@@ -1,0 +1,14 @@
+
+##
+# Note: spring.cloud.config.server.encrypt.enabled: false
+# needs to be in bootstrap.yml instead of application.yml
+##
+
+spring:
+  application:
+    name: configserver
+  cloud:
+     config:
+       server:
+           encrypt:
+             enabled: false
