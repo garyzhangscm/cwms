@@ -5,7 +5,7 @@ services:
     ports:
        - "8888:8888"
     environment:
-      ENCRYPT_KEY:       "IMSYMMETRIC"
+      ENCRYPT_KEY:       "CWMS2018"
       COMPOSE_PROJECT_NAME: "CONFIGURATION"
   database:
     image: mysql

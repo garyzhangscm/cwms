@@ -7,7 +7,7 @@ spring:
       url: jdbc:mysql://192.168.99.100:3306/cwms
       driverClassName: com.mysql.cj.jdbc.Driver
       username: cwms
-      password: cwms@2018
+      password: "{cipher}a53f0b89e7c3a118264c975185ca6a942c9466f7b20911220c034a3c236c69fe"
       initialization-mode: always
   # ==============================================================
   # = Keep the connection alive if idle for a long time (needed in production)
@@ -29,6 +29,9 @@ spring:
   # ==============================================================
       hibernate:
           ddl-auto: none
+
+customized:
+  source: local
   # ==============================================================
   # = For actuator
   # ==============================================================

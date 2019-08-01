@@ -36,9 +36,7 @@ spring:
   cloud:
      config:
        server:
-#           native:
+           native:
 #              # searchLocations: file:///cwms/confsvr/src/main/resources/config/layoutservice
-#              searchLocations: classpath:config/layoutservice
+              searchLocations: classpath:config/layoutservice
 #              #searchLocations: classpath:config/,classpath:config/licensingservice
-          git:
-            uri:
