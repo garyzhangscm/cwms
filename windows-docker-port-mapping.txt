@@ -1,0 +1,12 @@
+# port mapping for configuration server
+netsh interface portproxy add v4tov4 listenport=8888 listenaddress=0.0.0.0 connectport=8888 connectaddress=server.example.invalid
+
+# port mapping for adminer server(client tool for mysql)
+netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=server.example.invalid
+
+# port mapping for mysql db
+netsh interface portproxy add v4tov4 listenport=3306 listenaddress=0.0.0.0 connectport=3306 connectaddress=server.example.invalid
+
+
+# port mapping for layout service
+netsh interface portproxy add v4tov4 listenport=8180 listenaddress=0.0.0.0 connectport=8180 connectaddress=server.example.invalid

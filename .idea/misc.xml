@@ -6,6 +6,7 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/confsvr/pom.xml" />
+        <option value="$PROJECT_DIR$/layoutserver/pom.xml" />
       </list>
     </option>
   </component>

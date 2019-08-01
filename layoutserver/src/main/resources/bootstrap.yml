@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: layoutservice
+  profiles:
+    active:
+      default
+  cloud:
+    config:
+      uri: http://server.example.invalid:8888
