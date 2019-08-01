@@ -1,0 +1,58 @@
+version: '2'
+services:
+  configserver:
+    image: garyzhangscm/cwms-confsvr
+    ports:
+       - "8888:8888"
+    environment:
+      ENCRYPT_KEY:       "IMSYMMETRIC"
+      COMPOSE_PROJECT_NAME: "CONFIGURATION"
+  database:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: garyzhangscm
+      COMPOSE_PROJECT_NAME: "DATABASE"
+
+# adminer is a standard dock to configure database
+# database name will be "database", which is the service name
+# user: root
+# password: MYSQL_ROOT_PASSWORD: garyzhangscm
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      COMPOSE_PROJECT_NAME: "DATABASE"
+#    image: postgres:9.5
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      POSTGRES_USER: "postgres"
+#      POSTGRES_PASSWORD: "p0stgr@s"
+#      POSTGRES_DB:       "eagle_eye_local"
+#  layoutservice:
+#      image: garyzhangscm/cwms-layoutserver
+#      ports:
+#          - "8180:8180"
+#      environment:
+#          PROFILE: "default"
+#          CONFIGSERVER_URI: "http://localhost:8888"
+#          CONFIGSERVER_PORT:   "8888"
+#          DATABASESERVER_PORT: "3306"
+#          ENCRYPT_KEY:       "IMSYMMETRIC"
+
+#  licensingservice:
+#    image: johncarnell/tmx-licensing-service:chapter3
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      PROFILE: "default"
+#      CONFIGSERVER_URI: "http://configserver:8888"
+#      CONFIGSERVER_PORT:   "8888"
+#      DATABASESERVER_PORT: "5432"
+#      ENCRYPT_KEY:       "IMSYMMETRIC"

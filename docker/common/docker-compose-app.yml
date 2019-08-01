@@ -1,0 +1,14 @@
+version: '2'
+services:
+
+  layoutservice:
+      image: garyzhangscm/cwms-layoutserver
+      ports:
+          - "8180:8180"
+      environment:
+          PROFILE: "default"
+          CONFIGSERVER_URI: "http://192.168.99.100:8888"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "IMSYMMETRIC"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"

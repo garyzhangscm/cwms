@@ -20,7 +20,7 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>com.garyzhangscm.cwms.confsvr.ConfigServerApplication</start-class>
-		<docker.image.name>garyzhangscm/cmws-confsvr</docker.image.name>
+		<docker.image.name>garyzhangscm/cwms-confsvr</docker.image.name>
 		<docker.image.tag>latest</docker.image.tag>
 	</properties>
 
