@@ -29,5 +29,4 @@
 ####
 
 server:
-#   port: 8888
-    port: 8889
+    port: 8888
