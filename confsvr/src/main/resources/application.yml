@@ -29,14 +29,5 @@
 ####
 
 server:
-   port: 8888
-spring:
-  profiles:
-    active: native
-  cloud:
-     config:
-       server:
-           native:
-#              # searchLocations: file:///cwms/confsvr/src/main/resources/config/layoutservice
-              searchLocations: classpath:config/layoutservice
-#              #searchLocations: classpath:config/,classpath:config/licensingservice
+#   port: 8888
+    port: 8889

@@ -12,3 +12,6 @@ spring:
        server:
            encrypt:
              enabled: false
+           git:
+             uri: https://github.com/garyzhangscm/config-repo/
+             searchPaths: cwms/layoutservice
