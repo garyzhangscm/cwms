@@ -21,13 +21,17 @@ package com.garyzhangscm.cwms.auth.controller;
 import com.garyzhangscm.cwms.auth.model.LoginResponseWrapper;
 import com.garyzhangscm.cwms.auth.model.OAuth2Token;
 import com.garyzhangscm.cwms.auth.model.OAuth2TokenWrapper;
+import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.service.OAuth2Service;
 import com.garyzhangscm.cwms.auth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/login")
@@ -39,12 +43,36 @@ public class LoginController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     @RequestMapping(method =  RequestMethod.POST)
     public LoginResponseWrapper login(@RequestParam("username") String username,
                                       @RequestParam("password") String password) {
         OAuth2Token oAuth2Token = oAuth2Service.getOAuth2Token(username, password);
         oAuth2Token.setUser(userService.findByUsername(username));
         return LoginResponseWrapper.of("ok", OAuth2TokenWrapper.of(oAuth2Token));
+    }
+
+    @RequestMapping("/mock")
+    public User generateMocaUser(@RequestParam("username") String username,
+                                 @RequestParam("password") String password) {
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(username + "@gmail.com" );
+        user.setEnabled(true);
+        user.setFirstname(username);
+        user.setLastname(username);
+        user.setLocked(false);
+
+        return userService.save(user);
+    }
+
+
+    @RequestMapping("/allusers")
+    public List<User> getAllUsers() {
+          return userService.findAll();
     }
 
 }
