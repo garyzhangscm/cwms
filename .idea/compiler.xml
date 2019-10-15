@@ -6,15 +6,31 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="authsvr" />
         <module name="confsvr" />
         <module name="layoutserver" />
+        <module name="ressvr" />
+        <module name="zuulsvr" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="authentication-service" target="1.8" />
+      <module name="authserver" target="1.8" />
+      <module name="resources" target="1.8" />
+      <module name="resourceserver" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="authentication-service" options="-parameters" />
+      <module name="authserver" options="-parameters" />
+      <module name="authsvr" options="-parameters" />
       <module name="confsvr" options="-parameters" />
       <module name="layoutserver" options="-parameters" />
+      <module name="resources" options="-parameters" />
+      <module name="resourceserver" options="-parameters" />
+      <module name="ressvr" options="-parameters" />
+      <module name="zuulsvr" options="-parameters" />
     </option>
   </component>
 </project>

@@ -4,9 +4,28 @@ spring:
   profiles:
     active:
       default
+      # dev
   cloud:
     config:
-      uri: http://192.168.99.100:8888
+      # uri: http://configserver:8888
+      # We will need to use localost here instead of host name as this will be
+      # used by compile and build, during when the process is not running under
+      # docker environment hence not possible to find the server by host name
+      # Precondition: config server needs to be up by docker in local environment
+      #               at 8888 port, during mvn compile
+      uri: http://localhost:8888
+eureka:
+  instance:
+     preferIpAddress: true
+  client:
+     registerWithEureka: true
+     fetchRegistry: true
+     serviceUrl:
+       # Different from the config url, eureka url will be used when the server is
+       # already up. Since we will use docker to run eureka server and application server
+       # we can assume the application server can always access eureka server by host name
+       # as long as they are in the same sub-network(executed in the same docker project)
+       defaultZone: http://eurekaserver:8761/eureka
 # When build the package with Test, maven build process
 # will need to connect to the config server. As we
 # encrypt the password in the config server, we will need to

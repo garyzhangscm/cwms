@@ -7,11 +7,26 @@
 spring:
   application:
     name: configserver
+  profiles:
+    active:
+      - default
   cloud:
      config:
+       #discovery:
+       #  enabled: true
        server:
            encrypt:
              enabled: false
            git:
-             uri: https://github.com/garyzhangscm/config-repo/
-             searchPaths: cwms/layoutservice
+             uri: https://github.com/garyzhangscm/config-repo
+             searchPaths: cwms/zuulservice,cwms/layoutservice,cwms/resourceservice,cwms/authservice
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      # defaultZone: http://192.168.99.100:8761/eureka
+      # connect to eureka server by host name(service id)
+      defaultZone: http://eurekaserver:8761/eureka

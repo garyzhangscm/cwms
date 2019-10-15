@@ -1,0 +1,6 @@
+version: '2'
+services:
+  eurekaserver:
+    image: garyzhangscm/cwms-eurekasvr
+    ports:
+      - "8761:8761"

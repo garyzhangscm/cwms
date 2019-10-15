@@ -13,17 +13,20 @@ echo "********************************************************"
 #    printf '.'
 #    sleep 5
 #done
-while ! nc -z 192.168.99.100 $CONFIGSERVER_PORT; do sleep 3; done
+while ! nc -z configserver $CONFIGSERVER_PORT; do sleep 3; done
 echo ">>>>>>>>>>>> Configuration Server has started"
 
 echo "********************************************************"
 echo "Waiting for the database server to start on port $DATABASESERVER_PORT"
 echo "********************************************************"
 #while ! 'nc -z database $DATABASESERVER_PORT'; do sleep 3; done
-while ! nc -z 192.168.99.100 $DATABASESERVER_PORT; do sleep 3; done
+while ! nc -z database $DATABASESERVER_PORT; do sleep 3; done
 echo ">>>>>>>>>>>> Database Server has started"
 
 echo "********************************************************"
 echo "Starting License Server with Configuration Service :  $CONFIGSERVER_URI";
+echo "DATABASE_URL :  $DATABASE_URL";
+echo "SPRING_PROFILE :  $SPRING_PROFILE";
 echo "********************************************************"
-java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=default -jar /usr/local/layoutserver/@project.build.finalName@.jar
+## java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=default -jar /usr/local/layoutserver/@project.build.finalName@.jar
+java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=$SPRING_PROFILE -Dspring.database.url=$DATABASE_URL -jar /usr/local/layoutserver/@project.build.finalName@.jar

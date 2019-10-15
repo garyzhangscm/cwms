@@ -1,0 +1,34 @@
+# Eureka
+http://localhost:8761/actuator
+http://localhost:8761/eureka/apps
+
+# Configuration
+http://localhost:8888/actuator
+http://localhost:8888/layoutservice/default
+http://localhost:8888/layoutservice/dev
+http://localhost:8888/authservice/default
+http://localhost:8888/authservice/dev
+http://localhost:8888/zuulservice/default
+http://localhost:8888/zuulservice/dev
+
+# mysql web console / Adminre
+http://localhost:8080/
+
+#Zuul
+http://localhost:5555/actuator
+http://localhost:5555/actuator/routes
+
+# Layout server
+http://localhost:8180/actuator
+
+# Authorization server
+http://localhost:8280/actuator
+
+
+# OAuth2 server
+http://localhost:8901/actuator
+http://localhost:8901/oauth/token
+http://localhost:5555/api/oauth/oauth/token
+
+http://localhost:8901/user
+http://localhost:5555/api/oauth/user

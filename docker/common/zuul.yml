@@ -1,0 +1,12 @@
+version: '2'
+services:
+  zuulserver:
+    image: garyzhangscm/cwms-zuulsvr
+    ports:
+      - "5555:5555"
+    environment:
+       SPRING_PROFILE: "dev"
+       CONFIGSERVER_URI: "http://configserver:8888"
+       CONFIGSERVER_PORT:   "8888"
+       ENCRYPT_KEY:       "CWMS2018"
+       COMPOSE_PROJECT_NAME: "CWMS-APP"

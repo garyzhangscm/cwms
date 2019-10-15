@@ -1,0 +1,28 @@
+version: '2'
+services:
+
+  layoutservice:
+      image: garyzhangscm/cwms-layoutserver
+      ports:
+          - "8180:8180"
+      environment:
+          SPRING_PROFILE: "dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          DATABASE_URL: "jdbc:mysql://192.168.99.100:3306/cwms"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+
+  resourceservice:
+      image: garyzhangscm/cwms-ressvr
+      ports:
+          - "8280:8280"
+      environment:
+          SPRING_PROFILE: "dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          DATABASE_URL: "jdbc:mysql://192.168.99.100:3306/cwms"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"

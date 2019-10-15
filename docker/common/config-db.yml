@@ -1,5 +1,11 @@
 version: '2'
 services:
+#  eurekaserver:
+    # 默认情况下，其他服务可以使用服务名称连接到该服务。
+#    image: garyzhangscm/cwms-eurekasvr
+#    ports:
+#      - "8761:8761"
+
   configserver:
     image: garyzhangscm/cwms-confsvr
     ports:
@@ -13,6 +19,9 @@ services:
     restart: always
     ports:
       - 3306:3306
+#    networks:
+#      - vpcbr
+     #   ipv4_address: 10.5.0.5
     environment:
       MYSQL_ROOT_PASSWORD: garyzhangscm
       COMPOSE_PROJECT_NAME: "DATABASE"
@@ -56,3 +65,12 @@ services:
 #      CONFIGSERVER_PORT:   "8888"
 #      DATABASESERVER_PORT: "5432"
 #      ENCRYPT_KEY:       "IMSYMMETRIC"
+
+
+# networks:
+#  vpcbr:
+#    driver: bridge
+#    ipam:
+#      config:
+#        - subnet: 172.16.2.0/16
+#          gateway: 172.16.2.7

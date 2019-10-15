@@ -7,6 +7,17 @@ netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 conne
 # port mapping for mysql db
 netsh interface portproxy add v4tov4 listenport=3306 listenaddress=0.0.0.0 connectport=3306 connectaddress=192.168.99.100
 
+# port mapping for eureka service
+netsh interface portproxy add v4tov4 listenport=8761 listenaddress=0.0.0.0 connectport=8761 connectaddress=192.168.99.100
 
 # port mapping for layout service
 netsh interface portproxy add v4tov4 listenport=8180 listenaddress=0.0.0.0 connectport=8180 connectaddress=192.168.99.100
+
+# port mapping for auth service
+netsh interface portproxy add v4tov4 listenport=8280 listenaddress=0.0.0.0 connectport=8280 connectaddress=192.168.99.100
+
+# port mapping for Zuul service
+netsh interface portproxy add v4tov4 listenport=5555 listenaddress=0.0.0.0 connectport=5555 connectaddress=192.168.99.100
+
+# port mapping for OAuth2 service
+netsh interface portproxy add v4tov4 listenport=8901 listenaddress=0.0.0.0 connectport=8901 connectaddress=192.168.99.100
