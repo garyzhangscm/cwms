@@ -18,11 +18,19 @@
 
 package com.garyzhangscm.cwms.auth.model;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
+import java.util.Arrays;
+import java.util.Collection;
 
 @Entity
 @Table(name = "user_info")
-public class User {
+public class User implements UserDetails {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +49,37 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "enabled")
+    private boolean enabled;
+    @Column(name = "locked")
+    private boolean locked;
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !locked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Arrays.asList( new SimpleGrantedAuthority(" ADMIN"));
+
+    }
+
+
     public Integer getId() {
         return id;
     }
@@ -56,6 +95,7 @@ public class User {
     public void setUsername(String username) {
         this.username = username;
     }
+
 
     public String getPassword() {
         return password;
@@ -87,5 +127,17 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }

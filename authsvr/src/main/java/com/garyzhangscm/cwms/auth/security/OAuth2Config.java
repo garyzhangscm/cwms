@@ -21,7 +21,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
                 .withClient("cwms")
-                .secret("gz-cwms")
+                .secret("{noop}gz-cwms")
                 .authorizedGrantTypes("refresh_token", "password", "client_credentials")
                 .scopes("webclient", "mobileclient");
     }

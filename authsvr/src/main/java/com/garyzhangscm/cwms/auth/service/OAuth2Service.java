@@ -53,6 +53,7 @@ public class OAuth2Service {
         formData.add("grant_type", "password");
         formData.add("scope", "webclient");
         formData.add("username", username);
+        System.out.println("Start to verify by password: " + password);
         formData.add("password", password);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(formData, headers);

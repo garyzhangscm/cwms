@@ -6,7 +6,15 @@ CREATE TABLE user_info (
   password  VARCHAR(100) NOT NULL,
   first_name  VARCHAR(100) NOT NULL,
   last_name  VARCHAR(100) NOT NULL,
-  email  VARCHAR(100)
+  email  VARCHAR(100),
+  enabled boolean not null default 0,
+  locked boolean not null default 0
 );
 
-INSERT INTO user_info (username, password, first_name, last_name, email) VALUES ("GZHANG", "GZHANG", "Gary", "Zhang", "gzhang1999@gmail.com");
+INSERT INTO user_info (username, password, first_name, last_name, email, enabled, locked) VALUES ("GZHANG", "GZHANG", "Gary", "Zhang", "gzhang1999@gmail.com", 1, 0);
+
+INSERT INTO user_info (username, password, first_name, last_name, email, enabled, locked) VALUES ("RWU", "RWU", "Rainbow", "Wu", "rwu@gmail.com", 1, 0);
+
+INSERT INTO user_info (username, password, first_name, last_name, email, enabled, locked) VALUES ("OZHANG", "OZHANG", "Olivia", "Zhang", "ozhang@gmail.com", 1, 0);
+
+INSERT INTO user_info (username, password, first_name, last_name, email, enabled, locked) VALUES ("JZHANG", "JZHANG", "Japser", "Zhang", "ozhang@gmail.com", 1, 0);
