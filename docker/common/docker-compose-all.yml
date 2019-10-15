@@ -1,5 +1,11 @@
+
 version: '2'
 services:
+  eurekaserver:
+    image: garyzhangscm/cwms-eurekasvr
+    ports:
+      - "8761:8761"
+
   configserver:
     image: garyzhangscm/cwms-confsvr
     ports:
@@ -13,6 +19,9 @@ services:
     restart: always
     ports:
       - 3306:3306
+#    networks:
+#      - vpcbr
+     #   ipv4_address: server.example.invalid
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       COMPOSE_PROJECT_NAME: "DATABASE"
@@ -52,3 +61,12 @@ services:
 #      CONFIGSERVER_URI: "http://configserver:8888"
 #      CONFIGSERVER_PORT:   "8888"
 #      DATABASESERVER_PORT: "5432"
+
+
+# networks:
+#  vpcbr:
+#    driver: bridge
+#    ipam:
+#      config:
+#        - subnet: server.example.invalid/16
+#          gateway: server.example.invalid

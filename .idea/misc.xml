@@ -7,7 +7,15 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/confsvr/pom.xml" />
         <option value="$PROJECT_DIR$/layoutserver/pom.xml" />
+        <option value="$PROJECT_DIR$/zuulsvr/pom.xml" />
+        <option value="$PROJECT_DIR$/ressvr/pom.xml" />
+        <option value="$PROJECT_DIR$/authsvr/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/authserver/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="JDK_1.8" project-jdk-type="JavaSDK">
