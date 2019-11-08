@@ -31,8 +31,8 @@ public class WarehouseService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
-    public Warehouse findByWarehouseId(int id) {
-        return warehouseRepository.findById(id);
+    public Warehouse findById(Long id) {
+        return warehouseRepository.findById(id).orElse(null);
     }
 
     public List<Warehouse> findAll() {
@@ -40,9 +40,19 @@ public class WarehouseService {
         return warehouseRepository.findAll();
     }
 
-    public Warehouse findByWarehouseName(String name){
+    public Warehouse findByName(String name){
         return warehouseRepository.findByName(name);
     }
 
+    public Warehouse save(Warehouse warehouse) {
+        return warehouseRepository.save(warehouse);
+    }
+
+    public void delete(Warehouse warehouse) {
+        warehouseRepository.delete(warehouse);
+    }
+    public void delete(Long id) {
+        warehouseRepository.deleteById(id);
+    }
 
 }

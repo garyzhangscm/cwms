@@ -30,7 +30,7 @@ public class MenuService {
     @Autowired
     private MenuRepository menuRepository;
 
-    public Menu findByMenuGroupId(int id) {
+    public Menu findById(int id) {
         return menuRepository.findById(id);
     }
 
@@ -39,9 +39,6 @@ public class MenuService {
         return menuRepository.findAll();
     }
 
-    public Menu findByMenuName(String name){
-        return menuRepository.findByName(name);
-    }
 
 
 }

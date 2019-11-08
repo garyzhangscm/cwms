@@ -18,36 +18,35 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
-import java.io.Serializable;
 
 @Entity
 @Table(name = "menu")
-public class Menu implements Serializable {
+public class Menu implements Comparable<Menu> {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_id")
     private Integer id;
 
+    @Column(name = "text")
+    private String  text;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "i18n")
+    private String i18n;
 
-
-    @Column(name = "description")
-    private String description;
-
+    @Column(name = "link")
+    private String link;
 
     @Column(name = "sequence")
     private Integer sequence;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_group_id")
-    private MenuGroup menuGroup;
+    @Override
+    public int compareTo(Menu anotherMenu) {
+        return this.getSequence() - anotherMenu.getSequence();
+    }
 
     public Integer getId() {
         return id;
@@ -57,20 +56,28 @@ public class Menu implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getText() {
+        return text;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setText(String text) {
+        this.text = text;
     }
 
-    public String getDescription() {
-        return description;
+    public String getI18n() {
+        return i18n;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setI18n(String i18n) {
+        this.i18n = i18n;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
     }
 
     public Integer getSequence() {
@@ -79,13 +86,5 @@ public class Menu implements Serializable {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
-    }
-
-    public MenuGroup getMenuGroup() {
-        return menuGroup;
-    }
-
-    public void setMenuGroup(MenuGroup menuGroup) {
-        this.menuGroup = menuGroup;
     }
 }

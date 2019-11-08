@@ -28,4 +28,4 @@ echo "Starting Zuul Server with Configuration Service :  $CONFIGSERVER_URI";
 echo "SPRING_PROFILE :  $SPRING_PROFILE";
 echo "DATABASE_URL :  $DATABASE_URL";
 echo "********************************************************"
-java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=$SPRING_PROFILE -Dspring.database.url=$DATABASE_URL -jar /usr/local/authsvr/@project.build.finalName@.jar
+java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=$SPRING_PROFILE -jar /usr/local/authsvr/@project.build.finalName@.jar

@@ -9,7 +9,7 @@ spring:
     name: zuulservice
   profiles:
     active:
-      default
+      dev
   cloud:
     config:
       # uri: http://configserver:8888

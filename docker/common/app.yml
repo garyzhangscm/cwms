@@ -8,7 +8,7 @@ services:
       environment:
           SPRING_PROFILE: "dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "jdbc:mysql://server.example.invalid:3306/cwms"
+          DATABASE_URL: "jdbc:mysql://database:3306/cwms"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "${ENCRYPT_KEY}"
@@ -21,7 +21,7 @@ services:
       environment:
           SPRING_PROFILE: "dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "jdbc:mysql://server.example.invalid:3306/cwms"
+          DATABASE_URL: "jdbc:mysql://database:3306/cwms"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "${ENCRYPT_KEY}"

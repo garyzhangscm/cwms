@@ -31,5 +31,4 @@ public interface MenuGroupRepository extends JpaRepository<MenuGroup, Integer>, 
 
     MenuGroup findById(int id);
 
-    MenuGroup findByName(String name);
 }

@@ -30,17 +30,13 @@ public class MenuGroupService {
     @Autowired
     private MenuGroupRepository menuGroupRepository;
 
-    public MenuGroup findByMenuGroupId(int id) {
+    public MenuGroup findById(int id) {
         return menuGroupRepository.findById(id);
     }
 
     public List<MenuGroup> findAll() {
 
         return menuGroupRepository.findAll();
-    }
-
-    public MenuGroup findByMenuGroupName(String name){
-        return menuGroupRepository.findByName(name);
     }
 
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.auth.security;
+package com.garyzhangscm.cwms.zuulsvr.filters;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +31,11 @@ public class CORSConfiguration {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("*").allowedMethods("POST", "GET", "PUT", "OPTIONS", "DELETE");
+                registry.
+                        addMapping("/**").
+                        allowedOrigins("*").
+                        allowedMethods("POST", "GET", "PUT", "OPTIONS", "DELETE").
+                        allowedHeaders("*");
             }
         };
     }

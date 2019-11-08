@@ -18,22 +18,50 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
+import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.WarehouseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping(value="/warehouse/{id}")
 public class WarehouseController {
 
     @Autowired
     WarehouseService warehouseService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public Warehouse findWarehouseByID(@PathVariable int id) {
-        return warehouseService.findByWarehouseId(id);
+
+    @RequestMapping(value="/warehouses", method=RequestMethod.GET)
+    public List<Warehouse> listWarehouses() {
+        return warehouseService.findAll();
     }
 
+    @RequestMapping(value="/warehouses", method=RequestMethod.POST)
+    public Warehouse addWarehouses(@RequestBody Warehouse warehouse) {
+        return warehouseService.save(warehouse);
+    }
+
+    @RequestMapping(value="/warehouse/{id}", method=RequestMethod.PUT)
+    public Warehouse changeWarehouse(@PathVariable long id, @RequestBody Warehouse warehouse) {
+        if (warehouse.getId() != null && warehouse.getId() != id) {
+            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+        }
+        return warehouseService.save(warehouse);
+    }
+
+    @RequestMapping(value="/warehouse/{id}", method=RequestMethod.DELETE)
+    public Warehouse removeWarehouses(@PathVariable long id) {
+        Warehouse removedWarehouse = warehouseService.findById(id);
+        warehouseService.delete(id);
+        return removedWarehouse;
+    }
+
+    @RequestMapping(value="/warehouse/{id}", method = RequestMethod.GET)
+    public Warehouse findWarehouseByID(@PathVariable long id) {
+        return warehouseService.findById(id);
+    }
 
 }

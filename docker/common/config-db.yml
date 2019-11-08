@@ -1,13 +1,8 @@
 version: '2'
 services:
-#  eurekaserver:
-    # 默认情况下，其他服务可以使用服务名称连接到该服务。
-#    image: garyzhangscm/cwms-eurekasvr
-#    ports:
-#      - "8761:8761"
-
   configserver:
     image: garyzhangscm/cwms-confsvr
+    restart: always
     ports:
        - "8888:8888"
     environment:
@@ -25,8 +20,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       COMPOSE_PROJECT_NAME: "DATABASE"
+      # MYSQL_DATABASE: cwms
+      # MYSQL_USER: cwms_dba
 
-# adminer is a standard dock to configure database
+
+  # adminer is a standard dock to configure database
 # database name will be "database", which is the service name
 # user: root
   adminer:

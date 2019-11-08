@@ -29,4 +29,4 @@ echo "DATABASE_URL :  $DATABASE_URL";
 echo "SPRING_PROFILE :  $SPRING_PROFILE";
 echo "********************************************************"
 ## java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=default -jar /usr/local/layoutserver/@project.build.finalName@.jar
-java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=$SPRING_PROFILE -Dspring.database.url=$DATABASE_URL -jar /usr/local/layoutserver/@project.build.finalName@.jar
+java -Dspring.cloud.config.uri=$CONFIGSERVER_URI -Dspring.profiles.active=$SPRING_PROFILE -jar /usr/local/layoutserver/@project.build.finalName@.jar

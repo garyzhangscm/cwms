@@ -31,5 +31,4 @@ public interface MenuRepository extends JpaRepository<Menu, Integer>, JpaSpecifi
 
     Menu findById(int id);
 
-    Menu findByName(String name);
 }
