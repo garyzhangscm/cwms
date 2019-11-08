@@ -16,19 +16,16 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.resources.repository;
+package com.garyzhangscm.cwms.layout.repository;
 
-import com.garyzhangscm.cwms.resources.model.Menu;
+import com.garyzhangscm.cwms.layout.model.LocationGroupType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 
 @Repository
-public interface MenuRepository extends JpaRepository<Menu, Integer>, JpaSpecificationExecutor<Menu> {
-    List<Menu> findAll();
+public interface LocationGroupTypeRepository extends JpaRepository<LocationGroupType, Long>, JpaSpecificationExecutor<LocationGroupType> {
 
-    Menu findById(int id);
-
+    LocationGroupType findByName(String name);
 }

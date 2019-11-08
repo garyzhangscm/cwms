@@ -1,5 +1,5 @@
 /**
- * Copyright 2018
+ * Copyright 2019
  *
  * @author gzhang
  * <p>
@@ -16,19 +16,20 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.resources.repository;
+package com.garyzhangscm.cwms.layout.Exception;
 
-import com.garyzhangscm.cwms.resources.model.Menu;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.stereotype.Repository;
+public class GenericException extends RuntimeException {
+    private int code;
+    public GenericException(int code, String message) {
+        super(message);
+        this.code = code;
+    }
 
-import java.util.List;
+    public int getCode() {
+        return code;
+    }
 
-@Repository
-public interface MenuRepository extends JpaRepository<Menu, Integer>, JpaSpecificationExecutor<Menu> {
-    List<Menu> findAll();
-
-    Menu findById(int id);
-
+    public void setCode(int code) {
+        this.code = code;
+    }
 }

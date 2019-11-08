@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.layout.model;
 
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 import javax.persistence.*;
 import java.io.Serializable;
 @Entity
@@ -28,16 +30,35 @@ public class Warehouse implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "warehouse_id")
-    private Integer id;
+    @JsonProperty(value="id")
+    private Long id;
 
     @Column(name = "name")
     private String name;
 
-    public Integer getId() {
+    @Column(name = "size")
+    private String size;
+
+    @Column(name = "address_country")
+    private String addressCountry;
+    @Column(name = "address_county")
+    private String addressCounty;
+    @Column(name = "address_city")
+    private String addressCity;
+    @Column(name = "address_street")
+    private String addressStreet;
+    @Column(name = "address_line1")
+    private String addressLine1;
+    @Column(name = "address_line2")
+    private String addressLine2;
+    @Column(name = "address_postcode")
+    private String addressPostcode;
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -47,5 +68,69 @@ public class Warehouse implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public String getAddressCountry() {
+        return addressCountry;
+    }
+
+    public void setAddressCountry(String addressCountry) {
+        this.addressCountry = addressCountry;
+    }
+
+    public String getAddressCounty() {
+        return addressCounty;
+    }
+
+    public void setAddressCounty(String addressCounty) {
+        this.addressCounty = addressCounty;
+    }
+
+    public String getAddressCity() {
+        return addressCity;
+    }
+
+    public void setAddressCity(String addressCity) {
+        this.addressCity = addressCity;
+    }
+
+    public String getAddressStreet() {
+        return addressStreet;
+    }
+
+    public void setAddressStreet(String addressStreet) {
+        this.addressStreet = addressStreet;
+    }
+
+    public String getAddressLine1() {
+        return addressLine1;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+    }
+
+    public String getAddressLine2() {
+        return addressLine2;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+    }
+
+    public String getAddressPostcode() {
+        return addressPostcode;
+    }
+
+    public void setAddressPostcode(String addressPostcode) {
+        this.addressPostcode = addressPostcode;
     }
 }

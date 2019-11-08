@@ -19,16 +19,18 @@
 package com.garyzhangscm.cwms.resources.model;
 
 import javax.persistence.*;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Entity
-@Table(name = "menu")
-public class Menu implements Comparable<Menu> {
+@Table(name = "menu_sub_group")
+public class MenuSubGroup implements Comparable<MenuSubGroup>{
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "menu_id")
+    @Column(name = "menu_sub_group_id")
     private Integer id;
 
     @Column(name = "text")
@@ -37,15 +39,29 @@ public class Menu implements Comparable<Menu> {
     @Column(name = "i18n")
     private String i18n;
 
-    @Column(name = "link")
-    private String link;
+    @Column(name = "icon")
+    private String icon;
+
+    @Column(name = "shortcut_root")
+    private Boolean shortcutRoot;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="menu_sub_group_id")
+    private Set<Menu> children = new TreeSet<>();
+
 
     @Column(name = "sequence")
     private Integer sequence;
 
+    @Column(name = "link")
+    private String link;
+
+    @Column(name = "badge")
+    private Integer badge;
+
     @Override
-    public int compareTo(Menu anotherMenu) {
-        return this.getSequence() - anotherMenu.getSequence();
+    public int compareTo(MenuSubGroup anotherMenuSubGroup) {
+        return this.getSequence() - anotherMenuSubGroup.getSequence();
     }
 
     public Integer getId() {
@@ -72,12 +88,20 @@ public class Menu implements Comparable<Menu> {
         this.i18n = i18n;
     }
 
-    public String getLink() {
-        return link;
+    public String getIcon() {
+        return icon;
     }
 
-    public void setLink(String link) {
-        this.link = link;
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public Set<Menu> getChildren() {
+        return children;
+    }
+
+    public void setChildren(Set<Menu> children) {
+        this.children = children;
     }
 
     public Integer getSequence() {
@@ -86,5 +110,29 @@ public class Menu implements Comparable<Menu> {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public Boolean isShortcutRoot() {
+        return shortcutRoot;
+    }
+
+    public void setShortcutRoot(Boolean shortcutRoot) {
+        this.shortcutRoot = shortcutRoot;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public Integer getBadge() {
+        return badge;
+    }
+
+    public void setBadge(Integer badge) {
+        this.badge = badge;
     }
 }

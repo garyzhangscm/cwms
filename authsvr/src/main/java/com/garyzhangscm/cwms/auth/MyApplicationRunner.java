@@ -24,9 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class MyApplicationRunner implements ApplicationRunner {
     @Autowired
     UserService userService;
@@ -36,13 +38,15 @@ public class MyApplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        System.out.println("MyApplicationRunner...");
         List<User> users = userService.findAll();
         for(User user : users) {
+            System.out.println("user: "+ user.getUsername());
             if (!user.getPassword().startsWith("{") ||
                  user.getPassword().indexOf("}") < 0) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
-                userService.save(user);
-                System.out.println("encoding password for user: " + user.getUsername());
+                User newUser = userService.save(user);
+                System.out.println("==> encoding password for user: " + newUser.getUsername() + newUser.getPassword());
             }
         }
     }

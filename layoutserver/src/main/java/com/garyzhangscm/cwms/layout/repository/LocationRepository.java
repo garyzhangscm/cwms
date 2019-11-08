@@ -16,19 +16,24 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.resources.repository;
+package com.garyzhangscm.cwms.layout.repository;
 
-import com.garyzhangscm.cwms.resources.model.Menu;
+import com.garyzhangscm.cwms.layout.model.Location;
+import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface MenuRepository extends JpaRepository<Menu, Integer>, JpaSpecificationExecutor<Menu> {
-    List<Menu> findAll();
+public interface LocationRepository extends JpaRepository<Location, Long>, JpaSpecificationExecutor<Location> {
 
-    Menu findById(int id);
+    Location findByName(String name);
+
+    @Query( "select o from Location o where location_group_id in :ids" )
+    List<Location> findByLocationGroups(@Param("ids") List<Long> locationGroupIds);
 
 }

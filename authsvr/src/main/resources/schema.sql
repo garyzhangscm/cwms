@@ -1,3 +1,5 @@
+-- User
+
 DROP TABLE IF EXISTS user_info;
 
 CREATE TABLE user_info (
@@ -18,3 +20,5 @@ INSERT INTO user_info (username, password, first_name, last_name, email, enabled
 INSERT INTO user_info (username, password, first_name, last_name, email, enabled, locked) VALUES ("OZHANG", "OZHANG", "Olivia", "Zhang", "ozhang@gmail.com", 1, 0);
 
 INSERT INTO user_info (username, password, first_name, last_name, email, enabled, locked) VALUES ("JZHANG", "JZHANG", "Japser", "Zhang", "ozhang@gmail.com", 1, 0);
+
+

@@ -6,7 +6,7 @@ services:
       ports:
           - "8180:8180"
       environment:
-          SPRING_PROFILE: "dev"
+          SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
           DATABASE_URL: "jdbc:mysql://database:3306/cwms"
           CONFIGSERVER_PORT:   "8888"
@@ -19,7 +19,7 @@ services:
       ports:
           - "8280:8280"
       environment:
-          SPRING_PROFILE: "dev"
+          SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
           DATABASE_URL: "jdbc:mysql://database:3306/cwms"
           CONFIGSERVER_PORT:   "8888"

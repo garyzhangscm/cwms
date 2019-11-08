@@ -18,41 +18,42 @@
 
 package com.garyzhangscm.cwms.layout.service;
 
+import com.garyzhangscm.cwms.layout.model.LocationGroupType;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
+import com.garyzhangscm.cwms.layout.repository.LocationGroupTypeRepository;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class WarehouseService {
+public class LocationGroupTypeService {
     @Autowired
-    private WarehouseRepository warehouseRepository;
+    private LocationGroupTypeRepository locationGroupTypeRepository;
 
-    public Warehouse findById(Long id) {
-        return warehouseRepository.findById(id).orElse(null);
+    public LocationGroupType findById(Long id) {
+        return locationGroupTypeRepository.findById(id).orElse(null);
     }
 
-    public List<Warehouse> findAll() {
+    public List<LocationGroupType> findAll() {
 
-        return warehouseRepository.findAll();
+        return locationGroupTypeRepository.findAll();
     }
 
-    public Warehouse findByName(String name){
-        return warehouseRepository.findByName(name);
+    public LocationGroupType findByName(String name){
+        return locationGroupTypeRepository.findByName(name);
     }
 
-    public Warehouse save(Warehouse warehouse) {
-        return warehouseRepository.save(warehouse);
+    public LocationGroupType save(LocationGroupType locationGroupType) {
+        return locationGroupTypeRepository.save(locationGroupType);
     }
 
-    public void delete(Warehouse warehouse) {
-        warehouseRepository.delete(warehouse);
+    public void delete(LocationGroupType locationGroupType) {
+        locationGroupTypeRepository.delete(locationGroupType);
     }
     public void delete(Long id) {
-        warehouseRepository.deleteById(id);
+        locationGroupTypeRepository.deleteById(id);
     }
 
 }

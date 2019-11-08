@@ -25,7 +25,7 @@
         <!-- Warehouse Layout: Warehouse / Building / Area / Location / etc-->
         <module>layoutserver</module>
         <!-- Authorization Service: User / Role / Menu / etc-->
-        <module>authserver</module>
+        <module>authsvr</module>
         <!--
         <module>licensing-service</module>
         -->

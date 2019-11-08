@@ -26,10 +26,7 @@ import com.garyzhangscm.cwms.auth.service.OAuth2Service;
 import com.garyzhangscm.cwms.auth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -46,11 +43,19 @@ public class LoginController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    /***
     @RequestMapping(method =  RequestMethod.POST)
     public LoginResponseWrapper login(@RequestParam("username") String username,
                                       @RequestParam("password") String password) {
         OAuth2Token oAuth2Token = oAuth2Service.getOAuth2Token(username, password);
         oAuth2Token.setUser(userService.findByUsername(username));
+        return LoginResponseWrapper.of("ok", OAuth2TokenWrapper.of(oAuth2Token));
+    }
+     **/
+    @RequestMapping(method =  RequestMethod.POST)
+    public LoginResponseWrapper login(@RequestBody User user) {
+        OAuth2Token oAuth2Token = oAuth2Service.getOAuth2Token(user.getUsername(), user.getPassword());
+        oAuth2Token.setUser(userService.findByUsername(user.getUsername()));
         return LoginResponseWrapper.of("ok", OAuth2TokenWrapper.of(oAuth2Token));
     }
 

@@ -1,40 +1,10 @@
 
-##
-# Note: spring.cloud.config.server.encrypt.enabled: false
-# needs to be in bootstrap.yml instead of application.yml
-##
-
 spring:
   application:
     name: authservice
   profiles:
     active:
-      dev
+      default
   cloud:
     config:
-      # uri: http://configserver:8888
-      # We will need to use localost here instead of host name as this will be
-      # used by compile and build, during when the process is not running under
-      # docker environment hence not possible to find the server by host name
-      # Precondition: config server needs to be up by docker in local environment
-      #               at 8888 port, during mvn compile
       uri: http://localhost:8888
-
-#Setting logging levels
-logging:
-  level:
-    com.netflix: WARN
-    org.springframework.web: WARN
-    com.garyzhangscm: DEBUG
-
-
-eureka:
-  instance:
-    preferIpAddress: true
-  client:
-    registerWithEureka: true
-    fetchRegistry: true
-    serviceUrl:
-      # defaultZone: http://192.168.99.100:8761/eureka
-      # connect to eureka server by host name(service id)
-      defaultZone: http://eurekaserver:8761/eureka

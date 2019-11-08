@@ -19,34 +19,45 @@
 package com.garyzhangscm.cwms.resources.model;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Entity
 @Table(name = "menu_group")
-public class MenuGroup  implements Serializable {
+public class MenuGroup implements Comparable<MenuGroup>{
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_group_id")
     private Integer id;
 
+    @Column(name = "text")
+    private String  text;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "i18n")
+    private String i18n;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "group_flag")
+    private Boolean group;
+
+    @Column(name = "hide_in_breadcrumb")
+    private Boolean hideInBreadcrumb;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="menu_group_id")
+//    @Transient
+    private Set<MenuSubGroup> children = new TreeSet<>();
+
 
     @Column(name = "sequence")
     private Integer sequence;
 
-    @OneToMany(
-        mappedBy = "menuGroup",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
-    private List<Menu> menus;
+    @Override
+    public int compareTo(MenuGroup anotherMenuGroup) {
+        return this.getSequence() - anotherMenuGroup.getSequence();
+    }
 
     public Integer getId() {
         return id;
@@ -56,20 +67,44 @@ public class MenuGroup  implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getText() {
+        return text;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setText(String text) {
+        this.text = text;
     }
 
-    public String getDescription() {
-        return description;
+    public String getI18n() {
+        return i18n;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setI18n(String i18n) {
+        this.i18n = i18n;
+    }
+
+    public Boolean isGroup() {
+        return group;
+    }
+
+    public void setGroup(Boolean group) {
+        this.group = group;
+    }
+
+    public Boolean isHideInBreadcrumb() {
+        return hideInBreadcrumb;
+    }
+
+    public void setHideInBreadcrumb(Boolean hideInBreadcrumb) {
+        this.hideInBreadcrumb = hideInBreadcrumb;
+    }
+
+    public Set<MenuSubGroup> getChildren() {
+        return children;
+    }
+
+    public void setChildren(Set<MenuSubGroup> children) {
+        this.children = children;
     }
 
     public Integer getSequence() {
@@ -78,13 +113,5 @@ public class MenuGroup  implements Serializable {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
-    }
-
-    public List<Menu> getMenus() {
-        return menus;
-    }
-
-    public void setMenus(List<Menu> menus) {
-        this.menus = menus;
     }
 }

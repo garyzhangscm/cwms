@@ -1,0 +1,12 @@
+{
+    "result": 0,
+    "message": "",
+    "data": [
+        {
+            "id": 1,
+            "name": "locations",
+            "description": "warehouse locations",
+            "destinationUrl" : "layout/locations/upload"
+        }
+    ]
+}

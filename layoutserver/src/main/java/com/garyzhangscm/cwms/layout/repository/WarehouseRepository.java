@@ -26,10 +26,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface WarehouseRepository extends JpaRepository<Warehouse, Integer>, JpaSpecificationExecutor<Warehouse> {
-    List<Warehouse> findAll();
-
-    Warehouse findById(int id);
-
+public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, JpaSpecificationExecutor<Warehouse> {
     Warehouse findByName(String name);
 }
