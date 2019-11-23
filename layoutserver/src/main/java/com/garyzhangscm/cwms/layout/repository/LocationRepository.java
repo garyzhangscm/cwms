@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -36,4 +37,7 @@ public interface LocationRepository extends JpaRepository<Location, Long>, JpaSp
     @Query( "select o from Location o where location_group_id in :ids" )
     List<Location> findByLocationGroups(@Param("ids") List<Long> locationGroupIds);
 
+    @Modifying
+    @Query( "delete from Location o where location_id in :ids" )
+    void deleteByLocationIds(@Param("ids") List<Long> locationIds);
 }

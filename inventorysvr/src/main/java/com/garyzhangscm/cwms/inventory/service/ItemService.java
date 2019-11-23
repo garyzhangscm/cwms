@@ -1,0 +1,190 @@
+/**
+ * Copyright 2018
+ *
+ * @author gzhang
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.garyzhangscm.cwms.inventory.service;
+
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.model.*;
+import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ItemService implements TestDataInitiableService{
+    private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
+
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    ItemFamilyService itemFamilyService;
+
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private FileService fileService;
+
+    @Value("${fileupload.test-data.items:items.csv}")
+    String testDataFile;
+
+    public Item findById(Long id, boolean includeDetails) {
+         Item item = itemRepository.findById(id).orElse(null);
+         if (item != null && includeDetails) {
+             loadItemAttribute(item);
+         }
+         return item;
+    }
+    public Item findById(Long id) {
+        return findById(id, true);
+    }
+
+    public List<Item> findAll(boolean includeDetails) {
+        List<Item> items = itemRepository.findAll();
+        if (items.size() > 0 && includeDetails)
+            loadItemAttribute(items);
+        return items;
+    }
+
+    public List<Item> findAll() {
+        return findAll(true);
+    }
+
+    public Item findByName(String name, boolean includeDetails){
+        Item item = itemRepository.findByName(name);
+        if (item != null && includeDetails) {
+            loadItemAttribute(item);
+        }
+        return item;
+    }
+    public Item findByName(String name){
+        return findByName(name, true);
+    }
+
+    public Item save(Item item) {
+        return itemRepository.save(item);
+    }
+
+    public Item saveOrUpdate(Item item) {
+        if (findByName(item.getName()) != null) {
+            item.setId(findByName(item.getName()).getId());
+        }
+        return save(item);
+    }
+    public void delete(Item item) {
+        itemRepository.delete(item);
+    }
+    public void delete(Long id) {
+        itemRepository.deleteById(id);
+    }
+
+
+    // load detail data from other service
+    // Client / Supplier / Unit of Measure
+    public void loadItemAttribute(List<Item> items) {
+        for(Item item : items) {
+            loadItemAttribute(item);
+        }
+    }
+
+    public void loadItemAttribute(Item item) {
+        if (item.getClientId() != null) {
+            item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
+        }
+        for (ItemUnitOfMeasure itemUnitOfMeasure : item.getItemUnitOfMeasures()) {
+            if (itemUnitOfMeasure.getSupplierId() != null) {
+                itemUnitOfMeasure.setSupplier(commonServiceRestemplateClient.getSupplierById(itemUnitOfMeasure.getSupplierId()));
+            }
+            if (itemUnitOfMeasure.getClientId() != null){
+                itemUnitOfMeasure.setClient(commonServiceRestemplateClient.getClientById(itemUnitOfMeasure.getClientId()));
+            }
+            if (itemUnitOfMeasure.getUnitOfMeasureId() != null) {
+                itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId()));
+            }
+        }
+    }
+
+    public List<Item> loadItemData(File  file) throws IOException {
+        List<ItemCSVWrapper> itemCSVWrappers = loadData(file);
+        return itemCSVWrappers.stream().map(itemCSVWrapper -> convertFromWrapper(itemCSVWrapper)).collect(Collectors.toList());
+    }
+
+    public List<ItemCSVWrapper> loadData(File file) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("name").
+                addColumn("description").
+                addColumn("client").
+                addColumn("itemFamily").
+                addColumn("unitCost").
+                build().withHeader();
+        return fileService.loadData(file, schema, ItemCSVWrapper.class);
+    }
+
+
+    public List<ItemCSVWrapper> loadData(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("name").
+                addColumn("description").
+                addColumn("client").
+                addColumn("itemFamily").
+                addColumn("unitCost").
+                build().withHeader();
+
+        return fileService.loadData(inputStream, schema, ItemCSVWrapper.class);
+    }
+
+    public void initTestData() {
+        try {
+            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            List<ItemCSVWrapper> itemCSVWrappers = loadData(inputStream);
+            itemCSVWrappers.stream().forEach(itemCSVWrapper -> saveOrUpdate(convertFromWrapper(itemCSVWrapper)));
+        } catch (IOException ex) {
+            logger.debug("Exception while load test data: {}", ex.getMessage());
+        }
+    }
+
+    private Item convertFromWrapper(ItemCSVWrapper itemCSVWrapper) {
+        Item item = new Item();
+        item.setName(itemCSVWrapper.getName());
+        item.setDescription(itemCSVWrapper.getDescription());
+        item.setUnitCost(itemCSVWrapper.getUnitCost());
+        if (!itemCSVWrapper.getClient().isEmpty()) {
+            Client client = commonServiceRestemplateClient.getClientByName(itemCSVWrapper.getClient());
+            item.setClientId(client.getId());
+        }
+        if (!itemCSVWrapper.getItemFamily().isEmpty()) {
+            ItemFamily itemFamily = itemFamilyService.findByName(itemCSVWrapper.getItemFamily());
+            item.setItemFamily(itemFamily);
+        }
+        return item;
+
+    }
+
+
+}

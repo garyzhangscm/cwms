@@ -18,18 +18,35 @@
 
 package com.garyzhangscm.cwms.layout.service;
 
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.layout.model.LocationCSVWrapper;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class WarehouseService {
+public class WarehouseService implements TestDataInitiableService {
+
+    private static final Logger logger = LoggerFactory.getLogger(WarehouseService.class);
+
     @Autowired
     private WarehouseRepository warehouseRepository;
+    @Autowired
+    private FileService fileService;
+
+    @Value("${fileupload.test-data.warehouses:warehouses.csv}")
+    String testDataFile;
 
     public Warehouse findById(Long id) {
         return warehouseRepository.findById(id).orElse(null);
@@ -48,11 +65,63 @@ public class WarehouseService {
         return warehouseRepository.save(warehouse);
     }
 
+    public Warehouse saveOrUpdate(Warehouse warehouse) {
+        if (findByName(warehouse.getName()) != null) {
+            warehouse.setId(findByName(warehouse.getName()).getId());
+        }
+        return save(warehouse);
+    }
+
     public void delete(Warehouse warehouse) {
         warehouseRepository.delete(warehouse);
     }
     public void delete(Long id) {
         warehouseRepository.deleteById(id);
     }
+    public List<Warehouse> loadData(File file) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("name").
+                addColumn("size").
+                addColumn("addressCountry").
+                addColumn("addressState").
+                addColumn("addressCounty").
+                addColumn("addressCity").
+                addColumn("addressDistrict").
+                addColumn("addressLine1").
+                addColumn("addressLine2").
+                addColumn("addressPostcode").
+                build().withHeader();
+        return fileService.loadData(file, schema, Warehouse.class);
+    }
+
+    public List<Warehouse> loadData(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("name").
+                addColumn("size").
+                addColumn("addressCountry").
+                addColumn("addressState").
+                addColumn("addressCounty").
+                addColumn("addressCity").
+                addColumn("addressDistrict").
+                addColumn("addressLine1").
+                addColumn("addressLine2").
+                addColumn("addressPostcode").
+                build().withHeader();
+
+        return fileService.loadData(inputStream, schema, Warehouse.class);
+    }
+
+    public void initTestData() {
+        try {
+            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            List<Warehouse> warehouses = loadData(inputStream);
+            warehouses.stream().forEach(warehouse -> saveOrUpdate(warehouse));
+        } catch (IOException ex) {
+            logger.debug("Exception while load test data: {}", ex.getMessage());
+        }
+    }
+
 
 }

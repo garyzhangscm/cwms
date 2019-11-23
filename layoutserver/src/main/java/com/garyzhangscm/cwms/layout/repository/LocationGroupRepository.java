@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.layout.repository;
 
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -29,6 +30,7 @@ import java.util.List;
 
 @Repository
 public interface LocationGroupRepository extends JpaRepository<LocationGroup, Long>, JpaSpecificationExecutor<LocationGroup> {
+
 
     LocationGroup findByName(String name);
 

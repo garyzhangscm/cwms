@@ -7,6 +7,12 @@
             "name": "locations",
             "description": "warehouse locations",
             "destinationUrl" : "layout/locations/upload"
+        },
+        {
+            "id": 2,
+            "name": "items",
+            "description": "Items",
+            "destinationUrl" : "inventory/items/upload"
         }
     ]
 }

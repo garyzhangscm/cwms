@@ -64,4 +64,11 @@ public class WarehouseController {
         return warehouseService.findById(id);
     }
 
+    @RequestMapping(value="/warehouse/accessible/{username}", method=RequestMethod.GET)
+    public List<Warehouse> getAccessibleWarehouse(@PathVariable String username) {
+        // TO-DO: return warehouse that the user has access
+        return warehouseService.findAll();
+    }
+
+
 }
