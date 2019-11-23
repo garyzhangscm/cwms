@@ -26,6 +26,10 @@
         <module>layoutserver</module>
         <!-- Authorization Service: User / Role / Menu / etc-->
         <module>authsvr</module>
+        <!-- Resource Service: Configuration / Menu -->
+        <module>ressvr</module>
+        <!-- Common Service: Common Business Entites-->
+        <module>commonsvr</module>
         <!--
         <module>licensing-service</module>
         -->

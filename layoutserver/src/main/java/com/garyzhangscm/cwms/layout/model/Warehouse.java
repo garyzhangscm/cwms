@@ -41,12 +41,14 @@ public class Warehouse implements Serializable {
 
     @Column(name = "address_country")
     private String addressCountry;
+    @Column(name = "address_state")
+    private String addressState;
     @Column(name = "address_county")
     private String addressCounty;
     @Column(name = "address_city")
     private String addressCity;
-    @Column(name = "address_street")
-    private String addressStreet;
+    @Column(name = "address_district")
+    private String addressDistrict;
     @Column(name = "address_line1")
     private String addressLine1;
     @Column(name = "address_line2")
@@ -86,6 +88,14 @@ public class Warehouse implements Serializable {
         this.addressCountry = addressCountry;
     }
 
+    public String getAddressState() {
+        return addressState;
+    }
+
+    public void setAddressState(String addressState) {
+        this.addressState = addressState;
+    }
+
     public String getAddressCounty() {
         return addressCounty;
     }
@@ -102,12 +112,12 @@ public class Warehouse implements Serializable {
         this.addressCity = addressCity;
     }
 
-    public String getAddressStreet() {
-        return addressStreet;
+    public String getAddressDistrict() {
+        return addressDistrict;
     }
 
-    public void setAddressStreet(String addressStreet) {
-        this.addressStreet = addressStreet;
+    public void setAddressDistrict(String addressDistrict) {
+        this.addressDistrict = addressDistrict;
     }
 
     public String getAddressLine1() {

@@ -7,7 +7,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="authsvr" />
+        <module name="commonsvr" />
         <module name="confsvr" />
+        <module name="inventorysvr" />
         <module name="layoutserver" />
         <module name="ressvr" />
         <module name="zuulsvr" />
@@ -16,6 +18,7 @@
     <bytecodeTargetLevel>
       <module name="authentication-service" target="1.8" />
       <module name="authserver" target="1.8" />
+      <module name="common" target="1.8" />
       <module name="resources" target="1.8" />
       <module name="resourceserver" target="1.8" />
     </bytecodeTargetLevel>
@@ -25,7 +28,10 @@
       <module name="authentication-service" options="-parameters" />
       <module name="authserver" options="-parameters" />
       <module name="authsvr" options="-parameters" />
+      <module name="common" options="-parameters" />
+      <module name="commonsvr" options="-parameters" />
       <module name="confsvr" options="-parameters" />
+      <module name="inventorysvr" options="-parameters" />
       <module name="layoutserver" options="-parameters" />
       <module name="resources" options="-parameters" />
       <module name="resourceserver" options="-parameters" />

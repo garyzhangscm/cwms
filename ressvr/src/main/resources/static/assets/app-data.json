@@ -6,7 +6,20 @@
   "user": {
     "name": "GZHANG",
     "avatar": "./assets/tmp/img/avatar.jpg",
-    "email": "gzhang1999@gmail.com"
+    "email": "gzhang1999@gmail.com",
+    "warehouse" : {
+      "id": 1,
+      "name": "WMOR"
+    },
+    "availableWarehouse" : [{
+      "id": 1,
+      "name": "WMOR"
+
+    },
+      {
+        "id": 2,
+        "name": "WMNE"}
+    ]
   },
   "menu": [
     {
@@ -21,9 +34,14 @@
           "icon": "anticon-dashboard",
           "children": [
             {
-              "text": "仪表盘V1",
-              "link": "/dashboard/v1",
-              "i18n": "menu.dashboard.v1"
+              "text": "默认演示",
+              "link": "/dashboard/default",
+              "i18n": "menu.dashboard.default"
+            },
+            {
+              "text": "库位统计",
+              "link": "/dashboard/locations",
+              "i18n": "menu.dashboard.locations"
             }
           ]
         }
@@ -61,6 +79,106 @@
           ]
         },
         {
+          "text": "Inventory",
+          "i18n": "menu.main.inventory",
+          "icon": "anticon-info",
+          "children": [
+            {
+              "text": "Item Family",
+              "link": "/inventory/item-family",
+              "i18n": "menu.main.inventory.item-family",
+              "shortcut": false
+            },
+            {
+              "text": "Item",
+              "link": "/inventory/item",
+              "i18n": "menu.main.inventory.item",
+              "shortcut": false
+            },
+            {
+              "text": "Inventory",
+              "link": "/inventory/inventory",
+              "i18n": "menu.main.inventory.inventory",
+              "shortcut": false
+            },
+            {
+              "text": "Inventory Adjust",
+              "link": "/inventory/inventory-adjust",
+              "i18n": "menu.main.inventory.adjust",
+              "shortcut": false
+            },
+            {
+              "text": "Count",
+              "i18n": "menu.main.inventory.count",
+              "shortcut": false,
+              "children": [
+                {
+                  "text": "Cycle Count",
+                  "link": "/inventory/count/config",
+                  "i18n": "menu.main.inventory.count.config",
+                  "shortcut": false
+                },
+                {
+                  "text": "Cycle Count",
+                  "link": "/inventory/count/cycle-count",
+                  "i18n": "menu.main.inventory.count.cycle-count",
+                  "shortcut": false
+                }
+              ]
+            },
+            {
+              "text": "Replenishment",
+              "i18n": "menu.main.inventory.replenishment",
+              "shortcut": false,
+              "children": [
+                {
+                  "text": "Emergency Replenishment Configuration",
+                  "link": "/inventory/replenishment/emergency/config",
+                  "i18n": "menu.main.inventory.replenishment.emergency.config",
+                  "shortcut": false
+                },
+                {
+                  "text": "Trigger Replenishment Configuration",
+                  "link": "/inventory/replenishment/trigger/config",
+                  "i18n": "menu.main.inventory.replenishment.trigger.config",
+                  "shortcut": false
+                },
+                {
+                  "text": "Replenishment Display",
+                  "link": "/inventory/replenishment",
+                  "i18n": "menu.main.inventory.replenishment.display",
+                  "shortcut": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "text": "common",
+          "i18n": "menu.main.common",
+          "icon": "anticon-info",
+          "children": [
+            {
+              "text": "Client",
+              "link": "/common/client",
+              "i18n": "menu.main.common.client",
+              "shortcut": false
+            },
+            {
+              "text": "Supplier",
+              "link": "/common/supplier",
+              "i18n": "menu.main.common.supplier",
+              "shortcut": false
+            },
+            {
+              "text": "Unit Of Measure",
+              "link": "/common/unit-of-measure",
+              "i18n": "menu.main.common.unit-of-measure",
+              "shortcut": false
+            }
+          ]
+        },
+        {
           "text": "Util",
           "i18n": "menu.main.util",
           "icon": "anticon-info",
@@ -69,6 +187,13 @@
               "text": "File Upload",
               "link": "/util/file-upload",
               "i18n": "menu.main.util.file-upload",
+              "shortcut": false
+            },
+
+            {
+              "text": "Test Data Initial",
+              "link": "/util/test-data-init",
+              "i18n": "menu.main.util.test-data-init",
               "shortcut": false
             }
           ]

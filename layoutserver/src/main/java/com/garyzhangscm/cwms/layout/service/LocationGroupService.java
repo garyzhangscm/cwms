@@ -18,22 +18,44 @@
 
 package com.garyzhangscm.cwms.layout.service;
 
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
+import com.garyzhangscm.cwms.layout.model.LocationGroupCSVWrapper;
 import com.garyzhangscm.cwms.layout.model.LocationGroupType;
+import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupRepository;
-import com.garyzhangscm.cwms.layout.repository.LocationGroupTypeRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class LocationGroupService {
+@CacheConfig(cacheNames = "location_groups")
+public class LocationGroupService implements TestDataInitiableService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LocationGroupService.class);
     @Autowired
     private LocationGroupRepository locationGroupRepository;
+    @Autowired
+    private LocationGroupTypeService locationGroupTypeService;
+    @Autowired
+    private FileService fileService;
 
+    @Value("${fileupload.test-data.location-groups:location_groups.csv}")
+    String testDataFile;
+
+    @Cacheable
     public LocationGroup findById(Long id) {
         return locationGroupRepository.findById(id).orElse(null);
     }
@@ -67,6 +89,12 @@ public class LocationGroupService {
         return locationGroupRepository.save(locationGroup);
     }
 
+    public LocationGroup saveOrUpdate(LocationGroup locationGroup) {
+        if (findByName(locationGroup.getName()) != null) {
+            locationGroup.setId(findByName(locationGroup.getName()).getId());
+        }
+        return save(locationGroup);
+    }
     public void delete(LocationGroup locationGroup) {
         locationGroupRepository.delete(locationGroup);
     }
@@ -84,5 +112,68 @@ public class LocationGroupService {
         }
 
     }
+    public List<LocationGroupCSVWrapper> loadData(File file) throws IOException {
 
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("name").
+                addColumn("description").
+                addColumn("locationGroupType").
+                addColumn("pickable").
+                addColumn("storable").
+                addColumn("countable").
+                build().withHeader();
+        return fileService.loadData(file, schema, LocationGroupCSVWrapper.class);
+    }
+    public List<LocationGroupCSVWrapper> loadData(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("name").
+                addColumn("description").
+                addColumn("locationGroupType").
+                addColumn("pickable").
+                addColumn("storable").
+                addColumn("countable").
+                build().withHeader();
+
+        return fileService.loadData(inputStream, schema, LocationGroupCSVWrapper.class);
+    }
+
+    public void initTestData() {
+        try {
+            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            List<LocationGroupCSVWrapper> locationGroupCSVWrappers = loadData(inputStream);
+            locationGroupCSVWrappers.stream().forEach(locationGroupCSVWrapper -> {
+                try {
+                    saveOrUpdate(convertFromWrapper(locationGroupCSVWrapper));
+                } catch(Exception ex) {
+                    logger.debug("Exception while saving location group " + locationGroupCSVWrapper.getName());
+                }
+            });
+        } catch (IOException ex) {
+            logger.debug("Exception while load test data: {}", ex.getMessage());
+        }
+    }
+
+
+    private LocationGroup convertFromWrapper(LocationGroupCSVWrapper locationGroupCSVWrapper) {
+        LocationGroup locationGroup = new LocationGroup();
+        locationGroup.setName(locationGroupCSVWrapper.getName());
+        locationGroup.setDescription(locationGroupCSVWrapper.getDescription());
+        locationGroup.setPickable(locationGroupCSVWrapper.getPickable());
+        locationGroup.setCountable(locationGroupCSVWrapper.getCountable());
+        locationGroup.setStorable(locationGroupCSVWrapper.getStorable());
+
+        logger.debug("locationGroupCSVWrapper.getLocationGroupType().isEmpty()? " + locationGroupCSVWrapper.getLocationGroupType().isEmpty());
+        if (!locationGroupCSVWrapper.getLocationGroupType().isEmpty()) {
+            logger.debug("locationGroupCSVWrapper.getLocationGroupType():" + locationGroupCSVWrapper.getLocationGroupType());
+            LocationGroupType locationGroupType = locationGroupTypeService.findByName(locationGroupCSVWrapper.getLocationGroupType().trim());
+            logger.debug("locationGroupType == null ? : " + (locationGroupType==null));
+            if (locationGroupType != null) {
+                logger.debug("locationGroupType.getId():" + locationGroupType.getId());
+            }
+            locationGroup.setLocationGroupType(locationGroupType);
+        }
+        return locationGroup;
+
+    }
 }

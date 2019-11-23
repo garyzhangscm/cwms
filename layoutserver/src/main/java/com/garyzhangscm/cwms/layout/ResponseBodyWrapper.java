@@ -37,6 +37,12 @@ public class ResponseBodyWrapper<T> {
     public static ResponseBodyWrapper raiseError(GenericException exception) {
         return new ResponseBodyWrapper<String>(exception.getCode(), exception.getMessage(), "");
     }
+    public static ResponseBodyWrapper success(String message, String body) {
+        return new ResponseBodyWrapper<String>(0,  message, body);
+    }
+    public static ResponseBodyWrapper success(String body) {
+        return new ResponseBodyWrapper<String>(0,  "", body);
+    }
 
 
     public int getResult() {

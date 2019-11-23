@@ -18,10 +18,9 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
-import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.model.Location;
-import com.garyzhangscm.cwms.layout.model.LocationGroup;
-import com.garyzhangscm.cwms.layout.service.LocationGroupService;
+import com.garyzhangscm.cwms.layout.service.FileService;
 import com.garyzhangscm.cwms.layout.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -38,29 +36,30 @@ public class LocationController {
     @Autowired
     LocationService locationService;
 
+    @Autowired
+    FileService fileService;
+
 
     @RequestMapping(method=RequestMethod.POST, value="/locations/upload")
-    public List<Location> listLocationGroups(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseBodyWrapper uploadLocations(@RequestParam("file") MultipartFile file) throws IOException {
 
 
-        String destination = "/upload/tmp/"  + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        File localFile = new File(destination);
-
-        if (!localFile.getParentFile().exists()) {
-            localFile.getParentFile().mkdirs();
-        }
-        if (!localFile.exists()) {
-            localFile.createNewFile();
-        }
-        file.transferTo(localFile);
-        return locationService.findAll();
+        File localFile = fileService.saveFile(file);
+        List<Location> locations = locationService.loadLocationData(localFile);
+        return  ResponseBodyWrapper.success(locations.size() + "");
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/locations")
-    public List<Location> findLocationGroups(@RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes,
+    public List<Location> findLocations(@RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes,
                                              @RequestParam(name = "location_groups", required = false, defaultValue = "") String locationGroups) {
         return locationService.findAll();
     }
 
+    @RequestMapping(method=RequestMethod.DELETE, value="/location")
+    public ResponseBodyWrapper removeLocations(@RequestParam("location_ids") String locationIds) {
+
+        locationService.delete(locationIds);
+        return  ResponseBodyWrapper.success(locationIds);
+    }
 
 }

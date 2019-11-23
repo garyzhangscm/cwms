@@ -1,0 +1,10 @@
+name, description, fourWallInventory, virtual
+Storage,Storage Locations, true, false
+Receive_Stage,Receiving Stage, true, false
+Receive_Dock,Receiving Dock, true, false
+Shipping_Stage,Shipping Stage, true, false
+Shipping_Dock,Shipping Dock, true, false
+Dispatched,Dispatched Shipment, false, false
+RF,RF device, true, false
+Yard,Yard, true, false
+PickupDeposit,Pickup and Deposit, true, false

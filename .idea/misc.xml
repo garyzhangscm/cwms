@@ -10,6 +10,8 @@
         <option value="$PROJECT_DIR$/zuulsvr/pom.xml" />
         <option value="$PROJECT_DIR$/ressvr/pom.xml" />
         <option value="$PROJECT_DIR$/authsvr/pom.xml" />
+        <option value="$PROJECT_DIR$/commonsvr/pom.xml" />
+        <option value="$PROJECT_DIR$/inventorysvr/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
