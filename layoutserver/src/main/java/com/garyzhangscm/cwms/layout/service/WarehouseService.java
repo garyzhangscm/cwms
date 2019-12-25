@@ -66,7 +66,7 @@ public class WarehouseService implements TestDataInitiableService {
     }
 
     public Warehouse saveOrUpdate(Warehouse warehouse) {
-        if (findByName(warehouse.getName()) != null) {
+        if (warehouse.getId() == null && findByName(warehouse.getName()) != null) {
             warehouse.setId(findByName(warehouse.getName()).getId());
         }
         return save(warehouse);

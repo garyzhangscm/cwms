@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
 import com.garyzhangscm.cwms.common.repository.SupplierRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +53,14 @@ public class SupplierService implements  TestDataInitiableService{
         return supplierRepository.findById(id).orElse(null);
     }
 
-    public List<Supplier> findAll() {
+    public List<Supplier> findAll(String name) {
 
-        return supplierRepository.findAll();
+        if (StringUtils.isBlank(name)) {
+            return supplierRepository.findAll();
+        }
+        else {
+            return Arrays.asList(new Supplier[]{findByName(name)});
+        }
     }
 
     public Supplier findByName(String name){
@@ -68,7 +74,7 @@ public class SupplierService implements  TestDataInitiableService{
     // Save when the supplier's name doesn't exists
     // update when the supplier already exists
     public Supplier saveOrUpdate(Supplier supplier) {
-        if (findByName(supplier.getName()) != null) {
+        if (supplier.getId() == null && findByName(supplier.getName()) != null) {
             supplier.setId(findByName(supplier.getName()).getId());
         }
         return save(supplier);

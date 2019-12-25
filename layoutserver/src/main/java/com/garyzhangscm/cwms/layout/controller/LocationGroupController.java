@@ -34,8 +34,13 @@ public class LocationGroupController {
 
 
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups")
-    public List<LocationGroup> listLocationGroups(@RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes) {
-        return locationGroupService.listLocationGroupsByTypes(locationGroupTypes);
+    public List<LocationGroup> listLocationGroups(@RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes,
+                                                  @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        return locationGroupService.findAll(locationGroupTypes, name);
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/locationgroup/{id}")
+    public LocationGroup getLocationGroup(@PathVariable long id) {
+        return locationGroupService.findById(id);
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/locationgroups")

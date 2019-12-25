@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.common.controller.TestDataInitController;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,9 +54,14 @@ public class ClientService implements  TestDataInitiableService{
         return clientRepository.findById(id).orElse(null);
     }
 
-    public List<Client> findAll() {
+    public List<Client> findAll(String name) {
 
-        return clientRepository.findAll();
+        if (StringUtils.isBlank(name)) {
+            return clientRepository.findAll();
+        }
+        else {
+            return Arrays.asList(new Client[]{findByName(name)});
+        }
     }
 
     public Client findByName(String name){
@@ -70,7 +76,7 @@ public class ClientService implements  TestDataInitiableService{
     // Save when the client's name doesn't exists
     // update when the client already exists
     public Client saveOrUpdate(Client client) {
-        if (findByName(client.getName()) != null) {
+        if (client.getId() == null && findByName(client.getName()) != null) {
             client.setId(findByName(client.getName()).getId());
         }
         return save(client);

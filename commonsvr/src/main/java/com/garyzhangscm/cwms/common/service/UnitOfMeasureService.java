@@ -66,7 +66,7 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
     // Save when the supplier's name doesn't exists
     // update when the supplier already exists
     public UnitOfMeasure saveOrUpdate(UnitOfMeasure unitOfMeasure) {
-        if (findByName(unitOfMeasure.getName()) != null) {
+        if (unitOfMeasure.getId() == null && findByName(unitOfMeasure.getName()) != null) {
             unitOfMeasure.setId(findByName(unitOfMeasure.getName()).getId());
         }
         return save(unitOfMeasure);

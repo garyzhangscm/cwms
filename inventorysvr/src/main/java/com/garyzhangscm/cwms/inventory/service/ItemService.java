@@ -27,11 +27,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +78,40 @@ public class ItemService implements TestDataInitiableService{
         return findAll(true);
     }
 
+    public List<Item> findAll(String name, String clientIds, String itemFamilyIds) {
+
+        return itemRepository.findAll(
+            (Root<Item> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<Predicate>();
+                if (!itemFamilyIds.isEmpty()) {
+
+                    Join<Item, ItemFamily> joinItemFamily = root.join("itemFamily", JoinType.INNER);
+                    CriteriaBuilder.In<Long> in = criteriaBuilder.in(joinItemFamily.get("id"));
+                    for(String id : itemFamilyIds.split(",")) {
+                        in.value(Long.parseLong(id));
+                    }
+                    predicates.add(criteriaBuilder.and(in));
+                }
+
+                if (!name.isEmpty()) {
+                    predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                }
+
+                if (!clientIds.isEmpty()) {
+                    CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("clientId"));
+                    for(String id : clientIds.split(",")) {
+                        in.value(Long.parseLong(id));
+                    }
+                    predicates.add(criteriaBuilder.and(in));
+                }
+
+
+                Predicate[] p = new Predicate[predicates.size()];
+                return criteriaBuilder.and(predicates.toArray(p));
+            }
+        );
+    }
+
     public Item findByName(String name, boolean includeDetails){
         Item item = itemRepository.findByName(name);
         if (item != null && includeDetails) {
@@ -90,7 +128,7 @@ public class ItemService implements TestDataInitiableService{
     }
 
     public Item saveOrUpdate(Item item) {
-        if (findByName(item.getName()) != null) {
+        if (item.getId() == null && findByName(item.getName()) != null) {
             item.setId(findByName(item.getName()).getId());
         }
         return save(item);
@@ -101,7 +139,15 @@ public class ItemService implements TestDataInitiableService{
     public void delete(Long id) {
         itemRepository.deleteById(id);
     }
+    public void delete(String itemIds) {
+        if (!itemIds.isEmpty()) {
+            long[] itemIdArray = Arrays.asList(itemIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
+            for(long id : itemIdArray) {
+                delete(id);
+            }
+        }
 
+    }
 
     // load detail data from other service
     // Client / Supplier / Unit of Measure
@@ -112,20 +158,18 @@ public class ItemService implements TestDataInitiableService{
     }
 
     public void loadItemAttribute(Item item) {
+
+        // Load client information
         if (item.getClientId() != null) {
             item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
         }
-        for (ItemUnitOfMeasure itemUnitOfMeasure : item.getItemUnitOfMeasures()) {
-            if (itemUnitOfMeasure.getSupplierId() != null) {
-                itemUnitOfMeasure.setSupplier(commonServiceRestemplateClient.getSupplierById(itemUnitOfMeasure.getSupplierId()));
-            }
-            if (itemUnitOfMeasure.getClientId() != null){
-                itemUnitOfMeasure.setClient(commonServiceRestemplateClient.getClientById(itemUnitOfMeasure.getClientId()));
-            }
-            if (itemUnitOfMeasure.getUnitOfMeasureId() != null) {
+
+        // load unit of measure for each package type
+        item.getItemPackageTypes().forEach(itemPackageType -> {
+            itemPackageType.getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
                 itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId()));
-            }
-        }
+            });
+        });
     }
 
     public List<Item> loadItemData(File  file) throws IOException {

@@ -5,7 +5,7 @@ drop Table if exists location_group_type;
 
 CREATE TABLE warehouse (
   warehouse_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name   VARCHAR(100) NOT NULL,
+  name   VARCHAR(100) NOT NULL unique,
   size   VARCHAR(100) NOT NULL,
   address_country   VARCHAR(100) NOT NULL,
   address_state   VARCHAR(100) NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE location_group(
 CREATE TABLE location(
   location_id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL unique,
-  aisle   VARCHAR(100) NOT NULL,
+  aisle   VARCHAR(100),
   x double,
   y double,
   z double,
@@ -74,6 +74,8 @@ CREATE TABLE location(
   count_sequence BIGINT,
   capacity double,
   fill_percentage double,
+  current_volume double,
+  pending_volume double,
   location_group_id  BIGINT not null,
   enabled boolean not null default 0,
   foreign key(location_group_id) references location_group(location_group_id));

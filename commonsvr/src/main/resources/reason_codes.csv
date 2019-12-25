@@ -1,0 +1,4 @@
+name,description,type
+Damaged,Inventory is damaged,Inventory_Adjust
+Office-Use,Used by Office,Inventory_Adjust
+Customer-Gift,Used as a gift to customer,Inventory_Adjust

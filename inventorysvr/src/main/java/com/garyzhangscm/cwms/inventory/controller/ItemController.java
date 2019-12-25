@@ -39,11 +39,13 @@ public class ItemController {
     FileService fileService;
 
     @RequestMapping(value="/items", method = RequestMethod.GET)
-    public List<Item> findAllClients() {
-        return itemService.findAll();
+    public List<Item> findAllItems(@RequestParam(name="name", required = false, defaultValue = "") String name,
+                                   @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
+                                   @RequestParam(name="item_families", required = false, defaultValue = "") String itemFamilyIds) {
+        return itemService.findAll(name, clientIds, itemFamilyIds);
     }
 
-    @RequestMapping(value="/client/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/item/{id}", method = RequestMethod.GET)
     public Item findItem(@PathVariable Long id) {
         return itemService.findById(id);
     }
@@ -56,5 +58,10 @@ public class ItemController {
         File localFile = fileService.saveFile(file);
         List<Item> locations = itemService.loadItemData(localFile);
         return  ResponseBodyWrapper.success(locations.size() + "");
+    }
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/item")
+    public void removeItems(@RequestParam(name = "item_ids", required = false, defaultValue = "") String itemIds) {
+        itemService.delete(itemIds);
     }
 }

@@ -1,0 +1,6 @@
+sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType
+1,,,DMG,,DAMAGED,
+2,,HIGH_VALUE,,,EACH_PICK_HV,
+3,,HIGH_VALUE,,,CASE_PICK_HV,
+4,,FROZEN,,,EACH_PICK_FRZ,
+5,,FROZEN,,,CASE_PICK_FRZ,

@@ -21,8 +21,26 @@ package com.garyzhangscm.cwms.inventory.repository;
 import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ItemUnitOfMeasureRepository extends JpaRepository<ItemUnitOfMeasure, Long>, JpaSpecificationExecutor<ItemUnitOfMeasure> {
+
+    // Natrual Keys: item name, item package name, unit of measure id
+    @Query("select uom from ItemUnitOfMeasure uom " +
+           " where uom.unitOfMeasureId = :unitOfMeasureId and uom.itemPackageType.name = :itemPackageTypeName " +
+           "   and uom.itemPackageType.item.name = :itemName")
+    ItemUnitOfMeasure findByNaturalKeys(String itemName, String itemPackageTypeName, Long unitOfMeasureId);
+
+    // Natrual Keys: item id, item package name, unit of measure id
+    @Query("select uom from ItemUnitOfMeasure uom " +
+            " where uom.unitOfMeasureId = :unitOfMeasureId and uom.itemPackageType.name = :itemPackageTypeName " +
+            "   and uom.itemPackageType.item.id = :itemId")
+    ItemUnitOfMeasure findByNaturalKeys(Long itemId, String itemPackageTypeName, Long unitOfMeasureId);
+
+    // Natrual Keys: item package id, unit of measure id
+    @Query("select uom from ItemUnitOfMeasure uom " +
+            " where uom.unitOfMeasureId = :unitOfMeasureId and uom.itemPackageType.id = :itemPackageTypeId ")
+    ItemUnitOfMeasure findByNaturalKeys(Long itemPackageTypeId, Long unitOfMeasureId);
 }

@@ -1,0 +1,5 @@
+key,value,description
+LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION,AUDIT,Location to Save Removed Inventory
+LOCATION-AUDIT-COUNT,REMOVE_INV,Location to Save Removed Inventory by Audit Count
+LOCATION-INVENTORY-ADJUST,INVADJ,Location to Save Removed Inventory by Inventory Adjustment
+LOCATION-GROUP-RECEIPT,RECEIPT,Location Group for Receipt

@@ -18,11 +18,8 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
-import com.garyzhangscm.cwms.layout.Exception.GenericException;
 import com.garyzhangscm.cwms.layout.model.LocationGroupType;
-import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.LocationGroupTypeService;
-import com.garyzhangscm.cwms.layout.service.WarehouseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,8 +33,8 @@ public class LocationGroupTypeController {
 
 
     @RequestMapping(method=RequestMethod.GET, value="/locationgrouptypes")
-    public List<LocationGroupType> listLocationGroupTypes() {
-        return locationGroupTypeService.findAll();
+    public List<LocationGroupType> listLocationGroupTypes(@RequestParam(name="name", required = false, defaultValue = "") String name) {
+        return locationGroupTypeService.findAll(name);
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/locationgrouptype/{id}")

@@ -19,10 +19,9 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.model.ItemFamily;
 import com.garyzhangscm.cwms.inventory.repository.ItemFamilyRepository;
-import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +32,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -52,9 +53,21 @@ public class ItemFamilyService implements TestDataInitiableService{
         return itemFamilyRepository.findById(id).orElse(null);
     }
 
-    public List<ItemFamily> findAll() {
+    public List<ItemFamily> findAll(String name) {
 
-        return itemFamilyRepository.findAll();
+        if (StringUtils.isBlank(name)) {
+            return itemFamilyRepository.findAll();
+        }
+        else {
+
+            ItemFamily itemFamily = findByName(name);
+            if (itemFamily == null) {
+                return new ArrayList<>();
+            }
+            else {
+                return Arrays.asList(new ItemFamily[]{itemFamily});
+            }
+        }
     }
 
     public ItemFamily findByName(String name){
@@ -66,7 +79,7 @@ public class ItemFamilyService implements TestDataInitiableService{
     }
 
     public ItemFamily saveOrUpdate(ItemFamily itemFamily) {
-        if (findByName(itemFamily.getName()) != null) {
+        if (itemFamily.getId() == null && findByName(itemFamily.getName()) != null) {
             itemFamily.setId(findByName(itemFamily.getName()).getId());
         }
         return save(itemFamily);
@@ -78,6 +91,15 @@ public class ItemFamilyService implements TestDataInitiableService{
         itemFamilyRepository.deleteById(id);
     }
 
+    public void delete(String itemFamilyIds) {
+        if (!itemFamilyIds.isEmpty()) {
+            long[] itemFamilyIdArray = Arrays.asList(itemFamilyIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
+            for(long id : itemFamilyIdArray) {
+                delete(id);
+            }
+        }
+
+    }
 
     public List<ItemFamily> loadData(File file) throws IOException {
 

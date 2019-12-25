@@ -1,14 +1,25 @@
 name, description, locationGroupType, pickable, storable, countable
 EACH_PICK_1,Each Picking Area - #1,Storage, true, true, true
-EACH_PICK_2,Each Picking Area - #2,Storage, true, true, true
+EACH_PICK_FRZ,Each Picking Area - Frozen,Storage, true, true, true
 CASE_PICK_1,Case Picking Area - #1,Storage, true, true, true
-CASE_PICK_2,Case Picking Area - #2,Storage, true, true, true
+CASE_PICK_FRZ,Case Picking Area - Frozen,Storage, true, true, true
 PALLET_PICK,Pallet Picking Area,Storage, true, true, true
+EACH_PICK_HV,Each Picking Area - High Value,Storage, true, true, true
+CASE_PICK_HV,Case Picking Area - High Value,Storage, true, true, true
+PALLET_PICK_HV,Pallet Picking Area - High Value,Storage, true, true, true
+EACH_PICK_OZ,Each Picking Area - Over Size,Storage, true, true, true
+CASE_PICK_OZ,Case Picking Area - Over Size,Storage, true, true, true
+PALLET_PICK_OZ,Pallet Picking Area - Over Size,Storage, true, true, true
+DAMAGED,Damaged Inventory Area,Damaged, true, true, true
 RECV_STG,Receiving Stage,Receive_Stage, false, false, false
 RECV_DCK,Receiving Dock,Receive_Dock, false, false, false
+RECEIPT,Receipt,RECEIPT, false, false, false
 SHIP_STG,Shipping Stage,Shipping_Stage, false, false, false
 SHIP_DCK,Shipping Dock,Shipping_Dock, false, false, false
 DISPATCHED,Dispatched Trailer,Dispatched, false, false, false
 RF,RF locations,RF, false, false, false
 YARD,Yard for parking,Yard, false, false, false
 P&D,Pickup and Deposit,PickupDeposit, false, false, false
+Default_Removed_Inventory_Location,Default Location For Removed Inventory,Removed_Inventory, false, false, false
+Audit_Count_Inventory_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false
+Inventory_Adjustment_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false

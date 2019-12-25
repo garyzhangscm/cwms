@@ -53,13 +53,29 @@ public class Item implements Serializable {
 
     @OneToMany(
         mappedBy = "item",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
+        cascade = CascadeType.REMOVE,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
     )
-    private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
+    private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
 
     @Column(name="unit_cost")
     private double unitCost;
+
+    @Override
+    public boolean equals(Object anotherItem) {
+        if (this == anotherItem) {
+            return true;
+        }
+        if (!(anotherItem instanceof Item)) {
+            return false;
+        }
+        return this.getName().equals(((Item)anotherItem).getName());
+    }
+    @Override
+    public int hashCode() {
+        return this.getName().hashCode();
+    }
 
     public Long getId() {
         return id;
@@ -109,12 +125,12 @@ public class Item implements Serializable {
         this.itemFamily = itemFamily;
     }
 
-    public List<ItemUnitOfMeasure> getItemUnitOfMeasures() {
-        return itemUnitOfMeasures;
+    public List<ItemPackageType> getItemPackageTypes() {
+        return itemPackageTypes;
     }
 
-    public void setItemUnitOfMeasures(List<ItemUnitOfMeasure> itemUnitOfMeasures) {
-        this.itemUnitOfMeasures = itemUnitOfMeasures;
+    public void setItemPackageTypes(List<ItemPackageType> itemPackageTypes) {
+        this.itemPackageTypes = itemPackageTypes;
     }
 
     public double getUnitCost() {

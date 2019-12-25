@@ -32,6 +32,8 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @Component
 public class CommonServiceRestemplateClient {
 
@@ -49,11 +51,17 @@ public class CommonServiceRestemplateClient {
 
     }
     public Client getClientByName(String name) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/client")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/clients")
                 .queryParam("name", name);
-        ResponseBodyWrapper<Client> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}).getBody();
-        return responseBodyWrapper.getData();
+        ResponseBodyWrapper<List<Client>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
+        List<Client> clients = responseBodyWrapper.getData();
+        if (clients.size() == 0) {
+            return null;
+        }
+        else {
+            return clients.get(0);
+        }
     }
     public Supplier getSupplierById(Long id) {
 
@@ -63,11 +71,18 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
     public Supplier getSupplierByName(String name) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/supplier")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
                 .queryParam("name", name);
-        ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Supplier>>() {}).getBody();
-        return responseBodyWrapper.getData();
+        ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
+        List<Supplier> suppliers = responseBodyWrapper.getData();
+        if (suppliers.size() == 0) {
+            return null;
+        }
+        else {
+            return suppliers.get(0);
+
+        }
     }
 
     public UnitOfMeasure getUnitOfMeasureById(Long id) {

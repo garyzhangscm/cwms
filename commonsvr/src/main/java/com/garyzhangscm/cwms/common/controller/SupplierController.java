@@ -34,8 +34,8 @@ public class SupplierController {
     SupplierService supplierService;
 
     @RequestMapping(value="/suppliers", method = RequestMethod.GET)
-    public List<Supplier> findAllClients() {
-        return supplierService.findAll();
+    public List<Supplier> findAllClients(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        return supplierService.findAll(name);
     }
 
     @RequestMapping(value="/supplier/{id}", method = RequestMethod.GET)

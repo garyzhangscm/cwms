@@ -29,24 +29,43 @@ public class TestDataInitService {
 
     ItemFamilyService itemFamilyService;
 
+    ItemPackageTypeService itemPackageTypeService;
+
     ItemUnitOfMeasureService itemUnitOfMeasureService;
+
+    InventoryStatusService inventoryStatusService;
+
+    InventoryService inventoryService;
 
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
     @Autowired
     public TestDataInitService(ItemFamilyService itemFamilyService,
                                ItemService itemService,
-                               ItemUnitOfMeasureService itemUnitOfMeasureService) {
+                               ItemUnitOfMeasureService itemUnitOfMeasureService,
+                               ItemPackageTypeService itemPackageTypeService,
+                               InventoryStatusService inventoryStatusService,
+                               InventoryService inventoryService) {
         this.itemFamilyService = itemFamilyService;
         this.itemService = itemService;
+        this.itemPackageTypeService = itemPackageTypeService;
         this.itemUnitOfMeasureService = itemUnitOfMeasureService;
+        this.inventoryStatusService = inventoryStatusService;
+        this.inventoryService = inventoryService;
+
 
         initiableServices.put("item family", itemFamilyService);
         serviceNames.add("item family");
         initiableServices.put("item", itemService);
         serviceNames.add("item");
+        initiableServices.put("item package type", itemPackageTypeService);
+        serviceNames.add("item package type");
         initiableServices.put("item unit of measure", itemUnitOfMeasureService);
         serviceNames.add("item unit of measure");
+        initiableServices.put("inventory status", inventoryStatusService);
+        serviceNames.add("inventory status");
+        initiableServices.put("inventory", inventoryService);
+        serviceNames.add("inventory");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);

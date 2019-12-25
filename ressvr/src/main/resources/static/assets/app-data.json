@@ -56,12 +56,13 @@
         {
           "text": "Layout",
           "i18n": "menu.main.layout",
-          "icon": "anticon-info",
+          "icon": "anticon-appstore",
           "children": [
             {
               "text": "Warehouse",
               "link": "/warehouse-layout/warehouse",
               "i18n": "menu.main.layout.warehouse",
+              "icon": "anticon-appstore",
               "shortcut": false
             },
             {
@@ -81,7 +82,7 @@
         {
           "text": "Inventory",
           "i18n": "menu.main.inventory",
-          "icon": "anticon-info",
+          "icon": "anticon-star",
           "children": [
             {
               "text": "Item Family",
@@ -99,12 +100,6 @@
               "text": "Inventory",
               "link": "/inventory/inventory",
               "i18n": "menu.main.inventory.inventory",
-              "shortcut": false
-            },
-            {
-              "text": "Inventory Adjust",
-              "link": "/inventory/inventory-adjust",
-              "i18n": "menu.main.inventory.adjust",
               "shortcut": false
             },
             {
@@ -154,9 +149,28 @@
           ]
         },
         {
+          "text": "inbound",
+          "i18n": "menu.main.inbound",
+          "icon": "anticon-exception",
+          "children": [
+            {
+              "text": "Receipt",
+              "link": "/inbound/receipt",
+              "i18n": "menu.main.inbound.receipt",
+              "shortcut": false
+            },
+            {
+              "text": "Putaway Configuration",
+              "link": "/inbound/putaway-configuration",
+              "i18n": "menu.main.inbound.putaway-configuration",
+              "shortcut": false
+            }
+          ]
+        },
+        {
           "text": "common",
           "i18n": "menu.main.common",
-          "icon": "anticon-info",
+          "icon": "anticon-setting",
           "children": [
             {
               "text": "Client",
@@ -181,7 +195,7 @@
         {
           "text": "Util",
           "i18n": "menu.main.util",
-          "icon": "anticon-info",
+          "icon": "anticon-tool",
           "children": [
             {
               "text": "File Upload",
@@ -189,11 +203,16 @@
               "i18n": "menu.main.util.file-upload",
               "shortcut": false
             },
-
             {
               "text": "Test Data Initial",
               "link": "/util/test-data-init",
               "i18n": "menu.main.util.test-data-init",
+              "shortcut": false
+            },
+            {
+              "text": "Valid Icon",
+              "link": "/util/icon-list",
+              "i18n": "menu.main.util.icon-list",
               "shortcut": false
             }
           ]

@@ -32,19 +32,34 @@ public class TestDataInitService {
 
     UnitOfMeasureService unitOfMeasureService;
 
+    ReasonCodeService reasonCodeService;
+
+    SystemControlledNumberService systemControlledNumberService;
+
+    PolicyService policyService;
+
     Map<String, TestDataInitiableService> initiableServices = new TreeMap<>();
     @Autowired
     public TestDataInitService(
             ClientService clientService,
             SupplierService supplierService,
-            UnitOfMeasureService unitOfMeasureService) {
+            UnitOfMeasureService unitOfMeasureService,
+            ReasonCodeService reasonCodeService,
+            SystemControlledNumberService systemControlledNumberService,
+            PolicyService policyService) {
         this.clientService = clientService;
         this.supplierService = supplierService;
         this.unitOfMeasureService = unitOfMeasureService;
+        this.reasonCodeService = reasonCodeService;
+        this.systemControlledNumberService = systemControlledNumberService;
+        this.policyService = policyService;
 
-        initiableServices.put("client", clientService);
-        initiableServices.put("supplier", supplierService);
-        initiableServices.put("unit of measure", unitOfMeasureService);
+        initiableServices.put("Client", clientService);
+        initiableServices.put("Supplier", supplierService);
+        initiableServices.put("Unit of Measure", unitOfMeasureService);
+        initiableServices.put("Reason Code", reasonCodeService);
+        initiableServices.put("System Controlled Number", systemControlledNumberService);
+        initiableServices.put("Policy", policyService);
     }
     public String[] getTestDataNames() {
         return initiableServices.keySet().toArray(new String[0]);

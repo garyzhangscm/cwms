@@ -32,8 +32,8 @@ public class ClientController {
     ClientService clientService;
 
     @RequestMapping(value="/clients", method = RequestMethod.GET)
-    public List<Client> findAllClients() {
-        return clientService.findAll();
+    public List<Client> findAllClients(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        return clientService.findAll(name);
     }
 
     @RequestMapping(value="/client/{id}", method = RequestMethod.GET)

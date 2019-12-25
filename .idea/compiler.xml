@@ -9,6 +9,7 @@
         <module name="authsvr" />
         <module name="commonsvr" />
         <module name="confsvr" />
+        <module name="inboundsvr" />
         <module name="inventorysvr" />
         <module name="layoutserver" />
         <module name="ressvr" />
@@ -31,6 +32,7 @@
       <module name="common" options="-parameters" />
       <module name="commonsvr" options="-parameters" />
       <module name="confsvr" options="-parameters" />
+      <module name="inboundsvr" options="-parameters" />
       <module name="inventorysvr" options="-parameters" />
       <module name="layoutserver" options="-parameters" />
       <module name="resources" options="-parameters" />
