@@ -1,0 +1,25 @@
+docker push garyzhangscm/cwms-commonserver:latest
+docker push garyzhangscm/cwms-ressvr:latest
+docker push garyzhangscm/cwms-layoutserver:latest
+docker push garyzhangscm/cwms-inboundserver:latest
+docker push garyzhangscm/cwms-inventoryserver:latest
+
+docker push garyzhangscm/cwms-auth:latest
+docker push garyzhangscm/cwms-confsvr:latest
+docker push garyzhangscm/cwms-zuulsvr:latest
+docker push garyzhangscm/cwms-eurekasvr:latest
+
+
+
+docker pull garyzhangscm/cwms-commonserver:latest
+docker pull garyzhangscm/cwms-ressvr:latest
+docker pull garyzhangscm/cwms-layoutserver:latest
+docker pull garyzhangscm/cwms-inboundserver:latest
+docker pull garyzhangscm/cwms-inventoryserver:latest
+
+
+docker pull garyzhangscm/cwms-auth:latest
+docker pull garyzhangscm/cwms-confsvr:latest
+docker pull garyzhangscm/cwms-zuulsvr:latest
+docker pull garyzhangscm/cwms-eurekasvr:latest
+

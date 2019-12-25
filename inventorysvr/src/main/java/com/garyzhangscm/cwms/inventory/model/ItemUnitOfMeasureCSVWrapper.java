@@ -23,8 +23,7 @@ import java.io.Serializable;
 
 public class ItemUnitOfMeasureCSVWrapper implements Serializable {
     private String item;
-    private String client;
-    private String supplier;
+    private String itemPackageType;
     private String unitOfMeasure;
     private Integer quantity;
     private Double weight;
@@ -40,20 +39,12 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
         this.item = item;
     }
 
-    public String getClient() {
-        return client;
+    public String getItemPackageType() {
+        return itemPackageType;
     }
 
-    public void setClient(String client) {
-        this.client = client;
-    }
-
-    public String getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(String supplier) {
-        this.supplier = supplier;
+    public void setItemPackageType(String itemPackageType) {
+        this.itemPackageType = itemPackageType;
     }
 
     public String getUnitOfMeasure() {

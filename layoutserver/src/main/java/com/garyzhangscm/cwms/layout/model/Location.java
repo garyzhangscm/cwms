@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.layout.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -31,7 +32,7 @@ public class Location {
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
 
     @Column(name = "aisle")
@@ -62,6 +63,12 @@ public class Location {
     private Double capacity;
     @Column(name = "fill_percentage")
     private Double fillPercentage;
+
+    @Column(name = "current_volume")
+    private Double currentVolume;
+
+    @Column(name = "pending_volume")
+    private Double pendingVolume;
 
     @ManyToOne
     @JoinColumn(name="location_group_id")
@@ -196,5 +203,30 @@ public class Location {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Double getCurrentVolume() {
+        return currentVolume;
+    }
+
+    public void setCurrentVolume(Double currentVolume) {
+        this.currentVolume = currentVolume;
+    }
+
+    public Double getPendingVolume() {
+        return pendingVolume;
+    }
+
+    public void setPendingVolume(Double pendingVolume) {
+        this.pendingVolume = pendingVolume;
+    }
+
+    @JsonIgnore
+    public boolean hasInventory() {
+        return getCurrentVolume() > 0.0;
+    }
+    @JsonIgnore
+    public boolean isEmpty() {
+        return getCurrentVolume() == 0 && getPendingVolume() == 0;
     }
 }

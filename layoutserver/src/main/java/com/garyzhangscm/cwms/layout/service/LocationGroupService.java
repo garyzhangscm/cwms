@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.layout.model.LocationGroupCSVWrapper;
 import com.garyzhangscm.cwms.layout.model.LocationGroupType;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,6 +65,24 @@ public class LocationGroupService implements TestDataInitiableService {
     public List<LocationGroup> findAll() {
 
         return locationGroupRepository.findAll();
+    }
+
+    public List<LocationGroup> findAll(String locationGroupTypes, String name) {
+
+        if (!StringUtils.isBlank(name)) {
+            LocationGroup locationGroup = findByName(name);
+            if (locationGroup != null) {
+                return Arrays.asList(new LocationGroup[]{locationGroup});
+            }
+            else {
+                return new ArrayList<>();
+            }
+        }
+        else {
+            return listLocationGroupsByTypes(locationGroupTypes);
+
+        }
+
     }
 
     public List<LocationGroup> findAll(long[] locationGroupTypeIdArray) {

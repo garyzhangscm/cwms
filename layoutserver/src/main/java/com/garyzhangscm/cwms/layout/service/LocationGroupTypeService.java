@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.layout.model.LocationGroupType;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupTypeRepository;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -53,9 +56,20 @@ public class LocationGroupTypeService implements TestDataInitiableService {
         return locationGroupTypeRepository.findById(id).orElse(null);
     }
 
-    public List<LocationGroupType> findAll() {
+    public List<LocationGroupType> findAll(String name) {
 
-        return locationGroupTypeRepository.findAll();
+        if (StringUtils.isBlank(name)) {
+            return locationGroupTypeRepository.findAll();
+        }
+        else {
+            LocationGroupType locationGroupType = findByName(name);
+            if (locationGroupType != null) {
+                return Arrays.asList(new LocationGroupType[]{locationGroupType});
+            }
+            else {
+                return new ArrayList<>();
+            }
+        }
     }
 
     public LocationGroupType findByName(String name){

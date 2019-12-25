@@ -40,4 +40,10 @@ public interface LocationRepository extends JpaRepository<Location, Long>, JpaSp
     @Modifying
     @Query( "delete from Location o where location_id in :ids" )
     void deleteByLocationIds(@Param("ids") List<Long> locationIds);
+
+    List<Location> findByCountSequenceBetween(Long beginSequence, Long endSequence);
+
+    List<Location> findByPickSequenceBetween(Long beginSequence, Long endSequence);
+
+    List<Location> findByPutawaySequenceBetween(Long beginSequence, Long endSequence);
 }

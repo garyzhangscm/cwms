@@ -1,0 +1,4 @@
+variable,prefix,postfix,length,currentNumber,rollover
+cycle-count-batch-id,CB,,10,0,true
+LPN,L,,10,0,true
+receipt-number,RECPT,,10,0,true

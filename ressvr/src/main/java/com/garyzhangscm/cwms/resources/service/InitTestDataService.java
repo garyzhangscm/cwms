@@ -19,10 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.resources.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.clients.InitiableServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.clients.*;
 import javafx.collections.transformation.SortedList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,18 +38,25 @@ public class InitTestDataService {
 
     LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
+    InboundServiceRestemplateClient inboundServiceRestemplateClient;
+
+
+
     List<InitiableServiceRestemplateClient> initiableServiceRestemplateClients = new LinkedList<>();
     @Autowired
     public InitTestDataService(CommonServiceRestemplateClient commonServiceRestemplateClient,
                                InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
-                               LayoutServiceRestemplateClient layoutServiceRestemplateClient) {
+                               LayoutServiceRestemplateClient layoutServiceRestemplateClient,
+                               InboundServiceRestemplateClient inboundServiceRestemplateClient) {
         this.commonServiceRestemplateClient = commonServiceRestemplateClient;
         this.layoutServiceRestemplateClient  = layoutServiceRestemplateClient;
         this.inventoryServiceRestemplateClient = inventoryServiceRestemplateClient;
+        this.inboundServiceRestemplateClient = inboundServiceRestemplateClient;
 
         initiableServiceRestemplateClients.add(commonServiceRestemplateClient);
         initiableServiceRestemplateClients.add(layoutServiceRestemplateClient);
         initiableServiceRestemplateClients.add(inventoryServiceRestemplateClient);
+        initiableServiceRestemplateClients.add(inboundServiceRestemplateClient);
 
     }
 

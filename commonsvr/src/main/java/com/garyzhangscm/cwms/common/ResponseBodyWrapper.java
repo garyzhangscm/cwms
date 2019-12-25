@@ -25,6 +25,10 @@ public class ResponseBodyWrapper<T> {
     private String message;
     private T data;
 
+    public ResponseBodyWrapper() {
+        this.result = 0;
+        this.message = "";
+    }
     public ResponseBodyWrapper(int result, String message, T data) {
         this.result = result;
         this.message = message;

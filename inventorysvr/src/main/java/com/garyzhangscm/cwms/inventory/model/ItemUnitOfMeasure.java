@@ -18,8 +18,8 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
-
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -34,27 +34,16 @@ public class ItemUnitOfMeasure implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "client_id")
-    private Long clientId;
-
-    @Transient
-    private Client client;
-
-    @Column(name = "supplier_id")
-    private Long supplierId;
-
-    @Transient
-    private Supplier supplier;
-
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
 
     @Transient
     private UnitOfMeasure unitOfMeasure;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id")
-    private Item item;
+    @JoinColumn(name = "item_package_type_id")
+    private ItemPackageType itemPackageType;
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -77,37 +66,6 @@ public class ItemUnitOfMeasure implements Serializable {
         this.id = id;
     }
 
-    public Long getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public Long getSupplierId() {
-        return supplierId;
-    }
-
-    public void setSupplierId(Long supplierId) {
-        this.supplierId = supplierId;
-    }
-
-    public Supplier getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(Supplier supplier) {
-        this.supplier = supplier;
-    }
 
     public Long getUnitOfMeasureId() {
         return unitOfMeasureId;
@@ -165,11 +123,11 @@ public class ItemUnitOfMeasure implements Serializable {
         this.height = height;
     }
 
-    public Item getItem() {
-        return item;
+    public ItemPackageType getItemPackageType() {
+        return itemPackageType;
     }
 
-    public void setItem(Item item) {
-        this.item = item;
+    public void setItemPackageType(ItemPackageType itemPackageType) {
+        this.itemPackageType = itemPackageType;
     }
 }

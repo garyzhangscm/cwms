@@ -22,20 +22,27 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupRepository;
 import com.garyzhangscm.cwms.layout.repository.LocationRepository;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.*;
+import javax.validation.constraints.Null;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +64,9 @@ public class LocationService implements TestDataInitiableService {
     @Value("${fileupload.test-data.locations:locations.csv}")
     String testDataFile;
 
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
+
     public Location findById(Long id) {
         return locationRepository.findById(id).orElse(null);
     }
@@ -66,9 +76,92 @@ public class LocationService implements TestDataInitiableService {
         return locationRepository.findAll();
     }
 
+    public List<Location> findAll(String locationGroupTypeIds,
+                                  String locationGroupIds,
+                                  String name,
+                                  Long beginSequence,
+                                  Long endSequence,
+                                  String sequenceType,
+                                  Boolean includeEmptyLocation,
+                                  Boolean includeDisabledLocation) {
+
+        return locationRepository.findAll(
+            (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<Predicate>();
+                if (!locationGroupTypeIds.isEmpty()) {
+
+                    Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
+                    Join<LocationGroup, LocationGroupType> joinLocationGroupType = joinLocationGroup.join("locationGroupType", JoinType.INNER);
+
+                    if (!locationGroupIds.isEmpty()) {
+
+                        CriteriaBuilder.In<Long> inLocationGroupIds = criteriaBuilder.in(joinLocationGroup.get("id"));
+                        for(String id : locationGroupIds.split(",")) {
+                            inLocationGroupIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inLocationGroupIds));
+                    }
+
+                    CriteriaBuilder.In<Long> inLocationGroupTypeIds = criteriaBuilder.in(joinLocationGroupType.get("id"));
+                    for(String id : locationGroupTypeIds.split(",")) {
+                        inLocationGroupTypeIds.value(Long.parseLong(id));
+                    }
+                    predicates.add(criteriaBuilder.and(inLocationGroupTypeIds));
+                }
+                else if (!locationGroupIds.isEmpty()) {
+
+                    Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
+                    CriteriaBuilder.In<Long> in = criteriaBuilder.in(joinLocationGroup.get("id"));
+                    for(String id : locationGroupIds.split(",")) {
+                        in.value(Long.parseLong(id));
+                    }
+                    predicates.add(criteriaBuilder.and(in));
+                }
+
+                if (!name.isEmpty()) {
+                    predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                }
+                if (beginSequence != null  && endSequence != null) {
+                    if (sequenceType.equals("count")) {
+
+                        predicates.add(criteriaBuilder.between(root.get("countSequence"), beginSequence, endSequence));
+                    }
+                    else if (sequenceType.equals("putaway")) {
+                        predicates.add(criteriaBuilder.between(root.get("putawaySequence"), beginSequence, endSequence));
+                    }
+                    else if (sequenceType.equals("pick")) {
+                        predicates.add(criteriaBuilder.between(root.get("pickSequence"), beginSequence, endSequence));
+                    }
+                }
+                if (!includeEmptyLocation) {
+                    Expression<Double> totalVolume = criteriaBuilder.sum(root.get("currentVolume"), root.get("pendingVolume"));
+
+                    predicates.add(criteriaBuilder.greaterThan(totalVolume, 0.0));
+                }
+                if (!includeDisabledLocation){
+
+                    predicates.add(criteriaBuilder.equal(root.get("enabled"), true));
+                }
+
+                Predicate[] p = new Predicate[predicates.size()];
+                return criteriaBuilder.and(predicates.toArray(p));
+            }
+        );
+
+    }
+
+    public Location findLogicLocation(String locationType) {
+
+        // Get the logic location's name by policy
+        String policyKey = "LOCATION-" + locationType;
+        logger.debug("Start to find policy by key: {}", policyKey);
+        Policy policy = commonServiceRestemplateClient.getPolicyByKey(policyKey);
+        return findByName(policy.getValue());
+    }
+
     public List<Location> findAll(long[] locationGroupIdArray) {
 
-        List<Long> locationGroupList = Arrays.stream(locationGroupIdArray).boxed().collect( Collectors.toList());
+        List<Long> locationGroupList = Arrays.stream(locationGroupIdArray).boxed().collect(Collectors.toList());
         return locationRepository.findByLocationGroups(locationGroupList);
     }
 
@@ -187,6 +280,8 @@ public class LocationService implements TestDataInitiableService {
         location.setCapacity(locationCSVWrapper.getCapacity());
         location.setFillPercentage(locationCSVWrapper.getFillPercentage());
         location.setEnabled(locationCSVWrapper.getEnabled());
+        location.setCurrentVolume(0.0);
+        location.setPendingVolume(0.0);
 
         if (!locationCSVWrapper.getLocationGroup().isEmpty()) {
             LocationGroup locationGroup = locationGroupService.findByName(locationCSVWrapper.getLocationGroup());
@@ -194,6 +289,10 @@ public class LocationService implements TestDataInitiableService {
         }
         return location;
 
+    }
+
+    public double getLocationVolume(Long inventoryQuantity, Double inventorySize) {
+        return inventorySize;
     }
 
 }
