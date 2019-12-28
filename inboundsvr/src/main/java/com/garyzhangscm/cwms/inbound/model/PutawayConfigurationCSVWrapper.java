@@ -32,6 +32,7 @@ public class PutawayConfigurationCSVWrapper {
     private String location;
     private String locationGroup;
     private String locationGroupType;
+    private String strategies;
 
     public Integer getSequence() {
         return sequence;
@@ -87,5 +88,13 @@ public class PutawayConfigurationCSVWrapper {
 
     public void setLocationGroupType(String locationGroupType) {
         this.locationGroupType = locationGroupType;
+    }
+
+    public String getStrategies() {
+        return strategies;
+    }
+
+    public void setStrategies(String strategies) {
+        this.strategies = strategies;
     }
 }

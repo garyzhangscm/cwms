@@ -18,9 +18,14 @@
 
 package com.garyzhangscm.cwms.inbound.model;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "putaway_configuration")
@@ -75,6 +80,13 @@ public class PutawayConfiguration {
 
     @Transient
     private LocationGroupType locationGroupType;
+
+
+    @Column(name = "strategies")
+    private String strategies;
+
+    @Transient
+    private List<PutawayConfigurationStrategy> putawayConfigurationStrategies = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -186,5 +198,29 @@ public class PutawayConfiguration {
 
     public void setLocationGroupType(LocationGroupType locationGroupType) {
         this.locationGroupType = locationGroupType;
+    }
+
+    public String getStrategies() {
+        return strategies;
+    }
+
+    public void setStrategies(String strategies) {
+        this.strategies = strategies;
+    }
+
+    public List<PutawayConfigurationStrategy> getPutawayConfigurationStrategies() {
+        if (putawayConfigurationStrategies.size()  == 0 &&
+               !StringUtils.isBlank(strategies)){
+            putawayConfigurationStrategies =
+                    Arrays.stream(strategies.split(","))
+                            .map(strategy -> PutawayConfigurationStrategy.valueOf(strategy))
+                            .collect(Collectors.toList());
+
+        }
+        return putawayConfigurationStrategies;
+    }
+
+    public void setPutawayConfigurationStrategies(List<PutawayConfigurationStrategy> putawayConfigurationStrategies) {
+        this.putawayConfigurationStrategies = putawayConfigurationStrategies;
     }
 }

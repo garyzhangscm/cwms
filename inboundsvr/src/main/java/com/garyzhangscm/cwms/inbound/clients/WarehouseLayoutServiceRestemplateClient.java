@@ -77,6 +77,27 @@ public class WarehouseLayoutServiceRestemplateClient {
             return locations[0];
         }
     }
+
+    @Cacheable
+    public Location[] getLocationByLocationGroups(String locationGroupIds) {
+
+        ResponseBodyWrapper<Location[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations?location_group_ids={locationGroupIds}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
+                }, locationGroupIds).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    @Cacheable
+    public Location[] getLocationByLocationGroupTypes(String locationGroupTypeIds) {
+
+        ResponseBodyWrapper<Location[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations?location_group_type_ids={locationGroupTypeIds}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
+                }, locationGroupTypeIds).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     public List<Location> getLocationsByRnage(Long beginSequence, Long endSequence, String sequenceType) {
         return getLocationsByRnage(beginSequence, endSequence, sequenceType, true);
     }

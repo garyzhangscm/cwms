@@ -51,7 +51,38 @@ public class Location {
 
     private Boolean enabled;
 
+    private String reservedCode;
 
+    @Override
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("id : " + id + ",\n");
+        builder.append("name : " + name + ",\n");
+        builder.append("aisle : " + aisle + ",\n");
+
+        builder.append("length : " + length + ",\n");
+        builder.append("width : " + width + ",\n");
+        builder.append("height : " + height + ",\n");
+
+        builder.append("pickSequence : " + pickSequence + ",\n");
+        builder.append("putawaySequence : " + putawaySequence + ",\n");
+        builder.append("countSequence : " + countSequence + ",\n");
+
+
+        builder.append("capacity : " + capacity + ",\n");
+        builder.append("fillPercentage : " + fillPercentage + ",\n");
+
+        builder.append("currentVolume : " + currentVolume + ",\n");
+        builder.append("pendingVolume : " + pendingVolume + ",\n");
+
+        builder.append("locationGroup : " + (locationGroup == null ? "\n" :  locationGroup.getName()) + ",\n");
+
+        builder.append("enabled : " + enabled + ",\n");
+        builder.append("reservedCode : " + reservedCode);
+
+        return builder.toString();
+    }
 
     @JsonIgnore
     public boolean hasInventory() {
@@ -207,5 +238,13 @@ public class Location {
 
     public void setLocationGroup(LocationGroup locationGroup) {
         this.locationGroup = locationGroup;
+    }
+
+    public String getReservedCode() {
+        return reservedCode;
+    }
+
+    public void setReservedCode(String reservedCode) {
+        this.reservedCode = reservedCode;
     }
 }

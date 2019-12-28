@@ -29,5 +29,6 @@ CREATE TABLE  putaway_configuration(
     inventory_status_id BIGINT,
     location_id BIGINT,
     location_group_id BIGINT,
-    location_group_type_id BIGINT
+    location_group_type_id BIGINT,
+    strategies VARCHAR(100) NOT NULL
 );

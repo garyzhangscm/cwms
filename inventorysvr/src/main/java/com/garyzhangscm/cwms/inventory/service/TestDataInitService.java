@@ -37,6 +37,8 @@ public class TestDataInitService {
 
     InventoryService inventoryService;
 
+    MovementPathService movementPathService;
+
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
     @Autowired
@@ -45,27 +47,31 @@ public class TestDataInitService {
                                ItemUnitOfMeasureService itemUnitOfMeasureService,
                                ItemPackageTypeService itemPackageTypeService,
                                InventoryStatusService inventoryStatusService,
-                               InventoryService inventoryService) {
+                               InventoryService inventoryService,
+                               MovementPathService movementPathService) {
         this.itemFamilyService = itemFamilyService;
         this.itemService = itemService;
         this.itemPackageTypeService = itemPackageTypeService;
         this.itemUnitOfMeasureService = itemUnitOfMeasureService;
         this.inventoryStatusService = inventoryStatusService;
         this.inventoryService = inventoryService;
+        this.movementPathService = movementPathService;
 
 
-        initiableServices.put("item family", itemFamilyService);
-        serviceNames.add("item family");
-        initiableServices.put("item", itemService);
-        serviceNames.add("item");
-        initiableServices.put("item package type", itemPackageTypeService);
-        serviceNames.add("item package type");
-        initiableServices.put("item unit of measure", itemUnitOfMeasureService);
-        serviceNames.add("item unit of measure");
-        initiableServices.put("inventory status", inventoryStatusService);
-        serviceNames.add("inventory status");
-        initiableServices.put("inventory", inventoryService);
-        serviceNames.add("inventory");
+        initiableServices.put("Item Family", itemFamilyService);
+        serviceNames.add("Item Family");
+        initiableServices.put("Item", itemService);
+        serviceNames.add("Item");
+        initiableServices.put("Item Package Type", itemPackageTypeService);
+        serviceNames.add("Item Package Type");
+        initiableServices.put("Item Unit of Measure", itemUnitOfMeasureService);
+        serviceNames.add("Item Unit of Measure");
+        initiableServices.put("Inventory status", inventoryStatusService);
+        serviceNames.add("Inventory status");
+        initiableServices.put("Inventory", inventoryService);
+        serviceNames.add("Inventory");
+        initiableServices.put("Movement Path", movementPathService);
+        serviceNames.add("Movement Path");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);

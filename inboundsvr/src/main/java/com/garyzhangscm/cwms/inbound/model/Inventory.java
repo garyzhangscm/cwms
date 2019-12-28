@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Inventory implements Serializable {
 
@@ -50,6 +52,8 @@ public class Inventory implements Serializable {
     private Location location;
 
     private Long receiptId;
+
+    private List<InventoryMovement> inventoryMovements;
 
     public Long getId() {
         return id;
@@ -129,5 +133,13 @@ public class Inventory implements Serializable {
 
     public void setReceiptId(Long receiptId) {
         this.receiptId = receiptId;
+    }
+
+    public List<InventoryMovement> getInventoryMovements() {
+        return inventoryMovements;
+    }
+
+    public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
+        this.inventoryMovements = inventoryMovements;
     }
 }

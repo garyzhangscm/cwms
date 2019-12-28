@@ -417,7 +417,7 @@ public class CycleCountRequestService{
 
             // Ok we got begin location and end location, let's get all locations between the begin
             // location and end location, including both begin location and end location
-            return warehouseLayoutServiceRestemplateClient.getLocationsByRnage(
+            return warehouseLayoutServiceRestemplateClient.getLocationsByRange(
                     beginLocation.getCountSequence(),
                     endLocation.getCountSequence(),
                     "count", includeEmptyLocation);

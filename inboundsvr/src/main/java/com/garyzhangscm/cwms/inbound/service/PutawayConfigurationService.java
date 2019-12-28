@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inbound.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inbound.exception.GenericException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.PutawayConfigurationRepository;
 import net.bytebuddy.asm.Advice;
@@ -35,9 +36,8 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PutawayConfigurationService implements TestDataInitiableService{
@@ -49,6 +49,8 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private PutawayConfigurationStrategyService putawayConfigurationStrategyService;
 
     @Autowired
     private FileService fileService;
@@ -60,6 +62,9 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return putawayConfigurationRepository.findById(id).orElse(null);
     }
 
+    public List<PutawayConfiguration> findAll() {
+        return putawayConfigurationRepository.findAll();
+    }
 
     public List<PutawayConfiguration> findAll(Integer sequence,
                                               String itemName,
@@ -131,6 +136,13 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         if (putawayConfiguration.getLocationGroupTypeId() != null && putawayConfiguration.getLocationGroupType() == null) {
             putawayConfiguration.setLocationGroupType(warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(putawayConfiguration.getLocationGroupTypeId()));
         }
+
+        if (!StringUtils.isBlank(putawayConfiguration.getStrategies()) && putawayConfiguration.getPutawayConfigurationStrategies().size() == 0) {
+
+            putawayConfiguration.setPutawayConfigurationStrategies(
+                    Arrays.stream(putawayConfiguration.getStrategies().split(","))
+                            .map(strategy -> PutawayConfigurationStrategy.valueOf(strategy)).collect(Collectors.toList()));
+        }
     }
 
     private void loadLocationDetails(List<PutawayConfiguration> putawayConfigurations) {
@@ -181,6 +193,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
                 addColumn("location").
                 addColumn("locationGroup").
                 addColumn("locationGroupType").
+                addColumn("strategies").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, PutawayConfigurationCSVWrapper.class);
@@ -190,7 +203,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         try {
             InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
             List<PutawayConfigurationCSVWrapper> putawayConfigurationCSVWrappers = loadData(inputStream);
-            putawayConfigurationCSVWrappers.stream().forEach(putawayConfigurationCSVWrapper -> save(convertFromWrapper(putawayConfigurationCSVWrapper)));
+            putawayConfigurationCSVWrappers.stream().forEach(putawayConfigurationCSVWrapper -> saveOrUpdate(convertFromWrapper(putawayConfigurationCSVWrapper)));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
@@ -200,6 +213,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
 
         PutawayConfiguration putawayConfiguration = new PutawayConfiguration();
         putawayConfiguration.setSequence(putawayConfigurationCSVWrapper.getSequence());
+        putawayConfiguration.setStrategies(putawayConfigurationCSVWrapper.getStrategies());
 
         if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(putawayConfigurationCSVWrapper.getItem());
@@ -243,7 +257,153 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return putawayConfiguration;
     }
 
+    public Inventory allocateLocation(Inventory inventory) throws Exception{
+        logger.debug("start to allocate location for inventory: {}", inventory.getLpn());
+        Location location = allocateSuitableLocation(inventory);
+        if (location == null) {
+            throw new GenericException(99999, "fail to allocate location for the inventory");
+        }
+        InventoryMovement inventoryMovement = new InventoryMovement();
+        inventoryMovement.setInventory(inventory);
+        inventoryMovement.setLocation(location);
 
+        return inventoryServiceRestemplateClient.setupMovementPath(inventory.getId(), Arrays.asList(new InventoryMovement[]{inventoryMovement}));
+    }
+
+
+    private Location allocateSuitableLocation(Inventory inventory) {
+        // First of all, let's find all suitable putaway configuration and
+        // sort by sequence
+        logger.debug("Step 1: get the putaway configuration for the inventory");
+        List<PutawayConfiguration> suitablePutawayConfiguration = findSuitablePutawayConfiguration(inventory);
+        // Loop through every suitable putaway configuration until we find a location
+
+        logger.debug("Step 1 - Result: get total {} putaway configuration for the inventory", suitablePutawayConfiguration.size());
+        for(PutawayConfiguration putawayConfiguration : suitablePutawayConfiguration) {
+            logger.debug("Step 2 - try to find a location based on the putaway configuration {}", putawayConfiguration.getId());
+            Location location  = findSuitableLocation(putawayConfiguration, inventory);
+            if (location != null) {
+
+                logger.debug("Step 2 RESULT!!! - WE FOUND A LOCATION: {} " + location.getName());
+                return location;
+            }
+        }
+        return null;
+    }
+
+    public Location findSuitableLocation(PutawayConfiguration putawayConfiguration, Inventory inventory){
+
+        // Loop through each strategy to get the right location
+        for(PutawayConfigurationStrategy putawayConfigurationStrategy : putawayConfiguration.getPutawayConfigurationStrategies()) {
+            logger.debug("Step 2.1 - Will find location with configuraiton {}, strategy {}",
+                    putawayConfiguration.getId(), putawayConfigurationStrategy.name());
+            List<Location> locations = findLocation(putawayConfiguration);
+            logger.debug("Step 2.1.1 - Get totally {} locations according to the putaway configuratioln", locations.size());
+            if (locations.size() == 0) {
+                continue;
+            }
+
+            // we find some locations according to the putaway configuration criteria,
+            // let's apply the strategy to future filter out those locations that
+            // doesn't meet with the strategy
+
+            logger.debug("Step 2.1.2 - Start to filter by strategy");
+            locations = putawayConfigurationStrategyService.fitlerLocationByStrategy(locations, inventory, putawayConfigurationStrategy);
+            logger.debug("Step 2.1.2 Result - Get totally {} locations according to the strategy {}", locations.size(), putawayConfigurationStrategy);
+
+            for(Location location : locations) {
+                if (fit(inventory, location)) {
+                    return location;
+                }
+            }
+        }
+        return null;
+    }
+    private boolean fit(Inventory inventory, Location location) {
+        // TO-DO:
+        // will need to check if the inventory can be fit into the location
+        return true;
+    }
+
+    // Get all the locations according to the putaway configuration
+    public List<Location> findLocation(PutawayConfiguration putawayConfiguration){
+        List<Location> locations = new ArrayList<>();
+        if (putawayConfiguration.getLocationId() != null) {
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationById(putawayConfiguration.getLocationId());
+            if (location != null) {
+                locations.add(location);
+            }
+        }
+        else if (putawayConfiguration.getLocationGroupId() != null) {
+            Location[] locationsByGroup = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(
+                    String.valueOf(putawayConfiguration.getLocationGroupId()));
+            if (locationsByGroup.length > 0) {
+                locations = Arrays.asList(locationsByGroup);
+            }
+        }
+        else if (putawayConfiguration.getLocationGroupTypeId() != null) {
+            Location[] locationsByGroupType = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroupTypes(
+                    String.valueOf(putawayConfiguration.getLocationGroupTypeId()));
+            if (locationsByGroupType.length > 0) {
+                locations = Arrays.asList(locationsByGroupType);
+            }
+        }
+
+        return locations;
+
+    }
+
+
+    public List<PutawayConfiguration> findSuitablePutawayConfiguration(Inventory inventory){
+
+        List<PutawayConfiguration> putawayConfigurations = findAll();
+        logger.debug("Step 1.1 get {} putaway configurations", putawayConfigurations.size());
+        putawayConfigurations.sort(Comparator.comparingInt(PutawayConfiguration::getSequence));
+
+        return putawayConfigurations.stream()
+                .filter(putawayConfiguration -> match(putawayConfiguration, inventory))
+                .collect(Collectors.toList());
+
+
+    }
+
+    // Whether the putaway configuration matches with the inventory only when
+    // if configuration has item defined and the inventory has the same item
+    // if configuration has item family defined and the inventory has the same item family
+    // if configuration has invenotry status defined and the inventory has the same inventory status
+    public boolean match(PutawayConfiguration putawayConfiguration, Inventory inventory) {
+        logger.debug("Step 1.2 check {} matches with inventory {}", putawayConfiguration.getId(), inventory.getLpn());
+        if (putawayConfiguration.getItemId() != null &&
+                inventory.getItem().getId() != putawayConfiguration.getItemId()) {
+
+            logger.debug("Step 1.2 >> fail as the item doesn't match.");
+            logger.debug(">>>>>>>>>>> putawayConfiguration.getItemId(): {} / inventory.getItem().getId(): {}",
+                    putawayConfiguration.getItemId(), inventory.getItem().getId());
+            return false;
+        }
+
+        if (putawayConfiguration.getItemFamilyId() != null &&
+                inventory.getItem().getItemFamily().getId() != putawayConfiguration.getItemFamilyId()) {
+
+            logger.debug("Step 1.2 >> fail as the item family doesn't match.");
+            logger.debug(">>>>>>>>>>> putawayConfiguration.getItemFamilyId(): {} / inventory.getItem().getItemFamily().getId(): {}",
+                    putawayConfiguration.getItemFamilyId(), inventory.getItem().getItemFamily().getId());
+            return false;
+        }
+
+        if (putawayConfiguration.getInventoryStatusId() != null &&
+                inventory.getInventoryStatus().getId() != putawayConfiguration.getInventoryStatusId()) {
+
+            logger.debug("Step 1.2 >> fail as the inventory status doesn't match.");
+            logger.debug(">>>>>>>>>>> putawayConfiguration.getInventoryStatusId(): {} / inventory.getInventoryStatus().getId(): {}",
+                    putawayConfiguration.getInventoryStatusId(), inventory.getInventoryStatus().getId());
+            return false;
+        }
+
+        logger.debug("Step 1.2 >> inventory matches with putaway configuration.");
+        return true;
+
+    }
 
 
 }
