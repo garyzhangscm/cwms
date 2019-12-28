@@ -24,6 +24,10 @@ public class Location {
 
     private String name;
 
+    private Double currentVolume;
+
+    private Double pendingVolume;
+
     private Boolean enabled;
 
     private LocationGroup locationGroup;
@@ -58,5 +62,21 @@ public class Location {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Double getCurrentVolume() {
+        return currentVolume;
+    }
+
+    public void setCurrentVolume(Double currentVolume) {
+        this.currentVolume = currentVolume;
+    }
+
+    public Double getPendingVolume() {
+        return pendingVolume;
+    }
+
+    public void setPendingVolume(Double pendingVolume) {
+        this.pendingVolume = pendingVolume;
     }
 }

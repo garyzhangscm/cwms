@@ -6,12 +6,17 @@ drop table if exists audit_count_result;
 drop table if exists audit_count_request;
 
 
+DROP TABLE if exists inventory_movement;
 DROP TABLE if exists inventory;
 drop table if exists inventory_status;
 DROP TABLE IF EXISTS item_unit_of_measure;
 DROP TABLE IF EXISTS item_package_type;
 DROP TABLE IF EXISTS item;
 DROP TABLE IF EXISTS item_family;
+
+
+DROP TABLE IF EXISTS movement_path_detail;
+DROP TABLE IF EXISTS movement_path;
 
 
 
@@ -66,7 +71,6 @@ CREATE TABLE inventory(
   inventory_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   lpn   VARCHAR(100) NOT NULL,
   location_id    BIGINT NOT NULL,
-  next_location_id    BIGINT,
   item_id BIGINT not null,
   item_package_type_id BIGINT not null,
   quantity bigint not null,
@@ -77,6 +81,15 @@ CREATE TABLE inventory(
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),
   foreign key(inventory_status_id) references inventory_status(inventory_status_id)
 );
+
+CREATE TABLE inventory_movement(
+  inventory_movement_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  inventory_id    BIGINT NOT NULL,
+  location_id    BIGINT not null,
+  sequence INT not null,
+  foreign key(inventory_id) references inventory(inventory_id)
+);
+
 
 create table cycle_count_batch(
   cycle_count_batch_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -113,4 +126,25 @@ create table audit_count_result(
   inventory_id BIGINT,
   quantity int not null,
   count_quantity int NOT NULL
+);
+
+
+CREATE TABLE movement_path(
+  movement_path_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  from_location_id    BIGINT,
+  from_location_group_id    BIGINT,
+  to_location_id BIGINT,
+  to_location_group_id BIGINT,
+  sequence INT not null
+);
+
+
+CREATE TABLE movement_path_detail(
+  movement_path_detail_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  movement_path_id    BIGINT NOT NULL,
+  hop_location_id    BIGINT,
+  hop_location_group_id BIGINT,
+  sequence INT not null,
+  strategy INT not null,
+  foreign key(movement_path_id) references movement_path(movement_path_id)
 );

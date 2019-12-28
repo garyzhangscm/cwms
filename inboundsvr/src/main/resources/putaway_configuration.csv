@@ -1,6 +1,6 @@
-sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType
-1,,,DMG,,DAMAGED,
-2,,HIGH_VALUE,,,EACH_PICK_HV,
-3,,HIGH_VALUE,,,CASE_PICK_HV,
-4,,FROZEN,,,EACH_PICK_FRZ,
-5,,FROZEN,,,CASE_PICK_FRZ,
+sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,strategies
+1,,,DMG,,DAMAGED,,EMPTY_LOCATIONS
+2,,HIGH_VALUE,,,EACH_PICK_HV,,EMPTY_LOCATIONS
+3,,HIGH_VALUE,,,CASE_PICK_HV,,EMPTY_LOCATIONS
+4,,FROZEN,,,EACH_PICK_FRZ,,EMPTY_LOCATIONS
+5,,FROZEN,,,CASE_PICK_FRZ,,EMPTY_LOCATIONS

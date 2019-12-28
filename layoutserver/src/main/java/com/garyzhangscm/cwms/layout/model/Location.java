@@ -77,6 +77,18 @@ public class Location {
     @Column(name = "enabled")
     private Boolean enabled;
 
+    @Column(name = "reserved_code")
+    private String reservedCode;
+
+    @JsonIgnore
+    public boolean hasInventory() {
+        return getCurrentVolume() > 0.0;
+    }
+    @JsonIgnore
+    public boolean isEmpty() {
+        return getCurrentVolume() == 0 && getPendingVolume() == 0;
+    }
+
     public Long getId() {
         return id;
     }
@@ -221,12 +233,12 @@ public class Location {
         this.pendingVolume = pendingVolume;
     }
 
-    @JsonIgnore
-    public boolean hasInventory() {
-        return getCurrentVolume() > 0.0;
+    public String getReservedCode() {
+        return reservedCode;
     }
-    @JsonIgnore
-    public boolean isEmpty() {
-        return getCurrentVolume() == 0 && getPendingVolume() == 0;
+
+    public void setReservedCode(String reservedCode) {
+        this.reservedCode = reservedCode;
     }
+
 }

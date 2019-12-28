@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
+import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -71,5 +72,14 @@ public class InventoryController {
         }
         return inventoryService.save(inventory);
     }
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/movements")
+    public Inventory setupMovementPath(@PathVariable long id,
+                                       @RequestBody List<InventoryMovement> inventoryMovements) {
+
+        return inventoryService.setupMovementPath(id, inventoryMovements);
+    }
+
 
 }

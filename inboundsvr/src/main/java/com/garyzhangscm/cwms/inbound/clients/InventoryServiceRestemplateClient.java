@@ -143,6 +143,36 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public List<Inventory> findInventoryByItem(Item item) {
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories?itemName={itemName}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}, item.getName()).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public Inventory setupMovementPath(long inventoryId, List<InventoryMovement> inventoryMovements) throws IOException {
+
+        String requestBody = mapper.writeValueAsString(inventoryMovements);
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
+        logger.debug("start to call inventory / movements with payload:\n{}", requestBody);
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventory/{id}/movements",
+                HttpMethod.POST, httpEntity, new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}, inventoryId).getBody();
+
+        Inventory inventory = responseBodyWrapper.getData();
+        logger.debug("setupMovementPath returns {}", inventory.getInventoryMovements());
+        return responseBodyWrapper.getData();
+
+    }
+
+
+
+
 
 
 

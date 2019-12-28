@@ -348,7 +348,9 @@
   "description.field.label.receiving":"收货",
   "description.field.label.sequence":"顺序",
   "description.field.label.allocateLocation":"分配库位",
+  "description.field.label.reallocateLocation":"重新分配库位",
   "description.field.label.nextLocation":"目标库位",
+  "description.field.label.putaway-configuration.strategy":"上架策略",
   "description.field.placeholder.file-upload.filetype":"选择需要加载的文件类型",
   "description.field.placeholder.locationgrouptype":"选择库位组类型",
   "description.field.placeholder.location-group":"选择库位组",
@@ -444,6 +446,7 @@
   "description.steps.supplier-maintenance.basic-info.description":"供应商基础信息",
   "description.steps.supplier-maintenance.address.title":"供应商地址",
   "description.steps.supplier-maintenance.address.description":"维护供应商的地址信息",
+  "description.drawer.title.lookup":"查询",
   "error.form.field.login.warehouse.required" : "请选择登陆仓库",
   "error.form.field.warehouseName.required" : "请输入仓库名称",
   "error.form.field.warehouseSize.required" : "请输入仓库面积",
@@ -454,5 +457,6 @@
   "message.new.complete":"新建成功",
   "message.action.success":"操作成功",
   "message.error.saveReceiptFirst":"请先保存当前入库单",
-  "message.receiving.success":"收货成功"
+  "message.receiving.success":"收货成功",
+  "message.allocate-location.success":"库位分配成功"
 }

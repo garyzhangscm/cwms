@@ -112,4 +112,13 @@ public class LocationController {
         return locationService.saveOrUpdate(location);
     }
 
+
+    @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/reserve")
+    public Location reserveLocation(@PathVariable Long id,
+                                   @RequestParam(name = "reservedCode") String reservedCode) {
+
+
+        return locationService.reserveLocation(id, reservedCode);
+    }
+
 }

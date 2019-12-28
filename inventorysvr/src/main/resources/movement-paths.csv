@@ -1,0 +1,2 @@
+fromLocation,toLocation,fromLocationGroup,toLocationGroup,sequence,hopLocation,hopLocationGroup,strategy
+,,RECEIPT,,1,,RECV_STG,BY_RECEIPT

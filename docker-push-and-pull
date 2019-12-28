@@ -23,3 +23,5 @@ docker pull garyzhangscm/cwms-confsvr:latest
 docker pull garyzhangscm/cwms-zuulsvr:latest
 docker pull garyzhangscm/cwms-eurekasvr:latest
 
+
+Remove untaged

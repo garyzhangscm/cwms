@@ -69,6 +69,17 @@ public class PutawayConfigurationController {
     }
 
 
+    @RequestMapping(value="/putaway-configuration/allocate-location", method = RequestMethod.POST)
+    public Inventory allocateLocation(@RequestBody Inventory inventory) {
+        try {
+            Inventory allocatedInventory = putawayConfigurationService.allocateLocation(inventory);
+            return allocatedInventory;
+        } catch (Exception ex) {
+            throw new GenericException(99999, ex.getMessage());
+        }
+    }
+
+
 
 
 

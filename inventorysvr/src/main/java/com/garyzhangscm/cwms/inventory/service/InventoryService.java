@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.PropertySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +56,10 @@ public class InventoryService implements TestDataInitiableService{
     private ItemPackageTypeService itemPackageTypeService;
     @Autowired
     private InventoryStatusService inventoryStatusService;
+    @Autowired
+    private InventoryMovementService inventoryMovementService;
+    @Autowired
+    private MovementPathService movementPathService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -70,6 +76,7 @@ public class InventoryService implements TestDataInitiableService{
     }
     public Inventory findById(Long id, boolean includeDetails) {
         Inventory inventory = inventoryRepository.findById(id).orElse(null);
+        logger.debug("load details? {} for inventory id: {}", includeDetails, id);
         if (includeDetails && inventory != null) {
             loadInventoryAttribute(inventory);
         }
@@ -224,6 +231,21 @@ public class InventoryService implements TestDataInitiableService{
             inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
         }
 
+
+        logger.debug("inventory.getInventoryMovements() == null? " + (inventory.getInventoryMovements() == null));
+        logger.debug("inventory.getInventoryMovements().size()? " + (inventory.getInventoryMovements() == null ? 0 : inventory.getInventoryMovements().size()));
+        logger.debug("inventory.getInventoryMovements()? " + (inventory.getInventoryMovements() == null ? "" : inventory.getInventoryMovements()));
+        if (inventory.getInventoryMovements() != null && inventory.getInventoryMovements().size() > 0) {
+            inventory.getInventoryMovements().forEach(
+                    inventoryMovement -> {
+                        if (inventoryMovement.getLocation() == null && inventoryMovement.getLocationId() != null) {
+                            inventoryMovement.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventoryMovement.getLocationId()));
+                        }
+                    }
+            );
+        }
+
+
         // load the unit of measure details for the packate types
         inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure ->
                 itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId())));
@@ -344,4 +366,68 @@ public class InventoryService implements TestDataInitiableService{
         removeInventory(id, warehouseLayoutServiceRestemplateClient.getLocationForInventoryAdjustment());
     }
 
+
+    // Note here the movement path only contains final destination location. We will need to get the
+    // hop location as well and save it
+    public Inventory setupMovementPath(Long inventoryId, List<InventoryMovement> inventoryMovements) {
+
+        Inventory inventory = findById(inventoryId);
+        logger.debug("start to setup movement path for inventory lpn: {}", inventory.getLpn());
+        logger.debug("The inventory has {} movement defined", inventoryMovements.size());
+        logger.debug(" >> {}", inventoryMovements);
+
+        if (inventoryMovements.size() == 1) {
+            // we only have the final destination. let's see if we need
+            // any hop
+            InventoryMovement finalDestinationMove = inventoryMovements.get(0);
+            if (finalDestinationMove.getLocationId() == null && finalDestinationMove.getLocation() != null) {
+                finalDestinationMove.setLocationId(finalDestinationMove.getLocation().getId());
+            }
+            logger.debug("Start to get hop locations for this movement. current location id: {}, final destination id: {}", inventory.getLocationId(), finalDestinationMove.getLocationId());
+            List<Location> hopLocations = movementPathService.reserveHopLocations(inventory.getLocationId(), finalDestinationMove.getLocationId(), inventory);
+            int sequence = 0;
+            for(Location location : hopLocations) {
+                InventoryMovement inventoryMovement = new InventoryMovement();
+                inventoryMovement.setLocation(location);
+                inventoryMovement.setLocationId(location.getId());
+                inventoryMovement.setSequence(sequence++);
+                inventoryMovement.setInventory(inventory);
+                inventoryMovements.add(inventoryMovement);
+            }
+
+            // Reset the final move's sequence to 0
+            finalDestinationMove.setSequence(sequence);
+
+            logger.debug("After setup the hop locations, now the inventory has {} movement defined", inventoryMovements.size());
+            logger.debug(" >> {}", inventoryMovements);
+
+        }
+
+
+        // Sort by sequence so we can save record by sequence
+        inventoryMovements.sort(Comparator.comparingInt(InventoryMovement::getSequence));
+
+        logger.debug("Start to save movement for inventory: {}", inventory.getId());
+        // logger.debug(">> movement path: {}", inventoryMovements);
+        inventoryMovements.forEach(inventoryMovement -> {
+            inventoryMovement.setInventory(inventory);
+            if (inventoryMovement.getLocationId() == null && inventoryMovement.getLocation() != null) {
+                inventoryMovement.setLocationId(inventoryMovement.getLocation().getId());
+            }
+        });
+        logger.debug(">> movement path: {}", inventoryMovements);
+        List<InventoryMovement> newInventoryMovements = inventoryMovementService.save(inventoryMovements);
+        logger.debug(">> reload inventory informaiton after movement path is saved!");
+
+        // Setup the movement path for the inventory so we can return the
+        // latest information
+        // Note: We may not be able to get the latest movement path by call findById() here
+        // as the change may not be serialized yet
+        // Also we will need to call clear() and addAll() instead of setInventoryMovements
+        // to setup the inventory's movements
+        inventory.getInventoryMovements().clear();
+        inventory.getInventoryMovements().addAll(newInventoryMovements);
+        logger.debug("Will return following movement path to the end user: {}", inventory.getInventoryMovements());
+        return inventory;
+    }
 }

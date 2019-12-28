@@ -73,10 +73,30 @@ public class WarehouseLayoutServiceRestemplateClient {
             return locations[0];
         }
     }
-    public List<Location> getLocationsByRnage(Long beginSequence, Long endSequence, String sequenceType) {
-        return getLocationsByRnage(beginSequence, endSequence, sequenceType, true);
+    public Location[] getLocationsByReservedCode(String locationGroupIds, String reservedCode) {
+
+        String url = "http://zuulserver:5555/api/layout/locations?location_group_ids={locationGroupIds}"
+                     + "&with_reserved_code=true&reserved_code={reservedCode}";
+        ResponseBodyWrapper<Location[]> responseBodyWrapper = restTemplate.exchange(url ,
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
+                }, locationGroupIds, reservedCode).getBody();
+
+        return responseBodyWrapper.getData();
     }
-    public List<Location> getLocationsByRnage(Long beginSequence, Long endSequence, String sequenceType, Boolean includeEmptyLocation) {
+
+    public List<Location> getLocationsByRange(Long beginSequence, Long endSequence, String sequenceType) {
+        return getLocationsByRange(beginSequence, endSequence, sequenceType, true);
+    }
+    @Cacheable
+    public Location[] getLocationByLocationGroups(String locationGroupIds) {
+
+        ResponseBodyWrapper<Location[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations?location_group_ids={locationGroupIds}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
+                }, locationGroupIds).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public List<Location> getLocationsByRange(Long beginSequence, Long endSequence, String sequenceType, Boolean includeEmptyLocation) {
 
         String url = "http://zuulserver:5555/api/layout/locations?" +
                       "begin_sequence={beginSequence}&end_sequence={endSequence}&sequence_type={sequenceType}&include_empty_location={includeEmptyLocation}";
@@ -202,4 +222,66 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    public LocationGroup getLocationGroupById(Long id) {
+
+        ResponseBodyWrapper<LocationGroup> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgroup/{id}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup>>() {
+                }, id).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public LocationGroup getLocationGroupByName(String name) {
+
+        ResponseBodyWrapper<LocationGroup[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgroups?name={name}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup[]>>() {
+                }, name).getBody();
+
+        LocationGroup[] locationGroups = responseBodyWrapper.getData();
+
+        if (locationGroups.length != 1) {
+            logger.debug("getLocationGroupByName / {} return {} location groups. Error!!!", name, locationGroups.length);
+            return null;
+        }
+        else {
+
+            return locationGroups[0];
+        }
+    }
+    public LocationGroupType getLocationGroupTypeById(Long id) {
+
+        ResponseBodyWrapper<LocationGroupType> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgrouptype/{id}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType>>() {
+                }, id).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public LocationGroupType getLocationGroupTypeByName(String name) {
+
+        ResponseBodyWrapper<LocationGroupType[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgrouptypes?name={name}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType[]>>() {
+                }, name).getBody();
+
+        LocationGroupType[] locationGroupTypes = responseBodyWrapper.getData();
+
+        if (locationGroupTypes.length != 1) {
+            logger.debug("getLocationGroupTypeByName / {} return {} location group types. Error!!!", name, locationGroupTypes.length);
+            return null;
+        }
+        else {
+
+            return locationGroupTypes[0];
+        }
+    }
+
+    public Location reserveLocation(Long id, String reservedCode) {
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/reserve?reservedCode={reservedCode}",
+                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, id, reservedCode).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
 }

@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "inventory")
@@ -47,13 +49,6 @@ public class Inventory implements Serializable {
     @Transient
     private Location location;
 
-
-    @Column(name = "next_location_id")
-    private Long nextLocationId;
-
-    @Transient
-    private Location nextLocation;
-
     @Column(name = "receipt_id")
     private Long receiptId;
 
@@ -74,6 +69,15 @@ public class Inventory implements Serializable {
     @ManyToOne
     @JoinColumn(name="inventory_status_id")
     private InventoryStatus inventoryStatus;
+
+
+    @OneToMany(
+            mappedBy = "inventory",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -160,27 +164,19 @@ public class Inventory implements Serializable {
         this.virtual = virtual;
     }
 
-    public Long getNextLocationId() {
-        return nextLocationId;
-    }
-
-    public void setNextLocationId(Long nextLocationId) {
-        this.nextLocationId = nextLocationId;
-    }
-
-    public Location getNextLocation() {
-        return nextLocation;
-    }
-
-    public void setNextLocation(Location nextLocation) {
-        this.nextLocation = nextLocation;
-    }
-
     public Long getReceiptId() {
         return receiptId;
     }
 
     public void setReceiptId(Long receiptId) {
         this.receiptId = receiptId;
+    }
+
+    public List<InventoryMovement> getInventoryMovements() {
+        return inventoryMovements;
+    }
+
+    public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
+        this.inventoryMovements = inventoryMovements;
     }
 }

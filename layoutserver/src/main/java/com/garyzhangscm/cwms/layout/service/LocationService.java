@@ -295,4 +295,11 @@ public class LocationService implements TestDataInitiableService {
         return inventorySize;
     }
 
+    public Location reserveLocation(Long id, String reservedCode) {
+        Location location = findById(id);
+        location.setReservedCode(reservedCode);
+        return save(location);
+
+    }
+
 }
