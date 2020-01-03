@@ -302,4 +302,38 @@ public class LocationService implements TestDataInitiableService {
 
     }
 
+    public Location allocateLocation(Long id, Double inventorySize) {
+        Location location = findById(id);
+
+        logger.debug("before allocation, location {} has pending qvl: {}", location.getName(), location.getPendingVolume());
+        location.setPendingVolume(location.getPendingVolume() + inventorySize);
+
+        logger.debug("Start to allocate {} from location {}", location.getPendingVolume(), location.getName());
+        return save(location);
+    }
+
+    public Location changePendingVolume(Long id, Double reducedPendingVolume, Double increasedPendingVolume) {
+
+        Location location = findById(id);
+        logger.debug("Start to adjust pending volume for location: {}, current pending volume: {}, reduced by {}, increased by {}",
+                location.getName(), location.getPendingVolume(), reducedPendingVolume, increasedPendingVolume);
+        location.setPendingVolume(location.getPendingVolume() - reducedPendingVolume + increasedPendingVolume);
+        logger.debug("afect adjusting pending volume for location: {}, pending volume: {}",
+                location.getName(), location.getPendingVolume());
+        return save(location);
+
+    }
+
+    public Location changeLocationVolume(Long id, Double reducedVolume, Double increasedVolume) {
+
+        Location location = findById(id);
+        logger.debug("Start to adjust location volume for location: {}, current volume: {}, reduced by {}, increased by {}",
+                location.getName(), location.getCurrentVolume(), reducedVolume, increasedVolume);
+        location.setPendingVolume(location.getCurrentVolume() - reducedVolume + increasedVolume);
+        logger.debug("afect adjusting location volume for location: {}, current volume: {}",
+                location.getName(), location.getCurrentVolume());
+        return save(location);
+
+    }
+
 }

@@ -20,14 +20,13 @@ package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
-import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
 import com.garyzhangscm.cwms.inventory.model.Location;
 import com.garyzhangscm.cwms.inventory.model.MovementPath;
-import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import com.garyzhangscm.cwms.inventory.service.MovementPathService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.Path;
 import java.util.List;
 
 @RestController
@@ -37,16 +36,40 @@ public class MovementPathController {
 
     @RequestMapping(value="/movement-path", method = RequestMethod.GET)
     public List<MovementPath> findAllMovementPaths(@RequestParam(name="from_location_id", required = false, defaultValue = "") Long fromLocationId,
+                                                   @RequestParam(name="from_location", required = false, defaultValue = "") String fromLocationName,
                                                  @RequestParam(name="from_location_group_id", required = false, defaultValue = "") Long fromLocationGroupId,
                                                  @RequestParam(name="to_location_id", required = false, defaultValue = "") Long toLocationId,
+                                                   @RequestParam(name="to_location", required = false, defaultValue = "") String toLocationName,
                                                  @RequestParam(name="to_location_group_id", required = false, defaultValue = "") Long toLocationGroupId) {
-        return movementPathService.findAll(fromLocationId, fromLocationGroupId, toLocationId, toLocationGroupId);
+        return movementPathService.findAll(fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
+    }
+
+    @RequestMapping(value="/movement-path/{id}", method = RequestMethod.GET)
+    public MovementPath findById(@PathVariable Long id) {
+        return movementPathService.findById(id);
+    }
+    @RequestMapping(value="/movement-path", method = RequestMethod.POST)
+    public MovementPath createMovementPath(@RequestBody MovementPath movementPath) {
+        return movementPathService.save(movementPath);
+    }
+    @RequestMapping(value="/movement-path/{id}", method = RequestMethod.PUT)
+    public MovementPath changeMovementPath(@PathVariable Long id,
+                                           @RequestBody MovementPath movementPath) {
+        if (id != movementPath.getId()) {
+            throw new GenericException(10000, "Id passed in doesn't match with the movement path passed in");
+        }
+        return movementPathService.save(movementPath);
     }
 
 
     @RequestMapping(method=RequestMethod.DELETE, value="/movement-path/{id}")
     public void removeMovementPath(@PathVariable Long id) {
         movementPathService.delete(id);
+    }
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/movement-path?movement_path_ids")
+    public void removeMovementPath(@RequestParam(name="movement_path_ids") String movementPathIds) {
+        movementPathService.removeMovementPaths(movementPathIds);
     }
 
 

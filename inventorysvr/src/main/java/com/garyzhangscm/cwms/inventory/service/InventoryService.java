@@ -34,13 +34,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import javax.swing.text.html.HTMLDocument;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,8 +98,9 @@ public class InventoryService implements TestDataInitiableService{
                                    String clientIds,
                                    String itemFamilyIds,
                                    String locationName,
-                                   String receiptId) {
-        return findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, true);
+                                   String receiptId,
+                                   String lpn) {
+        return findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, lpn, true);
     }
 
 
@@ -110,6 +109,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String itemFamilyIds,
                                    String locationName,
                                    String receiptId,
+                                   String lpn,
                                    boolean includeDetails) {
         List<Inventory> inventories =  inventoryRepository.findAll(
                 (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -147,6 +147,10 @@ public class InventoryService implements TestDataInitiableService{
                     }
                     if (!StringUtils.isBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
+
+                    }
+                    if (!StringUtils.isBlank(lpn)) {
+                        predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
 
                     }
 
@@ -352,14 +356,78 @@ public class InventoryService implements TestDataInitiableService{
         }
     }
 
-    public void moveInventory(Inventory inventory, Location destination) {
+    public Inventory moveInventory(Long inventoryId, Location destination) {
+        return moveInventory(findById(inventoryId), destination);
+
+    }
+    public Inventory moveInventory(Inventory inventory, Location destination) {
+        Location sourceLocation = inventory.getLocation();
         inventory.setLocationId(destination.getId());
+
+        // we will need to get the destination location's location group
+        // so we can know whether the inventory become a virtual inventory
+        if (destination.getLocationGroup() == null || destination.getLocationGroup().getLocationGroupType() == null) {
+            // Refresh the location's information from layout service
+            destination = warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId());
+        }
         if (destination.getLocationGroup().getLocationGroupType().getVirtual()) {
             // The inventory is moved to the virtual location, let's mark the inventory
             // as virtual
             inventory.setVirtual(true);
         }
-        save(inventory);
+        // Check if we have finished any movement
+        recalculateMovementPathForInventoryMovement(inventory, destination);
+
+        // Reset the destination location's size
+        recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
+        return save(inventory);
+    }
+    private void recalculateLocationSizeForInventoryMovement(Location sourceLocation, Location destination, double volume) {
+        warehouseLayoutServiceRestemplateClient.reduceLocationVolume(sourceLocation.getId(), volume);
+        warehouseLayoutServiceRestemplateClient.increaseLocationVolume(destination.getId(), volume);
+    }
+    private void recalculateMovementPathForInventoryMovement(Inventory inventory, Location destination) {
+
+        List<InventoryMovement> matchedMovements = inventory.getInventoryMovements().stream()
+                         .filter(inventoryMovement ->  inventoryMovement.getLocationId().equals(destination.getId()))
+                         .collect(Collectors.toList());
+        if (matchedMovements.size() == 1) {
+            // Ok we moved inventory to some hop location
+            // let's remove all the locations(including the hop location) from the
+            // movement path
+            InventoryMovement matchedMovement = matchedMovements.get(0);
+
+            inventory.getInventoryMovements().stream().forEach(inventoryMovement -> {
+                if (inventoryMovement.getSequence() <= matchedMovement.getSequence()) {
+                    logger.debug("Will remove movement path {} from inventory {}", matchedMovements.size(), inventory.getLpn());
+                    inventoryMovementService.removeInventoryMovement(inventoryMovement.getId(), inventory);
+                }
+            });
+
+            // Reload the inventory movement for the inventory
+            inventory.setInventoryMovements(inventoryMovementService.findByInventoryId(inventory.getId()));
+            logger.debug("After we removed all the movement pre matched movement, we have left");
+            inventory.getInventoryMovements()
+                    .stream().forEach(inventoryMovement -> logger.debug("{} - {}", inventoryMovement.getSequence(), inventoryMovement.getLocation().getName()));
+
+        }
+        else if (matchedMovements.size() == 0 &&
+                inventory.getInventoryMovements().size() > 0 &&
+                destination.getLocationGroup().getStorable() == true
+        ) {
+            // OK, the inventory was moved into a location that is not defined as a hop location
+            // of the inventory. If the location is a P&D location, we will still keep
+            // inventory movement path. If the location is a storage location, then we will
+            // remove all the inventory movement path
+
+            inventory.getInventoryMovements().stream().forEach(inventoryMovement ->
+                    inventoryMovementService.removeInventoryMovement(inventoryMovement.getId(), inventory)
+            );
+
+            // We should have removed all the movements
+            inventory.setInventoryMovements(new ArrayList<>());
+        }
+
     }
 
     public void adjustDownInventory(Long id) {

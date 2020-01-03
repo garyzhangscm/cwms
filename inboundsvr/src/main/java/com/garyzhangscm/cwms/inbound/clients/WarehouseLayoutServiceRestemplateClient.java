@@ -210,4 +210,14 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+
+    public Location allocateLocation(Location location, Double inventorySize) {
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout//location/{id}/allocate?inventory_size={inventorySize}",
+                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, location.getId(), inventorySize).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
 }

@@ -8,6 +8,7 @@
     <file url="file://$PROJECT_DIR$/inboundsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/inventorysvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/layoutserver" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/outboundsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ressvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr" charset="UTF-8" />
   </component>

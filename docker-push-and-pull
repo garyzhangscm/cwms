@@ -2,6 +2,7 @@ docker push garyzhangscm/cwms-commonserver:latest
 docker push garyzhangscm/cwms-ressvr:latest
 docker push garyzhangscm/cwms-layoutserver:latest
 docker push garyzhangscm/cwms-inboundserver:latest
+docker push garyzhangscm/cwms-outboundserver:latest
 docker push garyzhangscm/cwms-inventoryserver:latest
 
 docker push garyzhangscm/cwms-auth:latest
@@ -15,6 +16,7 @@ docker pull garyzhangscm/cwms-commonserver:latest
 docker pull garyzhangscm/cwms-ressvr:latest
 docker pull garyzhangscm/cwms-layoutserver:latest
 docker pull garyzhangscm/cwms-inboundserver:latest
+docker pull garyzhangscm/cwms-outboundserver:latest
 docker pull garyzhangscm/cwms-inventoryserver:latest
 
 

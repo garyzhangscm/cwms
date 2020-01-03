@@ -55,6 +55,15 @@ public class Inventory implements Serializable {
 
     private List<InventoryMovement> inventoryMovements;
 
+    public Double getSize() {
+
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+
+        return (quantity / stockItemUnitOfMeasure.getQuantity())
+                * stockItemUnitOfMeasure.getLength()
+                * stockItemUnitOfMeasure.getWidth()
+                * stockItemUnitOfMeasure.getHeight();
+    }
     public Long getId() {
         return id;
     }

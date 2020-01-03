@@ -263,6 +263,10 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         if (location == null) {
             throw new GenericException(99999, "fail to allocate location for the inventory");
         }
+        else {
+            warehouseLayoutServiceRestemplateClient.allocateLocation(location, inventory.getSize());
+
+        }
         InventoryMovement inventoryMovement = new InventoryMovement();
         inventoryMovement.setInventory(inventory);
         inventoryMovement.setLocation(location);

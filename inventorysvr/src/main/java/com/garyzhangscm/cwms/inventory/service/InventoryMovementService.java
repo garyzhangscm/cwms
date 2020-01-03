@@ -18,22 +18,15 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
-import com.garyzhangscm.cwms.inventory.model.InventoryStatus;
 import com.garyzhangscm.cwms.inventory.repository.InventoryMovementRepository;
-import com.garyzhangscm.cwms.inventory.repository.InventoryStatusRepository;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +37,12 @@ public class InventoryMovementService{
 
     @Autowired
     private InventoryMovementRepository inventoryMovementRepository;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
+    public InventoryMovement findById(Long id) {
+        return inventoryMovementRepository.findById(id).orElse(null);
+    }
 
     public List<InventoryMovement> findByInventory(Inventory inventory) {
         return findByInventoryId(inventory.getId());
@@ -75,5 +73,26 @@ public class InventoryMovementService{
         return result;
 
     }
+
+
+    public void delete(InventoryMovement inventoryMovement) {
+        inventoryMovementRepository.delete(inventoryMovement);
+    }
+    public void delete(Long id) {
+        inventoryMovementRepository.deleteById(id);
+    }
+
+    public void removeInventoryMovement(Long id, Inventory inventory) {
+        // Once we remove the movement from the location, we will need to
+        // deduct the pending quantity from the location
+        InventoryMovement inventoryMovement = findById(id);
+        if (inventoryMovement != null) {
+
+            warehouseLayoutServiceRestemplateClient.reduceLocationPendingVolume(inventoryMovement.getLocationId(), inventory.getSize());
+        }
+        delete(id);
+
+    }
+
 
 }

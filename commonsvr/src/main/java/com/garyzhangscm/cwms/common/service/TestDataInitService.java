@@ -30,6 +30,8 @@ public class TestDataInitService {
 
     SupplierService supplierService;
 
+    CustomerService customerService;
+
     UnitOfMeasureService unitOfMeasureService;
 
     ReasonCodeService reasonCodeService;
@@ -43,12 +45,14 @@ public class TestDataInitService {
     public TestDataInitService(
             ClientService clientService,
             SupplierService supplierService,
+            CustomerService customerService,
             UnitOfMeasureService unitOfMeasureService,
             ReasonCodeService reasonCodeService,
             SystemControlledNumberService systemControlledNumberService,
             PolicyService policyService) {
         this.clientService = clientService;
         this.supplierService = supplierService;
+        this.customerService = customerService;
         this.unitOfMeasureService = unitOfMeasureService;
         this.reasonCodeService = reasonCodeService;
         this.systemControlledNumberService = systemControlledNumberService;
@@ -56,6 +60,7 @@ public class TestDataInitService {
 
         initiableServices.put("Client", clientService);
         initiableServices.put("Supplier", supplierService);
+        initiableServices.put("Customer", customerService);
         initiableServices.put("Unit of Measure", unitOfMeasureService);
         initiableServices.put("Reason Code", reasonCodeService);
         initiableServices.put("System Controlled Number", systemControlledNumberService);

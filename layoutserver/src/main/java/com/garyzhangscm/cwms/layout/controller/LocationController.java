@@ -112,13 +112,41 @@ public class LocationController {
         return locationService.saveOrUpdate(location);
     }
 
-
+    // Reserve a location. This is normally to reserve hop locations for certain inventory
     @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
-                                   @RequestParam(name = "reservedCode") String reservedCode) {
+                                   @RequestParam(name = "reserved_code") String reservedCode) {
 
 
         return locationService.reserveLocation(id, reservedCode);
     }
+
+    // Allocate a final destination for a inventory and update the pending volume of the
+    // location
+    @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/allocate")
+    public Location allocateLocation(@PathVariable Long id,
+                                     @RequestParam(name = "inventory_size") Double inventorySize) {
+
+        logger.debug("Start to allocate location with id {}, inventory size is : {}", id, inventorySize);
+        return locationService.allocateLocation(id, inventorySize);
+    }
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/location/{id}/pending-volume")
+    public Location changePendingVolume(@PathVariable Long id,
+                                        @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedPendingVolume,
+                                        @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedPendingVolume) {
+
+        return locationService.changePendingVolume(id, reducedPendingVolume, increasedPendingVolume);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/location/{id}/volume")
+    public Location changeVolume(@PathVariable Long id,
+                                        @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedVolume,
+                                        @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedVolume) {
+
+        return locationService.changeLocationVolume(id, reducedVolume, increasedVolume);
+    }
+
 
 }

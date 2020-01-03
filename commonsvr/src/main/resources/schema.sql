@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS client;
 DROP TABLE IF EXISTS supplier;
+DROP TABLE IF EXISTS customer;
 DROP TABLE IF EXISTS unit_of_measure;
 DROP TABLE IF EXISTS reason_code;
 drop table if exists system_controlled_number;
@@ -37,6 +38,22 @@ CREATE TABLE unit_of_measure (
 
 CREATE TABLE supplier (
   supplier_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name   VARCHAR(100) NOT NULL unique,
+  description   VARCHAR(100) NOT NULL,
+  contactor_firstname   VARCHAR(100) NOT NULL,
+  contactor_lastname   VARCHAR(100) NOT NULL,
+  address_country   VARCHAR(100) NOT NULL,
+  address_state   VARCHAR(100) NOT NULL,
+  address_county   VARCHAR(100) NOT NULL,
+  address_city   VARCHAR(100) NOT NULL,
+  address_district   VARCHAR(100),
+  address_line1   VARCHAR(300) NOT NULL,
+  address_line2   VARCHAR(300),
+  address_postcode  VARCHAR(10) NOT NULL);
+
+
+CREATE TABLE customer (
+  customer_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL unique,
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,

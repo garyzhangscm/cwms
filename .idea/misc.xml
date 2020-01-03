@@ -13,6 +13,7 @@
         <option value="$PROJECT_DIR$/commonsvr/pom.xml" />
         <option value="$PROJECT_DIR$/inventorysvr/pom.xml" />
         <option value="$PROJECT_DIR$/inboundsvr/pom.xml" />
+        <option value="$PROJECT_DIR$/outboundsvr/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
