@@ -74,7 +74,7 @@ public class Inventory implements Serializable {
     @OneToMany(
             mappedBy = "inventory",
             cascade = CascadeType.REMOVE,
-            orphanRemoval = true,
+            // orphanRemoval = true, // We will process the movement manually from InventoryMovementService
             fetch = FetchType.LAZY
     )
     List<InventoryMovement> inventoryMovements = new ArrayList<>();

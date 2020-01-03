@@ -8,7 +8,7 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "jdbc:mysql://database:3306/cwms"
+          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -21,7 +21,7 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "jdbc:mysql://database:3306/cwms"
+          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -35,7 +35,7 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "jdbc:mysql://database:3306/cwms"
+          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -49,7 +49,7 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "jdbc:mysql://database:3306/cwms"
+          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -62,7 +62,21 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "jdbc:mysql://database:3306/cwms"
+          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+
+
+  outboundservice:
+      image: garyzhangscm/cwms-outboundserver
+      ports:
+          - "8680:8680"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"

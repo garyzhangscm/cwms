@@ -105,12 +105,23 @@ public class MovementPathService implements TestDataInitiableService{
                                       Long fromLocationGroupId,
                                       Long toLocationId,
                                       Long toLocationGroupId) {
-        return findAll(fromLocationId, fromLocationGroupId, toLocationId, toLocationGroupId, true);
+        return findAll(fromLocationId, "", fromLocationGroupId, toLocationId, "", toLocationGroupId, true);
     }
 
     public List<MovementPath> findAll(Long fromLocationId,
+                                      String fromLocationName,
+                                      Long fromLocationGroupId,
+                                      Long toLocationId,
+                                      String toLocationName,
+                                      Long toLocationGroupId) {
+        return findAll(fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId, true);
+    }
+
+    public List<MovementPath> findAll(Long fromLocationId,
+                                      String fromLocationName,
                                           Long fromLocationGroupId,
                                           Long toLocationId,
+                                      String toLocationName,
                                           Long toLocationGroupId, boolean includeDetails) {
 
         List<MovementPath> movementPaths =  movementPathRepository.findAll(
@@ -119,11 +130,25 @@ public class MovementPathService implements TestDataInitiableService{
                     if (fromLocationId != null) {
                         predicates.add(criteriaBuilder.equal(root.get("fromLocationId"), fromLocationId));
                     }
+                    else if (!StringUtils.isBlank(fromLocationName)) {
+                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(fromLocationName);
+                        if (location != null) {
+                            predicates.add(criteriaBuilder.equal(root.get("fromLocationId"), location.getId()));
+                        }
+
+                    }
                     if (fromLocationGroupId != null) {
                         predicates.add(criteriaBuilder.equal(root.get("fromLocationGroupId"), fromLocationGroupId));
                     }
                     if (toLocationId != null) {
                         predicates.add(criteriaBuilder.equal(root.get("toLocationId"), toLocationId));
+                    }
+                    else if (!StringUtils.isBlank(toLocationName)) {
+                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(toLocationName);
+                        if (location != null) {
+                            predicates.add(criteriaBuilder.equal(root.get("toLocationId"), location.getId()));
+                        }
+
                     }
                     if (toLocationGroupId != null) {
                         predicates.add(criteriaBuilder.equal(root.get("toLocationGroupId"), toLocationGroupId));
@@ -467,6 +492,17 @@ public class MovementPathService implements TestDataInitiableService{
             return false;
         }
         return  true;
+    }
+
+
+    public void removeMovementPaths(String movementPathIds) {
+
+        if (!movementPathIds.isEmpty()) {
+            long[] movementPathIdArray = Arrays.asList(movementPathIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
+            for(long id : movementPathIdArray) {
+                delete(id);
+            }
+        }
     }
 
 

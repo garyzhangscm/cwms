@@ -1,9 +1,10 @@
 name, description, locationGroupType, pickable, storable, countable
-EACH_PICK_1,Each Picking Area - #1,Storage, true, true, true
-EACH_PICK_FRZ,Each Picking Area - Frozen,Storage, true, true, true
-CASE_PICK_1,Case Picking Area - #1,Storage, true, true, true
-CASE_PICK_FRZ,Case Picking Area - Frozen,Storage, true, true, true
+EACH_PICK,Each Picking Area - #1,Storage, true, true, true
+CASE_PICK,Case Picking Area - #1,Storage, true, true, true
 PALLET_PICK,Pallet Picking Area,Storage, true, true, true
+EACH_PICK_FRZ,Each Picking Area - Frozen,Storage, true, true, true
+CASE_PICK_FRZ,Case Picking Area - Frozen,Storage, true, true, true
+PALLET_PICK_FRZ,Pallet Picking Area - Frozen,Storage, true, true, true
 EACH_PICK_HV,Each Picking Area - High Value,Storage, true, true, true
 CASE_PICK_HV,Case Picking Area - High Value,Storage, true, true, true
 PALLET_PICK_HV,Pallet Picking Area - High Value,Storage, true, true, true

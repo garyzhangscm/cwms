@@ -277,9 +277,35 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     public Location reserveLocation(Long id, String reservedCode) {
 
-        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/reserve?reservedCode={reservedCode}",
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/reserve?reserved_code={reservedCode}",
                 HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
                 }, id, reservedCode).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public Location reduceLocationPendingVolume(Long id, Double pendingVolumeReduced) {
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/pending-volume?reduce={pendingVolumeReduced}",
+                HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, id, pendingVolumeReduced).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location reduceLocationVolume(Long id, Double volumeReduced) {
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/volume?reduce={volumeReduced}",
+                HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, id, volumeReduced).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location increaseLocationVolume(Long id, Double volumeIncreased) {
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/volume?increase={volumeIncreased}",
+                HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, id, volumeIncreased).getBody();
 
         return responseBodyWrapper.getData();
     }

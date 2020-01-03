@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.controller;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
+import com.garyzhangscm.cwms.inventory.model.Location;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +38,9 @@ public class InventoryController {
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="item_families", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="location", required = false, defaultValue = "") String locationName,
-                                              @RequestParam(name="receipt_id", required = false, defaultValue = "") String receiptId) {
-        return inventoryService.findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId);
+                                              @RequestParam(name="receipt_id", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
+        return inventoryService.findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, lpn);
     }
 
 
@@ -79,6 +81,16 @@ public class InventoryController {
                                        @RequestBody List<InventoryMovement> inventoryMovements) {
 
         return inventoryService.setupMovementPath(id, inventoryMovements);
+    }
+
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/move")
+    public Inventory moveInventory(@PathVariable long id,
+                                   @RequestBody Location location) {
+
+
+        return inventoryService.moveInventory(id, location);
     }
 
 

@@ -28,6 +28,8 @@
         <module>confsvr</module>
         <!-- Inbound Service: Inbound Entites-->
         <module>inboundsvr</module>
+        <!-- Outbound Service: Outbound Entites-->
+        <module>outboundsvr</module>
         <!-- Inventory Service: Inventory Entites-->
         <module>inventorysvr</module>
         <!-- Warehouse Layout: Warehouse / Building / Area / Location / etc-->

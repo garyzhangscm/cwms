@@ -34,7 +34,7 @@ public class SupplierController {
     SupplierService supplierService;
 
     @RequestMapping(value="/suppliers", method = RequestMethod.GET)
-    public List<Supplier> findAllClients(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
+    public List<Supplier> findAllSuppliers(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
         return supplierService.findAll(name);
     }
 
@@ -57,7 +57,7 @@ public class SupplierController {
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/supplier")
-    public void deleteClients(@RequestParam(name = "supplier_ids", required = false, defaultValue = "") String supplierIds) {
+    public void deleteSuppliers(@RequestParam(name = "supplier_ids", required = false, defaultValue = "") String supplierIds) {
         supplierService.delete(supplierIds);
     }
 }

@@ -12,6 +12,7 @@
         <module name="inboundsvr" />
         <module name="inventorysvr" />
         <module name="layoutserver" />
+        <module name="outboundsvr" />
         <module name="ressvr" />
         <module name="zuulsvr" />
       </profile>
@@ -35,6 +36,7 @@
       <module name="inboundsvr" options="-parameters" />
       <module name="inventorysvr" options="-parameters" />
       <module name="layoutserver" options="-parameters" />
+      <module name="outboundsvr" options="-parameters" />
       <module name="resources" options="-parameters" />
       <module name="resourceserver" options="-parameters" />
       <module name="ressvr" options="-parameters" />

@@ -40,6 +40,9 @@ public class InitTestDataService {
 
     InboundServiceRestemplateClient inboundServiceRestemplateClient;
 
+    OutboundServiceRestemplateClient outboundServiceRestemplateClient;
+
+
 
 
     List<InitiableServiceRestemplateClient> initiableServiceRestemplateClients = new LinkedList<>();
@@ -47,16 +50,19 @@ public class InitTestDataService {
     public InitTestDataService(CommonServiceRestemplateClient commonServiceRestemplateClient,
                                InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
                                LayoutServiceRestemplateClient layoutServiceRestemplateClient,
-                               InboundServiceRestemplateClient inboundServiceRestemplateClient) {
+                               InboundServiceRestemplateClient inboundServiceRestemplateClient,
+                               OutboundServiceRestemplateClient outboundServiceRestemplateClient) {
         this.commonServiceRestemplateClient = commonServiceRestemplateClient;
         this.layoutServiceRestemplateClient  = layoutServiceRestemplateClient;
         this.inventoryServiceRestemplateClient = inventoryServiceRestemplateClient;
         this.inboundServiceRestemplateClient = inboundServiceRestemplateClient;
+        this.outboundServiceRestemplateClient = outboundServiceRestemplateClient;
 
         initiableServiceRestemplateClients.add(commonServiceRestemplateClient);
         initiableServiceRestemplateClients.add(layoutServiceRestemplateClient);
         initiableServiceRestemplateClients.add(inventoryServiceRestemplateClient);
         initiableServiceRestemplateClients.add(inboundServiceRestemplateClient);
+        initiableServiceRestemplateClients.add(outboundServiceRestemplateClient);
 
     }
 

@@ -103,6 +103,12 @@
               "shortcut": false
             },
             {
+              "text": "Inventory",
+              "link": "/inventory/movement-path",
+              "i18n": "menu.main.inventory.movement-path",
+              "shortcut": false
+            },
+            {
               "text": "Count",
               "i18n": "menu.main.inventory.count",
               "shortcut": false,
@@ -168,6 +174,31 @@
           ]
         },
         {
+          "text": "outbound",
+          "i18n": "menu.main.outbound",
+          "icon": "anticon-global",
+          "children": [
+            {
+              "text": "Order",
+              "link": "/outbound/order",
+              "i18n": "menu.main.outbound.order",
+              "shortcut": false
+            },
+            {
+              "text": "Shipment",
+              "link": "/outbound/shipment",
+              "i18n": "menu.main.outbound.shipment",
+              "shortcut": false
+            },
+            {
+              "text": "Wave",
+              "link": "/outbound/wave",
+              "i18n": "menu.main.outbound.wave",
+              "shortcut": false
+            }
+          ]
+        },
+        {
           "text": "common",
           "i18n": "menu.main.common",
           "icon": "anticon-setting",
@@ -182,6 +213,12 @@
               "text": "Supplier",
               "link": "/common/supplier",
               "i18n": "menu.main.common.supplier",
+              "shortcut": false
+            },
+            {
+              "text": "Customer",
+              "link": "/common/customer",
+              "i18n": "menu.main.common.customer",
               "shortcut": false
             },
             {
