@@ -15,6 +15,7 @@
         <module name="inboundserver" />
         <module name="ressvr" />
         <module name="zuulsvr" />
+        <module name="outboundserver" />
         <module name="resourceserver" />
         <module name="outboundsvr" />
         <module name="commonserver" />
@@ -46,6 +47,7 @@
       <module name="inventoryserver" options="-parameters" />
       <module name="inventorysvr" options="-parameters" />
       <module name="layoutserver" options="-parameters" />
+      <module name="outboundserver" options="-parameters" />
       <module name="outboundsvr" options="-parameters" />
       <module name="resources" options="-parameters" />
       <module name="resourceserver" options="-parameters" />
