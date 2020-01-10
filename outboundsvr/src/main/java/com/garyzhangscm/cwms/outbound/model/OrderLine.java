@@ -46,6 +46,12 @@ public class OrderLine {
     private Long expectedQuantity;
 
 
+    @Column(name = "open_quantity")
+    private Long openQuantity;
+
+    @Column(name = "inprocess_quantity")
+    private Long inprocessQuantity;
+
     @Column(name = "shipped_quantity")
     private Long shippedQuantity;
 
@@ -134,5 +140,21 @@ public class OrderLine {
 
     public void setOrder(Order order) {
         this.order = order;
+    }
+
+    public Long getOpenQuantity() {
+        return openQuantity;
+    }
+
+    public void setOpenQuantity(Long openQuantity) {
+        this.openQuantity = openQuantity;
+    }
+
+    public Long getInprocessQuantity() {
+        return inprocessQuantity;
+    }
+
+    public void setInprocessQuantity(Long inprocessQuantity) {
+        this.inprocessQuantity = inprocessQuantity;
     }
 }

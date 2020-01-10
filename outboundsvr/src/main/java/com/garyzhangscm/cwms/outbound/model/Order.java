@@ -114,6 +114,18 @@ public class Order {
     )
     private List<OrderLine> orderLines = new ArrayList<>();
 
+    @Override
+    public boolean equals(Object anotherObj){
+        if (this == anotherObj) {
+            return true;
+        }
+        if (!(anotherObj instanceof Order)) {
+            return false;
+        }
+        Order anotherOrder = (Order)anotherObj;
+        return getNumber().equals(anotherOrder.getNumber());
+    }
+
     public Long getId() {
         return id;
     }

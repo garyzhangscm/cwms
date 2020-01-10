@@ -162,6 +162,8 @@ public class OrderLineService implements TestDataInitiableService{
         OrderLine orderLine = new OrderLine();
         orderLine.setNumber(orderLineCSVWrapper.getNumber());
         orderLine.setExpectedQuantity(orderLineCSVWrapper.getExpectedQuantity());
+        orderLine.setOpenQuantity(orderLineCSVWrapper.getExpectedQuantity());
+        orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getOrder())) {

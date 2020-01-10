@@ -18,10 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.clients;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.Client;
-import com.garyzhangscm.cwms.outbound.model.Customer;
-import com.garyzhangscm.cwms.outbound.model.Supplier;
-import com.garyzhangscm.cwms.outbound.model.UnitOfMeasure;
+import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,6 +123,15 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    public String getNextNumber(String variable) {
+
+        ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common//system-controlled-number/{variable}/next",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}, variable).getBody();
+
+        return responseBodyWrapper.getData().getNextNumber();
+    }
+
 
 
 }
