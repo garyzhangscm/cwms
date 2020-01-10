@@ -6,15 +6,21 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="authsvr" />
-        <module name="commonsvr" />
-        <module name="confsvr" />
         <module name="inboundsvr" />
+        <module name="authsvr" />
+        <module name="configurationserver" />
         <module name="inventorysvr" />
+        <module name="confsvr" />
         <module name="layoutserver" />
-        <module name="outboundsvr" />
+        <module name="inboundserver" />
         <module name="ressvr" />
         <module name="zuulsvr" />
+        <module name="resourceserver" />
+        <module name="outboundsvr" />
+        <module name="commonserver" />
+        <module name="authenticationserver" />
+        <module name="inventoryserver" />
+        <module name="commonsvr" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -22,18 +28,22 @@
       <module name="authserver" target="1.8" />
       <module name="common" target="1.8" />
       <module name="resources" target="1.8" />
-      <module name="resourceserver" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="authentication-service" options="-parameters" />
+      <module name="authenticationserver" options="-parameters" />
       <module name="authserver" options="-parameters" />
       <module name="authsvr" options="-parameters" />
       <module name="common" options="-parameters" />
+      <module name="commonserver" options="-parameters" />
       <module name="commonsvr" options="-parameters" />
+      <module name="configurationserver" options="-parameters" />
       <module name="confsvr" options="-parameters" />
+      <module name="inboundserver" options="-parameters" />
       <module name="inboundsvr" options="-parameters" />
+      <module name="inventoryserver" options="-parameters" />
       <module name="inventorysvr" options="-parameters" />
       <module name="layoutserver" options="-parameters" />
       <module name="outboundsvr" options="-parameters" />
