@@ -1,9 +1,20 @@
+drop table if exists short_allocation;
+drop table if exists  pick_movement;
+drop table if exists pick;
 drop table if exists shipment_line;
 DROP TABLE if exists shipment;
+DROP TABLE if exists stop;
+DROP TABLE if exists trailer;
 DROP TABLE if exists wave;
 
 drop table if exists outbound_order_line;
 DROP TABLE if exists outbound_order;
+
+
+DROP TABLE if exists allocation_configuration;
+drop table if exists  shipping_stage_area_configuration;
+
+drop table if exists trailer_template;
 
 
 CREATE TABLE outbound_order (
@@ -31,6 +42,7 @@ CREATE TABLE outbound_order (
   bill_to_address_line1   VARCHAR(100),
   bill_to_address_line2   VARCHAR(100),
   bill_to_address_postcode   VARCHAR(100),
+  stage_location_group_id BIGINT,
   client_id  BIGINT
   );
 
@@ -44,16 +56,40 @@ CREATE TABLE outbound_order_line(
   shipped_quantity   BIGINT NOT NULL,
   inventory_status_id   BIGINT NOT NULL,
   outbound_order_id BIGINT  NOT NULL,
+  carrier_id BIGINT,
+  carrier_service_level_id BIGINT,
   foreign key(outbound_order_id) references outbound_order(outbound_order_id));
 
 
+CREATE TABLE trailer(
+  trailer_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  driver_first_name VARCHAR(50)  NOT NULL,
+  driver_last_name VARCHAR(50) NOT NULL,
+  driver_phone VARCHAR(50) NOT NULL,
+  license_plate_number VARCHAR(50) NOT NULL,
+  number VARCHAR(50) NOT NULL,
+  size VARCHAR(50) NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  carrier_id BIGINT,
+  carrier_service_level_id BIGINT,
+  location_id BIGINT,
+  status VARCHAR(20) NOT NULL,
+  enabled boolean not null default 0);
+
+
+CREATE TABLE stop(
+  stop_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  trailer_id BIGINT,
+  foreign key(trailer_id) references trailer(trailer_id));
 
 CREATE TABLE shipment(
   shipment_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   number   VARCHAR(100) NOT NULL,
-  outbound_order_id BIGINT  NOT NULL,
   status   VARCHAR(20) NOT NULL,
-  foreign key(outbound_order_id) references outbound_order(outbound_order_id));
+  stop_id BIGINT,
+  carrier_id BIGINT,
+  carrier_service_level_id BIGINT,
+  foreign key(stop_id) references stop(stop_id));
 
 
 CREATE TABLE wave(
@@ -67,10 +103,70 @@ CREATE TABLE shipment_line(
   wave_id BIGINT  NOT NULL,
   outbound_order_line_id BIGINT  NOT NULL,
   quantity BIGINT  NOT NULL,
+  open_quantity BIGINT  NOT NULL,
+  inprocess_quantity BIGINT  NOT NULL,
+  loaded_quantity BIGINT  NOT NULL,
   shipped_quantity BIGINT  NOT NULL,
   foreign key(shipment_id) references shipment(shipment_id),
   foreign key(outbound_order_line_id) references outbound_order_line(outbound_order_line_id),
   foreign key(wave_id) references wave(wave_id));
 
+
+CREATE TABLE pick(
+  pick_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  number   VARCHAR(100) NOT NULL,
+  source_location_id BIGINT  NOT NULL,
+  destination_location_id BIGINT,
+  item_id BIGINT  NOT NULL,
+  status VARCHAR(20) not null,
+  shipment_line_id BIGINT  NOT NULL,
+  quantity BIGINT  NOT NULL,
+  picked_quantity BIGINT  NOT NULL,
+  foreign key(shipment_line_id) references shipment_line(shipment_line_id));
+
+CREATE TABLE pick_movement(
+  pick_movement_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  pick_id   BIGINT  NOT NULL,
+  location_id BIGINT  NOT NULL,
+  sequence int  NOT NULL,
+  foreign key(pick_id) references pick(pick_id));
+
+CREATE TABLE short_allocation(
+  short_allocation_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  item_id BIGINT  NOT NULL,
+  shipment_line_id BIGINT  NOT NULL,
+  quantity BIGINT  NOT NULL,
+  status VARCHAR(20) not null,
+  foreign key(shipment_line_id) references shipment_line(shipment_line_id));
+
+
+CREATE TABLE allocation_configuration(
+  allocation_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  sequence int  NOT NULL,
+  item_id BIGINT,
+  item_family_id BIGINT,
+  location_id BIGINT,
+  location_group_id BIGINT,
+  location_group_type_id BIGINT,
+  allocation_strategy VARCHAR(20) NOT NULL);
+
+
+CREATE TABLE shipping_stage_area_configuration(
+  shipping_stage_area_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  sequence int  NOT NULL,
+  location_group_id BIGINT NOT NULL,
+  location_reserve_strategy VARCHAR(20) NOT NULL);
+
+
+CREATE TABLE trailer_template(
+  trailer_template_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  driver_first_name VARCHAR(50)  NOT NULL,
+  driver_last_name VARCHAR(50) NOT NULL,
+  driver_phone VARCHAR(50) NOT NULL,
+  license_plate_number VARCHAR(50) NOT NULL,
+  number VARCHAR(50) NOT NULL,
+  size VARCHAR(50) NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  enabled boolean not null default 0);
 
 

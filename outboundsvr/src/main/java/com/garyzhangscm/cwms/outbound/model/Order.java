@@ -21,12 +21,13 @@ package com.garyzhangscm.cwms.outbound.model;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "outbound_order")
-public class Order {
+public class Order implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -113,6 +114,14 @@ public class Order {
             fetch = FetchType.LAZY
     )
     private List<OrderLine> orderLines = new ArrayList<>();
+
+
+    // staging location group
+    @Column(name="stage_location_group_id")
+    private Long stageLocationGroupId;
+
+    @Transient
+    private LocationGroup stageLocationGroup;
 
     @Override
     public boolean equals(Object anotherObj){
@@ -356,5 +365,25 @@ public class Order {
 
     public void setOrderLines(List<OrderLine> orderLines) {
         this.orderLines = orderLines;
+    }
+
+    public void addOrderLine(OrderLine orderLine) {
+        orderLines.add(orderLine);
+    }
+
+    public Long getStageLocationGroupId() {
+        return stageLocationGroupId;
+    }
+
+    public void setStageLocationGroupId(Long stageLocationGroupId) {
+        this.stageLocationGroupId = stageLocationGroupId;
+    }
+
+    public LocationGroup getStageLocationGroup() {
+        return stageLocationGroup;
+    }
+
+    public void setStageLocationGroup(LocationGroup stageLocationGroup) {
+        this.stageLocationGroup = stageLocationGroup;
     }
 }

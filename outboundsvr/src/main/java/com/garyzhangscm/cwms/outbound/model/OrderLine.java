@@ -22,10 +22,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "outbound_order_line")
-public class OrderLine {
+public class OrderLine implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,6 +70,40 @@ public class OrderLine {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "outbound_order_id")
     private Order order;
+
+    @Column(name = "carrier_id")
+    private Long carrierId;
+
+    @Transient
+    private Carrier carrier;
+
+    @Column(name = "carrier_service_level_id")
+    private Long carrierServiceLevelId;
+
+    @Transient
+    private CarrierServiceLevel carrierServiceLevel;
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("{ id: ").append(id).append(",")
+                .append("number: ").append(number).append(",")
+                .append("order number: ").append(order == null ? "" : order.getNumber()).append(",")
+                .append("itemId: ").append(itemId).append(",")
+                .append("item number: ").append(item == null ? "" : item.getName()).append(",")
+                .append("carrier ID: ").append(carrierId).append(",")
+                .append("carrier: ").append(carrier == null ? "" : carrier.getName()).append(",")
+                .append("Carrier Service Level Id: ").append(carrierServiceLevelId).append(",")
+                .append("Carrier Service Level: ").append(carrierServiceLevel == null ? "" : carrierServiceLevel.getName()).append(",")
+                .append("expectedQuantity: ").append(expectedQuantity).append(",")
+                .append("openQuantity: ").append(openQuantity).append(",")
+                .append("inprocessQuantity: ").append(inprocessQuantity).append(",")
+                .append("shippedQuantity: ").append(shippedQuantity).append(",")
+                .append("inventoryStatusId: ").append(inventoryStatusId).append(",")
+                .append("inventoryStatus: ").append(inventoryStatus == null? "" : inventoryStatus.getName()).append("}")
+                .toString();
+
+    }
 
     public Long getId() {
         return id;
@@ -156,5 +191,9 @@ public class OrderLine {
 
     public void setInprocessQuantity(Long inprocessQuantity) {
         this.inprocessQuantity = inprocessQuantity;
+    }
+
+    public String getOrderNumber() {
+        return order.getNumber();
     }
 }

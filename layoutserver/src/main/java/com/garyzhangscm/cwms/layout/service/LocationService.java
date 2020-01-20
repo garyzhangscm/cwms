@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.layout.Exception.GenericException;
 import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupRepository;
@@ -36,6 +37,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
@@ -157,6 +159,10 @@ public class LocationService implements TestDataInitiableService {
         logger.debug("Start to find policy by key: {}", policyKey);
         Policy policy = commonServiceRestemplateClient.getPolicyByKey(policyKey);
         return findByName(policy.getValue());
+    }
+
+    public List<Location> findByLocationGroup(Long locationGroupId) {
+        return findAll(new long[]{locationGroupId});
     }
 
     public List<Location> findAll(long[] locationGroupIdArray) {
@@ -295,11 +301,61 @@ public class LocationService implements TestDataInitiableService {
         return inventorySize;
     }
 
+    @Transactional
     public Location reserveLocation(Long id, String reservedCode) {
-        Location location = findById(id);
-        location.setReservedCode(reservedCode);
+        return reserveLocation(findById(id), reservedCode);
+
+    }
+
+    @Transactional
+    public Location reserveLocation(Location location, String reservedCode) {
+        return reserveLocation(location, reservedCode, 0.0);
+
+    }
+
+    @Transactional
+    public Location reserveLocation(Long id, String reservedCode, Double pendingVolume) {
+        return reserveLocation(findById(id), reservedCode, pendingVolume);
+    }
+    @Transactional
+    public Location reserveLocation(Location location, String reservedCode, Double pendingVolume) {
+
+        if (StringUtils.isBlank(location.getReservedCode())) {
+            location.setReservedCode(reservedCode);
+        }
+        else if (!location.getReservedCode().equals(reservedCode)){
+            // Current location is already reserved but not the same
+            // as the one we are trying to reserve. we will raise
+            // an exception
+            throw new GenericException(10000, "Location is already reserved by other code");
+        }
+
+        location.setPendingVolume(location.getPendingVolume() + pendingVolume);
         return save(location);
 
+    }
+
+    @Transactional
+    public Location reserveLocation(Long id, String reservedCode,
+                                    Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
+
+        return reserveLocation(findById(id), reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
+    }
+    public Location reserveLocation(Location location, String reservedCode,
+                                    Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
+
+        // See how we can get the pending volume for the location to be reserved, based on
+        // the configuration on the location group
+        switch (location.getLocationGroup().getVolumeTrackingPolicy()) {
+            case BY_VOLUME:
+                return reserveLocation(location, reservedCode, pendingSize);
+            case BY_EACH:
+                return reserveLocation(location, reservedCode, (double)pendingQuantity);
+            case BY_PALLET:
+                return reserveLocation(location, reservedCode, (double)pendingPalletQuantity);
+
+        }
+        throw  new GenericException(10000, "can't find the right volume tracking policy for the location:" + location.getLocationGroup().getName());
     }
 
     public Location allocateLocation(Long id, Double inventorySize) {
@@ -334,6 +390,40 @@ public class LocationService implements TestDataInitiableService {
                 location.getName(), location.getCurrentVolume());
         return save(location);
 
+    }
+
+    public List<Location> getDockLocations(Boolean emptyDockOnly) {
+        List<Location> dockLocations = locationRepository.getDockLocations();
+        if (emptyDockOnly) {
+            return dockLocations.stream().filter(Location::isEmpty).collect(Collectors.toList());
+        }
+        return dockLocations;
+    }
+
+    public Location checkInTrailerAtDock(Long dockLocationId, Long trailerId) {
+        return checkInTrailerAtDock(findById(dockLocationId), trailerId);
+    }
+    public Location checkInTrailerAtDock(Location dockLocation, Long trailerId) {
+        // Create a fake location for the trailer. Location's name will be the trailer ID
+        createTrailerLocation(trailerId);
+        // update the location's volume to 1 when we check in the trailer
+        // at the dock
+        dockLocation.setCurrentVolume(1.0);
+        return saveOrUpdate(dockLocation);
+    }
+    public Location moveTrailerFromDock(Long dockLocationId) {
+        return moveTrailerFromDock(findById(dockLocationId));
+    }
+    public Location moveTrailerFromDock(Location dockLocation) {
+        dockLocation.setCurrentVolume(0.0);
+        return saveOrUpdate(dockLocation);
+    }
+    public Location createTrailerLocation(Long trailerId) {
+        Location location = new Location();
+        location.setName("TRLR-" + String.valueOf(trailerId));
+        location.setLocationGroup(locationGroupService.getDockLocationGroup());
+        location.setEnabled(true);
+        return saveOrUpdate(location);
     }
 
 }

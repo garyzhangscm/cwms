@@ -21,12 +21,16 @@ package com.garyzhangscm.cwms.outbound.model;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "wave")
-public class Wave {
+public class Wave implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,5 +72,18 @@ public class Wave {
 
     public void setShipmentLines(List<ShipmentLine> shipmentLines) {
         this.shipmentLines = shipmentLines;
+    }
+
+    public List<Pick> getPicks() {
+
+        return shipmentLines.stream()
+                .map(shipmentLine -> shipmentLine.getPicks())
+                .filter(list -> !list.isEmpty())
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+    }
+    public List<ShortAllocation> getShortAllocations() {
+
+        return shipmentLines.stream().map(shipmentLine -> shipmentLine.getShortAllocation()).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

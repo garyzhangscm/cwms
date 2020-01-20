@@ -21,15 +21,19 @@ package com.garyzhangscm.cwms.inventory.repository;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long>, JpaSpecificationExecutor<Inventory> {
-    Inventory findByLpn(String lpn);
+    List<Inventory> findByLpn(String lpn);
 
     List<Inventory> findByLocationId(Long locationId);
+
+    @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId")
+    List<Inventory> findByItemId(Long itemId);
 
     List<Inventory> findByVirtual(Boolean virtual);
 }

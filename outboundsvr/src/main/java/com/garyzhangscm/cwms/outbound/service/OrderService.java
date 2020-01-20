@@ -34,9 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -94,6 +92,39 @@ public class OrderService implements TestDataInitiableService {
 
     public List<Order> findAll(String number) {
         return findAll(number, true);
+    }
+
+
+    public List<Order> findWavableOrders(String orderNumber,
+                                         String customerName) {
+        // We will get all the wavable order lines and constuct the order structure with those order line
+        // As long as there's one line in the order is wavable, we will return the order but only with
+        // those wavable lines
+        logger.debug("start to find order lines with order: {}, customer：{}", orderNumber, customerName);
+        List<OrderLine> wavableOrderLine = orderLineService.findWavableOrderLines(orderNumber, customerName);
+        logger.debug("get order lines: {}", wavableOrderLine.size());
+        Map<String, Order> wavableOrderMap = new HashMap<>();
+
+        wavableOrderLine.forEach(orderLine -> {
+            Order order;
+            if (wavableOrderMap.containsKey(orderLine.getOrder().getNumber())) {
+                order = wavableOrderMap.get(orderLine.getOrder().getNumber());
+            }
+            else {
+                order = orderLine.getOrder();
+                // clear all lines so that we will only have the wavable lines in the order
+                order.setOrderLines(new ArrayList<>());
+
+            }
+
+            order.addOrderLine(orderLine);
+            wavableOrderMap.put(order.getNumber(), order);
+
+        });
+
+        wavableOrderMap.values().forEach(order -> logger.debug("will return order # {} with {} wavable lines ", order.getNumber(), order.getOrderLines().size()));
+
+        return new ArrayList<>(wavableOrderMap.values());
     }
 
     public Order findByNumber(String number, boolean loadDetails) {

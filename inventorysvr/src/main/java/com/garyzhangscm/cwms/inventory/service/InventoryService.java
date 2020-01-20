@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
@@ -32,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.swing.text.html.HTMLDocument;
@@ -63,6 +66,8 @@ public class InventoryService implements TestDataInitiableService{
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
     @Autowired
     private FileService fileService;
 
@@ -99,8 +104,9 @@ public class InventoryService implements TestDataInitiableService{
                                    String itemFamilyIds,
                                    String locationName,
                                    String receiptId,
+                                   String pickIds,
                                    String lpn) {
-        return findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, lpn, true);
+        return findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, pickIds, lpn, true);
     }
 
 
@@ -109,12 +115,13 @@ public class InventoryService implements TestDataInitiableService{
                                    String itemFamilyIds,
                                    String locationName,
                                    String receiptId,
+                                   String pickIds,
                                    String lpn,
                                    boolean includeDetails) {
         List<Inventory> inventories =  inventoryRepository.findAll(
                 (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
-                    if (!itemName.isEmpty() || !clientIds.isEmpty()) {
+                    if (!StringUtils.isBlank(itemName) || !StringUtils.isBlank(clientIds)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (!itemName.isEmpty()) {
                             predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
@@ -129,7 +136,7 @@ public class InventoryService implements TestDataInitiableService{
 
                         }
                     }
-                    if (!itemFamilyIds.isEmpty()) {
+                    if (!StringUtils.isBlank(itemFamilyIds)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         Join<Item, ItemFamily> joinItemFamily = joinItem.join("itemFamily", JoinType.INNER);
 
@@ -139,7 +146,7 @@ public class InventoryService implements TestDataInitiableService{
                         }
                         predicates.add(criteriaBuilder.and(inItemFamilyIds));
                     }
-                    if (!locationName.isEmpty()) {
+                    if (!StringUtils.isBlank(locationName)) {
                         Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(locationName);
                         if (location != null) {
                             predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
@@ -147,6 +154,12 @@ public class InventoryService implements TestDataInitiableService{
                     }
                     if (!StringUtils.isBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
+
+                    }
+                    if (!StringUtils.isBlank(pickIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("pickId"));
+                        Arrays.stream(pickIds.split(",")).map(Long::parseLong).forEach(pickId -> inClause.value(pickId));
+                        predicates.add(inClause);
 
                     }
                     if (!StringUtils.isBlank(lpn)) {
@@ -169,16 +182,30 @@ public class InventoryService implements TestDataInitiableService{
         return inventories;
     }
 
+    public List<Inventory> findPickableInventories(Long itemId) {
+        return findPickableInventories(itemId, true);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   boolean includeDetails) {
 
-    public Inventory findByLpn(String lpn){
+        List<Inventory> inventories =  inventoryRepository.findByItemId(itemId);
+
+        if (includeDetails && inventories.size() > 0) {
+            loadInventoryAttribute(inventories);
+        }
+        return inventories;
+    }
+
+
+    public List<Inventory> findByLpn(String lpn){
         return findByLpn(lpn,true);
     }
-    public Inventory findByLpn(String lpn, boolean includeDetails){
-        Inventory inventory = inventoryRepository.findByLpn(lpn);
-        if (inventory != null && includeDetails) {
-            loadInventoryAttribute(inventory);
+    public List<Inventory> findByLpn(String lpn, boolean includeDetails){
+        List<Inventory> inventories = inventoryRepository.findByLpn(lpn);
+        if (inventories != null && includeDetails) {
+            loadInventoryAttribute(inventories);
         }
-        return inventory;
+        return inventories;
     }
 
     public List<Inventory> findByLocationId(Long locationId, boolean includeDetails) {
@@ -202,8 +229,8 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public Inventory saveOrUpdate(Inventory inventory) {
-        if (inventory.getId() == null && findByLpn(inventory.getLpn()) != null) {
-            inventory.setId(findByLpn(inventory.getLpn()).getId());
+        if (inventory.getId() == null && findByLpn(inventory.getLpn()).size() == 1) {
+            inventory.setId(findByLpn(inventory.getLpn()).get(0).getId());
         }
         return save(inventory);
     }
@@ -235,10 +262,6 @@ public class InventoryService implements TestDataInitiableService{
             inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
         }
 
-
-        logger.debug("inventory.getInventoryMovements() == null? " + (inventory.getInventoryMovements() == null));
-        logger.debug("inventory.getInventoryMovements().size()? " + (inventory.getInventoryMovements() == null ? 0 : inventory.getInventoryMovements().size()));
-        logger.debug("inventory.getInventoryMovements()? " + (inventory.getInventoryMovements() == null ? "" : inventory.getInventoryMovements()));
         if (inventory.getInventoryMovements() != null && inventory.getInventoryMovements().size() > 0) {
             inventory.getInventoryMovements().forEach(
                     inventoryMovement -> {
@@ -253,6 +276,7 @@ public class InventoryService implements TestDataInitiableService{
         // load the unit of measure details for the packate types
         inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure ->
                 itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId())));
+
 
 
     }
@@ -357,12 +381,24 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public Inventory moveInventory(Long inventoryId, Location destination) {
-        return moveInventory(findById(inventoryId), destination);
+        return moveInventory(findById(inventoryId), destination, null);
 
     }
+
     public Inventory moveInventory(Inventory inventory, Location destination) {
+        return moveInventory(inventory, destination, null);
+    }
+    public Inventory moveInventory(Long inventoryId, Location destination, Long pickId) {
+        return moveInventory(findById(inventoryId), destination, pickId);
+
+    }
+
+    public Inventory moveInventory(Inventory inventory, Location destination, Long pickId) {
         Location sourceLocation = inventory.getLocation();
         inventory.setLocationId(destination.getId());
+        if (pickId != null) {
+            markAsPicked(inventory, pickId);
+        }
 
         // we will need to get the destination location's location group
         // so we can know whether the inventory become a virtual inventory
@@ -498,4 +534,77 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("Will return following movement path to the end user: {}", inventory.getInventoryMovements());
         return inventory;
     }
+
+    public Inventory markAsPicked(Long inventoryId, Long pickId) {
+        return markAsPicked(findById(inventoryId), pickId);
+    }
+    public Inventory markAsPicked(Inventory inventory, Long pickId) {
+        inventory.setPickId(pickId);
+        if (inventory.getInventoryMovements().size() == 0) {
+            // copy the pick movement and assign it to the inventory's movement
+            Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
+            copyMovementsFromPick(pick, inventory);
+        }
+        return inventory;
+    }
+    private void copyMovementsFromPick(Pick pick, Inventory inventory) {
+
+        List<InventoryMovement> inventoryMovements = new ArrayList<>();
+        pick.getPickMovements().stream().forEach(pickMovement -> {
+            inventoryMovements.add(inventoryMovementService.createInventoryMovementFromPickMovement(inventory, pickMovement));
+        });
+
+        // Note the pick's movement path only contains the hop locations. We will need to set
+        // the inventory's movement to include the final destination as well
+        inventoryMovements.add(inventoryMovementService.createInventoryMovement(inventory, pick.getDestinationLocationId()));
+        inventory.setInventoryMovements(inventoryMovements);
+    }
+
+    // Split the inventory based on the quantity, usually into 2 inventory.
+    // the first one in the list is the original inventory with updated quantity
+    // the second one in the list is the new inventory
+    public List<Inventory> splitInventory(long id, String newLpn, Long newQuantity) {
+        return splitInventory(findById(id), newLpn, newQuantity);
+    }
+
+    // Split the inventory based on the quantity, usually into 2 inventory.
+    // the first one in the list is the original inventory with updated quantity
+    // the second one in the list is the new inventory
+    public List<Inventory> splitInventory(Inventory inventory, String newLpn, Long newQuantity) {
+        Inventory newInventory = inventory.split(newLpn, newQuantity);
+        List<Inventory> inventories = new ArrayList<>();
+        inventories.add(saveOrUpdate(inventory));
+        inventories.add(saveOrUpdate(newInventory));
+        return inventories;
+    }
+
+    public List<Inventory> unpick(String lpn) {
+        List<Inventory> inventories = findByLpn(lpn);
+        List<Inventory> unpickedInventory = new ArrayList<>();
+        return inventories.stream().map(this::unpick).collect(Collectors.toList());
+    }
+
+    public Inventory unpick(Long id) {
+        return unpick(findById(id));
+
+    }
+
+    public Inventory unpick(Inventory inventory) {
+        if (inventory.getPickId() == null) {
+            // The inventory is not a picked inventory
+            return inventory;
+        }
+
+        // update the pick
+        outbuondServiceRestemplateClient.unpick(inventory.getPickId(), inventory.getQuantity());
+
+        // disconnect the inventory from the pick and
+        // clear all the movement path
+        inventory.setPickId(null);
+        inventoryMovementService.clearInventoryMovement(inventory);
+
+        return saveOrUpdate(inventory);
+
+    }
+
 }

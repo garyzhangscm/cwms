@@ -17,6 +17,8 @@
  */
 
 package com.garyzhangscm.cwms.outbound.model;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 
 public class InventoryStatus implements Serializable {
@@ -24,6 +26,21 @@ public class InventoryStatus implements Serializable {
     private Long id;
     private String name;
     private String description;
+
+    @Override
+    public boolean equals(Object anotherObject) {
+        if (this == anotherObject) {
+            return true;
+        }
+        if (!(anotherObject instanceof InventoryStatus)) {
+            return false;
+        }
+        InventoryStatus anotherInventoryStatus = (InventoryStatus)anotherObject;
+        if (id != null && anotherInventoryStatus.getId() != null) {
+            return id.equals(anotherInventoryStatus.getId());
+        }
+        return  name.equals(anotherInventoryStatus.getName());
+    }
 
     public Long getId() {
         return id;

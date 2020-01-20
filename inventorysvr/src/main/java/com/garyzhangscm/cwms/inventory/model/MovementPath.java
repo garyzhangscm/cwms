@@ -61,7 +61,7 @@ public class MovementPath {
     private LocationGroup toLocationGroup;
 
 
-    @Column(name = "sequence")
+    @Column(name = "sequence", unique = true)
     private Integer sequence;
 
     @OneToMany(
@@ -75,13 +75,32 @@ public class MovementPath {
 
     @Override
     public String toString() {
-        return "MovementPath: { "
-                + "fromLocation: " + fromLocation + ","
-                + "toLocation: " + toLocation+ ","
-                + "fromLocationGroup: " + fromLocationGroup+ ","
-                + "toLocationGroup: " + toLocationGroup+ ","
-                + "sequence: " + sequence+ ","
-                + "movementPathDetails: " + movementPathDetails +   "}";
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("MovementPath: { ")
+                .append("fromLocation: ").append(fromLocation).append(",")
+                .append("toLocation: ").append(toLocation).append(",")
+                .append("fromLocationGroup: ").append(fromLocationGroup).append(",")
+                .append("toLocationGroup: ").append(toLocationGroup).append(",")
+                .append("sequence: ").append(sequence).append(",")
+                .append("movementPathDetails: ").append(movementPathDetails).append("}");
+
+        return stringBuilder.toString();
+    }
+    @Override
+    public boolean equals(Object anotherObject) {
+        if (anotherObject == this) {
+            return true;
+        }
+        if (!(anotherObject instanceof MovementPath)) {
+            return false;
+        }
+        MovementPath anotherMovementPath = (MovementPath) anotherObject;
+        if (id != null && anotherMovementPath.getId() != null && id.equals(anotherMovementPath.getId())) {
+            return true;
+        }
+
+        return (sequence.equals(anotherMovementPath.getSequence()));
+
     }
 
 

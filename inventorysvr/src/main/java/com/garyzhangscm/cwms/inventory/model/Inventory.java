@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,12 @@ public class Inventory implements Serializable {
 
     @Transient
     private Location location;
+
+    @Column(name = "pick_id")
+    private Long pickId;
+
+    @Transient
+    private Pick pick;
 
     @Column(name = "receipt_id")
     private Long receiptId;
@@ -79,6 +86,36 @@ public class Inventory implements Serializable {
     )
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
+    public Inventory split(String newLpn, Long newQuantity) {
+        Inventory inventory = new Inventory();
+        if (StringUtils.isBlank(newLpn)) {
+            newLpn = getLpn();
+        }
+        inventory.setLpn(newLpn);
+        inventory.setPickId(getPickId());
+        // Copy inventory movement
+        List<InventoryMovement> inventoryMovements = new ArrayList<>();
+        getInventoryMovements().stream().forEach(inventoryMovement -> {
+            InventoryMovement newInventoryMovement = (InventoryMovement)inventoryMovement.clone();
+            newInventoryMovement.setInventory(inventory);
+            inventoryMovements.add(newInventoryMovement);
+        });
+
+        inventory.setInventoryMovements(inventoryMovements);
+
+        inventory.setInventoryStatus(getInventoryStatus());
+        inventory.setItem(getItem());
+        inventory.setItemPackageType(getItemPackageType());
+        inventory.setLocationId(getLocationId());
+        inventory.setQuantity(newQuantity);
+        inventory.setReceiptId(getReceiptId());
+        inventory.setVirtual(getVirtual());
+
+        setQuantity(getQuantity() - newQuantity);
+
+        return inventory;
+
+    }
     public Long getId() {
         return id;
     }
@@ -179,4 +216,22 @@ public class Inventory implements Serializable {
     public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
         this.inventoryMovements = inventoryMovements;
     }
+
+    public Long getPickId() {
+        return pickId;
+    }
+
+    public void setPickId(Long pickId) {
+        this.pickId = pickId;
+    }
+
+    public Pick getPick() {
+        return pick;
+    }
+
+    public void setPick(Pick pick) {
+        this.pick = pick;
+    }
+
+
 }

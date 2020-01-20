@@ -78,11 +78,12 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     }
 
     public SystemControlledNumber findByVariable(String variable){
-        return systemControlledNumberRepository.findByVariable(variable);
+        return systemControlledNumberRepository.findByVariableIgnoreCase(variable.toLowerCase());
     }
 
     public SystemControlledNumber save(SystemControlledNumber systemControlledNumber) {
 
+        systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
         SystemControlledNumber newSystemControlledNumber = systemControlledNumberRepository.save(systemControlledNumber);
         initSystemControlledNumberLocks();
         return newSystemControlledNumber;
@@ -90,6 +91,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     // Save when the client's name doesn't exists
     // update when the client already exists
     public SystemControlledNumber saveOrUpdate(SystemControlledNumber systemControlledNumber) {
+        systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
         if (systemControlledNumber.getId() == null && findByVariable(systemControlledNumber.getVariable()) != null) {
             systemControlledNumber.setId(findByVariable(systemControlledNumber.getVariable()).getId());
         }

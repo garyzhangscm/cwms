@@ -48,6 +48,13 @@ public class LocationGroup {
     private Boolean storable;
     @Column(name = "countable")
     private Boolean countable;
+    @Column(name = "tracking_volume")
+    private Boolean trackingVolume;
+
+    @Column(name = "volume_tracking_policy")
+    private LocationVolumeTrackingPolicy volumeTrackingPolicy;
+
+
 
     public Long getId() {
         return id;
@@ -103,5 +110,22 @@ public class LocationGroup {
 
     public void setCountable(Boolean countable) {
         this.countable = countable;
+    }
+
+
+    public Boolean getTrackingVolume() {
+        return trackingVolume;
+    }
+
+    public void setTrackingVolume(Boolean trackingVolume) {
+        this.trackingVolume = trackingVolume;
+    }
+
+    public LocationVolumeTrackingPolicy getVolumeTrackingPolicy() {
+        return volumeTrackingPolicy;
+    }
+
+    public void setVolumeTrackingPolicy(LocationVolumeTrackingPolicy volumeTrackingPolicy) {
+        this.volumeTrackingPolicy = volumeTrackingPolicy;
     }
 }

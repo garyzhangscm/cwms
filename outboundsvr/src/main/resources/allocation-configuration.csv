@@ -1,0 +1,5 @@
+sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,allocationStrategy
+1,,HIGH_VALUE,,,EACH_PICK_HV,,FIRST_IN_FIRST_OUT
+2,,HIGH_VALUE,,,CASE_PICK_HV,,FIRST_IN_FIRST_OUT
+3,,FROZEN,,,EACH_PICK_FRZ,,FIRST_IN_FIRST_OUT
+4,,FROZEN,,,CASE_PICK_FRZ,,FIRST_IN_FIRST_OUT

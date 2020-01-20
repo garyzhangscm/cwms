@@ -27,3 +27,4 @@ docker pull garyzhangscm/cwms-eurekasvr:latest
 
 
 Remove untaged
+docker rmi $(docker images -f "dangling=true" -q)

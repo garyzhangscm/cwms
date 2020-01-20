@@ -60,11 +60,14 @@ public class MovementPathDetail {
 
     @Override
     public String toString() {
-        return "MovementPathDetail: { "
-                + "sequence: " + sequence+ ","
-                + "hopLocation: " + hopLocation+ ","
-                + "hopLocationGroup: " + hopLocationGroup+ ","
-                + "strategy: " + strategy + "}";
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("MovementPathDetail: { ")
+                .append("sequence: ").append(sequence)
+                .append("hopLocation: ").append(hopLocation).append(",")
+                .append("hopLocationGroup: ").append(hopLocationGroup).append(",")
+                .append("strategy: ").append(strategy).append("}");
+
+        return stringBuilder.toString();
     }
 
     public Long getId() {

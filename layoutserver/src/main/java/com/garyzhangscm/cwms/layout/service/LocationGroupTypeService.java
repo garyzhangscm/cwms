@@ -99,6 +99,13 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("description").
                 addColumn("fourWallInventory").
                 addColumn("virtual").
+                addColumn("receivingStage").
+                addColumn("shippingStage").
+                addColumn("dock").
+                addColumn("yard").
+                addColumn("storage").
+                addColumn("pickupAndDeposit").
+                addColumn("trailer").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupType.class);
     }
@@ -109,6 +116,13 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("description").
                 addColumn("fourWallInventory").
                 addColumn("virtual").
+                addColumn("receivingStage").
+                addColumn("shippingStage").
+                addColumn("dock").
+                addColumn("yard").
+                addColumn("storage").
+                addColumn("pickupAndDeposit").
+                addColumn("trailer").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupType.class);

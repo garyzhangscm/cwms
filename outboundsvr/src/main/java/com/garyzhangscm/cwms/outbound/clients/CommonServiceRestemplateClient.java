@@ -63,6 +63,38 @@ public class CommonServiceRestemplateClient {
             return clients.get(0);
         }
     }
+
+    public Carrier getCarrierById(Long id) {
+
+        ResponseBodyWrapper<Carrier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/carriers/{id}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Carrier>>() {}, id).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public Carrier getCarrierByName(String name) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/carriers")
+                .queryParam("name", name);
+        ResponseBodyWrapper<List<Carrier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Carrier>>>() {}).getBody();
+        List<Carrier> carriers = responseBodyWrapper.getData();
+        if (carriers.size() == 0) {
+            return null;
+        }
+        else {
+            return carriers.get(0);
+        }
+    }
+    public CarrierServiceLevel getCarrierServiceLevelById(Long id) {
+
+        ResponseBodyWrapper<CarrierServiceLevel> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/carrier-service-levels/{id}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<CarrierServiceLevel>>() {}, id).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
     public Supplier getSupplierById(Long id) {
 
         ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/supplier/{id}",

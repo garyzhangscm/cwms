@@ -1,0 +1,12 @@
+carrier,name,description,type
+落地配,SAMEDAY,当日达,PACKAGE
+落地配,城配,次日达,LESS_THAN_LOAD
+落地配,整车,当日达,TAILER_LOAD
+Amazon,SAMEDAY,当日达,PACKAGE
+Amazon,OverNight,次日达,PACKAGE
+Amazon,Domestic,全国配,PACKAGE
+Cainiao,SAMEDAY,当日达,PACKAGE
+Cainiao,OverNight,次日达,PACKAGE
+Cainiao,Domestic,全国配,PACKAGE
+Cainiao,城配,次日达,LESS_THAN_LOAD
+Cainiao,整车,当日达,TAILER_LOAD

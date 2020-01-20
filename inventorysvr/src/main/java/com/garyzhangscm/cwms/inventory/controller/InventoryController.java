@@ -39,8 +39,14 @@ public class InventoryController {
                                               @RequestParam(name="item_families", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="location", required = false, defaultValue = "") String locationName,
                                               @RequestParam(name="receipt_id", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="pick_ids", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
-        return inventoryService.findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, lpn);
+        return inventoryService.findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, pickIds, lpn);
+    }
+
+    @RequestMapping(value="/inventories/pickable", method = RequestMethod.GET)
+    public List<Inventory> findPickableInventories(@RequestParam Long itemId) {
+        return inventoryService.findPickableInventories(itemId);
     }
 
 
@@ -87,11 +93,34 @@ public class InventoryController {
 
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/move")
     public Inventory moveInventory(@PathVariable long id,
+                                   @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
                                    @RequestBody Location location) {
 
 
-        return inventoryService.moveInventory(id, location);
+        return inventoryService.moveInventory(id, location , pickId);
     }
 
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/split")
+    public List<Inventory> splitInventory(@PathVariable long id,
+                                          @RequestParam String newLpn,
+                                          @RequestParam Long newQuantity) {
+
+
+        return inventoryService.splitInventory(id, newLpn, newQuantity);
+    }
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/unpick")
+    public Inventory unpick(@PathVariable long id) {
+
+        return inventoryService.unpick(id);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventories/unpick")
+    public List<Inventory> unpick(@RequestParam String lpn) {
+
+        return inventoryService.unpick(lpn);
+    }
 
 }

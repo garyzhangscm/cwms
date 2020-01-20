@@ -46,4 +46,7 @@ public interface LocationRepository extends JpaRepository<Location, Long>, JpaSp
     List<Location> findByPickSequenceBetween(Long beginSequence, Long endSequence);
 
     List<Location> findByPutawaySequenceBetween(Long beginSequence, Long endSequence);
+
+    @Query("select l from Location l inner join l.locationGroup.locationGroupType type where type.dock = true and l.enabled = true")
+    List<Location> getDockLocations();
 }

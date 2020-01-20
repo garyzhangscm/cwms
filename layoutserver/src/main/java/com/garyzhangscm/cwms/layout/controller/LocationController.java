@@ -80,6 +80,22 @@ public class LocationController {
                 includeEmptyLocation, includeDisabledLocation);
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/locations/dock")
+    public List<Location> findDockLocations(@RequestParam(name = "empty", required = false, defaultValue = "") boolean emptyDockOnly) {
+
+        return locationService.getDockLocations(emptyDockOnly);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/dispatch-trailer")
+    public Location dispatchTrailerFromDock(@PathVariable Long id){
+        return locationService.moveTrailerFromDock(id);
+    }
+    @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/check-in-trailer")
+    public Location checkInTrailerAtDock(@PathVariable Long id,
+                                         @RequestParam Long trailerId){
+        return locationService.checkInTrailerAtDock(id, trailerId);
+    }
+
     @RequestMapping(method=RequestMethod.DELETE, value="/location")
     public ResponseBodyWrapper removeLocations(@RequestParam("location_ids") String locationIds) {
 
@@ -115,10 +131,22 @@ public class LocationController {
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
-                                   @RequestParam(name = "reserved_code") String reservedCode) {
+                                    @RequestParam(name = "reserved_code") String reservedCode) {
 
 
         return locationService.reserveLocation(id, reservedCode);
+    }
+
+    // Reserve a location. This is normally to reserve hop locations for certain inventory
+    @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/reserveWithVolume")
+    public Location reserveLocation(@PathVariable Long id,
+                                    @RequestParam(name = "reserved_code") String reservedCode,
+                                    @RequestParam(name = "pending_size") Double pendingSize,
+                                    @RequestParam(name = "pending_quantity") Long pendingQuantity,
+                                    @RequestParam(name = "pending_pallet_quantity") Integer pendingPalletQuantity) {
+
+
+        return locationService.reserveLocation(id, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
     }
 
     // Allocate a final destination for a inventory and update the pending volume of the
@@ -147,6 +175,7 @@ public class LocationController {
 
         return locationService.changeLocationVolume(id, reducedVolume, increasedVolume);
     }
+
 
 
 }

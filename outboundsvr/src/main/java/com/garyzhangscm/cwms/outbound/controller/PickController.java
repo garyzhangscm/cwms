@@ -1,0 +1,89 @@
+/**
+ * Copyright 2019
+ *
+ * @author gzhang
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.garyzhangscm.cwms.outbound.controller;
+
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.model.Order;
+import com.garyzhangscm.cwms.outbound.model.OrderLine;
+import com.garyzhangscm.cwms.outbound.model.Pick;
+import com.garyzhangscm.cwms.outbound.model.Wave;
+import com.garyzhangscm.cwms.outbound.service.PickService;
+import com.garyzhangscm.cwms.outbound.service.WaveService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
+
+@RestController
+public class PickController {
+    @Autowired
+    PickService pickService;
+
+    @RequestMapping(value="/picks", method = RequestMethod.GET)
+    public List<Pick> findAllPicks(@RequestParam(name="number", required = false, defaultValue = "") String number) {
+        return pickService.findAll(number);
+    }
+    @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)
+    public Pick findPick(@PathVariable Long id) {
+        return pickService.findById(id);
+    }
+
+
+    @RequestMapping(value="/picks", method = RequestMethod.POST)
+    public Pick addPick(@RequestBody Pick pick) {
+        return pickService.save(pick);
+    }
+
+    @RequestMapping(value="/picks/{id}", method = RequestMethod.PUT)
+    public Pick changePick(@RequestBody Pick pick){
+        return pickService.save(pick);
+    }
+
+    @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
+    public Pick cancelPick(@RequestBody Pick pick){
+        return pickService.cancelPick(pick);
+    }
+
+    @RequestMapping(value="/picks/{id}/unpick", method = RequestMethod.POST)
+    public Pick unpick(@PathVariable Long id,
+                       @RequestParam Long unpickQuantity){
+        return pickService.unpick(id, unpickQuantity);
+    }
+
+
+    @RequestMapping(value="/picks", method = RequestMethod.DELETE)
+    public List<Pick> cancelPicks(@RequestParam(name = "pick_ids") String pickIds) {
+        return pickService.cancelPicks(pickIds);
+    }
+
+
+    @RequestMapping(value="/picks/{id}/confirm", method = RequestMethod.POST)
+    public Pick confirmPick(@PathVariable Long id,
+                            @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId) {
+        try {
+            return pickService.confirmPick(id, nextLocationId);
+        }
+        catch (IOException exception) {
+            throw  new GenericException(10000, exception.getMessage());
+        }
+    }
+
+
+}
