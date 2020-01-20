@@ -1,0 +1,434 @@
+/**
+ * Copyright 2018
+ *
+ * @author gzhang
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.garyzhangscm.cwms.outbound.service;
+
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+
+
+
+@Service
+public class AllocationConfigurationService implements TestDataInitiableService {
+    private static final Logger logger = LoggerFactory.getLogger(AllocationConfigurationService.class);
+
+    @Autowired
+    private AllocationConfigurationRepository allocationConfigurationRepository;
+    @Autowired
+    private InventorySummaryService inventorySummaryService;
+    @Autowired
+    private ShortAllocationService shortAllocationService;
+    @Autowired
+    private PickService pickService;
+
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private FileService fileService;
+
+    @Value("${fileupload.test-data.allocation-configuration:allocation-configuration.csv}")
+    String testDataFile;
+
+    public AllocationConfiguration findById(Long id, boolean loadDetails) {
+        AllocationConfiguration allocationConfiguration = allocationConfigurationRepository.findById(id).orElse(null);
+        if (allocationConfiguration != null && loadDetails) {
+            loadAttribute(allocationConfiguration);
+        }
+        return allocationConfiguration;
+    }
+
+    public AllocationConfiguration findBySequence(int sequence) {
+        return findBySequence(sequence, true);
+    }
+
+
+    public AllocationConfiguration findBySequence(int sequence, boolean loadDetails) {
+        AllocationConfiguration allocationConfiguration = allocationConfigurationRepository.findBySequence(sequence);
+        if (allocationConfiguration != null && loadDetails) {
+            loadAttribute(allocationConfiguration);
+        }
+        return allocationConfiguration;
+    }
+
+    public AllocationConfiguration findById(Long id) {
+        return findById(id, true);
+    }
+
+
+    public List<AllocationConfiguration> findAll(boolean loadDetails) {
+        List<AllocationConfiguration> allocationConfigurations = allocationConfigurationRepository.findAll();
+
+        if (allocationConfigurations.size() > 0 && loadDetails) {
+            loadAttribute(allocationConfigurations);
+        }
+        return allocationConfigurations;
+    }
+
+    public List<AllocationConfiguration> findAll() {
+        return findAll(true);
+    }
+
+    private void loadAttribute(AllocationConfiguration allocationConfiguration) {
+
+        if (allocationConfiguration.getItemId() != null && allocationConfiguration.getItem() == null) {
+            allocationConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(allocationConfiguration.getItemId()));
+        }
+        if (allocationConfiguration.getItemFamilyId() != null && allocationConfiguration.getItemFamily() == null) {
+            allocationConfiguration.setItemFamily(inventoryServiceRestemplateClient.getItemFamilyById(allocationConfiguration.getItemFamilyId()));
+        }
+        if (allocationConfiguration.getLocationId() != null && allocationConfiguration.getLocation() == null) {
+            allocationConfiguration.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(allocationConfiguration.getLocationId()));
+        }
+        if (allocationConfiguration.getLocationGroupId() != null && allocationConfiguration.getLocationGroup() == null) {
+            allocationConfiguration.setLocationGroup(warehouseLayoutServiceRestemplateClient.getLocationGroupById(allocationConfiguration.getLocationGroupId()));
+        }
+        if (allocationConfiguration.getLocationGroupTypeId() != null && allocationConfiguration.getLocationGroupType() == null) {
+            allocationConfiguration.setLocationGroupType(warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(allocationConfiguration.getLocationGroupTypeId()));
+        }
+
+    }
+
+    private void loadAttribute(List<AllocationConfiguration> allocationConfigurations) {
+        allocationConfigurations.forEach(allocationConfiguration -> loadAttribute(allocationConfiguration));
+    }
+
+    public AllocationConfiguration save(AllocationConfiguration allocationConfiguration) {
+        AllocationConfiguration newAllocationConfiguration = allocationConfigurationRepository.save(allocationConfiguration);
+        loadAttribute(newAllocationConfiguration);
+        return newAllocationConfiguration;
+    }
+
+    public AllocationConfiguration saveOrUpdate(AllocationConfiguration allocationConfiguration) {
+        if (allocationConfiguration.getId() == null && findBySequence(allocationConfiguration.getSequence()) != null) {
+            allocationConfiguration.setId(findBySequence(allocationConfiguration.getSequence()).getId());
+        }
+        return save(allocationConfiguration);
+    }
+
+
+    public void delete(AllocationConfiguration allocationConfiguration) {
+        allocationConfigurationRepository.delete(allocationConfiguration);
+    }
+
+    public void delete(Long id) {
+        allocationConfigurationRepository.deleteById(id);
+    }
+
+    public void delete(String allocationConfigurationIds) {
+        if (!allocationConfigurationIds.isEmpty()) {
+            long[] allocationConfigurationIdArray = Arrays.asList(allocationConfigurationIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
+            for (long id : allocationConfigurationIdArray) {
+                delete(id);
+            }
+        }
+    }
+
+    public List<AllocationConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("sequence").
+                addColumn("item").
+                addColumn("itemFamily").
+                addColumn("inventoryStatus").
+                addColumn("location").
+                addColumn("locationGroup").
+                addColumn("locationGroupType").
+                addColumn("allocationStrategy").
+                build().withHeader();
+
+        return fileService.loadData(inputStream, schema, AllocationConfigurationCSVWrapper.class);
+    }
+
+    public void initTestData() {
+        try {
+            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            List<AllocationConfigurationCSVWrapper> allocationConfigurationCSVWrappers = loadData(inputStream);
+            allocationConfigurationCSVWrappers.stream().forEach(allocationConfigurationCSVWrapper -> saveOrUpdate(convertFromWrapper(allocationConfigurationCSVWrapper)));
+        } catch (IOException ex) {
+            logger.debug("Exception while load test data: {}", ex.getMessage());
+        }
+    }
+
+    private AllocationConfiguration convertFromWrapper(AllocationConfigurationCSVWrapper allocationConfigurationCSVWrapper) {
+
+        AllocationConfiguration allocationConfiguration = new AllocationConfiguration();
+        allocationConfiguration.setSequence(allocationConfigurationCSVWrapper.getSequence());
+        allocationConfiguration.setAllocationStrategy(AllocationStrategy.valueOf(allocationConfigurationCSVWrapper.getAllocationStrategy()));
+
+        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getItem())) {
+            Item item = inventoryServiceRestemplateClient.getItemByName(allocationConfigurationCSVWrapper.getItem());
+            if (item != null) {
+                allocationConfiguration.setItemId(item.getId());
+            }
+        }
+        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getItemFamily())) {
+            ItemFamily itemFamily = inventoryServiceRestemplateClient.getItemFamilyByName(allocationConfigurationCSVWrapper.getItemFamily());
+            if (itemFamily != null) {
+                allocationConfiguration.setItemFamilyId(itemFamily.getId());
+            }
+        }
+
+
+        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocation())) {
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(allocationConfigurationCSVWrapper.getLocation());
+            if (location != null) {
+                allocationConfiguration.setLocationId(location.getId());
+            }
+        }
+
+        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocationGroup())) {
+            LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupByName(allocationConfigurationCSVWrapper.getLocationGroup());
+            if (locationGroup != null) {
+                allocationConfiguration.setLocationGroupId(locationGroup.getId());
+            }
+        }
+
+        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocationGroupType())) {
+            LocationGroupType locationGroupType = warehouseLayoutServiceRestemplateClient.getLocationGroupTypeByName(allocationConfigurationCSVWrapper.getLocationGroupType());
+            if (locationGroupType != null) {
+                allocationConfiguration.setLocationGroupTypeId(locationGroupType.getId());
+            }
+        }
+        return allocationConfiguration;
+    }
+
+    @Transactional
+    public AllocationResult allocate(ShipmentLine shipmentLine, List<Pick> existingPicks, List<Inventory> pickableInventory) {
+
+        AllocationResult allocationResult = new AllocationResult();
+
+        // open quantity is the quantity we are about to allocate this time
+        Long openQuantity = shipmentLine.getOpenQuantity();
+        logger.debug("Start to allocate shipment line: {} / {} by going through all the strategy",
+                shipmentLine.getId(), shipmentLine.getNumber());
+
+        // Let's get the item by shipment line
+        // Then we will get all the strategy by the item attribute
+        // After we get all the strategy, we will loop through each strategy until
+        // we either generate enough picks, or we generate emergency replenishment for the shortage
+        Item item = shipmentLine.getOrderLine().getItem();
+
+
+        // Get all allocation configuration that match with the item
+        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(item);
+        logger.debug("We got {} allocation configuration by item {}",
+                        matchedAllocationConfiguration.size(), item.getName());
+
+        if (matchedAllocationConfiguration.size() == 0) {
+            // OK, we don't have any allocation configuration defined for this item, let's return
+            // a short allocation for the whole open quantity
+
+            allocationResult.addShortAllocation(generateShortAllocation(item, shipmentLine, openQuantity));
+            return allocationResult;
+        }
+
+        // Sort the allocation configuration based upon the sequence then try one by one
+        matchedAllocationConfiguration.sort(Comparator.comparing(AllocationConfiguration::getSequence));
+        // We will allocate based on inventory group(group by location and status and etc)
+        List<InventorySummary> inventorySummaries = inventorySummaryService.getInventorySummaryForAllocation(pickableInventory);
+        logger.debug("We have {} pickable inventory summary against the item with {}",
+                inventorySummaries.size(), item.getName());
+
+        List<Pick> picks = new ArrayList<>();
+
+        // Let's loop through each allocation configuration to see if we can allocate by the configuration
+        for (AllocationConfiguration allocationConfiguration : matchedAllocationConfiguration) {
+            logger.debug("Start to allocate against the configuration: {} / {}",
+                    allocationConfiguration.getId(), allocationConfiguration.getSequence());
+            if (openQuantity <= 0) {
+                logger.debug("1. open quantity is 0. We have already allocate the full quantity.");
+                break;
+            }
+            for (InventorySummary inventorySummary : inventorySummaries) {
+                if (openQuantity <= 0) {
+                    logger.debug("2. open quantity is 0. We have already allocate the full quantity.");
+                    break;
+                }
+                Long pickableQuantity = getPickableQuantity(allocationConfiguration, existingPicks, inventorySummary);
+                logger.debug("We can pick {} from location {}, item {}", pickableQuantity,
+                        inventorySummary.getLocation().getName(), inventorySummary.getItem().getName());
+                if (pickableQuantity > 0) {
+                    Long pickQuantity = Math.min(pickableQuantity, openQuantity);
+                    Pick pick = pickService.generatePick(inventorySummary, shipmentLine, pickQuantity);
+                    picks.add(pick);
+                    openQuantity -= pickQuantity;
+                    logger.debug("OK, we generate a pick with quantity {}. The open quantity become {}",
+                            pickQuantity, openQuantity);
+
+                    // deduct the quantity from inventory summary so that we can have the right available quantity
+                    // in the following round
+                    inventorySummary.setQuantity(inventorySummary.getQuantity() - pickQuantity);
+                }
+
+            }
+        }
+
+        allocationResult.setPicks(picks);
+        logger.debug("After we tried all the configurations, we still have {} quantity left", openQuantity);
+        if (openQuantity > 0) {
+            // OK, we don't have any allocation configuration defined for this item, let's return
+            // a short allocation for the whole open quantity
+
+            allocationResult.addShortAllocation(generateShortAllocation(item, shipmentLine, openQuantity));
+        }
+        return allocationResult;
+
+    }
+
+    private ShortAllocation generateShortAllocation(Item item, ShipmentLine shipmentLine, Long quantity) {
+
+        ShortAllocation shortAllocation = new ShortAllocation();
+        shortAllocation.setItem(item);
+        shortAllocation.setItemId(item.getId());
+        shortAllocation.setQuantity(quantity);
+        shortAllocation.setShipmentLine(shipmentLine);
+        shortAllocation.setStatus(ShortAllocationStatus.PENDING);
+
+        return shortAllocationService.save(shortAllocation);
+
+    }
+
+
+    private Long getPickableQuantity(AllocationConfiguration allocationConfiguration,
+                               List<Pick> existingPicks,
+                               InventorySummary inventorySummary) {
+
+        if (!isPickable(allocationConfiguration, inventorySummary)) {
+            return 0L;
+        }
+
+        // OK. The inventory matches with the allocatino cnofiguration, let's check
+        // the quantity we can still allocate from this location
+        Long pickableQuantity = inventorySummary.getQuantity();
+
+        // Loop through all existing picks to deduct the quantity
+        for(Pick pick : existingPicks) {
+            if (pick.getSourceLocationId().equals(inventorySummary.getLocationId())) {
+                // The pick is from the same location. let's deduct the quantity
+                pickableQuantity -= (pick.getQuantity() - pick.getPickedQuantity());
+            }
+        }
+        if (pickableQuantity > 0) {
+            return pickableQuantity;
+        }
+        else {
+            return 0L;
+        }
+
+    }
+
+    private boolean isPickable(AllocationConfiguration allocationConfiguration,
+                               InventorySummary inventorySummary) {
+        logger.debug("Check if we can apply allocation configuration {} to inventory: location  {}, item {},  ",
+                        allocationConfiguration.getSequence(),
+                inventorySummary.getLocation(), inventorySummary.getItem().getName());
+        // Make sure the inventory is in the location / group / group type that
+        // defined by the configuration
+        if (allocationConfiguration.getLocationId() != null &&
+                !allocationConfiguration.getLocationId().equals(inventorySummary.getLocationId())) {
+
+            logger.debug("Step 1.2 >> fail as the location doesn't match.");
+            logger.debug(">>>>>>>>>>> allocationConfiguration.getLocationId(): {} / inventorySummary.getLocationId(): {}",
+                    allocationConfiguration.getLocationId(), inventorySummary.getLocationId());
+            return false;
+        }
+        if (allocationConfiguration.getLocationGroupId() != null &&
+                allocationConfiguration.getLocationGroupId().equals(inventorySummary.getLocation().getLocationGroup().getId())) {
+
+            logger.debug("Step 1.2 >> fail as the location doesn't match.");
+            logger.debug(">>>>>>>>>>> allocationConfiguration.getLocationGroupId(): {} / inventorySummary.getLocation().getLocationGroup().getId(): {}",
+                    allocationConfiguration.getLocationGroupId(), inventorySummary.getLocation().getLocationGroup().getId());
+            return false;
+        }
+        if (allocationConfiguration.getLocationGroupTypeId() != null &&
+                allocationConfiguration.getLocationGroupTypeId().equals(inventorySummary.getLocation().getLocationGroup().getLocationGroupType().getId())) {
+
+            logger.debug("Step 1.2 >> fail as the location doesn't match.");
+            logger.debug(">>>>>>>>>>> allocationConfiguration.getLocationGroupTypeId(): {} / inventorySummary.getLocation().getLocationGroup().getLocationGroupType().getId(): {}",
+                    allocationConfiguration.getLocationGroupTypeId(), inventorySummary.getLocation().getLocationGroup().getLocationGroupType().getId());
+            return false;
+        }
+
+        return true;
+    }
+
+    private List<AllocationConfiguration> getMatchedAllocationConfiguration(Item item) {
+        List<AllocationConfiguration> allocationConfigurations = new ArrayList<>();
+        List<AllocationConfiguration> allAllocationConfigurations = findAll();
+        logger.debug("We have {} allocation configuration defined in the system", allAllocationConfigurations.size());
+
+        allAllocationConfigurations.forEach(allocationConfiguration -> {
+            logger.debug("> Check configuration {} / {} against item {}",
+                    allocationConfiguration.getId(), allocationConfiguration.getSequence(),
+                    item.getName());
+            if (match(allocationConfiguration, item)) {
+                logger.debug("> Matched!");
+                allocationConfigurations.add(allocationConfiguration);
+            }
+        });
+        return allocationConfigurations;
+    }
+
+    // Whether the allocation configuration matches with the item only when
+    // if configuration has item defined and match with the item
+    // if configuration has item family defined and match with the item
+    public boolean match(AllocationConfiguration allocationConfiguration, Item item) {
+        logger.debug("==================   Allocation Configuration V.S Item ======================");
+        logger.debug("Step 1.1 check {} matches with item {}", allocationConfiguration.getId(), item.getName());
+        if (allocationConfiguration.getItemId() != null &&
+                item.getId() != allocationConfiguration.getItemId()) {
+
+            logger.debug("Step 1.2 >> fail as the item doesn't match.");
+            logger.debug(">>>>>>>>>>> allocationConfiguration.getItemId(): {} / item.getId(): {}",
+                    allocationConfiguration.getItemId(), item.getId());
+            return false;
+        }
+
+        if (allocationConfiguration.getItemFamilyId() != null &&
+                item.getItemFamily().getId() != allocationConfiguration.getItemFamilyId()) {
+
+            logger.debug("Step 1.2 >> fail as the item family doesn't match.");
+            logger.debug(">>>>>>>>>>> allocationConfiguration.getItemFamilyId(): {} / item.getItemFamily().getId(): {}",
+                    allocationConfiguration.getItemFamilyId(), item.getItemFamily().getId());
+            return false;
+        }
+        logger.debug("Step 1.2 >> inventory matches with putaway configuration.");
+        return true;
+
+    }
+}

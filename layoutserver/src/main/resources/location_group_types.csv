@@ -1,13 +1,14 @@
-name, description, fourWallInventory, virtual
-Storage,Storage Locations, true, false
-Damaged,Damaged Inventory Locations, true, false
-Receive_Stage,Receiving Stage, true, false
-Receipt,Receipt, true, false
-Receive_Dock,Receiving Dock, true, false
-Shipping_Stage,Shipping Stage, true, false
-Shipping_Dock,Shipping Dock, true, false
-Dispatched,Dispatched Shipment, false, false
-RF,RF device, true, false
-Yard,Yard, true, false
-PickupDeposit,Pickup and Deposit, true, false
-Removed_Inventory,Removed Inventory,false,true
+name, description, fourWallInventory, virtual, receivingStage,shippingStage,dock,yard,storage,pickupAndDeposit,trailer
+Storage,Storage Locations, true, false,false, false, false, false, true, false,false
+Damaged,Damaged Inventory Locations, true, false, false,false, false, false, false, false,false
+Receive_Stage,Receiving Stage, true, false, true,false, false, false, false, false, false
+Receipt,Receipt, true, false, false,false, false, false, false, false,false
+Receive_Dock,Receiving Dock, true, false, false,false, true, false, false, false,false
+Shipping_Stage,Shipping Stage, true, false, false,true, false, false, false, false,false
+Shipping_Dock,Shipping Dock, true, false, false,false, true, false, false, false,false
+Dispatched,Dispatched Shipment, false, false, false,false, false, false, false, false,false
+RF,RF device, true, false, false,false, false, false, false, false,false
+Yard,Yard, true, false, false,false, false, true, false, false,false
+PickupDeposit,Pickup and Deposit, true, false, false,false, false, false, false, true,false
+Removed_Inventory,Removed Inventory,false,true, false,false, false, false, false, false,false
+Trailer,Trailer, false, false, false,false, false, false, false, false,true

@@ -30,6 +30,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
@@ -275,11 +276,19 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    public Location reserveLocation(Long id, String reservedCode) {
+    public Location reserveLocation(Long locationGroupId, String reservedCode,
+                                    Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
 
-        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/reserve?reserved_code={reservedCode}",
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/locationgroup/{locationGroupId}/reserve?")
+                .append("reserved_code={reservedCode}")
+                .append("&pending_size={pendingSize}")
+                .append("&pending_quantity={pendingQuantity}")
+                .append("&pending_pallet_quantity={pendingPalletQuantity}");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(url.toString(),
                 HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
-                }, id, reservedCode).getBody();
+                }, locationGroupId, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity).getBody();
 
         return responseBodyWrapper.getData();
     }

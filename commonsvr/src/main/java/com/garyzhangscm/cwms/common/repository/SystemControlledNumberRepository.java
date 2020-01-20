@@ -26,5 +26,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SystemControlledNumberRepository extends JpaRepository<SystemControlledNumber, Long>, JpaSpecificationExecutor<SystemControlledNumber> {
-    SystemControlledNumber findByVariable(String variable);
+    SystemControlledNumber findByVariableIgnoreCase(String variable);
 }

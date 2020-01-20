@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,20 +33,38 @@ public class TestDataInitService {
 
     OrderLineService orderLineService;
 
+    AllocationConfigurationService allocationConfigurationService;
+
+    ShippingStageAreaConfigurationService shippingStageAreaConfigurationService;
+    TrailerTemplateService trailerTemplateService;
+
 
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
     @Autowired
     public TestDataInitService(OrderService orderService,
-                              OrderLineService orderLineService) {
+                              OrderLineService orderLineService,
+                               AllocationConfigurationService allocationConfigurationService,
+                               ShippingStageAreaConfigurationService shippingStageAreaConfigurationService,
+                               TrailerTemplateService trailerTemplateService) {
         this.orderService = orderService;
         this.orderLineService = orderLineService;
+        this.allocationConfigurationService = allocationConfigurationService;
+        this.shippingStageAreaConfigurationService = shippingStageAreaConfigurationService;
+
+        this.trailerTemplateService = trailerTemplateService;
 
 
         initiableServices.put("Order", orderService);
         serviceNames.add("Order");
         initiableServices.put("Order Line", orderLineService);
         serviceNames.add("Order Line");
+        initiableServices.put("Allocation Configuration", allocationConfigurationService);
+        serviceNames.add("Allocation Configuration");
+        initiableServices.put("Shipping Stage Area Configuration", shippingStageAreaConfigurationService);
+        serviceNames.add("Shipping Stage Area Configuration");
+        initiableServices.put("Trailer Template", trailerTemplateService);
+        serviceNames.add("Trailer Template");
 
     }
     public String[] getTestDataNames() {

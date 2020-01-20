@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.Order;
+import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
 import com.garyzhangscm.cwms.outbound.model.Wave;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
@@ -36,12 +38,27 @@ public class WaveController {
     public List<Wave> findAllWaves(@RequestParam(name="number", required = false, defaultValue = "") String number) {
         return waveService.findAll(number);
     }
+    @RequestMapping(value="/waves/candidate", method = RequestMethod.GET)
+    public List<Order> findWaveCandidate(@RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
+                                         @RequestParam(name="customerName", required = false, defaultValue = "") String customerName) {
+        return waveService.findWaveCandidate(orderNumber, customerName);
+    }
 
     @RequestMapping(value="/waves", method = RequestMethod.POST)
     public Wave addWave(@RequestBody Wave wave) {
         return waveService.save(wave);
     }
 
+    @RequestMapping(value="/waves/plan", method = RequestMethod.POST)
+    public Wave planWave(@RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
+                         @RequestBody List<OrderLine> orderLines) {
+        return waveService.planWave(waveNumber, orderLines);
+    }
+
+    @RequestMapping(value="/waves/{id}/allocate", method = RequestMethod.POST)
+    public Wave allocateWave(@PathVariable Long id) {
+        return waveService.allocateWave(id);
+    }
 
     @RequestMapping(value="/waves/{id}", method = RequestMethod.GET)
     public Wave findWave(@PathVariable Long id) {

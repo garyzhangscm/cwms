@@ -6,6 +6,9 @@ DROP TABLE IF EXISTS reason_code;
 drop table if exists system_controlled_number;
 drop table if exists policy;
 
+drop table if exists carrier_service_level;
+drop table if exists carrier;
+
 CREATE TABLE client (
   client_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL unique,
@@ -94,3 +97,28 @@ CREATE TABLE policy (
   policy_key   VARCHAR(100) NOT NULL unique,
   policy_value   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL);
+
+
+CREATE TABLE carrier (
+  carrier_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name   VARCHAR(100) NOT NULL unique,
+  description   VARCHAR(100) NOT NULL,
+  contactor_firstname   VARCHAR(100) NOT NULL,
+  contactor_lastname   VARCHAR(100) NOT NULL,
+  address_country   VARCHAR(100) NOT NULL,
+  address_state   VARCHAR(100) NOT NULL,
+  address_county   VARCHAR(100) NOT NULL,
+  address_city   VARCHAR(100) NOT NULL,
+  address_district   VARCHAR(100),
+  address_line1   VARCHAR(300) NOT NULL,
+  address_line2   VARCHAR(300),
+  address_postcode  VARCHAR(10) NOT NULL);
+
+
+CREATE TABLE carrier_service_level (
+  carrier_service_level_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name   VARCHAR(100) NOT NULL,
+  description   VARCHAR(100) NOT NULL,
+  type   VARCHAR(20) NOT NULL,
+  carrier_id   BIGINT NOT NULL,
+  foreign key(carrier_id) references carrier(carrier_id));

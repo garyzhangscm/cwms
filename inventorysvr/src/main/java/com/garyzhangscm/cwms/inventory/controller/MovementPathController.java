@@ -44,6 +44,16 @@ public class MovementPathController {
         return movementPathService.findAll(fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
     }
 
+    @RequestMapping(value="/movement-path/match", method = RequestMethod.GET)
+    public List<MovementPath> findMatchedMovementPaths(@RequestParam(name="from_location_id", required = false, defaultValue = "") Long fromLocationId,
+                                                   @RequestParam(name="from_location", required = false, defaultValue = "") String fromLocationName,
+                                                   @RequestParam(name="from_location_group_id", required = false, defaultValue = "") Long fromLocationGroupId,
+                                                   @RequestParam(name="to_location_id", required = false, defaultValue = "") Long toLocationId,
+                                                   @RequestParam(name="to_location", required = false, defaultValue = "") String toLocationName,
+                                                   @RequestParam(name="to_location_group_id", required = false, defaultValue = "") Long toLocationGroupId) {
+        return movementPathService.findMatchedMovementPaths(fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
+    }
+
     @RequestMapping(value="/movement-path/{id}", method = RequestMethod.GET)
     public MovementPath findById(@PathVariable Long id) {
         return movementPathService.findById(id);

@@ -195,6 +195,24 @@
               "link": "/outbound/wave",
               "i18n": "menu.main.outbound.wave",
               "shortcut": false
+            },
+            {
+              "text": "Pick",
+              "link": "/outbound/pick",
+              "i18n": "menu.main.outbound.pick",
+              "shortcut": false
+            },
+            {
+              "text": "Short Allocation",
+              "link": "/outbound/short-allocation",
+              "i18n": "menu.main.outbound.short-allocation",
+              "shortcut": false
+            },
+            {
+              "text": "Trailer",
+              "link": "/outbound/trailer",
+              "i18n": "menu.main.outbound.trailer",
+              "shortcut": false
             }
           ]
         },

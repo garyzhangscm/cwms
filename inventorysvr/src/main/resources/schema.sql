@@ -71,6 +71,7 @@ CREATE TABLE inventory(
   inventory_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   lpn   VARCHAR(100) NOT NULL,
   location_id    BIGINT NOT NULL,
+  pick_id    BIGINT,
   item_id BIGINT not null,
   item_package_type_id BIGINT not null,
   quantity bigint not null,

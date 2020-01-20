@@ -18,15 +18,17 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "pick")
-public class Pick {
+public class Pick implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,10 +40,10 @@ public class Pick {
     private String number;
 
     @Column(name = "source_location_id")
-    private Long sourcelLocationId;
+    private Long sourceLocationId;
 
     @Transient
-    private Location sourcelLocation;
+    private Location sourceLocation;
 
     @Column(name = "destination_location_id")
     private Long destinationLocationId;
@@ -55,8 +57,55 @@ public class Pick {
     @Transient
     private Item item;
 
+    @ManyToOne
+    @JoinColumn(name = "shipment_line_id")
+    @JsonIgnore
+    private ShipmentLine shipmentLine;
+
     @Column(name = "quantity")
     private Long quantity;
+
+    @Column(name = "picked_quantity")
+    private Long pickedQuantity;
+
+    @Column(name = "status")
+    private PickStatus status;
+
+    @OneToMany(
+            mappedBy = "pick",
+            cascade = CascadeType.REMOVE,
+            // orphanRemoval = true, // We will process the movement manually from InventoryMovementService
+            fetch = FetchType.LAZY
+    )
+    List<PickMovement> pickMovements = new ArrayList<>();
+
+    public Double getSize() {
+
+        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasures();
+
+        return (quantity / stockItemUnitOfMeasure.getQuantity())
+                * stockItemUnitOfMeasure.getLength()
+                * stockItemUnitOfMeasure.getWidth()
+                * stockItemUnitOfMeasure.getHeight();
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("{ id: ").append(id).append(",")
+                .append("number: ").append(number).append(",")
+                .append("sourceLocationId: ").append(sourceLocationId).append(",")
+                .append("sourceLocation: ").append(sourceLocation).append(",")
+                .append("destinationLocationId: ").append(destinationLocationId).append(",")
+                .append("destinationLocation: ").append(destinationLocation).append(",")
+                .append("itemId: ").append(itemId).append(",")
+                .append("item: ").append(item).append(",")
+                .append("shipmentLine: ").append(shipmentLine).append(",")
+                .append("quantity: ").append(quantity).append(",")
+                .append("pickedQuantity: ").append(pickedQuantity).append(",")
+                .append("status: ").append(status).append("}").toString();
+
+    }
 
     public Long getId() {
         return id;
@@ -74,20 +123,28 @@ public class Pick {
         this.number = number;
     }
 
-    public Long getSourcelLocationId() {
-        return sourcelLocationId;
+    public Long getSourceLocationId() {
+        return sourceLocationId;
     }
 
-    public void setSourcelLocationId(Long sourcelLocationId) {
-        this.sourcelLocationId = sourcelLocationId;
+    public void setSourceLocationId(Long sourceLocationId) {
+        this.sourceLocationId = sourceLocationId;
     }
 
-    public Location getSourcelLocation() {
-        return sourcelLocation;
+    public Location getSourceLocation() {
+        return sourceLocation;
     }
 
-    public void setSourcelLocation(Location sourcelLocation) {
-        this.sourcelLocation = sourcelLocation;
+    public void setSourceLocation(Location sourceLocation) {
+        this.sourceLocation = sourceLocation;
+    }
+
+    public ShipmentLine getShipmentLine() {
+        return shipmentLine;
+    }
+
+    public void setShipmentLine(ShipmentLine shipmentLine) {
+        this.shipmentLine = shipmentLine;
     }
 
     public Long getDestinationLocationId() {
@@ -128,5 +185,37 @@ public class Pick {
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    public Long getPickedQuantity() {
+        return pickedQuantity;
+    }
+
+    public void setPickedQuantity(Long pickedQuantity) {
+        this.pickedQuantity = pickedQuantity;
+    }
+
+    public PickStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PickStatus status) {
+        this.status = status;
+    }
+
+    public String getOrderNumber() {
+        return shipmentLine.getOrderNumber();
+    }
+
+    public List<PickMovement> getPickMovements() {
+        return pickMovements;
+    }
+
+    public void setPickMovements(List<PickMovement> pickMovements) {
+        this.pickMovements = pickMovements;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return shipmentLine.getOrderLine().getInventoryStatus();
     }
 }

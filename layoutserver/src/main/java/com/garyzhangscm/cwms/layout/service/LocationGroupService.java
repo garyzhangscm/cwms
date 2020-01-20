@@ -19,10 +19,8 @@
 package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.layout.model.LocationGroup;
-import com.garyzhangscm.cwms.layout.model.LocationGroupCSVWrapper;
-import com.garyzhangscm.cwms.layout.model.LocationGroupType;
-import com.garyzhangscm.cwms.layout.model.Warehouse;
+import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -33,7 +31,11 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.transaction.Transactional;
+import java.beans.Transient;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,6 +53,8 @@ public class LocationGroupService implements TestDataInitiableService {
     private LocationGroupRepository locationGroupRepository;
     @Autowired
     private LocationGroupTypeService locationGroupTypeService;
+    @Autowired
+    private LocationService locationService;
     @Autowired
     private FileService fileService;
 
@@ -141,6 +145,8 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("pickable").
                 addColumn("storable").
                 addColumn("countable").
+                addColumn("trackingVolume").
+                addColumn("volumeTrackingPolicy").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupCSVWrapper.class);
     }
@@ -153,6 +159,8 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("pickable").
                 addColumn("storable").
                 addColumn("countable").
+                addColumn("trackingVolume").
+                addColumn("volumeTrackingPolicy").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupCSVWrapper.class);
@@ -183,6 +191,11 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.setCountable(locationGroupCSVWrapper.getCountable());
         locationGroup.setStorable(locationGroupCSVWrapper.getStorable());
 
+
+        locationGroup.setTrackingVolume(locationGroupCSVWrapper.getTrackingVolume());
+        if (!StringUtils.isBlank(locationGroupCSVWrapper.getVolumeTrackingPolicy())) {
+            locationGroup.setVolumeTrackingPolicy(LocationVolumeTrackingPolicy.valueOf(locationGroupCSVWrapper.getVolumeTrackingPolicy()));
+        }
         logger.debug("locationGroupCSVWrapper.getLocationGroupType().isEmpty()? " + locationGroupCSVWrapper.getLocationGroupType().isEmpty());
         if (!locationGroupCSVWrapper.getLocationGroupType().isEmpty()) {
             logger.debug("locationGroupCSVWrapper.getLocationGroupType():" + locationGroupCSVWrapper.getLocationGroupType());
@@ -195,5 +208,108 @@ public class LocationGroupService implements TestDataInitiableService {
         }
         return locationGroup;
 
+    }
+
+
+    // Reserve a location from a group with the specific code.
+    // We will first try to allocate a location with the same reserve code. If
+    // we can't find such location, we will find a empty location and reserve the
+    // location with the code
+    @Transactional
+    public Location reserveLocation(Long id, String reservedCode, Double pendingSize, Long pendingQuantity, int pendingPalletQuantity) {
+        LocationGroup locationGroup = findById(id);
+
+        // Let's check if we have any location in the group that has the same reserve code
+        List<Location> locations = locationService.findByLocationGroup(id);
+
+        List<Location> locationsWithSameReservedCode = locations.stream().filter(location -> reservedCode.equals(location.getReservedCode())).collect(Collectors.toList());
+
+        for (Location location : locationsWithSameReservedCode) {
+            // See if we can still add more inventory into the location with the same reserve code
+            if (!locationGroup.getTrackingVolume()) {
+                // OK, the location doesn't need volume tracking. We can add infinite volume to this location
+                // we will just return this location without even change it
+                return location;
+            }
+            else {
+                // OK, we tracking volume for the location. Let's see how we tracking the location
+                if (ifVolumeFitForLocation(locationGroup.getVolumeTrackingPolicy(), location, pendingSize, pendingQuantity, pendingPalletQuantity)) {
+                    return reserveLocation(locationGroup.getVolumeTrackingPolicy(), location, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
+
+                }
+            }
+        }
+
+        // If we are still here, we can't find any location with same reserve code, let's find any location that
+        // is not reserved yet
+        List<Location> locationsWithoutReservedCode =
+                locations.stream().filter(location -> StringUtils.isBlank(location.getReservedCode())).collect(Collectors.toList());
+
+        for (Location location : locationsWithoutReservedCode) {
+            // See if we can still add more inventory into the location
+            if (!locationGroup.getTrackingVolume()) {
+                // OK, the location doesn't need volume tracking. We can add infinite volume to this location
+                // we will just return this location without even change it
+                return locationService.reserveLocation(location, reservedCode);
+            }
+            else {
+                // OK, we tracking volume for the location. Let's see how we tracking the location
+                if (ifVolumeFitForLocation(locationGroup.getVolumeTrackingPolicy(), location, pendingSize, pendingQuantity, pendingPalletQuantity)) {
+                    return reserveLocation(locationGroup.getVolumeTrackingPolicy(), location, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
+
+                }
+            }
+        }
+
+        // If we are here, we fail to find any location
+        throw new GenericException(1000, "fail to reserve a location from the group");
+    }
+
+    private boolean ifVolumeFitForLocation(LocationVolumeTrackingPolicy locationVolumeTrackingPolicy,
+                                           Location location, Double pendingSize,
+                                           Long pendingQuantity, int pendingPalletQuantity) {
+        // Get the empty space from the location
+        Double emptySpace = location.getCapacity() - location.getCurrentVolume() - location.getPendingVolume();
+        // If we don't have any empty space, return false
+        if (emptySpace <= 0) {
+            return false;
+        }
+        switch (locationVolumeTrackingPolicy) {
+            case BY_EACH:
+                return emptySpace >= pendingQuantity;
+            case BY_VOLUME:
+                return emptySpace >= pendingSize;
+            case BY_PALLET:
+                return emptySpace >= pendingPalletQuantity;
+
+        }
+        return false;
+    }
+
+    private Location reserveLocation(LocationVolumeTrackingPolicy locationVolumeTrackingPolicy,
+                                    Location location, String reservedCode, Double pendingSize,
+                                           Long pendingQuantity, int pendingPalletQuantity) {
+        switch (locationVolumeTrackingPolicy) {
+            case BY_EACH:
+                return locationService.reserveLocation(location, reservedCode, (double)pendingQuantity);
+            case BY_VOLUME:
+                return locationService.reserveLocation(location, reservedCode, (double)pendingSize);
+            case BY_PALLET:
+                return locationService.reserveLocation(location, reservedCode, (double)pendingPalletQuantity);
+
+        }
+        return locationService.reserveLocation(location, reservedCode, (double)pendingQuantity);
+
+    }
+
+    public LocationGroup getDockLocationGroup() {
+
+        List<LocationGroup> locationGroups = locationGroupRepository.getDockLocationGroup();
+        if (locationGroups.size() > 0) {
+            return locationGroups.get(0);
+        }
+        else {
+            return null;
+        }
     }
 }

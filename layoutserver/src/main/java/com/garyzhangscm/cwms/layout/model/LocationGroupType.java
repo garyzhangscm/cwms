@@ -47,6 +47,22 @@ public class LocationGroupType {
     @Column(name = "virtual_locations")
     private Boolean virtual;
 
+    @Column(name = "receiving_stage_locations")
+    private Boolean receivingStage;
+    @Column(name = "shipping_stage_locations")
+    private Boolean shippingStage;
+    @Column(name = "dock_locations")
+    private Boolean dock;
+    @Column(name = "yard_locations")
+    private Boolean yard;
+    @Column(name = "storage_locations")
+    private Boolean storage;
+    @Column(name = "pickup_and_deposit_locations")
+    private Boolean pickupAndDeposit;
+    @Column(name = "trailer_locations")
+    private Boolean trailer;
+
+
     public Long getId() {
         return id;
     }
@@ -87,4 +103,59 @@ public class LocationGroupType {
         this.virtual = virtual;
     }
 
+    public Boolean getReceivingStage() {
+        return receivingStage;
+    }
+
+    public void setReceivingStage(Boolean receivingStage) {
+        this.receivingStage = receivingStage;
+    }
+
+    public Boolean getShippingStage() {
+        return shippingStage;
+    }
+
+    public void setShippingStage(Boolean shippingStage) {
+        this.shippingStage = shippingStage;
+    }
+
+    public Boolean getDock() {
+        return dock;
+    }
+
+    public void setDock(Boolean dock) {
+        this.dock = dock;
+    }
+
+    public Boolean getYard() {
+        return yard;
+    }
+
+    public void setYard(Boolean yard) {
+        this.yard = yard;
+    }
+
+    public Boolean getStorage() {
+        return storage;
+    }
+
+    public void setStorage(Boolean storage) {
+        this.storage = storage;
+    }
+
+    public Boolean getPickupAndDeposit() {
+        return pickupAndDeposit;
+    }
+
+    public void setPickupAndDeposit(Boolean pickupAndDeposit) {
+        this.pickupAndDeposit = pickupAndDeposit;
+    }
+
+    public Boolean getTrailer() {
+        return trailer;
+    }
+
+    public void setTrailer(Boolean trailer) {
+        this.trailer = trailer;
+    }
 }

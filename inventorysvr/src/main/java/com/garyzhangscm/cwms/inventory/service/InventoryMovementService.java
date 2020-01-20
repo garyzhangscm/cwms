@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
+import com.garyzhangscm.cwms.inventory.model.Location;
+import com.garyzhangscm.cwms.inventory.model.PickMovement;
 import com.garyzhangscm.cwms.inventory.repository.InventoryMovementRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -91,6 +94,31 @@ public class InventoryMovementService{
             warehouseLayoutServiceRestemplateClient.reduceLocationPendingVolume(inventoryMovement.getLocationId(), inventory.getSize());
         }
         delete(id);
+    }
+    public void clearInventoryMovement(Inventory inventory) {
+        inventory.getInventoryMovements().stream().forEach(this::delete);
+    }
+
+    public InventoryMovement createInventoryMovementFromPickMovement(Inventory inventory, PickMovement pickMovement) {
+        return createInventoryMovement(inventory, pickMovement.getSequence(), pickMovement.getLocationId());
+    }
+
+    public InventoryMovement createInventoryMovement(Inventory inventory, Long locationId) {
+        List<InventoryMovement> inventoryMovements = inventory.getInventoryMovements();
+        int sequence = 0;
+        if (inventoryMovements.size() > 0){
+            sequence = inventoryMovements.stream().map(InventoryMovement::getSequence).max(Integer::compare).get() +1;
+        }
+        return createInventoryMovement(inventory, sequence, locationId);
+
+    }
+    public InventoryMovement createInventoryMovement(Inventory inventory, int sequence, Long locationId) {
+        InventoryMovement inventoryMovement = new InventoryMovement();
+        inventoryMovement.setInventory(inventory);
+        inventoryMovement.setLocationId(locationId);
+        inventoryMovement.setSequence(sequence);
+        return save(inventoryMovement);
+
 
     }
 

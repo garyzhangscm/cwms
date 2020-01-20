@@ -21,8 +21,7 @@ package com.garyzhangscm.cwms.common.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 public class TestDataInitService {
@@ -32,6 +31,10 @@ public class TestDataInitService {
 
     CustomerService customerService;
 
+    CarrierService carrierService;
+
+    CarrierServiceLevelService carrierServiceLevelService;
+
     UnitOfMeasureService unitOfMeasureService;
 
     ReasonCodeService reasonCodeService;
@@ -40,12 +43,16 @@ public class TestDataInitService {
 
     PolicyService policyService;
 
-    Map<String, TestDataInitiableService> initiableServices = new TreeMap<>();
+    Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
+    List<String> serviceNames = new ArrayList<>();
+
     @Autowired
     public TestDataInitService(
             ClientService clientService,
             SupplierService supplierService,
             CustomerService customerService,
+            CarrierService carrierService,
+            CarrierServiceLevelService carrierServiceLevelService,
             UnitOfMeasureService unitOfMeasureService,
             ReasonCodeService reasonCodeService,
             SystemControlledNumberService systemControlledNumberService,
@@ -53,21 +60,34 @@ public class TestDataInitService {
         this.clientService = clientService;
         this.supplierService = supplierService;
         this.customerService = customerService;
+        this.carrierService = carrierService;
+        this.carrierServiceLevelService = carrierServiceLevelService;
         this.unitOfMeasureService = unitOfMeasureService;
         this.reasonCodeService = reasonCodeService;
         this.systemControlledNumberService = systemControlledNumberService;
         this.policyService = policyService;
 
         initiableServices.put("Client", clientService);
+        serviceNames.add("Client");
         initiableServices.put("Supplier", supplierService);
+        serviceNames.add("Supplier");
         initiableServices.put("Customer", customerService);
+        serviceNames.add("Customer");
+        initiableServices.put("Carrier", carrierService);
+        serviceNames.add("Carrier");
+        initiableServices.put("Carrier Service Level", carrierServiceLevelService);
+        serviceNames.add("Carrier Service Level");
         initiableServices.put("Unit of Measure", unitOfMeasureService);
+        serviceNames.add("Unit of Measure");
         initiableServices.put("Reason Code", reasonCodeService);
+        serviceNames.add("Reason Code");
         initiableServices.put("System Controlled Number", systemControlledNumberService);
+        serviceNames.add("System Controlled Number");
         initiableServices.put("Policy", policyService);
+        serviceNames.add("Policy");
     }
     public String[] getTestDataNames() {
-        return initiableServices.keySet().toArray(new String[0]);
+        return serviceNames.toArray(new String[0]);
     }
     public void init() {
         for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {

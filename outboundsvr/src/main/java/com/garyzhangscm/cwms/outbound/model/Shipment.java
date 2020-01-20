@@ -18,15 +18,17 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "shipment")
-public class Shipment {
+public class Shipment implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,10 +38,6 @@ public class Shipment {
 
     @Column(name = "number")
     private String number;
-
-    @ManyToOne
-    @JoinColumn(name = "outbound_order_id")
-    private Order order;
 
     @OneToMany(
         mappedBy = "shipment",
@@ -51,6 +49,23 @@ public class Shipment {
 
     @Column(name="status")
     private ShipmentStatus status;
+
+    @Column(name = "carrier_id")
+    private Long carrierId;
+
+    @Transient
+    private Carrier carrier;
+
+    @Column(name = "carrier_service_level_id")
+    private Long carrierServiceLevelId;
+
+    @Transient
+    private CarrierServiceLevel carrierServiceLevel;
+
+    @ManyToOne
+    @JoinColumn(name="stop_id")
+    @JsonIgnore
+    private Stop stop;
 
     public Long getId() {
         return id;
@@ -68,13 +83,6 @@ public class Shipment {
         this.number = number;
     }
 
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
 
     public List<ShipmentLine> getShipmentLines() {
         return shipmentLines;
@@ -90,5 +98,45 @@ public class Shipment {
 
     public void setStatus(ShipmentStatus status) {
         this.status = status;
+    }
+
+    public Stop getStop() {
+        return stop;
+    }
+
+    public void setStop(Stop stop) {
+        this.stop = stop;
+    }
+
+    public Long getCarrierId() {
+        return carrierId;
+    }
+
+    public void setCarrierId(Long carrierId) {
+        this.carrierId = carrierId;
+    }
+
+    public Carrier getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(Carrier carrier) {
+        this.carrier = carrier;
+    }
+
+    public Long getCarrierServiceLevelId() {
+        return carrierServiceLevelId;
+    }
+
+    public void setCarrierServiceLevelId(Long carrierServiceLevelId) {
+        this.carrierServiceLevelId = carrierServiceLevelId;
+    }
+
+    public CarrierServiceLevel getCarrierServiceLevel() {
+        return carrierServiceLevel;
+    }
+
+    public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
+        this.carrierServiceLevel = carrierServiceLevel;
     }
 }

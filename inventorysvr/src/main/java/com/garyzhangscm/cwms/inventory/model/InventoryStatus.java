@@ -40,6 +40,20 @@ public class InventoryStatus implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @Override
+    public Object clone() {
+        InventoryStatus inventoryStatus = null;
+        try {
+            inventoryStatus = (InventoryStatus) super.clone();
+        } catch (CloneNotSupportedException e) {
+            inventoryStatus = new InventoryStatus();
+            inventoryStatus.setName(name);
+
+            inventoryStatus.setDescription(description);
+        }
+        return inventoryStatus;
+    }
+
     public Long getId() {
         return id;
     }

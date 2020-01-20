@@ -54,6 +54,20 @@ public class InventoryMovement implements Serializable {
     @Column(name = "sequence")
     private Integer sequence;
 
+    @Override
+    public Object clone() {
+        InventoryMovement inventoryMovement = null;
+        try {
+            inventoryMovement = (InventoryMovement) super.clone();
+        }
+        catch(CloneNotSupportedException e) {
+            inventoryMovement = new InventoryMovement();
+            inventoryMovement.setLocationId(getLocationId());
+            inventoryMovement.setSequence(getSequence());
+        }
+        inventoryMovement.setLocation((Location)(getLocation().clone()));
+        return inventoryMovement;
+    }
     public String toString() {
         return "id: " + id + "\n"
                 + "Inventory: " + "\n"

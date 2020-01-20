@@ -22,9 +22,19 @@ package com.garyzhangscm.cwms.outbound.repository;
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface PickRepository extends JpaRepository<Pick, Long>, JpaSpecificationExecutor<Pick> {
     Pick findByNumber(String number);
+
+    @Query("select p from Pick p where itemId = :itemId and pickedQuantity < quantity and quantity > 0")
+    List<Pick> getOpenPicksByItemId(Long itemId);
+
+
+    @Query("select p from Pick p inner join p.shipmentLine.shipment s where s.id = :shipmentId")
+    List<Pick> getPicksByShipmentId(Long shipmentId);
 }

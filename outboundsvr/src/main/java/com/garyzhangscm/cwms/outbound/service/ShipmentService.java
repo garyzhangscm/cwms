@@ -29,7 +29,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -42,6 +45,12 @@ public class ShipmentService {
     private ShipmentLineService shipmentLineService;
     @Autowired
     private WaveService waveService;
+    @Autowired
+    private OrderLineService orderLineService;
+    @Autowired
+    private TrailerService trailerService;
+    @Autowired
+    private PickService pickService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -52,11 +61,22 @@ public class ShipmentService {
 
 
     public Shipment findById(Long id) {
-        return shipmentRepository.findById(id).orElse(null);
+        return findById(id, true);
+    }
+    public Shipment findById(Long id, boolean includeDetails) {
+
+        Shipment shipment = shipmentRepository.findById(id).orElse(null);
+        if (shipment != null && includeDetails) {
+            loadAttribute(shipment);
+        }
+        return shipment;
     }
 
 
-    public List<Shipment> findAll(String number ) {
+    public List<Shipment> findAll(String number) {
+        return findAll(number, true);
+    }
+    public List<Shipment> findAll(String number, boolean includeDetails) {
         List<Shipment> shipments;
 
         if (StringUtils.isBlank(number)) {
@@ -69,13 +89,22 @@ public class ShipmentService {
                 shipments = new ArrayList<>();
             }
         }
+        if (shipments.size() > 0 && includeDetails) {
+            loadAttribute(shipments);
+        }
         return shipments;
     }
 
     public Shipment findByNumber(String number) {
-        return shipmentRepository.findByNumber(number);
+        return findByNumber(number, true);
     }
-
+    public Shipment findByNumber(String number, boolean includeDetails) {
+        Shipment shipment =  shipmentRepository.findByNumber(number);
+        if (shipment != null && includeDetails) {
+            loadAttribute(shipment);
+        }
+        return shipment;
+    }
 
     public Shipment save(Shipment shipment) {
         return shipmentRepository.save(shipment);
@@ -99,6 +128,18 @@ public class ShipmentService {
         }
     }
 
+    private void loadAttribute(List<Shipment> shipments) {
+        shipments.stream().forEach(this::loadAttribute);
+    }
+    private void loadAttribute(Shipment shipment) {
+        if (shipment.getCarrierId() != null && shipment.getCarrier() == null) {
+            shipment.setCarrier(commonServiceRestemplateClient.getCarrierById(shipment.getCarrierId()));
+        }
+        if (shipment.getCarrierServiceLevelId() != null && shipment.getCarrierServiceLevel() == null) {
+            shipment.setCarrierServiceLevel(commonServiceRestemplateClient.getCarrierServiceLevelById(shipment.getCarrierServiceLevelId()));
+        }
+    }
+
     public void cancelShipment(Shipment shipment) {
 
     }
@@ -107,21 +148,28 @@ public class ShipmentService {
 
     }
 
+    @Transactional
     public List<Shipment> planShipments(Wave wave, List<OrderLine> orderLines){
         // Let's split the list of order line by order number first
 
         Map<Order, List<OrderLine>> orderListMap = new HashMap<>();
         orderLines.forEach(orderLine ->
                 {
-                    List<OrderLine> existingOrderLines = orderListMap.getOrDefault(orderLine.getOrder(), new ArrayList<>());
+                    // in case the order line doesn't have the order setup yet, load the order line again from the db
+                    Order order = orderLineService.findById(orderLine.getId()).getOrder();
+                    logger.debug("Find order: {} for order line: {}", order.getNumber(), orderLine.getId());
+                    orderLine.setOrder(order);
+                    List<OrderLine> existingOrderLines = orderListMap.getOrDefault(order, new ArrayList<>());
                     existingOrderLines.add(orderLine);
-                    orderListMap.put(orderLine.getOrder(), existingOrderLines);
+                    orderListMap.put(order, existingOrderLines);
                 });
 
         List<Shipment> shipments = new ArrayList<>();
-        orderListMap.entrySet().stream().forEach(orderListEntry ->
-            shipments.add(createShipment(wave, orderListEntry.getKey(), orderListEntry.getValue()))
-        );
+        orderListMap.entrySet().stream().forEach(orderListEntry ->{
+            logger.debug("Start to process order line entry: key: {}, value: {}", orderListEntry.getKey().getNumber(), orderListEntry.getValue().size());
+            shipments.add(createShipment(wave, orderListEntry.getKey(), orderListEntry.getValue()));
+
+        });
 
         return shipments;
     }
@@ -131,14 +179,19 @@ public class ShipmentService {
         Map<Order, List<OrderLine>> orderListMap = new HashMap<>();
         orderLines.forEach(orderLine ->
         {
-            List<OrderLine> existingOrderLines = orderListMap.getOrDefault(orderLine.getOrder(), new ArrayList<>());
+            // in case the order line doesn't have the order setup yet, load the order line again from the db
+            Order order = orderLineService.findById(orderLine.getId()).getOrder();
+            orderLine.setOrder(order);
+            logger.debug("Find order: {} for order line: {}", order.getNumber(), orderLine.getId());
+            List<OrderLine> existingOrderLines = orderListMap.getOrDefault(order, new ArrayList<>());
             existingOrderLines.add(orderLine);
-            orderListMap.put(orderLine.getOrder(), existingOrderLines);
+            orderListMap.put(order, existingOrderLines);
         });
 
         List<Shipment> shipments = new ArrayList<>();
         orderListMap.entrySet().stream().forEach(orderListEntry ->
                 {
+                    logger.debug("Start to process order line entry: key: {}, value: {}", orderListEntry.getKey().getNumber(), orderListEntry.getValue().size());
                     // Plan one wave for each shipment, wave number will be the shipment number
                     String shipmentNumber = getNextShipmentNumber();
 
@@ -158,9 +211,9 @@ public class ShipmentService {
     }
 
     private Shipment createShipment(Wave wave, String shipmentNumber, Order order, List<OrderLine> orderLines) {
+
         Shipment shipment = new Shipment();
         shipment.setNumber(shipmentNumber);
-        shipment.setOrder(order);
         shipment.setStatus(ShipmentStatus.PENDING);
 
         Shipment newShipment = save(shipment);
@@ -171,7 +224,120 @@ public class ShipmentService {
     }
 
     private String getNextShipmentNumber(){
-        return commonServiceRestemplateClient.getNextNumber("shipment_number");
+        return commonServiceRestemplateClient.getNextNumber("shipment-number");
+    }
+
+    // Complete the shipment. We will automatically generate the trailer structure
+    private Shipment complete(Shipment shipment) throws IOException {
+        trailerService.completeShipment(shipment);
+        return findById(shipment.getId());
+
+    }
+
+    // Get a list of inventory that is picked for the shipment
+    public List<Inventory> getPickedInventory(Shipment shipment) {
+        List<Pick> picks = pickService.getPicksByShipment(shipment.getId());
+        return inventoryServiceRestemplateClient.getPickedInventory(picks);
+
+    }
+
+    // Get a list of the inventory that is picked and staged for the shipment
+    public List<Inventory> getStagedInventory(Shipment shipment) {
+        // Let's get all the picked inventory and check which is already staged
+        List<Inventory> pickedInventories = getPickedInventory(shipment);
+        return pickedInventories.stream()
+                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getReceivingStage())
+                .collect(Collectors.toList());
+    }
+
+    // Get a list of the inventory that is already on the trailer
+    public List<Inventory> getLoadedInventory(Shipment shipment) {
+        // Get the trailer ID. for each trailer, we will create a location for the trailer.
+        // The location's name is the same as the trailer.
+        // Then we will move the inventory to the location that represent for the trailer
+        if (shipment.getStop() == null || shipment.getStop().getTrailer() == null) {
+            return new ArrayList<>();
+        }
+        Trailer trailer = shipment.getStop().getTrailer();
+        // Trailer is already dispatched. We will count all inventory in the trailer as
+        // shipped, not loaded
+        if (trailer.getStatus().equals(TrailerStatus.DISPATCHED)) {
+            return new ArrayList<>();
+        }
+        List<Inventory> pickedInventories = getPickedInventory(shipment);
+
+
+        return pickedInventories.stream()
+                .filter(inventory -> inventory.getLocation().getName().equals(String.valueOf(trailer.getId())))
+                .collect(Collectors.toList());
+    }
+
+    // Get a list of the inventory that is picked and staged for the shipment
+    public List<Inventory> getShippedInventory(Shipment shipment) {
+        // Get the trailer ID. for each trailer, we will create a location for the trailer.
+        // The location's name is the same as the trailer.
+        // Then we will move the inventory to the location that represent for the trailer
+        if (shipment.getStop() == null || shipment.getStop().getTrailer() == null) {
+            return new ArrayList<>();
+        }
+        Trailer trailer = shipment.getStop().getTrailer();
+        // Trailer is not dispatched. We will count all inventory in the trailer as
+        // loaded, not shipped
+        if (!trailer.getStatus().equals(TrailerStatus.DISPATCHED)) {
+            return new ArrayList<>();
+        }
+        List<Inventory> pickedInventories = getPickedInventory(shipment);
+
+        return pickedInventories.stream()
+                .filter(inventory -> inventory.getLocation().getName().equals(String.valueOf(trailer.getId())))
+                .collect(Collectors.toList());
+    }
+
+    public Shipment loadShipment(Shipment shipment, Trailer trailer) throws IOException {
+        // load everything of the shipment onto the trailer
+        // We will only load the inventory that is picked and staged
+        List<Inventory> stagedInventory = getStagedInventory(shipment);
+
+        stagedInventory.stream().forEach(inventory -> {
+            try {
+                loadShipment(inventory, trailer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        // check if we can mark the shipment as loaded
+        // only if we don't have any in process quantity and open quantity
+        Long openShipmentLineQuantity
+                = shipment.getShipmentLines().stream()
+                     .filter(shipmentLine -> shipmentLine.getOpenQuantity() > 0 || shipmentLine.getInprocessQuantity() > 0).count();
+        if (openShipmentLineQuantity == 0) {
+            // THere's no open quantity so far. let's mark the shipment as loaded
+            shipment.setStatus(ShipmentStatus.LOADED);
+
+        }
+        else {
+            shipment.setStatus(ShipmentStatus.LOADING_IN_PROCESS);
+        }
+        return save(shipment);
+
+
+    }
+
+    // Load the inventory onto the trailer
+    public void loadShipment(Inventory inventory, Trailer trailer) throws IOException {
+        // Let's move the inventory onto the trailer
+
+        Location trailerLocation = warehouseLayoutServiceRestemplateClient.getTrailerLocation(trailer.getId());
+        inventoryServiceRestemplateClient.moveInventory(inventory, trailerLocation);
+
+        ShipmentLine shipmentLine = inventory.getPick().getShipmentLine();
+        // move the quantity from inprocess to loaded quantity
+        shipmentLine.setLoadedQuantity(shipmentLine.getLoadedQuantity() + inventory.getQuantity());
+        shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - inventory.getQuantity());
+        shipmentLineService.save(shipmentLine);
+
+
     }
 
 }

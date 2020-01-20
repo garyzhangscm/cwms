@@ -67,7 +67,7 @@ public class ShipmentController {
     // We will pick / ship based upon shipments.
     @RequestMapping(value="/shipments/plan",  method = RequestMethod.POST)
     public List<Shipment> planShipmetns(@RequestBody List<OrderLine> orderLines){
-        return shipmentService.planShipmetns(orderLines);
+        return shipmentService.planShipments(orderLines);
     }
 
 

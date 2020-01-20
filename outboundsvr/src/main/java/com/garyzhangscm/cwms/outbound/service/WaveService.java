@@ -21,9 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.model.OrderLine;
-import com.garyzhangscm.cwms.outbound.model.Shipment;
-import com.garyzhangscm.cwms.outbound.model.Wave;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import com.garyzhangscm.cwms.outbound.repository.WaveRepository;
 import org.apache.commons.lang.StringUtils;
@@ -31,11 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import javax.transaction.Transactional;
+import java.util.*;
 
 
 @Service
@@ -46,6 +43,11 @@ public class WaveService {
     private WaveRepository waveRepository;
     @Autowired
     private ShipmentService shipmentService;
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private ShipmentLineService shipmentLineService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -54,13 +56,24 @@ public class WaveService {
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
-
     public Wave findById(Long id) {
-        return waveRepository.findById(id).orElse(null);
+        return findById(id, true);
     }
 
+    public Wave findById(Long id, boolean loadAttribute) {
+
+        Wave wave =  waveRepository.findById(id).orElse(null);
+        if (wave != null && loadAttribute) {
+            loadAttribute(wave);
+        }
+        return wave;
+    }
 
     public List<Wave> findAll(String number ) {
+        return findAll(number, true);
+    }
+
+    public List<Wave> findAll(String number, boolean loadAttribute) {
         List<Wave> waves;
 
         if (StringUtils.isBlank(number)) {
@@ -73,16 +86,67 @@ public class WaveService {
                 waves = new ArrayList<>();
             }
         }
+        if (waves.size() > 0 && loadAttribute) {
+            loadAttribute(waves);
+        }
         return waves;
     }
 
     public Wave findByNumber(String number) {
-        return waveRepository.findByNumber(number);
+        return findByNumber(number, true);
     }
 
+    public Wave findByNumber(String number, boolean loadAttribute) {
+        Wave wave = waveRepository.findByNumber(number);
+        if (wave != null && loadAttribute) {
+            loadAttribute(wave);
+        }
+        return wave;
+    }
 
+    private void loadAttribute(List<Wave> waves) {
+        waves.forEach(wave -> loadAttribute(wave));
+    }
+    private void loadAttribute(Wave wave) {
+        wave.getShipmentLines().forEach(shipmentLine -> {
+            loadOrderLineAttribute(shipmentLine.getOrderLine());
+            if (shipmentLine.getShortAllocation() != null) {
+                loadShortAllocationAttribute(shipmentLine.getShortAllocation());
+            }
+            loadPickAttribute(shipmentLine.getPicks());
+        });
+    }
+    private void loadOrderLineAttribute(OrderLine orderLine) {
+        if (orderLine.getInventoryStatusId() != null && orderLine.getInventoryStatus() == null) {
+            orderLine.setInventoryStatus(inventoryServiceRestemplateClient.getInventoryStatusById(orderLine.getInventoryStatusId()));
+        }
+        if (orderLine.getItemId() != null && orderLine.getItem() == null) {
+            orderLine.setItem(inventoryServiceRestemplateClient.getItemById(orderLine.getItemId()));
+        }
+    }
 
+    private void loadShortAllocationAttribute(ShortAllocation shortAllocation) {
 
+        if (shortAllocation.getItemId() != null && shortAllocation.getItem() == null) {
+            shortAllocation.setItem(inventoryServiceRestemplateClient.getItemById(shortAllocation.getItemId()));
+        }
+    }
+
+    private void loadPickAttribute(List<Pick> picks) {
+        picks.stream().filter(Objects::nonNull).forEach(this::loadPickAttribute);
+    }
+    private void loadPickAttribute(Pick pick) {
+
+        if (pick.getItemId() != null && pick.getItem() == null) {
+            pick.setItem(inventoryServiceRestemplateClient.getItemById(pick.getItemId()));
+        }
+        if (pick.getSourceLocationId() != null && pick.getSourceLocation() == null) {
+            pick.setSourceLocation(warehouseLayoutServiceRestemplateClient.getLocationById(pick.getSourceLocationId()));
+        }
+        if (pick.getDestinationLocationId() != null && pick.getDestinationLocation() == null) {
+            pick.setDestinationLocation(warehouseLayoutServiceRestemplateClient.getLocationById(pick.getDestinationLocationId()));
+        }
+    }
     public Wave save(Wave wave) {
         return waveRepository.save(wave);
     }
@@ -113,8 +177,15 @@ public class WaveService {
     }
 
     // Plan a list of order lines into a wave
+    @Transactional
     public Wave planWave(String waveNumber, List<OrderLine> orderLines) {
 
+        if (StringUtils.isBlank(waveNumber)) {
+            waveNumber = getNextWaveNumber();
+            logger.debug("wave number is not passed in during plan wave, auto generated number: {}", waveNumber);
+        }
+
+        logger.debug("Start to plan {} order lines into wave # {}", orderLines.size(), waveNumber);
         Wave wave = findByNumber(waveNumber);
         if (wave == null) {
             wave = new Wave();
@@ -139,7 +210,28 @@ public class WaveService {
         }
     }
 
-    public void allocateWave(Wave wave) {
+    public List<Order> findWaveCandidate(String orderNumber,
+                                         String customerName) {
 
+        return orderService.findWavableOrders(orderNumber, customerName);
+    }
+
+    public Wave allocateWave(Long id) {
+        return allocateWave(findById(id));
+    }
+    public Wave allocateWave(Wave wave) {
+
+        // Allocate each open shipment line
+        wave.getShipmentLines().forEach(shipmentLine -> {
+            shipmentLineService.allocateShipmentLine(shipmentLine);
+        });
+
+        // return the latest information
+        return findById(wave.getId());
+
+    }
+
+    private String getNextWaveNumber(){
+        return commonServiceRestemplateClient.getNextNumber("wave-number");
     }
 }

@@ -31,6 +31,8 @@ public class LocationGroupCSVWrapper {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean trackingVolume;
+    private String volumeTrackingPolicy;
 
     public String getName() {
         return name;
@@ -78,5 +80,21 @@ public class LocationGroupCSVWrapper {
 
     public void setCountable(Boolean countable) {
         this.countable = countable;
+    }
+
+    public Boolean getTrackingVolume() {
+        return trackingVolume;
+    }
+
+    public void setTrackingVolume(Boolean trackingVolume) {
+        this.trackingVolume = trackingVolume;
+    }
+
+    public String getVolumeTrackingPolicy() {
+        return volumeTrackingPolicy;
+    }
+
+    public void setVolumeTrackingPolicy(String volumeTrackingPolicy) {
+        this.volumeTrackingPolicy = volumeTrackingPolicy;
     }
 }

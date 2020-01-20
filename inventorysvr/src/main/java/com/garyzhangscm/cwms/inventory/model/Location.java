@@ -54,6 +54,45 @@ public class Location {
     private String reservedCode;
 
     @Override
+    public Object clone() {
+        Location location = null;
+        try {
+            location = (Location) super.clone();
+        }
+        catch(CloneNotSupportedException e) {
+            location = new Location();
+            location.setName(name);
+
+            location.setAisle(aisle);
+
+            location.setX(x);
+            location.setY(y);
+            location.setZ(z);
+
+            location.setLength(length);
+            location.setWidth(width);
+            location.setHeight(height);
+
+            location.setPickSequence(pickSequence);
+            location.setPutawaySequence(putawaySequence);
+            location.setCountSequence(countSequence);
+
+            location.setCapacity(capacity);
+            location.setFillPercentage(fillPercentage);
+
+            location.setCurrentVolume(currentVolume);
+
+            location.setPendingVolume(pendingVolume);
+            location.setLocationGroup(locationGroup);
+
+            location.setEnabled(enabled);
+
+            location.setReservedCode(reservedCode);
+        }
+        return location;
+    }
+
+    @Override
     public String toString() {
 
         StringBuilder builder = new StringBuilder();

@@ -22,7 +22,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.OrderLineRepository;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
@@ -34,8 +36,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -104,7 +108,47 @@ public class OrderLineService implements TestDataInitiableService{
             orderLine.setItem(inventoryServiceRestemplateClient.getItemById(orderLine.getItemId()));
 
         }
+        if (orderLine.getInventoryStatusId() != null && orderLine.getInventoryStatus() == null) {
+            orderLine.setInventoryStatus(inventoryServiceRestemplateClient.getInventoryStatusById(orderLine.getInventoryStatusId()));
 
+        }
+
+    }
+
+
+    public List<OrderLine> findWavableOrderLines(String orderNumber,
+                                         String customerName) {
+
+        List<OrderLine> wavableOrderLine =  orderLineRepository.findAll(
+                (Root<OrderLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+                    // the open quantity needs to be greater than 0 so we can plan a wave on this order line
+                    predicates.add(criteriaBuilder.greaterThan(root.get("openQuantity"), 0L));
+
+                    if (!StringUtils.isBlank(orderNumber)) {
+                        Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("name"), orderNumber));
+
+                    }
+                    if (!StringUtils.isBlank(customerName)) {
+                        Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
+                        Customer customer = commonServiceRestemplateClient.getCustomerByName(customerName);
+                        if (customer != null) {
+                            predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), customer.getId()));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), -999L));
+                        }
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+        if (wavableOrderLine.size() > 0) {
+            loadOrderLineAttribute(wavableOrderLine);
+        }
+        return wavableOrderLine;
     }
 
     public OrderLine save(OrderLine orderLine) {
@@ -179,5 +223,16 @@ public class OrderLineService implements TestDataInitiableService{
             orderLine.setInventoryStatusId(inventoryStatus.getId());
         }
         return orderLine;
+    }
+
+    public void markQuantityAsInProcess(OrderLine orderLine, Long inprocessQuantity) {
+        Long openQuantity = orderLine.getOpenQuantity();
+        if (openQuantity < inprocessQuantity) {
+            logger.debug("expected inprocess quantity {} exceeds the open quantity {} ", inprocessQuantity, openQuantity);
+            throw new GenericException(10000, "Inprocess quantity can't exceed the open quantity");
+        }
+        orderLine.setOpenQuantity(openQuantity - inprocessQuantity);
+        orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() + inprocessQuantity);
+        saveOrUpdate(orderLine);
     }
 }

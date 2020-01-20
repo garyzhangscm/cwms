@@ -30,7 +30,15 @@ CREATE TABLE location_group_type (
   name   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL,
   four_wall_inventory  boolean not null default 1,
-  virtual_locations  boolean not null default 0);
+  virtual_locations  boolean not null default 0,
+  receiving_stage_locations  boolean not null default 0,
+  shipping_stage_locations  boolean not null default 0,
+  dock_locations  boolean not null default 0,
+  yard_locations  boolean not null default 0,
+  storage_locations  boolean not null default 0,
+  pickup_and_deposit_locations  boolean not null default 0,
+  trailer_locations  boolean not null default 0
+  );
 
 -- INSERT INTO location_group_type(name, description, four_wall_inventory, virtual_locations) VALUES("Storage", "Storage Locations", 1, 0);
 -- INSERT INTO location_group_type(name, description, four_wall_inventory, virtual_locations) VALUES("Receive_Stage", "Receiving Stage", 1, 0);
@@ -50,6 +58,8 @@ CREATE TABLE location_group(
   pickable  boolean not null default 0,
   storable  boolean not null default 0,
   countable  boolean not null default 0,
+  tracking_volume  boolean not null default 0,
+  volume_tracking_policy VARCHAR(20),
   foreign key(location_group_type_id) references location_group_type(location_group_type_id));
 
 -- INSERT INTO location_group(name, description, location_group_type_id, pickable, storable, countable)

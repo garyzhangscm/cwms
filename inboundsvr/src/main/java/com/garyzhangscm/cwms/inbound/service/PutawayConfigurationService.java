@@ -108,12 +108,12 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         );
 
         if (putawayConfigurations.size() > 0) {
-            loadLocationDetails(putawayConfigurations);
+            loadAttribute(putawayConfigurations);
         }
         return putawayConfigurations;
     }
 
-    private void loadLocationDetails(PutawayConfiguration putawayConfiguration) {
+    private void loadAttribute(PutawayConfiguration putawayConfiguration) {
 
         if (putawayConfiguration.getItemId() != null && putawayConfiguration.getItem() == null) {
             putawayConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(putawayConfiguration.getItemId()));
@@ -145,8 +145,8 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         }
     }
 
-    private void loadLocationDetails(List<PutawayConfiguration> putawayConfigurations) {
-        putawayConfigurations.forEach(putawayConfiguration -> loadLocationDetails(putawayConfiguration));
+    private void loadAttribute(List<PutawayConfiguration> putawayConfigurations) {
+        putawayConfigurations.forEach(putawayConfiguration -> loadAttribute(putawayConfiguration));
     }
 
     public PutawayConfiguration findBySequence(int sequence) {

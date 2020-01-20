@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.File;
@@ -119,10 +120,10 @@ public class MovementPathService implements TestDataInitiableService{
 
     public List<MovementPath> findAll(Long fromLocationId,
                                       String fromLocationName,
-                                          Long fromLocationGroupId,
-                                          Long toLocationId,
+                                      Long fromLocationGroupId,
+                                      Long toLocationId,
                                       String toLocationName,
-                                          Long toLocationGroupId, boolean includeDetails) {
+                                      Long toLocationGroupId, boolean includeDetails) {
 
         List<MovementPath> movementPaths =  movementPathRepository.findAll(
                 (Root<MovementPath> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -166,6 +167,47 @@ public class MovementPathService implements TestDataInitiableService{
         return movementPaths;
     }
 
+    // Get matched movement path based upon the from / to location or location group
+    // We will only get by 3 pairs of parameters
+    // 1. from / to location id
+    // 2. from / to location name
+    // 3. from / to location group
+    // Then we will group all the results together
+    public List<MovementPath> findMatchedMovementPaths(Long fromLocationId,
+                             String fromLocationName,
+                             Long fromLocationGroupId,
+                             Long toLocationId,
+                             String toLocationName,
+                             Long toLocationGroupId) {
+        Set<MovementPath> matchedMovementPathSet = new HashSet<>();
+        if (fromLocationId != null && toLocationId != null) {
+            List<MovementPath> matchedMovementPath = findAll(fromLocationId, "", null,
+                    toLocationId, "", null);
+            if (matchedMovementPath.size() > 0) {
+                matchedMovementPathSet.addAll(matchedMovementPath);
+            }
+        }
+        else if (!StringUtils.isBlank(fromLocationName) && !StringUtils.isBlank(toLocationName)) {
+            List<MovementPath> matchedMovementPath = findAll(null, fromLocationName, null,
+                    null, toLocationName, null);
+            if (matchedMovementPath.size() > 0) {
+                matchedMovementPathSet.addAll(matchedMovementPath);
+            }
+        }
+        else if (fromLocationGroupId != null && toLocationGroupId != null) {
+            List<MovementPath> matchedMovementPath = findAll(null, "", fromLocationGroupId,
+                    null, "", toLocationGroupId);
+            if (matchedMovementPath.size() > 0) {
+                matchedMovementPathSet.addAll(matchedMovementPath);
+            }
+        }
+
+        // Sort the result by the movement path sequence
+        List<MovementPath> matchedMovementPathList = new ArrayList<>(matchedMovementPathSet);
+        matchedMovementPathList.sort(Comparator.comparing(MovementPath::getSequence));
+        return matchedMovementPathList;
+
+    }
     public MovementPath saveOrUpdate(MovementPath movementPath) {
         if (movementPath.getId() == null && findByNaturalKeys(movementPath) != null) {
             movementPath.setId(findByNaturalKeys(movementPath).getId());
@@ -324,7 +366,9 @@ public class MovementPathService implements TestDataInitiableService{
         List<Location> hopLocations = getHopLocations(fromLocationId, toLocationId, inventory);
 
         logger.debug("We will hop through those locations: \n {}", hopLocations);
-        hopLocations.forEach(location -> warehouseLayoutServiceRestemplateClient.reserveLocation(location.getId(),location.getReservedCode()));
+        hopLocations.forEach(location ->
+                warehouseLayoutServiceRestemplateClient.reserveLocation(location.getId(),location.getReservedCode(),
+                                                    inventory.getSize(), inventory.getQuantity(), 1));
 
         return hopLocations;
     }
@@ -433,17 +477,8 @@ public class MovementPathService implements TestDataInitiableService{
 
         String reservedCode = getReservedCode(inventory, movementPathStrategy);
 
-        Location[] locations = warehouseLayoutServiceRestemplateClient.getLocationsByReservedCode(String.valueOf(locationGroup.getId()), reservedCode);
-
-        for(Location location : locations) {
-            if (reserveLocationForMovement(location, reservedCode)) {
-                // OK, we are able to reserve the location
-                // let's stop here
-                return location;
-            }
-        }
-        return null;
-
+        return warehouseLayoutServiceRestemplateClient.reserveLocation(
+                locationGroup.getId(), reservedCode, inventory.getSize(), inventory.getQuantity(), 1);
 
     }
 

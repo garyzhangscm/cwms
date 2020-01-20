@@ -35,6 +35,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -195,11 +197,89 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     public Location allocateLocation(Location location, Double inventorySize) {
 
-        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout//location/{id}/allocate?inventory_size={inventorySize}",
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/location/{id}/allocate?inventory_size={inventorySize}",
                 HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
                 }, location.getId(), inventorySize).getBody();
 
         return responseBodyWrapper.getData();
     }
+
+    public Location reserveLocationFromGroup(Long locationGroupId, String reservedCode,
+                                    Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
+
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/locationgroup/{locationGroupId}/reserve?")
+                .append("reserved_code={reservedCode}")
+                .append("&pending_size={pendingSize}")
+                .append("&pending_quantity={pendingQuantity}")
+                .append("&pending_pallet_quantity={pendingPalletQuantity}");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(url.toString(),
+                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, locationGroupId, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location reserveLocation(Long locationId, String reservedCode,
+                                             Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
+
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/location/{locationId}/reserveWithVolume?")
+                .append("reserved_code={reservedCode}")
+                .append("&pending_size={pendingSize}")
+                .append("&pending_quantity={pendingQuantity}")
+                .append("&pending_pallet_quantity={pendingPalletQuantity}");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(url.toString(),
+                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, locationId, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
+    public List<Location> findDockLocations() {
+
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/locations/dock");
+
+        ResponseBodyWrapper<List<Location>> responseBodyWrapper = restTemplate.exchange(url.toString(),
+                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {
+                }).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location checkInTrailerAtDockLocations(Long dockLocationId, Long trailerId) {
+
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/locations/dock/{id}/check-in-trailer?")
+           .append("trailerId={trailerId}");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(url.toString(),
+                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, dockLocationId, trailerId).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location dispatchTrailerFromDockLocations(Long dockLocationId) {
+
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/locations/dock/{id}/dispatch-trailer");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(url.toString(),
+                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
+                }, dockLocationId).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location getTrailerLocation(Long trailerId) {
+        String locationName = "TRLR-" + trailerId;
+        return getLocationByName(locationName);
+    }
+
 
 }

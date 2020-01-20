@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.layout.controller;
 
 import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import com.garyzhangscm.cwms.layout.service.LocationGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,18 @@ public class LocationGroupController {
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroup")
     public void removeLocationGroups(@RequestParam(name = "location_group_ids", required = false, defaultValue = "") String locationGroupIds) {
         locationGroupService.delete(locationGroupIds);
+    }
+
+
+    // Reserve a location. This is normally to reserve hop locations for certain inventory
+    @RequestMapping(method=RequestMethod.PUT, value="/locationgroup/{id}/reserve")
+    public Location reserveLocation(@PathVariable Long id,
+                                    @RequestParam(name = "reserved_code") String reservedCode,
+                                    @RequestParam(name = "pending_size") Double pendingSize,
+                                    @RequestParam(name = "pending_quantity") Long pendingQuantity,
+                                    @RequestParam(name = "pending_pallet_quantity") Integer pendingPalletQuantity) {
+
+        return locationGroupService.reserveLocation(id, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
     }
 
 

@@ -37,4 +37,7 @@ public interface LocationGroupRepository extends JpaRepository<LocationGroup, Lo
     @Query( "select o from LocationGroup o where location_group_type_id in :ids" )
     List<LocationGroup> findByLocationGroupTypes(@Param("ids") List<Long> locationGroupTypeIds);
 
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.trailer = true" )
+    List<LocationGroup> getDockLocationGroup();
+
 }
