@@ -49,6 +49,7 @@ public class OrderCSVWrapper {
     private String billToAddressLine1;
     private String billToAddressLine2;
     private String billToAddressPostcode;
+    private String warehouse;
 
     private String client;
 
@@ -242,5 +243,13 @@ public class OrderCSVWrapper {
 
     public void setClient(String client) {
         this.client = client;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

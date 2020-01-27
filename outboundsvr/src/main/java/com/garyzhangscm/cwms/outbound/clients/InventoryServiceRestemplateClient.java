@@ -116,10 +116,32 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
-    public List<Inventory> getPickableInventory(Long itemId) {
+    public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId) {
+        StringBuilder url = new StringBuilder()
+                                .append("http://zuulserver:5555/api/inventory/inventories/pickable?" )
+                                .append("itemId={itemId}")
+                                .append("&inventoryStatusId={inventoryStatusId}");
 
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories/pickable?itemId={itemId}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}, itemId).getBody();
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange(url.toString(),
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {},
+                itemId, inventoryStatusId).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<Inventory> getInventoryByLocation(Location location) {
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories?location={location}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}, location.getName()).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<Inventory> getPendingInventoryByLocation(Location location) {
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories/pending?locationId={locationId}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}, location.getId()).getBody();
 
         return responseBodyWrapper.getData();
     }
@@ -134,6 +156,25 @@ public class InventoryServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    public List<Inventory> getInventoryByLocationGroup(Item item, InventoryStatus inventoryStatus, LocationGroup locationGroup) {
+        StringBuilder url = new StringBuilder()
+                                .append("http://zuulserver:5555/api/inventory/inventories?")
+                                .append("itemName={itemName}")
+                                .append("&inventory_status_id={inventoryStatusId}")
+                                .append("&location_group_id={locationGroupId}");
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {},
+                item.getName(),
+                inventoryStatus.getId(),
+                locationGroup.getId()).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
 
 
     public List<MovementPath> getPickMovementPath(Pick pick) {

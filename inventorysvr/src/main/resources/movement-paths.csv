@@ -1,2 +1,2 @@
-fromLocation,toLocation,fromLocationGroup,toLocationGroup,sequence,hopLocation,hopLocationGroup,strategy
-,,RECEIPT,,1,,RECV_STG,BY_RECEIPT
+warehouse,fromLocation,toLocation,fromLocationGroup,toLocationGroup,sequence,hopLocation,hopLocationGroup,strategy
+WMOR,,,RECEIPT,,1,,RECV_STG,BY_RECEIPT

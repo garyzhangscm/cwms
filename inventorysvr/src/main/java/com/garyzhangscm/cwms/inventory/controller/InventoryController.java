@@ -34,19 +34,28 @@ public class InventoryController {
     InventoryService inventoryService;
 
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
-    public List<Inventory> findAllInventories(@RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+    public List<Inventory> findAllInventories(@RequestParam String warehouseName,
+                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="item_families", required = false, defaultValue = "") String itemFamilyIds,
+                                              @RequestParam(name="inventory_status_id", required = false, defaultValue = "") Long inventoryStatusId,
                                               @RequestParam(name="location", required = false, defaultValue = "") String locationName,
+                                              @RequestParam(name="location_group_id", required = false, defaultValue = "") Long locationGroupId,
                                               @RequestParam(name="receipt_id", required = false, defaultValue = "") String receiptId,
                                               @RequestParam(name="pick_ids", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
-        return inventoryService.findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, pickIds, lpn);
+        return inventoryService.findAll(warehouseName, itemName, clientIds, itemFamilyIds,inventoryStatusId,  locationName, locationGroupId, receiptId, pickIds, lpn);
+    }
+
+    @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
+    public List<Inventory> findPendingInventories(@RequestParam Long locationId) {
+        return inventoryService.findPendingInventoryByLocationId(locationId);
     }
 
     @RequestMapping(value="/inventories/pickable", method = RequestMethod.GET)
-    public List<Inventory> findPickableInventories(@RequestParam Long itemId) {
-        return inventoryService.findPickableInventories(itemId);
+    public List<Inventory> findPickableInventories(@RequestParam Long itemId,
+                                                   @RequestParam Long inventoryStatusId) {
+        return inventoryService.findPickableInventories(itemId, inventoryStatusId);
     }
 
 

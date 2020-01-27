@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.model.LocationCSVWrapper;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -53,8 +55,16 @@ public class WarehouseService implements TestDataInitiableService {
     }
 
     public List<Warehouse> findAll() {
+        return findAll("");
+    }
+    public List<Warehouse> findAll(String name) {
 
-        return warehouseRepository.findAll();
+        if (StringUtils.isBlank(name)) {
+            return warehouseRepository.findAll();
+        }
+        else {
+            return Arrays.asList(new Warehouse[]{findByName(name)});
+        }
     }
 
     public Warehouse findByName(String name){

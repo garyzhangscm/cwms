@@ -147,6 +147,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     public List<ShippingStageAreaConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("sequence").
                 addColumn("locationGroup").
                 addColumn("locationReserveStrategy").
@@ -174,10 +175,16 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         shippingStageAreaConfiguration.setLocationReserveStrategy(
                 ShippingStageLocationReserveStrategy.valueOf(shippingStageAreaConfigurationCSVWrapper.getLocationReserveStrategy()));
 
+        if (!StringUtils.isBlank(shippingStageAreaConfigurationCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(shippingStageAreaConfigurationCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                shippingStageAreaConfiguration.setWarehouseId(warehouse.getId());
+            }
+        }
         if (!StringUtils.isBlank(shippingStageAreaConfigurationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup =
                     warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                            shippingStageAreaConfigurationCSVWrapper.getLocationGroup());
+                            shippingStageAreaConfigurationCSVWrapper.getWarehouse(), shippingStageAreaConfigurationCSVWrapper.getLocationGroup());
             if (locationGroup != null) {
                 shippingStageAreaConfiguration.setLocationGroupId(locationGroup.getId());
             }

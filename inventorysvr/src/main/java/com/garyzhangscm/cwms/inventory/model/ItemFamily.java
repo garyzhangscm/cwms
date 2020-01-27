@@ -44,6 +44,12 @@ public class ItemFamily implements Serializable {
     @JsonProperty(value="totalItemCount")
     private int totalItemCount;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     public Long getId() {
         return id;
     }
@@ -74,5 +80,21 @@ public class ItemFamily implements Serializable {
 
     public void setTotalItemCount(int totalItemCount) {
         this.totalItemCount = totalItemCount;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

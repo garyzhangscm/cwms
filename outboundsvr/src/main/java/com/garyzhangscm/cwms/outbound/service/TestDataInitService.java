@@ -19,8 +19,10 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +38,13 @@ public class TestDataInitService {
     AllocationConfigurationService allocationConfigurationService;
 
     ShippingStageAreaConfigurationService shippingStageAreaConfigurationService;
+
+    EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService;
+
     TrailerTemplateService trailerTemplateService;
 
+    @Autowired
+    private KafkaTemplate kafkaTemplate;
 
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
@@ -46,11 +53,13 @@ public class TestDataInitService {
                               OrderLineService orderLineService,
                                AllocationConfigurationService allocationConfigurationService,
                                ShippingStageAreaConfigurationService shippingStageAreaConfigurationService,
+                               EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService,
                                TrailerTemplateService trailerTemplateService) {
         this.orderService = orderService;
         this.orderLineService = orderLineService;
         this.allocationConfigurationService = allocationConfigurationService;
         this.shippingStageAreaConfigurationService = shippingStageAreaConfigurationService;
+        this.emergencyReplenishmentConfigurationService = emergencyReplenishmentConfigurationService;
 
         this.trailerTemplateService = trailerTemplateService;
 
@@ -63,6 +72,8 @@ public class TestDataInitService {
         serviceNames.add("Allocation Configuration");
         initiableServices.put("Shipping Stage Area Configuration", shippingStageAreaConfigurationService);
         serviceNames.add("Shipping Stage Area Configuration");
+        initiableServices.put("Emergency Replenishment Configuration", emergencyReplenishmentConfigurationService);
+        serviceNames.add("Emergency Replenishment Configuration");
         initiableServices.put("Trailer Template", trailerTemplateService);
         serviceNames.add("Trailer Template");
 

@@ -45,6 +45,13 @@ public class AuditCountRequest implements Serializable {
     private Location location;
 
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
+
 
     public Long getId() {
         return id;
@@ -78,4 +85,19 @@ public class AuditCountRequest implements Serializable {
         this.location = location;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 }

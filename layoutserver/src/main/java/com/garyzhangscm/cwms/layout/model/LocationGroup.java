@@ -39,6 +39,10 @@ public class LocationGroup {
     private String description;
 
     @ManyToOne
+    @JoinColumn(name = "warehouse_id")
+    private Warehouse warehouse;
+
+    @ManyToOne
     @JoinColumn(name="location_group_type_id")
     private LocationGroupType locationGroupType;
 
@@ -127,5 +131,13 @@ public class LocationGroup {
 
     public void setVolumeTrackingPolicy(LocationVolumeTrackingPolicy volumeTrackingPolicy) {
         this.volumeTrackingPolicy = volumeTrackingPolicy;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -61,6 +61,8 @@ public class LocationService implements TestDataInitiableService {
     @Autowired
     private LocationGroupService locationGroupService;
     @Autowired
+    private WarehouseService warehouseService;
+    @Autowired
     private FileService fileService;
 
     @Value("${fileupload.test-data.locations:locations.csv}")
@@ -78,13 +80,16 @@ public class LocationService implements TestDataInitiableService {
         return locationRepository.findAll();
     }
 
-    public List<Location> findAll(String locationGroupTypeIds,
+    public List<Location> findAll(String warehouseName, String locationGroupTypeIds,
                                   String locationGroupIds,
                                   String name,
                                   Long beginSequence,
                                   Long endSequence,
                                   String sequenceType,
                                   Boolean includeEmptyLocation,
+                                  Boolean emptyLocationOnly,
+                                  Double minEmptyCapacity,
+                                  Boolean pickableLocationOnly,
                                   Boolean includeDisabledLocation) {
 
         return locationRepository.findAll(
@@ -140,9 +145,43 @@ public class LocationService implements TestDataInitiableService {
 
                     predicates.add(criteriaBuilder.greaterThan(totalVolume, 0.0));
                 }
+                if (emptyLocationOnly == true) {
+                    Expression<Double> totalVolume = criteriaBuilder.sum(root.get("currentVolume"), root.get("pendingVolume"));
+
+                    predicates.add(criteriaBuilder.equal(totalVolume, 0.0));
+
+                }
+                if (pickableLocationOnly == true ) {
+                    // only return pickable location
+                    Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
+                    predicates.add(criteriaBuilder.equal(joinLocationGroup.get("pickable"), true));
+                }
+                if (minEmptyCapacity > 0.0) {
+                    // current capacity = total capacity * capacity fill rate - current volume - pending volume
+                    Expression<Double> emptyCapacity =
+                            criteriaBuilder.diff(
+                                    criteriaBuilder.diff(
+                                            criteriaBuilder.prod(
+                                                    root.get("capacity"),
+                                                    root.get("fillPercentage")
+                                            )
+                                            ,
+                                            root.get("currentVolume")
+                                    ),
+                                    root.get("pendingVolume")
+                            );
+
+                    predicates.add(criteriaBuilder.ge(emptyCapacity, minEmptyCapacity));
+
+                }
                 if (!includeDisabledLocation){
 
                     predicates.add(criteriaBuilder.equal(root.get("enabled"), true));
+                }
+                if (!StringUtils.isBlank(warehouseName)) {
+
+                    Join<Location, Warehouse> joinWarehouse = root.join("warehouse", JoinType.INNER);
+                    predicates.add(criteriaBuilder.equal(joinWarehouse.get("name"), warehouseName));
                 }
 
                 Predicate[] p = new Predicate[predicates.size()];
@@ -152,13 +191,13 @@ public class LocationService implements TestDataInitiableService {
 
     }
 
-    public Location findLogicLocation(String locationType) {
+    public Location findLogicLocation(String locationType, String warehouseName) {
 
         // Get the logic location's name by policy
         String policyKey = "LOCATION-" + locationType;
         logger.debug("Start to find policy by key: {}", policyKey);
         Policy policy = commonServiceRestemplateClient.getPolicyByKey(policyKey);
-        return findByName(policy.getValue());
+        return findByName(policy.getValue(), warehouseName);
     }
 
     public List<Location> findByLocationGroup(Long locationGroupId) {
@@ -181,16 +220,16 @@ public class LocationService implements TestDataInitiableService {
         }
     }
 
-    public Location findByName(String name){
-        return locationRepository.findByName(name);
+    public Location findByName(String name, String warehouseName){
+        return locationRepository.findByName(warehouseName, name);
     }
 
     public Location save(Location location) {
         return locationRepository.save(location);
     }
     public Location saveOrUpdate(Location location) {
-        if (findByName(location.getName()) != null) {
-            location.setId(findByName(location.getName()).getId());
+        if (findByName(location.getName(), location.getWarehouse().getName()) != null) {
+            location.setId(findByName(location.getName(), location.getWarehouse().getName()).getId());
         }
         return save(location);
     }
@@ -219,6 +258,7 @@ public class LocationService implements TestDataInitiableService {
 
     public List<LocationCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("aisle").
                 addColumn("x").
@@ -240,6 +280,7 @@ public class LocationService implements TestDataInitiableService {
     public List<LocationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("aisle").
                 addColumn("x").
@@ -289,8 +330,10 @@ public class LocationService implements TestDataInitiableService {
         location.setCurrentVolume(0.0);
         location.setPendingVolume(0.0);
 
+        location.setWarehouse(warehouseService.findByName(locationCSVWrapper.getWarehouse()));
+
         if (!locationCSVWrapper.getLocationGroup().isEmpty()) {
-            LocationGroup locationGroup = locationGroupService.findByName(locationCSVWrapper.getLocationGroup());
+            LocationGroup locationGroup = locationGroupService.findByName(locationCSVWrapper.getWarehouse(),locationCSVWrapper.getLocationGroup());
             location.setLocationGroup(locationGroup);
         }
         return location;
@@ -392,8 +435,8 @@ public class LocationService implements TestDataInitiableService {
 
     }
 
-    public List<Location> getDockLocations(Boolean emptyDockOnly) {
-        List<Location> dockLocations = locationRepository.getDockLocations();
+    public List<Location> getDockLocations(String warehouseName, Boolean emptyDockOnly) {
+        List<Location> dockLocations = locationRepository.getDockLocations(warehouseName);
         if (emptyDockOnly) {
             return dockLocations.stream().filter(Location::isEmpty).collect(Collectors.toList());
         }
@@ -405,7 +448,9 @@ public class LocationService implements TestDataInitiableService {
     }
     public Location checkInTrailerAtDock(Location dockLocation, Long trailerId) {
         // Create a fake location for the trailer. Location's name will be the trailer ID
-        createTrailerLocation(trailerId);
+        Location trailerLocation = createTrailerLocation(dockLocation.getWarehouse().getName(), trailerId);
+        logger.debug(">> trailer location created: {} / {}",
+                trailerLocation.getId(), trailerLocation.getName());
         // update the location's volume to 1 when we check in the trailer
         // at the dock
         dockLocation.setCurrentVolume(1.0);
@@ -418,10 +463,10 @@ public class LocationService implements TestDataInitiableService {
         dockLocation.setCurrentVolume(0.0);
         return saveOrUpdate(dockLocation);
     }
-    public Location createTrailerLocation(Long trailerId) {
+    public Location createTrailerLocation(String warehouseName, Long trailerId) {
         Location location = new Location();
         location.setName("TRLR-" + String.valueOf(trailerId));
-        location.setLocationGroup(locationGroupService.getDockLocationGroup());
+        location.setLocationGroup(locationGroupService.getDockLocationGroup(warehouseName));
         location.setEnabled(true);
         return saveOrUpdate(location);
     }

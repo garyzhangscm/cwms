@@ -62,6 +62,12 @@ public class Item implements Serializable {
     @Column(name="unit_cost")
     private double unitCost;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Override
     public boolean equals(Object anotherItem) {
         if (this == anotherItem) {
@@ -139,5 +145,21 @@ public class Item implements Serializable {
 
     public void setUnitCost(double unitCost) {
         this.unitCost = unitCost;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

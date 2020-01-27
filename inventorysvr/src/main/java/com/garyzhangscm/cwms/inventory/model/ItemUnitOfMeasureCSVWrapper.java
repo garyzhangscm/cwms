@@ -31,6 +31,8 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
     private Double width;
     private Double height;
 
+    private String warehouse;
+
     public String getItem() {
         return item;
     }
@@ -93,5 +95,13 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
 
     public void setHeight(Double height) {
         this.height = height;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

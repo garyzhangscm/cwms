@@ -30,7 +30,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -50,6 +52,11 @@ public class PickService {
     private PickMovementService pickMovementService;
     @Autowired
     private ShipmentLineService shipmentLineService;
+    @Autowired
+    private EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService;
+
+    @Autowired
+    private PickListService pickListService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -213,7 +220,7 @@ public class PickService {
     }
 
 
-    public Pick generatePick(InventorySummary inventorySummary, ShipmentLine shipmentLine, Long quantity) {
+    public Pick generatePick(InventorySummary inventorySummary, Long quantity) {
         logger.debug("Start to generate pick");
         Pick pick = new Pick();
         pick.setItem(inventorySummary.getItem());
@@ -223,9 +230,77 @@ public class PickService {
         pick.setQuantity(quantity);
         pick.setPickedQuantity(0L);
         pick.setNumber(getNextPickNumber());
-        pick.setShipmentLine(shipmentLine);
         pick.setStatus(PickStatus.PENDING);
 
+        return pick;
+    }
+
+    public Pick generatePick(InventorySummary inventorySummary, ShipmentLine shipmentLine, Long quantity) {
+        Pick pick = generatePick(inventorySummary, quantity);
+
+        pick.setShipmentLine(shipmentLine);
+        pick.setWarehouseId(shipmentLine.getWarehouseId());
+
+        // Setup the destination, get from ship staging area
+
+
+        Location stagingLocation = getDestinationLocationForPick(shipmentLine, pick);
+        pick.setDestinationLocation(stagingLocation);
+        pick.setDestinationLocationId(stagingLocation.getId());
+
+        Pick savedPick = save(pick);
+
+        logger.debug("pick saved!!!! id : {}", savedPick.getId());
+        // Setup the pick movement
+        setupMovementPath(savedPick);
+        logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
+
+
+        // Let's see if we can group the pick either
+        // 1. into an existing pick list
+        // 2. or create a new picking list so other picks can be grouped
+        processPickList(savedPick);
+
+        return findById(savedPick.getId());
+    }
+
+    @Transactional
+    public void processPickList(Pick pick) {
+        try {
+            PickList pickList = pickListService.getPickList(pick);
+            pick.setPickList(pickList);
+            saveOrUpdate(pick);
+        }
+        catch (Exception ex) {
+            logger.debug("Exception while trying group the pick {} to list\n{}"
+                         , pick.getNumber(), ex.getMessage());
+        }
+    }
+
+    public Pick generatePick(InventorySummary inventorySummary, ShortAllocation shortAllocation, Long quantity) {
+        Pick pick = generatePick(inventorySummary, quantity);
+
+        pick.setShortAllocation(shortAllocation);
+        pick.setWarehouseId(shortAllocation.getWarehouseId());
+
+        // Setup the destination, get from ship staging area
+
+
+        Location destinationLocation = getDestinationLocationForPick(pick);
+        pick.setDestinationLocation(destinationLocation);
+        pick.setDestinationLocationId(destinationLocation.getId());
+
+        Pick savedPick = save(pick);
+
+        logger.debug("pick saved!!!! id : {}", savedPick.getId());
+        // Setup the pick movement
+        setupMovementPath(savedPick);
+        logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
+
+        return findById(savedPick.getId());
+    }
+
+    private Location getDestinationLocationForPick(ShipmentLine shipmentLine, Pick pick) {
         ShippingStageAreaConfiguration shippingStageAreaConfiguration;
         logger.debug(">> Try to get ship stage for the pick");
         logger.debug(">> shipmentLine.getOrderLine().getOrder().getStageLocationGroupId(): {}",
@@ -243,20 +318,16 @@ public class PickService {
         Location stagingLocation = shippingStageAreaConfigurationService.reserveShippingStageLocation(shippingStageAreaConfiguration, pick);
 
         logger.debug("Bingo, we got the ship stage location: {}", stagingLocation.getName());
+        return stagingLocation;
 
-        pick.setDestinationLocation(stagingLocation);
-        pick.setDestinationLocationId(stagingLocation.getId());
-
-
-        Pick savedPick = save(pick);
-
-        logger.debug("pick saved!!!! id : {}", savedPick.getId());
-        // Setup the pick movement
-        setupMovementPath(savedPick);
-        logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
-
-        return findById(savedPick.getId());
     }
+
+
+    private Location getDestinationLocationForPick(Pick pick) {
+        return emergencyReplenishmentConfigurationService.getEmergencyReplenishmentDestination(pick);
+
+    }
+
 
     // Once we have the source and destination of the pick, we will need to setup the movement path of
     // the pick. THe movement path will guide the user to drop in different hops when moving inventory
@@ -377,6 +448,7 @@ public class PickService {
             logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
         }
 
+
         // Get the latest pick information
         return findById(pick.getId());
     }
@@ -428,6 +500,9 @@ public class PickService {
                 pick.getPickedQuantity(), (pick.getPickedQuantity() + quantityToBePick));
         pick.setPickedQuantity(pick.getPickedQuantity() + quantityToBePick);
         saveOrUpdate(pick);
+
+        // Let's update the list if the pick belongs to any list
+        pickListService.processPickConfirmed(pick);
         return quantityToBePick;
 
     }

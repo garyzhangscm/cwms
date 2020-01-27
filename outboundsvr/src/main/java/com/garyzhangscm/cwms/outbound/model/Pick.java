@@ -57,10 +57,26 @@ public class Pick implements Serializable {
     @Transient
     private Item item;
 
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
+
     @ManyToOne
     @JoinColumn(name = "shipment_line_id")
     @JsonIgnore
     private ShipmentLine shipmentLine;
+
+    @ManyToOne
+    @JoinColumn(name = "short_allocation_id")
+    @JsonIgnore
+    private ShortAllocation shortAllocation;
+
+    @Column(name = "type")
+    private PickType pickType;
 
     @Column(name = "quantity")
     private Long quantity;
@@ -79,8 +95,16 @@ public class Pick implements Serializable {
     )
     List<PickMovement> pickMovements = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "pick_list_id")
+    private PickList pickList;
+
+    @JsonIgnore
     public Double getSize() {
 
+        if (item == null) {
+            return 0.0;
+        }
         ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasures();
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
@@ -218,4 +242,53 @@ public class Pick implements Serializable {
     public InventoryStatus getInventoryStatus() {
         return shipmentLine.getOrderLine().getInventoryStatus();
     }
+
+    public ShortAllocation getShortAllocation() {
+        return shortAllocation;
+    }
+
+    public void setShortAllocation(ShortAllocation shortAllocation) {
+        this.shortAllocation = shortAllocation;
+    }
+
+    public PickList getPickList() {
+        return pickList;
+    }
+
+    public void setPickList(PickList pickList) {
+        this.pickList = pickList;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public Client getClient() {
+        if (shipmentLine == null) {
+            return null;
+        }
+        return shipmentLine.getOrderLine().getOrder().getClient();
+    }
+
+    public PickType getPickType() {
+        return pickType;
+    }
+
+    public void setPickType(PickType pickType) {
+        this.pickType = pickType;
+    }
+
+
 }

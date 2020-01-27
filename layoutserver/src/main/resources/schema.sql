@@ -1,7 +1,8 @@
-DROP TABLE IF EXISTS warehouse;
+
 drop table if exists location;
 drop table if exists location_group;
 drop Table if exists location_group_type;
+DROP TABLE IF EXISTS warehouse;
 
 CREATE TABLE warehouse (
   warehouse_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -55,12 +56,14 @@ CREATE TABLE location_group(
   name   VARCHAR(100) NOT NULL unique,
   description   VARCHAR(100) NOT NULL,
   location_group_type_id BIGINT NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   pickable  boolean not null default 0,
   storable  boolean not null default 0,
   countable  boolean not null default 0,
   tracking_volume  boolean not null default 0,
   volume_tracking_policy VARCHAR(20),
-  foreign key(location_group_type_id) references location_group_type(location_group_type_id));
+  foreign key(location_group_type_id) references location_group_type(location_group_type_id),
+  foreign key(warehouse_id) references warehouse(warehouse_id));
 
 -- INSERT INTO location_group(name, description, location_group_type_id, pickable, storable, countable)
 --     values ("EACH_PICK_1", "Each Picking Area - #1", 1, 1, 1, 1);
@@ -72,6 +75,7 @@ CREATE TABLE location_group(
 CREATE TABLE location(
   location_id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL unique,
+  warehouse_id BIGINT NOT NULL,
   aisle   VARCHAR(100),
   x double,
   y double,
@@ -89,7 +93,8 @@ CREATE TABLE location(
   location_group_id  BIGINT not null,
   enabled boolean not null default 0,
   reserved_code VARCHAR(100),
-  foreign key(location_group_id) references location_group(location_group_id));
+  foreign key(location_group_id) references location_group(location_group_id),
+  foreign key(warehouse_id) references warehouse(warehouse_id));
 
 
 

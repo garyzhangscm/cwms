@@ -20,17 +20,22 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
+import com.garyzhangscm.cwms.outbound.utils.UserContext;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,9 +53,13 @@ public class ShipmentService {
     @Autowired
     private OrderLineService orderLineService;
     @Autowired
+    private OrderService orderService;
+    @Autowired
     private TrailerService trailerService;
     @Autowired
     private PickService pickService;
+    @Autowired
+    private KafkaSender kafkaSender;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -167,6 +176,10 @@ public class ShipmentService {
         List<Shipment> shipments = new ArrayList<>();
         orderListMap.entrySet().stream().forEach(orderListEntry ->{
             logger.debug("Start to process order line entry: key: {}, value: {}", orderListEntry.getKey().getNumber(), orderListEntry.getValue().size());
+            logger.debug("## With user: {}", SecurityContextHolder.getContext().getAuthentication().getName());
+            kafkaSender.send(OrderActivity.build()
+                    .withOrder(orderService.findById(orderListEntry.getKey().getId()))
+                    .withOrderActivityType(OrderActivityType.ORDER_PLAN));
             shipments.add(createShipment(wave, orderListEntry.getKey(), orderListEntry.getValue()));
 
         });
@@ -215,6 +228,7 @@ public class ShipmentService {
         Shipment shipment = new Shipment();
         shipment.setNumber(shipmentNumber);
         shipment.setStatus(ShipmentStatus.PENDING);
+        shipment.setWarehouseId(order.getWarehouseId());
 
         Shipment newShipment = save(shipment);
 
@@ -245,8 +259,9 @@ public class ShipmentService {
     public List<Inventory> getStagedInventory(Shipment shipment) {
         // Let's get all the picked inventory and check which is already staged
         List<Inventory> pickedInventories = getPickedInventory(shipment);
+        logger.debug("Get {} picked inventory ", pickedInventories.size());
         return pickedInventories.stream()
-                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getReceivingStage())
+                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())
                 .collect(Collectors.toList());
     }
 
@@ -298,6 +313,8 @@ public class ShipmentService {
         // We will only load the inventory that is picked and staged
         List<Inventory> stagedInventory = getStagedInventory(shipment);
 
+        logger.debug("Get {} staged inventory for the shipment {}",
+                stagedInventory.size(), shipment.getNumber());
         stagedInventory.stream().forEach(inventory -> {
             try {
                 loadShipment(inventory, trailer);
@@ -326,12 +343,21 @@ public class ShipmentService {
 
     // Load the inventory onto the trailer
     public void loadShipment(Inventory inventory, Trailer trailer) throws IOException {
+
+        ShipmentLine shipmentLine = pickService.findById(inventory.getPickId()).getShipmentLine();
+
         // Let's move the inventory onto the trailer
 
-        Location trailerLocation = warehouseLayoutServiceRestemplateClient.getTrailerLocation(trailer.getId());
-        inventoryServiceRestemplateClient.moveInventory(inventory, trailerLocation);
+        Location trailerLocation =
+                warehouseLayoutServiceRestemplateClient.getTrailerLocation(
+                        getWarehouseName(shipmentLine.getWarehouseId()), trailer.getId());
 
-        ShipmentLine shipmentLine = inventory.getPick().getShipmentLine();
+        logger.debug("Start to move inventory {} onto trailer {} ",
+                inventory.getLpn(), trailer.getId());
+        inventory = inventoryServiceRestemplateClient.moveInventory(inventory, trailerLocation);
+
+        logger.debug("Start to get pick and shipment line by id {} from inventory {}",
+                inventory.getPickId(), inventory.getLpn());
         // move the quantity from inprocess to loaded quantity
         shipmentLine.setLoadedQuantity(shipmentLine.getLoadedQuantity() + inventory.getQuantity());
         shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - inventory.getQuantity());
@@ -339,5 +365,45 @@ public class ShipmentService {
 
 
     }
+
+    // Complete the shipment
+    // If we haven't setup the outbound structure yet(stop / trailer / etc), we
+    //    will let the trailer service create all the structure automatically so
+    //    we can complete the shipment
+    public Shipment completeShipment(Shipment shipment) {
+        try {
+            if (shipment.getStop() == null) {
+                trailerService.completeShipment(shipment);
+                shipment.setStatus(ShipmentStatus.LOADED);
+                return save(shipment);
+            } else if (shipment.getStop().getTrailer() != null) {
+                // OK we have stop assign, let's see if we can load the shipment
+                // for the trailer
+                trailerService.loadShipment(shipment);
+                shipment.setStatus(ShipmentStatus.LOADED);
+                return save(shipment);
+            }
+        }
+        catch (IOException ex) {
+            throw new GenericException(10000, ex.getMessage());
+        }
+        return shipment;
+
+    }
+
+    public Shipment completeShipment(Long shipmentId) {
+        return completeShipment(findById(shipmentId));
+    }
+
+    private String getWarehouseName(Long warehouseId) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        if (warehouse == null) {
+            return "";
+        }
+        else  {
+            return warehouse.getName();
+        }
+    }
+
 
 }

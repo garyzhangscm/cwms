@@ -1,6 +1,6 @@
-number,licensePlateNumber,size,type,driverFirstName,driverLastName,driverPhone,enabled
-1001,沪A00001,24 ft,FT_24,一,张,7148881111,true
-1002,沪A00002,50 ft,FT_50,二,张,7148882222,true
-1003,沪A00002,20 GP,GP_20,三,张,7148883333,true
-1004,沪A00003,40 GP,GP_40,四,张,7148884444,true
-1005,沪A00004,40 HQ,HQ_40,五,张,7148885555,true
+warehouse,number,licensePlateNumber,size,type,driverFirstName,driverLastName,driverPhone,enabled
+WMOR,1001,沪A00001,24 ft,FT_24,一,张,7148881111,true
+WMOR,1002,沪A00002,50 ft,FT_50,二,张,7148882222,true
+WMOR,1003,沪A00002,20 GP,GP_20,三,张,7148883333,true
+WMOR,1004,沪A00003,40 GP,GP_40,四,张,7148884444,true
+WMOR,1005,沪A00004,40 HQ,HQ_40,五,张,7148885555,true

@@ -37,12 +37,13 @@ public class CycleCountRequestController {
 
     @RequestMapping(value = "/cycle-count-requests", method = RequestMethod.POST)
     public List<CycleCountRequest> generateCycleCountRequests(
+            @RequestParam String warehouseName,
             @RequestParam("batch_id") String batchId,
             @RequestParam("cycle_count_request_type") String cycleCountRequestType,
             @RequestParam("begin_value") String beginValue,
             @RequestParam("end_value") String endValue,
             @RequestParam("include_empty_location") Boolean includeEmptyLocation) {
-        return cycleCountRequestService.generateCycleCountRequest(batchId, CycleCountRequestType.valueOf(cycleCountRequestType), beginValue, endValue, includeEmptyLocation);
+        return cycleCountRequestService.generateCycleCountRequest(batchId, CycleCountRequestType.valueOf(cycleCountRequestType), warehouseName, beginValue, endValue, includeEmptyLocation);
     }
 
 

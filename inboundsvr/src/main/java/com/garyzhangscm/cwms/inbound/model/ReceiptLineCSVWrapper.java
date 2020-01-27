@@ -25,6 +25,7 @@ public class ReceiptLineCSVWrapper {
     private String item;
     private Long expectedQuantity;
     private Long receivedQuantity;
+    private String warehouse;
 
     public String getReceipt() {
         return receipt;
@@ -64,5 +65,13 @@ public class ReceiptLineCSVWrapper {
 
     public void setReceivedQuantity(Long receivedQuantity) {
         this.receivedQuantity = receivedQuantity;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -74,14 +74,14 @@ public class ReceiptService implements TestDataInitiableService{
 
 
 
-    public List<Receipt> findAll(String number, boolean loadDetails) {
+    public List<Receipt> findAll(String warehouseName, String number, boolean loadDetails) {
         List<Receipt> receipts;
 
         if (StringUtils.isBlank(number)) {
-            receipts = receiptRepository.findAll();
+            receipts = receiptRepository.findAll(getWarehouseId(warehouseName));
         }
         else {
-            Receipt receipt = receiptRepository.findByNumber(number);
+            Receipt receipt = receiptRepository.findByNumber(getWarehouseId(warehouseName), number);
             if (receipt != null) {
                 receipts = Arrays.asList(new Receipt[]{receipt});
             }
@@ -94,20 +94,29 @@ public class ReceiptService implements TestDataInitiableService{
         }
         return receipts;
     }
-    public List<Receipt> findAll(String number) {
-        return findAll(number, true);
+    public List<Receipt> findAll(String warehouseName, String number) {
+        return findAll(warehouseName, number, true);
     }
 
-    public Receipt findByNumber(String number, boolean loadDetails) {
-        Receipt receipt = receiptRepository.findByNumber(number);
+    public Receipt findByNumber(String warehouseName, String number, boolean loadDetails) {
+        return findByNumber(getWarehouseId(warehouseName), number, loadDetails);
+    }
+
+    public Receipt findByNumber(Long warehouseId, String number, boolean loadDetails) {
+        Receipt receipt = receiptRepository.findByNumber(warehouseId, number);
         if (receipt != null && loadDetails) {
             loadReceiptAttribute(receipt);
         }
         return receipt;
     }
-    public Receipt findByNumber(String number) {
-        return findByNumber(number, true);
+    public Receipt findByNumber(String warehouseName, String number) {
+        return findByNumber(getWarehouseId(warehouseName), number, true);
     }
+
+    public Receipt findByNumber(Long warehouseId, String number) {
+        return findByNumber(warehouseId, number, true);
+    }
+
 
 
     public void loadReceiptAttribute(List<Receipt> receipts) {
@@ -140,8 +149,8 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
     public Receipt saveOrUpdate(Receipt receipt) {
-        if (receipt.getId() == null && findByNumber(receipt.getNumber()) != null) {
-            receipt.setId(findByNumber(receipt.getNumber()).getId());
+        if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),receipt.getNumber()) != null) {
+            receipt.setId(findByNumber(receipt.getWarehouseId(),receipt.getNumber()).getId());
         }
         return save(receipt);
     }
@@ -168,9 +177,10 @@ public class ReceiptService implements TestDataInitiableService{
         throw new GenericException(10000, "Receipt not in right status");
     }
 
-    public Receipt addReceipt(String number, String clientId, String supplierId) {
+    public Receipt addReceipt(String warehouseName, String number, String clientId, String supplierId) {
         Receipt receipt = new Receipt();
         receipt.setNumber(number);
+        receipt.setWarehouseId(getWarehouseId(warehouseName));
         receipt.setReceiptStatus(ReceiptStatus.OPEN);
         if (!StringUtils.isBlank(clientId)) {
             logger.debug("start to get client by ID: {}", clientId);
@@ -211,6 +221,7 @@ public class ReceiptService implements TestDataInitiableService{
     public List<ReceiptCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("number").
                 addColumn("client").
                 addColumn("supplier").
@@ -234,6 +245,13 @@ public class ReceiptService implements TestDataInitiableService{
         Receipt receipt = new Receipt();
         receipt.setNumber(receiptCSVWrapper.getNumber());
         receipt.setReceiptStatus(ReceiptStatus.OPEN);
+
+        if (!StringUtils.isBlank(receiptCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                receipt.setWarehouseId(warehouse.getId());
+            }
+        }
 
         if (!StringUtils.isBlank(receiptCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(receiptCSVWrapper.getClient());
@@ -274,6 +292,16 @@ public class ReceiptService implements TestDataInitiableService{
     public List<Inventory> findInventoryByReceipt(Long receiptId) {
 
         return inventoryServiceRestemplateClient.findInventoryByReceipt(receiptId);
+    }
+
+    private Long getWarehouseId(String warehouseName) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
+        if (warehouse != null) {
+            return warehouse.getId();
+        }
+        else {
+            return -1L;
+        }
     }
 
 

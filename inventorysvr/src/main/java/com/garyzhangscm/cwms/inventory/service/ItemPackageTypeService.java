@@ -20,8 +20,10 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemPackageTypeRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,8 @@ public class ItemPackageTypeService implements TestDataInitiableService{
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private FileService fileService;
 
@@ -102,6 +106,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
 
     public List<ItemPackageTypeCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("item").
                 addColumn("client").
                 addColumn("supplier").
@@ -115,6 +120,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
     public List<ItemPackageTypeCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("item").
                 addColumn("client").
                 addColumn("supplier").
@@ -140,6 +146,13 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         itemPackageType.setName(itemPackageTypeCSVWrapper.getName());
         itemPackageType.setDescription(itemPackageTypeCSVWrapper.getDescription());
 
+        // warehouse
+        if (!StringUtils.isBlank(itemPackageTypeCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemPackageTypeCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                itemPackageType.setWarehouseId(warehouse.getId());
+            }
+        }
         if (!itemPackageTypeCSVWrapper.getClient().isEmpty()) {
             Client client = commonServiceRestemplateClient.getClientByName(itemPackageTypeCSVWrapper.getClient());
             itemPackageType.setClientId(client.getId());

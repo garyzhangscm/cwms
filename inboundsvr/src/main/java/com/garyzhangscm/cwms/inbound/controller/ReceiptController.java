@@ -40,8 +40,9 @@ public class ReceiptController {
 
 
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
-    public List<Receipt> findAllReceipts(@RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return receiptService.findAll(number);
+    public List<Receipt> findAllReceipts(@RequestParam String warehouseName,
+                                         @RequestParam(name="number", required = false, defaultValue = "") String number) {
+        return receiptService.findAll(warehouseName, number);
     }
 
     @RequestMapping(value="/receipts", method = RequestMethod.POST)

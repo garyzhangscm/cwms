@@ -91,7 +91,8 @@ public class MovementPathService implements TestDataInitiableService{
     }
 
     public MovementPath findByNaturalKeys(MovementPath movementPath) {
-        List<MovementPath> movementPaths = findAll(movementPath.getFromLocationId(),
+        List<MovementPath> movementPaths = findAll(getWarehouseName(movementPath.getWarehouseId()),
+                movementPath.getFromLocationId(),
                 movementPath.getFromLocationGroupId(), movementPath.getToLocationId(),
                 movementPath.getToLocationGroupId());
         if (movementPaths.size() > 0) {
@@ -102,23 +103,26 @@ public class MovementPathService implements TestDataInitiableService{
         }
     }
 
-    public List<MovementPath> findAll(Long fromLocationId,
+    public List<MovementPath> findAll(String warehouseName,
+                                      Long fromLocationId,
                                       Long fromLocationGroupId,
                                       Long toLocationId,
                                       Long toLocationGroupId) {
-        return findAll(fromLocationId, "", fromLocationGroupId, toLocationId, "", toLocationGroupId, true);
+        return findAll(warehouseName, fromLocationId, "", fromLocationGroupId, toLocationId, "", toLocationGroupId, true);
     }
 
-    public List<MovementPath> findAll(Long fromLocationId,
+    public List<MovementPath> findAll(String warehouseName,
+                                      Long fromLocationId,
                                       String fromLocationName,
                                       Long fromLocationGroupId,
                                       Long toLocationId,
                                       String toLocationName,
                                       Long toLocationGroupId) {
-        return findAll(fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId, true);
+        return findAll(warehouseName, fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId, true);
     }
 
-    public List<MovementPath> findAll(Long fromLocationId,
+    public List<MovementPath> findAll(String warehouseName,
+                                      Long fromLocationId,
                                       String fromLocationName,
                                       Long fromLocationGroupId,
                                       Long toLocationId,
@@ -131,8 +135,10 @@ public class MovementPathService implements TestDataInitiableService{
                     if (fromLocationId != null) {
                         predicates.add(criteriaBuilder.equal(root.get("fromLocationId"), fromLocationId));
                     }
-                    else if (!StringUtils.isBlank(fromLocationName)) {
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(fromLocationName);
+                    else if (!StringUtils.isBlank(warehouseName)
+                              && !StringUtils.isBlank(fromLocationName)) {
+                        Location location =
+                                warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, fromLocationName);
                         if (location != null) {
                             predicates.add(criteriaBuilder.equal(root.get("fromLocationId"), location.getId()));
                         }
@@ -144,8 +150,9 @@ public class MovementPathService implements TestDataInitiableService{
                     if (toLocationId != null) {
                         predicates.add(criteriaBuilder.equal(root.get("toLocationId"), toLocationId));
                     }
-                    else if (!StringUtils.isBlank(toLocationName)) {
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(toLocationName);
+                    else if (!StringUtils.isBlank(warehouseName) &&
+                             !StringUtils.isBlank(toLocationName)) {
+                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, toLocationName);
                         if (location != null) {
                             predicates.add(criteriaBuilder.equal(root.get("toLocationId"), location.getId()));
                         }
@@ -173,7 +180,8 @@ public class MovementPathService implements TestDataInitiableService{
     // 2. from / to location name
     // 3. from / to location group
     // Then we will group all the results together
-    public List<MovementPath> findMatchedMovementPaths(Long fromLocationId,
+    public List<MovementPath> findMatchedMovementPaths(String warehouseName,
+                                                       Long fromLocationId,
                              String fromLocationName,
                              Long fromLocationGroupId,
                              Long toLocationId,
@@ -181,21 +189,24 @@ public class MovementPathService implements TestDataInitiableService{
                              Long toLocationGroupId) {
         Set<MovementPath> matchedMovementPathSet = new HashSet<>();
         if (fromLocationId != null && toLocationId != null) {
-            List<MovementPath> matchedMovementPath = findAll(fromLocationId, "", null,
+            List<MovementPath> matchedMovementPath = findAll(warehouseName,
+                    fromLocationId, "", null,
                     toLocationId, "", null);
             if (matchedMovementPath.size() > 0) {
                 matchedMovementPathSet.addAll(matchedMovementPath);
             }
         }
         else if (!StringUtils.isBlank(fromLocationName) && !StringUtils.isBlank(toLocationName)) {
-            List<MovementPath> matchedMovementPath = findAll(null, fromLocationName, null,
+            List<MovementPath> matchedMovementPath = findAll(warehouseName,
+                    null, fromLocationName, null,
                     null, toLocationName, null);
             if (matchedMovementPath.size() > 0) {
                 matchedMovementPathSet.addAll(matchedMovementPath);
             }
         }
         else if (fromLocationGroupId != null && toLocationGroupId != null) {
-            List<MovementPath> matchedMovementPath = findAll(null, "", fromLocationGroupId,
+            List<MovementPath> matchedMovementPath = findAll(warehouseName,
+                    null, "", fromLocationGroupId,
                     null, "", toLocationGroupId);
             if (matchedMovementPath.size() > 0) {
                 matchedMovementPathSet.addAll(matchedMovementPath);
@@ -271,6 +282,7 @@ public class MovementPathService implements TestDataInitiableService{
     public List<MovementPathCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("fromLocation").
                 addColumn("toLocation").
                 addColumn("fromLocationGroup").
@@ -287,6 +299,7 @@ public class MovementPathService implements TestDataInitiableService{
     public List<MovementPathCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("fromLocation").
                 addColumn("toLocation").
                 addColumn("fromLocationGroup").
@@ -327,17 +340,34 @@ public class MovementPathService implements TestDataInitiableService{
                 movementPath = movementPathMap.get(key);
             } else {
                 movementPath = new MovementPath();
+
+                // warehouse
+                if (!StringUtils.isBlank(movementPathCSVWrapper.getWarehouse())) {
+                    Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(movementPathCSVWrapper.getWarehouse());
+                    if (warehouse != null) {
+                        movementPath.setWarehouseId(warehouse.getId());
+                    }
+                }
+
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getFromLocation())) {
-                    movementPath.setFromLocationId(warehouseLayoutServiceRestemplateClient.getLocationByName(movementPathCSVWrapper.getFromLocation()).getId());
+                    movementPath.setFromLocationId(
+                            warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                    movementPathCSVWrapper.getWarehouse(), movementPathCSVWrapper.getFromLocation()).getId());
                 }
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getFromLocationGroup())) {
-                    movementPath.setFromLocationGroupId(warehouseLayoutServiceRestemplateClient.getLocationGroupByName(movementPathCSVWrapper.getFromLocationGroup()).getId());
+                    movementPath.setFromLocationGroupId(
+                            warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
+                                    movementPathCSVWrapper.getWarehouse(), movementPathCSVWrapper.getFromLocationGroup()).getId());
                 }
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getToLocation())) {
-                    movementPath.setToLocationId(warehouseLayoutServiceRestemplateClient.getLocationByName(movementPathCSVWrapper.getToLocation()).getId());
+                    movementPath.setToLocationId(
+                            warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                    movementPathCSVWrapper.getWarehouse(), movementPathCSVWrapper.getToLocation()).getId());
                 }
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getToLocationGroup())) {
-                    movementPath.setToLocationGroupId(warehouseLayoutServiceRestemplateClient.getLocationGroupByName(movementPathCSVWrapper.getToLocationGroup()).getId());
+                    movementPath.setToLocationGroupId(
+                            warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
+                                    movementPathCSVWrapper.getWarehouse(), movementPathCSVWrapper.getToLocationGroup()).getId());
                 }
                 movementPath.setSequence(Integer.parseInt(movementPathCSVWrapper.getSequence()));
                 movementPathMap.put(key, movementPath);
@@ -349,11 +379,23 @@ public class MovementPathService implements TestDataInitiableService{
             movementPathDetail.setSequence(Integer.parseInt(movementPathCSVWrapper.getSequence()));
             movementPathDetail.setStrategy(MovementPathStrategy.valueOf(movementPathCSVWrapper.getStrategy()));
 
+            // warehouse
+            if (!StringUtils.isBlank(movementPathCSVWrapper.getWarehouse())) {
+                Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(movementPathCSVWrapper.getWarehouse());
+                if (warehouse != null) {
+                    movementPathDetail.setWarehouseId(warehouse.getId());
+                }
+            }
+
             if (!StringUtils.isBlank(movementPathCSVWrapper.getHopLocation())) {
-                movementPathDetail.setHopLocationId(warehouseLayoutServiceRestemplateClient.getLocationByName(movementPathCSVWrapper.getHopLocation()).getId());
+                movementPathDetail.setHopLocationId(
+                        warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                movementPathCSVWrapper.getWarehouse(), movementPathCSVWrapper.getHopLocation()).getId());
             }
             if (!StringUtils.isBlank(movementPathCSVWrapper.getHopLocationGroup())) {
-                movementPathDetail.setHopLocationGroupId(warehouseLayoutServiceRestemplateClient.getLocationGroupByName(movementPathCSVWrapper.getHopLocationGroup()).getId());
+                movementPathDetail.setHopLocationGroupId(
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
+                                movementPathCSVWrapper.getWarehouse(), movementPathCSVWrapper.getHopLocationGroup()).getId());
             }
             movementPath.getMovementPathDetails().add(movementPathDetail);
         }
@@ -540,5 +582,14 @@ public class MovementPathService implements TestDataInitiableService{
         }
     }
 
+    private String getWarehouseName(Long warehouseId) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        if (warehouse == null) {
+            return "";
+        }
+        else {
+            return warehouse.getName();
+        }
+    }
 
 }

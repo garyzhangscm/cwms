@@ -7,6 +7,7 @@ CREATE TABLE receipt (
   receipt_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   number   VARCHAR(100) NOT NULL,
   client_id   BIGINT,
+  warehouse_id   BIGINT,
   status   int not null,
   supplier_id   BIGINT);
 
@@ -14,6 +15,7 @@ CREATE TABLE receipt_line(
   receipt_line_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   number   VARCHAR(100) NOT NULL,
   item_id BIGINT,
+  warehouse_id   BIGINT,
   expected_quantity   BIGINT NOT NULL,
   received_quantity   BIGINT NOT NULL,
   receipt_id BIGINT,
@@ -25,6 +27,7 @@ CREATE TABLE  putaway_configuration(
     putaway_configuration_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     sequence INT NOT NULL unique,
     item_id BIGINT,
+    warehouse_id   BIGINT,
     item_family_id BIGINT,
     inventory_status_id BIGINT,
     location_id BIGINT,

@@ -37,6 +37,12 @@ public class ReceiptLine {
     @Column(name = "number")
     private String number;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Column(name = "item_id")
     private Long itemId;
 
@@ -111,5 +117,19 @@ public class ReceiptLine {
         this.receipt = receipt;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
 
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 }

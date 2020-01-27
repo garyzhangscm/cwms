@@ -207,6 +207,7 @@ public class OrderService implements TestDataInitiableService {
     public List<OrderCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("number").
                 addColumn("shipToCustomer").
                 addColumn("billToCustomer").
@@ -250,6 +251,13 @@ public class OrderService implements TestDataInitiableService {
 
         Order order = new Order();
         order.setNumber(orderCSVWrapper.getNumber());
+
+        if (!StringUtils.isBlank(orderCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(orderCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                order.setWarehouseId(warehouse.getId());
+            }
+        }
         // if we specify the ship to customer, we load information with the customer
         if (!StringUtils.isBlank(orderCSVWrapper.getShipToCustomer())) {
             Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(orderCSVWrapper.getShipToCustomer());

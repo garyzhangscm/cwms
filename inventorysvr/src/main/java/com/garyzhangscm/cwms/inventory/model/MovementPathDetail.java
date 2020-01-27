@@ -70,6 +70,12 @@ public class MovementPathDetail {
         return stringBuilder.toString();
     }
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     public Long getId() {
         return id;
     }
@@ -132,5 +138,21 @@ public class MovementPathDetail {
 
     public void setMovementPath(MovementPath movementPath) {
         this.movementPath = movementPath;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

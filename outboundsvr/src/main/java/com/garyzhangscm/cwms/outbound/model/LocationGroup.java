@@ -30,6 +30,7 @@ public class LocationGroup {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean trackingVolume;
 
     private LocationGroupType locationGroupType;
 
@@ -87,5 +88,13 @@ public class LocationGroup {
 
     public void setLocationGroupType(LocationGroupType locationGroupType) {
         this.locationGroupType = locationGroupType;
+    }
+
+    public Boolean getTrackingVolume() {
+        return trackingVolume;
+    }
+
+    public void setTrackingVolume(Boolean trackingVolume) {
+        this.trackingVolume = trackingVolume;
     }
 }

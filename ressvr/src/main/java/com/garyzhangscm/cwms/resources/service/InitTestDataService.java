@@ -93,6 +93,7 @@ public class InitTestDataService {
     }
     private void initAll() {
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
+
             initiableServiceRestemplateClient.initTestData();
         }
     }

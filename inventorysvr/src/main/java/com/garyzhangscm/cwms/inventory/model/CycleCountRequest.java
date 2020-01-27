@@ -47,6 +47,12 @@ public class CycleCountRequest implements Serializable {
     @Enumerated(EnumType.STRING)
     private CycleCountRequestStatus status;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     public CycleCountRequest(){}
 
     public CycleCountRequest(String batchId, Location location) {
@@ -94,5 +100,21 @@ public class CycleCountRequest implements Serializable {
 
     public void setStatus(CycleCountRequestStatus status) {
         this.status = status;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

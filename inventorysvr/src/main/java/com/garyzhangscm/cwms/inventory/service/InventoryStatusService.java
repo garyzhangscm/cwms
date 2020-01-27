@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryStatusRepository;
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +42,8 @@ public class InventoryStatusService implements TestDataInitiableService{
 
     @Autowired
     private InventoryStatusRepository inventoryStatusRepository;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Autowired
     private FileService fileService;
@@ -99,24 +102,40 @@ public class InventoryStatusService implements TestDataInitiableService{
 
     }
 
-    public List<InventoryStatus> loadData(InputStream inputStream) throws IOException {
+    public List<InventoryStatusCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, InventoryStatus.class);
+        return fileService.loadData(inputStream, schema, InventoryStatusCSVWrapper.class);
     }
 
     public void initTestData() {
         try {
             InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
-            List<InventoryStatus> inventoryStatuses = loadData(inputStream);
-            inventoryStatuses.stream().forEach(inventoryStatus -> saveOrUpdate(inventoryStatus));
+            List<InventoryStatusCSVWrapper> inventoryStatusCSVWrappers = loadData(inputStream);
+            inventoryStatusCSVWrappers.stream().forEach(inventoryStatusCSVWrapper -> saveOrUpdate(convertFromWrapper(inventoryStatusCSVWrapper)));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
 
+    private InventoryStatus convertFromWrapper(InventoryStatusCSVWrapper inventoryStatusCSVWrapper) {
+        InventoryStatus inventoryStatus = new InventoryStatus();
+        inventoryStatus.setName(inventoryStatusCSVWrapper.getName());
+        inventoryStatus.setDescription(inventoryStatusCSVWrapper.getDescription());
+
+
+        // warehouse
+        if (!StringUtils.isBlank(inventoryStatusCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(inventoryStatusCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                inventoryStatus.setWarehouseId(warehouse.getId());
+            }
+        }
+        return inventoryStatus;
+    }
 }

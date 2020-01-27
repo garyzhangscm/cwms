@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS movement_path;
 CREATE TABLE item_family (
   item_family_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   description   VARCHAR(100) NOT NULL);
 
 
@@ -36,6 +37,7 @@ CREATE TABLE item(
   item_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   client_id BIGINT,
   item_family_id BIGINT,
   unit_cost double,
@@ -46,6 +48,7 @@ CREATE TABLE item_package_type(
   name   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL,
   item_id BIGINT NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   client_id BIGINT,
   supplier_id BIGINT,
   foreign key(item_id) references item(item_id));
@@ -54,6 +57,7 @@ CREATE TABLE item_unit_of_measure (
   item_unit_of_measure_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   item_package_type_id BIGINT NOT NULL,
   unit_of_measure_id BIGINT NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   quantity INT not null,
   weight double not null,
   length double not null,
@@ -64,6 +68,7 @@ CREATE TABLE item_unit_of_measure (
 create table inventory_status(
   inventory_status_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   description   VARCHAR(100) NOT NULL
 );
 
@@ -73,6 +78,7 @@ CREATE TABLE inventory(
   location_id    BIGINT NOT NULL,
   pick_id    BIGINT,
   item_id BIGINT not null,
+  warehouse_id BIGINT NOT NULL,
   item_package_type_id BIGINT not null,
   quantity bigint not null,
   inventory_status_id bigint not null,
@@ -87,6 +93,7 @@ CREATE TABLE inventory_movement(
   inventory_movement_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   inventory_id    BIGINT NOT NULL,
   location_id    BIGINT not null,
+  warehouse_id BIGINT NOT NULL,
   sequence INT not null,
   foreign key(inventory_id) references inventory(inventory_id)
 );
@@ -94,11 +101,13 @@ CREATE TABLE inventory_movement(
 
 create table cycle_count_batch(
   cycle_count_batch_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   batch_id VARCHAR(100) NOT NULL
 );
 create table cycle_count_request(
   cycle_count_request_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   batch_id VARCHAR(100) NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   location_id BIGINT NOT NULL,
   status VARCHAR(20) NOT NULL
 );
@@ -106,6 +115,7 @@ create table cycle_count_request(
 create table audit_count_request(
   audit_count_request_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   batch_id VARCHAR(100) NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   location_id BIGINT NOT NULL
 );
 
@@ -113,6 +123,7 @@ create table cycle_count_result(
   cycle_count_result_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   batch_id VARCHAR(100) NOT NULL,
   location_id BIGINT NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   item_id BIGINT,
   quantity int NOT NULL,
   count_quantity int NOT NULL,
@@ -124,6 +135,7 @@ create table audit_count_result(
   audit_count_result_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   batch_id VARCHAR(100) NOT NULL,
   location_id BIGINT NOT NULL,
+  warehouse_id BIGINT NOT NULL,
   inventory_id BIGINT,
   quantity int not null,
   count_quantity int NOT NULL
@@ -134,6 +146,7 @@ CREATE TABLE movement_path(
   movement_path_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   from_location_id    BIGINT,
   from_location_group_id    BIGINT,
+  warehouse_id BIGINT NOT NULL,
   to_location_id BIGINT,
   to_location_group_id BIGINT,
   sequence INT not null
@@ -145,6 +158,7 @@ CREATE TABLE movement_path_detail(
   movement_path_id    BIGINT NOT NULL,
   hop_location_id    BIGINT,
   hop_location_group_id BIGINT,
+  warehouse_id BIGINT NOT NULL,
   sequence INT not null,
   strategy INT not null,
   foreign key(movement_path_id) references movement_path(movement_path_id)

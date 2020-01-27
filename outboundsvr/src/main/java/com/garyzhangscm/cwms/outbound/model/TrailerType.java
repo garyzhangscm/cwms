@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 public enum TrailerType {
+    UNKNOUN,
     FT_17,
     FT_24,
     FT_32,

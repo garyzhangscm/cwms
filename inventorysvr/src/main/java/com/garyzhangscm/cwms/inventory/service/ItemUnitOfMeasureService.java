@@ -20,8 +20,10 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemUnitOfMeasureRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,8 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
     private ItemUnitOfMeasureRepository itemUnitOfMeasureRepository;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private ItemPackageTypeService itemPackageTypeService;
     @Autowired
@@ -100,6 +104,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
 
     public List<ItemUnitOfMeasureCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("item").
                 addColumn("itemPackageType").
                 addColumn("unitOfMeasure").
@@ -114,6 +119,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
     public List<ItemUnitOfMeasureCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("item").
                 addColumn("itemPackageType").
                 addColumn("unitOfMeasure").
@@ -145,6 +151,13 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         itemUnitOfMeasure.setWidth(itemUnitOfMeasureCSVWrapper.getWidth());
         itemUnitOfMeasure.setHeight(itemUnitOfMeasureCSVWrapper.getHeight());
 
+        // warehouse
+        if (!StringUtils.isBlank(itemUnitOfMeasureCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemUnitOfMeasureCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                itemUnitOfMeasure.setWarehouseId(warehouse.getId());
+            }
+        }
 
         if (!itemUnitOfMeasureCSVWrapper.getUnitOfMeasure().isEmpty()) {
             UnitOfMeasure unitOfMeasure = commonServiceRestemplateClient.getUnitOfMeasureByName(itemUnitOfMeasureCSVWrapper.getUnitOfMeasure());

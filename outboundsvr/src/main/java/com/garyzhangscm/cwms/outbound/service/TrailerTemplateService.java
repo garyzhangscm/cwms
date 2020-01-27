@@ -49,6 +49,8 @@ public class TrailerTemplateService implements TestDataInitiableService {
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.trailer-templates:trailer-templates.csv}")
     String testDataFile;
@@ -116,6 +118,7 @@ public class TrailerTemplateService implements TestDataInitiableService {
     public List<TrailerTemplate> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("number").
                 addColumn("licensePlateNumber").
                 addColumn("size").
@@ -137,6 +140,30 @@ public class TrailerTemplateService implements TestDataInitiableService {
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
+    }
+
+
+    private TrailerTemplate convertFromWrapper(TrailerTemplateCSVWrapper trailerTemplateCSVWrapper) {
+
+        TrailerTemplate trailerTemplate = new TrailerTemplate();
+        trailerTemplate.setDriverFirstName(trailerTemplateCSVWrapper.getDriverFirstName());
+        trailerTemplate.setDriverLastName(trailerTemplateCSVWrapper.getDriverLastName());
+        trailerTemplate.setDriverPhone(trailerTemplateCSVWrapper.getDriverPhone());
+        trailerTemplate.setEnabled(trailerTemplateCSVWrapper.getEnabled());
+        trailerTemplate.setLicensePlateNumber(trailerTemplateCSVWrapper.getLicensePlateNumber());
+        trailerTemplate.setNumber(trailerTemplateCSVWrapper.getNumber());
+        trailerTemplate.setSize(trailerTemplateCSVWrapper.getSize());
+        trailerTemplate.setType(TrailerType.valueOf(trailerTemplateCSVWrapper.getType()));
+
+        if (!StringUtils.isBlank(trailerTemplateCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(trailerTemplateCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                trailerTemplate.setWarehouseId(warehouse.getId());
+            }
+        }
+
+
+        return trailerTemplate;
     }
 
 

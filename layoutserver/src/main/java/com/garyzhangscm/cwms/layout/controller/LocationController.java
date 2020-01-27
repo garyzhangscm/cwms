@@ -44,15 +44,16 @@ public class LocationController {
     @Autowired
     FileService fileService;
 
-    @RequestMapping(value="/location/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/locations/{id}", method = RequestMethod.GET)
     public Location getLocationById(@PathVariable Long id) {
         return locationService.findById(id);
     }
 
 
-    @RequestMapping(value="/location/logic/{locationType}", method = RequestMethod.GET)
-    public Location getLogicalLocation(@PathVariable String locationType) {
-        return locationService.findLogicLocation(locationType);
+    @RequestMapping(value="/locations/logic/{locationType}", method = RequestMethod.GET)
+    public Location getLogicalLocation(@PathVariable String locationType,
+                                       @RequestParam String warehouseName) {
+        return locationService.findLogicLocation(locationType, warehouseName);
     }
 
 
@@ -66,24 +67,63 @@ public class LocationController {
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/locations")
-    public List<Location> findLocations(@RequestParam(name = "location_group_type_ids", required = false, defaultValue = "") String locationGroupTypeIds,
+    public List<Location> findLocations(@RequestParam String warehouseName,
+                                        @RequestParam(name = "location_group_type_ids", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "location_group_ids", required = false, defaultValue = "") String locationGroupIds,
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
                                         @RequestParam(name = "begin_sequence", required = false, defaultValue = "") Long beginSequence,
                                         @RequestParam(name = "end_sequence", required = false, defaultValue = "") Long endSequence,
                                         @RequestParam(name = "sequence_type", required = false, defaultValue = "") String sequenceType,
                                         @RequestParam(name = "include_empty_location", required = false, defaultValue = "true") Boolean includeEmptyLocation,
-                                        @RequestParam(name = "include_disabled_location", required = false, defaultValue = "false") Boolean includeDisabledLocation) {
+                                        @RequestParam(name = "empty_location_only", required = false, defaultValue = "false") Boolean emptyLocationOnly,
+                                        @RequestParam(name = "min_empty_capacity", required = false, defaultValue = "0.0") Double minEmptyCapacity,
+                                        @RequestParam(name = "pickable_location_only", required = false, defaultValue = "false") Boolean pickableLocationOnly,
+                                        @RequestParam(name = "include_disabled_location", required = false, defaultValue = "false") Boolean includeDisabledLocation,
+                                        @RequestParam(name = "max_result_count", required =  false, defaultValue =  "0") Integer maxResultCount) {
 
-        return locationService.findAll(locationGroupTypeIds, locationGroupIds, name,
+        StringBuilder params = new StringBuilder()
+                .append("Start to find location with params:")
+                .append("\nwarehouseName: ").append(warehouseName)
+                .append("\nlocationGroupTypeIds: ").append(locationGroupTypeIds)
+                .append("\nlocationGroupIds: ").append(locationGroupIds)
+                .append("\nname: ").append(name)
+                .append("\nbeginSequence: ").append(beginSequence)
+                .append("\nendSequence: ").append(endSequence)
+                .append("\nsequenceType: ").append(sequenceType)
+                .append("\nincludeEmptyLocation: ").append(includeEmptyLocation)
+                .append("\nemptyLocationOnly: ").append(emptyLocationOnly)
+                .append("\nminEmptyCapacity: ").append(minEmptyCapacity)
+                .append("\npickableLocationOnly: ").append(pickableLocationOnly)
+                .append("\nincludeDisabledLocation: ").append(includeDisabledLocation)
+                .append("\nmaxResultCount: ").append(maxResultCount);
+
+        logger.debug(params.toString());
+
+
+        List<Location> locations = locationService.findAll(
+                warehouseName,
+                locationGroupTypeIds, locationGroupIds, name,
                 beginSequence, endSequence, sequenceType,
-                includeEmptyLocation, includeDisabledLocation);
+                includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  includeDisabledLocation);
+
+        logger.debug(">> Find {} locations", locations.size());
+        if (locations.size() == 0) {
+            return locations;
+        }
+
+        int returnResultCout = locations.size();
+        if (maxResultCount > 0) {
+            returnResultCout = Math.min(maxResultCount, locations.size());
+        }
+        logger.debug(">> Will only return {} locations", returnResultCout);
+        return locations.subList(0, returnResultCout);
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/locations/dock")
-    public List<Location> findDockLocations(@RequestParam(name = "empty", required = false, defaultValue = "") boolean emptyDockOnly) {
+    public List<Location> findDockLocations(@RequestParam String warehouseName,
+                                            @RequestParam(name = "empty", required = false, defaultValue = "false") boolean emptyDockOnly) {
 
-        return locationService.getDockLocations(emptyDockOnly);
+        return locationService.getDockLocations(warehouseName, emptyDockOnly);
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/dispatch-trailer")
@@ -96,7 +136,7 @@ public class LocationController {
         return locationService.checkInTrailerAtDock(id, trailerId);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/location")
+    @RequestMapping(method=RequestMethod.DELETE, value="/locations")
     public ResponseBodyWrapper removeLocations(@RequestParam("location_ids") String locationIds) {
 
         locationService.delete(locationIds);
@@ -104,7 +144,7 @@ public class LocationController {
     }
 
 
-    @RequestMapping(method=RequestMethod.PUT, value="/location/{id}")
+    @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}")
     public Location updateLocation(@PathVariable Long id,
                                               @RequestParam(name = "enabled", defaultValue = "", required = false) Boolean enabled,
                                               @RequestParam(name = "inventory_quantity", defaultValue = "", required = false) Long inventoryQuantity,
@@ -129,7 +169,7 @@ public class LocationController {
     }
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory
-    @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/reserve")
+    @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reserved_code") String reservedCode) {
 
@@ -138,7 +178,7 @@ public class LocationController {
     }
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory
-    @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/reserveWithVolume")
+    @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserveWithVolume")
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reserved_code") String reservedCode,
                                     @RequestParam(name = "pending_size") Double pendingSize,
@@ -151,7 +191,7 @@ public class LocationController {
 
     // Allocate a final destination for a inventory and update the pending volume of the
     // location
-    @RequestMapping(method=RequestMethod.PUT, value="/location/{id}/allocate")
+    @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/allocate")
     public Location allocateLocation(@PathVariable Long id,
                                      @RequestParam(name = "inventory_size") Double inventorySize) {
 
@@ -160,7 +200,7 @@ public class LocationController {
     }
 
 
-    @RequestMapping(method=RequestMethod.POST, value="/location/{id}/pending-volume")
+    @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/pending-volume")
     public Location changePendingVolume(@PathVariable Long id,
                                         @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedPendingVolume,
                                         @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedPendingVolume) {
@@ -168,7 +208,7 @@ public class LocationController {
         return locationService.changePendingVolume(id, reducedPendingVolume, increasedPendingVolume);
     }
 
-    @RequestMapping(method=RequestMethod.POST, value="/location/{id}/volume")
+    @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/volume")
     public Location changeVolume(@PathVariable Long id,
                                         @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedVolume,
                                         @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedVolume) {

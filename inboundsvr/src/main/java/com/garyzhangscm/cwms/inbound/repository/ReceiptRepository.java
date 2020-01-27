@@ -21,9 +21,16 @@ package com.garyzhangscm.cwms.inbound.repository;
 import com.garyzhangscm.cwms.inbound.model.Receipt;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface ReceiptRepository extends JpaRepository<Receipt, Long>, JpaSpecificationExecutor<Receipt> {
-    Receipt findByNumber(String number);
+    @Query("select r from Receipt r where r.warehouseId = :warehouseId")
+    List<Receipt> findAll(Long warehouseId);
+
+    @Query("select r from Receipt r where r.warehouseId = :warehouseId and r.number = :number")
+    Receipt findByNumber(Long warehouseId, String number);
 }

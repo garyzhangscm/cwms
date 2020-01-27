@@ -355,9 +355,9 @@ public class CycleCountRequestService{
 
     public List<CycleCountRequest> generateCycleCountRequest(
             String batchId, CycleCountRequestType cycleCountRequestType,
-            String beginValue, String endValue,
+            String warehouseName, String beginValue, String endValue,
             Boolean includeEmptyLocation) {
-        List<Location> locations = getCycleCountRequestLocations(cycleCountRequestType, beginValue, endValue, includeEmptyLocation);
+        List<Location> locations = getCycleCountRequestLocations(cycleCountRequestType, warehouseName, beginValue, endValue, includeEmptyLocation);
         return locations.stream()
                 // only return those locations that doesn't have any count request or audit request
                 .filter(location ->
@@ -370,25 +370,25 @@ public class CycleCountRequestService{
 
 
     private List<Location> getCycleCountRequestLocations(
-            CycleCountRequestType cycleCountRequestType, String beginValue, String endValue, Boolean includeEmptyLocation) {
+            CycleCountRequestType cycleCountRequestType, String warehouseName, String beginValue, String endValue, Boolean includeEmptyLocation) {
         switch (cycleCountRequestType) {
             case BY_LOCATION_RANGE:
-                return getCycleCountRequestLocationsByLocationRange(beginValue, endValue, includeEmptyLocation);
+                return getCycleCountRequestLocationsByLocationRange(warehouseName, beginValue, endValue, includeEmptyLocation);
             case BY_ITEM_RANGE:
                 return getCycleCountRequestLocationsByItemRange(beginValue, endValue, includeEmptyLocation);
             case BY_AISLE_RANGE:
                 return getCycleCountRequestLocationsByAisleRange(beginValue, endValue, includeEmptyLocation);
             default:
-                return getCycleCountRequestLocationsByLocationRange(beginValue, endValue, includeEmptyLocation);
+                return getCycleCountRequestLocationsByLocationRange(warehouseName, beginValue, endValue, includeEmptyLocation);
         }
     }
 
-    private List<Location> getCycleCountRequestLocationsByLocationRange(String beginValue, String endValue, Boolean includeEmptyLocation) {
+    private List<Location> getCycleCountRequestLocationsByLocationRange(String warehouseName, String beginValue, String endValue, Boolean includeEmptyLocation) {
         if (beginValue.isEmpty() && endValue.isEmpty()) {
             return new ArrayList<>();
         }
         else if (beginValue.isEmpty()) {
-            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(endValue);
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, endValue);
             if (location.isEmpty() && !includeEmptyLocation) {
                 // current location is empty but we don't want to count empty location,
                 // don't return this location
@@ -397,7 +397,7 @@ public class CycleCountRequestService{
             return Arrays.asList(new Location[]{location});
         }
         else if (endValue.isEmpty()) {
-            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(beginValue);
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, beginValue);
             if (location.isEmpty() && !includeEmptyLocation) {
                 // current location is empty but we don't want to count empty location,
                 // don't return this location
@@ -406,11 +406,11 @@ public class CycleCountRequestService{
             return Arrays.asList(new Location[]{location});
         }
         else {
-            Location beginLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(beginValue);
+            Location beginLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, beginValue);
             if (beginLocation == null) {
                 throw new GenericException(10000, "can't find the begin location by value: " + beginValue);
             }
-            Location endLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(endValue);
+            Location endLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, endValue);
             if (endLocation == null) {
                 throw new GenericException(10000, "can't find the end location by value: " + endValue);
             }

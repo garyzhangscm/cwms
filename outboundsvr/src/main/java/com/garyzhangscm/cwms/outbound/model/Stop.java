@@ -24,6 +24,12 @@ public class Stop {
     )
     private List<Shipment> shipments = new ArrayList<>();
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @ManyToOne
     @JoinColumn(name = "trailer_id")
     @JsonIgnore
@@ -51,5 +57,21 @@ public class Stop {
 
     public void setTrailer(Trailer trailer) {
         this.trailer = trailer;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

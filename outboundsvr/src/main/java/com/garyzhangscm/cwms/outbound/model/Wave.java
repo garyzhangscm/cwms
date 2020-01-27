@@ -38,8 +38,18 @@ public class Wave implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Column(name = "number")
     private String number;
+
+    @Column(name = "status")
+    private WaveStatus status;
+
 
     @OneToMany(
         mappedBy = "wave",
@@ -85,5 +95,29 @@ public class Wave implements Serializable {
     public List<ShortAllocation> getShortAllocations() {
 
         return shipmentLines.stream().map(shipmentLine -> shipmentLine.getShortAllocation()).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    public WaveStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WaveStatus status) {
+        this.status = status;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

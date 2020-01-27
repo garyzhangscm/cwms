@@ -27,6 +27,8 @@ public class ReceiptCSVWrapper {
 
     private String supplier;
 
+    private String warehouse;
+
     public String getNumber() {
         return number;
     }
@@ -49,5 +51,13 @@ public class ReceiptCSVWrapper {
 
     public void setSupplier(String supplier) {
         this.supplier = supplier;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

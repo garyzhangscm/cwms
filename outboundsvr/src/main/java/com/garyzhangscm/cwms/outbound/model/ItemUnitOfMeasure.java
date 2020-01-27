@@ -31,13 +31,14 @@ public class ItemUnitOfMeasure implements Serializable {
 
     private ItemPackageType itemPackageType;
 
-    private Integer quantity;
+    private Long quantity;
 
     private Double weight;
 
     private Double length;
     private Double width;
     private Double height;
+
 
     public Long getId() {
         return id;
@@ -64,11 +65,11 @@ public class ItemUnitOfMeasure implements Serializable {
         this.unitOfMeasure = unitOfMeasure;
     }
 
-    public Integer getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
     }
 

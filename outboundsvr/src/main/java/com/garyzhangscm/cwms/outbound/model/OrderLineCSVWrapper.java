@@ -25,6 +25,7 @@ public class OrderLineCSVWrapper {
     private String item;
     private Long expectedQuantity;
     private String inventoryStatus;
+    private String warehouse;
 
     public String getOrder() {
         return order;
@@ -64,5 +65,13 @@ public class OrderLineCSVWrapper {
 
     public void setInventoryStatus(String inventoryStatus) {
         this.inventoryStatus = inventoryStatus;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

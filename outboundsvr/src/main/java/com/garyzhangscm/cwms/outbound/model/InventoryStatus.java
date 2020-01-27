@@ -17,7 +17,6 @@
  */
 
 package com.garyzhangscm.cwms.outbound.model;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 

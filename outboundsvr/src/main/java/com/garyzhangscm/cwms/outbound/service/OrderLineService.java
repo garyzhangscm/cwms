@@ -181,6 +181,7 @@ public class OrderLineService implements TestDataInitiableService{
     public List<OrderLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("order").
                 addColumn("number").
                 addColumn("item").
@@ -209,6 +210,13 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setOpenQuantity(orderLineCSVWrapper.getExpectedQuantity());
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
+
+        if (!StringUtils.isBlank(orderLineCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(orderLineCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                orderLine.setWarehouseId(warehouse.getId());
+            }
+        }
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getOrder())) {
             Order order = orderService.findByNumber(orderLineCSVWrapper.getOrder());

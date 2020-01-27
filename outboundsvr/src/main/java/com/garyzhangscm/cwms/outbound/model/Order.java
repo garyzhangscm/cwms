@@ -45,6 +45,11 @@ public class Order implements Serializable {
     @Transient
     private Customer shipToCustomer;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @Column(name = "bill_to_customer_id")
     private Long billToCustomerId;
@@ -111,7 +116,7 @@ public class Order implements Serializable {
             mappedBy = "order",
             cascade = CascadeType.REMOVE,
             orphanRemoval = true,
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     private List<OrderLine> orderLines = new ArrayList<>();
 
@@ -385,5 +390,21 @@ public class Order implements Serializable {
 
     public void setStageLocationGroup(LocationGroup stageLocationGroup) {
         this.stageLocationGroup = stageLocationGroup;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }
