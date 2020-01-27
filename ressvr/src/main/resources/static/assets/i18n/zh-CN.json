@@ -386,6 +386,7 @@
   "description.field.label.order.line.inprocessQuantity":"正处理数量",
   "description.field.label.order.line.shippedQuantity":"已发货数量",
   "description.field.label.wave.number":"波次号",
+  "description.field.label.wave.status":"波次状态",
   "description.field.label.wave.totalOrderCount":"订单数",
   "description.field.label.wave.totalItemCount":"商品数",
   "description.field.label.wave.totalQuantity":"总数量",
@@ -427,6 +428,7 @@
   "description.field.button.remove":"删除",
   "description.field.button.cancel":"取消",
   "description.field.button.confirm":"确认",
+  "description.field.button.complete":"完成",
   "description.field.button.confirmSelected":"确认已选记录",
   "description.field.button.confirmAll":"确认全部",
   "description.field.button.ok":"ok",
@@ -541,6 +543,7 @@
   "message.short-allocation.cancelled":"缺货信息取消成功",
   "message.pick.confirmed":"拣货任务确认成功",
   "message.shipment.cancelled":"发货任务取消成功",
+  "message.shipment.complete":"发货任务已经完成",
   "message.trailer.cancelled":"车辆取消成功",
   "message.trailer.checkedin":"车辆迁入成功",
   "message.trailer.dispatched":"车辆出库成功"

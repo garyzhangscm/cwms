@@ -46,12 +46,21 @@ public class AllocationConfiguration implements Serializable {
     @Transient
     private Item item;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
 
     @Column(name = "item_family_id")
     private Long itemFamilyId;
 
     @Transient
     private ItemFamily itemFamily;
+
+    @Column(name = "type")
+    private AllocationConfigurationType type;
 
     // source
     @Column(name = "location_id")
@@ -73,6 +82,13 @@ public class AllocationConfiguration implements Serializable {
 
     @Column(name ="allocation_strategy")
     private AllocationStrategy allocationStrategy;
+
+    @OneToMany(
+            mappedBy = "allocationConfiguration",
+            orphanRemoval = true,
+            cascade = CascadeType.REMOVE
+    )
+    private List<PickableUnitOfMeasure> pickableUnitOfMeasures = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -176,5 +192,37 @@ public class AllocationConfiguration implements Serializable {
 
     public void setAllocationStrategy(AllocationStrategy allocationStrategy) {
         this.allocationStrategy = allocationStrategy;
+    }
+
+    public List<PickableUnitOfMeasure> getPickableUnitOfMeasures() {
+        return pickableUnitOfMeasures;
+    }
+
+    public void setPickableUnitOfMeasures(List<PickableUnitOfMeasure> pickableUnitOfMeasures) {
+        this.pickableUnitOfMeasures = pickableUnitOfMeasures;
+    }
+
+    public AllocationConfigurationType getType() {
+        return type;
+    }
+
+    public void setType(AllocationConfigurationType type) {
+        this.type = type;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

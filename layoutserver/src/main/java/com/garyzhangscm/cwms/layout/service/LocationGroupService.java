@@ -54,6 +54,8 @@ public class LocationGroupService implements TestDataInitiableService {
     @Autowired
     private LocationGroupTypeService locationGroupTypeService;
     @Autowired
+    private WarehouseService warehouseService;
+    @Autowired
     private LocationService locationService;
     @Autowired
     private FileService fileService;
@@ -66,15 +68,15 @@ public class LocationGroupService implements TestDataInitiableService {
         return locationGroupRepository.findById(id).orElse(null);
     }
 
-    public List<LocationGroup> findAll() {
+    public List<LocationGroup> findAll(String warehouseName) {
 
-        return locationGroupRepository.findAll();
+        return locationGroupRepository.findAll(warehouseName);
     }
 
-    public List<LocationGroup> findAll(String locationGroupTypes, String name) {
+    public List<LocationGroup> findAll(String warehouseName, String locationGroupTypes, String name) {
 
         if (!StringUtils.isBlank(name)) {
-            LocationGroup locationGroup = findByName(name);
+            LocationGroup locationGroup = findByName(warehouseName, name);
             if (locationGroup != null) {
                 return Arrays.asList(new LocationGroup[]{locationGroup});
             }
@@ -83,30 +85,30 @@ public class LocationGroupService implements TestDataInitiableService {
             }
         }
         else {
-            return listLocationGroupsByTypes(locationGroupTypes);
+            return listLocationGroupsByTypes(warehouseName, locationGroupTypes);
 
         }
 
     }
 
-    public List<LocationGroup> findAll(long[] locationGroupTypeIdArray) {
+    public List<LocationGroup> findAll(String warehouseName, long[] locationGroupTypeIdArray) {
 
         List<Long> locationGroupTypeList = Arrays.stream(locationGroupTypeIdArray).boxed().collect( Collectors.toList());
-        return locationGroupRepository.findByLocationGroupTypes(locationGroupTypeList);
+        return locationGroupRepository.findByLocationGroupTypes(warehouseName, locationGroupTypeList);
     }
 
-    public List<LocationGroup> listLocationGroupsByTypes(String locationGroupTypes) {
+    public List<LocationGroup> listLocationGroupsByTypes(String warehouseName, String locationGroupTypes) {
         if (locationGroupTypes.isEmpty()) {
-            return findAll();
+            return findAll(warehouseName);
         }
         else {
             long[] locationGroupTypeArray = Arrays.asList(locationGroupTypes.split(",")).stream().mapToLong(Long::parseLong).toArray();
-            return findAll(locationGroupTypeArray);
+            return findAll(warehouseName, locationGroupTypeArray);
         }
     }
 
-    public LocationGroup findByName(String name){
-        return locationGroupRepository.findByName(name);
+    public LocationGroup findByName(String warehouseName, String name){
+        return locationGroupRepository.findByName(warehouseName, name);
     }
 
     public LocationGroup save(LocationGroup locationGroup) {
@@ -114,8 +116,8 @@ public class LocationGroupService implements TestDataInitiableService {
     }
 
     public LocationGroup saveOrUpdate(LocationGroup locationGroup) {
-        if (findByName(locationGroup.getName()) != null) {
-            locationGroup.setId(findByName(locationGroup.getName()).getId());
+        if (findByName(locationGroup.getName(), locationGroup.getWarehouse().getName()) != null) {
+            locationGroup.setId(findByName(locationGroup.getName(), locationGroup.getWarehouse().getName()).getId());
         }
         return save(locationGroup);
     }
@@ -139,6 +141,7 @@ public class LocationGroupService implements TestDataInitiableService {
     public List<LocationGroupCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("locationGroupType").
@@ -153,6 +156,7 @@ public class LocationGroupService implements TestDataInitiableService {
     public List<LocationGroupCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("locationGroupType").
@@ -190,6 +194,8 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.setPickable(locationGroupCSVWrapper.getPickable());
         locationGroup.setCountable(locationGroupCSVWrapper.getCountable());
         locationGroup.setStorable(locationGroupCSVWrapper.getStorable());
+
+        locationGroup.setWarehouse(warehouseService.findByName(locationGroupCSVWrapper.getWarehouse()));
 
 
         locationGroup.setTrackingVolume(locationGroupCSVWrapper.getTrackingVolume());
@@ -302,9 +308,9 @@ public class LocationGroupService implements TestDataInitiableService {
 
     }
 
-    public LocationGroup getDockLocationGroup() {
+    public LocationGroup getDockLocationGroup(String warehouseName) {
 
-        List<LocationGroup> locationGroups = locationGroupRepository.getDockLocationGroup();
+        List<LocationGroup> locationGroups = locationGroupRepository.getDockLocationGroup(warehouseName);
         if (locationGroups.size() > 0) {
             return locationGroups.get(0);
         }

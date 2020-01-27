@@ -18,6 +18,12 @@ public class ShippingStageAreaConfiguration {
     @Column(name="sequence")
     private Integer sequence;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     // criteria
     // TO-DO
 
@@ -70,5 +76,21 @@ public class ShippingStageAreaConfiguration {
 
     public void setLocationReserveStrategy(ShippingStageLocationReserveStrategy locationReserveStrategy) {
         this.locationReserveStrategy = locationReserveStrategy;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

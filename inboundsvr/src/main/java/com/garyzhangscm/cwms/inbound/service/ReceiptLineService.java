@@ -136,6 +136,7 @@ public class ReceiptLineService implements TestDataInitiableService{
     public List<ReceiptLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("receipt").
                 addColumn("number").
                 addColumn("item").
@@ -163,8 +164,15 @@ public class ReceiptLineService implements TestDataInitiableService{
         receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity());
         receiptLine.setReceivedQuantity(receiptLineCSVWrapper.getReceivedQuantity());
 
+        if (!StringUtils.isBlank(receiptLineCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptLineCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                receiptLine.setWarehouseId(warehouse.getId());
+            }
+        }
+
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getReceipt())) {
-            Receipt receipt = receiptService.findByNumber(receiptLineCSVWrapper.getReceipt());
+            Receipt receipt = receiptService.findByNumber(receiptLineCSVWrapper.getWarehouse(), receiptLineCSVWrapper.getReceipt());
             receiptLine.setReceipt(receipt);
         }
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getItem())) {
@@ -190,7 +198,9 @@ public class ReceiptLineService implements TestDataInitiableService{
         Receipt receipt = receiptService.findById(receiptId);
         // Everytime when we check in a receipt, we will create a location with the same name so that
         // we can receive inventory on this receipt
-        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(receipt.getNumber());
+        Location location =
+                warehouseLayoutServiceRestemplateClient.getLocationByName(
+                        getWarehouseName(receipt.getWarehouseId()), receipt.getNumber());
         inventory.setLocationId(location.getId());
         inventory.setLocation(location);
         inventory.setVirtual(false);
@@ -201,6 +211,16 @@ public class ReceiptLineService implements TestDataInitiableService{
         receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() + newInventory.getQuantity());
         save(receiptLine);
         return newInventory;
+    }
+
+    public String getWarehouseName(Long warehouseId) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        if (warehouse == null) {
+            return "";
+        }
+        else {
+            return warehouse.getName();
+        }
     }
 
 

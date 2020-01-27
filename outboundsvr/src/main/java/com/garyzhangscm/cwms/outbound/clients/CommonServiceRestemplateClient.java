@@ -164,6 +164,31 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData().getNextNumber();
     }
 
+    public Integer getMaxCountInEmergencyReplenishmentJob() {
+        Policy policy = getPolicy("JOB-EMERGENCY-REPLENISHMENT-MAX-COUNT");
+        if (policy != null) {
+            try {
+                return Integer.parseInt(policy.getValue());
+            }
+            catch (Exception ex) {
+                return 50;
+            }
+        }
+        else {
+            // By default, we can process at maximum 50 short allocation in one
+            // emergency replenishment job execution
+            return 50;
+        }
+    }
+
+    public Policy getPolicy(String key) {
+
+        ResponseBodyWrapper<Policy> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/policies?key={key}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Policy>>() {},key
+        ).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 
 }

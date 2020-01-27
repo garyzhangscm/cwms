@@ -5,6 +5,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "short_allocation")
@@ -21,6 +22,18 @@ public class ShortAllocation  implements Serializable {
     @JsonIgnore
     private ShipmentLine shipmentLine;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
+    @OneToMany(
+            mappedBy = "shortAllocation",
+            orphanRemoval = true,
+            cascade = CascadeType.REMOVE
+    )
+    private List<Pick> picks;
 
     @Column(name = "item_id")
     private Long itemId;
@@ -86,5 +99,29 @@ public class ShortAllocation  implements Serializable {
 
     public void setStatus(ShortAllocationStatus status) {
         this.status = status;
+    }
+
+    public List<Pick> getPicks() {
+        return picks;
+    }
+
+    public void setPicks(List<Pick> picks) {
+        this.picks = picks;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

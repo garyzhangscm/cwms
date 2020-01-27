@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.layout.Exception.GenericException;
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.WarehouseService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,13 +32,14 @@ import java.util.List;
 @RestController
 public class WarehouseController {
 
+    private static final Logger logger = LoggerFactory.getLogger(WarehouseController.class);
     @Autowired
     WarehouseService warehouseService;
 
 
     @RequestMapping(value="/warehouses", method=RequestMethod.GET)
-    public List<Warehouse> listWarehouses() {
-        return warehouseService.findAll();
+    public List<Warehouse> listWarehouses(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        return warehouseService.findAll(name);
     }
 
     @RequestMapping(value="/warehouses", method=RequestMethod.POST)
@@ -44,7 +47,7 @@ public class WarehouseController {
         return warehouseService.save(warehouse);
     }
 
-    @RequestMapping(value="/warehouse/{id}", method=RequestMethod.PUT)
+    @RequestMapping(value="/warehouses/{id}", method=RequestMethod.PUT)
     public Warehouse changeWarehouse(@PathVariable long id, @RequestBody Warehouse warehouse) {
         if (warehouse.getId() != null && warehouse.getId() != id) {
             throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
@@ -52,22 +55,25 @@ public class WarehouseController {
         return warehouseService.save(warehouse);
     }
 
-    @RequestMapping(value="/warehouse/{id}", method=RequestMethod.DELETE)
+    @RequestMapping(value="/warehouses/{id}", method=RequestMethod.DELETE)
     public Warehouse removeWarehouses(@PathVariable long id) {
         Warehouse removedWarehouse = warehouseService.findById(id);
         warehouseService.delete(id);
         return removedWarehouse;
     }
 
-    @RequestMapping(value="/warehouse/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/warehouses/{id}", method = RequestMethod.GET)
     public Warehouse findWarehouseByID(@PathVariable long id) {
         return warehouseService.findById(id);
     }
 
-    @RequestMapping(value="/warehouse/accessible/{username}", method=RequestMethod.GET)
+    @RequestMapping(value="/warehouses/accessible/{username}", method=RequestMethod.GET)
     public List<Warehouse> getAccessibleWarehouse(@PathVariable String username) {
         // TO-DO: return warehouse that the user has access
-        return warehouseService.findAll();
+        List<Warehouse> warehouses =  warehouseService.findAll();
+        logger.debug("get {} warehouse for the user: {}",
+                warehouses.size(), username);
+        return warehouses;
     }
 
 

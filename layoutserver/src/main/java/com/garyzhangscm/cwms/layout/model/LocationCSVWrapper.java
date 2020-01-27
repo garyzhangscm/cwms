@@ -44,6 +44,8 @@ public class LocationCSVWrapper {
 
     private Boolean enabled;
 
+    private String warehouse;
+
     public String getName() {
         return name;
     }
@@ -162,5 +164,13 @@ public class LocationCSVWrapper {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -19,13 +19,11 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class Inventory implements Serializable {
@@ -54,6 +52,10 @@ public class Inventory implements Serializable {
     private Long receiptId;
 
     private List<InventoryMovement> inventoryMovements;
+
+    private Long warehouseId;
+    private Warehouse warehouse;
+
 
     public Double getSize() {
 
@@ -150,5 +152,21 @@ public class Inventory implements Serializable {
 
     public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
         this.inventoryMovements = inventoryMovements;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

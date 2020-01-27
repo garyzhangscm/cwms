@@ -29,6 +29,8 @@ public class MovementPathCSVWrapper {
     private String hopLocationGroup;
     private String strategy;
 
+    private String warehouse;
+
     @Override
     public String toString() {
         return "MovementPathCSVWrapper: { "
@@ -104,5 +106,13 @@ public class MovementPathCSVWrapper {
 
     public void setStrategy(String strategy) {
         this.strategy = strategy;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -58,6 +58,13 @@ public class ItemUnitOfMeasure implements Serializable {
     @Column(name = "height")
     private Double height;
 
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     public Long getId() {
         return id;
     }
@@ -129,5 +136,21 @@ public class ItemUnitOfMeasure implements Serializable {
 
     public void setItemPackageType(ItemPackageType itemPackageType) {
         this.itemPackageType = itemPackageType;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

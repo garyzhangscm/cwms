@@ -80,6 +80,10 @@ public class Location {
     @Column(name = "reserved_code")
     private String reservedCode;
 
+    @ManyToOne
+    @JoinColumn(name = "warehouse_id")
+    private Warehouse warehouse;
+
     @JsonIgnore
     public boolean hasInventory() {
         return getCurrentVolume() > 0.0;
@@ -241,4 +245,11 @@ public class Location {
         this.reservedCode = reservedCode;
     }
 
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 }

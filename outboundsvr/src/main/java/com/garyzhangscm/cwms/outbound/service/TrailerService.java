@@ -107,6 +107,12 @@ public class TrailerService {
         return loadShipment(shipment, trailer);
 
     }
+    public Trailer loadShipment(Shipment shipment) throws IOException {
+        if (shipment.getStop() == null || shipment.getStop().getTrailer() == null) {
+            throw  new GenericException(10000, "The shipment is not assigned to any trailer yet");
+        }
+        return loadShipment(shipment, shipment.getStop().getTrailer());
+    }
 
     public Trailer loadShipment(Shipment shipment, Trailer trailer) throws IOException {
         // load everything of the shipment onto the trailer
@@ -128,10 +134,12 @@ public class TrailerService {
     }
 
     // Load the inventory onto the trailer
-    public void loadShipment(Inventory inventory, Trailer trailer) throws IOException {
+    public void loadShipment(ShipmentLine shipmentLine, Inventory inventory, Trailer trailer) throws IOException {
         // Let's move the inventory onto the trailer
 
-        Location trailerLocation = warehouseLayoutServiceRestemplateClient.getTrailerLocation(trailer.getId());
+        Location trailerLocation =
+                warehouseLayoutServiceRestemplateClient.getTrailerLocation(
+                        getWarehouseName(shipmentLine.getWarehouseId()), trailer.getId());
         inventoryServiceRestemplateClient.moveInventory(inventory, trailerLocation);
 
 
@@ -141,7 +149,7 @@ public class TrailerService {
     // happens when the trailer is a fake trailer and we don't care about
     // the actual dock door we check in
     public Trailer checkInTrailer(Trailer trailer) {
-        List<Location> dockLocations = warehouseLayoutServiceRestemplateClient.findDockLocations();
+        List<Location> dockLocations = warehouseLayoutServiceRestemplateClient.findEmptyDockLocations();
         if (dockLocations.size() > 0) {
             return checkInTrailer(trailer, dockLocations.get(0));
         }
@@ -204,10 +212,21 @@ public class TrailerService {
         trailer.setDriverPhone("----");
         trailer.setLicensePlateNumber("----");
         trailer.setNumber("----");
+        trailer.setSize("----");
+        trailer.setType(TrailerType.UNKNOUN);
         trailer.setStatus(TrailerStatus.PENDING);
 
         return save(trailer);
     }
 
+    private String getWarehouseName(Long warehouseId) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        if (warehouse == null) {
+            return "";
+        }
+        else  {
+            return warehouse.getName();
+        }
+    }
 
 }

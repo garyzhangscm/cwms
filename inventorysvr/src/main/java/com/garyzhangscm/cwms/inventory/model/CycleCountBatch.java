@@ -37,6 +37,12 @@ public class CycleCountBatch implements Serializable {
     @Column(name = "batch_id", unique = true)
     private String batchId;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Transient
     private int requestLocationCount;
     @Transient
@@ -104,5 +110,29 @@ public class CycleCountBatch implements Serializable {
 
     public void setFinishedAuditLocationCount(int finishedAuditLocationCount) {
         this.finishedAuditLocationCount = finishedAuditLocationCount;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

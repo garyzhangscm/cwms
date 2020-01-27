@@ -37,7 +37,7 @@ public class LocationGroupTypeController {
         return locationGroupTypeService.findAll(name);
     }
 
-    @RequestMapping(method=RequestMethod.GET, value="/locationgrouptype/{id}")
+    @RequestMapping(method=RequestMethod.GET, value="/locationgrouptypes/{id}")
     public LocationGroupType getLocationGroupType(@PathVariable Long id) {
         return locationGroupTypeService.findById(id);
     }

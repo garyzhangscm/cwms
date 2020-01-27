@@ -66,7 +66,8 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return putawayConfigurationRepository.findAll();
     }
 
-    public List<PutawayConfiguration> findAll(Integer sequence,
+    public List<PutawayConfiguration> findAll(String warehouseName,
+                                              Integer sequence,
                                               String itemName,
                                               String itemFamilyName,
                                               Long inventoryStatusId) {
@@ -74,10 +75,22 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         List<PutawayConfiguration> putawayConfigurations =  putawayConfigurationRepository.findAll(
                 (Root<PutawayConfiguration> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+                    if (!StringUtils.isBlank(warehouseName)) {
+
+                        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
+                        if (warehouse != null) {
+                            predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouse.getId()));
+                        }
+                        else {
+                            // web client passed in a incorrect warehouse name, we will return an empty result
+                            predicates.add(criteriaBuilder.equal(root.get("itemId"), -1L));
+                        }
+                    }
                     if (sequence != null) {
                         predicates.add(criteriaBuilder.equal(root.get("sequence"), sequence));
 
                     }
+
                     if (!StringUtils.isBlank(itemName)) {
                         Item item = inventoryServiceRestemplateClient.getItemByName(itemName);
                         if (item != null) {
@@ -186,6 +199,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     public List<PutawayConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("sequence").
                 addColumn("item").
                 addColumn("itemFamily").
@@ -215,6 +229,12 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         putawayConfiguration.setSequence(putawayConfigurationCSVWrapper.getSequence());
         putawayConfiguration.setStrategies(putawayConfigurationCSVWrapper.getStrategies());
 
+        if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(putawayConfigurationCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                putawayConfiguration.setWarehouseId(warehouse.getId());
+            }
+        }
         if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(putawayConfigurationCSVWrapper.getItem());
             if (item != null) {
@@ -235,14 +255,16 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         }
 
         if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getLocation())) {
-            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(putawayConfigurationCSVWrapper.getLocation());
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                    putawayConfigurationCSVWrapper.getWarehouse(), putawayConfigurationCSVWrapper.getLocation());
             if (location != null) {
                 putawayConfiguration.setLocationId(location.getId());
             }
         }
 
         if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getLocationGroup())) {
-            LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupByName(putawayConfigurationCSVWrapper.getLocationGroup());
+            LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
+                    putawayConfigurationCSVWrapper.getWarehouse(), putawayConfigurationCSVWrapper.getLocationGroup());
             if (locationGroup != null) {
                 putawayConfiguration.setLocationGroupId(locationGroup.getId());
             }

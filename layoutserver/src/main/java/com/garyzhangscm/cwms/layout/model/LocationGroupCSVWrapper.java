@@ -34,6 +34,8 @@ public class LocationGroupCSVWrapper {
     private Boolean trackingVolume;
     private String volumeTrackingPolicy;
 
+    private String warehouse;
+
     public String getName() {
         return name;
     }
@@ -96,5 +98,13 @@ public class LocationGroupCSVWrapper {
 
     public void setVolumeTrackingPolicy(String volumeTrackingPolicy) {
         this.volumeTrackingPolicy = volumeTrackingPolicy;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

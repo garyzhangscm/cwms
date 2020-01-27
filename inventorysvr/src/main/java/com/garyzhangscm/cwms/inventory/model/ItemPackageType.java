@@ -67,6 +67,12 @@ public class ItemPackageType implements Serializable {
     )
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     public Long getId() {
         return id;
     }
@@ -151,5 +157,21 @@ public class ItemPackageType implements Serializable {
             }
         }
         return stockItemUnitOfMeasure;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

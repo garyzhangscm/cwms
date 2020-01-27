@@ -25,6 +25,10 @@ import org.springframework.stereotype.Component;
 public class FilterUtils {
 
     public static final String CORRELATION_ID = "gzcwms-correlation-id";
+    public static final String USERNAME = "gzcwms-username";
+
+    public static final String AUTH_TOKEN     = "Authorization";
+
     public static final String PRE_FILTER_TYPE = "pre";
 
     public String getCorrelationId(){
@@ -42,5 +46,31 @@ public class FilterUtils {
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.addZuulRequestHeader(CORRELATION_ID, correlationId);
     }
+
+    public String getAuthToken(){
+        RequestContext ctx = RequestContext.getCurrentContext();
+
+        if (ctx.getRequest().getHeader(AUTH_TOKEN) !=null) {
+            return getAuthToken(ctx.getRequest().getHeader(AUTH_TOKEN));
+        }
+        else{
+            return getAuthToken(ctx.getZuulRequestHeaders().get(AUTH_TOKEN));
+        }
+    }
+
+    private String getAuthToken(String bearerAuthToken) {
+        // The token will be passed in as Bearer xxxxx-xxxxx-xxxx-xxxx
+        if (!bearerAuthToken.startsWith("Bearer")) {
+            return "";
+        }
+        String[] tokenValues = bearerAuthToken.split(" ");
+        if (tokenValues.length != 2) {
+            return "";
+        }
+        return tokenValues[1];
+
+    }
+
+
 
 }

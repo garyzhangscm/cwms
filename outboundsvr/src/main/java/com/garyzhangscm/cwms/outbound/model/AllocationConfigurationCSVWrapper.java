@@ -29,10 +29,33 @@ public class AllocationConfigurationCSVWrapper {
 
     private String inventoryStatus;
 
+
     private String location;
     private String locationGroup;
     private String locationGroupType;
     private String allocationStrategy;
+
+    private String pickableUnitOfMeasures;
+
+    private String type;
+    private String warehouse;
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("sequence: ").append(sequence)
+                .append("\nitem: ").append(item)
+                .append("\nitemFamily: ").append(itemFamily)
+                .append("\ninventoryStatus: ").append(inventoryStatus)
+                .append("\nlocation: ").append(location)
+                .append("\nlocationGroup: ").append(locationGroup)
+                .append("\nlocationGroupType: ").append(locationGroupType)
+                .append("\nallocationStrategy: ").append(allocationStrategy)
+                .append("\npickableUnitOfMeasures: ").append(pickableUnitOfMeasures)
+                .append("\ntype: ").append(type)
+                .toString();
+
+    }
 
     public Integer getSequence() {
         return sequence;
@@ -96,5 +119,29 @@ public class AllocationConfigurationCSVWrapper {
 
     public void setAllocationStrategy(String allocationStrategy) {
         this.allocationStrategy = allocationStrategy;
+    }
+
+    public String getPickableUnitOfMeasures() {
+        return pickableUnitOfMeasures;
+    }
+
+    public void setPickableUnitOfMeasures(String pickableUnitOfMeasures) {
+        this.pickableUnitOfMeasures = pickableUnitOfMeasures;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

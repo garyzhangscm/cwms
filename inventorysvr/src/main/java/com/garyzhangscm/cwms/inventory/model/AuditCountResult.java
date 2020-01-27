@@ -54,6 +54,13 @@ public class AuditCountResult implements Serializable {
     @Column(name = "count_quantity")
     private Long countQuantity;
 
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     public AuditCountResult() {}
     public AuditCountResult(String batchId, Long locationId, Inventory inventory,
                             Long quantity, Long countQuantity) {
@@ -150,4 +157,19 @@ public class AuditCountResult implements Serializable {
         this.inventory = inventory;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 }

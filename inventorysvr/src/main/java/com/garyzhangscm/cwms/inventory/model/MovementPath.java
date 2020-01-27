@@ -73,6 +73,12 @@ public class MovementPath {
     private List<MovementPathDetail> movementPathDetails = new ArrayList<>();
 
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -190,5 +196,21 @@ public class MovementPath {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

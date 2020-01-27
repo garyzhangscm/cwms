@@ -10,6 +10,7 @@ public class ShippingStageAreaConfigurationCSVWrapper {
     private String locationGroup;
 
     private String locationReserveStrategy;
+    private String warehouse;
 
     public Integer getSequence() {
         return sequence;
@@ -33,5 +34,13 @@ public class ShippingStageAreaConfigurationCSVWrapper {
 
     public void setLocationReserveStrategy(String locationReserveStrategy) {
         this.locationReserveStrategy = locationReserveStrategy;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

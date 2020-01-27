@@ -34,6 +34,8 @@ public class InventoryCSVWrapper implements Serializable {
 
     private String inventoryStatus;
 
+    private String warehouse;
+
     public String getLpn() {
         return lpn;
     }
@@ -80,5 +82,13 @@ public class InventoryCSVWrapper implements Serializable {
 
     public void setInventoryStatus(String inventoryStatus) {
         this.inventoryStatus = inventoryStatus;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
+import javax.persistence.Column;
+
 public class LocationGroup {
 
     private Long id;
@@ -31,6 +33,8 @@ public class LocationGroup {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean trackingVolume;
+
 
     public Long getId() {
         return id;
@@ -86,5 +90,13 @@ public class LocationGroup {
 
     public void setCountable(Boolean countable) {
         this.countable = countable;
+    }
+
+    public Boolean getTrackingVolume() {
+        return trackingVolume;
+    }
+
+    public void setTrackingVolume(Boolean trackingVolume) {
+        this.trackingVolume = trackingVolume;
     }
 }

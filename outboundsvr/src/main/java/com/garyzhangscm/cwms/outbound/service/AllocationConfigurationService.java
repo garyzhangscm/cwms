@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
@@ -36,7 +37,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 
 @Service
@@ -51,6 +52,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     private ShortAllocationService shortAllocationService;
     @Autowired
     private PickService pickService;
+    @Autowired
+    private PickableUnitOfMeasureService pickableUnitOfMeasureService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -102,6 +105,29 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     public List<AllocationConfiguration> findAll() {
         return findAll(true);
     }
+
+    public List<AllocationConfiguration> findAllocationConfigurationForPicking() {
+        return findByType(AllocationConfigurationType.PICKING);
+    }
+
+    public List<AllocationConfiguration> findAllocationConfigurationForReplenishment() {
+        return findByType(AllocationConfigurationType.REPLENISHMENT);
+    }
+    public List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType) {
+        return findByType(allocationConfigurationType, true);
+
+    }
+    public List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType, boolean loadDetails) {
+        List<AllocationConfiguration> allocationConfigurations = allocationConfigurationRepository.findByType(allocationConfigurationType);
+
+        if (allocationConfigurations.size() > 0 && loadDetails) {
+            loadAttribute(allocationConfigurations);
+        }
+        return allocationConfigurations;
+
+    }
+
+
 
     private void loadAttribute(AllocationConfiguration allocationConfiguration) {
 
@@ -161,6 +187,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     public List<AllocationConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("sequence").
                 addColumn("item").
                 addColumn("itemFamily").
@@ -169,6 +196,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 addColumn("locationGroup").
                 addColumn("locationGroupType").
                 addColumn("allocationStrategy").
+                addColumn("pickableUnitOfMeasures").
+                addColumn("type").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, AllocationConfigurationCSVWrapper.class);
@@ -178,17 +207,28 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         try {
             InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
             List<AllocationConfigurationCSVWrapper> allocationConfigurationCSVWrappers = loadData(inputStream);
-            allocationConfigurationCSVWrappers.stream().forEach(allocationConfigurationCSVWrapper -> saveOrUpdate(convertFromWrapper(allocationConfigurationCSVWrapper)));
+            allocationConfigurationCSVWrappers.stream().forEach(allocationConfigurationCSVWrapper -> saveFromWrapper(allocationConfigurationCSVWrapper));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
 
-    private AllocationConfiguration convertFromWrapper(AllocationConfigurationCSVWrapper allocationConfigurationCSVWrapper) {
+    private void saveFromWrapper(AllocationConfigurationCSVWrapper allocationConfigurationCSVWrapper) {
 
+        logger.debug("Start to save allocation configuration with meta value:\n {}",
+                allocationConfigurationCSVWrapper);
         AllocationConfiguration allocationConfiguration = new AllocationConfiguration();
         allocationConfiguration.setSequence(allocationConfigurationCSVWrapper.getSequence());
         allocationConfiguration.setAllocationStrategy(AllocationStrategy.valueOf(allocationConfigurationCSVWrapper.getAllocationStrategy()));
+        allocationConfiguration.setType(AllocationConfigurationType.valueOf(allocationConfigurationCSVWrapper.getType()));
+
+        Warehouse warehouse = null;
+        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getWarehouse())) {
+            warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(allocationConfigurationCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                allocationConfiguration.setWarehouseId(warehouse.getId());
+            }
+        }
 
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(allocationConfigurationCSVWrapper.getItem());
@@ -205,14 +245,18 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
 
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocation())) {
-            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(allocationConfigurationCSVWrapper.getLocation());
+            Location location =
+                    warehouseLayoutServiceRestemplateClient.getLocationByName(
+                            allocationConfigurationCSVWrapper.getWarehouse(),allocationConfigurationCSVWrapper.getLocation());
             if (location != null) {
                 allocationConfiguration.setLocationId(location.getId());
             }
         }
 
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocationGroup())) {
-            LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupByName(allocationConfigurationCSVWrapper.getLocationGroup());
+            LocationGroup locationGroup =
+                    warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
+                            allocationConfigurationCSVWrapper.getWarehouse(),allocationConfigurationCSVWrapper.getLocationGroup());
             if (locationGroup != null) {
                 allocationConfiguration.setLocationGroupId(locationGroup.getId());
             }
@@ -224,7 +268,22 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 allocationConfiguration.setLocationGroupTypeId(locationGroupType.getId());
             }
         }
-        return allocationConfiguration;
+
+        // Save the configuration first, then save all the pickable unit of measure
+        AllocationConfiguration savedAllocationConfiguration = saveOrUpdate(allocationConfiguration);
+
+
+        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getPickableUnitOfMeasures())) {
+            logger.debug("Start to save pickable unit of measure:\n,{}",
+                    allocationConfigurationCSVWrapper.getPickableUnitOfMeasures());
+            long warehouseId = warehouse.getId();
+            List<String> pickableUnitOfMeasureNames = Arrays.asList(allocationConfigurationCSVWrapper.getPickableUnitOfMeasures().split(";"));
+                    pickableUnitOfMeasureNames.stream()
+                            .map(pickableUnitOfMeasureName ->  commonServiceRestemplateClient.getUnitOfMeasureByName(pickableUnitOfMeasureName))
+                            .filter(Objects::nonNull)
+                            .map(unitOfMeasure -> new PickableUnitOfMeasure(warehouseId, unitOfMeasure.getId(), savedAllocationConfiguration))
+                            .forEach(pickableUnitOfMeasure -> pickableUnitOfMeasureService.save(pickableUnitOfMeasure));
+        }
     }
 
     @Transactional
@@ -245,7 +304,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
 
         // Get all allocation configuration that match with the item
-        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(item);
+        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(item, AllocationConfigurationType.PICKING);
         logger.debug("We got {} allocation configuration by item {}",
                         matchedAllocationConfiguration.size(), item.getName());
 
@@ -279,11 +338,26 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                     logger.debug("2. open quantity is 0. We have already allocate the full quantity.");
                     break;
                 }
-                Long pickableQuantity = getPickableQuantity(allocationConfiguration, existingPicks, inventorySummary);
+                Long smallestPickableUnitOfMeasureQuantity
+                        = getSmallestPickableUnitOfMeasureQuantity(allocationConfiguration, inventorySummary);
+                if (smallestPickableUnitOfMeasureQuantity == 0) {
+                    logger.debug("No pickable unit of measure defined for the inventory summary, {} / {}",
+                            inventorySummary.getItem().getName(), inventorySummary.getItemPackageType().getName());
+                    continue;
+                }
+
+                Long pickableQuantity = getPickableQuantity(allocationConfiguration, existingPicks,
+                        inventorySummary, smallestPickableUnitOfMeasureQuantity);
                 logger.debug("We can pick {} from location {}, item {}", pickableQuantity,
                         inventorySummary.getLocation().getName(), inventorySummary.getItem().getName());
-                if (pickableQuantity > 0) {
+
+                logger.debug("Start to generate pick\n pickable quantity {}\n open quantity {}\n pickable unit of measure quantity {}",
+                        pickableQuantity, openQuantity, smallestPickableUnitOfMeasureQuantity);
+                if (Math.min(pickableQuantity, openQuantity) > smallestPickableUnitOfMeasureQuantity) {
                     Long pickQuantity = Math.min(pickableQuantity, openQuantity);
+                    // Make sure we pick by unit of measure
+                    pickQuantity = (pickQuantity / smallestPickableUnitOfMeasureQuantity) * smallestPickableUnitOfMeasureQuantity;
+
                     Pick pick = pickService.generatePick(inventorySummary, shipmentLine, pickQuantity);
                     picks.add(pick);
                     openQuantity -= pickQuantity;
@@ -310,23 +384,140 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
     }
 
+
+    @Transactional
+    public List<Pick> allocate(ShortAllocation shortAllocation, List<Pick> existingPicks, List<Inventory> pickableInventory) {
+
+
+        // open quantity is the quantity we are about to allocate this time
+        Long openQuantity = shortAllocation.getQuantity();
+        logger.debug("Start to allocate short allocation: {} / {} / {} by going through all the strategy",
+                shortAllocation.getId(), shortAllocation.getItem(), shortAllocation.getItem().getItemFamily());
+
+        // Let's get the item by short allocation
+        // Then we will get all the strategy by the item attribute
+        // After we get all the strategy, we will loop through each strategy until
+        // we either generate enough picks, or we generate emergency replenishment for the shortage
+        Item item = shortAllocation.getItem();
+
+
+        // Get all allocation configuration that match with the item
+        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(item, AllocationConfigurationType.REPLENISHMENT);
+        logger.debug("We got {} allocation configuration by item {}",
+                matchedAllocationConfiguration.size(), item.getName());
+
+        if (matchedAllocationConfiguration.size() == 0) {
+            // OK, we don't have any allocation configuration defined for this item,
+            // Let's return nothing
+            return new ArrayList<>();
+        }
+
+        // Sort the allocation configuration based upon the sequence then try one by one
+        matchedAllocationConfiguration.sort(Comparator.comparing(AllocationConfiguration::getSequence));
+        // We will allocate based on inventory group(group by location and status and etc)
+        List<InventorySummary> inventorySummaries = inventorySummaryService.getInventorySummaryForAllocation(pickableInventory);
+        logger.debug("We have {} pickable inventory summary against the item with {}",
+                inventorySummaries.size(), item.getName());
+
+        List<Pick> picks = new ArrayList<>();
+
+        // Let's loop through each allocation configuration to see if we can allocate by the configuration
+        for (AllocationConfiguration allocationConfiguration : matchedAllocationConfiguration) {
+            logger.debug("Start to allocate against the configuration: {} / {}",
+                    allocationConfiguration.getId(), allocationConfiguration.getSequence());
+            if (openQuantity <= 0) {
+                logger.debug("1. open quantity is 0. We have already allocate the full quantity.");
+                break;
+            }
+            for (InventorySummary inventorySummary : inventorySummaries) {
+                if (openQuantity <= 0) {
+                    logger.debug("2. open quantity is 0. We have already allocate the full quantity.");
+                    break;
+                }
+                Long smallestPickableUnitOfMeasureQuantity
+                        = getSmallestPickableUnitOfMeasureQuantity(allocationConfiguration, inventorySummary);
+                if (smallestPickableUnitOfMeasureQuantity == 0) {
+                    logger.debug("No pickable unit of measure defined for the inventory summary, {} / {}",
+                            inventorySummary.getItem().getName(), inventorySummary.getItemPackageType().getName());
+                    continue;
+                }
+
+                Long pickableQuantity = getPickableQuantity(allocationConfiguration, existingPicks,
+                        inventorySummary, smallestPickableUnitOfMeasureQuantity);
+                logger.debug("We can pick {} from location {}, item {}", pickableQuantity,
+                        inventorySummary.getLocation().getName(), inventorySummary.getItem().getName());
+
+                logger.debug("Start to generate pick\n pickable quantity {}\n open quantity {}\n pickable unit of measure quantity {}",
+                        pickableQuantity, openQuantity, smallestPickableUnitOfMeasureQuantity);
+                if (Math.min(pickableQuantity, openQuantity) > smallestPickableUnitOfMeasureQuantity) {
+                    Long pickQuantity = Math.min(pickableQuantity, openQuantity);
+                    // Make sure we pick by unit of measure
+                    pickQuantity = (pickQuantity / smallestPickableUnitOfMeasureQuantity) * smallestPickableUnitOfMeasureQuantity;
+
+                    try {
+                        Pick pick = pickService.generatePick(inventorySummary, shortAllocation, pickQuantity);
+                        picks.add(pick);
+                        openQuantity -= pickQuantity;
+                        logger.debug("OK, we generate a pick with quantity {}. The open quantity become {}",
+                                pickQuantity, openQuantity);
+
+                        // deduct the quantity from inventory summary so that we can have the right available quantity
+                        // in the following round
+                        inventorySummary.setQuantity(inventorySummary.getQuantity() - pickQuantity);
+                    }
+                    catch(GenericException ex) {
+                        // in case we can't generate the pick, let's just ignore the exception and continue with next possible pick
+                        logger.debug("Error while generate the pick: " + ex.getMessage());
+                    }
+                }
+
+            }
+        }
+
+        return picks;
+
+    }
+
     private ShortAllocation generateShortAllocation(Item item, ShipmentLine shipmentLine, Long quantity) {
 
-        ShortAllocation shortAllocation = new ShortAllocation();
-        shortAllocation.setItem(item);
-        shortAllocation.setItemId(item.getId());
-        shortAllocation.setQuantity(quantity);
-        shortAllocation.setShipmentLine(shipmentLine);
-        shortAllocation.setStatus(ShortAllocationStatus.PENDING);
-
-        return shortAllocationService.save(shortAllocation);
+        return shortAllocationService.generateShortAllocation(item, shipmentLine, quantity);
 
     }
 
 
+    // Get the smallest pickable unit of measure quantity
+    // We will get all the unit of measure defined for this inventory summary
+    // then for each unit of measure, check if it is defined in the allocation configuraiton
+    // (allocationConfiguration.getPickableUnitOfMeasures()).
+    // After we get all those unit of measure, we get the smallest unit of measure's quantity
+    // Then we will pick by this smallest unit of measure.
+    private Long getSmallestPickableUnitOfMeasureQuantity(AllocationConfiguration allocationConfiguration,
+                                                          InventorySummary inventorySummary) {
+        return inventorySummary.getItemPackageType()
+                .getItemUnitOfMeasures()
+                .stream().filter(itemUnitOfMeasure -> {
+                    logger.debug(">> getSmallestPickableUnitOfMeasureQuantity / compare: {}",
+                            itemUnitOfMeasure.getUnitOfMeasure().getName());
+                    boolean match = allocationConfiguration.getPickableUnitOfMeasures().stream()
+                            .map(PickableUnitOfMeasure::getUnitOfMeasureId)
+                            .filter(id -> {
+                                logger.debug("Will compare ");
+                                return itemUnitOfMeasure.getUnitOfMeasureId().equals(id);
+                            })
+                            .filter(Objects::nonNull).count() > 0;
+
+                    return match;
+
+                })
+                .map(ItemUnitOfMeasure::getQuantity)
+                .min(Long::compare)
+                .orElse(0L);
+    }
+
     private Long getPickableQuantity(AllocationConfiguration allocationConfiguration,
                                List<Pick> existingPicks,
-                               InventorySummary inventorySummary) {
+                               InventorySummary inventorySummary,
+                               Long smallestPickableUnitOfMeasureQuantity) {
 
         if (!isPickable(allocationConfiguration, inventorySummary)) {
             return 0L;
@@ -336,6 +527,11 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         // the quantity we can still allocate from this location
         Long pickableQuantity = inventorySummary.getQuantity();
 
+
+
+        if (smallestPickableUnitOfMeasureQuantity.equals(0)) {
+            return 0L;
+        }
         // Loop through all existing picks to deduct the quantity
         for(Pick pick : existingPicks) {
             if (pick.getSourceLocationId().equals(inventorySummary.getLocationId())) {
@@ -343,8 +539,11 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 pickableQuantity -= (pick.getQuantity() - pick.getPickedQuantity());
             }
         }
-        if (pickableQuantity > 0) {
-            return pickableQuantity;
+        if (pickableQuantity > smallestPickableUnitOfMeasureQuantity) {
+            // we will pick by unit of measure
+            Long pickableUnitOfMeasureQuantity = pickableQuantity / smallestPickableUnitOfMeasureQuantity;
+
+            return pickableUnitOfMeasureQuantity * smallestPickableUnitOfMeasureQuantity;
         }
         else {
             return 0L;
@@ -387,9 +586,9 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return true;
     }
 
-    private List<AllocationConfiguration> getMatchedAllocationConfiguration(Item item) {
+    private List<AllocationConfiguration> getMatchedAllocationConfiguration(Item item, AllocationConfigurationType allocationConfigurationType) {
         List<AllocationConfiguration> allocationConfigurations = new ArrayList<>();
-        List<AllocationConfiguration> allAllocationConfigurations = findAll();
+        List<AllocationConfiguration> allAllocationConfigurations = findByType(allocationConfigurationType);
         logger.debug("We have {} allocation configuration defined in the system", allAllocationConfigurations.size());
 
         allAllocationConfigurations.forEach(allocationConfiguration -> {

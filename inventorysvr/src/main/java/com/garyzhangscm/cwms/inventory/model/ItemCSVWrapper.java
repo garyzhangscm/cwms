@@ -35,6 +35,8 @@ public class ItemCSVWrapper implements Serializable {
     private String itemFamily;
     private Double unitCost;
 
+    private String warehouse;
+
     public String getName() {
         return name;
     }
@@ -73,5 +75,13 @@ public class ItemCSVWrapper implements Serializable {
 
     public void setUnitCost(Double unitCost) {
         this.unitCost = unitCost;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

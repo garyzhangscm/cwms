@@ -40,6 +40,12 @@ public class Receipt {
     private String number;
 
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Column(name = "client_id")
     private Long clientId;
 
@@ -125,5 +131,21 @@ public class Receipt {
 
     public void setReceiptStatus(ReceiptStatus receiptStatus) {
         this.receiptStatus = receiptStatus;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

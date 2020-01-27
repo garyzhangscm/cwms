@@ -19,7 +19,7 @@ public class LayoutServerConfiguration extends ResourceServerConfigurerAdapter {
         http
         .authorizeRequests()
           .antMatchers("/actuator").permitAll()
-          .antMatchers("/warehouse/accessible/**").permitAll()
+          .antMatchers("/warehouses/accessible/**").permitAll()
           .anyRequest()
           .authenticated();
     }

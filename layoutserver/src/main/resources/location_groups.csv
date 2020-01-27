@@ -1,27 +1,27 @@
-name, description, locationGroupType, pickable, storable, countable,trackingVolume, volumeTrackingPolicy
-EACH_PICK,Each Picking Area - #1,Storage, true, true, true,true,BY_EACH
-CASE_PICK,Case Picking Area - #1,Storage, true, true, true,true,BY_VOLUME
-PALLET_PICK,Pallet Picking Area,Storage, true, true, true,true,BY_PALLET
-EACH_PICK_FRZ,Each Picking Area - Frozen,Storage, true, true, true,true,BY_EACH
-CASE_PICK_FRZ,Case Picking Area - Frozen,Storage, true, true, true,true,BY_VOLUME
-PALLET_PICK_FRZ,Pallet Picking Area - Frozen,Storage, true, true, true,true,BY_PALLET
-EACH_PICK_HV,Each Picking Area - High Value,Storage, true, true, true,true,BY_EACH
-CASE_PICK_HV,Case Picking Area - High Value,Storage, true, true, true,true,BY_VOLUME
-PALLET_PICK_HV,Pallet Picking Area - High Value,Storage, true, true, true,true,BY_PALLET
-EACH_PICK_OZ,Each Picking Area - Over Size,Storage, true, true, true,true,BY_EACH
-CASE_PICK_OZ,Case Picking Area - Over Size,Storage, true, true, true,true,BY_VOLUME
-PALLET_PICK_OZ,Pallet Picking Area - Over Size,Storage, true, true, true,true,BY_PALLET
-DAMAGED,Damaged Inventory Area,Damaged, true, true, true,false,
-RECV_STG,Receiving Stage,Receive_Stage, false, false, false,false,
-RECV_DCK,Receiving Dock,Receive_Dock, false, false, false,false,
-RECEIPT,Receipt,RECEIPT, false, false, false,false,
-SHIP_STG,Shipping Stage,Shipping_Stage, false, false, false,false,
-SHIP_DCK,Shipping Dock,Shipping_Dock, false, false, false,false,
-DISPATCHED,Dispatched Trailer,Dispatched, false, false, false,false,
-TRAILER,Trailer,Trailer, false, false, false,false,
-RF,RF locations,RF, false, false, false,false,
-YARD,Yard for parking,Yard, false, false, false,false,
-P&D,Pickup and Deposit,PickupDeposit, false, false, false,false,
-Default_Removed_Inventory_Location,Default Location For Removed Inventory,Removed_Inventory, false, false, false,false,
-Audit_Count_Inventory_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,
-Inventory_Adjustment_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,
+warehouse,name, description, locationGroupType, pickable, storable, countable,trackingVolume, volumeTrackingPolicy
+WMOR,EACH_PICK,Each Picking Area - #1,Storage, true, true, true,true,BY_EACH
+WMOR,CASE_PICK,Case Picking Area - #1,Storage, true, true, true,true,BY_VOLUME
+WMOR,PALLET_PICK,Pallet Picking Area,Storage, true, true, true,true,BY_PALLET
+WMOR,EACH_PICK_FRZ,Each Picking Area - Frozen,Storage, true, true, true,true,BY_EACH
+WMOR,CASE_PICK_FRZ,Case Picking Area - Frozen,Storage, true, true, true,true,BY_VOLUME
+WMOR,PALLET_PICK_FRZ,Pallet Picking Area - Frozen,Storage, true, true, true,true,BY_PALLET
+WMOR,EACH_PICK_HV,Each Picking Area - High Value,Storage, true, true, true,true,BY_EACH
+WMOR,CASE_PICK_HV,Case Picking Area - High Value,Storage, true, true, true,true,BY_VOLUME
+WMOR,PALLET_PICK_HV,Pallet Picking Area - High Value,Storage, true, true, true,true,BY_PALLET
+WMOR,EACH_PICK_OZ,Each Picking Area - Over Size,Storage, true, true, true,true,BY_EACH
+WMOR,CASE_PICK_OZ,Case Picking Area - Over Size,Storage, true, true, true,true,BY_VOLUME
+WMOR,PALLET_PICK_OZ,Pallet Picking Area - Over Size,Storage, true, true, true,true,BY_PALLET
+WMOR,DAMAGED,Damaged Inventory Area,Damaged, true, true, true,false,
+WMOR,RECV_STG,Receiving Stage,Receive_Stage, false, false, false,false,
+WMOR,RECV_DCK,Receiving Dock,Receive_Dock, false, false, false,false,
+WMOR,RECEIPT,Receipt,RECEIPT, false, false, false,false,
+WMOR,SHIP_STG,Shipping Stage,Shipping_Stage, false, false, false,false,
+WMOR,SHIP_DCK,Shipping Dock,Shipping_Dock, false, false, false,false,
+WMOR,DISPATCHED,Dispatched Trailer,Dispatched, false, false, false,false,
+WMOR,TRAILER,Trailer,Trailer, false, false, false,false,
+WMOR,RF,RF locations,RF, false, false, false,false,
+WMOR,YARD,Yard for parking,Yard, false, false, false,false,
+WMOR,P&D,Pickup and Deposit,PickupDeposit, false, false, false,false,
+WMOR,Default_Removed_Inventory_Location,Default Location For Removed Inventory,Removed_Inventory, false, false, false,false,
+WMOR,Audit_Count_Inventory_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,
+WMOR,Inventory_Adjustment_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,

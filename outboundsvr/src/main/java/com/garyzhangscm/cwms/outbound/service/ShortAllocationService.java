@@ -22,10 +22,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
-import com.garyzhangscm.cwms.outbound.model.Pick;
-import com.garyzhangscm.cwms.outbound.model.PickStatus;
-import com.garyzhangscm.cwms.outbound.model.ShortAllocation;
-import com.garyzhangscm.cwms.outbound.model.ShortAllocationStatus;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.PickRepository;
 import com.garyzhangscm.cwms.outbound.repository.ShortAllocationRepository;
 import org.apache.commons.lang.StringUtils;
@@ -46,6 +43,10 @@ public class ShortAllocationService {
 
     @Autowired
     private ShortAllocationRepository shortAllocationRepository;
+    @Autowired
+    private PickService pickService;
+    @Autowired
+    private AllocationConfigurationService allocationConfigurationService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -53,6 +54,7 @@ public class ShortAllocationService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+
 
     public ShortAllocation findById(Long id, boolean loadDetails) {
         ShortAllocation shortAllocation = shortAllocationRepository.findById(id).orElse(null);
@@ -128,6 +130,79 @@ public class ShortAllocationService {
         shortAllocation.setStatus(ShortAllocationStatus.CANCELLED);
         return save(shortAllocation);
 
+    }
+
+    public ShortAllocation generateShortAllocation(Item item, ShipmentLine shipmentLine, Long quantity) {
+
+        ShortAllocation shortAllocation = new ShortAllocation();
+        shortAllocation.setItem(item);
+        shortAllocation.setItemId(item.getId());
+        shortAllocation.setQuantity(quantity);
+        shortAllocation.setShipmentLine(shipmentLine);
+        shortAllocation.setStatus(ShortAllocationStatus.PENDING);
+        shortAllocation.setWarehouseId(shipmentLine.getWarehouseId());
+
+        return save(shortAllocation);
+
+    }
+
+    public ShortAllocation allocateShortAllocation(ShortAllocation shortAllocation) {
+        logger.debug("Start to allocate short allocation: {} / {}",
+                shortAllocation.getItem(), shortAllocation.getItem().getItemFamily());
+        if (!isAllocatable(shortAllocation) || shortAllocation.getQuantity() <= 0) {
+            logger.debug("short allocation is not allocatable! is allocatable? {}, open quantity? {}",
+                    isAllocatable(shortAllocation), shortAllocation.getQuantity());
+            return shortAllocation;
+        }
+
+        // Let's get all the pickable inventory and existing picking so we can start to calculate
+        // how to generate picks for the shipment
+        Long itemId = shortAllocation.getItemId();
+
+        List<Pick> existingPicks = pickService.getOpenPicksByItemId(itemId);
+        logger.debug("We have {} existing picks against the item with id {}",
+                existingPicks.size(), itemId);
+
+        // Get all pickable inventory
+        List<Inventory> pickableInventory
+                = inventoryServiceRestemplateClient.getPickableInventory(
+                        itemId, shortAllocation.getShipmentLine().getOrderLine().getInventoryStatusId());
+        logger.debug("We have {} pickable inventory against the item with id {} / {}",
+                pickableInventory.size(), itemId, shortAllocation.getShipmentLine().getOrderLine().getInventoryStatusId());
+
+
+        List<Pick> picks = allocationConfigurationService.allocate(shortAllocation, existingPicks, pickableInventory);
+
+        if (picks.size() > 0) {
+            // We allocated some quantity for the short allocation, let's deduct the quantity
+            // from the short allocation record
+
+            // Deduct the quantity from short allocation
+            // There're 2 options to track the quantity of a short allocation
+            // Option 1: keep the original short quantity
+            //     -- We will keep the original short quantity. So if we cancel any pick of the short allocation, we
+            //        can always re-allocate the cancelled quantity later on
+            // Option 2: Not keep the original short quantity
+            //     -- We won't track the original short quantity. So if we cancel any pick of the short allocation,
+            //        there's no way to re-allocate those cancelled quantity
+            // Since we will use a scheduled job to allocate the short allocation, we will use option 2 for now.
+            // Should we choose option 1, then in case any use cancels the pick of the allocation, the schedule job
+            //     will just pickup the short allocation again and re-allocate the quantity, which may not be
+            //     what the user want.
+            Long totalPickQuantity = picks.stream().map(Pick::getQuantity).mapToLong(Long::longValue).sum();
+            logger.debug("We allocate {} of the item {} for the short allocation",
+                    totalPickQuantity, shortAllocation.getItem().getName());
+
+            shortAllocation.setQuantity(shortAllocation.getQuantity() - totalPickQuantity);
+        }
+        shortAllocation.setStatus(ShortAllocationStatus.INPROCESS);
+
+        return save(shortAllocation);
+    }
+
+    private boolean isAllocatable(ShortAllocation shortAllocation) {
+        return shortAllocation.getStatus().equals(ShortAllocationStatus.PENDING) ||
+                shortAllocation.getStatus().equals(ShortAllocationStatus.INPROCESS);
     }
 
 }

@@ -190,6 +190,7 @@ public class WaveService {
         if (wave == null) {
             wave = new Wave();
             wave.setNumber(waveNumber);
+            wave.setStatus(WaveStatus.PLANED);
             wave = save(wave);
         }
 
@@ -203,6 +204,7 @@ public class WaveService {
         if (wave == null) {
             wave = new Wave();
             wave.setNumber(waveNumber);
+            wave.setStatus(WaveStatus.PLANED);
             return save(wave);
         }
         else {
@@ -225,9 +227,10 @@ public class WaveService {
         wave.getShipmentLines().forEach(shipmentLine -> {
             shipmentLineService.allocateShipmentLine(shipmentLine);
         });
+        wave.setStatus(WaveStatus.ALLOCATED);
 
         // return the latest information
-        return findById(wave.getId());
+        return save(wave);
 
     }
 

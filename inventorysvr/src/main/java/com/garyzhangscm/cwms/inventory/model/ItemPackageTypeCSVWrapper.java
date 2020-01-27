@@ -29,6 +29,8 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
     private String client;
     private String supplier;
 
+    private String warehouse;
+
     public String getName() {
         return name;
     }
@@ -67,5 +69,13 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
 
     public void setSupplier(String supplier) {
         this.supplier = supplier;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

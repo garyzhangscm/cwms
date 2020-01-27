@@ -42,6 +42,11 @@ public class OrderLine implements Serializable {
 
     @Transient
     private Item item;
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
@@ -67,7 +72,7 @@ public class OrderLine implements Serializable {
     private InventoryStatus inventoryStatus;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "outbound_order_id")
     private Order order;
 
@@ -195,5 +200,53 @@ public class OrderLine implements Serializable {
 
     public String getOrderNumber() {
         return order.getNumber();
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public Long getCarrierId() {
+        return carrierId;
+    }
+
+    public void setCarrierId(Long carrierId) {
+        this.carrierId = carrierId;
+    }
+
+    public Carrier getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(Carrier carrier) {
+        this.carrier = carrier;
+    }
+
+    public Long getCarrierServiceLevelId() {
+        return carrierServiceLevelId;
+    }
+
+    public void setCarrierServiceLevelId(Long carrierServiceLevelId) {
+        this.carrierServiceLevelId = carrierServiceLevelId;
+    }
+
+    public CarrierServiceLevel getCarrierServiceLevel() {
+        return carrierServiceLevel;
+    }
+
+    public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
+        this.carrierServiceLevel = carrierServiceLevel;
     }
 }

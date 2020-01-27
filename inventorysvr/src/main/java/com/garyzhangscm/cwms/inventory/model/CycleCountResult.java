@@ -58,6 +58,12 @@ public class CycleCountResult implements Serializable {
     @JoinColumn(name="audit_count_request_id")
     private AuditCountRequest auditCountRequest;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     public CycleCountResult() {
 
     }
@@ -152,5 +158,21 @@ public class CycleCountResult implements Serializable {
 
     public void setAuditCountRequest(AuditCountRequest auditCountRequest) {
         this.auditCountRequest = auditCountRequest;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

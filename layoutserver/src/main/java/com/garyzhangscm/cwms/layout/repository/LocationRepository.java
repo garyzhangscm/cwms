@@ -32,7 +32,8 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long>, JpaSpecificationExecutor<Location> {
 
-    Location findByName(String name);
+    @Query("select l from Location l where l.name = :name and l.warehouse.name = :warehouseName")
+    Location findByName(String warehouseName, String name);
 
     @Query( "select o from Location o where location_group_id in :ids" )
     List<Location> findByLocationGroups(@Param("ids") List<Long> locationGroupIds);
@@ -47,6 +48,6 @@ public interface LocationRepository extends JpaRepository<Location, Long>, JpaSp
 
     List<Location> findByPutawaySequenceBetween(Long beginSequence, Long endSequence);
 
-    @Query("select l from Location l inner join l.locationGroup.locationGroupType type where type.dock = true and l.enabled = true")
-    List<Location> getDockLocations();
+    @Query("select l from Location l inner join l.locationGroup.locationGroupType type where type.dock = true and l.enabled = true and l.warehouse.name = :warehouseName")
+    List<Location> getDockLocations(String warehouseName);
 }

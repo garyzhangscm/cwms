@@ -82,6 +82,7 @@ public class ShipmentLineService {
         ShipmentLine shipmentLine = new ShipmentLine();
         shipmentLine.setNumber(getNextShipmentLineNumber(shipment));
         shipmentLine.setOrderLine(orderLine);
+        shipmentLine.setWarehouseId(orderLine.getWarehouseId());
 
         // For new shipment, we will set the quantity and open quantity as the passed in quantity, to begin with
         // The in process quantity and shipped quantity will be 0.
@@ -145,7 +146,9 @@ public class ShipmentLineService {
                 existingPicks.size(), itemId);
 
         // Get all pickable inventory
-        List<Inventory> pickableInventory =inventoryServiceRestemplateClient.getPickableInventory(itemId);
+        List<Inventory> pickableInventory
+                = inventoryServiceRestemplateClient.getPickableInventory(
+                        itemId, shipmentLine.getOrderLine().getInventoryStatusId());
         logger.debug("We have {} pickable inventory against the item with id {}",
                 pickableInventory.size(), itemId);
 
@@ -158,6 +161,7 @@ public class ShipmentLineService {
 
         shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() + shipmentLine.getOpenQuantity());
         shipmentLine.setOpenQuantity(0L);
+
         save(shipmentLine);
 
         return allocationResult;

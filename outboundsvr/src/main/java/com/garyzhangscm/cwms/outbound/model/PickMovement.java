@@ -44,6 +44,12 @@ public class PickMovement implements Serializable {
     @JoinColumn(name = "pick_id")
     private Pick pick;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Column(name = "location_id")
     private Long locationId;
 
@@ -114,4 +120,20 @@ public class PickMovement implements Serializable {
 
     public String getPickNumber(){return pick.getNumber();}
     public Long getPickId(){return pick.getId();}
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 }

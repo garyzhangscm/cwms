@@ -19,7 +19,8 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inventory.model.ItemFamily;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemFamilyRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -43,6 +44,8 @@ public class ItemFamilyService implements TestDataInitiableService{
 
     @Autowired
     private ItemFamilyRepository itemFamilyRepository;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private FileService fileService;
 
@@ -101,31 +104,48 @@ public class ItemFamilyService implements TestDataInitiableService{
 
     }
 
-    public List<ItemFamily> loadData(File file) throws IOException {
+    public List<ItemFamilyCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 build().withHeader();
-        return fileService.loadData(file, schema, ItemFamily.class);
+        return fileService.loadData(file, schema, ItemFamilyCSVWrapper.class);
     }
-    public List<ItemFamily> loadData(InputStream inputStream) throws IOException {
+    public List<ItemFamilyCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, ItemFamily.class);
+        return fileService.loadData(inputStream, schema, ItemFamilyCSVWrapper.class);
     }
 
     public void initTestData() {
         try {
             InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
-            List<ItemFamily> itemFamilies = loadData(inputStream);
-            itemFamilies.stream().forEach(itemFamily -> saveOrUpdate(itemFamily));
+            List<ItemFamilyCSVWrapper> itemFamilyCSVWrappers = loadData(inputStream);
+            itemFamilyCSVWrappers.stream().forEach(itemFamilyCSVWrapper -> saveOrUpdate(convertFromWrapper(itemFamilyCSVWrapper)));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
+    }
+
+    private ItemFamily convertFromWrapper(ItemFamilyCSVWrapper itemFamilyCSVWrapper) {
+        ItemFamily itemFamily = new ItemFamily();
+        itemFamily.setName(itemFamilyCSVWrapper.getName());
+        itemFamily.setDescription(itemFamilyCSVWrapper.getDescription());
+
+        // warehouse
+        if (!StringUtils.isBlank(itemFamilyCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemFamilyCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                itemFamily.setWarehouseId(warehouse.getId());
+            }
+        }
+        return itemFamily;
     }
 }

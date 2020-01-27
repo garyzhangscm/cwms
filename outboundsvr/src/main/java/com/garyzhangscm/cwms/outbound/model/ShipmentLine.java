@@ -36,6 +36,12 @@ public class ShipmentLine implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Column(name = "number")
     private String number;
 
@@ -203,5 +209,21 @@ public class ShipmentLine implements Serializable {
 
     public void setLoadedQuantity(Long loadedQuantity) {
         this.loadedQuantity = loadedQuantity;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -35,11 +35,12 @@ public class LocationGroupController {
 
 
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups")
-    public List<LocationGroup> listLocationGroups(@RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes,
+    public List<LocationGroup> listLocationGroups(@RequestParam String warehouseName,
+                                                  @RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes,
                                                   @RequestParam(name = "name", required = false, defaultValue = "") String name) {
-        return locationGroupService.findAll(locationGroupTypes, name);
+        return locationGroupService.findAll(warehouseName, locationGroupTypes, name);
     }
-    @RequestMapping(method=RequestMethod.GET, value="/locationgroup/{id}")
+    @RequestMapping(method=RequestMethod.GET, value="/locationgroups/{id}")
     public LocationGroup getLocationGroup(@PathVariable long id) {
         return locationGroupService.findById(id);
     }
@@ -48,7 +49,7 @@ public class LocationGroupController {
     public LocationGroup addLocationGroups(@RequestBody LocationGroup locationGroup) {
         return locationGroupService.save(locationGroup);
     }
-    @RequestMapping(method=RequestMethod.PUT, value="/locationgroup/{id}")
+    @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}")
     public LocationGroup changeLocationGroups(@PathVariable long id,
                                               @RequestBody LocationGroup locationGroup) {
         if (locationGroup.getId() != null && locationGroup.getId() != id) {
@@ -58,14 +59,14 @@ public class LocationGroupController {
     }
 
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/locationgroup")
+    @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups")
     public void removeLocationGroups(@RequestParam(name = "location_group_ids", required = false, defaultValue = "") String locationGroupIds) {
         locationGroupService.delete(locationGroupIds);
     }
 
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory
-    @RequestMapping(method=RequestMethod.PUT, value="/locationgroup/{id}/reserve")
+    @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reserved_code") String reservedCode,
                                     @RequestParam(name = "pending_size") Double pendingSize,

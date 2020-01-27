@@ -40,6 +40,13 @@ public class InventoryStatus implements Serializable {
     @Column(name = "description")
     private String description;
 
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Override
     public Object clone() {
         InventoryStatus inventoryStatus = null;
@@ -78,4 +85,19 @@ public class InventoryStatus implements Serializable {
         this.description = description;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 }

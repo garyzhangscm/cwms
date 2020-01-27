@@ -54,6 +54,13 @@ public class InventoryMovement implements Serializable {
     @Column(name = "sequence")
     private Integer sequence;
 
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Override
     public Object clone() {
         InventoryMovement inventoryMovement = null;
@@ -118,5 +125,21 @@ public class InventoryMovement implements Serializable {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

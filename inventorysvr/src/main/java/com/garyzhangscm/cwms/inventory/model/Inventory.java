@@ -77,6 +77,11 @@ public class Inventory implements Serializable {
     @JoinColumn(name="inventory_status_id")
     private InventoryStatus inventoryStatus;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @OneToMany(
             mappedBy = "inventory",
@@ -233,5 +238,19 @@ public class Inventory implements Serializable {
         this.pick = pick;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
 
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 }

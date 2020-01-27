@@ -20,11 +20,16 @@ package com.garyzhangscm.cwms.zuulsvr.filters;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TrackingFilter extends ZuulFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(TrackingFilter.class);
+
     private static final int      FILTER_ORDER =  1;
     private static final boolean  SHOULD_FILTER=true;
 
@@ -49,7 +54,6 @@ public class TrackingFilter extends ZuulFilter {
         if (filterUtils.getCorrelationId() != null){
             return true;
         }
-
         return false;
     }
 
@@ -63,7 +67,8 @@ public class TrackingFilter extends ZuulFilter {
             filterUtils.setCorrelationId(generateCorrelationId());
         }
 
-        RequestContext ctx = RequestContext.getCurrentContext();
+        logger.debug(">>Auth Token: " + filterUtils.getAuthToken());
+
         return null;
     }
 }

@@ -18,12 +18,8 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
-import com.garyzhangscm.cwms.outbound.service.OrderLineService;
-import com.garyzhangscm.cwms.outbound.service.OrderService;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -70,5 +66,10 @@ public class ShipmentController {
         return shipmentService.planShipments(orderLines);
     }
 
+    @RequestMapping(value="/shipments/{id}/complete", method = RequestMethod.PUT)
+    public Shipment completeShipment(@PathVariable Long id){
+
+        return shipmentService.completeShipment(id);
+    }
 
 }

@@ -40,11 +40,12 @@ public class PutawayConfigurationController {
 
 
     @RequestMapping(value="/putaway-configuration", method = RequestMethod.GET)
-    public List<PutawayConfiguration> findAllPutawayConfiguration(@RequestParam(name="sequence", required = false, defaultValue = "") Integer sequence,
+    public List<PutawayConfiguration> findAllPutawayConfiguration(@RequestParam String warehouseName,
+                                                                  @RequestParam(name="sequence", required = false, defaultValue = "") Integer sequence,
                                                                   @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                                                   @RequestParam(name="itemFamilyName", required = false, defaultValue = "") String itemFamilyName,
                                                                   @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId) {
-        return putawayConfigurationService.findAll(sequence, itemName, itemFamilyName, inventoryStatusId);
+        return putawayConfigurationService.findAll(warehouseName, sequence, itemName, itemFamilyName, inventoryStatusId);
     }
 
     @RequestMapping(value="/putaway-configuration", method = RequestMethod.POST)

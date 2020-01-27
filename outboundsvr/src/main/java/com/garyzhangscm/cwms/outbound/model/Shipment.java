@@ -39,6 +39,12 @@ public class Shipment implements Serializable {
     @Column(name = "number")
     private String number;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @OneToMany(
         mappedBy = "shipment",
         cascade = CascadeType.REMOVE,
@@ -138,5 +144,21 @@ public class Shipment implements Serializable {
 
     public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
         this.carrierServiceLevel = carrierServiceLevel;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

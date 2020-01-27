@@ -31,13 +31,16 @@ import java.util.List;
 @Repository
 public interface LocationGroupRepository extends JpaRepository<LocationGroup, Long>, JpaSpecificationExecutor<LocationGroup> {
 
+    @Query("select lg from LocationGroup lg where lg.warehouse.name = :warehouseName")
+    List<LocationGroup> findAll(String warehouseName);
 
-    LocationGroup findByName(String name);
+    @Query("select lg from LocationGroup lg where lg.warehouse.name = :warehouseName and lg.name = :name")
+    LocationGroup findByName(String warehouseName, String name);
 
-    @Query( "select o from LocationGroup o where location_group_type_id in :ids" )
-    List<LocationGroup> findByLocationGroupTypes(@Param("ids") List<Long> locationGroupTypeIds);
+    @Query( "select o from LocationGroup o where location_group_type_id in :ids and o.warehouse.name = :warehouseName" )
+    List<LocationGroup> findByLocationGroupTypes(String warehouseName, @Param("ids") List<Long> locationGroupTypeIds);
 
-    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.trailer = true" )
-    List<LocationGroup> getDockLocationGroup();
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.trailer = true and lg.warehouse.name = :warehouseName" )
+    List<LocationGroup> getDockLocationGroup(String warehouseName);
 
 }

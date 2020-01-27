@@ -99,21 +99,27 @@ public class InventoryService implements TestDataInitiableService{
         }
         return inventories;
     }
-    public List<Inventory> findAll(String itemName,
+    public List<Inventory> findAll(String warehouseName,
+                                   String itemName,
                                    String clientIds,
                                    String itemFamilyIds,
+                                   Long inventoryStatusId,
                                    String locationName,
+                                   Long locationGroupId,
                                    String receiptId,
                                    String pickIds,
                                    String lpn) {
-        return findAll(itemName, clientIds, itemFamilyIds, locationName, receiptId, pickIds, lpn, true);
+        return findAll(warehouseName, itemName, clientIds, itemFamilyIds, inventoryStatusId, locationName, locationGroupId, receiptId, pickIds, lpn, true);
     }
 
 
-    public List<Inventory> findAll(String itemName,
+    public List<Inventory> findAll(String warehouseName,
+                                   String itemName,
                                    String clientIds,
                                    String itemFamilyIds,
+                                   Long inventoryStatusId,
                                    String locationName,
+                                   Long locationGroupId,
                                    String receiptId,
                                    String pickIds,
                                    String lpn,
@@ -146,8 +152,14 @@ public class InventoryService implements TestDataInitiableService{
                         }
                         predicates.add(criteriaBuilder.and(inItemFamilyIds));
                     }
-                    if (!StringUtils.isBlank(locationName)) {
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(locationName);
+                    if (inventoryStatusId != null) {
+                        Join<Inventory, InventoryStatus> joinInventoryStatus = root.join("inventoryStatus", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinInventoryStatus.get("id"), inventoryStatusId));
+
+                    }
+                    if (!StringUtils.isBlank(locationName) &&
+                        !StringUtils.isBlank(warehouseName)) {
+                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, locationName);
                         if (location != null) {
                             predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
                         }
@@ -179,21 +191,48 @@ public class InventoryService implements TestDataInitiableService{
         if (includeDetails && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
         }
+
+        // When location group id is passed in, we will only return inventory from this location group
+        if (locationGroupId != null) {
+            List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(String.valueOf(locationGroupId));
+            // convert the list of locations to map of Long so as to speed up
+            // when compare the inventory's location id with the locations from the group
+            Map<Long, Long> locationMap = new HashMap<>();
+            locations.stream().forEach(location -> locationMap.put(location.getId(), location.getId()));
+
+            return inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
+        }
         return inventories;
     }
 
-    public List<Inventory> findPickableInventories(Long itemId) {
-        return findPickableInventories(itemId, true);
+    public List<Inventory> findPendingInventoryByLocationId(Long locationId) {
+        return inventoryRepository.findPendingInventoryByLocationId(locationId);
+    }
+
+    public List<Inventory> findPickableInventories(Long itemId, Long inventoryStatusId) {
+        return findPickableInventories(itemId, inventoryStatusId, true);
     }
     public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
                                                    boolean includeDetails) {
 
-        List<Inventory> inventories =  inventoryRepository.findByItemId(itemId);
+        List<Inventory> inventories =  inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId);
 
         if (includeDetails && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
         }
-        return inventories;
+
+        // Make sure the location is pickable
+
+        return inventories.stream().filter(this::isInventoryPickable).collect(Collectors.toList());
+    }
+
+
+    // CHeck if the inventory is in a pickable location
+    private boolean isInventoryPickable(Inventory inventory) {
+        return inventory.getLocation().getEnabled() == true &&
+                inventory.getLocation().getLocationGroup().getPickable() == true &&
+                inventory.getLocation().getLocationGroup().getLocationGroupType().getFourWallInventory() == true;
     }
 
 
@@ -225,6 +264,9 @@ public class InventoryService implements TestDataInitiableService{
         Inventory savedInventory = inventoryRepository.save(inventory);
         // reset location's status and volume
         warehouseLayoutServiceRestemplateClient.resetLocation(inventory.getLocationId());
+
+        // loadInventoryAttribute(savedInventory);
+
         return savedInventory;
     }
 
@@ -272,10 +314,14 @@ public class InventoryService implements TestDataInitiableService{
             );
         }
 
-
         // load the unit of measure details for the packate types
         inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure ->
                 itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId())));
+
+        if (inventory.getPickId() != null) {
+            inventory.setPick(outbuondServiceRestemplateClient.getPickById(inventory.getPickId()));
+        }
+
 
 
 
@@ -289,6 +335,7 @@ public class InventoryService implements TestDataInitiableService{
     public List<InventoryCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("lpn").
                 addColumn("location").
                 addColumn("item").
@@ -303,6 +350,7 @@ public class InventoryService implements TestDataInitiableService{
     public List<InventoryCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("warehouse").
                 addColumn("lpn").
                 addColumn("location").
                 addColumn("item").
@@ -330,6 +378,13 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setQuantity(inventoryCSVWrapper.getQuantity());
         inventory.setVirtual(false);
 
+        // warehouse
+        if (!StringUtils.isBlank(inventoryCSVWrapper.getWarehouse())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(inventoryCSVWrapper.getWarehouse());
+            if (warehouse != null) {
+                inventory.setWarehouseId(warehouse.getId());
+            }
+        }
 
         // item
         if (!inventoryCSVWrapper.getItem().isEmpty()) {
@@ -350,7 +405,7 @@ public class InventoryService implements TestDataInitiableService{
         // location
         if (!inventoryCSVWrapper.getLocation().isEmpty()) {
             logger.debug("start to get location by name: {}", inventoryCSVWrapper.getLocation());
-            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(inventoryCSVWrapper.getLocation());
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(inventoryCSVWrapper.getWarehouse(), inventoryCSVWrapper.getLocation());
             inventory.setLocationId(location.getId());
         }
 
@@ -419,8 +474,12 @@ public class InventoryService implements TestDataInitiableService{
         return save(inventory);
     }
     private void recalculateLocationSizeForInventoryMovement(Location sourceLocation, Location destination, double volume) {
-        warehouseLayoutServiceRestemplateClient.reduceLocationVolume(sourceLocation.getId(), volume);
-        warehouseLayoutServiceRestemplateClient.increaseLocationVolume(destination.getId(), volume);
+        if (sourceLocation.getLocationGroup().getTrackingVolume()) {
+            warehouseLayoutServiceRestemplateClient.reduceLocationVolume(sourceLocation.getId(), volume);
+        }
+        if (destination.getLocationGroup().getTrackingVolume()) {
+            warehouseLayoutServiceRestemplateClient.increaseLocationVolume(destination.getId(), volume);
+        }
     }
     private void recalculateMovementPathForInventoryMovement(Inventory inventory, Location destination) {
 

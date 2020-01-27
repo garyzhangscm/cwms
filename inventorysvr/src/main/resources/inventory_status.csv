@@ -1,5 +1,5 @@
-name,description
-AVAL,Available
-DMG,Damaged
-QC,QC inspection
-HOLD,Held for processing
+warehouse,name,description
+WMOR,AVAL,Available
+WMOR,DMG,Damaged
+WMOR,QC,QC inspection
+WMOR,HOLD,Held for processing

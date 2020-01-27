@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 
 import com.garyzhangscm.cwms.outbound.model.AllocationConfiguration;
+import com.garyzhangscm.cwms.outbound.model.AllocationConfigurationType;
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -32,4 +33,6 @@ import java.util.List;
 public interface AllocationConfigurationRepository extends JpaRepository<AllocationConfiguration, Long>, JpaSpecificationExecutor<AllocationConfiguration> {
 
     AllocationConfiguration findBySequence(int sequence);
+
+    List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType);
 }

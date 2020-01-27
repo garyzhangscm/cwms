@@ -43,6 +43,12 @@ public class PutawayConfiguration {
 
     // criteria: item / item group / inventory status
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
     @Column(name = "item_id")
     private Long itemId;
 
@@ -222,5 +228,21 @@ public class PutawayConfiguration {
 
     public void setPutawayConfigurationStrategies(List<PutawayConfigurationStrategy> putawayConfigurationStrategies) {
         this.putawayConfigurationStrategies = putawayConfigurationStrategies;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }
