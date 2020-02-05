@@ -58,6 +58,7 @@ public class AuditCountRequestService {
         AuditCountRequest auditCountRequest = new AuditCountRequest();
         auditCountRequest.setBatchId(cycleCountResult.getBatchId());
         auditCountRequest.setLocationId(cycleCountResult.getLocationId());
+        auditCountRequest.setWarehouseId(cycleCountResult.getWarehouseId());
         return save(auditCountRequest);
     }
 

@@ -25,5 +25,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ItemFamilyRepository extends JpaRepository<ItemFamily, Long>, JpaSpecificationExecutor<ItemFamily> {
-    ItemFamily findByName(String name);
+    ItemFamily findByWarehouseIdAndName(Long warehouseId, String name);
 }

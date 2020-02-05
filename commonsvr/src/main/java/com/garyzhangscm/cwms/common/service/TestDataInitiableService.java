@@ -19,5 +19,5 @@
 package com.garyzhangscm.cwms.common.service;
 
 public interface TestDataInitiableService {
-    public void initTestData();
+    public void initTestData(String warehouseName);
 }

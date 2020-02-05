@@ -59,7 +59,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.shipping-stage-area-configuration:shipping-stage-area-configuration.csv}")
+    @Value("${fileupload.test-data.shipping-stage-area-configuration:shipping-stage-area-configuration}")
     String testDataFile;
 
     public ShippingStageAreaConfiguration findById(Long id, boolean loadDetails) {
@@ -156,9 +156,12 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         return fileService.loadData(inputStream, schema, ShippingStageAreaConfigurationCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ShippingStageAreaConfigurationCSVWrapper> shippingStageAreaConfigurationCSVWrappers = loadData(inputStream);
             shippingStageAreaConfigurationCSVWrappers
                     .stream()

@@ -30,6 +30,8 @@
         <module>inboundsvr</module>
         <!-- Outbound Service: Outbound Entites-->
         <module>outboundsvr</module>
+        <!-- Work Order Service: Work Order Entites-->
+        <module>workordersvr</module>
         <!-- Inventory Service: Inventory Entites-->
         <module>inventorysvr</module>
         <!-- Warehouse Layout: Warehouse / Building / Area / Location / etc-->

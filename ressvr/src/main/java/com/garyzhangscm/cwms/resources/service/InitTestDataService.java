@@ -42,6 +42,8 @@ public class InitTestDataService {
 
     OutboundServiceRestemplateClient outboundServiceRestemplateClient;
 
+    WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
+
 
 
 
@@ -51,18 +53,21 @@ public class InitTestDataService {
                                InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
                                LayoutServiceRestemplateClient layoutServiceRestemplateClient,
                                InboundServiceRestemplateClient inboundServiceRestemplateClient,
-                               OutboundServiceRestemplateClient outboundServiceRestemplateClient) {
+                               OutboundServiceRestemplateClient outboundServiceRestemplateClient,
+                               WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient) {
         this.commonServiceRestemplateClient = commonServiceRestemplateClient;
         this.layoutServiceRestemplateClient  = layoutServiceRestemplateClient;
         this.inventoryServiceRestemplateClient = inventoryServiceRestemplateClient;
         this.inboundServiceRestemplateClient = inboundServiceRestemplateClient;
         this.outboundServiceRestemplateClient = outboundServiceRestemplateClient;
+        this.workOrderServiceRestemplateClient = workOrderServiceRestemplateClient;
 
         initiableServiceRestemplateClients.add(commonServiceRestemplateClient);
         initiableServiceRestemplateClients.add(layoutServiceRestemplateClient);
         initiableServiceRestemplateClients.add(inventoryServiceRestemplateClient);
         initiableServiceRestemplateClients.add(inboundServiceRestemplateClient);
         initiableServiceRestemplateClients.add(outboundServiceRestemplateClient);
+        initiableServiceRestemplateClients.add(workOrderServiceRestemplateClient);
 
     }
 
@@ -74,27 +79,27 @@ public class InitTestDataService {
         return testDataNames.toArray(new String[0]);
     }
 
-    public void init() {
-        initAll();
+    public void init(String warehouseName) {
+        initAll(warehouseName);
     }
-    public void init(String name) {
+    public void init(String name, String warehouseName) {
         if (name.isEmpty() || name.equals("ALL")) {
-            initAll();
+            initAll(warehouseName);
         }
         else {
 
             for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
                 if (initiableServiceRestemplateClient.contains(name)) {
-                    initiableServiceRestemplateClient.initTestData(name);
+                    initiableServiceRestemplateClient.initTestData(name, warehouseName);
                 }
             }
         }
 
     }
-    private void initAll() {
+    private void initAll(String warehouseName) {
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
 
-            initiableServiceRestemplateClient.initTestData();
+            initiableServiceRestemplateClient.initTestData(warehouseName);
         }
     }
 }

@@ -56,13 +56,13 @@ public class TestDataInitService {
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
     }
-    public void init() {
+    public void init(String warehouseName) {
         for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData();
+            testDataInitiableService.initTestData(warehouseName);
         }
     }
-    public void init(String name) {
-        initiableServices.get(name).initTestData();
+    public void init(String name, String warehouseName) {
+        initiableServices.get(name).initTestData(warehouseName);
     }
     public TestDataInitiableService getInitiableService(String name) {
         return initiableServices.get(name);

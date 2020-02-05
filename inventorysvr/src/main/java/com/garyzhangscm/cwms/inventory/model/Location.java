@@ -53,6 +53,8 @@ public class Location {
 
     private String reservedCode;
 
+    private Warehouse warehouse;
+
     @Override
     public Object clone() {
         Location location = null;
@@ -285,5 +287,13 @@ public class Location {
 
     public void setReservedCode(String reservedCode) {
         this.reservedCode = reservedCode;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -27,6 +27,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReceiptLineRepository extends JpaRepository<ReceiptLine, Long>, JpaSpecificationExecutor<ReceiptLine> {
 
-    @Query("select rl from ReceiptLine rl where receipt.id = :receiptId and number = :number")
-    ReceiptLine findByNaturalKey(Long receiptId, String number);
+    @Query("select rl from ReceiptLine rl where receipt.id = :receiptId and number = :number and warehouseId = :warehouseId")
+    ReceiptLine findByNaturalKey(Long warehouseId, Long receiptId, String number);
 }

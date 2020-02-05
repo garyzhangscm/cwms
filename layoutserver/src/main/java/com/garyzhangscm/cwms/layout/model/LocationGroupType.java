@@ -51,6 +51,12 @@ public class LocationGroupType {
     private Boolean receivingStage;
     @Column(name = "shipping_stage_locations")
     private Boolean shippingStage;
+    @Column(name = "production_line_locations")
+    private Boolean productionLine;
+    @Column(name = "production_line_inbound_locations")
+    private Boolean productionLineInbound;
+    @Column(name = "production_line_outbound_locations")
+    private Boolean productionLineOutbound;
     @Column(name = "dock_locations")
     private Boolean dock;
     @Column(name = "yard_locations")
@@ -157,5 +163,29 @@ public class LocationGroupType {
 
     public void setTrailer(Boolean trailer) {
         this.trailer = trailer;
+    }
+
+    public Boolean getProductionLine() {
+        return productionLine;
+    }
+
+    public void setProductionLine(Boolean productionLine) {
+        this.productionLine = productionLine;
+    }
+
+    public Boolean getProductionLineInbound() {
+        return productionLineInbound;
+    }
+
+    public void setProductionLineInbound(Boolean productionLineInbound) {
+        this.productionLineInbound = productionLineInbound;
+    }
+
+    public Boolean getProductionLineOutbound() {
+        return productionLineOutbound;
+    }
+
+    public void setProductionLineOutbound(Boolean productionLineOutbound) {
+        this.productionLineOutbound = productionLineOutbound;
     }
 }

@@ -155,6 +155,32 @@
           ]
         },
         {
+          "text": "Work Order",
+          "i18n": "menu.main.work-order",
+          "icon": "anticon-exception",
+          "children": [
+            {
+              "text": "Bill Of Measure",
+              "link": "/work-order/bill-of-material",
+              "i18n": "menu.main.work-order.bill-of-material",
+              "shortcut": false
+            },
+            {
+              "text": "Work Order",
+              "link": "/work-order/work-order",
+              "i18n": "menu.main.work-order.work-order",
+              "shortcut": false
+            },
+            {
+              "text": "Bill Of Measure",
+              "link": "/work-order/production-line",
+              "i18n": "menu.main.work-order.production-line",
+              "shortcut": false
+            }
+          ]
+        },
+
+        {
           "text": "inbound",
           "i18n": "menu.main.inbound",
           "icon": "anticon-exception",

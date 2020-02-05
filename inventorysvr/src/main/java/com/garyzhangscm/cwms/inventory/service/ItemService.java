@@ -57,13 +57,13 @@ public class ItemService implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.items:items.csv}")
+    @Value("${fileupload.test-data.items:items}")
     String testDataFile;
 
     public Item findById(Long id, boolean includeDetails) {
          Item item = itemRepository.findById(id).orElse(null);
          if (item != null && includeDetails) {
-             loadItemAttribute(item);
+             loadAttribute(item);
          }
          return item;
     }
@@ -74,7 +74,7 @@ public class ItemService implements TestDataInitiableService{
     public List<Item> findAll(boolean includeDetails) {
         List<Item> items = itemRepository.findAll();
         if (items.size() > 0 && includeDetails)
-            loadItemAttribute(items);
+            loadAttribute(items);
         return items;
     }
 
@@ -84,7 +84,7 @@ public class ItemService implements TestDataInitiableService{
 
     public List<Item> findAll(String name, String clientIds, String itemFamilyIds) {
 
-        return itemRepository.findAll(
+        List<Item> items = itemRepository.findAll(
             (Root<Item> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
                 if (!itemFamilyIds.isEmpty()) {
@@ -114,17 +114,44 @@ public class ItemService implements TestDataInitiableService{
                 return criteriaBuilder.and(predicates.toArray(p));
             }
         );
+
+        if (items.size() > 0) {
+            loadAttribute(items);
+        }
+        return items;
     }
 
-    public Item findByName(String name, boolean includeDetails){
-        Item item = itemRepository.findByName(name);
+    private void loadAttribute(List<Item> items) {
+        items.stream().forEach(this::loadAttribute);
+    }
+
+    private void loadAttribute(Item item) {
+
+        if (item.getClientId() != null && item.getClient() == null) {
+            item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
+        }
+        // Setup the unit of measure information for each item package type
+        item.getItemPackageTypes().stream().forEach(itemPackageType -> {
+            itemPackageType.getItemUnitOfMeasures()
+                    .stream().filter(itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure() == null)
+                    .forEach(itemUnitOfMeasure -> {
+                itemUnitOfMeasure.setUnitOfMeasure(
+                        commonServiceRestemplateClient.getUnitOfMeasureById(
+                            itemUnitOfMeasure.getUnitOfMeasureId()));
+            });
+
+        });
+    }
+
+    public Item findByName(Long warehouseId, String name, boolean includeDetails){
+        Item item = itemRepository.findByWarehouseIdAndName(warehouseId, name);
         if (item != null && includeDetails) {
-            loadItemAttribute(item);
+            loadAttribute(item);
         }
         return item;
     }
-    public Item findByName(String name){
-        return findByName(name, true);
+    public Item findByName(Long warehouseId, String name){
+        return findByName(warehouseId, name, true);
     }
 
     public Item save(Item item) {
@@ -132,8 +159,8 @@ public class ItemService implements TestDataInitiableService{
     }
 
     public Item saveOrUpdate(Item item) {
-        if (item.getId() == null && findByName(item.getName()) != null) {
-            item.setId(findByName(item.getName()).getId());
+        if (item.getId() == null && findByName(item.getWarehouseId(), item.getName()) != null) {
+            item.setId(findByName(item.getWarehouseId(), item.getName()).getId());
         }
         return save(item);
     }
@@ -151,29 +178,6 @@ public class ItemService implements TestDataInitiableService{
             }
         }
 
-    }
-
-    // load detail data from other service
-    // Client / Supplier / Unit of Measure
-    public void loadItemAttribute(List<Item> items) {
-        for(Item item : items) {
-            loadItemAttribute(item);
-        }
-    }
-
-    public void loadItemAttribute(Item item) {
-
-        // Load client information
-        if (item.getClientId() != null) {
-            item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
-        }
-
-        // load unit of measure for each package type
-        item.getItemPackageTypes().forEach(itemPackageType -> {
-            itemPackageType.getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
-                itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId()));
-            });
-        });
     }
 
     public List<Item> loadItemData(File  file) throws IOException {
@@ -209,9 +213,12 @@ public class ItemService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ItemCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ItemCSVWrapper> itemCSVWrappers = loadData(inputStream);
             itemCSVWrappers.stream().forEach(itemCSVWrapper -> saveOrUpdate(convertFromWrapper(itemCSVWrapper)));
         } catch (IOException ex) {
@@ -238,7 +245,8 @@ public class ItemService implements TestDataInitiableService{
             item.setClientId(client.getId());
         }
         if (!itemCSVWrapper.getItemFamily().isEmpty()) {
-            ItemFamily itemFamily = itemFamilyService.findByName(itemCSVWrapper.getItemFamily());
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemCSVWrapper.getWarehouse());
+            ItemFamily itemFamily = itemFamilyService.findByName(warehouse.getId(), itemCSVWrapper.getItemFamily());
             item.setItemFamily(itemFamily);
         }
         return item;

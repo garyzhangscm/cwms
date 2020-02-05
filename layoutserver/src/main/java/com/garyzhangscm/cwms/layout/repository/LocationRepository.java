@@ -32,14 +32,14 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long>, JpaSpecificationExecutor<Location> {
 
-    @Query("select l from Location l where l.name = :name and l.warehouse.name = :warehouseName")
-    Location findByName(String warehouseName, String name);
+    @Query("select l from Location l inner join l.warehouse w where l.name = :name and w.id = :warehouseId")
+    Location findByName(Long warehouseId, String name);
 
-    @Query( "select o from Location o where location_group_id in :ids" )
+    @Query( "select l from Location l inner join l.locationGroup lg where lg.id in (:ids)" )
     List<Location> findByLocationGroups(@Param("ids") List<Long> locationGroupIds);
 
     @Modifying
-    @Query( "delete from Location o where location_id in :ids" )
+    @Query( "delete from Location l where l.id in (:ids)" )
     void deleteByLocationIds(@Param("ids") List<Long> locationIds);
 
     List<Location> findByCountSequenceBetween(Long beginSequence, Long endSequence);
@@ -48,6 +48,6 @@ public interface LocationRepository extends JpaRepository<Location, Long>, JpaSp
 
     List<Location> findByPutawaySequenceBetween(Long beginSequence, Long endSequence);
 
-    @Query("select l from Location l inner join l.locationGroup.locationGroupType type where type.dock = true and l.enabled = true and l.warehouse.name = :warehouseName")
-    List<Location> getDockLocations(String warehouseName);
+    @Query("select l from Location l inner join l.locationGroup.locationGroupType type where type.dock = true and l.enabled = true and l.warehouse.id = :warehouseId")
+    List<Location> getDockLocations(Long warehouseId);
 }

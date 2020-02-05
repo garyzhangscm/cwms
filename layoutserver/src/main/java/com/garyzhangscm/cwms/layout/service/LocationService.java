@@ -65,7 +65,7 @@ public class LocationService implements TestDataInitiableService {
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.locations:locations.csv}")
+    @Value("${fileupload.test-data.locations:locations}")
     String testDataFile;
 
     @Autowired
@@ -80,7 +80,7 @@ public class LocationService implements TestDataInitiableService {
         return locationRepository.findAll();
     }
 
-    public List<Location> findAll(String warehouseName, String locationGroupTypeIds,
+    public List<Location> findAll(Long warehouseId, String locationGroupTypeIds,
                                   String locationGroupIds,
                                   String name,
                                   Long beginSequence,
@@ -178,10 +178,10 @@ public class LocationService implements TestDataInitiableService {
 
                     predicates.add(criteriaBuilder.equal(root.get("enabled"), true));
                 }
-                if (!StringUtils.isBlank(warehouseName)) {
+                if (warehouseId != null) {
 
                     Join<Location, Warehouse> joinWarehouse = root.join("warehouse", JoinType.INNER);
-                    predicates.add(criteriaBuilder.equal(joinWarehouse.get("name"), warehouseName));
+                    predicates.add(criteriaBuilder.equal(joinWarehouse.get("id"), warehouseId));
                 }
 
                 Predicate[] p = new Predicate[predicates.size()];
@@ -191,13 +191,13 @@ public class LocationService implements TestDataInitiableService {
 
     }
 
-    public Location findLogicLocation(String locationType, String warehouseName) {
+    public Location findLogicLocation(String locationType, Long warehouseId) {
 
         // Get the logic location's name by policy
         String policyKey = "LOCATION-" + locationType;
         logger.debug("Start to find policy by key: {}", policyKey);
         Policy policy = commonServiceRestemplateClient.getPolicyByKey(policyKey);
-        return findByName(policy.getValue(), warehouseName);
+        return findByName(policy.getValue(), warehouseId);
     }
 
     public List<Location> findByLocationGroup(Long locationGroupId) {
@@ -220,16 +220,16 @@ public class LocationService implements TestDataInitiableService {
         }
     }
 
-    public Location findByName(String name, String warehouseName){
-        return locationRepository.findByName(warehouseName, name);
+    public Location findByName(String name, Long warehouseId){
+        return locationRepository.findByName(warehouseId, name);
     }
 
     public Location save(Location location) {
         return locationRepository.save(location);
     }
     public Location saveOrUpdate(Location location) {
-        if (findByName(location.getName(), location.getWarehouse().getName()) != null) {
-            location.setId(findByName(location.getName(), location.getWarehouse().getName()).getId());
+        if (findByName(location.getName(), location.getWarehouse().getId()) != null) {
+            location.setId(findByName(location.getName(), location.getWarehouse().getId()).getId());
         }
         return save(location);
     }
@@ -301,11 +301,16 @@ public class LocationService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, LocationCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName  = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            logger.debug("Start to load location from file: {}", testDataFileName);
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<LocationCSVWrapper> locationCSVWrappers = loadData(inputStream);
             locationCSVWrappers.stream().forEach(locationCSVWrapper -> saveOrUpdate(convertFromWrapper(locationCSVWrapper)));
+            logger.debug("==>  location loaded from file: {}", testDataFileName);
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
@@ -333,7 +338,8 @@ public class LocationService implements TestDataInitiableService {
         location.setWarehouse(warehouseService.findByName(locationCSVWrapper.getWarehouse()));
 
         if (!locationCSVWrapper.getLocationGroup().isEmpty()) {
-            LocationGroup locationGroup = locationGroupService.findByName(locationCSVWrapper.getWarehouse(),locationCSVWrapper.getLocationGroup());
+            LocationGroup locationGroup = locationGroupService.findByName(
+                    warehouseService.findByName(locationCSVWrapper.getWarehouse()).getId(),locationCSVWrapper.getLocationGroup());
             location.setLocationGroup(locationGroup);
         }
         return location;
@@ -428,15 +434,15 @@ public class LocationService implements TestDataInitiableService {
         Location location = findById(id);
         logger.debug("Start to adjust location volume for location: {}, current volume: {}, reduced by {}, increased by {}",
                 location.getName(), location.getCurrentVolume(), reducedVolume, increasedVolume);
-        location.setPendingVolume(location.getCurrentVolume() - reducedVolume + increasedVolume);
+        location.setCurrentVolume(location.getCurrentVolume() - reducedVolume + increasedVolume);
         logger.debug("afect adjusting location volume for location: {}, current volume: {}",
                 location.getName(), location.getCurrentVolume());
         return save(location);
 
     }
 
-    public List<Location> getDockLocations(String warehouseName, Boolean emptyDockOnly) {
-        List<Location> dockLocations = locationRepository.getDockLocations(warehouseName);
+    public List<Location> getDockLocations(Long warehouseId, Boolean emptyDockOnly) {
+        List<Location> dockLocations = locationRepository.getDockLocations(warehouseId);
         if (emptyDockOnly) {
             return dockLocations.stream().filter(Location::isEmpty).collect(Collectors.toList());
         }
@@ -448,7 +454,7 @@ public class LocationService implements TestDataInitiableService {
     }
     public Location checkInTrailerAtDock(Location dockLocation, Long trailerId) {
         // Create a fake location for the trailer. Location's name will be the trailer ID
-        Location trailerLocation = createTrailerLocation(dockLocation.getWarehouse().getName(), trailerId);
+        Location trailerLocation = createTrailerLocation(dockLocation.getWarehouse().getId(), trailerId);
         logger.debug(">> trailer location created: {} / {}",
                 trailerLocation.getId(), trailerLocation.getName());
         // update the location's volume to 1 when we check in the trailer
@@ -463,10 +469,10 @@ public class LocationService implements TestDataInitiableService {
         dockLocation.setCurrentVolume(0.0);
         return saveOrUpdate(dockLocation);
     }
-    public Location createTrailerLocation(String warehouseName, Long trailerId) {
+    public Location createTrailerLocation(Long warehouseId, Long trailerId) {
         Location location = new Location();
         location.setName("TRLR-" + String.valueOf(trailerId));
-        location.setLocationGroup(locationGroupService.getDockLocationGroup(warehouseName));
+        location.setLocationGroup(locationGroupService.getDockLocationGroup(warehouseId));
         location.setEnabled(true);
         return saveOrUpdate(location);
     }

@@ -23,10 +23,7 @@ import com.garyzhangscm.cwms.common.service.TestDataInitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/test-data")
@@ -43,16 +40,17 @@ public class TestDataInitController {
     }
 
     @RequestMapping(value = "/init", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init() {
-        testDataInitService.init();
+    public ResponseBodyWrapper<String> init(@RequestParam String warehouseName) {
+        testDataInitService.init(warehouseName);
         return ResponseBodyWrapper.success("data init succeed!");
     }
     @RequestMapping(value = "/init/{name}", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init(@PathVariable String name) {
+    public ResponseBodyWrapper<String> init(@PathVariable String name,
+                                            @RequestParam String warehouseName) {
 
-        logger.debug("Start initiate " + name);
-        testDataInitService.init(name);
-        logger.debug("End initiate " + name);
+        logger.debug("Start initiate {} / {}", name, warehouseName);
+        testDataInitService.init(name, warehouseName);
+        logger.debug("End initiate {} / {}", name, warehouseName);
         return ResponseBodyWrapper.success("data " + name + " init succeed!");
     }
 }

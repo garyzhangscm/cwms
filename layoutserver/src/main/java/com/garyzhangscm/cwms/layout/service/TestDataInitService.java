@@ -26,7 +26,7 @@ import java.util.*;
 @Service
 public class TestDataInitService {
 
-    WarehouseService warehouseService;
+    // WarehouseService warehouseService;
 
     LocationGroupTypeService locationGroupTypeService;
 
@@ -37,17 +37,16 @@ public class TestDataInitService {
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
     @Autowired
-    public TestDataInitService(WarehouseService warehouseService,
-                               LocationGroupTypeService locationGroupTypeService,
+    public TestDataInitService(LocationGroupTypeService locationGroupTypeService,
                                LocationGroupService locationGroupService,
                                LocationService locationService) {
-        this.warehouseService = warehouseService;
+        // this.warehouseService = warehouseService;
         this.locationGroupTypeService = locationGroupTypeService;
         this.locationGroupService = locationGroupService;
         this.locationService = locationService;
 
-        initiableServices.put("warehouse", warehouseService);
-        serviceNames.add("warehouse");
+        // initiableServices.put("warehouse", warehouseService);
+        // serviceNames.add("warehouse");
         initiableServices.put("location group type", locationGroupTypeService);
         serviceNames.add("location group type");
         initiableServices.put("location group", locationGroupService);
@@ -58,13 +57,13 @@ public class TestDataInitService {
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
     }
-    public void init() {
+    public void init(String warehouseName) {
         for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData();
+            testDataInitiableService.initTestData(warehouseName);
         }
     }
-    public void init(String name) {
-        initiableServices.get(name).initTestData();
+    public void init(String name, String warehouseName) {
+        initiableServices.get(name).initTestData(warehouseName);
     }
     public TestDataInitiableService getInitiableService(String name) {
         return initiableServices.get(name);

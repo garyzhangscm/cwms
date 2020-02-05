@@ -22,10 +22,7 @@ package com.garyzhangscm.cwms.inbound.controller;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.service.TestDataInitService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/test-data")
@@ -39,14 +36,14 @@ public class TestDataInitController {
     }
 
     @RequestMapping(value = "/init", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init() {
-        testDataInitService.init();
+    public ResponseBodyWrapper<String> init(@RequestParam String warehouseName) {
+        testDataInitService.init(warehouseName);
         return ResponseBodyWrapper.success("data init succeed!");
     }
 
     @RequestMapping(value = "/init/{name}", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init(@PathVariable String name) {
-        testDataInitService.init(name);
+    public ResponseBodyWrapper<String> init(@PathVariable String name, @RequestParam String warehouseName) {
+        testDataInitService.init(name, warehouseName);
         return ResponseBodyWrapper.success("data " + name + " init succeed!");
     }
 }

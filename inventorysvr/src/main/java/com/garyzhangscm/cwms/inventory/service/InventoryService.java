@@ -71,7 +71,7 @@ public class InventoryService implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.inventories:inventories.csv}")
+    @Value("${fileupload.test-data.inventories:inventories}")
     String testDataFile;
 
     public Inventory findById(Long id) {
@@ -99,7 +99,7 @@ public class InventoryService implements TestDataInitiableService{
         }
         return inventories;
     }
-    public List<Inventory> findAll(String warehouseName,
+    public List<Inventory> findAll(Long warehouseId,
                                    String itemName,
                                    String clientIds,
                                    String itemFamilyIds,
@@ -109,11 +109,11 @@ public class InventoryService implements TestDataInitiableService{
                                    String receiptId,
                                    String pickIds,
                                    String lpn) {
-        return findAll(warehouseName, itemName, clientIds, itemFamilyIds, inventoryStatusId, locationName, locationGroupId, receiptId, pickIds, lpn, true);
+        return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId, locationName, locationGroupId, receiptId, pickIds, lpn, true);
     }
 
 
-    public List<Inventory> findAll(String warehouseName,
+    public List<Inventory> findAll(Long warehouseId,
                                    String itemName,
                                    String clientIds,
                                    String itemFamilyIds,
@@ -158,8 +158,8 @@ public class InventoryService implements TestDataInitiableService{
 
                     }
                     if (!StringUtils.isBlank(locationName) &&
-                        !StringUtils.isBlank(warehouseName)) {
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseName, locationName);
+                            warehouseId != null) {
+                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
                         if (location != null) {
                             predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
                         }
@@ -362,11 +362,23 @@ public class InventoryService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, InventoryCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(inputStream);
-            inventoryCSVWrappers.stream().forEach(inventoryCSVWrapper -> saveOrUpdate(convertFromWrapper(inventoryCSVWrapper)));
+            inventoryCSVWrappers.stream().forEach(inventoryCSVWrapper -> {
+                Inventory savedInvenotry = saveOrUpdate(convertFromWrapper(inventoryCSVWrapper));
+                // re-calculate the size of the location
+
+                Location destination =
+                        warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                getWarehouseId(inventoryCSVWrapper.getWarehouse()), inventoryCSVWrapper.getLocation()
+                        );
+                recalculateLocationSizeForInventoryMovement(null, destination, savedInvenotry.getSize());
+            });
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
@@ -378,23 +390,24 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setQuantity(inventoryCSVWrapper.getQuantity());
         inventory.setVirtual(false);
 
-        // warehouse
-        if (!StringUtils.isBlank(inventoryCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(inventoryCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                inventory.setWarehouseId(warehouse.getId());
-            }
-        }
+        // warehouse is a mandate field
+        Warehouse warehouse =
+                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(inventoryCSVWrapper.getWarehouse());
+        inventory.setWarehouseId(warehouse.getId());
 
         // item
         if (!inventoryCSVWrapper.getItem().isEmpty()) {
-            inventory.setItem(itemService.findByName(inventoryCSVWrapper.getItem()));
+            inventory.setItem(itemService.findByName(warehouse.getId(), inventoryCSVWrapper.getItem()));
         }
 
         // itemPackageType
         if (!inventoryCSVWrapper.getItemPackageType().isEmpty() &&
                 !inventoryCSVWrapper.getItem().isEmpty()) {
-            inventory.setItemPackageType(itemPackageTypeService.findByNaturalKeys(inventoryCSVWrapper.getItemPackageType(), inventoryCSVWrapper.getItem()));
+            inventory.setItemPackageType(
+                    itemPackageTypeService.findByNaturalKeys(
+                            warehouse.getId(),
+                            inventoryCSVWrapper.getItemPackageType(),
+                            inventoryCSVWrapper.getItem()));
         }
 
         // inventoryStatus
@@ -405,7 +418,9 @@ public class InventoryService implements TestDataInitiableService{
         // location
         if (!inventoryCSVWrapper.getLocation().isEmpty()) {
             logger.debug("start to get location by name: {}", inventoryCSVWrapper.getLocation());
-            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(inventoryCSVWrapper.getWarehouse(), inventoryCSVWrapper.getLocation());
+            Location location =
+                    warehouseLayoutServiceRestemplateClient.getLocationByName(
+                            getWarehouseId(inventoryCSVWrapper.getWarehouse()), inventoryCSVWrapper.getLocation());
             inventory.setLocationId(location.getId());
         }
 
@@ -474,10 +489,14 @@ public class InventoryService implements TestDataInitiableService{
         return save(inventory);
     }
     private void recalculateLocationSizeForInventoryMovement(Location sourceLocation, Location destination, double volume) {
-        if (sourceLocation.getLocationGroup().getTrackingVolume()) {
+        if (sourceLocation != null && sourceLocation.getLocationGroup().getTrackingVolume()) {
+            logger.debug("re-calculate the source location {} 's size by reduce {}",
+                    sourceLocation.getName(), volume);
             warehouseLayoutServiceRestemplateClient.reduceLocationVolume(sourceLocation.getId(), volume);
         }
-        if (destination.getLocationGroup().getTrackingVolume()) {
+        if (destination != null && destination.getLocationGroup().getTrackingVolume()) {
+            logger.debug("re-calculate the destination location {} 's size by increase {}",
+                    destination.getName(), volume);
             warehouseLayoutServiceRestemplateClient.increaseLocationVolume(destination.getId(), volume);
         }
     }
@@ -558,7 +577,7 @@ public class InventoryService implements TestDataInitiableService{
                 inventoryMovements.add(inventoryMovement);
             }
 
-            // Reset the final move's sequence to 0
+            // Reset the final move's sequence to the last one in the movement path
             finalDestinationMove.setSequence(sequence);
 
             logger.debug("After setup the hop locations, now the inventory has {} movement defined", inventoryMovements.size());
@@ -574,6 +593,7 @@ public class InventoryService implements TestDataInitiableService{
         // logger.debug(">> movement path: {}", inventoryMovements);
         inventoryMovements.forEach(inventoryMovement -> {
             inventoryMovement.setInventory(inventory);
+            inventoryMovement.setWarehouseId(inventory.getWarehouseId());
             if (inventoryMovement.getLocationId() == null && inventoryMovement.getLocation() != null) {
                 inventoryMovement.setLocationId(inventoryMovement.getLocation().getId());
             }
@@ -664,6 +684,16 @@ public class InventoryService implements TestDataInitiableService{
 
         return saveOrUpdate(inventory);
 
+    }
+
+    private Long getWarehouseId(String warehouseName) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
+        if (warehouse == null) {
+            return null;
+        }
+        else {
+            return warehouse.getId();
+        }
     }
 
 }

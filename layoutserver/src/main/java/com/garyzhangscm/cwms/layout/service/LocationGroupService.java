@@ -60,7 +60,7 @@ public class LocationGroupService implements TestDataInitiableService {
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.location-groups:location_groups.csv}")
+    @Value("${fileupload.test-data.location-groups:location_groups}")
     String testDataFile;
 
     @Cacheable
@@ -68,15 +68,15 @@ public class LocationGroupService implements TestDataInitiableService {
         return locationGroupRepository.findById(id).orElse(null);
     }
 
-    public List<LocationGroup> findAll(String warehouseName) {
+    public List<LocationGroup> findAll(Long warehouseId) {
 
-        return locationGroupRepository.findAll(warehouseName);
+        return locationGroupRepository.findAll(warehouseId);
     }
 
-    public List<LocationGroup> findAll(String warehouseName, String locationGroupTypes, String name) {
+    public List<LocationGroup> findAll(Long warehouseId, String locationGroupTypes, String name) {
 
         if (!StringUtils.isBlank(name)) {
-            LocationGroup locationGroup = findByName(warehouseName, name);
+            LocationGroup locationGroup = findByName(warehouseId, name);
             if (locationGroup != null) {
                 return Arrays.asList(new LocationGroup[]{locationGroup});
             }
@@ -85,30 +85,30 @@ public class LocationGroupService implements TestDataInitiableService {
             }
         }
         else {
-            return listLocationGroupsByTypes(warehouseName, locationGroupTypes);
+            return listLocationGroupsByTypes(warehouseId, locationGroupTypes);
 
         }
 
     }
 
-    public List<LocationGroup> findAll(String warehouseName, long[] locationGroupTypeIdArray) {
+    public List<LocationGroup> findAll(Long warehouseId, long[] locationGroupTypeIdArray) {
 
         List<Long> locationGroupTypeList = Arrays.stream(locationGroupTypeIdArray).boxed().collect( Collectors.toList());
-        return locationGroupRepository.findByLocationGroupTypes(warehouseName, locationGroupTypeList);
+        return locationGroupRepository.findByLocationGroupTypes(warehouseId, locationGroupTypeList);
     }
 
-    public List<LocationGroup> listLocationGroupsByTypes(String warehouseName, String locationGroupTypes) {
+    public List<LocationGroup> listLocationGroupsByTypes(Long warehouseId, String locationGroupTypes) {
         if (locationGroupTypes.isEmpty()) {
-            return findAll(warehouseName);
+            return findAll(warehouseId);
         }
         else {
             long[] locationGroupTypeArray = Arrays.asList(locationGroupTypes.split(",")).stream().mapToLong(Long::parseLong).toArray();
-            return findAll(warehouseName, locationGroupTypeArray);
+            return findAll(warehouseId, locationGroupTypeArray);
         }
     }
 
-    public LocationGroup findByName(String warehouseName, String name){
-        return locationGroupRepository.findByName(warehouseName, name);
+    public LocationGroup findByName(Long warehouseId, String name){
+        return locationGroupRepository.findByName(warehouseId, name);
     }
 
     public LocationGroup save(LocationGroup locationGroup) {
@@ -116,8 +116,12 @@ public class LocationGroupService implements TestDataInitiableService {
     }
 
     public LocationGroup saveOrUpdate(LocationGroup locationGroup) {
-        if (findByName(locationGroup.getName(), locationGroup.getWarehouse().getName()) != null) {
-            locationGroup.setId(findByName(locationGroup.getName(), locationGroup.getWarehouse().getName()).getId());
+        logger.debug("Will try to find existing location group by \n ==> {} / {}"
+                ,locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName());
+        if (findByName(locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName()) != null) {
+            logger.debug("===> Find such location group {}",
+                    findByName(locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName()).getId());
+            locationGroup.setId(findByName(locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName()).getId());
         }
         return save(locationGroup);
     }
@@ -170,9 +174,13 @@ public class LocationGroupService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, LocationGroupCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
+            logger.debug("Start to load location group from file: {}", testDataFile);
             List<LocationGroupCSVWrapper> locationGroupCSVWrappers = loadData(inputStream);
             locationGroupCSVWrappers.stream().forEach(locationGroupCSVWrapper -> {
                 try {
@@ -181,6 +189,8 @@ public class LocationGroupService implements TestDataInitiableService {
                     logger.debug("Exception while saving location group " + locationGroupCSVWrapper.getName());
                 }
             });
+
+            logger.debug("==> location group loaded from file: {}", testDataFileName);
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
@@ -224,22 +234,30 @@ public class LocationGroupService implements TestDataInitiableService {
     @Transactional
     public Location reserveLocation(Long id, String reservedCode, Double pendingSize, Long pendingQuantity, int pendingPalletQuantity) {
         LocationGroup locationGroup = findById(id);
+        logger.debug("Start to reserve a location from group: {}", locationGroup.getName());
 
         // Let's check if we have any location in the group that has the same reserve code
         List<Location> locations = locationService.findByLocationGroup(id);
+        logger.debug("Get {} locations from the group: {}",
+                      locations.size(), locationGroup.getName());
 
         List<Location> locationsWithSameReservedCode = locations.stream().filter(location -> reservedCode.equals(location.getReservedCode())).collect(Collectors.toList());
 
+        logger.debug(">> including {} locations that have hte same reserve code", locationsWithSameReservedCode.size());
         for (Location location : locationsWithSameReservedCode) {
+            logger.debug(">>   ===> try location {} with same reserve code", location.getName());
             // See if we can still add more inventory into the location with the same reserve code
             if (!locationGroup.getTrackingVolume()) {
                 // OK, the location doesn't need volume tracking. We can add infinite volume to this location
                 // we will just return this location without even change it
+
+                logger.debug(">> return location {} same reserve code, size is not tracked for the location", location.getName());
                 return location;
             }
             else {
                 // OK, we tracking volume for the location. Let's see how we tracking the location
                 if (ifVolumeFitForLocation(locationGroup.getVolumeTrackingPolicy(), location, pendingSize, pendingQuantity, pendingPalletQuantity)) {
+                    logger.debug(">> return location {} same reserve code, volume is tracked and validated", location.getName());
                     return reserveLocation(locationGroup.getVolumeTrackingPolicy(), location, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
 
                 }
@@ -251,22 +269,27 @@ public class LocationGroupService implements TestDataInitiableService {
         List<Location> locationsWithoutReservedCode =
                 locations.stream().filter(location -> StringUtils.isBlank(location.getReservedCode())).collect(Collectors.toList());
 
+        logger.debug(">> including {} locations that have empty reserve code", locationsWithoutReservedCode.size());
         for (Location location : locationsWithoutReservedCode) {
+            logger.debug(">>   ===> try location {} with EMPTY reserve code", location.getName());
             // See if we can still add more inventory into the location
             if (!locationGroup.getTrackingVolume()) {
                 // OK, the location doesn't need volume tracking. We can add infinite volume to this location
                 // we will just return this location without even change it
+                logger.debug(">> return location {} with empty reserved code, size is not tracked for the location", location.getName());
                 return locationService.reserveLocation(location, reservedCode);
             }
             else {
                 // OK, we tracking volume for the location. Let's see how we tracking the location
                 if (ifVolumeFitForLocation(locationGroup.getVolumeTrackingPolicy(), location, pendingSize, pendingQuantity, pendingPalletQuantity)) {
+                    logger.debug(">> return location {} EMPTY reserve code, volume is tracked and validated", location.getName());
                     return reserveLocation(locationGroup.getVolumeTrackingPolicy(), location, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
 
                 }
             }
         }
 
+        logger.debug(">> No location has been found");
         // If we are here, we fail to find any location
         throw new GenericException(1000, "fail to reserve a location from the group");
     }
@@ -308,9 +331,9 @@ public class LocationGroupService implements TestDataInitiableService {
 
     }
 
-    public LocationGroup getDockLocationGroup(String warehouseName) {
+    public LocationGroup getDockLocationGroup(Long warehouseId) {
 
-        List<LocationGroup> locationGroups = locationGroupRepository.getDockLocationGroup(warehouseName);
+        List<LocationGroup> locationGroups = locationGroupRepository.getDockLocationGroup(warehouseId);
         if (locationGroups.size() > 0) {
             return locationGroups.get(0);
         }

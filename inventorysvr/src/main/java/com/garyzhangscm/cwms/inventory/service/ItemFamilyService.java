@@ -49,21 +49,21 @@ public class ItemFamilyService implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.item-families:item_families.csv}")
+    @Value("${fileupload.test-data.item-families:item_families}")
     String testDataFile;
 
     public ItemFamily findById(Long id) {
         return itemFamilyRepository.findById(id).orElse(null);
     }
 
-    public List<ItemFamily> findAll(String name) {
+    public List<ItemFamily> findAll(Long warehouseId, String name) {
 
         if (StringUtils.isBlank(name)) {
             return itemFamilyRepository.findAll();
         }
         else {
 
-            ItemFamily itemFamily = findByName(name);
+            ItemFamily itemFamily = findByName(warehouseId, name);
             if (itemFamily == null) {
                 return new ArrayList<>();
             }
@@ -73,8 +73,8 @@ public class ItemFamilyService implements TestDataInitiableService{
         }
     }
 
-    public ItemFamily findByName(String name){
-        return itemFamilyRepository.findByName(name);
+    public ItemFamily findByName(Long warehouseId, String name){
+        return itemFamilyRepository.findByWarehouseIdAndName(warehouseId, name);
     }
 
     public ItemFamily save(ItemFamily itemFamily) {
@@ -82,8 +82,8 @@ public class ItemFamilyService implements TestDataInitiableService{
     }
 
     public ItemFamily saveOrUpdate(ItemFamily itemFamily) {
-        if (itemFamily.getId() == null && findByName(itemFamily.getName()) != null) {
-            itemFamily.setId(findByName(itemFamily.getName()).getId());
+        if (itemFamily.getId() == null && findByName(itemFamily.getWarehouseId(), itemFamily.getName()) != null) {
+            itemFamily.setId(findByName(itemFamily.getWarehouseId(),itemFamily.getName()).getId());
         }
         return save(itemFamily);
     }
@@ -124,9 +124,12 @@ public class ItemFamilyService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ItemFamilyCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ItemFamilyCSVWrapper> itemFamilyCSVWrappers = loadData(inputStream);
             itemFamilyCSVWrappers.stream().forEach(itemFamilyCSVWrapper -> saveOrUpdate(convertFromWrapper(itemFamilyCSVWrapper)));
         } catch (IOException ex) {
@@ -138,6 +141,7 @@ public class ItemFamilyService implements TestDataInitiableService{
         ItemFamily itemFamily = new ItemFamily();
         itemFamily.setName(itemFamilyCSVWrapper.getName());
         itemFamily.setDescription(itemFamilyCSVWrapper.getDescription());
+        logger.debug(">>   Start to save item family: {}", itemFamilyCSVWrapper.getDescription());
 
         // warehouse
         if (!StringUtils.isBlank(itemFamilyCSVWrapper.getWarehouse())) {

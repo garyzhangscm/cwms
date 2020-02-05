@@ -31,16 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.io.IOException;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +52,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
-    private ObjectMapper mapper = new ObjectMapper();
+
 
     public Location getLocationById(Long id) {
         ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations/{id}",
@@ -67,15 +64,23 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
     public Location getLocationByName(String warehouseName, String name) {
+        Warehouse warehouse = getWarehouseByName(warehouseName);
+        if (warehouse == null) {
+            throw new GenericException(10000, "warehouse name is not valid");
+        }
+        return getLocationByName(warehouse.getId(), name);
+    }
+
+    public Location getLocationByName(Long warehouseId, String name) {
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/layout/locations?")
                 .append("name={name}")
-                .append("&warehouseName={warehouseName}");
+                .append("&warehouseId={warehouseId}");
         ResponseBodyWrapper<Location[]> responseBodyWrapper = restTemplate.exchange(
                 url.toString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
-                }, name, warehouseName).getBody();
+                }, name, warehouseId).getBody();
 
         Location[] locations = responseBodyWrapper.getData();
         logger.debug(">> Get {} locations by name: {}", locations.length, name);
@@ -158,15 +163,22 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
     public LocationGroup getLocationGroupByName(String warehouseName, String name) {
+        Warehouse warehouse = getWarehouseByName(warehouseName);
+        if (warehouse == null) {
+            throw new GenericException(10000, "Can't find the warehouse name");
+        }
+        return getLocationGroupByName(warehouse.getId(), name);
+    }
+    public LocationGroup getLocationGroupByName(Long warehouseId, String name) {
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/layout/locationgroups?")
                 .append("name={name}")
-                .append("&warehouseName={warehouseName}");
+                .append("&warehouseId={warehouseId}");
 
         ResponseBodyWrapper<LocationGroup[]> responseBodyWrapper = restTemplate.exchange(
                 url.toString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup[]>>() {
-                }, name, warehouseName).getBody();
+                }, name, warehouseId).getBody();
 
         LocationGroup[] locationGroups = responseBodyWrapper.getData();
 
@@ -301,9 +313,9 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Location getTrailerLocation(String warehouseName, Long trailerId) {
+    public Location getTrailerLocation(Long warehouseId, Long trailerId) {
         String locationName = "TRLR-" + trailerId;
-        return getLocationByName(warehouseName, locationName);
+        return getLocationByName(warehouseId, locationName);
     }
 
     public Location findEmptyDestinationLocationForEmergencyReplenishment(LocationGroup locationGroup,

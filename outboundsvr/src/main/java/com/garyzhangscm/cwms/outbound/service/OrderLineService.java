@@ -62,7 +62,7 @@ public class OrderLineService implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.order_lines:order_lines.csv}")
+    @Value("${fileupload.test-data.order_lines:order_lines}")
     String testDataFile;
 
     public OrderLine findById(Long id) {
@@ -192,9 +192,12 @@ public class OrderLineService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, OrderLineCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName  = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<OrderLineCSVWrapper> orderLineCSVWrappers = loadData(inputStream);
             orderLineCSVWrappers.stream().forEach(orderLineCSVWrapper -> saveOrUpdate(convertFromWrapper(orderLineCSVWrapper)));
         } catch (IOException ex) {
@@ -211,23 +214,23 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
 
-        if (!StringUtils.isBlank(orderLineCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(orderLineCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                orderLine.setWarehouseId(warehouse.getId());
-            }
-        }
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(orderLineCSVWrapper.getWarehouse());
+
+        orderLine.setWarehouseId(warehouse.getId());
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getOrder())) {
             Order order = orderService.findByNumber(orderLineCSVWrapper.getOrder());
             orderLine.setOrder(order);
         }
         if (!StringUtils.isBlank(orderLineCSVWrapper.getItem())) {
-            Item item = inventoryServiceRestemplateClient.getItemByName(orderLineCSVWrapper.getItem());
+            Item item = inventoryServiceRestemplateClient.getItemByName(
+                    warehouse.getId(), orderLineCSVWrapper.getItem());
             orderLine.setItemId(item.getId());
         }
         if (!StringUtils.isBlank(orderLineCSVWrapper.getInventoryStatus())) {
-            InventoryStatus inventoryStatus = inventoryServiceRestemplateClient.getInventoryStatusByName(orderLineCSVWrapper.getInventoryStatus());
+            InventoryStatus inventoryStatus =
+                    inventoryServiceRestemplateClient.getInventoryStatusByName(
+                            warehouse.getId(), orderLineCSVWrapper.getInventoryStatus());
             orderLine.setInventoryStatusId(inventoryStatus.getId());
         }
         return orderLine;

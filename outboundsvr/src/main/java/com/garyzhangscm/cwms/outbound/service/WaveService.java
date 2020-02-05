@@ -178,7 +178,7 @@ public class WaveService {
 
     // Plan a list of order lines into a wave
     @Transactional
-    public Wave planWave(String waveNumber, List<OrderLine> orderLines) {
+    public Wave planWave(Long warehouseId, String waveNumber, List<OrderLine> orderLines) {
 
         if (StringUtils.isBlank(waveNumber)) {
             waveNumber = getNextWaveNumber();
@@ -191,6 +191,7 @@ public class WaveService {
             wave = new Wave();
             wave.setNumber(waveNumber);
             wave.setStatus(WaveStatus.PLANED);
+            wave.setWarehouseId(warehouseId);
             wave = save(wave);
         }
 

@@ -72,12 +72,14 @@ public class CycleCountResult implements Serializable {
         this.batchId = cycleCountRequest.getBatchId();
         this.locationId = cycleCountRequest.getLocationId();
         this.location = cycleCountRequest.getLocation();
+        this.warehouseId = cycleCountRequest.getWarehouseId();
     }
 
     public CycleCountResult(CycleCountRequest cycleCountRequest, Item item, Long quantity) {
         this.batchId = cycleCountRequest.getBatchId();
         this.locationId = cycleCountRequest.getLocationId();
         this.location = cycleCountRequest.getLocation();
+        this.warehouseId = cycleCountRequest.getWarehouseId();
         this.item = item;
         this.quantity = quantity;
         this.countQuantity = 0L;

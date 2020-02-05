@@ -1,0 +1,5 @@
+warehouse,sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,allocationStrategy,pickableUnitOfMeasures, type
+WMEC,1,,FG,,,EACH_PICK,,FIRST_IN_FIRST_OUT,PCS,PICKING
+WMEC,2,,FG,,,EACH_PICK,,FIRST_IN_FIRST_OUT,LBS,PICKING
+WMEC,3,,RAW,,,EACH_PICK,,FIRST_IN_FIRST_OUT,PCS,PICKING
+WMEC,4,,RAW,,,EACH_PICK,,FIRST_IN_FIRST_OUT,LBS,PICKING

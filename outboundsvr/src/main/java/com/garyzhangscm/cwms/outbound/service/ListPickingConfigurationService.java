@@ -59,7 +59,7 @@ public class ListPickingConfigurationService implements TestDataInitiableService
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.list-picking-configuration:list-picking-configuration.csv}")
+    @Value("${fileupload.test-data.list-picking-configuration:list-picking-configuration}")
     String testDataFile;
 
     public ListPickingConfiguration findById(Long id, boolean loadDetails) {
@@ -164,9 +164,12 @@ public class ListPickingConfigurationService implements TestDataInitiableService
         return fileService.loadData(inputStream, schema, ListPickingConfigurationCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ListPickingConfigurationCSVWrapper> listPickingConfigurationCSVWrappers = loadData(inputStream);
             listPickingConfigurationCSVWrappers
                     .stream()

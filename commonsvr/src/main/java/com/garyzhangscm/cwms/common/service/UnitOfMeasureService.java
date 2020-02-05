@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import com.garyzhangscm.cwms.common.repository.UnitOfMeasureRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.unit-of-measures:unit_of_meansures.csv}")
+    @Value("${fileupload.test-data.unit-of-measures:unit_of_meansures}")
     String testDataFile;
 
     public UnitOfMeasure findById(Long id) {
@@ -66,6 +67,7 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
     // Save when the supplier's name doesn't exists
     // update when the supplier already exists
     public UnitOfMeasure saveOrUpdate(UnitOfMeasure unitOfMeasure) {
+        logger.debug("Will save or update unit of measure: {}", unitOfMeasure.getName());
         if (unitOfMeasure.getId() == null && findByName(unitOfMeasure.getName()) != null) {
             unitOfMeasure.setId(findByName(unitOfMeasure.getName()).getId());
         }
@@ -105,9 +107,13 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, UnitOfMeasure.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            logger.debug("Start to load unit of measure from {}", testDataFileName);
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<UnitOfMeasure> unitOfMeasures = loadData(inputStream);
             unitOfMeasures.stream().forEach(unitOfMeasure -> saveOrUpdate(unitOfMeasure));
         } catch (IOException ex) {

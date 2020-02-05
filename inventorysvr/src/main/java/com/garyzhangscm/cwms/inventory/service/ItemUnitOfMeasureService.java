@@ -52,7 +52,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.item-unit-of-measures:item_unit_of_measures.csv}")
+    @Value("${fileupload.test-data.item-unit-of-measures:item_unit_of_measures}")
     String testDataFile;
 
     public ItemUnitOfMeasure findById(Long id) {
@@ -67,21 +67,13 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         // Natrual Keys: item name, item package name, unit of measure id
         // Natrual Keys: item id, item package name, unit of measure id
         // Natrual Keys: item package id, unit of measure id
-        return itemUnitOfMeasureRepository.findByNaturalKeys(itemUnitOfMeasure.getItemPackageType().getId(), itemUnitOfMeasure.getUnitOfMeasureId());
+        return itemUnitOfMeasureRepository.findByNaturalKeys(
+                itemUnitOfMeasure.getWarehouseId(),
+                itemUnitOfMeasure.getItemPackageType().getId(),
+                itemUnitOfMeasure.getUnitOfMeasureId());
     }
 
-    public List<ItemUnitOfMeasure> findByItemPackageType(ItemPackageType itemPackageType) {
-        List<ItemUnitOfMeasure> itemUnitOfMeasures = itemPackageType.getItemUnitOfMeasures();
-        itemUnitOfMeasures.forEach(
-                itemUnitOfMeasure -> itemUnitOfMeasure.setUnitOfMeasure(
-                        commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId())
-                ));
-        return itemUnitOfMeasures;
-    }
 
-    public List<ItemUnitOfMeasure> findByItemPackageType(String itemName, String itemPackageTypeName) {
-        return findByItemPackageType(itemPackageTypeService.findByNaturalKeys(itemPackageTypeName, itemName));
-    }
 
 
     public ItemUnitOfMeasure save(ItemUnitOfMeasure itemUnitOfMeasure) {
@@ -133,17 +125,24 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ItemUnitOfMeasureCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
+            logger.debug(">> Start to get item unit of measure from {}", testDataFileName);
             List<ItemUnitOfMeasureCSVWrapper> itemUnitOfMeasureCSVWrappers = loadData(inputStream);
             itemUnitOfMeasureCSVWrappers.stream().forEach(itemUnitOfMeasureCSVWrapper -> saveOrUpdate(convertFromWrapper(itemUnitOfMeasureCSVWrapper)));
+            logger.debug(">> item unit of measure loaded from {}", testDataFile);
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
 
     private ItemUnitOfMeasure convertFromWrapper(ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
+        logger.debug("===>Start to create item unit of measure with \n item: {}, packate type: {}",
+                itemUnitOfMeasureCSVWrapper.getItem(), itemUnitOfMeasureCSVWrapper.getItemPackageType());
         ItemUnitOfMeasure itemUnitOfMeasure = new ItemUnitOfMeasure();
         itemUnitOfMeasure.setQuantity(itemUnitOfMeasureCSVWrapper.getQuantity());
         itemUnitOfMeasure.setWeight(itemUnitOfMeasureCSVWrapper.getWeight());
@@ -151,20 +150,17 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         itemUnitOfMeasure.setWidth(itemUnitOfMeasureCSVWrapper.getWidth());
         itemUnitOfMeasure.setHeight(itemUnitOfMeasureCSVWrapper.getHeight());
 
-        // warehouse
-        if (!StringUtils.isBlank(itemUnitOfMeasureCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemUnitOfMeasureCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                itemUnitOfMeasure.setWarehouseId(warehouse.getId());
-            }
-        }
+        // warehouse  is mandate
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemUnitOfMeasureCSVWrapper.getWarehouse());
+        itemUnitOfMeasure.setWarehouseId(warehouse.getId());
 
         if (!itemUnitOfMeasureCSVWrapper.getUnitOfMeasure().isEmpty()) {
             UnitOfMeasure unitOfMeasure = commonServiceRestemplateClient.getUnitOfMeasureByName(itemUnitOfMeasureCSVWrapper.getUnitOfMeasure());
             itemUnitOfMeasure.setUnitOfMeasureId(unitOfMeasure.getId());
         }
         if (!(itemUnitOfMeasureCSVWrapper.getItem().isEmpty() || itemUnitOfMeasureCSVWrapper.getItemPackageType().isEmpty())) {
-            ItemPackageType itemPackageType = itemPackageTypeService.findByNaturalKeys(itemUnitOfMeasureCSVWrapper.getItemPackageType(),
+            ItemPackageType itemPackageType = itemPackageTypeService.findByNaturalKeys(
+                    warehouse.getId(), itemUnitOfMeasureCSVWrapper.getItemPackageType(),
                     itemUnitOfMeasureCSVWrapper.getItem() );
             itemUnitOfMeasure.setItemPackageType(itemPackageType);
         }

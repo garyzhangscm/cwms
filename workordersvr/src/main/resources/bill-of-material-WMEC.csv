@@ -1,0 +1,4 @@
+number,warehouse,item,expectedQuantity
+BOM-001,WMEC,22570P-93-29,1
+BOM-002,WMEC,22570P-93-25,1
+BOM-003,WMEC,22570P-00-20,2

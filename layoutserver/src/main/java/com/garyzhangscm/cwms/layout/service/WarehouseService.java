@@ -123,9 +123,13 @@ public class WarehouseService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, Warehouse.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<Warehouse> warehouses = loadData(inputStream);
             warehouses.stream().forEach(warehouse -> saveOrUpdate(warehouse));
         } catch (IOException ex) {

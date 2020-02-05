@@ -31,6 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,8 +73,27 @@ public class ShortAllocationService {
     }
 
 
-    public List<ShortAllocation> findAll(boolean loadDetails) {
-        List<ShortAllocation> shortAllocations = shortAllocationRepository.findAll();
+    public List<ShortAllocation> findAll(Long workOrderLineId, String workOrderLineIds, boolean loadDetails) {
+
+
+        List<ShortAllocation> shortAllocations =  shortAllocationRepository.findAll(
+                (Root<ShortAllocation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    if (workOrderLineId != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("workOrderLineId"), workOrderLineId));
+                    }
+                    else if (!StringUtils.isBlank(workOrderLineIds)){
+                        CriteriaBuilder.In<Long> inWorkOrderLineIds = criteriaBuilder.in(root.get("workOrderLineId"));
+                        for(String id : workOrderLineIds.split(",")) {
+                            inWorkOrderLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inWorkOrderLineIds));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
 
         if (shortAllocations.size() > 0 && loadDetails) {
             loadOrderAttribute(shortAllocations);
@@ -78,8 +101,8 @@ public class ShortAllocationService {
         return shortAllocations;
     }
 
-    public List<ShortAllocation> findAll() {
-        return findAll(true);
+    public List<ShortAllocation> findAll(Long workOrderLineId, String workOrderLineIds) {
+        return findAll(workOrderLineId, workOrderLineIds, true);
     }
 
     public void loadOrderAttribute(List<ShortAllocation> shortAllocations) {
@@ -141,6 +164,20 @@ public class ShortAllocationService {
         shortAllocation.setShipmentLine(shipmentLine);
         shortAllocation.setStatus(ShortAllocationStatus.PENDING);
         shortAllocation.setWarehouseId(shipmentLine.getWarehouseId());
+
+        return save(shortAllocation);
+
+    }
+
+    public ShortAllocation generateShortAllocation(WorkOrder workOrder, Item item, WorkOrderLine workOrderLine, Long quantity) {
+
+        ShortAllocation shortAllocation = new ShortAllocation();
+        shortAllocation.setItem(item);
+        shortAllocation.setItemId(item.getId());
+        shortAllocation.setQuantity(quantity);
+        shortAllocation.setStatus(ShortAllocationStatus.PENDING);
+        shortAllocation.setWarehouseId(workOrder.getWarehouseId());
+        shortAllocation.setWorkOrderLineId(workOrderLine.getId());
 
         return save(shortAllocation);
 

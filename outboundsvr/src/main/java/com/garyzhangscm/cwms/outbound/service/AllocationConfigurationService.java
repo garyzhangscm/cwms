@@ -64,7 +64,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.allocation-configuration:allocation-configuration.csv}")
+    @Value("${fileupload.test-data.allocation-configuration:allocation-configuration}")
     String testDataFile;
 
     public AllocationConfiguration findById(Long id, boolean loadDetails) {
@@ -203,9 +203,12 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return fileService.loadData(inputStream, schema, AllocationConfigurationCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<AllocationConfigurationCSVWrapper> allocationConfigurationCSVWrappers = loadData(inputStream);
             allocationConfigurationCSVWrappers.stream().forEach(allocationConfigurationCSVWrapper -> saveFromWrapper(allocationConfigurationCSVWrapper));
         } catch (IOException ex) {
@@ -222,22 +225,21 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         allocationConfiguration.setAllocationStrategy(AllocationStrategy.valueOf(allocationConfigurationCSVWrapper.getAllocationStrategy()));
         allocationConfiguration.setType(AllocationConfigurationType.valueOf(allocationConfigurationCSVWrapper.getType()));
 
-        Warehouse warehouse = null;
-        if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getWarehouse())) {
-            warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(allocationConfigurationCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                allocationConfiguration.setWarehouseId(warehouse.getId());
-            }
-        }
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(allocationConfigurationCSVWrapper.getWarehouse());
+
+        allocationConfiguration.setWarehouseId(warehouse.getId());
 
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getItem())) {
-            Item item = inventoryServiceRestemplateClient.getItemByName(allocationConfigurationCSVWrapper.getItem());
+            Item item = inventoryServiceRestemplateClient.getItemByName(
+                    warehouse.getId(), allocationConfigurationCSVWrapper.getItem());
             if (item != null) {
                 allocationConfiguration.setItemId(item.getId());
             }
         }
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getItemFamily())) {
-            ItemFamily itemFamily = inventoryServiceRestemplateClient.getItemFamilyByName(allocationConfigurationCSVWrapper.getItemFamily());
+            ItemFamily itemFamily = inventoryServiceRestemplateClient.getItemFamilyByName(
+                    warehouse.getId(), allocationConfigurationCSVWrapper.getItemFamily());
             if (itemFamily != null) {
                 allocationConfiguration.setItemFamilyId(itemFamily.getId());
             }
@@ -263,7 +265,9 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         }
 
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocationGroupType())) {
-            LocationGroupType locationGroupType = warehouseLayoutServiceRestemplateClient.getLocationGroupTypeByName(allocationConfigurationCSVWrapper.getLocationGroupType());
+            LocationGroupType locationGroupType =
+                    warehouseLayoutServiceRestemplateClient.getLocationGroupTypeByName(
+                            allocationConfigurationCSVWrapper.getLocationGroupType());
             if (locationGroupType != null) {
                 allocationConfiguration.setLocationGroupTypeId(locationGroupType.getId());
             }
@@ -287,6 +291,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     }
 
     @Transactional
+    // Allocate shipment line
     public AllocationResult allocate(ShipmentLine shipmentLine, List<Pick> existingPicks, List<Inventory> pickableInventory) {
 
         AllocationResult allocationResult = new AllocationResult();
@@ -386,6 +391,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
 
     @Transactional
+    // Allocate short allocation
     public List<Pick> allocate(ShortAllocation shortAllocation, List<Pick> existingPicks, List<Inventory> pickableInventory) {
 
 
@@ -478,9 +484,114 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
     }
 
+
+    @Transactional
+    // Allocate Work order line
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine, List<Pick> existingPicks, List<Inventory> pickableInventory) {
+
+        AllocationResult allocationResult = new AllocationResult();
+
+        // open quantity is the quantity we are about to allocate this time
+        Long openQuantity = workOrderLine.getOpenQuantity();
+        logger.debug("Start to allocate work order line: {} / {} by going through all the strategy",
+                workOrderLine.getId(), workOrderLine.getNumber());
+
+        // Let's get the item by work order line
+        // Then we will get all the strategy by the item attribute
+        // After we get all the strategy, we will loop through each strategy until
+        // we either generate enough picks, or we generate emergency replenishment for the shortage
+        Item item = workOrderLine.getItem();
+
+        // Get all allocation configuration that match with the item
+        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(item, AllocationConfigurationType.PICKING);
+        logger.debug("We got {} allocation configuration by item {}",
+                matchedAllocationConfiguration.size(), item.getName());
+
+        if (matchedAllocationConfiguration.size() == 0) {
+            // OK, we don't have any allocation configuration defined for this item, let's return
+            // a short allocation for the whole open quantity
+
+            allocationResult.addShortAllocation(generateShortAllocation(workOrder, item, workOrderLine, openQuantity));
+            return allocationResult;
+        }
+
+        // Sort the allocation configuration based upon the sequence then try one by one
+        matchedAllocationConfiguration.sort(Comparator.comparing(AllocationConfiguration::getSequence));
+        // We will allocate based on inventory group(group by location and status and etc)
+        List<InventorySummary> inventorySummaries = inventorySummaryService.getInventorySummaryForAllocation(pickableInventory);
+        logger.debug("We have {} pickable inventory summary against the item with {}",
+                inventorySummaries.size(), item.getName());
+
+        List<Pick> picks = new ArrayList<>();
+
+        // Let's loop through each allocation configuration to see if we can allocate by the configuration
+        for (AllocationConfiguration allocationConfiguration : matchedAllocationConfiguration) {
+            logger.debug("Start to allocate against the configuration: {} / {}",
+                    allocationConfiguration.getId(), allocationConfiguration.getSequence());
+            if (openQuantity <= 0) {
+                logger.debug("1. open quantity is 0. We have already allocate the full quantity.");
+                break;
+            }
+            for (InventorySummary inventorySummary : inventorySummaries) {
+                if (openQuantity <= 0) {
+                    logger.debug("2. open quantity is 0. We have already allocate the full quantity.");
+                    break;
+                }
+                Long smallestPickableUnitOfMeasureQuantity
+                        = getSmallestPickableUnitOfMeasureQuantity(allocationConfiguration, inventorySummary);
+                if (smallestPickableUnitOfMeasureQuantity == 0) {
+                    logger.debug("No pickable unit of measure defined for the inventory summary, {} / {}",
+                            inventorySummary.getItem().getName(), inventorySummary.getItemPackageType().getName());
+                    continue;
+                }
+
+                Long pickableQuantity = getPickableQuantity(allocationConfiguration, existingPicks,
+                        inventorySummary, smallestPickableUnitOfMeasureQuantity);
+                logger.debug("We can pick {} from location {}, item {}", pickableQuantity,
+                        inventorySummary.getLocation().getName(), inventorySummary.getItem().getName());
+
+                logger.debug("Start to generate pick\n pickable quantity {}\n open quantity {}\n pickable unit of measure quantity {}",
+                        pickableQuantity, openQuantity, smallestPickableUnitOfMeasureQuantity);
+                if (Math.min(pickableQuantity, openQuantity) > smallestPickableUnitOfMeasureQuantity) {
+                    Long pickQuantity = Math.min(pickableQuantity, openQuantity);
+                    // Make sure we pick by unit of measure
+                    pickQuantity = (pickQuantity / smallestPickableUnitOfMeasureQuantity) * smallestPickableUnitOfMeasureQuantity;
+
+                    Pick pick = pickService.generatePick(workOrder, inventorySummary, workOrderLine, pickQuantity);
+                    picks.add(pick);
+                    openQuantity -= pickQuantity;
+                    logger.debug("OK, we generate a pick with quantity {}. The open quantity become {}",
+                            pickQuantity, openQuantity);
+
+                    // deduct the quantity from inventory summary so that we can have the right available quantity
+                    // in the following round
+                    inventorySummary.setQuantity(inventorySummary.getQuantity() - pickQuantity);
+                }
+
+            }
+        }
+
+        allocationResult.setPicks(picks);
+        logger.debug("After we tried all the configurations, we still have {} quantity left", openQuantity);
+        if (openQuantity > 0) {
+            // OK, we don't have any allocation configuration defined for this item, let's return
+            // a short allocation for the whole open quantity
+
+            allocationResult.addShortAllocation(generateShortAllocation(workOrder, item, workOrderLine, openQuantity));
+        }
+        return allocationResult;
+
+    }
+
     private ShortAllocation generateShortAllocation(Item item, ShipmentLine shipmentLine, Long quantity) {
 
         return shortAllocationService.generateShortAllocation(item, shipmentLine, quantity);
+
+    }
+
+    private ShortAllocation generateShortAllocation(WorkOrder workOrder, Item item, WorkOrderLine workOrderLine, Long quantity) {
+
+        return shortAllocationService.generateShortAllocation(workOrder, item, workOrderLine, quantity);
 
     }
 
@@ -555,7 +666,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                                InventorySummary inventorySummary) {
         logger.debug("Check if we can apply allocation configuration {} to inventory: location  {}, item {},  ",
                         allocationConfiguration.getSequence(),
-                inventorySummary.getLocation(), inventorySummary.getItem().getName());
+                inventorySummary.getLocation().getName(), inventorySummary.getItem().getName());
         // Make sure the inventory is in the location / group / group type that
         // defined by the configuration
         if (allocationConfiguration.getLocationId() != null &&
@@ -567,17 +678,17 @@ public class AllocationConfigurationService implements TestDataInitiableService 
             return false;
         }
         if (allocationConfiguration.getLocationGroupId() != null &&
-                allocationConfiguration.getLocationGroupId().equals(inventorySummary.getLocation().getLocationGroup().getId())) {
+                !allocationConfiguration.getLocationGroupId().equals(inventorySummary.getLocation().getLocationGroup().getId())) {
 
-            logger.debug("Step 1.2 >> fail as the location doesn't match.");
+            logger.debug("Step 1.2 >> fail as the location group doesn't match.");
             logger.debug(">>>>>>>>>>> allocationConfiguration.getLocationGroupId(): {} / inventorySummary.getLocation().getLocationGroup().getId(): {}",
                     allocationConfiguration.getLocationGroupId(), inventorySummary.getLocation().getLocationGroup().getId());
             return false;
         }
         if (allocationConfiguration.getLocationGroupTypeId() != null &&
-                allocationConfiguration.getLocationGroupTypeId().equals(inventorySummary.getLocation().getLocationGroup().getLocationGroupType().getId())) {
+                !allocationConfiguration.getLocationGroupTypeId().equals(inventorySummary.getLocation().getLocationGroup().getLocationGroupType().getId())) {
 
-            logger.debug("Step 1.2 >> fail as the location doesn't match.");
+            logger.debug("Step 1.2 >> fail as the location group type doesn't match.");
             logger.debug(">>>>>>>>>>> allocationConfiguration.getLocationGroupTypeId(): {} / inventorySummary.getLocation().getLocationGroup().getLocationGroupType().getId(): {}",
                     allocationConfiguration.getLocationGroupTypeId(), inventorySummary.getLocation().getLocationGroup().getLocationGroupType().getId());
             return false;
@@ -630,4 +741,50 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return true;
 
     }
+
+    public AllocationResult allocateWorkOrder(WorkOrder workOrder){
+        logger.debug("Start to allocate Work Order {} ", workOrder.getNumber());
+        AllocationResult allocationResult = new AllocationResult();
+
+        workOrder.getWorkOrderLines().forEach(workOrderLine -> {
+            AllocationResult workOrderAllocationResult
+                    = allocateWorkOrderLine(workOrder, workOrderLine);
+            allocationResult.addPicks(workOrderAllocationResult.getPicks());
+            allocationResult.addShortAllocations(workOrderAllocationResult.getShortAllocations());
+        });
+        return allocationResult;
+
+    }
+
+    public AllocationResult allocateWorkOrderLine(WorkOrder workOrder, WorkOrderLine workOrderLine) {
+        logger.debug("Start to allocate Work Order Line: {} / {}", workOrderLine.getNumber(), workOrderLine.getItem().getName());
+        if (  workOrderLine.getOpenQuantity() <= 0) {
+            logger.debug("Shipment line is not allocatable! is allocatable? open quantity? {}",
+                      workOrderLine.getOpenQuantity());
+            return new AllocationResult();
+        }
+
+        // Let's get all the pickable inventory and existing picking so we can start to calculate
+        // how to generate picks for the shipment
+        Long itemId = workOrderLine.getItemId();
+
+        List<Pick> existingPicks = pickService.getOpenPicksByItemId(itemId);
+        logger.debug("We have {} existing picks against the item with id {}",
+                existingPicks.size(), itemId);
+
+        // Get all pickable inventory
+        List<Inventory> pickableInventory
+                = inventoryServiceRestemplateClient.getPickableInventory(
+                itemId, workOrderLine.getInventoryStatusId());
+        logger.debug("We have {} pickable inventory against the item with id {}",
+                pickableInventory.size(), itemId);
+
+
+        AllocationResult allocationResult = allocate(workOrder, workOrderLine, existingPicks, pickableInventory);
+
+
+        return allocationResult;
+    }
+
+
 }

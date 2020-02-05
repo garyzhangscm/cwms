@@ -18,6 +18,7 @@
     <file url="file://$PROJECT_DIR$/outboundsvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ressvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ressvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/workordersvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr/src/main/java" charset="UTF-8" />
   </component>

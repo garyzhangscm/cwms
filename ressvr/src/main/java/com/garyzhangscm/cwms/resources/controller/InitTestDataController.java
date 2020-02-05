@@ -24,10 +24,7 @@ import com.garyzhangscm.cwms.resources.clients.InventoryServiceRestemplateClient
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.service.InitTestDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/test-data")
@@ -42,15 +39,16 @@ public class InitTestDataController {
         return initTestDataService.getTestDataNames();
     }
     @RequestMapping(value = "/init", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init() {
+    public ResponseBodyWrapper<String> init(@RequestParam String warehouseName) {
 
-        initTestDataService.init();
+        initTestDataService.init(warehouseName);
         return ResponseBodyWrapper.success("Init all");
     }
     @RequestMapping(value = "/init/{name}", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init(@PathVariable String name) {
+    public ResponseBodyWrapper<String> init(@PathVariable String name,
+                                            @RequestParam String warehouseName) {
 
-        initTestDataService.init(name);
+        initTestDataService.init(name, warehouseName);
         return ResponseBodyWrapper.success("Init " + name);
     }
 

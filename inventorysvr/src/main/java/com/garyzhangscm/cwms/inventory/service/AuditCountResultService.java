@@ -70,14 +70,17 @@ public class AuditCountResultService {
         if (inventories.size() == 0) {
             // There's nothing left in the location, let's
             // count it as 0;
-            auditCountResults.add(AuditCountResult.emptyLocationAuditCountResult(batchId, locationId, location));
+            auditCountResults.add(
+                    AuditCountResult.emptyLocationAuditCountResult(
+                            location.getWarehouse().getId(), batchId, locationId, location));
         }
         else {
             // We will generate an empty audit count result(count quantity is 0) for each inventory
             // so that the front end user can start to input the quantity
             inventories.forEach(inventory ->
                     auditCountResults.add(
-                            new AuditCountResult(batchId, locationId, location, inventory, inventory.getQuantity(), 0L)));
+                            new AuditCountResult(location.getWarehouse().getId(), batchId, locationId,
+                                    location, inventory, inventory.getQuantity(), 0L)));
         }
         return auditCountResults;
     }

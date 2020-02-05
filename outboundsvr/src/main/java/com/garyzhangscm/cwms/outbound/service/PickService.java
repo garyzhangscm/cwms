@@ -30,6 +30,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -78,27 +82,40 @@ public class PickService {
     }
 
 
-    public List<Pick> findAll(String number, boolean loadDetails) {
-        List<Pick> picks;
+    public List<Pick> findAll(String number, Long workOrderLineId, String workOrderLineIds,  boolean loadDetails) {
 
-        if (StringUtils.isBlank(number)) {
-            picks = pickRepository.findAll();
-        } else {
-            Pick pick = pickRepository.findByNumber(number);
-            if (pick != null) {
-                picks = Arrays.asList(new Pick[]{pick});
-            } else {
-                picks = new ArrayList<>();
-            }
-        }
+        List<Pick> picks =  pickRepository.findAll(
+                (Root<Pick> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    if (!StringUtils.isBlank(number)) {
+                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+
+                    }
+                    if (workOrderLineId != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("workOrderLineId"), workOrderLineId));
+                    }
+                    else if (!StringUtils.isBlank(workOrderLineIds)){
+
+                        CriteriaBuilder.In<Long> inWorkOrderLineIds = criteriaBuilder.in(root.get("workOrderLineId"));
+                        for(String id : workOrderLineIds.split(",")) {
+                            inWorkOrderLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inWorkOrderLineIds));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
         if (picks.size() > 0 && loadDetails) {
             loadOrderAttribute(picks);
         }
         return picks;
     }
 
-    public List<Pick> findAll(String number) {
-        return findAll(number, true);
+    public List<Pick> findAll(String number, Long workOrderLineId, String workOrderLineIds) {
+        return findAll(number, workOrderLineId, workOrderLineIds, true);
     }
 
     public Pick findByNumber(String number, boolean loadDetails) {
@@ -235,6 +252,7 @@ public class PickService {
         return pick;
     }
 
+    @Transactional
     public Pick generatePick(InventorySummary inventorySummary, ShipmentLine shipmentLine, Long quantity) {
         Pick pick = generatePick(inventorySummary, quantity);
 
@@ -245,6 +263,37 @@ public class PickService {
 
 
         Location stagingLocation = getDestinationLocationForPick(shipmentLine, pick);
+        pick.setDestinationLocation(stagingLocation);
+        pick.setDestinationLocationId(stagingLocation.getId());
+
+        Pick savedPick = save(pick);
+
+        logger.debug("pick saved!!!! id : {}", savedPick.getId());
+        // Setup the pick movement
+        setupMovementPath(savedPick);
+        logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
+
+
+        // Let's see if we can group the pick either
+        // 1. into an existing pick list
+        // 2. or create a new picking list so other picks can be grouped
+        processPickList(savedPick);
+
+        return findById(savedPick.getId());
+    }
+
+
+    @Transactional
+    public Pick generatePick(WorkOrder workOrder, InventorySummary inventorySummary, WorkOrderLine workOrderLine, Long quantity) {
+        Pick pick = generatePick(inventorySummary, quantity);
+
+        pick.setWorkOrderLineId(workOrderLine.getId());
+        pick.setWarehouseId(workOrder.getWarehouseId());
+
+        // Setup the destination, get from ship staging area
+
+        logger.debug("get pick's destination for work order:\n{}", workOrder);
+        Location stagingLocation = getDestinationLocationForPick(workOrder, pick);
         pick.setDestinationLocation(stagingLocation);
         pick.setDestinationLocationId(stagingLocation.getId());
 
@@ -300,6 +349,15 @@ public class PickService {
         return findById(savedPick.getId());
     }
 
+    // For work order, the destination is always the inbound stage for the production line
+    private Location getDestinationLocationForPick(WorkOrder workOrder, Pick pick) {
+        logger.debug("workOrder.getProductionLine(): {}", workOrder.getProductionLine());
+        logger.debug("workOrder.getProductionLine().getName(): {}", workOrder.getProductionLine().getName());
+        logger.debug("workOrder.getProductionLine().getInboundStageLocation(): {}", workOrder.getProductionLine().getInboundStageLocation());
+        logger.debug("workOrder.getProductionLine().getInboundStageLocation().getName(): {}", workOrder.getProductionLine().getInboundStageLocation().getName());
+        return workOrder.getProductionLine().getInboundStageLocation();
+
+    }
     private Location getDestinationLocationForPick(ShipmentLine shipmentLine, Pick pick) {
         ShippingStageAreaConfiguration shippingStageAreaConfiguration;
         logger.debug(">> Try to get ship stage for the pick");

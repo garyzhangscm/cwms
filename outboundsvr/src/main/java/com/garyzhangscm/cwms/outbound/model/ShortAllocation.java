@@ -49,6 +49,9 @@ public class ShortAllocation  implements Serializable {
     private ShortAllocationStatus status;
 
 
+    @Column(name = "work_order_line_id")
+    private Long workOrderLineId;
+
     public Long getId() {
         return id;
     }
@@ -90,7 +93,7 @@ public class ShortAllocation  implements Serializable {
     }
 
     public String getOrderNumber() {
-        return shipmentLine.getOrderNumber();
+        return shipmentLine == null ? "" : shipmentLine.getOrderNumber();
     }
 
     public ShortAllocationStatus getStatus() {
@@ -123,5 +126,13 @@ public class ShortAllocation  implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getWorkOrderLineId() {
+        return workOrderLineId;
+    }
+
+    public void setWorkOrderLineId(Long workOrderLineId) {
+        this.workOrderLineId = workOrderLineId;
     }
 }

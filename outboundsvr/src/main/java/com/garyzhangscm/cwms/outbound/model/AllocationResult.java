@@ -33,4 +33,12 @@ public class AllocationResult  implements Serializable {
     public void addShortAllocation(ShortAllocation shortAllocation) {
         shortAllocations.add(shortAllocation);
     }
+
+    public void addPicks(List<Pick> picks) {
+        this.picks.addAll(picks);
+    }
+
+    public void addShortAllocations(List<ShortAllocation> shortAllocations) {
+        this.shortAllocations.addAll(shortAllocations);
+    }
 }

@@ -32,8 +32,9 @@ public class ItemFamilyController {
     ItemFamilyService itemFamilyService;
 
     @RequestMapping(value="/item-families", method = RequestMethod.GET)
-    public List<ItemFamily> findAllItemFaimlies(@RequestParam(name="name", required = false, defaultValue = "") String name) {
-        return itemFamilyService.findAll(name);
+    public List<ItemFamily> findAllItemFaimlies(@RequestParam Long warehouseId,
+                                                @RequestParam(name="name", required = false, defaultValue = "") String name) {
+        return itemFamilyService.findAll(warehouseId, name);
     }
 
     @RequestMapping(value="/item-family/{id}", method = RequestMethod.GET)

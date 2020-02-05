@@ -46,7 +46,7 @@ public class CustomerService implements  TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.customers:customers.csv}")
+    @Value("${fileupload.test-data.customers:customers}")
     String testDataFile;
 
     public Customer findById(Long id) {
@@ -135,9 +135,12 @@ public class CustomerService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Customer.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<Customer> customers = loadData(inputStream);
             customers.stream().forEach(customer -> saveOrUpdate(customer));
         } catch (IOException ex) {
