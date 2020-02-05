@@ -30,17 +30,18 @@ public interface ItemUnitOfMeasureRepository extends JpaRepository<ItemUnitOfMea
     // Natrual Keys: item name, item package name, unit of measure id
     @Query("select uom from ItemUnitOfMeasure uom " +
            " where uom.unitOfMeasureId = :unitOfMeasureId and uom.itemPackageType.name = :itemPackageTypeName " +
-           "   and uom.itemPackageType.item.name = :itemName")
-    ItemUnitOfMeasure findByNaturalKeys(String itemName, String itemPackageTypeName, Long unitOfMeasureId);
+           "   and uom.itemPackageType.item.name = :itemName and uom.warehouseId = :warehouseId")
+    ItemUnitOfMeasure findByNaturalKeys(Long warehouseId, String itemName, String itemPackageTypeName, Long unitOfMeasureId);
 
     // Natrual Keys: item id, item package name, unit of measure id
     @Query("select uom from ItemUnitOfMeasure uom " +
             " where uom.unitOfMeasureId = :unitOfMeasureId and uom.itemPackageType.name = :itemPackageTypeName " +
-            "   and uom.itemPackageType.item.id = :itemId")
-    ItemUnitOfMeasure findByNaturalKeys(Long itemId, String itemPackageTypeName, Long unitOfMeasureId);
+            "   and uom.itemPackageType.item.id = :itemId and uom.warehouseId = :warehouseId")
+    ItemUnitOfMeasure findByNaturalKeys(Long warehouseId, Long itemId, String itemPackageTypeName, Long unitOfMeasureId);
 
     // Natrual Keys: item package id, unit of measure id
     @Query("select uom from ItemUnitOfMeasure uom " +
-            " where uom.unitOfMeasureId = :unitOfMeasureId and uom.itemPackageType.id = :itemPackageTypeId ")
-    ItemUnitOfMeasure findByNaturalKeys(Long itemPackageTypeId, Long unitOfMeasureId);
+            " where uom.unitOfMeasureId = :unitOfMeasureId and uom.itemPackageType.id = :itemPackageTypeId " +
+            " and uom.warehouseId = :warehouseId")
+    ItemUnitOfMeasure findByNaturalKeys(Long warehouseId, Long itemPackageTypeId, Long unitOfMeasureId);
 }

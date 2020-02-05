@@ -47,7 +47,7 @@ public class InboundServiceRestemplateClient {
 
     @Cacheable
     public Receipt getReceiptById(Long id) {
-        ResponseBodyWrapper<Receipt> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inbound/receipt/{id}",
+        ResponseBodyWrapper<Receipt> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inbound/receipts/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Receipt>>() {
                 }, id).getBody();
 

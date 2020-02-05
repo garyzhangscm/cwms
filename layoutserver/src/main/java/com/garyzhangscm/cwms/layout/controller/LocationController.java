@@ -52,8 +52,8 @@ public class LocationController {
 
     @RequestMapping(value="/locations/logic/{locationType}", method = RequestMethod.GET)
     public Location getLogicalLocation(@PathVariable String locationType,
-                                       @RequestParam String warehouseName) {
-        return locationService.findLogicLocation(locationType, warehouseName);
+                                       @RequestParam Long warehouseId) {
+        return locationService.findLogicLocation(locationType, warehouseId);
     }
 
 
@@ -67,23 +67,23 @@ public class LocationController {
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/locations")
-    public List<Location> findLocations(@RequestParam String warehouseName,
-                                        @RequestParam(name = "location_group_type_ids", required = false, defaultValue = "") String locationGroupTypeIds,
-                                        @RequestParam(name = "location_group_ids", required = false, defaultValue = "") String locationGroupIds,
+    public List<Location> findLocations(@RequestParam Long warehouseId,
+                                        @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
+                                        @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
-                                        @RequestParam(name = "begin_sequence", required = false, defaultValue = "") Long beginSequence,
-                                        @RequestParam(name = "end_sequence", required = false, defaultValue = "") Long endSequence,
-                                        @RequestParam(name = "sequence_type", required = false, defaultValue = "") String sequenceType,
-                                        @RequestParam(name = "include_empty_location", required = false, defaultValue = "true") Boolean includeEmptyLocation,
-                                        @RequestParam(name = "empty_location_only", required = false, defaultValue = "false") Boolean emptyLocationOnly,
-                                        @RequestParam(name = "min_empty_capacity", required = false, defaultValue = "0.0") Double minEmptyCapacity,
-                                        @RequestParam(name = "pickable_location_only", required = false, defaultValue = "false") Boolean pickableLocationOnly,
-                                        @RequestParam(name = "include_disabled_location", required = false, defaultValue = "false") Boolean includeDisabledLocation,
-                                        @RequestParam(name = "max_result_count", required =  false, defaultValue =  "0") Integer maxResultCount) {
+                                        @RequestParam(name = "beginSequence", required = false, defaultValue = "") Long beginSequence,
+                                        @RequestParam(name = "endSequence", required = false, defaultValue = "") Long endSequence,
+                                        @RequestParam(name = "sequenceType", required = false, defaultValue = "") String sequenceType,
+                                        @RequestParam(name = "includeEmptyLocation", required = false, defaultValue = "true") Boolean includeEmptyLocation,
+                                        @RequestParam(name = "emptyLocationOnly", required = false, defaultValue = "false") Boolean emptyLocationOnly,
+                                        @RequestParam(name = "minEmptyCapacity", required = false, defaultValue = "0.0") Double minEmptyCapacity,
+                                        @RequestParam(name = "pickableLocationOnly", required = false, defaultValue = "false") Boolean pickableLocationOnly,
+                                        @RequestParam(name = "includeDisabledLocation", required = false, defaultValue = "false") Boolean includeDisabledLocation,
+                                        @RequestParam(name = "maxResultCount", required =  false, defaultValue =  "0") Integer maxResultCount) {
 
         StringBuilder params = new StringBuilder()
                 .append("Start to find location with params:")
-                .append("\nwarehouseName: ").append(warehouseName)
+                .append("\nwarehouseId: ").append(warehouseId)
                 .append("\nlocationGroupTypeIds: ").append(locationGroupTypeIds)
                 .append("\nlocationGroupIds: ").append(locationGroupIds)
                 .append("\nname: ").append(name)
@@ -101,7 +101,7 @@ public class LocationController {
 
 
         List<Location> locations = locationService.findAll(
-                warehouseName,
+                warehouseId,
                 locationGroupTypeIds, locationGroupIds, name,
                 beginSequence, endSequence, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  includeDisabledLocation);
@@ -120,10 +120,10 @@ public class LocationController {
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/locations/dock")
-    public List<Location> findDockLocations(@RequestParam String warehouseName,
+    public List<Location> findDockLocations(@RequestParam Long warehouseId,
                                             @RequestParam(name = "empty", required = false, defaultValue = "false") boolean emptyDockOnly) {
 
-        return locationService.getDockLocations(warehouseName, emptyDockOnly);
+        return locationService.getDockLocations(warehouseId, emptyDockOnly);
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/dispatch-trailer")

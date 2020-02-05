@@ -40,9 +40,9 @@ public class ReceiptController {
 
 
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
-    public List<Receipt> findAllReceipts(@RequestParam String warehouseName,
+    public List<Receipt> findAllReceipts(@RequestParam Long warehouseId,
                                          @RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return receiptService.findAll(warehouseName, number);
+        return receiptService.findAll(warehouseId, number);
     }
 
     @RequestMapping(value="/receipts", method = RequestMethod.POST)
@@ -51,34 +51,34 @@ public class ReceiptController {
     }
 
 
-    @RequestMapping(value="/receipt/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/receipts/{id}", method = RequestMethod.GET)
     public Receipt findReceipt(@PathVariable Long id) {
         return receiptService.findById(id);
     }
 
-    @RequestMapping(value="/receipt/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/receipts/{id}", method = RequestMethod.PUT)
     public Receipt changeReceipt(@RequestBody Receipt receipt){
         return receiptService.save(receipt);
     }
 
-    @RequestMapping(value="/receipt", method = RequestMethod.DELETE)
+    @RequestMapping(value="/receipts", method = RequestMethod.DELETE)
     public void removeReceipts(@RequestParam(name = "receipt_ids", required = false, defaultValue = "") String receiptIds) {
         receiptService.delete(receiptIds);
     }
 
 
-    @RequestMapping(value="/receipt/{id}/next-line-number", method = RequestMethod.GET)
+    @RequestMapping(value="/receipts/{id}/next-line-number", method = RequestMethod.GET)
     public ResponseBodyWrapper getNextReceiptLineNumber(@PathVariable Long id) {
         return ResponseBodyWrapper.success(receiptService.getNextReceiptLineNumber(id));
     }
 
-    @RequestMapping(value="/receipt/{id}/lines", method = RequestMethod.POST)
+    @RequestMapping(value="/receipts/{id}/lines", method = RequestMethod.POST)
     public ReceiptLine addReceiptLine(@PathVariable Long id,
                                       @RequestBody ReceiptLine receiptLine) {
         return receiptLineService.addReceiptLine(id, receiptLine);
     }
 
-    @RequestMapping(value="/receipt/{receiptId}/line/{receiptLineId}/receive", method = RequestMethod.POST)
+    @RequestMapping(value="/receipts/{receiptId}/line/{receiptLineId}/receive", method = RequestMethod.POST)
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,
                                @RequestBody Inventory inventory) {
@@ -91,7 +91,7 @@ public class ReceiptController {
     }
 
 
-    @RequestMapping(value="/receipt/{id}/check-in", method = RequestMethod.PUT)
+    @RequestMapping(value="/receipts/{id}/check-in", method = RequestMethod.PUT)
     public Receipt checkInReceipt(@PathVariable Long id){
 
         try {
@@ -101,7 +101,7 @@ public class ReceiptController {
             throw new GenericException(99999, ex.getMessage());
         }
     }
-    @RequestMapping(value="/receipt/{id}/inventories", method = RequestMethod.GET)
+    @RequestMapping(value="/receipts/{id}/inventories", method = RequestMethod.GET)
     public List<Inventory> findInventoryByReceipt(@PathVariable Long id){
         return receiptService.findInventoryByReceipt(id);
     }

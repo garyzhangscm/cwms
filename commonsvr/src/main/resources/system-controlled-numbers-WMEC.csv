@@ -6,3 +6,4 @@ shipment-number,SHIP,,10,0,true
 shipment-line-number,SL,,10,0,true
 wave-number,WAV,,10,0,true
 pick-number,PICK,,10,0,true
+work-order-number,WO,,10,0,true

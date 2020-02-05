@@ -31,6 +31,9 @@ public class LocationGroup {
     private Boolean storable;
     private Boolean countable;
 
+
+    private Warehouse warehouse;
+
     public Long getId() {
         return id;
     }
@@ -77,5 +80,13 @@ public class LocationGroup {
 
     public void setCountable(Boolean countable) {
         this.countable = countable;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

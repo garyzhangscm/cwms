@@ -1,7 +1,7 @@
 
 drop table if exists  pick_movement;
-drop table if exists pick_list;
 drop table if exists pick;
+drop table if exists pick_list;
 drop table if exists short_allocation;
 drop table if exists shipment_line;
 DROP TABLE if exists shipment;
@@ -129,10 +129,18 @@ CREATE TABLE short_allocation(
   short_allocation_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
   item_id BIGINT  NOT NULL,
-  shipment_line_id BIGINT  NOT NULL,
+  shipment_line_id BIGINT,
+  work_order_line_id BIGINT,
   quantity BIGINT  NOT NULL,
   status VARCHAR(20) not null,
   foreign key(shipment_line_id) references shipment_line(shipment_line_id));
+
+CREATE TABLE pick_list(
+  pick_list_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  group_key  VARCHAR(100) NOT NULL,
+  status   VARCHAR(20) NOT NULL);
+
 
 CREATE TABLE pick(
   pick_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -144,10 +152,13 @@ CREATE TABLE pick(
   status VARCHAR(20) not null,
   type VARCHAR(20) not null,
   shipment_line_id BIGINT,
+  work_order_line_id BIGINT,
   short_allocation_id BIGINT,
   quantity BIGINT  NOT NULL,
   picked_quantity BIGINT  NOT NULL,
+  pick_list_id BIGINT,
   foreign key(shipment_line_id) references shipment_line(shipment_line_id),
+  foreign key(pick_list_id) references pick_list(pick_list_id),
   foreign key(short_allocation_id) references short_allocation(short_allocation_id));
 
 CREATE TABLE pick_movement(
@@ -222,10 +233,4 @@ CREATE TABLE list_picking_configuration(
   group_rule  VARCHAR(20) NOT NULL,
   enabled boolean not null default 0);
 
-
-CREATE TABLE pick_list(
-  pick_list_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  warehouse_id BIGINT not null,
-  group_key  VARCHAR(100) NOT NULL,
-  status   VARCHAR(20) NOT NULL);
 

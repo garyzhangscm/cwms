@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.layout.Exception.GenericException;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import com.garyzhangscm.cwms.layout.service.LocationGroupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,15 +32,16 @@ import java.util.List;
 @RestController
 public class LocationGroupController {
 
+    private static final Logger logger = LoggerFactory.getLogger(LocationGroupController.class);
     @Autowired
     LocationGroupService locationGroupService;
 
 
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups")
-    public List<LocationGroup> listLocationGroups(@RequestParam String warehouseName,
+    public List<LocationGroup> listLocationGroups(@RequestParam Long warehouseId,
                                                   @RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes,
                                                   @RequestParam(name = "name", required = false, defaultValue = "") String name) {
-        return locationGroupService.findAll(warehouseName, locationGroupTypes, name);
+        return locationGroupService.findAll(warehouseId, locationGroupTypes, name);
     }
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups/{id}")
     public LocationGroup getLocationGroup(@PathVariable long id) {
@@ -68,11 +71,17 @@ public class LocationGroupController {
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
-                                    @RequestParam(name = "reserved_code") String reservedCode,
-                                    @RequestParam(name = "pending_size") Double pendingSize,
-                                    @RequestParam(name = "pending_quantity") Long pendingQuantity,
-                                    @RequestParam(name = "pending_pallet_quantity") Integer pendingPalletQuantity) {
+                                    @RequestParam(name = "reservedCode") String reservedCode,
+                                    @RequestParam(name = "pendingSize") Double pendingSize,
+                                    @RequestParam(name = "pendingQuantity") Long pendingQuantity,
+                                    @RequestParam(name = "pendingPalletQuantity") Integer pendingPalletQuantity) {
 
+        logger.debug("========     Start to reserve location with parameters:   =======");
+        logger.debug("id： {}", id);
+        logger.debug("reservedCode： {}", reservedCode);
+        logger.debug("pendingSize： {}", pendingSize);
+        logger.debug("pendingQuantity： {}", pendingQuantity);
+        logger.debug("pendingPalletQuantity： {}", pendingPalletQuantity);
         return locationGroupService.reserveLocation(id, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
     }
 

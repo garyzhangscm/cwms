@@ -19,7 +19,10 @@ CREATE TABLE warehouse (
 
 
 INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
+     VALUES ("WMEC", "50000 sqft", "U.S", "CA", "San Bernardino", "Ontario", "", "C st Mira Loma", "", "91752");
+INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
      VALUES ("WMOR", "50000 sqft", "U.S", "CA", "Orange", "Orange", "", "2164 N Batavia ST", "", "92865");
+
 -- INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
 --     VALUES ("SH", "75000 sqft", "China", "Shanghai", "Shanghai", "Shanghai", "Pudong", "68 Yuheng Road", "", "201203");
 -- INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
@@ -38,7 +41,10 @@ CREATE TABLE location_group_type (
   yard_locations  boolean not null default 0,
   storage_locations  boolean not null default 0,
   pickup_and_deposit_locations  boolean not null default 0,
-  trailer_locations  boolean not null default 0
+  trailer_locations  boolean not null default 0,
+  production_line_locations  boolean not null default 0,
+  production_line_inbound_locations  boolean not null default 0,
+  production_line_outbound_locations  boolean not null default 0
   );
 
 -- INSERT INTO location_group_type(name, description, four_wall_inventory, virtual_locations) VALUES("Storage", "Storage Locations", 1, 0);

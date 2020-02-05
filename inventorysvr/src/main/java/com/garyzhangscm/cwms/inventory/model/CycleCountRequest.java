@@ -55,7 +55,9 @@ public class CycleCountRequest implements Serializable {
 
     public CycleCountRequest(){}
 
-    public CycleCountRequest(String batchId, Location location) {
+    public CycleCountRequest(Long warehouseId, String batchId, Location location) {
+
+        this.warehouseId = warehouseId;
         this.batchId = batchId;
         this.locationId = location.getId();
         this.location = location;
@@ -117,4 +119,5 @@ public class CycleCountRequest implements Serializable {
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
     }
+
 }

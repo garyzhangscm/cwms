@@ -49,7 +49,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.location-group-types:location_group_types.csv}")
+    @Value("${fileupload.test-data.location-group-types:location_group_types}")
     String testDataFile;
 
     public LocationGroupType findById(Long id) {
@@ -93,7 +93,6 @@ public class LocationGroupTypeService implements TestDataInitiableService {
         locationGroupTypeRepository.deleteById(id);
     }
     public List<LocationGroupType> loadData(File file) throws IOException {
-
         CsvSchema schema = CsvSchema.builder().
                 addColumn("name").
                 addColumn("description").
@@ -106,6 +105,9 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("storage").
                 addColumn("pickupAndDeposit").
                 addColumn("trailer").
+                addColumn("productionLine").
+                addColumn("productionLineInbound").
+                addColumn("productionLineOutbound").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupType.class);
     }
@@ -123,14 +125,20 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("storage").
                 addColumn("pickupAndDeposit").
                 addColumn("trailer").
+                addColumn("productionLine").
+                addColumn("productionLineInbound").
+                addColumn("productionLineOutbound").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupType.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<LocationGroupType> locationGroupTypes = loadData(inputStream);
             locationGroupTypes.stream().forEach(locationGroupType -> saveOrUpdate(locationGroupType));
         } catch (IOException ex) {

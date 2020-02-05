@@ -1,0 +1,9 @@
+workOrder,sequence,instruction,warehouse
+PRD000001,1,Step 1.1 - put the 1.A,WMEC
+PRD000001,2,Step 1.2 - put the 1.B,WMEC
+PRD000001,3,Step 1.3 - put the 1.C,WMEC
+PRD000001,4,Step 1.4 - stir,WMEC
+PRD000002,1,Step 2.1 - put the 2.A,WMEC
+PRD000002,2,Step 2.2 - put the 2.B,WMEC
+PRD000002,3,Step 2.3 - stir,WMEC
+PRD000003,1,Step 3.1 - stir,WMEC

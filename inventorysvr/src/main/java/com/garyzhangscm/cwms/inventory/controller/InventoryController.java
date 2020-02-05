@@ -34,7 +34,7 @@ public class InventoryController {
     InventoryService inventoryService;
 
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
-    public List<Inventory> findAllInventories(@RequestParam String warehouseName,
+    public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="item_families", required = false, defaultValue = "") String itemFamilyIds,
@@ -44,7 +44,7 @@ public class InventoryController {
                                               @RequestParam(name="receipt_id", required = false, defaultValue = "") String receiptId,
                                               @RequestParam(name="pick_ids", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
-        return inventoryService.findAll(warehouseName, itemName, clientIds, itemFamilyIds,inventoryStatusId,  locationName, locationGroupId, receiptId, pickIds, lpn);
+        return inventoryService.findAll(warehouseId, itemName, clientIds, itemFamilyIds,inventoryStatusId,  locationName, locationGroupId, receiptId, pickIds, lpn);
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)

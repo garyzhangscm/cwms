@@ -52,7 +52,7 @@ public class TrailerTemplateService implements TestDataInitiableService {
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
-    @Value("${fileupload.test-data.trailer-templates:trailer-templates.csv}")
+    @Value("${fileupload.test-data.trailer-templates:trailer-templates}")
     String testDataFile;
 
     public TrailerTemplate findById(Long id) {
@@ -132,9 +132,12 @@ public class TrailerTemplateService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, TrailerTemplate.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<TrailerTemplate> trailerTemplates = loadData(inputStream);
             trailerTemplates.stream().forEach(trailerTemplate -> saveOrUpdate(trailerTemplate));
         } catch (IOException ex) {

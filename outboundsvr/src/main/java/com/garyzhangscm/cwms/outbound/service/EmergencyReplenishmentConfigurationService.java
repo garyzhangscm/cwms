@@ -67,7 +67,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.emergency-replenishment-configuration:emergency-replenishment-configuration.csv}")
+    @Value("${fileupload.test-data.emergency-replenishment-configuration:emergency-replenishment-configuration}")
     String testDataFile;
 
     public EmergencyReplenishmentConfiguration findById(Long id, boolean loadDetails) {
@@ -196,9 +196,12 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
         return fileService.loadData(inputStream, schema, EmergencyReplenishmentConfigurationCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<EmergencyReplenishmentConfigurationCSVWrapper> emergencyReplenishmentConfigurationCSVWrappers = loadData(inputStream);
             emergencyReplenishmentConfigurationCSVWrappers
                     .stream()
@@ -215,21 +218,21 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
         EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration = new EmergencyReplenishmentConfiguration();
         emergencyReplenishmentConfiguration.setSequence(emergencyReplenishmentConfigurationCSVWrapper.getSequence());
 
-        if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(emergencyReplenishmentConfigurationCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                emergencyReplenishmentConfiguration.setWarehouseId(warehouse.getId());
-            }
-        }
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(emergencyReplenishmentConfigurationCSVWrapper.getWarehouse());
+
+        emergencyReplenishmentConfiguration.setWarehouseId(warehouse.getId());
 
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getItem())) {
-            Item item = inventoryServiceRestemplateClient.getItemByName(emergencyReplenishmentConfigurationCSVWrapper.getItem());
+            Item item = inventoryServiceRestemplateClient.getItemByName(
+                    warehouse.getId(), emergencyReplenishmentConfigurationCSVWrapper.getItem());
             if (item != null) {
                 emergencyReplenishmentConfiguration.setItemId(item.getId());
             }
         }
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getItemFamily())) {
-            ItemFamily itemFamily = inventoryServiceRestemplateClient.getItemFamilyByName(emergencyReplenishmentConfigurationCSVWrapper.getItemFamily());
+            ItemFamily itemFamily = inventoryServiceRestemplateClient.getItemFamilyByName(
+                    warehouse.getId(), emergencyReplenishmentConfigurationCSVWrapper.getItemFamily());
             if (itemFamily != null) {
                 emergencyReplenishmentConfiguration.setItemFamilyId(itemFamily.getId());
             }

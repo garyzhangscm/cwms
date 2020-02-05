@@ -57,7 +57,7 @@ public class ReceiptLineService implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.receipt_lines:receipt_lines.csv}")
+    @Value("${fileupload.test-data.receipt_lines:receipt_lines}")
     String testDataFile;
 
     public ReceiptLine findById(Long id) {
@@ -84,8 +84,8 @@ public class ReceiptLineService implements TestDataInitiableService{
         return receiptLines;
     }
 
-    public ReceiptLine findByNaturalKey(Long receiptId, String number) {
-        return receiptLineRepository.findByNaturalKey(receiptId, number);
+    public ReceiptLine findByNaturalKey(Long warehouseId, Long receiptId, String number) {
+        return receiptLineRepository.findByNaturalKey(warehouseId, receiptId, number);
 
     }
 
@@ -112,8 +112,10 @@ public class ReceiptLineService implements TestDataInitiableService{
 
     public ReceiptLine saveOrUpdate(ReceiptLine receiptLine) {
 
-        if (receiptLine.getId() == null && findByNaturalKey(receiptLine.getReceipt().getId(), receiptLine.getNumber()) != null) {
-            receiptLine.setId(findByNaturalKey(receiptLine.getReceipt().getId(), receiptLine.getNumber()).getId());
+        if (receiptLine.getId() == null &&
+                findByNaturalKey(receiptLine.getWarehouseId(), receiptLine.getReceipt().getId(), receiptLine.getNumber()) != null) {
+            receiptLine.setId(
+                    findByNaturalKey(receiptLine.getWarehouseId(),receiptLine.getReceipt().getId(), receiptLine.getNumber()).getId());
         }
         return save(receiptLine);
     }
@@ -147,9 +149,12 @@ public class ReceiptLineService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ReceiptLineCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ReceiptLineCSVWrapper> receiptLineCSVWrappers = loadData(inputStream);
             receiptLineCSVWrappers.stream().forEach(receiptLineCSVWrapper -> saveOrUpdate(convertFromWrapper(receiptLineCSVWrapper)));
         } catch (IOException ex) {
@@ -164,19 +169,17 @@ public class ReceiptLineService implements TestDataInitiableService{
         receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity());
         receiptLine.setReceivedQuantity(receiptLineCSVWrapper.getReceivedQuantity());
 
-        if (!StringUtils.isBlank(receiptLineCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptLineCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                receiptLine.setWarehouseId(warehouse.getId());
-            }
-        }
+        // Warehouse is mandate
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptLineCSVWrapper.getWarehouse());
+        receiptLine.setWarehouseId(warehouse.getId());
 
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getReceipt())) {
-            Receipt receipt = receiptService.findByNumber(receiptLineCSVWrapper.getWarehouse(), receiptLineCSVWrapper.getReceipt());
+            Receipt receipt = receiptService.findByNumber(getWarehouseId(receiptLineCSVWrapper.getWarehouse()), receiptLineCSVWrapper.getReceipt());
             receiptLine.setReceipt(receipt);
         }
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getItem())) {
-            Item item = inventoryServiceRestemplateClient.getItemByName(receiptLineCSVWrapper.getItem());
+            Item item =
+                    inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), receiptLineCSVWrapper.getItem());
             receiptLine.setItemId(item.getId());
         }
         return receiptLine;
@@ -200,11 +203,12 @@ public class ReceiptLineService implements TestDataInitiableService{
         // we can receive inventory on this receipt
         Location location =
                 warehouseLayoutServiceRestemplateClient.getLocationByName(
-                        getWarehouseName(receipt.getWarehouseId()), receipt.getNumber());
+                        receipt.getWarehouseId(), receipt.getNumber());
         inventory.setLocationId(location.getId());
         inventory.setLocation(location);
         inventory.setVirtual(false);
         inventory.setReceiptId(receiptId);
+        inventory.setWarehouseId(receipt.getWarehouseId());
 
         Inventory newInventory = inventoryServiceRestemplateClient.addInventory(inventory);
         ReceiptLine receiptLine = findById(receiptLineId);
@@ -213,15 +217,14 @@ public class ReceiptLineService implements TestDataInitiableService{
         return newInventory;
     }
 
-    public String getWarehouseName(Long warehouseId) {
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+    public Long getWarehouseId(String warehouseName){
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
         if (warehouse == null) {
-            return "";
+            return null;
         }
         else {
-            return warehouse.getName();
+            return warehouse.getId();
         }
     }
-
 
 }

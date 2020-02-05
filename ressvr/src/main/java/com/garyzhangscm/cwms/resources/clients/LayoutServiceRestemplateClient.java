@@ -34,15 +34,25 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     @Autowired
     OAuth2RestTemplate restTemplate;
 
-    public String initTestData() {
-        ResponseEntity<String> restExchange = restTemplate.exchange("http://zuulserver:5555/api/layout/test-data/init",
-                HttpMethod.POST, null, String.class);
+    public String initTestData(String warehouseName) {
+        StringBuilder url = new StringBuilder()
+                .append("http://zuulserver:5555/api/layout/test-data/init?")
+                .append("warehouseName={warehouseName}");
+        ResponseEntity<String> restExchange = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.POST, null, String.class,
+                warehouseName);
         return restExchange.getBody();
     }
 
-    public String initTestData(String name) {
-        ResponseEntity<String> restExchange = restTemplate.exchange("http://zuulserver:5555/api/layout/test-data/init/{name}",
-                HttpMethod.POST, null, String.class, name);
+    public String initTestData(String name, String warehouseName) {
+        StringBuilder url = new StringBuilder()
+                .append("http://zuulserver:5555/api/layout/test-data/init/{name}?")
+                .append("warehouseName={warehouseName}");
+        ResponseEntity<String> restExchange = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.POST, null, String.class,
+                name, warehouseName);
         return restExchange.getBody();
     }
 

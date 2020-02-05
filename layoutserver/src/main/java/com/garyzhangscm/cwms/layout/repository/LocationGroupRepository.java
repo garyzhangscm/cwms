@@ -31,16 +31,16 @@ import java.util.List;
 @Repository
 public interface LocationGroupRepository extends JpaRepository<LocationGroup, Long>, JpaSpecificationExecutor<LocationGroup> {
 
-    @Query("select lg from LocationGroup lg where lg.warehouse.name = :warehouseName")
-    List<LocationGroup> findAll(String warehouseName);
+    @Query("select lg from LocationGroup lg where lg.warehouse.id = :warehouseId")
+    List<LocationGroup> findAll(Long warehouseId);
 
-    @Query("select lg from LocationGroup lg where lg.warehouse.name = :warehouseName and lg.name = :name")
-    LocationGroup findByName(String warehouseName, String name);
+    @Query("select lg from LocationGroup lg inner join lg.warehouse w where w.id = :warehouseId and lg.name = :name")
+    LocationGroup findByName(Long warehouseId, String name);
 
-    @Query( "select o from LocationGroup o where location_group_type_id in :ids and o.warehouse.name = :warehouseName" )
-    List<LocationGroup> findByLocationGroupTypes(String warehouseName, @Param("ids") List<Long> locationGroupTypeIds);
+    @Query( "select lg from LocationGroup lg inner join lg.warehouse w inner join lg.locationGroupType lgt where lgt.id in (:ids) and w.id = :warehouseId" )
+    List<LocationGroup> findByLocationGroupTypes(Long warehouseId, @Param("ids") List<Long> ids);
 
-    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.trailer = true and lg.warehouse.name = :warehouseName" )
-    List<LocationGroup> getDockLocationGroup(String warehouseName);
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.trailer = true and lg.warehouse.id = :warehouseId" )
+    List<LocationGroup> getDockLocationGroup(Long warehouseId);
 
 }

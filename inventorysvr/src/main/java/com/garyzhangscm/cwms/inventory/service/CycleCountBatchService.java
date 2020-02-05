@@ -57,13 +57,14 @@ public class CycleCountBatchService {
         }
     }
 
-    public CycleCountBatch createCycleCountBatch(String batchId) {
+    public CycleCountBatch createCycleCountBatch(Long warehouseId, String batchId) {
         if (findByBatchId(batchId) != null) {
             return findByBatchId(batchId);
         }
         else {
             CycleCountBatch cycleCountBatch = new CycleCountBatch();
             cycleCountBatch.setBatchId(batchId);
+            cycleCountBatch.setWarehouseId(warehouseId);
             return save(cycleCountBatch);
         }
     }

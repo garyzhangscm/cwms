@@ -48,23 +48,23 @@ public class OrderController {
     }
 
 
-    @RequestMapping(value="/order/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/orders/{id}", method = RequestMethod.GET)
     public Order findOrder(@PathVariable Long id) {
         return orderService.findById(id);
     }
 
-    @RequestMapping(value="/order/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/orders/{id}", method = RequestMethod.PUT)
     public Order changeOrder(@RequestBody Order order){
         return orderService.save(order);
     }
 
-    @RequestMapping(value="/order", method = RequestMethod.DELETE)
+    @RequestMapping(value="/orders", method = RequestMethod.DELETE)
     public void removeOrders(@RequestParam(name = "order_ids", required = false, defaultValue = "") String orderIds) {
         orderService.delete(orderIds);
     }
 
 
-    @RequestMapping(value="/order/{id}/next-line-number", method = RequestMethod.GET)
+    @RequestMapping(value="/orders/{id}/next-line-number", method = RequestMethod.GET)
     public ResponseBodyWrapper getNextOrderLineNumber(@PathVariable Long id) {
         return ResponseBodyWrapper.success(orderService.getNextOrderLineNumber(id));
     }

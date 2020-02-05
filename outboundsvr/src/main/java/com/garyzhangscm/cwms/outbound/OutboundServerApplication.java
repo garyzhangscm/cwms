@@ -1,7 +1,5 @@
 package com.garyzhangscm.cwms.outbound;
 
-import com.garyzhangscm.cwms.outbound.utils.UserContextFilter;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -13,8 +11,6 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.client.RestTemplate;
-import javax.servlet.Filter;
-
 import java.util.Collections;
 
 @SpringBootApplication

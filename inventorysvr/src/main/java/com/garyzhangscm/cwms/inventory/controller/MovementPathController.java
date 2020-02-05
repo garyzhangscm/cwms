@@ -36,26 +36,26 @@ public class MovementPathController {
 
     @RequestMapping(value="/movement-path", method = RequestMethod.GET)
     public List<MovementPath> findAllMovementPaths(
-            @RequestParam String warehouseName,
+            @RequestParam Long warehouseId,
             @RequestParam(name="from_location_id", required = false, defaultValue = "") Long fromLocationId,
             @RequestParam(name="from_location", required = false, defaultValue = "") String fromLocationName,
             @RequestParam(name="from_location_group_id", required = false, defaultValue = "") Long fromLocationGroupId,
             @RequestParam(name="to_location_id", required = false, defaultValue = "") Long toLocationId,
             @RequestParam(name="to_location", required = false, defaultValue = "") String toLocationName,
             @RequestParam(name="to_location_group_id", required = false, defaultValue = "") Long toLocationGroupId) {
-        return movementPathService.findAll(warehouseName, fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
+        return movementPathService.findAll(warehouseId, fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
     }
 
     @RequestMapping(value="/movement-path/match", method = RequestMethod.GET)
     public List<MovementPath> findMatchedMovementPaths(
-                                                   @RequestParam String warehouseName,
+                                                   @RequestParam Long warehouseId,
                                                    @RequestParam(name="from_location_id", required = false, defaultValue = "") Long fromLocationId,
                                                    @RequestParam(name="from_location", required = false, defaultValue = "") String fromLocationName,
                                                    @RequestParam(name="from_location_group_id", required = false, defaultValue = "") Long fromLocationGroupId,
                                                    @RequestParam(name="to_location_id", required = false, defaultValue = "") Long toLocationId,
                                                    @RequestParam(name="to_location", required = false, defaultValue = "") String toLocationName,
                                                    @RequestParam(name="to_location_group_id", required = false, defaultValue = "") Long toLocationGroupId) {
-        return movementPathService.findMatchedMovementPaths(warehouseName, fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
+        return movementPathService.findMatchedMovementPaths(warehouseId, fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
     }
 
     @RequestMapping(value="/movement-path/{id}", method = RequestMethod.GET)

@@ -62,8 +62,9 @@ public class AuditCountResult implements Serializable {
     private Warehouse warehouse;
 
     public AuditCountResult() {}
-    public AuditCountResult(String batchId, Long locationId, Inventory inventory,
+    public AuditCountResult(Long warehouseId, String batchId, Long locationId, Inventory inventory,
                             Long quantity, Long countQuantity) {
+        this.warehouseId = warehouseId;
         this.batchId = batchId;
         this.locationId = locationId;
         this.inventory = inventory;
@@ -71,8 +72,9 @@ public class AuditCountResult implements Serializable {
         this.countQuantity = countQuantity;
     }
 
-    public AuditCountResult(String batchId, Long locationId,Location location, Inventory inventory,
+    public AuditCountResult(Long warehouseId, String batchId, Long locationId,Location location, Inventory inventory,
                             Long quantity, Long countQuantity) {
+        this.warehouseId = warehouseId;
         this.batchId = batchId;
         this.locationId = locationId;
         this.location = location;
@@ -80,11 +82,11 @@ public class AuditCountResult implements Serializable {
         this.quantity = quantity;
         this.countQuantity = countQuantity;
     }
-    public static AuditCountResult emptyLocationAuditCountResult(String batchId, Long locationId) {
-        return new AuditCountResult(batchId, locationId, null, 0L, 0L);
+    public static AuditCountResult emptyLocationAuditCountResult(Long warehouseId, String batchId, Long locationId) {
+        return new AuditCountResult(warehouseId, batchId, locationId, null, 0L, 0L);
     }
-    public static AuditCountResult emptyLocationAuditCountResult(String batchId, Long locationId, Location location) {
-        return new AuditCountResult(batchId, locationId, location,null, 0L, 0L);
+    public static AuditCountResult emptyLocationAuditCountResult(Long warehouseId, String batchId, Long locationId, Location location) {
+        return new AuditCountResult(warehouseId, batchId, locationId, location,null, 0L, 0L);
     }
 
     @Override

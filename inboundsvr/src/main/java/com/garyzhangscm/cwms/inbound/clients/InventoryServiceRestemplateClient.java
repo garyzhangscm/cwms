@@ -54,10 +54,17 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public Item getItemByName(String name) {
+    public Item getItemByName(Long warehouseId, String name) {
 
-        ResponseBodyWrapper<List<Item>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/items?name={name}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}, name).getBody();
+        StringBuilder url = new StringBuilder()
+                                .append("http://zuulserver:5555/api/inventory/items?")
+                                .append("name={name}")
+                                .append("&warehouseId={warehouseId}");
+
+        ResponseBodyWrapper<List<Item>> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {},
+                name, warehouseId).getBody();
 
         List<Item> items = responseBodyWrapper.getData();
         if (items.size() == 0) {
@@ -78,10 +85,17 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public ItemFamily getItemFamilyByName(String name) {
+    public ItemFamily getItemFamilyByName(Long warehouseId, String name) {
 
-        ResponseBodyWrapper<List<ItemFamily>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/item-families?name={name}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<ItemFamily>>>() {}, name).getBody();
+        StringBuilder url = new StringBuilder()
+                .append("http://zuulserver:5555/api/inventory/item-families?")
+                .append("name={name}")
+                .append("&warehouseId={warehouseId}");
+
+        ResponseBodyWrapper<List<ItemFamily>> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<ItemFamily>>>() {},
+                name, warehouseId).getBody();
 
         List<ItemFamily> itemFamilies = responseBodyWrapper.getData();
         if (itemFamilies.size() == 0) {
@@ -102,10 +116,17 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public InventoryStatus getInventoryStatusByName(String name) {
+    public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
 
-        ResponseBodyWrapper<List<InventoryStatus>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventory-statuses?name={name}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryStatus>>>() {}, name).getBody();
+        StringBuilder url = new StringBuilder()
+                .append("http://zuulserver:5555/api/inventory/inventory-statuses?")
+                .append("name={name}")
+                .append("&warehouseId={warehouseId}");
+
+        ResponseBodyWrapper<List<InventoryStatus>> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryStatus>>>() {},
+                name, warehouseId).getBody();
 
         List<InventoryStatus> inventoryStatuses = responseBodyWrapper.getData();
         if (inventoryStatuses.size() == 0) {
@@ -135,10 +156,17 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public List<Inventory> findInventoryByReceipt(Long receiptId) {
+    public List<Inventory> findInventoryByReceipt(Long warehouseId, Long receiptId) {
+        StringBuilder url = new StringBuilder()
+                .append("http://zuulserver:5555/api/inventory/inventories?")
+                .append("receipt_id={receiptId}")
+                .append("&warehouseId={warehouseId}");
 
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories?receipt_id={receiptId}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}, receiptId).getBody();
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {},
+                receiptId, warehouseId).getBody();
 
         return responseBodyWrapper.getData();
     }

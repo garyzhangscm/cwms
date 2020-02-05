@@ -48,7 +48,7 @@ public class PolicyService implements  TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.policies:policies.csv}")
+    @Value("${fileupload.test-data.policies:policies}")
     String testDataFile;
 
     public Policy findById(Long id) {
@@ -123,9 +123,12 @@ public class PolicyService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Policy.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<Policy> policies = loadData(inputStream);
             policies.stream().forEach(policy -> saveOrUpdate(policy));
         }

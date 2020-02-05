@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.SystemControlledNumber;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
 import com.garyzhangscm.cwms.common.repository.SystemControlledNumberRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     private SystemControlledNumberRepository systemControlledNumberRepository;
     private FileService fileService;
 
-    @Value("${fileupload.test-data.system-controlled-numbers:system-controlled-numbers.csv}")
+    @Value("${fileupload.test-data.system-controlled-numbers:system-controlled-numbers}")
     String testDataFile;
 
     Map<String, String> systemControlledNumberLocks = new HashMap<>();
@@ -156,9 +157,13 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, SystemControlledNumber.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<SystemControlledNumber> systemControlledNumbers = loadData(inputStream);
             systemControlledNumbers.stream().forEach(systemControlledNumber -> saveOrUpdate(systemControlledNumber));
         }

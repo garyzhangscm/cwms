@@ -32,6 +32,8 @@ public class Location {
 
     private LocationGroup locationGroup;
 
+    private Warehouse warehouse;
+
     public Long getId() {
         return id;
     }
@@ -78,5 +80,13 @@ public class Location {
 
     public void setPendingVolume(Double pendingVolume) {
         this.pendingVolume = pendingVolume;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

@@ -1,0 +1,6 @@
+warehouse,number,licensePlateNumber,size,type,driverFirstName,driverLastName,driverPhone,enabled
+WMEC,1001,沪A00001,24 ft,FT_24,一,张,7148881111,true
+WMEC,1002,沪A00002,50 ft,FT_50,二,张,7148882222,true
+WMEC,1003,沪A00002,20 GP,GP_20,三,张,7148883333,true
+WMEC,1004,沪A00003,40 GP,GP_40,四,张,7148884444,true
+WMEC,1005,沪A00004,40 HQ,HQ_40,五,张,7148885555,true

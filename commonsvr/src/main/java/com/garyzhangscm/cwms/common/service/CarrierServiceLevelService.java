@@ -51,7 +51,7 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.carrier-service-levels:carrier-service-levels.csv}")
+    @Value("${fileupload.test-data.carrier-service-levels:carrier-service-levels}")
     String testDataFile;
 
     public CarrierServiceLevel findById(Long id) {
@@ -125,9 +125,13 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, CarrierServiceLevelCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<CarrierServiceLevelCSVWrapper> carrierServiceLevelCSVWrappers = loadData(inputStream);
             carrierServiceLevelCSVWrappers.stream().forEach(carrierServiceLevelCSVWrapper -> saveOrUpdate(convertFromWrapper(carrierServiceLevelCSVWrapper)));
         }

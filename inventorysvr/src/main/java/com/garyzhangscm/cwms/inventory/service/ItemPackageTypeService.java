@@ -53,7 +53,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.items:item_package_types.csv}")
+    @Value("${fileupload.test-data.items:item_package_types}")
     String testDataFile;
 
     public ItemPackageType findById(Long id) {
@@ -71,17 +71,18 @@ public class ItemPackageTypeService implements TestDataInitiableService{
     //item name, item package name, unit of measure id
     public ItemPackageType findByNaturalKeys(ItemPackageType itemPackageType) {
         // Natrual key: name,  item_id
-        return itemPackageTypeRepository.findByNaturalKeys(itemPackageType.getName(), itemPackageType.getItem().getId());
+        return itemPackageTypeRepository.findByNaturalKeys(itemPackageType.getWarehouseId(),
+                itemPackageType.getName(), itemPackageType.getItem().getId());
     }
 
-    public ItemPackageType findByNaturalKeys(String name, Long itemId) {
+    public ItemPackageType findByNaturalKeys(Long warehouseId, String name, Long itemId) {
         // Natrual key: name,  item_id
-        return itemPackageTypeRepository.findByNaturalKeys(name, itemId);
+        return itemPackageTypeRepository.findByNaturalKeys(warehouseId, name, itemId);
     }
 
-    public ItemPackageType findByNaturalKeys(String name, String itemName) {
+    public ItemPackageType findByNaturalKeys(Long warehouseId, String name, String itemName) {
         // Natrual key: name,  item name
-        return itemPackageTypeRepository.findByNaturalKeys(name, itemName);
+        return itemPackageTypeRepository.findByNaturalKeys(warehouseId, name, itemName);
     }
 
     // Natural Key: item &
@@ -131,9 +132,12 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ItemPackageTypeCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ItemPackageTypeCSVWrapper> itemPackageTypeCSVWrappers = loadData(inputStream);
             itemPackageTypeCSVWrappers.stream().forEach(itemPackageTypeCSVWrapper -> saveOrUpdate(convertFromWrapper(itemPackageTypeCSVWrapper)));
         } catch (IOException ex) {
@@ -146,13 +150,10 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         itemPackageType.setName(itemPackageTypeCSVWrapper.getName());
         itemPackageType.setDescription(itemPackageTypeCSVWrapper.getDescription());
 
-        // warehouse
-        if (!StringUtils.isBlank(itemPackageTypeCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemPackageTypeCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                itemPackageType.setWarehouseId(warehouse.getId());
-            }
-        }
+        // warehouse is mandate
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemPackageTypeCSVWrapper.getWarehouse());
+        itemPackageType.setWarehouseId(warehouse.getId());
+
         if (!itemPackageTypeCSVWrapper.getClient().isEmpty()) {
             Client client = commonServiceRestemplateClient.getClientByName(itemPackageTypeCSVWrapper.getClient());
             itemPackageType.setClientId(client.getId());
@@ -162,7 +163,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
             itemPackageType.setSupplierId(supplier.getId());
         }
         if (!itemPackageTypeCSVWrapper.getItem().isEmpty()) {
-            Item item = itemService.findByName(itemPackageTypeCSVWrapper.getItem());
+            Item item = itemService.findByName(warehouse.getId(), itemPackageTypeCSVWrapper.getItem());
             itemPackageType.setItem(item);
         }
         return itemPackageType;

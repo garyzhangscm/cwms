@@ -33,9 +33,12 @@ public class ShortAllocationController {
     ShortAllocationService shortAllocationService;
 
     @RequestMapping(value="/shortAllocations", method = RequestMethod.GET)
-    public List<ShortAllocation> findAllShortAllocations() {
-        return shortAllocationService.findAll();
+    public List<ShortAllocation> findAllShortAllocations(
+            @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
+            @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds) {
+        return shortAllocationService.findAll(workOrderLineId, workOrderLineIds);
     }
+
     @RequestMapping(value="/shortAllocations/{id}", method = RequestMethod.GET)
     public ShortAllocation findShortAllocation(@PathVariable Long id) {
         return shortAllocationService.findById(id);

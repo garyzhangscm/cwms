@@ -70,6 +70,10 @@ public class Pick implements Serializable {
     @JsonIgnore
     private ShipmentLine shipmentLine;
 
+
+    @Column(name = "work_order_line_id")
+    private Long workOrderLineId;
+
     @ManyToOne
     @JoinColumn(name = "short_allocation_id")
     @JsonIgnore
@@ -290,5 +294,11 @@ public class Pick implements Serializable {
         this.pickType = pickType;
     }
 
+    public Long getWorkOrderLineId() {
+        return workOrderLineId;
+    }
 
+    public void setWorkOrderLineId(Long workOrderLineId) {
+        this.workOrderLineId = workOrderLineId;
+    }
 }

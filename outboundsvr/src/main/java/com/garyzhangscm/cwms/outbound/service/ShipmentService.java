@@ -350,7 +350,7 @@ public class ShipmentService {
 
         Location trailerLocation =
                 warehouseLayoutServiceRestemplateClient.getTrailerLocation(
-                        getWarehouseName(shipmentLine.getWarehouseId()), trailer.getId());
+                         shipmentLine.getWarehouseId(), trailer.getId());
 
         logger.debug("Start to move inventory {} onto trailer {} ",
                 inventory.getLpn(), trailer.getId());
@@ -393,16 +393,6 @@ public class ShipmentService {
 
     public Shipment completeShipment(Long shipmentId) {
         return completeShipment(findById(shipmentId));
-    }
-
-    private String getWarehouseName(Long warehouseId) {
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
-        if (warehouse == null) {
-            return "";
-        }
-        else  {
-            return warehouse.getName();
-        }
     }
 
 

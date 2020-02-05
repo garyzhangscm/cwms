@@ -55,7 +55,7 @@ public class OrderService implements TestDataInitiableService {
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.orders:orders.csv}")
+    @Value("${fileupload.test-data.orders:orders}")
     String testDataFile;
 
     public Order findById(Long id, boolean loadDetails) {
@@ -237,9 +237,12 @@ public class OrderService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, OrderCSVWrapper.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<OrderCSVWrapper> orderCSVWrappers = loadData(inputStream);
             orderCSVWrappers.stream().forEach(orderCSVWrapper -> saveOrUpdate(convertFromWrapper(orderCSVWrapper)));
         } catch (IOException ex) {

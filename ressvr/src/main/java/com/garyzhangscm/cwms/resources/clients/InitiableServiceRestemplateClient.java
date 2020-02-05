@@ -20,8 +20,8 @@ package com.garyzhangscm.cwms.resources.clients;
 
 
 public interface InitiableServiceRestemplateClient {
-    public String initTestData();
-    public String initTestData(String name);
+    public String initTestData(String warehouseName);
+    public String initTestData(String name, String warehouseName);
 
     public String[] getTestDataNames();
 

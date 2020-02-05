@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.common.model.ReasonCode;
 import com.garyzhangscm.cwms.common.model.ReasonCodeType;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
 import com.garyzhangscm.cwms.common.repository.ReasonCodeRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ public class ReasonCodeService implements  TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
-    @Value("${fileupload.test-data.clients:reason_codes.csv}")
+    @Value("${fileupload.test-data.clients:reason_codes}")
     String testDataFile;
 
     public ReasonCode findById(Long id) {
@@ -124,9 +125,12 @@ public class ReasonCodeService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ReasonCode.class);
     }
 
-    public void initTestData() {
+    public void initTestData(String warehouseName) {
         try {
-            InputStream inputStream = new ClassPathResource(testDataFile).getInputStream();
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ReasonCode> reasonCodes = loadData(inputStream);
             reasonCodes.stream().forEach(reasonCode -> saveOrUpdate(reasonCode));
         }
