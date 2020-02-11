@@ -137,7 +137,7 @@ public class LocationController {
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/locations")
-    public ResponseBodyWrapper removeLocations(@RequestParam("location_ids") String locationIds) {
+    public ResponseBodyWrapper removeLocations(@RequestParam("locationIds") String locationIds) {
 
         locationService.delete(locationIds);
         return  ResponseBodyWrapper.success(locationIds);
@@ -147,8 +147,8 @@ public class LocationController {
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}")
     public Location updateLocation(@PathVariable Long id,
                                               @RequestParam(name = "enabled", defaultValue = "", required = false) Boolean enabled,
-                                              @RequestParam(name = "inventory_quantity", defaultValue = "", required = false) Long inventoryQuantity,
-                                              @RequestParam(name = "inventory_size", defaultValue = "", required = false) Double inventorySize) {
+                                              @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,
+                                              @RequestParam(name = "inventorySize", defaultValue = "", required = false) Double inventorySize) {
 
         Location location = locationService.findById(id);
 
@@ -171,7 +171,7 @@ public class LocationController {
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
-                                    @RequestParam(name = "reserved_code") String reservedCode) {
+                                    @RequestParam(name = "reservedCode") String reservedCode) {
 
 
         return locationService.reserveLocation(id, reservedCode);
@@ -180,10 +180,10 @@ public class LocationController {
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserveWithVolume")
     public Location reserveLocation(@PathVariable Long id,
-                                    @RequestParam(name = "reserved_code") String reservedCode,
-                                    @RequestParam(name = "pending_size") Double pendingSize,
-                                    @RequestParam(name = "pending_quantity") Long pendingQuantity,
-                                    @RequestParam(name = "pending_pallet_quantity") Integer pendingPalletQuantity) {
+                                    @RequestParam(name = "reservedCode") String reservedCode,
+                                    @RequestParam(name = "pendingSize") Double pendingSize,
+                                    @RequestParam(name = "pendingQuantity") Long pendingQuantity,
+                                    @RequestParam(name = "pendingPalletQuantity") Integer pendingPalletQuantity) {
 
 
         return locationService.reserveLocation(id, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
@@ -193,7 +193,7 @@ public class LocationController {
     // location
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/allocate")
     public Location allocateLocation(@PathVariable Long id,
-                                     @RequestParam(name = "inventory_size") Double inventorySize) {
+                                     @RequestParam(name = "inventorySize") Double inventorySize) {
 
         logger.debug("Start to allocate location with id {}, inventory size is : {}", id, inventorySize);
         return locationService.allocateLocation(id, inventorySize);

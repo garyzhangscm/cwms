@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,7 +95,7 @@ public class ProductionLineService implements TestDataInitiableService {
         }
         else {
             // none of the parameters are passed in, let's return everything
-            productionLines = productionLineRepository.findAll();
+            productionLines = productionLineRepository.findByWarehouseId(warehouseId);
         }
         if (productionLines.size() > 0 && loadDetails) {
             loadAttribute(productionLines);
@@ -103,6 +105,37 @@ public class ProductionLineService implements TestDataInitiableService {
 
     public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds) {
         return findAll(warehouseId, name, productionLineIds, true);
+    }
+
+    public List<ProductionLine> findAllAvailableProductionLines(Long warehouseId) {
+        return findAllAvailableProductionLines(warehouseId, true);
+    }
+
+    public List<ProductionLine> findAllAvailableProductionLines(Long warehouseId, boolean loadDetails) {
+        List<ProductionLine> productionLines = productionLineRepository.findByWarehouseId(warehouseId);
+        productionLines = productionLines.stream().filter(this::isAvailableForNewWorkOrder)
+                            .collect(Collectors.toList());
+        if (productionLines.size() > 0 && loadDetails) {
+            loadAttribute(productionLines);
+        }
+        return productionLines;
+
+    }
+
+    private boolean isAvailableForNewWorkOrder(ProductionLine productionLine) {
+        // The production line is available for new work order only if
+        // both of the following conditions are met
+        // 1. production line is enabled
+        // 2. production line is not exclusive
+        //    or is exclusive but no work order on it yet
+        if (!productionLine.getEnabled()) {
+            return false;
+        }
+        if (productionLine.getWorkOrderExclusiveFlag() &&
+            productionLine.getWorkOrders().size() > 0) {
+            return false;
+        }
+        return true;
     }
 
 
@@ -211,6 +244,8 @@ public class ProductionLineService implements TestDataInitiableService {
                 addColumn("inboundStageLocation").
                 addColumn("outboundStageLocation").
                 addColumn("productionLineLocation").
+                addColumn("workOrderExclusiveFlag").
+                addColumn("enabled").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, ProductionLineCSVWrapper.class);
@@ -233,6 +268,8 @@ public class ProductionLineService implements TestDataInitiableService {
 
         ProductionLine productionLine = new ProductionLine();
         productionLine.setName(productionLineCSVWrapper.getName());
+        productionLine.setWorkOrderExclusiveFlag(productionLineCSVWrapper.getWorkOrderExclusiveFlag());
+        productionLine.setEnabled(productionLineCSVWrapper.getEnabled());
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
                 productionLineCSVWrapper.getWarehouse()
@@ -258,4 +295,10 @@ public class ProductionLineService implements TestDataInitiableService {
     }
 
 
+    public ProductionLine disableProductionLine(@PathVariable Long id,
+                                                @RequestParam boolean disabled) {
+        ProductionLine productionLine = findById(id);
+        productionLine.setEnabled(!disabled);
+        return saveOrUpdate(productionLine);
+    }
 }

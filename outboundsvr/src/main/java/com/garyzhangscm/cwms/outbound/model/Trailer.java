@@ -24,8 +24,9 @@ public class Trailer {
 
     @OneToMany(
             mappedBy = "trailer",
-            orphanRemoval = true,
-            cascade = CascadeType.REMOVE
+            cascade = CascadeType.REMOVE,
+            fetch = FetchType.EAGER
+
     )
     private List<Stop> stops = new ArrayList<>();
 

@@ -36,7 +36,7 @@ public class Pick implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "number")
+    @Column(name = "number", unique = true)
     private String number;
 
     @Column(name = "source_location_id")
@@ -65,6 +65,10 @@ public class Pick implements Serializable {
     private Warehouse warehouse;
 
 
+    // Whether the pick is for
+    // 1. shipment line
+    // 2. work order line
+    // 3. short allocation
     @ManyToOne
     @JoinColumn(name = "shipment_line_id")
     @JsonIgnore
@@ -90,6 +94,12 @@ public class Pick implements Serializable {
 
     @Column(name = "status")
     private PickStatus status;
+
+    @Column(name = "inventory_status_id")
+    private Long inventoryStatusId;
+
+    @Transient
+    private InventoryStatus inventoryStatus;
 
     @OneToMany(
             mappedBy = "pick",
@@ -128,6 +138,8 @@ public class Pick implements Serializable {
                 .append("destinationLocation: ").append(destinationLocation).append(",")
                 .append("itemId: ").append(itemId).append(",")
                 .append("item: ").append(item).append(",")
+                .append("inventoryStatusId: ").append(inventoryStatusId).append(",")
+                .append("inventoryStatus: ").append(inventoryStatus).append(",")
                 .append("shipmentLine: ").append(shipmentLine).append(",")
                 .append("quantity: ").append(quantity).append(",")
                 .append("pickedQuantity: ").append(pickedQuantity).append(",")
@@ -232,7 +244,7 @@ public class Pick implements Serializable {
     }
 
     public String getOrderNumber() {
-        return shipmentLine.getOrderNumber();
+        return shipmentLine == null ? "" : shipmentLine.getOrderNumber();
     }
 
     public List<PickMovement> getPickMovements() {
@@ -244,7 +256,11 @@ public class Pick implements Serializable {
     }
 
     public InventoryStatus getInventoryStatus() {
-        return shipmentLine.getOrderLine().getInventoryStatus();
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
     }
 
     public ShortAllocation getShortAllocation() {
@@ -300,5 +316,13 @@ public class Pick implements Serializable {
 
     public void setWorkOrderLineId(Long workOrderLineId) {
         this.workOrderLineId = workOrderLineId;
+    }
+
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
     }
 }

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
@@ -32,9 +33,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Transient;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -46,6 +51,13 @@ public class OrderService implements TestDataInitiableService {
     @Autowired
     private OrderLineService orderLineService;
 
+    @Autowired
+    private PickService pickService;
+
+    @Autowired
+    private ShipmentService shipmentService;
+    @Autowired
+    private ShipmentLineService shipmentLineService;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
@@ -160,6 +172,58 @@ public class OrderService implements TestDataInitiableService {
 
         // Load the item and inventory status information for each lines
         order.getOrderLines().forEach(orderLine -> loadOrderLineAttribute(orderLine));
+
+        calculateStatisticQuantities(order);
+
+    }
+
+    private void calculateStatisticQuantities(Order order) {
+        order.setTotalLineCount(order.getOrderLines().size());
+
+        order.setTotalItemCount(
+                (int) order.getOrderLines().stream().map(OrderLine::getItemId).distinct().count()
+        );
+
+        Long totalExpectedQuantity = 0L;
+        Long totalOpenQuantity = 0L;
+        Long totalInprocessQuantity = 0L;
+        Long totalPendingAllocationQuantity = 0L;
+        Long totalOpenPickQuantity = 0L;
+        Long totalPickedQuantity = 0L;
+        Long totalShippedQuantity = 0L;
+
+        for(OrderLine orderLine : order.getOrderLines()) {
+            totalExpectedQuantity += orderLine.getExpectedQuantity();
+            totalOpenQuantity += orderLine.getOpenQuantity();
+            totalInprocessQuantity += orderLine.getInprocessQuantity();
+
+            totalShippedQuantity += orderLine.getShippedQuantity();
+        }
+
+        // pending allocation quantity are those open quantity
+        // from shipment line
+        List<ShipmentLine> shipmentLines = shipmentLineService.findByOrder(order);
+        for(ShipmentLine shipmentLine : shipmentLines) {
+            totalPendingAllocationQuantity += shipmentLine.getOpenQuantity();
+        }
+
+        // Let's see the total picked quantity
+        totalPickedQuantity
+                = pickService.findByOrder(order).stream()
+                .mapToLong(pick -> pick.getPickedQuantity()).sum();
+        totalOpenPickQuantity
+                =pickService.findByOrder(order).stream()
+                .mapToLong(pick -> pick.getQuantity() - pick.getPickedQuantity()).sum();
+
+
+
+        order.setTotalExpectedQuantity(totalExpectedQuantity);
+        order.setTotalOpenQuantity(totalOpenQuantity);
+        order.setTotalInprocessQuantity(totalInprocessQuantity);
+        order.setTotalShippedQuantity(totalShippedQuantity);
+        order.setTotalPendingAllocationQuantity(totalPendingAllocationQuantity);
+        order.setTotalPickedQuantity(totalPickedQuantity);
+        order.setTotalOpenPickQuantity(totalOpenPickQuantity);
 
     }
 
@@ -351,4 +415,195 @@ public class OrderService implements TestDataInitiableService {
             return String.valueOf(max + 1);
         }
     }
+
+    @Transactional
+    public Order allocate(Long orderId) {
+        Order order = findById(orderId);
+
+        // When we directly allocate the order, we will
+        // 1. create a fake wave / shipment for the order
+        // 2. allocate the shipment
+        shipmentService.planShipments(order.getWarehouseId(), order.getOrderLines());
+
+        // ok, if we are here, we may ends up with multiple shipments
+        // with lines for the order,
+        // let's allocate all of the shipment lines
+        List<AllocationResult> allocationResults
+                    = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
+                        .stream().filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
+                        .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
+                        .collect(Collectors.toList());
+
+        logger.debug("After allocation, we get the following result: \n {}", allocationResults);
+        return findById(orderId);
+
+    }
+    @Transactional
+    public Order stage(Long orderId, boolean ignoreUnfinishedPicks) {
+        Order order = findById(orderId);
+        validateOrderForOutboundProcessing(order, OrderActivityType.SHIPMENT_STAGE);
+
+        // Find any shipment that is ready for stage and stage the shipment
+        logger.debug("Start to stage order: {}", order.getNumber());
+
+        List<Shipment> shipments = shipmentService.findByOrder(order, false);
+        logger.debug(">> find {} shipments for this order", shipments.size());
+
+        // We will only stage the 'in process' shipment
+        shipments.stream()
+                .filter(shipment -> shipment.getStatus() == ShipmentStatus.INPROCESS)
+                .forEach(shipment -> shipmentService.stage(shipment, ignoreUnfinishedPicks));
+
+
+        return findById(orderId);
+
+    }
+    @Transactional
+    public Order load(Long orderId, boolean ignoreUnfinishedPicks) {
+        // Let's stage all the possible shipment first
+        Order order = findById(orderId);
+        validateOrderForOutboundProcessing(order, OrderActivityType.SHIPMENT_LOADING);
+
+        logger.debug("Start to load order: {}", order.getNumber());
+
+        // Find any shipments that are ready for load and load the shipments
+        List<Shipment> shipments = shipmentService.findByOrder(order, false);
+        logger.debug(">> find {} shipments for this order", shipments.size());
+
+        // Let's get all the staged shipment and load those shipment onto trailer
+        if (shipments.size() > 0 &&
+                shipments.stream()
+                     .filter(shipment -> shipment.getStatus() == ShipmentStatus.STAGED)
+                     .count() == 0) {
+            logger.debug(">> no shipment is staged, let's try to stage the shipment");
+            // there's no staged shipment yet, let's
+            // see if we can stage one in process shipment
+            stage(orderId, ignoreUnfinishedPicks);
+
+            // try to re-load the staged shipment
+            shipments = shipmentService.findByOrder(order, false);
+        }
+        shipments.stream()
+                .filter(shipment -> shipment.getStatus() == ShipmentStatus.STAGED).forEach(shipment -> {
+                    try {
+                        logger.debug(">> Start to load shipment {}", shipment.getNumber());
+                        shipmentService.loadShipment(shipment);
+                        logger.debug(">> Shipment {} loaded", shipment.getNumber());
+                    } catch (IOException e) {
+                        throw new GenericException(10000, e.getMessage());
+                    }
+                });
+
+
+        return findById(orderId);
+
+    }
+    @Transactional
+    public Order dispatch(Long orderId, boolean ignoreUnfinishedPicks) {
+        // Let's stage all the possible shipment first
+        Order order = findById(orderId);
+        validateOrderForOutboundProcessing(order, OrderActivityType.SHIPMENT_DISPATCH);
+        logger.debug("Start to dispatch order: {}", order.getNumber());
+
+
+        // Find any shipments that are ready for load and load the shipments
+        List<Shipment> shipments = shipmentService.findByOrder(order, false);
+        logger.debug(">> find {} shipments for this order", shipments.size());
+
+        // Let's get all the staged shipment and load those shipment onto trailer
+        if (shipments.size() > 0 &&
+                shipments.stream()
+                .filter(shipment -> shipment.getStatus() == ShipmentStatus.LOADED).count() == 0) {
+            // there's no loaded shipment yet, let's
+            // see if we can stage one in process shipment
+            logger.debug(">> no shipment is loaded, let's try to load the shipment");
+            load(orderId, ignoreUnfinishedPicks);
+
+            // try to re-load the loaded shipment
+            shipments = shipmentService.findByOrder(order, false);
+        }
+        // Get all the shipment that is in loaded status and will
+        // only dispatch the trailer
+        // 1. the shipment is in loaded status
+        // 2. There's only one shipment in this trailer
+
+        shipments.stream()
+                .filter(shipment -> shipment.getStatus() == ShipmentStatus.LOADED)
+                .forEach(shipment -> {
+                    try {
+                        logger.debug(">> Start to complete shipment {}", shipment.getNumber());
+                        shipmentService.autoCompleteShipment(shipment);
+                        logger.debug(">> Shipment {} completed!", shipment.getNumber());
+                    } catch (IOException e) {
+                        throw  new GenericException(10000, "Can't complete the shipment. Error message: " + e.getMessage());
+                    }
+                });
+        return findById(orderId);
+    }
+
+    // check if we can make outbound processing(stage / loading / shipping)
+    // at order level. Normally those outbound processing activities should
+    // be carried out at shipment level. For simple seek, we will allow
+    // those activities on order level when there's only one active shipment
+    // existing on the order
+    private void validateOrderForOutboundProcessing(Order order, OrderActivityType orderActivityType) {
+        List<Shipment> shipments = shipmentService.findByOrder(order, false);
+        logger.debug("Get {} shipments by order number: {}, \n{}",
+                shipments.size(), order.getNumber(), shipments);
+        if (shipments.size() <= 1) {
+            return ;
+        }
+
+        // There're more than 1 shipment exists for this order, let's make sure
+        // there's at maximum only one shipment is active.
+        // In case all the shipment are either cancelled, or dispatched,
+        // we will still return true and let the caller decides what to do
+        // with the order / shipment
+        long activeShipmentsCount = shipments.stream()
+                .filter(shipment -> shipment.getStatus() != ShipmentStatus.CANCELLED &&
+                        shipment.getStatus() != ShipmentStatus.DISPATCHED)
+                .count();
+        if (activeShipmentsCount > 1) {
+            throw new GenericException(10000,
+                    "There's multiple in process shipment for this order, please process each shipment individually");
+        }
+        else if (activeShipmentsCount == 1 &&
+                (orderActivityType.equals(OrderActivityType.SHIPMENT_LOADING) ||
+                        orderActivityType.equals(OrderActivityType.SHIPMENT_DISPATCH))){
+
+            // when we have one active shipment for the order and we want to
+            // load or dispatch the shipment, we will need to make sure either
+            // 1. there's no trailer yet, so that when we do loading or dispatch, we will
+            //    create fake stop and trailer
+            // 2. there's at maximum one trailer for the order
+            Shipment activeShipment = shipments.stream()
+                    .filter(shipment -> shipment.getStatus() != ShipmentStatus.CANCELLED &&
+                            shipment.getStatus() != ShipmentStatus.DISPATCHED).findFirst().orElse(null);
+
+            if (activeShipment != null &&
+                  activeShipment.getStop() != null) {
+                // Let's see how many shipments this stop have
+                int shipmentInTheSameStop = shipmentService.findByStop(order.getWarehouseId(), activeShipment.getStop().getId()).size();
+                if (shipmentInTheSameStop > 1) {
+                    throw new GenericException(10000,
+                            "There's multiple shipments in the same stop, please process each shipment individually");
+
+                }
+                // let's see how many shipments in the same trailer
+                if (activeShipment.getStop().getTrailer() != null) {
+                    int shipmentInTheSameTrailer = shipmentService.findByTrailer(
+                            order.getWarehouseId(),
+                            activeShipment.getStop().getTrailer().getId()).size();
+                    if (shipmentInTheSameTrailer > 1) {
+                        throw new GenericException(10000,
+                                "There's multiple shipments in the same trailer, please process each shipment individually");
+
+                    }
+                }
+            }
+        }
+
+    }
+
+
 }

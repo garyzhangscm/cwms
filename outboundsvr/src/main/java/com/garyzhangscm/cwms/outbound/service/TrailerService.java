@@ -80,6 +80,10 @@ public class TrailerService {
         return trailerRepository.save(trailer);
     }
 
+    public Trailer saveAndFlush(Trailer trailer) {
+        return trailerRepository.saveAndFlush(trailer);
+    }
+
 
     public void delete(Trailer trailer) {
         trailerRepository.delete(trailer);
@@ -149,7 +153,7 @@ public class TrailerService {
     // happens when the trailer is a fake trailer and we don't care about
     // the actual dock door we check in
     public Trailer checkInTrailer(Trailer trailer) {
-        List<Location> dockLocations = warehouseLayoutServiceRestemplateClient.findEmptyDockLocations();
+        List<Location> dockLocations = warehouseLayoutServiceRestemplateClient.findEmptyDockLocations(trailer.getWarehouseId());
         if (dockLocations.size() > 0) {
             return checkInTrailer(trailer, dockLocations.get(0));
         }
@@ -175,19 +179,33 @@ public class TrailerService {
     }
 
     public Trailer dispatchTrailer(Trailer trailer) {
+
         warehouseLayoutServiceRestemplateClient.dispatchTrailerFromDockLocations(trailer.getLocationId());
         trailer.setLocationId(null);
         trailer.setStatus(TrailerStatus.DISPATCHED);
-        return save(trailer);
+
+        // complete all the stops in the trailer
+        trailer = saveAndFlush(trailer);
+        logger.debug("Start to complete all the {} stops for this trailer {}:",
+                trailer.getStops().size(), trailer.getId());
+        trailer.getStops().stream().forEach(
+                stop -> stopService.completeStop(stop)
+        );
+        logger.debug("Set the trailer {}'s status to dispatched", trailer.getNumber());
+        return trailer;
     }
     // Create a fake trailer when we only want to ship the shipment but
     // didn't care about any shipping information about the shipment.
     // One example is the package. We only want to ship it to the customer and
     // the carrier will take care of the deliver
-    private Trailer createFakeTrailer(Shipment shipment) {
+    public Trailer createFakeTrailer(Shipment shipment) {
         // Let's create a fake stop for this shipment
 
-        Stop stop = stopService.createStop(shipment);
+        if (shipment.getStop() == null) {
+            Stop stop = stopService.createStop(shipment);
+            shipment.setStop(stop);
+            shipment = shipmentService.save(shipment);
+        }
         Trailer trailer = new Trailer();
         // Check if we can get carrier information from shipment
         if (shipment.getCarrierId() != null) {
@@ -215,8 +233,31 @@ public class TrailerService {
         trailer.setSize("----");
         trailer.setType(TrailerType.UNKNOUN);
         trailer.setStatus(TrailerStatus.PENDING);
+        trailer.setWarehouseId(shipment.getWarehouseId());
 
-        return save(trailer);
+        trailer = save(trailer);
+        logger.debug("Trailer {} / {} created!", trailer.getId(), trailer.getNumber());
+        // Refresh the stop with the new trailer;
+        shipment.getStop().setTrailer(trailer);
+
+        // We will use save and flush so that we can get the stops
+        // from the trailer right away
+        stopService.save(shipment.getStop());
+
+
+        logger.debug("attached the trailer {} / {}  to stop {}",
+                stopService.findById(shipment.getStop().getId()).getTrailer().getId(),
+                stopService.findById(shipment.getStop().getId()).getTrailer().getNumber(),
+                shipment.getStop().getId());
+
+        logger.debug("Stop {}'s trailer: {}",
+                stopService.findById(shipment.getStop().getId()).getId(),
+                stopService.findById(shipment.getStop().getId()).getTrailer().getId());
+        logger.debug("Now trailer {} has {} stops",
+                trailer.getId(),
+                findById(trailer.getId()).getStops().size());
+
+        return trailer;
     }
 
 

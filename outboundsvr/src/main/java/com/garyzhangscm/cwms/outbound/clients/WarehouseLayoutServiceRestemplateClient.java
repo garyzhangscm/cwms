@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.outbound.clients;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.Location;
@@ -29,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
+
 import org.springframework.core.ParameterizedTypeReference;
 
 import org.springframework.http.HttpMethod;
@@ -38,7 +37,6 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 
 
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -118,42 +116,6 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    public List<Location> getLocationsByRnage(Long beginSequence, Long endSequence, String sequenceType, Boolean includeEmptyLocation) {
-
-        String url = "http://zuulserver:5555/api/layout/locations?" +
-                      "begin_sequence={beginSequence}&end_sequence={endSequence}&sequence_type={sequenceType}&include_empty_location={includeEmptyLocation}";
-
-        ResponseBodyWrapper<Location[]> responseBodyWrapper =
-                restTemplate.exchange(url,
-                        HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
-                }, beginSequence, endSequence, sequenceType, includeEmptyLocation).getBody();
-
-        Location[] locations = responseBodyWrapper.getData();
-        return Arrays.asList(locations);
-    }
-
-    @Cacheable
-    public List<Location> getLocationByAisle(String aisle) {
-
-        ResponseBodyWrapper<Location[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations?aisle={aisle}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
-                }, aisle).getBody();
-
-        Location[] locations = responseBodyWrapper.getData();
-        return Arrays.asList(locations);
-    }
-
-    public List<Location> getLocationByAisleRange(String beginValue, String endValue) {
-
-        ResponseBodyWrapper<Location[]> responseBodyWrapper =
-                restTemplate.exchange("http://zuulserver:5555/api/layout/locations?beginAisle={beginValue}&&beginAisle={endValue}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {
-                }, beginValue, endValue).getBody();
-
-        Location[] locations = responseBodyWrapper.getData();
-        return Arrays.asList(locations);
-    }
-
     public LocationGroup getLocationGroupById(Long id) {
 
         ResponseBodyWrapper<LocationGroup> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgroups/{id}",
@@ -193,7 +155,11 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
     public LocationGroupType getLocationGroupTypeById(Long id) {
 
-        ResponseBodyWrapper<LocationGroupType> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgrouptypes/{id}",
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/locationgrouptypes/{id}");
+
+        ResponseBodyWrapper<LocationGroupType> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType>>() {
                 }, id).getBody();
 
@@ -202,7 +168,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     public LocationGroupType getLocationGroupTypeByName(String name) {
 
-        ResponseBodyWrapper<LocationGroupType[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgrouptypes?name={name}",
+        StringBuilder url = new StringBuilder();
+        url.append("http://zuulserver:5555/api/layout/locationgrouptypes?")
+                .append("name={name}");
+
+        ResponseBodyWrapper<LocationGroupType[]> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType[]>>() {
                 }, name).getBody();
 
@@ -220,24 +191,15 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
 
-    public Location allocateLocation(Location location, Double inventorySize) {
-
-        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations/{id}/allocate?inventory_size={inventorySize}",
-                HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
-                }, location.getId(), inventorySize).getBody();
-
-        return responseBodyWrapper.getData();
-    }
-
     public Location reserveLocationFromGroup(Long locationGroupId, String reservedCode,
                                     Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
 
         StringBuilder url = new StringBuilder();
         url.append("http://zuulserver:5555/api/layout/locationgroups/{locationGroupId}/reserve?")
-                .append("reserved_code={reservedCode}")
-                .append("&pending_size={pendingSize}")
-                .append("&pending_quantity={pendingQuantity}")
-                .append("&pending_pallet_quantity={pendingPalletQuantity}");
+                .append("reservedCode={reservedCode}")
+                .append("&pendingSize={pendingSize}")
+                .append("&pendingQuantity={pendingQuantity}")
+                .append("&pendingPalletQuantity={pendingPalletQuantity}");
 
         ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(url.toString(),
                 HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
@@ -251,10 +213,10 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         StringBuilder url = new StringBuilder();
         url.append("http://zuulserver:5555/api/layout/locations/{locationId}/reserveWithVolume?")
-                .append("reserved_code={reservedCode}")
-                .append("&pending_size={pendingSize}")
-                .append("&pending_quantity={pendingQuantity}")
-                .append("&pending_pallet_quantity={pendingPalletQuantity}");
+                .append("reservedCode={reservedCode}")
+                .append("&pendingSize={pendingSize}")
+                .append("&pendingQuantity={pendingQuantity}")
+                .append("&pendingPalletQuantity={pendingPalletQuantity}");
 
         ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(url.toString(),
                 HttpMethod.PUT, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
@@ -264,26 +226,16 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    public List<Location> findDockLocations() {
+    public List<Location> findEmptyDockLocations(Long warehouseId) {
 
-        StringBuilder url = new StringBuilder();
-        url.append("http://zuulserver:5555/api/layout/locations/dock");
-
-        ResponseBodyWrapper<List<Location>> responseBodyWrapper = restTemplate.exchange(url.toString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {
-                }).getBody();
-
-        return responseBodyWrapper.getData();
-    }
-
-    public List<Location> findEmptyDockLocations() {
-
-        StringBuilder url = new StringBuilder();
-        url.append("http://zuulserver:5555/api/layout/locations/dock?empty=true");
+        StringBuilder url = new StringBuilder()
+                      .append("http://zuulserver:5555/api/layout/locations/dock?")
+                      .append("empty=true")
+                      .append("&warehouseId={warehouseId}");
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper = restTemplate.exchange(url.toString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {
-                }).getBody();
+                }, warehouseId).getBody();
 
         return responseBodyWrapper.getData();
     }
@@ -325,11 +277,11 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         StringBuilder url = new StringBuilder();
         url.append("http://zuulserver:5555/api/layout/locations?")
-                .append("location_group_ids={locationGroupId}")
-                .append("empty_location_only=true")
-                .append("min_empty_capacity={replenishmentSize}")
-                .append("pickable_location_only=true")
-                .append("max_result_count=1");
+                .append("locationGroupIds={locationGroupId}")
+                .append("emptyLocationOnly=true")
+                .append("minEmptyCapacity={replenishmentSize}")
+                .append("pickableLocationOnly=true")
+                .append("maxResultCount=1");
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper = restTemplate.exchange(url.toString(),
                 HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {

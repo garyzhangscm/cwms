@@ -194,18 +194,20 @@ public class WaveService {
             wave.setWarehouseId(warehouseId);
             wave = save(wave);
         }
+        String shipmentNumber = shipmentService.getNextShipmentNumber();
 
-        shipmentService.planShipments(wave, orderLines);
+        shipmentService.planShipments(wave, shipmentNumber, orderLines);
         return findByNumber(waveNumber);
     }
 
-    public Wave createWave(String waveNumber) {
+    public Wave createWave(Long warehouseId, String waveNumber) {
 
         Wave wave = findByNumber(waveNumber);
         if (wave == null) {
             wave = new Wave();
             wave.setNumber(waveNumber);
             wave.setStatus(WaveStatus.PLANED);
+            wave.setWarehouseId(warehouseId);
             return save(wave);
         }
         else {

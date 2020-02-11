@@ -58,6 +58,30 @@ public class OrderController {
         return orderService.save(order);
     }
 
+    @RequestMapping(value="/orders/{id}/allocate", method = RequestMethod.POST)
+    public Order allocateOrder(@PathVariable Long id){
+        return orderService.allocate(id);
+    }
+
+    @RequestMapping(value="/orders/{id}/stage", method = RequestMethod.POST)
+    public Order stageOrder(@PathVariable Long id,
+                            @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
+        return orderService.stage(id, ignoreUnfinishedPicks);
+    }
+
+    @RequestMapping(value="/orders/{id}/load", method = RequestMethod.POST)
+    public Order loadOrder(@PathVariable Long id,
+                           @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
+        return orderService.load(id, ignoreUnfinishedPicks);
+    }
+
+    @RequestMapping(value="/orders/{id}/dispatch", method = RequestMethod.POST)
+    public Order dispatchOrder(@PathVariable Long id,
+                               @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
+        return orderService.dispatch(id, ignoreUnfinishedPicks);
+    }
+
+
     @RequestMapping(value="/orders", method = RequestMethod.DELETE)
     public void removeOrders(@RequestParam(name = "order_ids", required = false, defaultValue = "") String orderIds) {
         orderService.delete(orderIds);

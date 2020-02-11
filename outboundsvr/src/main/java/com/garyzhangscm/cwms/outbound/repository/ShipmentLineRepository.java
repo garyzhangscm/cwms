@@ -29,6 +29,10 @@ import java.util.List;
 @Repository
 public interface ShipmentLineRepository extends JpaRepository<ShipmentLine, Long>, JpaSpecificationExecutor<ShipmentLine> {
 
-    @Query("select sl from ShipmentLine sl where wave.id =  :waveId")
+    @Query("select sl from ShipmentLine sl inner join sl.wave w where w.id =  :waveId")
     List<ShipmentLine> findByWaveId(Long waveId);
+
+    @Query("select sl from ShipmentLine sl inner join sl.orderLine ol " +
+            " inner join ol.order o where o.number =  :orderNumber and sl.warehouseId = :warehouseId")
+    List<ShipmentLine> findByOrderNumber(Long warehouseId, String orderNumber);
 }

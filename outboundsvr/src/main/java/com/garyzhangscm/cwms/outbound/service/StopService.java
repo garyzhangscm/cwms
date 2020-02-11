@@ -40,6 +40,8 @@ public class StopService {
 
     @Autowired
     private StopRepository stopRepository;
+    @Autowired
+    private ShipmentService shipmentService;
 
 
     @Autowired
@@ -59,9 +61,16 @@ public class StopService {
         return stopRepository.findAll();
     }
 
+    public List<Stop> findByTrailerId(Long trailerId) {
+
+        return stopRepository.findByTrailerId(trailerId);
+    }
 
     public Stop save(Stop stop) {
         return stopRepository.save(stop);
+    }
+    public Stop saveAndFlush(Stop stop) {
+        return stopRepository.saveAndFlush(stop);
     }
 
 
@@ -85,8 +94,10 @@ public class StopService {
     public Stop createStop(Shipment shipment) {
         Stop stop = new Stop();
         List<Shipment> shipments = new ArrayList<>();
+        shipments.add(shipment);
         stop.setShipments(shipments);
-        return save(stop);
+        stop.setWarehouseId(shipment.getWarehouseId());
+        return saveAndFlush(stop);
     }
 
     public boolean isAllShipmentLoaded(Stop stop) {
@@ -99,5 +110,9 @@ public class StopService {
         return shipmentUnloaded == 0;
     }
 
+    public void completeStop(Stop stop) {
+        stop.getShipments().stream().forEach(shipment ->
+                shipmentService.dispatchShipment(shipment));
+    }
 
 }

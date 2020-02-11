@@ -15,6 +15,10 @@ public class ProductionLineCSVWrapper {
     private String productionLineLocation;
 
 
+    private Boolean workOrderExclusiveFlag;
+
+    private Boolean enabled;
+
     public String getWarehouse() {
         return warehouse;
     }
@@ -53,5 +57,21 @@ public class ProductionLineCSVWrapper {
 
     public void setProductionLineLocation(String productionLineLocation) {
         this.productionLineLocation = productionLineLocation;
+    }
+
+    public Boolean getWorkOrderExclusiveFlag() {
+        return workOrderExclusiveFlag;
+    }
+
+    public void setWorkOrderExclusiveFlag(Boolean workOrderExclusiveFlag) {
+        this.workOrderExclusiveFlag = workOrderExclusiveFlag;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

@@ -22,14 +22,20 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentLineRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ShipmentLineService {
@@ -43,6 +49,9 @@ public class ShipmentLineService {
     private PickService pickService;
     @Autowired
     private AllocationConfigurationService allocationConfigurationService;
+    @Autowired
+    private ShipmentService shipmentService;
+
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -56,6 +65,49 @@ public class ShipmentLineService {
         return shipmentLineRepository.findById(id).orElse(null);
     }
 
+    public List<ShipmentLine> findByOrderNumber(Long warehouseId, String orderNumber){
+        return shipmentLineRepository.findByOrderNumber(warehouseId, orderNumber);
+    }
+    public List<ShipmentLine> findAll(Long warehouseId, String number,
+                                       String orderNumber, Long orderLineId) {
+        List<ShipmentLine> shipmentLines =  shipmentLineRepository.findAll(
+                (Root<ShipmentLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+                    if (warehouseId != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+                    if (!StringUtils.isBlank(number)) {
+                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                    }
+
+                    if (!StringUtils.isBlank(orderNumber)) {
+                        Join<ShipmentLine, OrderLine> joinOrderLine = root.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
+                    }
+
+                    if (orderLineId != null) {
+                        Join<ShipmentLine, OrderLine> joinOrderLine = root.join("orderLine", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinOrderLine.get("id"), orderLineId));
+
+                    }
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+        return shipmentLines.stream().distinct().collect(Collectors.toList());
+    }
+
+    public List<ShipmentLine> findByOrderLine(OrderLine orderLine) {
+        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId());
+    }
+
+    public List<ShipmentLine> findByOrder(Order order) {
+        return findAll(order.getWarehouseId(), null, order.getNumber(), null);
+    }
 
     public ShipmentLine save(ShipmentLine shipmentLine) {
         return shipmentLineRepository.save(shipmentLine);
@@ -100,12 +152,6 @@ public class ShipmentLineService {
         return save(shipmentLine);
     }
 
-
-
-    private String getNextShipmentNumber(){
-        return commonServiceRestemplateClient.getNextNumber("shipment_number");
-    }
-
     private String getNextShipmentLineNumber(Shipment shipment) {
         if (shipment.getShipmentLines().isEmpty()) {
             return "0";
@@ -125,9 +171,6 @@ public class ShipmentLineService {
         }
     }
 
-    public List<ShipmentLine> findByWaveId(Long waveId){
-        return shipmentLineRepository.findByWaveId(waveId);
-    }
 
     public AllocationResult allocateShipmentLine(ShipmentLine shipmentLine) {
         logger.debug("Start to allocate shipment line: {} / {}", shipmentLine.getId(), shipmentLine.getNumber());
@@ -162,8 +205,14 @@ public class ShipmentLineService {
         shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() + shipmentLine.getOpenQuantity());
         shipmentLine.setOpenQuantity(0L);
 
+
         save(shipmentLine);
 
+        // Change the shipment's status to 'In Process'
+        if (!shipmentLine.getShipment().getStatus().equals(ShipmentStatus.INPROCESS)) {
+            shipmentLine.getShipment().setStatus(ShipmentStatus.INPROCESS);
+            shipmentService.save(shipmentLine.getShipment());
+        }
         return allocationResult;
     }
 
@@ -173,10 +222,27 @@ public class ShipmentLineService {
     }
 
     @Transactional
-    public void cancelPickQuantity(ShipmentLine shipmentLine, Long openQuantity) {
-        shipmentLine.setOpenQuantity(shipmentLine.getQuantity() + openQuantity);
-        shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - openQuantity);
-        save(shipmentLine);
+    public void registerPickCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
+        logger.debug("registerPickCancelled: shipment line: {}, cancelledQuantity: {}",
+                shipmentLine.getNumber(), cancelledQuantity);
+        shipmentLine.setOpenQuantity(shipmentLine.getOpenQuantity() + cancelledQuantity);
+        shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - cancelledQuantity);
+        shipmentLine = save(shipmentLine);
+        logger.debug("after pick cancelled, shipment line {} has open quantity {}, in process quantity: {}",
+                shipmentLine.getNumber(), shipmentLine.getOpenQuantity(), shipmentLine.getInprocessQuantity());
+
     }
+
+    @Transactional
+    // Complete the shipment line
+    public void completeShipmentLine(ShipmentLine shipmentLine) {
+        // Move the loaded quantity to shipped quantity
+        Long quantity = shipmentLine.getLoadedQuantity();
+        shipmentLine.setLoadedQuantity(0L);
+        shipmentLine.setShippedQuantity(quantity);
+        shipmentLine = save(shipmentLine);
+        orderLineService.registerShipmentLineComplete(shipmentLine, quantity);
+    }
+
 
 }

@@ -22,9 +22,16 @@ package com.garyzhangscm.cwms.outbound.repository;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface ShipmentRepository extends JpaRepository<Shipment, Long>, JpaSpecificationExecutor<Shipment> {
     Shipment findByNumber(String number);
+
+    @Query("select distinct s from ShipmentLine sl inner join sl.shipment s " +
+           " inner join sl.orderLine ol inner join ol.order o where o.number = :orderNumber ")
+    List<Shipment> findByOrderNumber(String orderNumber);
 }

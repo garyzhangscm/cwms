@@ -10,6 +10,14 @@ public class AllocationResult implements Serializable {
 
     List<ShortAllocation> shortAllocations = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return new StringBuilder().append("AllocationResult: \n")
+                .append("Pick List: ").append(picks)
+                .append("Short Allocation List：").append(shortAllocations)
+                .toString();
+    }
+
     public List<Pick> getPicks() {
         return picks;
     }

@@ -58,6 +58,9 @@ public class WorkOrder {
     @OneToMany(mappedBy = "workOrder")
     private List<WorkOrderAssignment> assignments = new ArrayList<>();
 
+    @Column(name = "status")
+    private WorkOrderStatus status;
+
 
     public Long getId() {
         return id;
@@ -153,5 +156,13 @@ public class WorkOrder {
 
     public void setAssignments(List<WorkOrderAssignment> assignments) {
         this.assignments = assignments;
+    }
+
+    public WorkOrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WorkOrderStatus status) {
+        this.status = status;
     }
 }

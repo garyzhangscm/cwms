@@ -37,12 +37,12 @@ public class InventoryController {
     public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
-                                              @RequestParam(name="item_families", required = false, defaultValue = "") String itemFamilyIds,
-                                              @RequestParam(name="inventory_status_id", required = false, defaultValue = "") Long inventoryStatusId,
+                                              @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
+                                              @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
                                               @RequestParam(name="location", required = false, defaultValue = "") String locationName,
-                                              @RequestParam(name="location_group_id", required = false, defaultValue = "") Long locationGroupId,
-                                              @RequestParam(name="receipt_id", required = false, defaultValue = "") String receiptId,
-                                              @RequestParam(name="pick_ids", required = false, defaultValue = "") String pickIds,
+                                              @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                              @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
         return inventoryService.findAll(warehouseId, itemName, clientIds, itemFamilyIds,inventoryStatusId,  locationName, locationGroupId, receiptId, pickIds, lpn);
     }
