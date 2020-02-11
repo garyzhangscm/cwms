@@ -1,6 +1,7 @@
 
 drop table if exists  pick_movement;
 drop table if exists pick;
+drop  table  if exists cancelled_pick;
 drop table if exists pick_list;
 drop table if exists short_allocation;
 drop table if exists shipment_line;
@@ -132,6 +133,9 @@ CREATE TABLE short_allocation(
   shipment_line_id BIGINT,
   work_order_line_id BIGINT,
   quantity BIGINT  NOT NULL,
+  open_quantity BIGINT  NOT NULL,
+  inprocess_quantity BIGINT  NOT NULL,
+  delivered_quantity BIGINT  NOT NULL,
   status VARCHAR(20) not null,
   foreign key(shipment_line_id) references shipment_line(shipment_line_id));
 
@@ -145,7 +149,7 @@ CREATE TABLE pick_list(
 CREATE TABLE pick(
   pick_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
-  number   VARCHAR(100) NOT NULL,
+  number   VARCHAR(100) NOT NULL unique,
   source_location_id BIGINT  NOT NULL,
   destination_location_id BIGINT,
   item_id BIGINT  NOT NULL,
@@ -157,6 +161,32 @@ CREATE TABLE pick(
   quantity BIGINT  NOT NULL,
   picked_quantity BIGINT  NOT NULL,
   pick_list_id BIGINT,
+  inventory_status_id BIGINT NOT NULL,
+  foreign key(shipment_line_id) references shipment_line(shipment_line_id),
+  foreign key(pick_list_id) references pick_list(pick_list_id),
+  foreign key(short_allocation_id) references short_allocation(short_allocation_id));
+
+
+CREATE TABLE cancelled_pick(
+  cancelled_pick_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  pick_id  BIGINT not null,
+  pick_number VARCHAR(100) NOT NULL,
+  number   VARCHAR(100) NOT NULL unique,
+  warehouse_id BIGINT not null,
+  source_location_id BIGINT  NOT NULL,
+  destination_location_id BIGINT,
+  item_id BIGINT  NOT NULL,
+  type VARCHAR(20) not null,
+  shipment_line_id BIGINT,
+  work_order_line_id BIGINT,
+  short_allocation_id BIGINT,
+  quantity BIGINT  NOT NULL,
+  picked_quantity BIGINT  NOT NULL,
+  cancelled_quantity BIGINT  NOT NULL,
+  pick_list_id BIGINT,
+  inventory_status_id BIGINT NOT NULL,
+  cancelled_username VARCHAR(100) not null,
+  cancelled_date datetime not null,
   foreign key(shipment_line_id) references shipment_line(shipment_line_id),
   foreign key(pick_list_id) references pick_list(pick_list_id),
   foreign key(short_allocation_id) references short_allocation(short_allocation_id));

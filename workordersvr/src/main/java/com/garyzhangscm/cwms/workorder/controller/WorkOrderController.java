@@ -71,9 +71,14 @@ public class WorkOrderController {
     }
 
     @RequestMapping(value="/work-orders/{id}/allocate", method = RequestMethod.POST)
-    public WorkOrder addWorkOrder(@PathVariable Long id) {
+    public WorkOrder allocateWorkOrder(@PathVariable Long id) {
         return workOrderService.allocateWorkOrder(id);
     }
 
+    @RequestMapping(value="/work-orders/{id}/change-production-line", method = RequestMethod.POST)
+    public WorkOrder changeProductionLine(@PathVariable Long id,
+                                  @RequestParam Long productionLineId) {
+        return workOrderService.changeProductionLine(id, productionLineId);
+    }
 
 }

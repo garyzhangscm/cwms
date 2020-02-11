@@ -98,11 +98,13 @@ public class Inventory implements Serializable {
         }
         inventory.setLpn(newLpn);
         inventory.setPickId(getPickId());
+        inventory.setWarehouseId(warehouseId);
         // Copy inventory movement
         List<InventoryMovement> inventoryMovements = new ArrayList<>();
         getInventoryMovements().stream().forEach(inventoryMovement -> {
             InventoryMovement newInventoryMovement = (InventoryMovement)inventoryMovement.clone();
             newInventoryMovement.setInventory(inventory);
+            newInventoryMovement.setWarehouseId(inventoryMovement.getWarehouseId());
             inventoryMovements.add(newInventoryMovement);
         });
 

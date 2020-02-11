@@ -1,6 +1,6 @@
 package com.garyzhangscm.cwms.workorder.model;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -44,9 +44,18 @@ public class ProductionLine {
     @Transient
     private Location productionLineLocation;
 
-    @OneToMany(mappedBy = "productionLine")
+    @OneToMany(mappedBy = "productionLine", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<WorkOrder> workOrders = new ArrayList<>();
+
+    // Whether there's only one work order can be worked on
+    // this production at any time
+    @Column(name = "work_order_exclusive_flag")
+    private Boolean workOrderExclusiveFlag = true;
+
+    @Column(name = "enabled")
+    private Boolean enabled = false;
+
 
     public String getName() {
         return name;
@@ -134,5 +143,21 @@ public class ProductionLine {
 
     public void setWorkOrders(List<WorkOrder> workOrders) {
         this.workOrders = workOrders;
+    }
+
+    public Boolean getWorkOrderExclusiveFlag() {
+        return workOrderExclusiveFlag;
+    }
+
+    public void setWorkOrderExclusiveFlag(Boolean workOrderExclusiveFlag) {
+        this.workOrderExclusiveFlag = workOrderExclusiveFlag;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

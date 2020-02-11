@@ -43,7 +43,9 @@ CREATE TABLE production_line (
   warehouse_id  BIGINT NOT NULL,
   inbound_stage_location_id BIGINT NOT NULL,
   outbound_stage_location_id BIGINT NOT NULL,
-  production_line_location_id BIGINT NOT NULL);
+  production_line_location_id BIGINT NOT NULL,
+  work_order_exclusive_flag boolean not null,
+  enabled boolean not null);
 
 
 CREATE TABLE work_order (
@@ -54,6 +56,7 @@ CREATE TABLE work_order (
   item_id   BIGINT NOT NULL,
   expected_quantity  BIGINT NOT NULL,
   produced_quantity BIGINT NOT NULL,
+  status VARCHAR(20) NOT NULL,
   foreign key(production_line_id) references production_line(production_line_id));
 
 CREATE TABLE work_order_line (

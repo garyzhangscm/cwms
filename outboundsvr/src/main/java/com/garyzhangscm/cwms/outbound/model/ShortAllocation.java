@@ -45,6 +45,15 @@ public class ShortAllocation  implements Serializable {
     @Column(name = "quantity")
     private Long quantity;
 
+    @Column(name = "open_quantity")
+    private Long openQuantity;
+
+    @Column(name = "inprocess_quantity")
+    private Long inprocessQuantity;
+
+    @Column(name = "delivered_quantity")
+    private Long deliveredQuantity;
+
     @Column(name = "status")
     private ShortAllocationStatus status;
 
@@ -134,5 +143,29 @@ public class ShortAllocation  implements Serializable {
 
     public void setWorkOrderLineId(Long workOrderLineId) {
         this.workOrderLineId = workOrderLineId;
+    }
+
+    public Long getOpenQuantity() {
+        return openQuantity;
+    }
+
+    public void setOpenQuantity(Long openQuantity) {
+        this.openQuantity = openQuantity;
+    }
+
+    public Long getInprocessQuantity() {
+        return inprocessQuantity;
+    }
+
+    public void setInprocessQuantity(Long inprocessQuantity) {
+        this.inprocessQuantity = inprocessQuantity;
+    }
+
+    public Long getDeliveredQuantity() {
+        return deliveredQuantity;
+    }
+
+    public void setDeliveredQuantity(Long deliveredQuantity) {
+        this.deliveredQuantity = deliveredQuantity;
     }
 }

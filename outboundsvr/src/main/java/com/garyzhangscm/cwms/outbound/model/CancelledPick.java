@@ -23,18 +23,28 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "pick")
-public class Pick implements Serializable {
+@Table(name = "cancelled_pick")
+public class CancelledPick implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pick_id")
+    @Column(name = "cancelled_pick_id")
     @JsonProperty(value="id")
     private Long id;
+
+    // We will only save the pickId here, When we cancelled
+    // the pick, we may remove the pick record as well if
+    // the whole pick is cancelled
+    @Column(name = "pick_id")
+    private Long pickId;
+
+    @Column(name = "pick_number")
+    private String pickNumber;
 
     @Column(name = "number", unique = true)
     private String number;
@@ -64,16 +74,10 @@ public class Pick implements Serializable {
     @Transient
     private Warehouse warehouse;
 
-
-    // Whether the pick is for
-    // 1. shipment line
-    // 2. work order line
-    // 3. short allocation
     @ManyToOne
     @JoinColumn(name = "shipment_line_id")
     @JsonIgnore
     private ShipmentLine shipmentLine;
-
 
     @Column(name = "work_order_line_id")
     private Long workOrderLineId;
@@ -92,8 +96,8 @@ public class Pick implements Serializable {
     @Column(name = "picked_quantity")
     private Long pickedQuantity;
 
-    @Column(name = "status")
-    private PickStatus status;
+    @Column(name = "cancelled_quantity")
+    private Long cancelledQuantity;
 
     @Column(name = "inventory_status_id")
     private Long inventoryStatusId;
@@ -101,51 +105,20 @@ public class Pick implements Serializable {
     @Transient
     private InventoryStatus inventoryStatus;
 
-    @OneToMany(
-            mappedBy = "pick",
-            cascade = CascadeType.REMOVE,
-            // orphanRemoval = true, // We will process the movement manually from InventoryMovementService
-            fetch = FetchType.LAZY
-    )
-    List<PickMovement> pickMovements = new ArrayList<>();
-
     @ManyToOne
     @JoinColumn(name = "pick_list_id")
     private PickList pickList;
 
-    @JsonIgnore
-    public Double getSize() {
 
-        if (item == null) {
-            return 0.0;
-        }
-        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasures();
 
-        return (quantity / stockItemUnitOfMeasure.getQuantity())
-                * stockItemUnitOfMeasure.getLength()
-                * stockItemUnitOfMeasure.getWidth()
-                * stockItemUnitOfMeasure.getHeight();
-    }
+    @Column(name = "cancelled_username")
+    private String cancelledUsername;
 
-    @Override
-    public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append("number: ").append(number).append(",")
-                .append("sourceLocationId: ").append(sourceLocationId).append(",")
-                .append("sourceLocation: ").append(sourceLocation).append(",")
-                .append("destinationLocationId: ").append(destinationLocationId).append(",")
-                .append("destinationLocation: ").append(destinationLocation).append(",")
-                .append("itemId: ").append(itemId).append(",")
-                .append("item: ").append(item).append(",")
-                .append("inventoryStatusId: ").append(inventoryStatusId).append(",")
-                .append("inventoryStatus: ").append(inventoryStatus).append(",")
-                .append("shipmentLine: ").append(shipmentLine).append(",")
-                .append("quantity: ").append(quantity).append(",")
-                .append("pickedQuantity: ").append(pickedQuantity).append(",")
-                .append("status: ").append(status).append("}").toString();
+    @Transient
+    private User cancelledUser;
 
-    }
+    @Column(name = "cancelled_date")
+    private LocalDateTime cancelledDate;
 
     public Long getId() {
         return id;
@@ -153,6 +126,14 @@ public class Pick implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getPickId() {
+        return pickId;
+    }
+
+    public void setPickId(Long pickId) {
+        this.pickId = pickId;
     }
 
     public String getNumber() {
@@ -177,14 +158,6 @@ public class Pick implements Serializable {
 
     public void setSourceLocation(Location sourceLocation) {
         this.sourceLocation = sourceLocation;
-    }
-
-    public ShipmentLine getShipmentLine() {
-        return shipmentLine;
-    }
-
-    public void setShipmentLine(ShipmentLine shipmentLine) {
-        this.shipmentLine = shipmentLine;
     }
 
     public Long getDestinationLocationId() {
@@ -219,66 +192,6 @@ public class Pick implements Serializable {
         this.item = item;
     }
 
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Long quantity) {
-        this.quantity = quantity;
-    }
-
-    public Long getPickedQuantity() {
-        return pickedQuantity;
-    }
-
-    public void setPickedQuantity(Long pickedQuantity) {
-        this.pickedQuantity = pickedQuantity;
-    }
-
-    public PickStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(PickStatus status) {
-        this.status = status;
-    }
-
-    public String getOrderNumber() {
-        return shipmentLine == null ? "" : shipmentLine.getOrderNumber();
-    }
-
-    public List<PickMovement> getPickMovements() {
-        return pickMovements;
-    }
-
-    public void setPickMovements(List<PickMovement> pickMovements) {
-        this.pickMovements = pickMovements;
-    }
-
-    public InventoryStatus getInventoryStatus() {
-        return inventoryStatus;
-    }
-
-    public void setInventoryStatus(InventoryStatus inventoryStatus) {
-        this.inventoryStatus = inventoryStatus;
-    }
-
-    public ShortAllocation getShortAllocation() {
-        return shortAllocation;
-    }
-
-    public void setShortAllocation(ShortAllocation shortAllocation) {
-        this.shortAllocation = shortAllocation;
-    }
-
-    public PickList getPickList() {
-        return pickList;
-    }
-
-    public void setPickList(PickList pickList) {
-        this.pickList = pickList;
-    }
-
     public Long getWarehouseId() {
         return warehouseId;
     }
@@ -295,11 +208,29 @@ public class Pick implements Serializable {
         this.warehouse = warehouse;
     }
 
-    public Client getClient() {
-        if (shipmentLine == null) {
-            return null;
-        }
-        return shipmentLine.getOrderLine().getOrder().getClient();
+
+    public Long getWorkOrderLineId() {
+        return workOrderLineId;
+    }
+
+    public void setWorkOrderLineId(Long workOrderLineId) {
+        this.workOrderLineId = workOrderLineId;
+    }
+
+    public ShipmentLine getShipmentLine() {
+        return shipmentLine;
+    }
+
+    public void setShipmentLine(ShipmentLine shipmentLine) {
+        this.shipmentLine = shipmentLine;
+    }
+
+    public ShortAllocation getShortAllocation() {
+        return shortAllocation;
+    }
+
+    public void setShortAllocation(ShortAllocation shortAllocation) {
+        this.shortAllocation = shortAllocation;
     }
 
     public PickType getPickType() {
@@ -310,12 +241,28 @@ public class Pick implements Serializable {
         this.pickType = pickType;
     }
 
-    public Long getWorkOrderLineId() {
-        return workOrderLineId;
+    public Long getQuantity() {
+        return quantity;
     }
 
-    public void setWorkOrderLineId(Long workOrderLineId) {
-        this.workOrderLineId = workOrderLineId;
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
+    }
+
+    public Long getPickedQuantity() {
+        return pickedQuantity;
+    }
+
+    public void setPickedQuantity(Long pickedQuantity) {
+        this.pickedQuantity = pickedQuantity;
+    }
+
+    public Long getCancelledQuantity() {
+        return cancelledQuantity;
+    }
+
+    public void setCancelledQuantity(Long cancelledQuantity) {
+        this.cancelledQuantity = cancelledQuantity;
     }
 
     public Long getInventoryStatusId() {
@@ -324,5 +271,53 @@ public class Pick implements Serializable {
 
     public void setInventoryStatusId(Long inventoryStatusId) {
         this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
+    }
+
+    public PickList getPickList() {
+        return pickList;
+    }
+
+    public void setPickList(PickList pickList) {
+        this.pickList = pickList;
+    }
+
+    public String getCancelledUsername() {
+        return cancelledUsername;
+    }
+
+    public void setCancelledUsername(String cancelledUsername) {
+        this.cancelledUsername = cancelledUsername;
+    }
+
+    public User getCancelledUser() {
+        return cancelledUser;
+    }
+
+    public void setCancelledUser(User cancelledUser) {
+        this.cancelledUser = cancelledUser;
+    }
+
+    public LocalDateTime getCancelledDate() {
+        return cancelledDate;
+    }
+
+    public void setCancelledDate(LocalDateTime cancelledDate) {
+        this.cancelledDate = cancelledDate;
+    }
+
+    public String getPickNumber() {
+        return pickNumber;
+    }
+
+    public void setPickNumber(String pickNumber) {
+        this.pickNumber = pickNumber;
     }
 }

@@ -25,6 +25,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "shipment")
@@ -72,6 +73,43 @@ public class Shipment implements Serializable {
     @JoinColumn(name="stop_id")
     @JsonIgnore
     private Stop stop;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Shipment shipment = (Shipment) o;
+
+        if (id != null && shipment.id != null) {
+            return Objects.equals(id, shipment.id);
+        }
+
+        return
+                Objects.equals(number, shipment.number) &&
+                Objects.equals(warehouseId, shipment.warehouseId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Shipment{" +
+                "id=" + id +
+                ", number='" + number + '\'' +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                ", shipmentLines=" + shipmentLines +
+                ", status=" + status +
+                ", carrierId=" + carrierId +
+                ", carrier=" + carrier +
+                ", carrierServiceLevelId=" + carrierServiceLevelId +
+                ", carrierServiceLevel=" + carrierServiceLevel +
+                ", stop=" + stop +
+                '}';
+    }
 
     public Long getId() {
         return id;

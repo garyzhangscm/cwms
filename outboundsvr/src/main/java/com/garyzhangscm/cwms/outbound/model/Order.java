@@ -128,6 +128,29 @@ public class Order implements Serializable {
     @Transient
     private LocationGroup stageLocationGroup;
 
+
+    // Some statistics numbers that we can show
+    // in the frontend
+    @Transient
+    private Integer totalLineCount;
+    @Transient
+    private Integer totalItemCount;
+    @Transient
+    private Long totalExpectedQuantity;
+    @Transient
+    private Long totalOpenQuantity; // Open quantity that is not in shipment yet
+    @Transient
+    private Long totalInprocessQuantity; // Total quantity that is in shipment
+    // totalInprocessQuantity = totalPendingAllocationQuantity + totalOpenPickQuantity + totalPickedQuantity
+    @Transient
+    private Long totalPendingAllocationQuantity;
+    @Transient
+    private Long totalOpenPickQuantity;
+    @Transient
+    private Long totalPickedQuantity;
+    @Transient
+    private Long totalShippedQuantity;
+
     @Override
     public boolean equals(Object anotherObj){
         if (this == anotherObj) {
@@ -406,5 +429,77 @@ public class Order implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Integer getTotalLineCount() {
+        return totalLineCount;
+    }
+
+    public void setTotalLineCount(Integer totalLineCount) {
+        this.totalLineCount = totalLineCount;
+    }
+
+    public Integer getTotalItemCount() {
+        return totalItemCount;
+    }
+
+    public void setTotalItemCount(Integer totalItemCount) {
+        this.totalItemCount = totalItemCount;
+    }
+
+    public Long getTotalExpectedQuantity() {
+        return totalExpectedQuantity;
+    }
+
+    public void setTotalExpectedQuantity(Long totalExpectedQuantity) {
+        this.totalExpectedQuantity = totalExpectedQuantity;
+    }
+
+    public Long getTotalOpenQuantity() {
+        return totalOpenQuantity;
+    }
+
+    public void setTotalOpenQuantity(Long totalOpenQuantity) {
+        this.totalOpenQuantity = totalOpenQuantity;
+    }
+
+    public Long getTotalInprocessQuantity() {
+        return totalInprocessQuantity;
+    }
+
+    public void setTotalInprocessQuantity(Long totalInprocessQuantity) {
+        this.totalInprocessQuantity = totalInprocessQuantity;
+    }
+
+    public Long getTotalPendingAllocationQuantity() {
+        return totalPendingAllocationQuantity;
+    }
+
+    public void setTotalPendingAllocationQuantity(Long totalPendingAllocationQuantity) {
+        this.totalPendingAllocationQuantity = totalPendingAllocationQuantity;
+    }
+
+    public Long getTotalOpenPickQuantity() {
+        return totalOpenPickQuantity;
+    }
+
+    public void setTotalOpenPickQuantity(Long totalOpenPickQuantity) {
+        this.totalOpenPickQuantity = totalOpenPickQuantity;
+    }
+
+    public Long getTotalPickedQuantity() {
+        return totalPickedQuantity;
+    }
+
+    public void setTotalPickedQuantity(Long totalPickedQuantity) {
+        this.totalPickedQuantity = totalPickedQuantity;
+    }
+
+    public Long getTotalShippedQuantity() {
+        return totalShippedQuantity;
+    }
+
+    public void setTotalShippedQuantity(Long totalShippedQuantity) {
+        this.totalShippedQuantity = totalShippedQuantity;
     }
 }

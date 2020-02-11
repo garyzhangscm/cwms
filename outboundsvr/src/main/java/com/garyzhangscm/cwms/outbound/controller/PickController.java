@@ -38,9 +38,14 @@ public class PickController {
 
     @RequestMapping(value="/picks", method = RequestMethod.GET)
     public List<Pick> findAllPicks(@RequestParam(name="number", required = false, defaultValue = "") String number,
+                                   @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
+                                   @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+                                   @RequestParam(name="sourceLocationId", required = false, defaultValue = "") Long sourceLocationId,
+                                   @RequestParam(name="destinationLocationId", required = false, defaultValue = "") Long destinationLocationId,
                                    @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
                                    @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds) {
-        return pickService.findAll(number, workOrderLineId, workOrderLineIds);
+        return pickService.findAll(number, orderId,
+                itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds);
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)
     public Pick findPick(@PathVariable Long id) {
@@ -59,8 +64,8 @@ public class PickController {
     }
 
     @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
-    public Pick cancelPick(@RequestBody Pick pick){
-        return pickService.cancelPick(pick);
+    public Pick cancelPick(@PathVariable Long id){
+        return pickService.cancelPick(id);
     }
 
     @RequestMapping(value="/picks/{id}/unpick", method = RequestMethod.POST)
@@ -78,9 +83,10 @@ public class PickController {
 
     @RequestMapping(value="/picks/{id}/confirm", method = RequestMethod.POST)
     public Pick confirmPick(@PathVariable Long id,
+                            @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
                             @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId) {
         try {
-            return pickService.confirmPick(id, nextLocationId);
+            return pickService.confirmPick(id, quantity, nextLocationId);
         }
         catch (IOException exception) {
             throw  new GenericException(10000, exception.getMessage());

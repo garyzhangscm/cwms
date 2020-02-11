@@ -25,6 +25,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "shipment_line")
@@ -107,6 +108,24 @@ public class ShipmentLine implements Serializable {
                 .append("shippedQuantity: ").append(shippedQuantity).append("}")
                 .toString();
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ShipmentLine that = (ShipmentLine) o;
+        if (id != null && that.id != null) {
+            return Objects.equals(id, that.id);
+        }
+        return  Objects.equals(warehouseId, that.warehouseId) &&
+                Objects.equals(number, that.number) &&
+                Objects.equals(shipment, that.shipment);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(warehouseId, number, shipment);
     }
 
     public Long getId() {

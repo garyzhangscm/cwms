@@ -39,7 +39,7 @@ public class LocationGroupController {
 
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups")
     public List<LocationGroup> listLocationGroups(@RequestParam Long warehouseId,
-                                                  @RequestParam(name = "location_group_types", required = false, defaultValue = "") String locationGroupTypes,
+                                                  @RequestParam(name = "locationGroupTypes", required = false, defaultValue = "") String locationGroupTypes,
                                                   @RequestParam(name = "name", required = false, defaultValue = "") String name) {
         return locationGroupService.findAll(warehouseId, locationGroupTypes, name);
     }
@@ -63,7 +63,7 @@ public class LocationGroupController {
 
 
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups")
-    public void removeLocationGroups(@RequestParam(name = "location_group_ids", required = false, defaultValue = "") String locationGroupIds) {
+    public void removeLocationGroups(@RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds) {
         locationGroupService.delete(locationGroupIds);
     }
 

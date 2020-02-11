@@ -246,4 +246,14 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() + inprocessQuantity);
         saveOrUpdate(orderLine);
     }
+
+    @Transactional
+    public void registerShipmentLineComplete(ShipmentLine shipmentLine, Long quantity) {
+        // When we complete a shipment line, we will move the
+        // quantity from order line's in process to shipped quantity
+        OrderLine orderLine = shipmentLine.getOrderLine();
+        orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() - quantity);
+        orderLine.setShippedQuantity(orderLine.getShippedQuantity() + quantity);
+        saveOrUpdate(orderLine);
+    }
 }

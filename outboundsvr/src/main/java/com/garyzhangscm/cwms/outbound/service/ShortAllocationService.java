@@ -126,9 +126,6 @@ public class ShortAllocationService {
         return newShortAllocation;
     }
 
-
-
-
     public void delete(ShortAllocation shortAllocation) {
         shortAllocationRepository.delete(shortAllocation);
     }
@@ -161,6 +158,9 @@ public class ShortAllocationService {
         shortAllocation.setItem(item);
         shortAllocation.setItemId(item.getId());
         shortAllocation.setQuantity(quantity);
+        shortAllocation.setOpenQuantity(quantity);
+        shortAllocation.setInprocessQuantity(0L);
+        shortAllocation.setDeliveredQuantity(0L);
         shortAllocation.setShipmentLine(shipmentLine);
         shortAllocation.setStatus(ShortAllocationStatus.PENDING);
         shortAllocation.setWarehouseId(shipmentLine.getWarehouseId());
@@ -175,6 +175,9 @@ public class ShortAllocationService {
         shortAllocation.setItem(item);
         shortAllocation.setItemId(item.getId());
         shortAllocation.setQuantity(quantity);
+        shortAllocation.setOpenQuantity(quantity);
+        shortAllocation.setInprocessQuantity(0L);
+        shortAllocation.setDeliveredQuantity(0L);
         shortAllocation.setStatus(ShortAllocationStatus.PENDING);
         shortAllocation.setWarehouseId(workOrder.getWarehouseId());
         shortAllocation.setWorkOrderLineId(workOrderLine.getId());
@@ -242,4 +245,10 @@ public class ShortAllocationService {
                 shortAllocation.getStatus().equals(ShortAllocationStatus.INPROCESS);
     }
 
+
+    public void registerPickCancelled(ShortAllocation shortAllocation, Long cancelledQuantity) {
+        shortAllocation.setOpenQuantity(shortAllocation.getOpenQuantity() + cancelledQuantity);
+        shortAllocation.setInprocessQuantity(shortAllocation.getInprocessQuantity() - cancelledQuantity);
+        save(shortAllocation);
+    }
 }

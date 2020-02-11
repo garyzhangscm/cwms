@@ -474,6 +474,7 @@ public class LocationService implements TestDataInitiableService {
         location.setName("TRLR-" + String.valueOf(trailerId));
         location.setLocationGroup(locationGroupService.getDockLocationGroup(warehouseId));
         location.setEnabled(true);
+        location.setWarehouse(warehouseService.findById(warehouseId));
         return saveOrUpdate(location);
     }
 

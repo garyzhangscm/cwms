@@ -33,4 +33,6 @@ public interface ProductionLineRepository extends JpaRepository<ProductionLine, 
 
     @Query("select line from ProductionLine line where line.warehouseId = :warehouseId and line.id in :ids")
     List<ProductionLine> findByIds(Long warehouseId, @Param("ids") List<Long>  productionIds);
+
+    List<ProductionLine> findByWarehouseId(Long warehouseId);
 }

@@ -34,8 +34,12 @@ public class ShipmentController {
 
 
     @RequestMapping(value="/shipments", method = RequestMethod.GET)
-    public List<Shipment> findAllShipments(@RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return shipmentService.findAll(number);
+    public List<Shipment> findAllShipments(@RequestParam Long warehouseId,
+                                           @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                           @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
+                                           @RequestParam(name="stopId", required = false, defaultValue = "") Long stopId,
+                                           @RequestParam(name="trailerId", required = false, defaultValue = "") Long trailerId) {
+        return shipmentService.findAll(warehouseId, number, orderNumber, stopId, trailerId);
     }
 
     @RequestMapping(value="/shipments", method = RequestMethod.POST)
@@ -62,14 +66,14 @@ public class ShipmentController {
     // Plan a list of order lines into shipments. One order per shipment.
     // We will pick / ship based upon shipments.
     @RequestMapping(value="/shipments/plan",  method = RequestMethod.POST)
-    public List<Shipment> planShipmetns(@RequestBody List<OrderLine> orderLines){
-        return shipmentService.planShipments(orderLines);
+    public List<Shipment> planShipmetns(@RequestParam Long warehouseId, @RequestBody List<OrderLine> orderLines){
+        return shipmentService.planShipments(warehouseId, orderLines);
     }
 
     @RequestMapping(value="/shipments/{id}/complete", method = RequestMethod.PUT)
     public Shipment completeShipment(@PathVariable Long id){
 
-        return shipmentService.completeShipment(id);
+        return shipmentService.autoCompleteShipment(id);
     }
 
 }

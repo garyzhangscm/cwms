@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.outbound.repository;
 
-import com.garyzhangscm.cwms.outbound.model.ShipmentLine;
+
+import com.garyzhangscm.cwms.outbound.model.CancelledPick;
+import com.garyzhangscm.cwms.outbound.model.Pick;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -27,12 +29,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ShipmentLineRepository extends JpaRepository<ShipmentLine, Long>, JpaSpecificationExecutor<ShipmentLine> {
-
-    @Query("select sl from ShipmentLine sl inner join sl.wave w where w.id =  :waveId")
-    List<ShipmentLine> findByWaveId(Long waveId);
-
-    @Query("select sl from ShipmentLine sl inner join sl.orderLine ol " +
-            " inner join ol.order o where o.number =  :orderNumber and sl.warehouseId = :warehouseId")
-    List<ShipmentLine> findByOrderNumber(Long warehouseId, String orderNumber);
+public interface CancelledPickRepository extends JpaRepository<CancelledPick, Long>, JpaSpecificationExecutor<CancelledPick> {
 }

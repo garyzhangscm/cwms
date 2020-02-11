@@ -22,11 +22,15 @@ package com.garyzhangscm.cwms.outbound.repository;
 import com.garyzhangscm.cwms.outbound.model.Stop;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 
 
 @Repository
 public interface StopRepository extends JpaRepository<Stop, Long>, JpaSpecificationExecutor<Stop> {
 
+    @Query("select s from Stop s inner join s.trailer t where t.id = :trailerId")
+    List<Stop> findByTrailerId(Long trailerId);
 }

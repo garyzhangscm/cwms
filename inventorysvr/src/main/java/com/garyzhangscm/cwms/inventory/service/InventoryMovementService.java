@@ -117,6 +117,7 @@ public class InventoryMovementService{
         inventoryMovement.setInventory(inventory);
         inventoryMovement.setLocationId(locationId);
         inventoryMovement.setSequence(sequence);
+        inventoryMovement.setWarehouseId(inventory.getWarehouseId());
         return save(inventoryMovement);
 
 

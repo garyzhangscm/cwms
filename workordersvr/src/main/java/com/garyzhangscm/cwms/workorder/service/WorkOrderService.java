@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -222,6 +223,7 @@ public class WorkOrderService implements TestDataInitiableService {
         workOrder.setNumber(workOrderCSVWrapper.getNumber());
         workOrder.setExpectedQuantity(workOrderCSVWrapper.getExpectedQuantity());
         workOrder.setProducedQuantity(0L);
+        workOrder.setStatus(WorkOrderStatus.PENDING);
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
                 workOrderCSVWrapper.getWarehouse()
@@ -273,6 +275,9 @@ public class WorkOrderService implements TestDataInitiableService {
             AllocationResult allocationResult
                     = outboundServiceRestemplateClient.allocateWorkOrder(workOrder);
 
+            logger.debug("Get result for work order {} \n, {} picks, {} short allocations, {}",
+                    workOrder.getNumber(), allocationResult.getPicks().size(),
+                    allocationResult.getShortAllocations().size(), allocationResult);
             // After we get the allocation result,
             // let's update the quantity in each work order line
 
@@ -298,10 +303,17 @@ public class WorkOrderService implements TestDataInitiableService {
                 // Move the 'inprocess quantity' we just calculated from 'Open quantity'
                 // to 'inprocess quantity'
                 Long inprocessQuantity = entry.getValue();
+                logger.debug("work order line {}'s inprocess quantity will be updated by {}",
+                        workOrderLine.getNumber(), inprocessQuantity);
                 workOrderLine.setOpenQuantity(workOrderLine.getOpenQuantity() - inprocessQuantity);
                 workOrderLine.setInprocessQuantity(workOrderLine.getInprocessQuantity() + inprocessQuantity);
                 workOrderLineService.save(workOrderLine);
             });
+            // If the current work order's status is 'Pending', change it to 'INPROCESS'
+            if (workOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
+                workOrder.setStatus(WorkOrderStatus.INPROCESS);
+                saveOrUpdate(workOrder);
+            }
 
         }
         catch (IOException ex) {
@@ -310,6 +322,35 @@ public class WorkOrderService implements TestDataInitiableService {
 
         // return the latest work order information
         return findById(workOrderId);
+    }
+
+
+    public WorkOrder changeProductionLine(Long id,
+                                          Long productionLineId){
+        // only allow to change the production line when the status is
+        // still pending
+        WorkOrder workOrder = findById(id);
+        if (!workOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
+            throw new GenericException(10000,"Can't change the production line once the work order is started");
+        }
+
+        ProductionLine newProductionLine = productionLineService.findById(productionLineId);
+
+        if (newProductionLine.getWorkOrderExclusiveFlag() == true &&
+            newProductionLine.getWorkOrders().size() > 0) {
+            // the production line is set to be exclusively occupies by
+            // any work order and there's already some work work on this production line
+            throw new GenericException(10000, "There's already work order " +newProductionLine.getWorkOrders().get(0).getNumber()
+                  + " on this production line");
+        }
+
+        // OK we are good to go
+        workOrder.setProductionLine(newProductionLine);
+        return saveOrUpdate(workOrder);
+
+
+
+
     }
 
 }

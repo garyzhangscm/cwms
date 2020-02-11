@@ -165,13 +165,20 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public List<Inventory> getPickedInventory(List<Pick> picks) {
+    public List<Inventory> getPickedInventory(Long warehouseId, List<Pick> picks) {
         // Convert a list of picks into a list of pick ids and join them into a single string with comma
         // Then we can call the inventory service endpoint to get all the picked inventory with those picks
         String pickIds =  picks.stream().map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
 
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories?pick_ids={pickIds}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}, pickIds).getBody();
+        StringBuilder url = new StringBuilder()
+                .append("http://zuulserver:5555/api/inventory/inventories?")
+                .append("pickIds={pickIds}")
+                .append("&warehouseId={warehouseId}");
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {},
+                pickIds, warehouseId).getBody();
 
         return responseBodyWrapper.getData();
     }
@@ -197,14 +204,15 @@ public class InventoryServiceRestemplateClient {
 
 
     public List<MovementPath> getPickMovementPath(Pick pick) {
-        return getPickMovementPath(pick.getSourceLocation(), pick.getDestinationLocation());
+        return getPickMovementPath(pick.getWarehouseId(), pick.getSourceLocation(), pick.getDestinationLocation());
     }
 
-    public List<MovementPath> getPickMovementPath(Location sourceLocation, Location destinationLocation) {
+    public List<MovementPath> getPickMovementPath(Long warehouseId, Location sourceLocation, Location destinationLocation) {
 
         StringBuilder url = new StringBuilder();
         url.append("http://zuulserver:5555/api/inventory/movement-path/match?")
-           .append("from_location_id={fromLocationId}")
+                .append("warehouseId={warehouseId}")
+                .append("&from_location_id={fromLocationId}")
                 .append("&from_location={fromLocationName}")
                 .append("&from_location_group_id={fromLocationGroupId}")
                 .append("&to_location_id={toLocationId}")
@@ -212,6 +220,7 @@ public class InventoryServiceRestemplateClient {
                 .append("&to_location_group_id={toLocationGroupId}");
         ResponseBodyWrapper<List<MovementPath>> responseBodyWrapper = restTemplate.exchange(url.toString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<MovementPath>>>() {},
+                warehouseId,
                 sourceLocation.getId(),
                 sourceLocation.getName(),
                 sourceLocation.getLocationGroup().getId(),
@@ -268,12 +277,14 @@ public class InventoryServiceRestemplateClient {
         StringBuilder url = new StringBuilder();
         url.append("http://zuulserver:5555/api/inventory/inventories?")
                 .append("itemName={itemName}")
-                .append("&location={locationName}");
+                .append("&location={locationName}")
+                .append("&warehouseId={warehouseId}");
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange(url.toString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {},
                 pick.getItem().getName(),
-                pick.getSourceLocation().getName()).getBody();
+                pick.getSourceLocation().getName(),
+                pick.getWarehouseId()).getBody();
 
         return responseBodyWrapper.getData();
 
