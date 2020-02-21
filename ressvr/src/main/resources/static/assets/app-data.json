@@ -54,6 +54,27 @@
       "hideInBreadcrumb": false,
       "children": [
         {
+          "text": "Authorization",
+          "i18n": "menu.main.auth",
+          "icon": "anticon-team",
+          "children": [
+            {
+              "text": "User",
+              "link": "/auth/user",
+              "i18n": "menu.main.auth.user",
+              "icon": "anticon-appstore",
+              "shortcut": false
+            },
+            {
+              "text": "Role",
+              "link": "/auth/role",
+              "i18n": "menu.main.auth.role",
+              "icon": "anticon-appstore",
+              "shortcut": false
+            }
+          ]
+        },
+        {
           "text": "Layout",
           "i18n": "menu.main.layout",
           "icon": "anticon-appstore",
@@ -154,32 +175,6 @@
             }
           ]
         },
-        {
-          "text": "Work Order",
-          "i18n": "menu.main.work-order",
-          "icon": "anticon-exception",
-          "children": [
-            {
-              "text": "Bill Of Measure",
-              "link": "/work-order/bill-of-material",
-              "i18n": "menu.main.work-order.bill-of-material",
-              "shortcut": false
-            },
-            {
-              "text": "Work Order",
-              "link": "/work-order/work-order",
-              "i18n": "menu.main.work-order.work-order",
-              "shortcut": false
-            },
-            {
-              "text": "Bill Of Measure",
-              "link": "/work-order/production-line",
-              "i18n": "menu.main.work-order.production-line",
-              "shortcut": false
-            }
-          ]
-        },
-
         {
           "text": "inbound",
           "i18n": "menu.main.inbound",

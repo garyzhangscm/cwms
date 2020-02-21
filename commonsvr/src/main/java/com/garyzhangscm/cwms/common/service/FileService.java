@@ -42,21 +42,15 @@ public class FileService {
 
     public File saveFile(MultipartFile file) throws IOException {
         String destination = destinationFolder  + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        System.out.println("Start to save file into: " + destination);
         File localFile = new File(destination);
 
         if (!localFile.getParentFile().exists()) {
-            System.out.println("Fold not exists, create the folder!");
             localFile.getParentFile().mkdirs();
-            System.out.println("Fold created!");
         }
         if (!localFile.exists()) {
-            System.out.println("File not exists, create the file!");
             localFile.createNewFile();
-            System.out.println("File created!");
         }
         file.transferTo(localFile);
-        System.out.println("File transfered!");
 
         return localFile;
 
@@ -71,9 +65,7 @@ public class FileService {
 
         // read from file
         try (Reader reader = new FileReader(file)) {
-            logger.debug("start to read content from files");
             MappingIterator<T> mappingIterator = mapper.readerFor(tClass).with(schema).readValues(reader);
-            logger.debug("mapper created!");
             return mappingIterator.readAll();
         }
     }

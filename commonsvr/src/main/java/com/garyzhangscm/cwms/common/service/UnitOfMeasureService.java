@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,12 +61,14 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
         return unitOfMeasureRepository.findByName(name);
     }
 
+    @Transactional
     public UnitOfMeasure save(UnitOfMeasure unitOfMeasure) {
         return unitOfMeasureRepository.save(unitOfMeasure);
     }
 
     // Save when the supplier's name doesn't exists
     // update when the supplier already exists
+    @Transactional
     public UnitOfMeasure saveOrUpdate(UnitOfMeasure unitOfMeasure) {
         logger.debug("Will save or update unit of measure: {}", unitOfMeasure.getName());
         if (unitOfMeasure.getId() == null && findByName(unitOfMeasure.getName()) != null) {
@@ -73,13 +76,16 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
         }
         return save(unitOfMeasure);
     }
+    @Transactional
     public void delete(UnitOfMeasure unitOfMeasure) {
         unitOfMeasureRepository.delete(unitOfMeasure);
     }
+    @Transactional
     public void delete(Long id) {
         unitOfMeasureRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(String unitOfMeasureIds) {
         // remove a list of location groups based upon the id passed in
         if (!unitOfMeasureIds.isEmpty()) {
@@ -90,13 +96,6 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
         }
     }
 
-    public List<UnitOfMeasure> loadData(File file) throws IOException {
-        CsvSchema schema = CsvSchema.builder().
-                addColumn("name").
-                addColumn("description").
-                build().withHeader();
-        return fileService.loadData(file, schema, UnitOfMeasure.class);
-    }
     public List<UnitOfMeasure> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -107,12 +106,13 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, UnitOfMeasure.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
-            logger.debug("Start to load unit of measure from {}", testDataFileName);
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<UnitOfMeasure> unitOfMeasures = loadData(inputStream);
             unitOfMeasures.stream().forEach(unitOfMeasure -> saveOrUpdate(unitOfMeasure));

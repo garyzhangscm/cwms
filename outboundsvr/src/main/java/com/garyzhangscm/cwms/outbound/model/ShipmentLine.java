@@ -85,13 +85,13 @@ public class ShipmentLine implements Serializable {
     )
     private List<Pick> picks = new ArrayList<>();
 
-    @OneToOne(
+    @OneToMany(
             mappedBy = "shipmentLine",
             cascade = CascadeType.REMOVE,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private ShortAllocation shortAllocation;
+    private List<ShortAllocation> shortAllocations = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -214,12 +214,12 @@ public class ShipmentLine implements Serializable {
         this.picks = picks;
     }
 
-    public ShortAllocation getShortAllocation() {
-        return shortAllocation;
+    public List<ShortAllocation> getShortAllocations() {
+        return shortAllocations;
     }
 
-    public void setShortAllocation(ShortAllocation shortAllocation) {
-        this.shortAllocation = shortAllocation;
+    public void setShortAllocations(List<ShortAllocation> shortAllocations) {
+        this.shortAllocations = shortAllocations;
     }
 
     public Long getLoadedQuantity() {

@@ -18,19 +18,36 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
-import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.clients.*;
-import javafx.collections.transformation.SortedList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class InitTestDataService {
+
+
+    UserService userService;
+    RoleService roleService;
+    UserRoleService userRoleService;
+    RoleMenuService roleMenuService;
+
+
+    /***
+     * Menus will be init when the server is started
+     * it is not based on any warehouse
+     * and necessary when the user login, before
+     * the user can ever load the test data
+    MenuGroupService menuGroupService;
+    MenuSubGroupService menuSubGroupService;
+    MenuService menuService;
+    ***/
+
+    Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
+    List<String> serviceNames = new ArrayList<>();
+
+
 
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
@@ -54,7 +71,44 @@ public class InitTestDataService {
                                LayoutServiceRestemplateClient layoutServiceRestemplateClient,
                                InboundServiceRestemplateClient inboundServiceRestemplateClient,
                                OutboundServiceRestemplateClient outboundServiceRestemplateClient,
-                               WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient) {
+                               WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient,
+                               UserService userService,
+                               RoleService roleService,
+                               // MenuGroupService menuGroupService,
+                               // MenuSubGroupService menuSubGroupService,
+                               // MenuService menuService,
+                               UserRoleService userRoleService,
+                               RoleMenuService roleMenuService) {
+
+        // Add service from current server
+        this.userService = userService;
+        this.roleService = roleService;
+        // this.menuGroupService = menuGroupService;
+        // this.menuSubGroupService = menuSubGroupService;
+        // this.menuService = menuService;
+        this.userRoleService = userRoleService;
+        this.roleMenuService = roleMenuService;
+
+
+        initiableServices.put("User", userService);
+        serviceNames.add("User");
+        initiableServices.put("Role", roleService);
+        serviceNames.add("Role");
+        /****
+        initiableServices.put("Menu Group", menuGroupService);
+        serviceNames.add("Menu Group");
+        initiableServices.put("Menu Sub Group", menuSubGroupService);
+        serviceNames.add("Menu Sub Group");
+        initiableServices.put("Menu", menuService);
+        serviceNames.add("Menu");
+         ****/
+        initiableServices.put("User's Role", userRoleService);
+        serviceNames.add("User's Role");
+        initiableServices.put("Role's Menu Access", roleMenuService);
+        serviceNames.add("Role's Menu Access");
+
+
+        // Add service from other servers
         this.commonServiceRestemplateClient = commonServiceRestemplateClient;
         this.layoutServiceRestemplateClient  = layoutServiceRestemplateClient;
         this.inventoryServiceRestemplateClient = inventoryServiceRestemplateClient;
@@ -73,6 +127,8 @@ public class InitTestDataService {
 
     public String[] getTestDataNames() {
         List<String> testDataNames = new ArrayList<>();
+        testDataNames.addAll(serviceNames);
+
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
             testDataNames.addAll(Arrays.asList(initiableServiceRestemplateClient.getTestDataNames()));
         }
@@ -87,16 +143,25 @@ public class InitTestDataService {
             initAll(warehouseName);
         }
         else {
-
-            for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
-                if (initiableServiceRestemplateClient.contains(name)) {
-                    initiableServiceRestemplateClient.initTestData(name, warehouseName);
+            if (initiableServices.containsKey(name)) {
+                initiableServices.get(name).initTestData(warehouseName);
+            }
+            else {
+                for (InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
+                    if (initiableServiceRestemplateClient.contains(name)) {
+                        initiableServiceRestemplateClient.initTestData(name, warehouseName);
+                    }
                 }
             }
         }
 
     }
     private void initAll(String warehouseName) {
+
+        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
+            testDataInitiableService.initTestData(warehouseName);
+        }
+
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
 
             initiableServiceRestemplateClient.initTestData(warehouseName);

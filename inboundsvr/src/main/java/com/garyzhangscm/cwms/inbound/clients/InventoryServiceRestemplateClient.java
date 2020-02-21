@@ -159,7 +159,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> findInventoryByReceipt(Long warehouseId, Long receiptId) {
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/inventory/inventories?")
-                .append("receipt_id={receiptId}")
+                .append("receiptId={receiptId}")
                 .append("&warehouseId={warehouseId}");
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange(

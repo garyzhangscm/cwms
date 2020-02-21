@@ -1,0 +1,5 @@
+username,password,email,firstname,lastname,admin,enabled,locked
+GZHANG,GZHANG,gzhang@gmail.com,Gary,Zhang,true,true,false
+OZHANG,OZHANG,ozhang@gmail.com,Olivia,Zhang,false,true,false
+RWU,RWU,rwu@gmail.com,Rainbow,Wu,false,true,false
+JZHANG,JZHANG, jzhang@gmail.com,Japser,Zhang,false,true,false

@@ -1,0 +1,9 @@
+text,i18n,icon,shortcutRoot,sequence,link,badge,menuGroup,name
+"Dashboard",menu.dashboard,anticon-dashboard,,1,,,User-Menu,User-Menu-Dashboard
+"Authorization",menu.main.auth,anticon-team,,1,,,Main-Menu,Main-Menu-Auth
+"Layout",menu.main.layout,anticon-appstore,,2,,,Main-Menu,Main-Menu-Layout
+"Inventory",menu.main.inventory,anticon-star,,3,,,Main-Menu,Main-Menu-Inventory
+"Inbound",menu.main.inbound,anticon-exception,,4,,,Main-Menu,Main-Menu-Inbound
+"Outbound",menu.main.outbound,anticon-global,,5,,,Main-Menu,Main-Menu-Outbound
+"Common",menu.main.common,anticon-setting,,6,,,Main-Menu,Main-Menu-Common
+"Util",menu.main.util,anticon-tool,,7,,,Main-Menu,Main-Menu-Util

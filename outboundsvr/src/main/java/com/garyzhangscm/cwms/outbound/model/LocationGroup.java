@@ -31,6 +31,7 @@ public class LocationGroup {
     private Boolean storable;
     private Boolean countable;
     private Boolean trackingVolume;
+    private Boolean consolidateLpn;
 
     private LocationGroupType locationGroupType;
 
@@ -96,5 +97,13 @@ public class LocationGroup {
 
     public void setTrackingVolume(Boolean trackingVolume) {
         this.trackingVolume = trackingVolume;
+    }
+
+    public Boolean getConsolidateLpn() {
+        return consolidateLpn;
+    }
+
+    public void setConsolidateLpn(Boolean consolidateLpn) {
+        this.consolidateLpn = consolidateLpn;
     }
 }

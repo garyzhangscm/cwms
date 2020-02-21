@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
-import javax.persistence.Column;
 
 public class LocationGroup {
 
@@ -34,6 +33,7 @@ public class LocationGroup {
     private Boolean storable;
     private Boolean countable;
     private Boolean trackingVolume;
+    private Boolean consolidateLpn;
 
 
     public Long getId() {
@@ -98,5 +98,13 @@ public class LocationGroup {
 
     public void setTrackingVolume(Boolean trackingVolume) {
         this.trackingVolume = trackingVolume;
+    }
+
+    public Boolean getConsolidateLpn() {
+        return consolidateLpn;
+    }
+
+    public void setConsolidateLpn(Boolean consolidateLpn) {
+        this.consolidateLpn = consolidateLpn;
     }
 }

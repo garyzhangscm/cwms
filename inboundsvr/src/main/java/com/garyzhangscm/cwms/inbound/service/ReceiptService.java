@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -135,12 +136,14 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
 
+    @Transactional
     public Receipt save(Receipt receipt) {
         Receipt newReceipt = receiptRepository.save(receipt);
         loadReceiptAttribute(newReceipt);
         return newReceipt;
     }
 
+    @Transactional
     public Receipt saveOrUpdate(Receipt receipt) {
         if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),receipt.getNumber()) != null) {
             receipt.setId(findByNumber(receipt.getWarehouseId(),receipt.getNumber()).getId());
@@ -148,6 +151,7 @@ public class ReceiptService implements TestDataInitiableService{
         return save(receipt);
     }
 
+    @Transactional
     public Receipt checkInReceipt(Long receiptId) throws Exception {
         Receipt receipt = findById(receiptId);
         logger.debug("receipt ID: {}, status: {}", receiptId, receipt.getReceiptStatus());
@@ -170,6 +174,7 @@ public class ReceiptService implements TestDataInitiableService{
         throw new GenericException(10000, "Receipt not in right status");
     }
 
+    @Transactional
     public Receipt addReceipt(Long warehouseId, String number, String clientId, String supplierId) {
         Receipt receipt = new Receipt();
         receipt.setNumber(number);
@@ -196,12 +201,15 @@ public class ReceiptService implements TestDataInitiableService{
         return save(receipt);
 
     }
+    @Transactional
     public void delete(Receipt receipt) {
         receiptRepository.delete(receipt);
     }
+    @Transactional
     public void delete(Long id) {
         receiptRepository.deleteById(id);
     }
+    @Transactional
     public void delete(String receiptIds) {
         if (!receiptIds.isEmpty()) {
             long[] receiptIdArray = Arrays.asList(receiptIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
@@ -218,11 +226,13 @@ public class ReceiptService implements TestDataInitiableService{
                 addColumn("number").
                 addColumn("client").
                 addColumn("supplier").
+                addColumn("allowUnexpectedItem").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, ReceiptCSVWrapper.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
@@ -241,6 +251,7 @@ public class ReceiptService implements TestDataInitiableService{
         Receipt receipt = new Receipt();
         receipt.setNumber(receiptCSVWrapper.getNumber());
         receipt.setReceiptStatus(ReceiptStatus.OPEN);
+        receipt.setAllowUnexpectedItem(receiptCSVWrapper.getAllowUnexpectedItem());
 
         if (!StringUtils.isBlank(receiptCSVWrapper.getWarehouse())) {
             Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptCSVWrapper.getWarehouse());

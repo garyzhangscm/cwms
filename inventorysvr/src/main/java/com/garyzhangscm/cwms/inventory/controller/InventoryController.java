@@ -67,8 +67,8 @@ public class InventoryController {
 
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-adj/{id}")
-    public void adjustDownInventory(@PathVariable Long id) {
-        inventoryService.adjustDownInventory(id);
+    public void adjustDownInventory(@PathVariable Long id, @RequestParam Long warehouseId) {
+        inventoryService.adjustDownInventory(id, warehouseId);
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/inventory/{id}")
@@ -78,7 +78,7 @@ public class InventoryController {
 
     @RequestMapping(method=RequestMethod.POST, value="/inventories")
     public Inventory addInventory(@RequestBody Inventory inventory) {
-        return inventoryService.save(inventory);
+        return inventoryService.addInventory(inventory);
     }
 
     @RequestMapping(method=RequestMethod.PUT, value="/inventory/{id}")

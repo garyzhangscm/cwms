@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
@@ -158,11 +159,13 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return putawayConfigurationRepository.findBySequence(sequence);
     }
 
+    @Transactional
     public PutawayConfiguration save(PutawayConfiguration putawayConfiguration) {
         return putawayConfigurationRepository.save(putawayConfiguration);
     }
 
 
+    @Transactional
     public PutawayConfiguration saveOrUpdate(PutawayConfiguration putawayConfiguration) {
         if (putawayConfiguration.getId() == null && findBySequence(putawayConfiguration.getSequence()) != null) {
             putawayConfiguration.setId(findBySequence(putawayConfiguration.getSequence()).getId());
@@ -170,15 +173,15 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return putawayConfigurationRepository.save(putawayConfiguration);
     }
 
-
-
-
+    @Transactional
     public void delete(PutawayConfiguration putawayConfiguration) {
         putawayConfigurationRepository.delete(putawayConfiguration);
     }
+    @Transactional
     public void delete(Long id) {
         putawayConfigurationRepository.deleteById(id);
     }
+    @Transactional
     public void delete(String putawayConfigurationIds) {
         if (!StringUtils.isBlank(putawayConfigurationIds)) {
             long[] putawayConfigurationIdArray = Arrays.asList(putawayConfigurationIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
@@ -205,6 +208,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, PutawayConfigurationCSVWrapper.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
@@ -276,6 +280,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return putawayConfiguration;
     }
 
+    @Transactional
     public Inventory allocateLocation(Inventory inventory) throws Exception{
         logger.debug("start to allocate location for inventory: {}", inventory.getLpn());
         Location location = allocateSuitableLocation(inventory);
@@ -294,6 +299,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     }
 
 
+    @Transactional
     private Location allocateSuitableLocation(Inventory inventory) {
         // First of all, let's find all suitable putaway configuration and
         // sort by sequence

@@ -20,30 +20,80 @@ package com.garyzhangscm.cwms.auth.service;
 
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     private UserRepository userRepository;
 
-    public User findById(int id) {
-        return userRepository.findById(id);
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 
     public List<User> findAll() {
-
-        return userRepository.findAll();
+        return findAll(null);
     }
+    public List<User> findAll(String usernames) {
+        return userRepository.findAll(
+            (Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<Predicate>();
+                if (!StringUtils.isBlank(usernames)) {
+                    CriteriaBuilder.In<String> inUsernames = criteriaBuilder.in(root.get("username"));
+                    for(String username : usernames.split(",")) {
+                        inUsernames.value(username);
+                    }
+                    predicates.add(criteriaBuilder.and(inUsernames));
+                }
 
+                Predicate[] p = new Predicate[predicates.size()];
+                return criteriaBuilder.and(predicates.toArray(p));
+            }
+        );
+
+    }
     public User findByUsername(String username){
         return userRepository.findByUsername(username);
     }
 
+    @Transactional
     public User save(User user) {
+        encryptPassword(user);
         return userRepository.save(user);
     }
+    @Transactional
+    public User saveOrUpdate(User user) {
+        // Save the user with encrypted password
+        encryptPassword(user);
+        if (Objects.isNull(user.getId()) && !StringUtils.isBlank(user.getUsername())) {
+            user.setId(findByUsername(user.getUsername()).getId());
+        }
+
+        return userRepository.save(user);
+    }
+    public void encryptPassword(User user) {
+        System.out.println("user: "+ user.getUsername());
+        if (!user.getPassword().startsWith("{") ||
+                user.getPassword().indexOf("}") < 0) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            logger.debug("User {}'s password was encrypt to {}",
+                    user.getUsername(), user.getPassword());
+        }
+    }
+
 }

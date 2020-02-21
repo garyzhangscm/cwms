@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Set;
 import java.util.TreeSet;
@@ -31,7 +34,10 @@ public class MenuSubGroup implements Comparable<MenuSubGroup>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_sub_group_id")
-    private Integer id;
+    private Long id;
+
+    @Column(name = "name")
+    private String  name;
 
     @Column(name = "text")
     private String  text;
@@ -45,9 +51,15 @@ public class MenuSubGroup implements Comparable<MenuSubGroup>{
     @Column(name = "shortcut_root")
     private Boolean shortcutRoot;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name="menu_sub_group_id")
-    private Set<Menu> children = new TreeSet<>();
+    @ManyToOne
+    @JoinColumn(name = "menu_group_id")
+    @JsonIgnore
+    private MenuGroup menuGroup;
+
+    @OneToMany(mappedBy = "menuSubGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonProperty("children")
+    @OrderBy("sequence ASC")
+    private Set<Menu> menus = new TreeSet<>();
 
 
     @Column(name = "sequence")
@@ -61,14 +73,23 @@ public class MenuSubGroup implements Comparable<MenuSubGroup>{
 
     @Override
     public int compareTo(MenuSubGroup anotherMenuSubGroup) {
-        return this.getSequence() - anotherMenuSubGroup.getSequence();
+        return this.getSequence().compareTo(anotherMenuSubGroup.getSequence());
     }
 
-    public Integer getId() {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -96,12 +117,16 @@ public class MenuSubGroup implements Comparable<MenuSubGroup>{
         this.icon = icon;
     }
 
-    public Set<Menu> getChildren() {
-        return children;
+    public Boolean getShortcutRoot() {
+        return shortcutRoot;
     }
 
-    public void setChildren(Set<Menu> children) {
-        this.children = children;
+    public Set<Menu> getMenus() {
+        return menus;
+    }
+
+    public void setMenus(Set<Menu> menus) {
+        this.menus = menus;
     }
 
     public Integer getSequence() {
@@ -134,5 +159,13 @@ public class MenuSubGroup implements Comparable<MenuSubGroup>{
 
     public void setBadge(Integer badge) {
         this.badge = badge;
+    }
+
+    public MenuGroup getMenuGroup() {
+        return menuGroup;
+    }
+
+    public void setMenuGroup(MenuGroup menuGroup) {
+        this.menuGroup = menuGroup;
     }
 }

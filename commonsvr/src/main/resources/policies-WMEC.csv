@@ -1,6 +1,6 @@
 key,value,description
-LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION,AUDIT,Location to Save Removed Inventory
-LOCATION-AUDIT-COUNT,REMOVE_INV,Location to Save Removed Inventory by Audit Count
+LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION,REMOVE_INV,Location to Save Removed Inventory
+LOCATION-AUDIT-COUNT,AUDIT,Location to Save Removed Inventory by Audit Count
 LOCATION-INVENTORY-ADJUST,INVADJ,Location to Save Removed Inventory by Inventory Adjustment
 LOCATION-GROUP-RECEIPT,RECEIPT,Location Group for Receipt
 JOB-EMERGENCY-REPLENISHMENT-MAX-COUNT,50,Max emergency replenishment can be processed in one round

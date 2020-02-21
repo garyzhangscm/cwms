@@ -1,0 +1,6 @@
+name,description,enabled
+Admin,Admin,true
+WarehouseManager,Warehouse Manager,true
+InboundManager,Inbound Manager,true
+OutboundManager,Outbound Manager,true
+InventoryManager,Inventory Manager,true

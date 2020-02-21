@@ -30,7 +30,11 @@ public class LocationGroup {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean trackingVolume;
+    private Boolean consolidateLpn;
 
+
+    private LocationGroupType locationGroupType;
 
     private Warehouse warehouse;
 
@@ -88,5 +92,29 @@ public class LocationGroup {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public LocationGroupType getLocationGroupType() {
+        return locationGroupType;
+    }
+
+    public void setLocationGroupType(LocationGroupType locationGroupType) {
+        this.locationGroupType = locationGroupType;
+    }
+
+    public Boolean getTrackingVolume() {
+        return trackingVolume;
+    }
+
+    public void setTrackingVolume(Boolean trackingVolume) {
+        this.trackingVolume = trackingVolume;
+    }
+
+    public Boolean getConsolidateLpn() {
+        return consolidateLpn;
+    }
+
+    public void setConsolidateLpn(Boolean consolidateLpn) {
+        this.consolidateLpn = consolidateLpn;
     }
 }

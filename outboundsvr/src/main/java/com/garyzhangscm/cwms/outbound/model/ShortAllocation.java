@@ -17,7 +17,7 @@ public class ShortAllocation  implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "shipment_line_id")
     @JsonIgnore
     private ShipmentLine shipmentLine;
@@ -53,6 +53,12 @@ public class ShortAllocation  implements Serializable {
 
     @Column(name = "delivered_quantity")
     private Long deliveredQuantity;
+
+    // How many times we have tried to
+    // allocate this short allocation to
+    // get an emergency replenishment
+    @Column(name = "allocation_count")
+    private Long allocationCount;
 
     @Column(name = "status")
     private ShortAllocationStatus status;
@@ -167,5 +173,13 @@ public class ShortAllocation  implements Serializable {
 
     public void setDeliveredQuantity(Long deliveredQuantity) {
         this.deliveredQuantity = deliveredQuantity;
+    }
+
+    public Long getAllocationCount() {
+        return allocationCount;
+    }
+
+    public void setAllocationCount(Long allocationCount) {
+        this.allocationCount = allocationCount;
     }
 }

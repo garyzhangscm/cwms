@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,11 +69,13 @@ public class PolicyService implements  TestDataInitiableService{
         return policyRepository.findByKeyIgnoreCase(key);
     }
 
+    @Transactional
     public Policy save(Policy policy) {
         return policyRepository.save(policy);
     }
     // Save when the client's name doesn't exists
     // update when the client already exists
+    @Transactional
     public Policy saveOrUpdate(Policy policy) {
         if (policy.getId() == null && findByKey(policy.getKey()) != null) {
             policy.setId(findByKey(policy.getKey()).getId());
@@ -80,13 +83,16 @@ public class PolicyService implements  TestDataInitiableService{
         return save(policy);
     }
 
+    @Transactional
     public void delete(Policy policy) {
         policyRepository.delete(policy);
     }
+    @Transactional
     public void delete(Long id) {
         policyRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(String policyIds) {
         // remove a list of location groups based upon the id passed in
         if (!policyIds.isEmpty()) {
@@ -97,10 +103,8 @@ public class PolicyService implements  TestDataInitiableService{
         }
     }
 
-    public List<Policy> loadData(String fileName) throws IOException {
-        return loadData(new File(fileName));
-    }
 
+    @Transactional
     public List<Policy> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -123,6 +127,7 @@ public class PolicyService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Policy.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?

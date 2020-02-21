@@ -18,7 +18,11 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "menu")
@@ -29,7 +33,10 @@ public class Menu implements Comparable<Menu> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_id")
-    private Integer id;
+    private Long id;
+
+    @Column(name = "name")
+    private String  name;
 
     @Column(name = "text")
     private String  text;
@@ -43,16 +50,42 @@ public class Menu implements Comparable<Menu> {
     @Column(name = "sequence")
     private Integer sequence;
 
+    @ManyToOne
+    @JoinColumn(name = "menu_sub_group_id")
+    @JsonIgnore
+    private MenuSubGroup menuSubGroup;
+
     @Override
     public int compareTo(Menu anotherMenu) {
-        return this.getSequence() - anotherMenu.getSequence();
+        return this.getSequence().compareTo(anotherMenu.getSequence());
     }
 
-    public Integer getId() {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Menu menu = (Menu) o;
+        return Objects.equals(id, menu.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -86,5 +119,13 @@ public class Menu implements Comparable<Menu> {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public MenuSubGroup getMenuSubGroup() {
+        return menuSubGroup;
+    }
+
+    public void setMenuSubGroup(MenuSubGroup menuSubGroup) {
+        this.menuSubGroup = menuSubGroup;
     }
 }

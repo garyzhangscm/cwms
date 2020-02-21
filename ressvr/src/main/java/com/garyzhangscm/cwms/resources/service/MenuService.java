@@ -18,25 +18,94 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.model.Menu;
+import com.garyzhangscm.cwms.resources.model.MenuCSVWrapper;
+import com.garyzhangscm.cwms.resources.model.MenuSubGroup;
+import com.garyzhangscm.cwms.resources.model.MenuSubGroupCSVWrapper;
 import com.garyzhangscm.cwms.resources.repository.MenuRepository;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Service
-public class MenuService {
+public class MenuService  implements TestDataInitiableService{
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     private MenuRepository menuRepository;
 
-    public Menu findById(int id) {
-        return menuRepository.findById(id);
+    @Autowired
+    private MenuSubGroupService menuSubGroupService;
+
+    @Autowired
+    private FileService fileService;
+    @Value("${fileupload.test-data.menus:menus}")
+    String testDataFile;
+
+    public Menu findById(Long id) {
+        return menuRepository.findById(id).orElse(null);
     }
 
     public List<Menu> findAll() {
 
         return menuRepository.findAll();
+    }
+    public Menu save(Menu menu) {
+        return menuRepository.save(menu);
+    }
+    public Menu findByName(String name) {
+        return menuRepository.findByName(name);
+    }
+
+
+    public List<MenuCSVWrapper> loadData(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("text").
+                addColumn("i18n").
+                addColumn("link").
+                addColumn("sequence").
+                addColumn("menuSubGroup").
+                addColumn("name").
+                build().withHeader();
+
+        return fileService.loadData(inputStream, schema, MenuCSVWrapper.class);
+    }
+
+    public void initTestData(String warehouseName) {
+        try {
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
+            List<MenuCSVWrapper> menuCSVWrappers = loadData(inputStream);
+            menuCSVWrappers.stream().forEach(menuCSVWrapper -> save(convertFromCSVWrapper(menuCSVWrapper)));
+        } catch (IOException ex) {
+            logger.debug("Exception while load test data: {}", ex.getMessage());
+        }
+    }
+
+    private Menu convertFromCSVWrapper(MenuCSVWrapper menuCSVWrapper) {
+        Menu menu = new Menu();
+        menu.setText(menuCSVWrapper.getText());
+        menu.setI18n(menuCSVWrapper.getI18n());
+        menu.setLink(menuCSVWrapper.getLink());
+        menu.setSequence(menuCSVWrapper.getSequence());
+        menu.setName(menuCSVWrapper.getName());
+
+        // Setup the parent menu group for this subgroup
+        menu.setMenuSubGroup(menuSubGroupService.findByName(menuCSVWrapper.getMenuSubGroup()));
+        return menu;
+
+
     }
 
 

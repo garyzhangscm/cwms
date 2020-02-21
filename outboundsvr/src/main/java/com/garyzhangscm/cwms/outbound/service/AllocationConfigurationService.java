@@ -396,7 +396,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
 
         // open quantity is the quantity we are about to allocate this time
-        Long openQuantity = shortAllocation.getQuantity();
+        Long openQuantity = shortAllocation.getOpenQuantity();
         logger.debug("Start to allocate short allocation: {} / {} / {} by going through all the strategy",
                 shortAllocation.getId(), shortAllocation.getItem(), shortAllocation.getItem().getItemFamily());
 

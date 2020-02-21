@@ -53,6 +53,9 @@ public class CommonServiceRestemplateClient {
 
         List<Policy> policies = responseBodyWrapper.getData();
         if (policies.size() > 0) {
+
+            logger.debug("Find result {} for policy {}",
+                    policies.get(0).getValue(), key);
             return policies.get(0);
         }
         else {

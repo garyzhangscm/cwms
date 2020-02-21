@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
@@ -428,14 +430,6 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
-    public void removeInventory(Long id) {
-        removeInventory(id, warehouseLayoutServiceRestemplateClient.getDefaultRemovedInventoryLocation());
-    }
-
-    public void removeInventory(Inventory inventory) {
-        removeInventory(inventory, warehouseLayoutServiceRestemplateClient.getDefaultRemovedInventoryLocation());
-    }
-
     // To remove inventory, we won't actually remove the record.
     // Instead we move the inventory to a 'logical' location
     public void removeInventory(Long id, Location destination) {
@@ -464,6 +458,8 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public Inventory moveInventory(Inventory inventory, Location destination, Long pickId) {
+        logger.debug("Start to move inventory {} to destination {}",
+                inventory.getLpn(), destination.getName());
         Location sourceLocation = inventory.getLocation();
         inventory.setLocationId(destination.getId());
         if (pickId != null) {
@@ -486,7 +482,33 @@ public class InventoryService implements TestDataInitiableService{
 
         // Reset the destination location's size
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
+
+        logger.debug("Location {}'s  consolidate LPN policy: ",
+                destination.getName(), destination.getLocationGroup().getConsolidateLpn());
+        if (destination.getLocationGroup().getConsolidateLpn() == true) {
+            // check if we can consolidate the inventory with LPN that
+            // already in the location
+            consolidateLpn(inventory, destination);
+            logger.debug("LPN consolidated! Now inventory has new LPN {}", inventory.getLpn());
+        }
         return save(inventory);
+    }
+    private void consolidateLpn(Inventory inventory, Location destination) {
+        // see if there's already LPN in the location
+        List<Inventory> inventories = findByLocationId(destination.getId());
+        List<String> existingLPN =
+                    inventories.stream()
+                        .filter(existingInventory -> existingInventory.getLpn() != inventory.getLpn())
+                            .map(existingInventory -> existingInventory.getLpn())
+                            .distinct().collect(Collectors.toList());
+        logger.debug("There's already {} existing LPN in the location",
+                existingLPN.size());
+        if (existingLPN.size() > 1) {
+            throw new GenericException(10000, "There's more than one LPN to be consolidated into");
+        }
+        else if (existingLPN.size() == 1) {
+            inventory.setLpn(existingLPN.get(0));
+        }
     }
     private void recalculateLocationSizeForInventoryMovement(Location sourceLocation, Location destination, double volume) {
         if (sourceLocation != null && sourceLocation.getLocationGroup().getTrackingVolume()) {
@@ -544,8 +566,8 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
-    public void adjustDownInventory(Long id) {
-        removeInventory(id, warehouseLayoutServiceRestemplateClient.getLocationForInventoryAdjustment());
+    public void adjustDownInventory(Long id, Long warehouseId) {
+        removeInventory(id, warehouseLayoutServiceRestemplateClient.getLocationForInventoryAdjustment(warehouseId));
     }
 
 
@@ -694,6 +716,19 @@ public class InventoryService implements TestDataInitiableService{
         else {
             return warehouse.getId();
         }
+    }
+
+    public Inventory addInventory(Inventory inventory) {
+
+        logger.debug("Location {}'s  consolidate LPN policy: ",
+                inventory.getLocation().getName(), inventory.getLocation().getLocationGroup().getConsolidateLpn());
+        if (inventory.getLocation().getLocationGroup().getConsolidateLpn() == true) {
+            // check if we can consolidate the inventory with LPN that
+            // already in the location
+            consolidateLpn(inventory, inventory.getLocation());
+            logger.debug("LPN consolidated! Now inventory has new LPN {}", inventory.getLpn());
+        }
+        return save(inventory);
     }
 
 }

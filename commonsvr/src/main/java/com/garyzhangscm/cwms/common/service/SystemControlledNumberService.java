@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,6 +83,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         return systemControlledNumberRepository.findByVariableIgnoreCase(variable.toLowerCase());
     }
 
+    @Transactional
     public SystemControlledNumber save(SystemControlledNumber systemControlledNumber) {
 
         systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
@@ -91,6 +93,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     }
     // Save when the client's name doesn't exists
     // update when the client already exists
+    @Transactional
     public SystemControlledNumber saveOrUpdate(SystemControlledNumber systemControlledNumber) {
         systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
         if (systemControlledNumber.getId() == null && findByVariable(systemControlledNumber.getVariable()) != null) {
@@ -118,7 +121,10 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
 
             systemControlledNumber = save(systemControlledNumber);
 
-            systemControlledNumber.setNextNumber(systemControlledNumber.getPrefix() + String.format("%0" + systemControlledNumber.getLength() +"d", nextNumber) + systemControlledNumber.getPostfix());
+            systemControlledNumber.setNextNumber(
+                    systemControlledNumber.getPrefix()
+                            + String.format("%0" + systemControlledNumber.getLength() +"d", nextNumber)
+                            + systemControlledNumber.getPostfix());
             return systemControlledNumber;
         }
 

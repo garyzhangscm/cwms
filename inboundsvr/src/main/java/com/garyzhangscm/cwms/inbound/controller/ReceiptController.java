@@ -78,7 +78,7 @@ public class ReceiptController {
         return receiptLineService.addReceiptLine(id, receiptLine);
     }
 
-    @RequestMapping(value="/receipts/{receiptId}/line/{receiptLineId}/receive", method = RequestMethod.POST)
+    @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/receive", method = RequestMethod.POST)
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,
                                @RequestBody Inventory inventory) {
@@ -104,5 +104,11 @@ public class ReceiptController {
     @RequestMapping(value="/receipts/{id}/inventories", method = RequestMethod.GET)
     public List<Inventory> findInventoryByReceipt(@PathVariable Long id){
         return receiptService.findInventoryByReceipt(id);
+    }
+
+
+    @RequestMapping(value="/receipts/lines", method = RequestMethod.DELETE)
+    public void removeReceiptLine(@RequestParam String receiptLineIds) {
+        receiptLineService.delete(receiptLineIds);
     }
 }

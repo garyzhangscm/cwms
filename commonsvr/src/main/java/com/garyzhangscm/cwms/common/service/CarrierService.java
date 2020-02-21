@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,11 +69,13 @@ public class CarrierService implements  TestDataInitiableService{
         return carrierRepository.findByName(name);
     }
 
+    @Transactional
     public Carrier save(Carrier carrier) {
         return carrierRepository.save(carrier);
     }
     // Save when the client's name doesn't exists
     // update when the client already exists
+    @Transactional
     public Carrier saveOrUpdate(Carrier carrier) {
         if (carrier.getId() == null && findByName(carrier.getName()) != null) {
             carrier.setId(findByName(carrier.getName()).getId());
@@ -80,13 +83,16 @@ public class CarrierService implements  TestDataInitiableService{
         return save(carrier);
     }
 
+    @Transactional
     public void delete(Carrier carrier) {
         carrierRepository.delete(carrier);
     }
+    @Transactional
     public void delete(Long id) {
         carrierRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(String carrierIds) {
         // remove a list of location groups based upon the id passed in
         if (!carrierIds.isEmpty()) {
@@ -97,10 +103,12 @@ public class CarrierService implements  TestDataInitiableService{
         }
     }
 
+    @Transactional
     public List<Carrier> loadData(String fileName) throws IOException {
         return loadData(new File(fileName));
     }
 
+    @Transactional
     public List<Carrier> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -121,6 +129,7 @@ public class CarrierService implements  TestDataInitiableService{
         return fileService.loadData(file, schema, Carrier.class);
     }
 
+    @Transactional
     public List<Carrier> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -141,6 +150,7 @@ public class CarrierService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Carrier.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?

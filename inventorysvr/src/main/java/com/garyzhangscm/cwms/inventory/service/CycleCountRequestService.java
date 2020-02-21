@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +60,7 @@ public class CycleCountRequestService{
     public boolean exists(Long id) {
         return findById(id) != null;
     }
+    @Transactional
     public void delete(Long id) {
         cycleCountRequestRepository.deleteById(id);
     }
@@ -78,11 +80,13 @@ public class CycleCountRequestService{
         return cycleCountRequestRepository.findOpenCycleCountRequestByLocationId(locationId);
     }
 
+    @Transactional
     public CycleCountRequest save(CycleCountRequest cycleCountRequest) {
         cycleCountBatchService.createCycleCountBatch(cycleCountRequest.getWarehouseId(), cycleCountRequest.getBatchId());
         return cycleCountRequestRepository.save(cycleCountRequest);
     }
 
+    @Transactional
     public List<CycleCountResult> confirmCycleCountRequests(String cycleCountRequestIds) {
 
         List<CycleCountRequest> cycleCountRequests =
@@ -114,11 +118,13 @@ public class CycleCountRequestService{
         return resultCycleCountResult;
     }
 
+    @Transactional
     private CycleCountResult confirmCycleCountRequest(CycleCountResult cycleCountResult) {
         return confirmCycleCountRequest(cycleCountResult, cycleCountResult.getQuantity());
     }
 
 
+    @Transactional
     private CycleCountResult confirmCycleCountRequest(CycleCountResult cycleCountResult, Long countQuantity) {
         cycleCountResult.setCountQuantity(countQuantity);
         logger.debug("confirm request with quantity: {}. Inventory Quantity: {}", countQuantity, cycleCountResult.getQuantity());
@@ -130,16 +136,19 @@ public class CycleCountRequestService{
         return cycleCountResultService.save(cycleCountResult);
     }
 
+    @Transactional
     private CycleCountResult confirmCycleCountRequest(Long cycleCountResultId) {
         return confirmCycleCountRequest(cycleCountResultService.findById(cycleCountResultId));
     }
 
 
+    @Transactional
     private CycleCountResult confirmCycleCountRequest(Long cycleCountResultId, Long countQuantity) {
         return confirmCycleCountRequest(cycleCountResultService.findById(cycleCountResultId), countQuantity);
     }
 
 
+    @Transactional
     public List<CycleCountResult> saveCycleCountResults(String cycleCountRequestId,
                                                         List<CycleCountResult> cycleCountResults) {
         logger.debug("Start to confirm: {}", cycleCountRequestId);
@@ -274,6 +283,7 @@ public class CycleCountRequestService{
 
     // create empty result structure
     // quantity will be the expected quantity. actual count quantity is 0
+    @Transactional
     public List<CycleCountResult> generateEmptyCycleCountResults(CycleCountRequest cycleCountRequest) {
         // Get all inventory from the location
         List<Inventory> inventories = inventoryService.findByLocationId(cycleCountRequest.getLocationId());
@@ -302,6 +312,7 @@ public class CycleCountRequestService{
         );
     }
 
+    @Transactional
     public List<CycleCountRequest> cancelCycleCountRequests(String cycleCountRequestIds) {
         return Arrays.stream(cycleCountRequestIds.split(","))
                 .map(Long::parseLong)
@@ -311,11 +322,13 @@ public class CycleCountRequestService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public CycleCountRequest cancelCycleCountRequest(CycleCountRequest cycleCountRequest) {
         cycleCountRequest.setStatus(CycleCountRequestStatus.CANCELLED);
         return cycleCountRequest;
     }
 
+    @Transactional
     public List<CycleCountRequest> reopenCancelledCycleCountRequests(String cycleCountRequestIds) {
         return Arrays.stream(cycleCountRequestIds.split(","))
                 .map(Long::parseLong)
@@ -325,6 +338,7 @@ public class CycleCountRequestService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public CycleCountRequest reopenCancelledCycleCountRequest(CycleCountRequest cycleCountRequest) {
         // if we have outstanding cycle count request or audit count in the same location,
         // let's ignore this request
@@ -354,6 +368,7 @@ public class CycleCountRequestService{
 
     }
 
+    @Transactional
     public List<CycleCountRequest> generateCycleCountRequest(
             String batchId, CycleCountRequestType cycleCountRequestType,
             Long warehouseId, String beginValue, String endValue,

@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,7 @@ public class AuditCountResultService {
     }
 
 
+    @Transactional
     public AuditCountResult save(AuditCountResult auditCountResult) {
         return auditCountResultRepository.save(auditCountResult);
     }
@@ -84,6 +86,7 @@ public class AuditCountResultService {
         }
         return auditCountResults;
     }
+    @Transactional
     public List<AuditCountResult> confirmAuditCountResults(String batchId,
                                                            Long locationId,
                                                            List<AuditCountResult> auditCountResults){
@@ -110,6 +113,7 @@ public class AuditCountResultService {
         return confirmedAuditCountResults;
     }
 
+    @Transactional
     public AuditCountResult confirmAuditCountResult(AuditCountResult auditCountResult) {
 
 
@@ -119,7 +123,7 @@ public class AuditCountResultService {
         if (auditCountResult.getInventory().getId() != null) {
             if (auditCountResult.getCountQuantity() == 0) {
                 inventoryService.removeInventory(auditCountResult.getInventory().getId(),
-                        warehouseLayoutServiceRestemplateClient.getLocationForAuditCount());
+                        warehouseLayoutServiceRestemplateClient.getLocationForAuditCount(auditCountResult.getWarehouseId()));
             }
             else {
                 auditCountResult.getInventory().setQuantity(auditCountResult.getCountQuantity());
@@ -134,6 +138,7 @@ public class AuditCountResultService {
         }
     }
 
+    @Transactional
     public void confirmAuditCountResultAsEmptyLocation(String batchId,
                                                        Long locationId) {
         List<AuditCountResult> auditCountResults = getEmptyAuditCountResults(batchId, locationId);

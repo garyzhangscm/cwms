@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,12 +68,14 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
         return carrierServiceLevelRepository.findByNatrualKey(carrierName, name);
     }
 
+    @Transactional
     public CarrierServiceLevel save(CarrierServiceLevel carrierServiceLevel) {
 
         return carrierServiceLevelRepository.save(carrierServiceLevel);
     }
     // Save when the client's name doesn't exists
     // update when the client already exists
+    @Transactional
     public CarrierServiceLevel saveOrUpdate(CarrierServiceLevel carrierServiceLevel) {
         if (carrierServiceLevel.getId() == null && findByNatrualKey(carrierServiceLevel.getCarrier().getName(), carrierServiceLevel.getName()) != null) {
             carrierServiceLevel.setId(findByNatrualKey(carrierServiceLevel.getCarrier().getName(), carrierServiceLevel.getName()).getId());
@@ -80,13 +83,16 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
         return save(carrierServiceLevel);
     }
 
+    @Transactional
     public void delete(CarrierServiceLevel carrierServiceLevel) {
         carrierServiceLevelRepository.delete(carrierServiceLevel);
     }
+    @Transactional
     public void delete(Long id) {
         carrierServiceLevelRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(String carrierServiceLevelIds) {
         // remove a list of location groups based upon the id passed in
         if (!carrierServiceLevelIds.isEmpty()) {
@@ -113,6 +119,7 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
         return fileService.loadData(file, schema, CarrierServiceLevelCSVWrapper.class);
     }
 
+    @Transactional
     public List<CarrierServiceLevelCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -125,6 +132,7 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, CarrierServiceLevelCSVWrapper.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
 

@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,12 +68,14 @@ public class CustomerService implements  TestDataInitiableService{
         return customerRepository.findByName(name);
     }
 
+    @Transactional
     public Customer save(Customer customer) {
         return customerRepository.save(customer);
     }
 
     // Save when the supplier's name doesn't exists
     // update when the supplier already exists
+    @Transactional
     public Customer saveOrUpdate(Customer customer) {
         if (customer.getId() == null && findByName(customer.getName()) != null) {
             customer.setId(findByName(customer.getName()).getId());
@@ -80,13 +83,16 @@ public class CustomerService implements  TestDataInitiableService{
         return save(customer);
     }
 
+    @Transactional
     public void delete(Customer customer) {
         customerRepository.delete(customer);
     }
+    @Transactional
     public void delete(Long id) {
         customerRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(String customerIds) {
         // remove a list of suppliers based upon the id passed in
         if (!customerIds.isEmpty()) {
@@ -135,6 +141,7 @@ public class CustomerService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Customer.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?

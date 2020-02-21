@@ -65,10 +65,8 @@ public class LoginController {
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
-        user.setEmail(username + "@gmail.com" );
+        user.setEmail("gzhang1999@gmail.com");
         user.setEnabled(true);
-        user.setFirstname(username);
-        user.setLastname(username);
         user.setLocked(false);
 
         return userService.save(user);
@@ -77,7 +75,7 @@ public class LoginController {
 
     @RequestMapping("/allusers")
     public List<User> getAllUsers() {
-          return userService.findAll();
+          return userService.findAll(null);
     }
 
 }

@@ -28,6 +28,7 @@ public class ReceiptCSVWrapper {
     private String supplier;
 
     private String warehouse;
+    private Boolean allowUnexpectedItem;
 
     public String getNumber() {
         return number;
@@ -59,5 +60,13 @@ public class ReceiptCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getAllowUnexpectedItem() {
+        return allowUnexpectedItem;
+    }
+
+    public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
+        this.allowUnexpectedItem = allowUnexpectedItem;
     }
 }

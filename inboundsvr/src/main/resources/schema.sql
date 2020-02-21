@@ -9,6 +9,7 @@ CREATE TABLE receipt (
   client_id   BIGINT,
   warehouse_id   BIGINT,
   status   int not null,
+  allow_unexpected_item boolean not null,
   supplier_id   BIGINT);
 
 CREATE TABLE receipt_line(
@@ -19,6 +20,8 @@ CREATE TABLE receipt_line(
   expected_quantity   BIGINT NOT NULL,
   received_quantity   BIGINT NOT NULL,
   receipt_id BIGINT,
+  over_receiving_quantity  BIGINT NOT NULL,
+  over_receiving_percent  DOUBLE NOT NULL,
   foreign key(receipt_id) references receipt(receipt_id));
 
 

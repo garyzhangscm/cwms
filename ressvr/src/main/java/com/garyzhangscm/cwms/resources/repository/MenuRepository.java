@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.repository;
 
 import com.garyzhangscm.cwms.resources.model.Menu;
+import com.garyzhangscm.cwms.resources.model.MenuGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -26,9 +27,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface MenuRepository extends JpaRepository<Menu, Integer>, JpaSpecificationExecutor<Menu> {
+public interface MenuRepository extends JpaRepository<Menu, Long>, JpaSpecificationExecutor<Menu> {
     List<Menu> findAll();
 
-    Menu findById(int id);
-
+    Menu findByName(String name);
 }
