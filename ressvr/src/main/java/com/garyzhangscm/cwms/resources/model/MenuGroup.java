@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+
 import javax.persistence.*;
 import java.util.Set;
 import java.util.TreeSet;
@@ -31,7 +34,10 @@ public class MenuGroup implements Comparable<MenuGroup>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_group_id")
-    private Integer id;
+    private Long id;
+
+    @Column(name = "name")
+    private String  name;
 
     @Column(name = "text")
     private String  text;
@@ -40,15 +46,19 @@ public class MenuGroup implements Comparable<MenuGroup>{
     private String i18n;
 
     @Column(name = "group_flag")
-    private Boolean group;
+    @JsonProperty("group")
+    private Boolean groupFlag;
 
     @Column(name = "hide_in_breadcrumb")
     private Boolean hideInBreadcrumb;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name="menu_group_id")
-//    @Transient
-    private Set<MenuSubGroup> children = new TreeSet<>();
+    @OneToMany(
+            mappedBy = "menuGroup",
+            cascade = CascadeType.REMOVE,
+            fetch = FetchType.LAZY)
+    @JsonProperty("children")
+    @OrderBy("sequence ASC")
+    private Set<MenuSubGroup> menuSubGroups = new TreeSet<>();
 
 
     @Column(name = "sequence")
@@ -59,11 +69,19 @@ public class MenuGroup implements Comparable<MenuGroup>{
         return this.getSequence() - anotherMenuGroup.getSequence();
     }
 
-    public Integer getId() {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -83,13 +101,6 @@ public class MenuGroup implements Comparable<MenuGroup>{
         this.i18n = i18n;
     }
 
-    public Boolean isGroup() {
-        return group;
-    }
-
-    public void setGroup(Boolean group) {
-        this.group = group;
-    }
 
     public Boolean isHideInBreadcrumb() {
         return hideInBreadcrumb;
@@ -99,12 +110,24 @@ public class MenuGroup implements Comparable<MenuGroup>{
         this.hideInBreadcrumb = hideInBreadcrumb;
     }
 
-    public Set<MenuSubGroup> getChildren() {
-        return children;
+    public Boolean getGroupFlag() {
+        return groupFlag;
     }
 
-    public void setChildren(Set<MenuSubGroup> children) {
-        this.children = children;
+    public void setGroupFlag(Boolean groupFlag) {
+        this.groupFlag = groupFlag;
+    }
+
+    public Boolean getHideInBreadcrumb() {
+        return hideInBreadcrumb;
+    }
+
+    public Set<MenuSubGroup> getMenuSubGroups() {
+        return menuSubGroups;
+    }
+
+    public void setMenuSubGroups(Set<MenuSubGroup> menuSubGroups) {
+        this.menuSubGroups = menuSubGroups;
     }
 
     public Integer getSequence() {

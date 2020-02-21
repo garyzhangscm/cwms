@@ -54,6 +54,8 @@ public class LocationGroup {
     private Boolean countable;
     @Column(name = "tracking_volume")
     private Boolean trackingVolume;
+    @Column(name = "consolidate_lpn")
+    private Boolean consolidateLpn;
 
     @Column(name = "volume_tracking_policy")
     private LocationVolumeTrackingPolicy volumeTrackingPolicy;
@@ -139,5 +141,13 @@ public class LocationGroup {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getConsolidateLpn() {
+        return consolidateLpn;
+    }
+
+    public void setConsolidateLpn(Boolean consolidateLpn) {
+        this.consolidateLpn = consolidateLpn;
     }
 }

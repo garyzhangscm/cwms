@@ -14,7 +14,9 @@ import java.util.Optional;
 public class KafkaReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaReceiver.class);
 
-    @KafkaListener(topics = {"order_activity", "test_data_init"})
+    // @KafkaListener(topics = {"order_activity", "test_data_init"})
+
+    @KafkaListener(topics = {"short-allocation"})
     public void listen(ConsumerRecord<?, ?> record) {
         Optional<?> kafkaMessage = Optional.ofNullable(record.value());
         if (kafkaMessage.isPresent()) {

@@ -1,0 +1,3 @@
+text,name,i18n,group,hideInBreadcrumb,sequence
+"User Menu",User-Menu,menu.user,true,true,1
+"Main Menu",Main-Menu,menu.main,true,false,2

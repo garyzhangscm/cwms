@@ -33,6 +33,7 @@ public class LocationGroupCSVWrapper {
     private Boolean countable;
     private Boolean trackingVolume;
     private String volumeTrackingPolicy;
+    private Boolean consolidateLpn;
 
     private String warehouse;
 
@@ -106,5 +107,13 @@ public class LocationGroupCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getConsolidateLpn() {
+        return consolidateLpn;
+    }
+
+    public void setConsolidateLpn(Boolean consolidateLpn) {
+        this.consolidateLpn = consolidateLpn;
     }
 }

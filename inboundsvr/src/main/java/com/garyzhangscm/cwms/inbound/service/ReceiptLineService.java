@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inbound.exception.GenericException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptLineRepository;
 import org.apache.commons.lang.StringUtils;
@@ -48,8 +49,6 @@ public class ReceiptLineService implements TestDataInitiableService{
     @Autowired
     private ReceiptService receiptService;
 
-    @Autowired
-    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
@@ -106,10 +105,12 @@ public class ReceiptLineService implements TestDataInitiableService{
 
     }
 
+    @Transactional
     public ReceiptLine save(ReceiptLine receiptLine) {
         return receiptLineRepository.save(receiptLine);
     }
 
+    @Transactional
     public ReceiptLine saveOrUpdate(ReceiptLine receiptLine) {
 
         if (receiptLine.getId() == null &&
@@ -120,12 +121,15 @@ public class ReceiptLineService implements TestDataInitiableService{
         return save(receiptLine);
     }
 
+    @Transactional
     public void delete(ReceiptLine receiptLine) {
         receiptLineRepository.delete(receiptLine);
     }
+    @Transactional
     public void delete(Long id) {
         receiptLineRepository.deleteById(id);
     }
+    @Transactional
     public void delete(String receiptLineIds) {
         if (!receiptLineIds.isEmpty()) {
             long[] receiptLineIdArray = Arrays.asList(receiptLineIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
@@ -144,11 +148,14 @@ public class ReceiptLineService implements TestDataInitiableService{
                 addColumn("item").
                 addColumn("expectedQuantity").
                 addColumn("receivedQuantity").
+                addColumn("overReceivingQuantity").
+                addColumn("overReceivingPercent").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, ReceiptLineCSVWrapper.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
@@ -169,6 +176,10 @@ public class ReceiptLineService implements TestDataInitiableService{
         receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity());
         receiptLine.setReceivedQuantity(receiptLineCSVWrapper.getReceivedQuantity());
 
+
+        receiptLine.setOverReceivingQuantity(receiptLineCSVWrapper.getOverReceivingQuantity());
+        receiptLine.setOverReceivingPercent(receiptLineCSVWrapper.getOverReceivingPercent());
+
         // Warehouse is mandate
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptLineCSVWrapper.getWarehouse());
         receiptLine.setWarehouseId(warehouse.getId());
@@ -185,8 +196,11 @@ public class ReceiptLineService implements TestDataInitiableService{
         return receiptLine;
     }
 
+    @Transactional
     public ReceiptLine addReceiptLine(Long receiptId, ReceiptLine receiptLine) {
-        receiptLine.setReceipt(receiptService.findById(receiptId));
+        Receipt receipt = receiptService.findById(receiptId);
+        receiptLine.setReceipt(receipt);
+        receiptLine.setWarehouseId(receipt.getWarehouseId());
         if (receiptLine.getItemId() == null && receiptLine.getItem() != null) {
             receiptLine.setItemId(receiptLine.getItem().getId());
         }
@@ -199,22 +213,80 @@ public class ReceiptLineService implements TestDataInitiableService{
         // Receive inventory and save it on the receipt
 
         Receipt receipt = receiptService.findById(receiptId);
+        ReceiptLine receiptLine = findById(receiptLineId);
+        // If the inventory has location passed in, we will directly receive the inventory into
+        // the location.
+        // Otherwise, we will receive the location on the receipt and let the putaway logic
+        // to decide where to put this LPN away
+
+        // Validate if we can receive the inventory
+        // 1. over receiving?
+        // 3. unexpected item number?
+        validateReceiving(receipt, receiptLine, inventory);
+
+        logger.debug("Will receive inventory\n {}", inventory);
+        if (inventory.getLocation() == null) {
+            Location location =
+                    warehouseLayoutServiceRestemplateClient.getLocationByName(
+                            receipt.getWarehouseId(), receipt.getNumber());
+            inventory.setLocationId(location.getId());
+            inventory.setLocation(location);
+            inventory.setVirtual(false);
+        }
+        else {
+            inventory.setVirtual(inventory.getLocation().getLocationGroup().getLocationGroupType().getVirtual());
+        }
         // Everytime when we check in a receipt, we will create a location with the same name so that
         // we can receive inventory on this receipt
-        Location location =
-                warehouseLayoutServiceRestemplateClient.getLocationByName(
-                        receipt.getWarehouseId(), receipt.getNumber());
-        inventory.setLocationId(location.getId());
-        inventory.setLocation(location);
-        inventory.setVirtual(false);
         inventory.setReceiptId(receiptId);
         inventory.setWarehouseId(receipt.getWarehouseId());
 
         Inventory newInventory = inventoryServiceRestemplateClient.addInventory(inventory);
-        ReceiptLine receiptLine = findById(receiptLineId);
         receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() + newInventory.getQuantity());
         save(receiptLine);
         return newInventory;
+    }
+
+    // validate whether we can receive inventory against this receipt line
+    // 1. over receiving?
+    // 3. unexpected item number?
+    private void validateReceiving(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {
+        // unexpected item number?
+        if (!receipt.getAllowUnexpectedItem() &&
+             !receiptLine.getItemId().equals(inventory.getItem().getId())) {
+            throw  new GenericException(10000, "Unexpected item not allowed for this receipt");
+        }
+
+        // check how many more we can receive against this receipt line
+        Long maxOverReceivingQuantityAllowedByQuantity = 0L;
+        Long maxOverReceivingQuantityAllowedByPercentage = 0L;
+
+        if (receiptLine.getOverReceivingQuantity() > 0) {
+            maxOverReceivingQuantityAllowedByQuantity = receiptLine.getOverReceivingQuantity();
+        }
+
+        if (receiptLine.getOverReceivingPercent() > 0) {
+            maxOverReceivingQuantityAllowedByPercentage =
+                    (long) (receiptLine.getExpectedQuantity() * receiptLine.getOverReceivingPercent() / 100);
+        }
+        Long maxOverReceivingQuantityAllowed = Math.max(
+                maxOverReceivingQuantityAllowedByQuantity, maxOverReceivingQuantityAllowedByPercentage);
+
+        // See should we receive this inventory, will the quantity maximum the total quantity allowed
+        if (receiptLine.getReceivedQuantity() + inventory.getQuantity() >
+                receiptLine.getExpectedQuantity() + maxOverReceivingQuantityAllowed) {
+            if (maxOverReceivingQuantityAllowed == 0) {
+                // over receiving is not allowed in this receipt line
+                throw  new GenericException(10000, "Over receiving is not allowed");
+            }
+            if (maxOverReceivingQuantityAllowed > 0) {
+                // over receiving is not allowed in this receipt line
+                throw  new GenericException(10000, "Over receiving. The maximum you can receive for this line is " +
+                        (receiptLine.getExpectedQuantity() + maxOverReceivingQuantityAllowed - receiptLine.getReceivedQuantity()));
+            }
+        }
+
+
     }
 
     public Long getWarehouseId(String warehouseName){

@@ -154,6 +154,7 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("countable").
                 addColumn("trackingVolume").
                 addColumn("volumeTrackingPolicy").
+                addColumn("consolidateLpn").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupCSVWrapper.class);
     }
@@ -169,6 +170,7 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("countable").
                 addColumn("trackingVolume").
                 addColumn("volumeTrackingPolicy").
+                addColumn("consolidateLpn").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupCSVWrapper.class);
@@ -204,6 +206,7 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.setPickable(locationGroupCSVWrapper.getPickable());
         locationGroup.setCountable(locationGroupCSVWrapper.getCountable());
         locationGroup.setStorable(locationGroupCSVWrapper.getStorable());
+        locationGroup.setConsolidateLpn(locationGroupCSVWrapper.getConsolidateLpn());
 
         locationGroup.setWarehouse(warehouseService.findByName(locationGroupCSVWrapper.getWarehouse()));
 

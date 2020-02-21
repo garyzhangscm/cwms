@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 import com.garyzhangscm.cwms.workorder.model.WorkOrder;
 
+import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,9 @@ import java.util.List;
 public class WorkOrderController {
     @Autowired
     WorkOrderService workOrderService;
+
+    @Autowired
+    WorkOrderLineService workOrderLineService;
 
 
     @RequestMapping(value="/work-orders", method = RequestMethod.GET)
@@ -73,6 +77,18 @@ public class WorkOrderController {
     @RequestMapping(value="/work-orders/{id}/allocate", method = RequestMethod.POST)
     public WorkOrder allocateWorkOrder(@PathVariable Long id) {
         return workOrderService.allocateWorkOrder(id);
+    }
+
+    @RequestMapping(value="/work-orders/lines/{id}/short-allocation-cancelled", method = RequestMethod.POST)
+    public void registerShortAllocationCancelled(@PathVariable Long id,
+                                           @RequestParam Long cancelledQuantity) {
+        workOrderLineService.registerShortAllocationCancelled(id, cancelledQuantity);
+    }
+
+    @RequestMapping(value="/work-orders/lines/{id}/pick-cancelled", method = RequestMethod.POST)
+    public void registerPickCancelled(@PathVariable Long id,
+                                           @RequestParam Long cancelledQuantity) {
+        workOrderLineService.registerPickCancelled(id, cancelledQuantity);
     }
 
     @RequestMapping(value="/work-orders/{id}/change-production-line", method = RequestMethod.POST)

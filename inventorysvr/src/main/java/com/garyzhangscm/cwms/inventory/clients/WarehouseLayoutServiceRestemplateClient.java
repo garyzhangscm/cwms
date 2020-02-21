@@ -232,7 +232,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    public Location getDefaultRemovedInventoryLocation() {
+    public Location getDefaultRemovedInventoryLocation(Long warehouseId) {
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/layout/locations/logic/default-removed-inventory-location");
@@ -244,26 +244,29 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Location getLocationForAuditCount() {
+    public Location getLocationForAuditCount(Long warehouseId) {
 
-        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations/logic/audit-count",
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(
+                "http://zuulserver:5555/api/layout/locations/logic/audit-count?warehouseId={warehouseId}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
-                }).getBody();
+                }, warehouseId).getBody();
 
         return responseBodyWrapper.getData();
     }
-    public Location getLocationForInventoryAdjustment() {
+    public Location getLocationForInventoryAdjustment(Long warehouseId) {
 
-        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locations/logic/inventory-adjust",
+        ResponseBodyWrapper<Location> responseBodyWrapper = restTemplate.exchange(
+                "http://zuulserver:5555/api/layout/locations/logic/inventory-adjust?warehouseId={warehouseId}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {
-                }).getBody();
+                }, warehouseId).getBody();
 
         return responseBodyWrapper.getData();
     }
 
     public LocationGroup getLocationGroupById(Long id) {
 
-        ResponseBodyWrapper<LocationGroup> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/locationgroups/{id}",
+        ResponseBodyWrapper<LocationGroup> responseBodyWrapper = restTemplate.exchange(
+                "http://zuulserver:5555/api/layout/locationgroups/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup>>() {
                 }, id).getBody();
 

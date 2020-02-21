@@ -69,6 +69,9 @@ public class Receipt {
     @Column(name = "status")
     private ReceiptStatus receiptStatus;
 
+    @Column(name = "allow_unexpected_item")
+    private Boolean allowUnexpectedItem;
+
     public Long getId() {
         return id;
     }
@@ -147,5 +150,13 @@ public class Receipt {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getAllowUnexpectedItem() {
+        return allowUnexpectedItem;
+    }
+
+    public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
+        this.allowUnexpectedItem = allowUnexpectedItem;
     }
 }

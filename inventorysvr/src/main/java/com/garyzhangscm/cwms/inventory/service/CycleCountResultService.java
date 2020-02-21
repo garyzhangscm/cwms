@@ -54,6 +54,7 @@ public class CycleCountResultService {
         return warehouseLayoutServiceRestemplateClient.setupCycleCountResultLocations(cycleCountResultRepository.findByBatchId(batchId));
     }
 
+    @Transactional
     public CycleCountResult save(CycleCountResult cycleCountResult) {
         return cycleCountResultRepository.save(cycleCountResult);
     }

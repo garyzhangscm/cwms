@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,11 +71,13 @@ public class ReasonCodeService implements  TestDataInitiableService{
         return findByType(ReasonCodeType.valueOf(type));
     }
 
+    @Transactional
     public ReasonCode save(ReasonCode reasonCode) {
         return reasonCodeRepository.save(reasonCode);
     }
     // Save when the reasonCode's name doesn't exists
     // update when the reasonCode already exists
+    @Transactional
     public ReasonCode saveOrUpdate(ReasonCode reasonCode) {
         if (reasonCode.getId() == null && findByName(reasonCode.getName()) != null) {
             reasonCode.setId(findByName(reasonCode.getName()).getId());
@@ -82,13 +85,16 @@ public class ReasonCodeService implements  TestDataInitiableService{
         return save(reasonCode);
     }
 
+    @Transactional
     public void delete(ReasonCode reasonCode) {
         reasonCodeRepository.delete(reasonCode);
     }
+    @Transactional
     public void delete(Long id) {
         reasonCodeRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(String reasonCodeIds) {
         // remove a list of location groups based upon the id passed in
         if (!reasonCodeIds.isEmpty()) {
@@ -125,6 +131,7 @@ public class ReasonCodeService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ReasonCode.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?

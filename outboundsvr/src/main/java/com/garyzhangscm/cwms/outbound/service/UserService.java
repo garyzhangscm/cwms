@@ -1,7 +1,5 @@
 package com.garyzhangscm.cwms.outbound.service;
 
-
-import com.garyzhangscm.cwms.outbound.model.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 

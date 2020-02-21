@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -50,10 +51,12 @@ public class AuditCountRequestService {
         return auditCountRequestRepository.findByLocationId(locationId);
     }
 
+    @Transactional
     public AuditCountRequest save(AuditCountRequest auditCountRequest) {
         return auditCountRequestRepository.save(auditCountRequest);
     }
 
+    @Transactional
     public AuditCountRequest generateAuditCountRequest(CycleCountResult cycleCountResult) {
         AuditCountRequest auditCountRequest = new AuditCountRequest();
         auditCountRequest.setBatchId(cycleCountResult.getBatchId());
@@ -66,9 +69,11 @@ public class AuditCountRequestService {
         return auditCountRequestRepository.findByBatchIdAndLocationId(batchId, locationId);
     }
 
+    @Transactional
     public void delete(AuditCountRequest auditCountRequest) {
         auditCountRequestRepository.delete(auditCountRequest);
     }
+    @Transactional
     public void removeAuditCountRequestByBatchIdAndLocationId(String batchId, Long locationId) {
         AuditCountRequest auditCountRequest = findByBatchIdAndLocationId(batchId, locationId);
         delete(findByBatchIdAndLocationId(batchId, locationId));

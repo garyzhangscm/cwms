@@ -67,6 +67,7 @@ CREATE TABLE location_group(
   storable  boolean not null default 0,
   countable  boolean not null default 0,
   tracking_volume  boolean not null default 0,
+  consolidate_lpn boolean not null default 0,
   volume_tracking_policy VARCHAR(20),
   foreign key(location_group_type_id) references location_group_type(location_group_type_id),
   foreign key(warehouse_id) references warehouse(warehouse_id));

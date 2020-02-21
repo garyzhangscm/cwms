@@ -58,4 +58,13 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 }).passwordEncoder(passwordEncoder());
     }
 
+    @Override
+    public void configure(HttpSecurity http) throws Exception{
+        http
+                .authorizeRequests()
+                .antMatchers("/site-information/default").permitAll()
+                .anyRequest()
+                .authenticated();
+    }
+
 }

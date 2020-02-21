@@ -1,5 +1,7 @@
 package com.garyzhangscm.cwms.resources;
 
+import com.garyzhangscm.cwms.resources.service.InitTestDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
@@ -29,6 +31,7 @@ public class ResourceServerApplication {
 
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(ResourceServerApplication.class, args);
 	}
 

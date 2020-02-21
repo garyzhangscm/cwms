@@ -24,10 +24,10 @@ public class OAuth2TokenWrapper {
     private String token;
     private String name;
     private String email;
-    private int id;
-    private long time;
+    private Long id;
+    private Long time;
 
-    public OAuth2TokenWrapper(String token, String name, String email, int id, long time) {
+    public OAuth2TokenWrapper(String token, String name, String email, Long id, Long time) {
         this.token = token;
         this.name = name;
         this.email = email;
@@ -63,11 +63,11 @@ public class OAuth2TokenWrapper {
         this.email = email;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.inbound.model;
 
-
 public class ReceiptLineCSVWrapper {
     private String receipt;
     private String number;
@@ -26,6 +25,10 @@ public class ReceiptLineCSVWrapper {
     private Long expectedQuantity;
     private Long receivedQuantity;
     private String warehouse;
+
+
+    private Long overReceivingQuantity;
+    private Double overReceivingPercent;
 
     public String getReceipt() {
         return receipt;
@@ -73,5 +76,21 @@ public class ReceiptLineCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getOverReceivingQuantity() {
+        return overReceivingQuantity;
+    }
+
+    public void setOverReceivingQuantity(Long overReceivingQuantity) {
+        this.overReceivingQuantity = overReceivingQuantity;
+    }
+
+    public Double getOverReceivingPercent() {
+        return overReceivingPercent;
+    }
+
+    public void setOverReceivingPercent(Double overReceivingPercent) {
+        this.overReceivingPercent = overReceivingPercent;
     }
 }

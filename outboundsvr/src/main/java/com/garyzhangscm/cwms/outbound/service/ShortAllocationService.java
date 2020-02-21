@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.PickRepository;
@@ -51,6 +52,11 @@ public class ShortAllocationService {
     private PickService pickService;
     @Autowired
     private AllocationConfigurationService allocationConfigurationService;
+    @Autowired
+    private CancelledShortAllocationService cancelledShortAllocationService;
+
+    @Autowired
+    private ShipmentLineService shipmentLineService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -58,6 +64,8 @@ public class ShortAllocationService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
 
     public ShortAllocation findById(Long id, boolean loadDetails) {
@@ -147,8 +155,46 @@ public class ShortAllocationService {
         if (shortAllocation.getStatus().equals(ShortAllocationStatus.COMPLETED)) {
             throw new GenericException(10000, "Can't cancel short allocation that is already cancelled");
         }
+
+
+        return cancelShortAllocation(shortAllocation, shortAllocation.getQuantity() - shortAllocation.getDeliveredQuantity());
+    }
+
+    public ShortAllocation cancelShortAllocation(ShortAllocation shortAllocation, Long cancelledQuantity) {
+        // we have nothing left to cancel
+        if (cancelledQuantity == 0) {
+            return shortAllocation;
+        }
         shortAllocation.setStatus(ShortAllocationStatus.CANCELLED);
+
+        // Return the quantity back to shipment line / work order line
+        registerShortAllocationCancelled(shortAllocation, cancelledQuantity);
+
         return save(shortAllocation);
+
+    }
+
+    private void registerShortAllocationCancelled(ShortAllocation shortAllocation, Long cancelledQuantity) {
+        if (shortAllocation.getShipmentLine() != null) {
+            shipmentLineService.registerShortAllocationCancelled(shortAllocation.getShipmentLine(), shortAllocation.getQuantity());
+        }
+        else if (shortAllocation.getWorkOrderLineId() != null) {
+            workOrderServiceRestemplateClient.registerShortAllocationCancelled(shortAllocation.getWorkOrderLineId(), shortAllocation.getQuantity());
+        }
+
+        // When we cancel the short allocation, do we still want to finish the
+        // related emergency replenishment picks, if the picks are already
+        // generated?
+        // Yes: Then next time when the orders with same item comes in, we won't
+        //      short again
+        // No: we will cancel the related pick so that we won't bother pick now,
+        //     as we don't know when the order with the same
+        //     item will come in again.
+        // For now, we will choose 'No' as it won't require us to do anything at this moment.
+        // The drawback of this choice is that, next time when we allocate a short allocation,
+        // we may need to consider the existing emergency picks as well
+
+        cancelledShortAllocationService.registerShortAllocationCancelled(shortAllocation, cancelledQuantity);
 
     }
 
@@ -164,6 +210,7 @@ public class ShortAllocationService {
         shortAllocation.setShipmentLine(shipmentLine);
         shortAllocation.setStatus(ShortAllocationStatus.PENDING);
         shortAllocation.setWarehouseId(shipmentLine.getWarehouseId());
+        shortAllocation.setAllocationCount(0L);
 
         return save(shortAllocation);
 
@@ -181,6 +228,7 @@ public class ShortAllocationService {
         shortAllocation.setStatus(ShortAllocationStatus.PENDING);
         shortAllocation.setWarehouseId(workOrder.getWarehouseId());
         shortAllocation.setWorkOrderLineId(workOrderLine.getId());
+        shortAllocation.setAllocationCount(0L);
 
         return save(shortAllocation);
 
@@ -189,9 +237,9 @@ public class ShortAllocationService {
     public ShortAllocation allocateShortAllocation(ShortAllocation shortAllocation) {
         logger.debug("Start to allocate short allocation: {} / {}",
                 shortAllocation.getItem(), shortAllocation.getItem().getItemFamily());
-        if (!isAllocatable(shortAllocation) || shortAllocation.getQuantity() <= 0) {
+        if (!isAllocatable(shortAllocation) || shortAllocation.getOpenQuantity() <= 0) {
             logger.debug("short allocation is not allocatable! is allocatable? {}, open quantity? {}",
-                    isAllocatable(shortAllocation), shortAllocation.getQuantity());
+                    isAllocatable(shortAllocation), shortAllocation.getOpenQuantity());
             return shortAllocation;
         }
 

@@ -61,6 +61,11 @@ public class ReceiptLine {
     @JoinColumn(name = "receipt_id")
     private Receipt receipt;
 
+    @Column(name = "over_receiving_quantity")
+    private Long overReceivingQuantity;
+    @Column(name = "over_receiving_percent")
+    private Double overReceivingPercent;
+
     public Long getId() {
         return id;
     }
@@ -131,5 +136,21 @@ public class ReceiptLine {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getOverReceivingQuantity() {
+        return overReceivingQuantity;
+    }
+
+    public void setOverReceivingQuantity(Long overReceivingQuantity) {
+        this.overReceivingQuantity = overReceivingQuantity;
+    }
+
+    public Double getOverReceivingPercent() {
+        return overReceivingPercent;
+    }
+
+    public void setOverReceivingPercent(Double overReceivingPercent) {
+        this.overReceivingPercent = overReceivingPercent;
     }
 }

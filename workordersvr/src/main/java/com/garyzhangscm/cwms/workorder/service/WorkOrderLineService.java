@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -247,6 +248,40 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
         return save(workOrderLine);
 
+
+    }
+
+
+    @Transactional
+    public void registerPickCancelled(Long workOrderLineId, Long cancelledQuantity) {
+        registerPickCancelled(findById(workOrderLineId), cancelledQuantity);
+    }
+    @Transactional
+    public void registerPickCancelled(WorkOrderLine workOrderLine, Long cancelledQuantity) {
+        logger.debug("registerPickCancelled: work order line: {}, cancelledQuantity: {}",
+                workOrderLine.getNumber(), cancelledQuantity);
+        workOrderLine.setOpenQuantity(workOrderLine.getOpenQuantity() + cancelledQuantity);
+        workOrderLine.setInprocessQuantity(workOrderLine.getInprocessQuantity() - cancelledQuantity);
+        workOrderLine = save(workOrderLine);
+        logger.debug("after pick cancelled, work order line {} has open quantity {}, in process quantity: {}",
+                workOrderLine.getNumber(), workOrderLine.getOpenQuantity(), workOrderLine.getInprocessQuantity());
+
+    }
+    @Transactional
+    public void registerShortAllocationCancelled(Long workOrderLineId, Long cancelledQuantity) {
+
+        registerShortAllocationCancelled(findById(workOrderLineId), cancelledQuantity);
+    }
+
+    @Transactional
+    public void registerShortAllocationCancelled(WorkOrderLine workOrderLine, Long cancelledQuantity) {
+        logger.debug("registerShortAllocationCancelled: work order line: {}, cancelledQuantity: {}",
+                workOrderLine.getNumber(), cancelledQuantity);
+        workOrderLine.setOpenQuantity(workOrderLine.getOpenQuantity() + cancelledQuantity);
+        workOrderLine.setInprocessQuantity(workOrderLine.getInprocessQuantity() - cancelledQuantity);
+        workOrderLine = save(workOrderLine);
+        logger.debug("after pick cancelled, work order line {} has open quantity {}, in process quantity: {}",
+                workOrderLine.getNumber(), workOrderLine.getOpenQuantity(), workOrderLine.getInprocessQuantity());
 
     }
 

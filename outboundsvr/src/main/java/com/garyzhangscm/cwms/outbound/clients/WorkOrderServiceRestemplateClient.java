@@ -54,18 +54,30 @@ public class WorkOrderServiceRestemplateClient {
 
     }
 
-    public WorkOrder registerPickCancelled(Long workOrderId, Long cancelledQuantity){
+    public WorkOrder registerPickCancelled(Long workOrderLineId, Long cancelledQuantity){
 
         StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/workorder/work-orders/{id}/pick-cancelled?")
+                .append("http://zuulserver:5555/api/workorder/work-orders/lines/{id}/pick-cancelled?")
                 .append("cancelledQuantity={cancelledQuantity}");
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper = restTemplate.exchange(
                 url.toString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {},
-                workOrderId, cancelledQuantity).getBody();
+                HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {},
+                workOrderLineId, cancelledQuantity).getBody();
 
         return responseBodyWrapper.getData();
     }
 
+    public WorkOrder registerShortAllocationCancelled(Long workOrderLineId, Long cancelledQuantity){
+
+        StringBuilder url = new StringBuilder()
+                .append("http://zuulserver:5555/api/workorder/work-orders/lines/{id}/short-allocation-cancelled?")
+                .append("cancelledQuantity={cancelledQuantity}");
+        ResponseBodyWrapper<WorkOrder> responseBodyWrapper = restTemplate.exchange(
+                url.toString(),
+                HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {},
+                workOrderLineId, cancelledQuantity).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 }

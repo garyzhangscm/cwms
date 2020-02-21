@@ -26,9 +26,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface MenuGroupRepository extends JpaRepository<MenuGroup, Integer>, JpaSpecificationExecutor<MenuGroup> {
+public interface MenuGroupRepository extends JpaRepository<MenuGroup, Long>, JpaSpecificationExecutor<MenuGroup> {
     List<MenuGroup> findAll();
 
-    MenuGroup findById(int id);
+    MenuGroup findByName(String name);
 
 }

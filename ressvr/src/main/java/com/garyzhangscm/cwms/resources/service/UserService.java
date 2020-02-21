@@ -1,0 +1,229 @@
+/**
+ * Copyright 2019
+ *
+ * @author gzhang
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.garyzhangscm.cwms.resources.service;
+
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.AuthServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.model.MenuGroup;
+import com.garyzhangscm.cwms.resources.model.SiteInformation;
+import com.garyzhangscm.cwms.resources.model.User;
+import com.garyzhangscm.cwms.resources.model.UserAuth;
+import com.garyzhangscm.cwms.resources.repository.UserRepository;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+public class UserService  implements TestDataInitiableService{
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private MenuGroupService menuGroupService;
+    @Autowired
+    private AuthServiceRestemplateClient authServiceRestemplateClient;
+    @Autowired
+    private FileService fileService;
+
+    @Value("${fileupload.test-data.users:users}")
+    String testDataFile;
+
+    public User findById(Long id) {
+        return findById(id, true);
+    }
+    public User findById(Long id, boolean loadAttribute) {
+        User user =  userRepository.findById(id).orElse(null);
+        if (user != null && loadAttribute) {
+            loadAttribute(user);
+        }
+        return user;
+    }
+
+    public User findByUsername(String username) {
+        return findByUsername(username, true);
+    }
+    public User findByUsername(String username, boolean loadAttribute) {
+        User user =  userRepository.findByUsername(username);
+        if (user != null && loadAttribute) {
+            loadAttribute(user);
+        }
+        return user;
+    }
+
+    public List<User> findAll() {
+
+        List<User> users =   userRepository.findAll();
+
+        loadAttribute(users);
+        return users;
+    }
+
+    public List<User> findAll(String username,
+                              String firstname,
+                              String lastname,
+                              Boolean enabled,
+                              Boolean locked) {
+
+        List<User> users =  userRepository.findAll(
+                (Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    if (!StringUtils.isBlank(username)) {
+                        predicates.add(criteriaBuilder.equal(root.get("username"), username));
+                    }
+
+                    if (!StringUtils.isBlank(firstname)) {
+                        predicates.add(criteriaBuilder.equal(root.get("firstname"), firstname));
+                    }
+
+                    if (!StringUtils.isBlank(lastname)) {
+                        predicates.add(criteriaBuilder.equal(root.get("lastname"), lastname));
+                    }
+
+                    if (enabled != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("enabled"), enabled));
+                    }
+
+                    if (locked != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("locked"), locked));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+        loadAttribute(users);
+        return users;
+
+
+    }
+
+    private void loadAttribute(List<User> users) {
+        String usernames = users.stream().map(User::getUsername).collect(Collectors.joining(","));
+        List<UserAuth> userAuths = authServiceRestemplateClient.getUserAuthByUsernames(usernames);
+        Map<String, UserAuth> userAuthMap = new HashMap<>();
+        userAuths.stream().forEach(userAuth -> userAuthMap.put(userAuth.getUsername(), userAuth));
+
+        users.stream().forEach(user -> setUserAuthInformation(user, userAuthMap.get(user.getUsername())));
+
+    }
+    private void loadAttribute(User user) {
+        // load the auth information for each user
+        UserAuth userAuth = authServiceRestemplateClient.getUserAuthByUsername(user.getUsername());
+
+        setUserAuthInformation(user, userAuth);
+    }
+    private void setUserAuthInformation(User user, UserAuth userAuth) {
+        user.setEmail(userAuth.getEmail());
+        user.setLocked(userAuth.isLocked());
+        user.setEnabled(userAuth.isEnabled());
+    }
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    public User saveOrUpdate(User user) {
+        if (Objects.isNull(user.getId()) &&
+                !Objects.isNull(findByUsername(user.getUsername()))) {
+            user.setId(findByUsername(user.getUsername()).getId());
+        }
+        return userRepository.save(user);
+    }
+    public SiteInformation getSiteInformaiton(String username) {
+        return getSiteInformaiton(findByUsername(username));
+
+    }
+    public SiteInformation getSiteInformaiton(User user) {
+        SiteInformation siteInformation = new SiteInformation();
+        siteInformation.setUser(user);
+
+        List<MenuGroup> menuGroups = menuGroupService.getAccessibleMenus(user);
+        siteInformation.setMenuGroups(menuGroups);
+        return siteInformation;
+    }
+
+    public List<User> loadData(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("username").
+                addColumn("password").
+                addColumn("email").
+                addColumn("firstname").
+                addColumn("lastname").
+                addColumn("admin").
+                addColumn("enabled").
+                addColumn("locked").
+                build().withHeader();
+
+        return fileService.loadData(inputStream, schema, User.class);
+    }
+
+    public void initTestData(String warehouseName) {
+        try {
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
+                    testDataFile + ".csv" :
+                    testDataFile + "-" + warehouseName + ".csv";
+            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
+            List<User> users = loadData(inputStream);
+            users.stream().forEach(user -> saveWithCredential(user));
+        } catch (IOException ex) {
+            logger.debug("Exception while load test data: {}", ex.getMessage());
+        }
+    }
+
+    private void saveWithCredential(User user) {
+        try {
+            saveOrUpdate(user);
+
+            // save the password , email, enabled, locked in the auth server
+            UserAuth userAuth = user.getUserAuth();
+            authServiceRestemplateClient.changeUserAuth(userAuth);
+        }
+        catch (IOException ex) {
+            logger.debug("Exception while save user data: {}", ex.getMessage());
+        }
+    }
+
+
+    public String getCurrentUserName() {
+        logger.debug("SecurityContextHolder.getContext().getAuthentication().getName(): {}",
+                SecurityContextHolder.getContext().getAuthentication().getName());
+        if (SecurityContextHolder.getContext().getAuthentication().getName().equals("anonymousUser")) {
+            return "";
+        }
+        else {
+            return SecurityContextHolder.getContext().getAuthentication().getName();
+        }
+    }
+}

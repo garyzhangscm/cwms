@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,13 +69,13 @@ public class ClientService implements  TestDataInitiableService{
         return clientRepository.findByName(name);
     }
 
+    @Transactional
     public Client save(Client client) {
-        logger.debug("Start to save client: {}", client.getName());
-
         return clientRepository.save(client);
     }
     // Save when the client's name doesn't exists
     // update when the client already exists
+    @Transactional
     public Client saveOrUpdate(Client client) {
         if (client.getId() == null && findByName(client.getName()) != null) {
             client.setId(findByName(client.getName()).getId());
@@ -82,13 +83,16 @@ public class ClientService implements  TestDataInitiableService{
         return save(client);
     }
 
+    @Transactional
     public void delete(Client client) {
         clientRepository.delete(client);
     }
+    @Transactional
     public void delete(Long id) {
         clientRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(String clientIds) {
         // remove a list of location groups based upon the id passed in
         if (!clientIds.isEmpty()) {
@@ -143,6 +147,7 @@ public class ClientService implements  TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Client.class);
     }
 
+    @Transactional
     public void initTestData(String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
