@@ -63,6 +63,25 @@ public class Customer implements Serializable {
     @Column(name = "address_postcode")
     private String addressPostcode;
 
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", contactorFirstname='" + contactorFirstname + '\'' +
+                ", contactorLastname='" + contactorLastname + '\'' +
+                ", addressCountry='" + addressCountry + '\'' +
+                ", addressState='" + addressState + '\'' +
+                ", addressCounty='" + addressCounty + '\'' +
+                ", addressCity='" + addressCity + '\'' +
+                ", addressDistrict='" + addressDistrict + '\'' +
+                ", addressLine1='" + addressLine1 + '\'' +
+                ", addressLine2='" + addressLine2 + '\'' +
+                ", addressPostcode='" + addressPostcode + '\'' +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }

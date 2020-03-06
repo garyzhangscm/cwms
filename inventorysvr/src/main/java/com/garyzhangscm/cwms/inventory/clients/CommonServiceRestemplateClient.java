@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -40,18 +41,19 @@ public class CommonServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
 
     public Client getClientById(Long id) {
 
-        ResponseBodyWrapper<Client> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/client/{id}",
+        ResponseBodyWrapper<Client> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/client/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}, id).getBody();
 
         return responseBodyWrapper.getData();
 
     }
     public Client getClientByName(String name) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/clients")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/common/clients")
                 .queryParam("name", name);
         ResponseBodyWrapper<List<Client>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
@@ -65,13 +67,13 @@ public class CommonServiceRestemplateClient {
     }
     public Supplier getSupplierById(Long id) {
 
-        ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/supplier/{id}",
+        ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/supplier/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Supplier>>() {}, id).getBody();
 
         return responseBodyWrapper.getData();
     }
     public Supplier getSupplierByName(String name) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/common/suppliers")
                 .queryParam("name", name);
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
@@ -87,7 +89,7 @@ public class CommonServiceRestemplateClient {
 
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
-        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/unit-of-measure/{id}",
+        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/unit-of-measure/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}, id).getBody();
 
         return responseBodyWrapper.getData();
@@ -95,7 +97,7 @@ public class CommonServiceRestemplateClient {
     public UnitOfMeasure getUnitOfMeasureByName(String name) {
 
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/unit-of-measure")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/common/unit-of-measure")
                 .queryParam("name", name);
 
         logger.debug("builder.toUriString(): " + builder.toUriString());

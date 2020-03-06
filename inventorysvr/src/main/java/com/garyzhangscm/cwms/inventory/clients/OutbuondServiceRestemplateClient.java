@@ -28,8 +28,10 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @CacheConfig(cacheNames = "outbound")
@@ -38,12 +40,12 @@ public class OutbuondServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(OutbuondServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    OAuth2RestOperations restTemplate;
 
 
     @Cacheable
     public Pick getPickById(Long id) {
-        ResponseBodyWrapper<Pick> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/outbound/picks/{id}",
+        ResponseBodyWrapper<Pick> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/outbound/picks/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {
                 }, id).getBody();
 
@@ -52,9 +54,12 @@ public class OutbuondServiceRestemplateClient {
     }
 
     public Pick unpick(Long pickId, Long unpickQuantity) {
-        ResponseBodyWrapper<Pick> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/outbound//picks/{id}/unpick?unpickQuantity={unpickQuantity}",
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/outbound/picks/{id}/unpick")
+                .queryParam("unpickQuantity", unpickQuantity);
+        ResponseBodyWrapper<Pick> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {
-                }, pickId, unpickQuantity).getBody();
+                }, pickId).getBody();
 
         return responseBodyWrapper.getData();
 

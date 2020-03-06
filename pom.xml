@@ -38,6 +38,8 @@
         <module>layoutserver</module>
         <!-- Resource Service: Configuration / Menu -->
         <module>ressvr</module>
+        <!-- Integration Service: Integration -->
+        <module>integrationsvr</module>
         <!--
         <module>licensing-service</module>
         -->

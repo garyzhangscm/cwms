@@ -1,26 +1,18 @@
 version: '2'
-
 services:
-  zookeeper1:
+  zookeeper:
     image: wurstmeister/zookeeper
-    restart: always
-    hostname: zookeeper1
     ports:
       - "2181:2181"
-    container_name: zookeeper
-
-  # kafka version: 1.1.0
-  # scala version: 2.12
-  kafka1:
+  kafka:
     image: wurstmeister/kafka
     ports:
       - "9092:9092"
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka1
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:2181"
-      KAFKA_BROKER_ID: 1
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CREATE_TOPICS: "stream-in:1:1,stream-out:1:1"
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_BROKER_ID: 10
+      KAFKA_CREATE_TOPICS: "ops_transaction:1:1,order_activity:1:1,test_data_init:1:1,short-allocation:1:1,INTEGRATION-CUSTOMER:1:1,INTEGRATION-CLIENT:1:1,INTEGRATION-SUPPLIER:1:1,
+                     INTEGRATION-ITEM:1:1,INTEGRATION-ITEM-FAMILY:1:1,INTEGRATION-ITEM-PACKAGE-TYPE:1:1,INTEGRATION-ITEM-UNIT-OF-MEASURE:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
-      - zookeeper1
-    container_name: kafka
+      - zookeeper

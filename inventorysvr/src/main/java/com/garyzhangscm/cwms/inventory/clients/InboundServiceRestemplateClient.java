@@ -28,6 +28,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 
@@ -42,12 +43,12 @@ public class InboundServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(InboundServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    OAuth2RestOperations restTemplate;
 
 
     @Cacheable
     public Receipt getReceiptById(Long id) {
-        ResponseBodyWrapper<Receipt> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inbound/receipts/{id}",
+        ResponseBodyWrapper<Receipt> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/inbound/receipts/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Receipt>>() {
                 }, id).getBody();
 

@@ -19,7 +19,10 @@ spring:
              enabled: false
            git:
              uri: https://github.com/garyzhangscm/config-repo
-             searchPaths: cwms/zuulservice,cwms/layoutservice,cwms/resourceservice,cwms/authservice,cwms/commonservice,cwms/inventoryservice,cwms/inboundservice,cwms/outboundservice,cwms/workorderservice
+             searchPaths: cwms/zuulservice,cwms/layoutservice,cwms/resourceservice,
+                          cwms/authservice,cwms/commonservice,cwms/inventoryservice,
+                          cwms/inboundservice,cwms/outboundservice,cwms/workorderservice,
+                          cwms/integrationservice
 eureka:
   instance:
     preferIpAddress: true
