@@ -83,6 +83,22 @@ public class Item implements Serializable {
         return this.getName().hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", clientId=" + clientId +
+                ", client=" + client +
+                ", itemFamily=" + itemFamily +
+                ", itemPackageTypes=" + itemPackageTypes +
+                ", unitCost=" + unitCost +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }

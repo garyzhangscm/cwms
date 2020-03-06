@@ -65,6 +65,25 @@ public class ItemUnitOfMeasure implements Serializable {
     @Transient
     private Warehouse warehouse;
 
+    @Override
+    public String toString() {
+        return "ItemUnitOfMeasure{" +
+                "id=" + id +
+                ", unitOfMeasureId=" + unitOfMeasureId +
+                ", unitOfMeasure=" + unitOfMeasure +
+                ", item=" + (itemPackageType == null? "" :
+                                 itemPackageType.getItem() == null ? "" : itemPackageType.getItem().getName()) +
+                ", itemPackageType=" + (itemPackageType == null ? "" : itemPackageType.getName()) +
+                ", quantity=" + quantity +
+                ", weight=" + weight +
+                ", length=" + length +
+                ", width=" + width +
+                ", height=" + height +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }

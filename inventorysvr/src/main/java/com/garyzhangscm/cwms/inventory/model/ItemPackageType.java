@@ -73,6 +73,23 @@ public class ItemPackageType implements Serializable {
     @Transient
     private Warehouse warehouse;
 
+    @Override
+    public String toString() {
+        return "ItemPackageType{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", clientId=" + clientId +
+                ", client=" + client +
+                ", supplierId=" + supplierId +
+                ", supplier=" + supplier +
+                ", item=" + (item == null ? "" : item.getName()) +
+                ", itemUnitOfMeasures=" + itemUnitOfMeasures +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }
