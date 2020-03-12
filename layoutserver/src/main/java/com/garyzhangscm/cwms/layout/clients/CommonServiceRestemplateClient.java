@@ -27,8 +27,10 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -39,17 +41,27 @@ public class CommonServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
 
+
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
+
 
 
     @Cacheable
     public Policy getPolicyByKey(String key) {
-        logger.debug("Start to get policy by url:\n {}", "http://zuulserver:5555/api/common/policies?key={key}");
-        logger.debug("key >> {}", key);
-        ResponseBodyWrapper<List<Policy>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/policies?key={key}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Policy>>>() {
-                }, key).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/common/policies")
+                        .queryParam("key", key);
+
+        ResponseBodyWrapper<List<Policy>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Policy>>>() {}).getBody();
 
         List<Policy> policies = responseBodyWrapper.getData();
         if (policies.size() > 0) {

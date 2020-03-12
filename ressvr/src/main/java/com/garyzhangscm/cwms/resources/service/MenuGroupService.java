@@ -39,6 +39,11 @@ public class MenuGroupService implements TestDataInitiableService{
 
     @Autowired
     private MenuGroupRepository menuGroupRepository;
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private MenuService menuService;
 
     @Autowired
     private FileService fileService;
@@ -74,6 +79,16 @@ public class MenuGroupService implements TestDataInitiableService{
         else {
             menuGroups = getAccessibleMenus(user.getRoles());
         }
+        menuGroups.sort(Comparator.comparing(MenuGroup::getSequence));
+
+        return menuGroups;
+    }
+
+    public List<MenuGroup> getAccessibleMenus(Role role) {
+
+        List<MenuGroup> menuGroups = getAccessibleMenus(
+                Collections.singletonList(role)
+        );;
         menuGroups.sort(Comparator.comparing(MenuGroup::getSequence));
 
         return menuGroups;

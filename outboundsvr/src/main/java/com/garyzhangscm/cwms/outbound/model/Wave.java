@@ -94,7 +94,10 @@ public class Wave implements Serializable {
     }
     public List<ShortAllocation> getShortAllocations() {
 
-        return shipmentLines.stream().map(shipmentLine -> shipmentLine.getShortAllocation()).filter(Objects::nonNull).collect(Collectors.toList());
+        return shipmentLines.stream()
+                .map(shipmentLine -> shipmentLine.getShortAllocations())
+                .filter(shortAllocations -> !shortAllocations.isEmpty())
+                .flatMap(List::stream).collect(Collectors.toList());
     }
 
     public WaveStatus getStatus() {

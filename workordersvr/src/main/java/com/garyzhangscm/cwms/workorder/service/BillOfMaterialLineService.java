@@ -19,12 +19,10 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.BillOfMaterialLineRepository;
-import com.garyzhangscm.cwms.workorder.repository.BillOfMaterialRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,8 +46,6 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
     @Autowired
     private BillOfMaterialService billOfMaterialService;
 
-    @Autowired
-    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired

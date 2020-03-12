@@ -33,8 +33,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -48,25 +50,24 @@ public class OutboundServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(OutboundServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestTemplate restTemplate;
-
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
 
     private ObjectMapper mapper = new ObjectMapper();
 
     public AllocationResult allocateWorkOrder(WorkOrder workOrder) throws IOException {
 
-        String requestBody = mapper.writeValueAsString(workOrder);
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/allocation/work-order");
 
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
-
-        ResponseBodyWrapper<AllocationResult> responseBodyWrapper = restTemplate.exchange(
-                "http://zuulserver:5555/api/outbound/allocation/work-order",
-                HttpMethod.POST, httpEntity,
-                new ParameterizedTypeReference<ResponseBodyWrapper<AllocationResult>>() {}).getBody();
+        ResponseBodyWrapper<AllocationResult> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.POST,
+                        getHttpEntity(mapper.writeValueAsString(workOrder)),
+                        new ParameterizedTypeReference<ResponseBodyWrapper<AllocationResult>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
@@ -74,30 +75,36 @@ public class OutboundServiceRestemplateClient {
 
     public List<Pick> getWorkOrderPicks(WorkOrder workOrder) throws IOException {
 
-        StringBuilder url = new StringBuilder()
-                            .append("http://zuulserver:5555/api/outbound/picks?")
-                            .append("workOrderLineIds={workOrderLineIds}");
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/picks")
+                        .queryParam("workOrderLineIds", getWorkOrderLineIds(workOrder));
 
-        ResponseBodyWrapper<List<Pick>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {},
-                getWorkOrderLineIds(workOrder)).getBody();
+        ResponseBodyWrapper<List<Pick>> responseBodyWrapper
+                = restTemplate.exchange(
+                            builder.toUriString(),
+                            HttpMethod.GET,
+                            null,
+                            new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
 
     public List<ShortAllocation> getWorkOrderShortAllocations(WorkOrder workOrder)  {
 
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/outbound/shortAllocations?")
-                .append("workOrderLineIds={workOrderLineIds}");
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/shortAllocations")
+                        .queryParam("workOrderLineIds", getWorkOrderLineIds(workOrder));
 
-        ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<ShortAllocation>>>() {},
-                getWorkOrderLineIds(workOrder)).getBody();
+        ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<List<ShortAllocation>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
@@ -110,32 +117,50 @@ public class OutboundServiceRestemplateClient {
 
     public List<Pick> getWorkOrderLinePicks(WorkOrderLine workOrderLine)  {
 
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/outbound/picks?")
-                .append("workOrderLineId={workOrderLineId}");
 
-        ResponseBodyWrapper< List<Pick>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<ResponseBodyWrapper< List<Pick>>>() {},
-                workOrderLine.getId()).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/picks")
+                        .queryParam("workOrderLineId", workOrderLine.getId());
+
+
+        ResponseBodyWrapper<List<Pick>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper< List<Pick>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
 
     public List<ShortAllocation> getWorkOrderLineShortAllocations(WorkOrderLine workOrderLine) {
 
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/outbound/shortAllocations?")
-                .append("workOrderLineId={workOrderLineId}");
 
-        ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<ResponseBodyWrapper< List<ShortAllocation>>>() {},
-                workOrderLine.getId()).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/shortAllocations")
+                        .queryParam("workOrderLineId", workOrderLine.getId());
+
+        ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper< List<ShortAllocation>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+    }
+
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
     }
 
 }

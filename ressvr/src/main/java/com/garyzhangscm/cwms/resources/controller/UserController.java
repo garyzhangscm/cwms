@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.resources.controller;
 
+import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.User;
 import com.garyzhangscm.cwms.resources.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,5 +47,17 @@ public class UserController {
     }
 
 
+    @RequestMapping(value="/users", method = RequestMethod.PUT)
+    public User addUser(@RequestBody User user) {
+        return userService.addUser(user);
+    }
 
+    @RequestMapping(value="/users/{id}/roles", method = RequestMethod.POST)
+    public ResponseBodyWrapper processRoles(@PathVariable Long id,
+                                            @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedRoleIds,
+                                            @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedRoleIds) {
+
+        userService.processRoles(id, assignedRoleIds, deassignedRoleIds);
+        return ResponseBodyWrapper.success("success");
+    }
 }

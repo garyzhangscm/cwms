@@ -110,8 +110,8 @@ public class WaveService {
     private void loadAttribute(Wave wave) {
         wave.getShipmentLines().forEach(shipmentLine -> {
             loadOrderLineAttribute(shipmentLine.getOrderLine());
-            if (shipmentLine.getShortAllocation() != null) {
-                loadShortAllocationAttribute(shipmentLine.getShortAllocation());
+            if (shipmentLine.getShortAllocations() != null) {
+                loadShortAllocationAttribute(shipmentLine.getShortAllocations());
             }
             loadPickAttribute(shipmentLine.getPicks());
         });
@@ -125,6 +125,10 @@ public class WaveService {
         }
     }
 
+    private void loadShortAllocationAttribute(List<ShortAllocation> shortAllocations) {
+
+        shortAllocations.forEach(this::loadShortAllocationAttribute);
+    }
     private void loadShortAllocationAttribute(ShortAllocation shortAllocation) {
 
         if (shortAllocation.getItemId() != null && shortAllocation.getItem() == null) {

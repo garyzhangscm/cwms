@@ -31,6 +31,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,9 +49,17 @@ public class InboundServiceRestemplateClient {
 
     @Cacheable
     public Receipt getReceiptById(Long id) {
-        ResponseBodyWrapper<Receipt> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/inbound/receipts/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Receipt>>() {
-                }, id).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inbound/receipts/{id}");
+
+        ResponseBodyWrapper<Receipt> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(id).toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Receipt>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 

@@ -23,44 +23,72 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 
 @Component
 public class LayoutServiceRestemplateClient implements  InitiableServiceRestemplateClient{
+
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
 
     public String initTestData(String warehouseName) {
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/layout/test-data/init?")
-                .append("warehouseName={warehouseName}");
-        ResponseEntity<String> restExchange = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.POST, null, String.class,
-                warehouseName);
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/test-data/init")
+                        .queryParam("warehouseName", warehouseName);
+
+        ResponseEntity<String> restExchange
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.POST,
+                        null,
+                        String.class);
         return restExchange.getBody();
     }
 
     public String initTestData(String name, String warehouseName) {
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/layout/test-data/init/{name}?")
-                .append("warehouseName={warehouseName}");
-        ResponseEntity<String> restExchange = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.POST, null, String.class,
-                name, warehouseName);
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/test-data/init/{name}")
+                        .queryParam("warehouseName", warehouseName);
+
+        ResponseEntity<String> restExchange
+                = restTemplate.exchange(
+                        builder.buildAndExpand(name).toUriString(),
+                        HttpMethod.POST,
+                        null,
+                        String.class);
         return restExchange.getBody();
     }
 
     public String[] getTestDataNames() {
-        ResponseBodyWrapper<String[]> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/layout/test-data",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<String[]>>() {}).getBody();
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/test-data");
+
+        ResponseBodyWrapper<String[]> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<String[]>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+
     }
     public boolean contains(String name) {
         return Arrays.stream(getTestDataNames()).anyMatch(dataName -> dataName.equals(name));

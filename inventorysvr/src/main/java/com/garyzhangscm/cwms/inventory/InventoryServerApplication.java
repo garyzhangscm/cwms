@@ -35,11 +35,6 @@ public class InventoryServerApplication {
 		SpringApplication.run(InventoryServerApplication.class, args);
 	}
 
-	@LoadBalanced
-	@Bean
-	public RestTemplate restTemplate() { return new RestTemplate(); }
-
-
 	@Bean
 	@ConfigurationProperties("security.oauth2.client")
 	public ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails() {

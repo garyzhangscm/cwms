@@ -30,11 +30,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -45,6 +47,10 @@ public class RoleService implements TestDataInitiableService{
     private static final Logger logger = LoggerFactory.getLogger(RoleService.class);
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private MenuService menuService;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private FileService fileService;
@@ -56,9 +62,26 @@ public class RoleService implements TestDataInitiableService{
         return roleRepository.findById(id).orElse(null);
     }
 
-    public List<Role> findAll() {
+    public List<Role> findAll(String name, Boolean enabled) {
 
-        return roleRepository.findAll();
+        return roleRepository.findAll(
+                (Root<Role> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    if (!StringUtils.isBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+
+
+                    if (enabled != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("enabled"), enabled));
+                    }
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
 
     }
 
@@ -101,5 +124,90 @@ public class RoleService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+
+
+    public void processMenus(Long roleId, String assignedMenuIds, String deassignedMenuIds) {
+
+        Role role = findById(roleId);
+        if (!StringUtils.isBlank(assignedMenuIds)) {
+            Arrays.stream(assignedMenuIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(menuId -> {
+                        Menu menu = menuService.findById(menuId);
+                        role.assignMenu(menu);
+                    });
+        }
+        if (!StringUtils.isBlank(deassignedMenuIds)) {
+            Arrays.stream(deassignedMenuIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(menuId -> {
+                        Menu menu = menuService.findById(menuId);
+                        role.deassignMenu(menu);
+                    });
+        }
+        saveOrUpdate(role);
+
+    }
+
+    public void processUsers(Long roleId, String assignedUserIds, String deassignedUserIds) {
+
+        Role role = findById(roleId);
+        if (!StringUtils.isBlank(assignedUserIds)) {
+            Arrays.stream(assignedUserIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(userId -> {
+                        User user = userService.findById(userId, false);
+                        user.assignRole(role);
+                        userService.saveOrUpdate(user);
+                    });
+        }
+        if (!StringUtils.isBlank(deassignedUserIds)) {
+            Arrays.stream(deassignedUserIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(userId -> {
+                        User user = userService.findById(userId, false);
+                        user.deassignRole(role);
+                        userService.saveOrUpdate(user);
+                    });
+        }
+
+    }
+
+    @Transactional
+    public Role addRole(Role role) {
+
+        logger.debug("start to add role: \n{}", role);
+        // assign the menu to the role
+        if (role.getMenuGroups().size() > 0) {
+            role.getMenuGroups().forEach(menuGroup -> {
+                menuGroup.getMenuSubGroups().forEach(menuSubGroup -> {
+                    menuSubGroup.getMenus().forEach(menu -> {
+                        logger.debug("Assign menu: {} to the role {}", menu, role.getName());
+                        Menu assignedMenu = menuService.findById(menu.getId());
+                        role.assignMenu(assignedMenu);
+                    });
+                });
+            });
+        }
+
+        // create the role with menus
+        Role newRole = save(role);
+
+        // assign the role to the user
+        if (role.getUsers().size() >0) {
+            role.getUsers().forEach(user -> {
+
+                logger.debug("Assign role: {} to the user {}", role.getName(), user);
+                user = userService.findById(user.getId());
+                user.assignRole(newRole);
+                userService.saveOrUpdate(user);
+            });
+        }
+        return newRole;
+
+
+
+    }
+
 
 }

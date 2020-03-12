@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.AuthServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.model.MenuGroup;
-import com.garyzhangscm.cwms.resources.model.SiteInformation;
-import com.garyzhangscm.cwms.resources.model.User;
-import com.garyzhangscm.cwms.resources.model.UserAuth;
+import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.UserRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -51,6 +48,8 @@ public class UserService  implements TestDataInitiableService{
     private UserRepository userRepository;
     @Autowired
     private MenuGroupService menuGroupService;
+    @Autowired
+    private RoleService roleService;
     @Autowired
     private AuthServiceRestemplateClient authServiceRestemplateClient;
     @Autowired
@@ -225,5 +224,33 @@ public class UserService  implements TestDataInitiableService{
         else {
             return SecurityContextHolder.getContext().getAuthentication().getName();
         }
+    }
+
+    public User addUser(User user) {
+        return save(user);
+    }
+
+    public User processRoles(Long userId, String assignedRoleIds, String deassignedRoleIds) {
+
+        User user = findById(userId);
+
+        if (!StringUtils.isBlank(assignedRoleIds)) {
+            Arrays.stream(assignedRoleIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(roleId -> {
+                        Role role = roleService.findById(roleId);
+                        user.assignRole(role);
+                    });
+        }
+        if (!StringUtils.isBlank(deassignedRoleIds)) {
+            Arrays.stream(deassignedRoleIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(roleId -> {
+                        Role role = roleService.findById(roleId);
+                        user.deassignRole(role);
+                    });
+        }
+        return saveOrUpdate(user);
+
     }
 }

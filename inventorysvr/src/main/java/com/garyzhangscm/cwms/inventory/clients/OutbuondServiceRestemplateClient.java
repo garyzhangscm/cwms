@@ -45,9 +45,18 @@ public class OutbuondServiceRestemplateClient {
 
     @Cacheable
     public Pick getPickById(Long id) {
-        ResponseBodyWrapper<Pick> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/outbound/picks/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {
-                }, id).getBody();
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/picks/{id}");
+
+        ResponseBodyWrapper<Pick> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(id).toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
@@ -55,11 +64,18 @@ public class OutbuondServiceRestemplateClient {
 
     public Pick unpick(Long pickId, Long unpickQuantity) {
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/outbound/picks/{id}/unpick")
-                .queryParam("unpickQuantity", unpickQuantity);
-        ResponseBodyWrapper<Pick> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {
-                }, pickId).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/picks/{id}/unpick")
+                        .queryParam("unpickQuantity", unpickQuantity);
+
+        ResponseBodyWrapper<Pick> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(pickId).toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 

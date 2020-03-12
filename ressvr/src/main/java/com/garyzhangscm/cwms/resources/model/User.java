@@ -63,6 +63,22 @@ public class User  {
     private List<Role> roles = new ArrayList<>();
 
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", isAdmin=" + isAdmin +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", locked=" + locked +
+                ", roles=" + roles +
+                '}';
+    }
+
     @JsonIgnore
     public UserAuth getUserAuth() {
         UserAuth userAuth = new UserAuth();
@@ -156,4 +172,18 @@ public class User  {
     }
 
     public String getName() {return username;}
+
+    public void assignRole(Role role) {
+
+        if (!getRoles().contains(role)) {
+            getRoles().add(role);
+        }
+    }
+
+    public void deassignRole(Role role) {
+
+        if (getRoles().contains(role)) {
+            getRoles().remove(role);
+        }
+    }
 }

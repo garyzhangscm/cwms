@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.model.*;
@@ -47,8 +46,6 @@ public class WorkOrderInstructionTemplateService implements TestDataInitiableSer
     @Autowired
     private BillOfMaterialService billOfMaterialService;
 
-    @Autowired
-    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
