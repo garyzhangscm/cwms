@@ -22,6 +22,9 @@ text,i18n,link,sequence,menuSubGruop,name
 "Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick
 "Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,5,Main-Menu-Outbound,Outbound-ShortAllocation
 "Trailer",menu.main.outbound.trailer,/outbound/trailer,6,Main-Menu-Outbound,Outbound-Trailer
+"Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material
+"Work Order",menu.main.work-order.work-order,/work-order/work-order,2,Main-Menu-WorkOrder,Work-Order
+"Production Line",menu.main.work-order.production-line,/work-order/production-line,3,Main-Menu-WorkOrder,Production-Line
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier
 "Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer

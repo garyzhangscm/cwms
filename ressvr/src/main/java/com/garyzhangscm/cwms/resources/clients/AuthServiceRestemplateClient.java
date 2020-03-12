@@ -30,8 +30,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 
 import java.io.IOException;
@@ -42,35 +44,42 @@ public class AuthServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceRestemplateClient.class);
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
 
     private ObjectMapper mapper = new ObjectMapper();
 
     public List<UserAuth> getUserAuthByUsernames(String usernames) {
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/auth/users?")
-                .append("usernames={usernames}");
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/auth/users")
+                        .queryParam("usernames", usernames);
 
-        List<UserAuth> userAuths = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<UserAuth>>() {},
-                usernames).getBody();
+
+        List<UserAuth> userAuths
+                = restTemplate.exchange(
+                            builder.toUriString(),
+                            HttpMethod.GET,
+                            null,
+                            new ParameterizedTypeReference<List<UserAuth>>() {}).getBody();
 
         return userAuths;
 
     }
 
     public UserAuth getUserAuthByUsername(String username) {
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/auth/users?")
-                .append("usernames={username}");
-
-        List<UserAuth> userAuths = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<UserAuth>>() {},
-                username).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/auth/users")
+                        .queryParam("usernames", username);
+        List<UserAuth> userAuths
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<List<UserAuth>>() {}).getBody();
 
         if (userAuths.size() == 0) {
             return null;
@@ -79,23 +88,26 @@ public class AuthServiceRestemplateClient {
     }
 
     public UserAuth changeUserAuth(UserAuth userAuth) throws IOException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/auth/users");
 
-        String requestBody = mapper.writeValueAsString(userAuth);
+        return restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(mapper.writeValueAsString(userAuth)),
+                new ParameterizedTypeReference<UserAuth>() {}).getBody();
 
+
+    }
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
         headers.setContentType(type);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
-
-
-
-        return restTemplate.exchange(
-                "http://zuulserver:5555/api/auth/users",
-                HttpMethod.POST, httpEntity,
-                new ParameterizedTypeReference<UserAuth>() {}).getBody();
-
-
+        return new HttpEntity<String>(requestBody, headers);
     }
 
 

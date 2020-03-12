@@ -8,7 +8,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -21,7 +22,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -35,7 +37,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -49,7 +52,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -62,7 +66,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -76,7 +81,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -90,7 +96,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
@@ -104,7 +111,8 @@ services:
       environment:
           SPRING_PROFILE: "aws-dev"
           CONFIGSERVER_URI: "http://configserver:8888"
-          DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"

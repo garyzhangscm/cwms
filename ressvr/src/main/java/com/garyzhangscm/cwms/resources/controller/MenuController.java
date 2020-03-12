@@ -35,7 +35,7 @@ public class MenuController {
     MenuGroupService menuGroupService;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<MenuGroup> listAllMenuGroups() {
+    public List<MenuGroup> listAllMenus() {
         return menuGroupService.findAll();
     }
 

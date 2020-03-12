@@ -37,24 +37,24 @@ public class MovementPathController {
     @RequestMapping(value="/movement-path", method = RequestMethod.GET)
     public List<MovementPath> findAllMovementPaths(
             @RequestParam Long warehouseId,
-            @RequestParam(name="from_location_id", required = false, defaultValue = "") Long fromLocationId,
-            @RequestParam(name="from_location", required = false, defaultValue = "") String fromLocationName,
-            @RequestParam(name="from_location_group_id", required = false, defaultValue = "") Long fromLocationGroupId,
-            @RequestParam(name="to_location_id", required = false, defaultValue = "") Long toLocationId,
-            @RequestParam(name="to_location", required = false, defaultValue = "") String toLocationName,
-            @RequestParam(name="to_location_group_id", required = false, defaultValue = "") Long toLocationGroupId) {
+            @RequestParam(name="fromLocationId", required = false, defaultValue = "") Long fromLocationId,
+            @RequestParam(name="fromLocation", required = false, defaultValue = "") String fromLocationName,
+            @RequestParam(name="fromLocationGroupId", required = false, defaultValue = "") Long fromLocationGroupId,
+            @RequestParam(name="toLocationId", required = false, defaultValue = "") Long toLocationId,
+            @RequestParam(name="toLocation", required = false, defaultValue = "") String toLocationName,
+            @RequestParam(name="toLocationGroupId", required = false, defaultValue = "") Long toLocationGroupId) {
         return movementPathService.findAll(warehouseId, fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
     }
 
     @RequestMapping(value="/movement-path/match", method = RequestMethod.GET)
     public List<MovementPath> findMatchedMovementPaths(
                                                    @RequestParam Long warehouseId,
-                                                   @RequestParam(name="from_location_id", required = false, defaultValue = "") Long fromLocationId,
-                                                   @RequestParam(name="from_location", required = false, defaultValue = "") String fromLocationName,
-                                                   @RequestParam(name="from_location_group_id", required = false, defaultValue = "") Long fromLocationGroupId,
-                                                   @RequestParam(name="to_location_id", required = false, defaultValue = "") Long toLocationId,
-                                                   @RequestParam(name="to_location", required = false, defaultValue = "") String toLocationName,
-                                                   @RequestParam(name="to_location_group_id", required = false, defaultValue = "") Long toLocationGroupId) {
+                                                   @RequestParam(name="fromLocationId", required = false, defaultValue = "") Long fromLocationId,
+                                                   @RequestParam(name="fromLocation", required = false, defaultValue = "") String fromLocationName,
+                                                   @RequestParam(name="fromLocationGroupId", required = false, defaultValue = "") Long fromLocationGroupId,
+                                                   @RequestParam(name="toLocationId", required = false, defaultValue = "") Long toLocationId,
+                                                   @RequestParam(name="toLocation", required = false, defaultValue = "") String toLocationName,
+                                                   @RequestParam(name="toLocationGroupId", required = false, defaultValue = "") Long toLocationGroupId) {
         return movementPathService.findMatchedMovementPaths(warehouseId, fromLocationId, fromLocationName, fromLocationGroupId, toLocationId, toLocationName, toLocationGroupId);
     }
 
@@ -82,14 +82,14 @@ public class MovementPathController {
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/movement-path?movement_path_ids")
-    public void removeMovementPath(@RequestParam(name="movement_path_ids") String movementPathIds) {
+    public void removeMovementPath(@RequestParam(name="movementPathIds") String movementPathIds) {
         movementPathService.removeMovementPaths(movementPathIds);
     }
 
 
     @RequestMapping(method=RequestMethod.POST, value="/movement-path/reserve")
-    public List<Location> reserveHopLocations(@RequestParam(name="from_location_id") Long fromLocationId,
-                                              @RequestParam(name="to_location_id") Long toLocationId,
+    public List<Location> reserveHopLocations(@RequestParam(name="fromLocationId") Long fromLocationId,
+                                              @RequestParam(name="toLocationId") Long toLocationId,
                                               @RequestBody Inventory inventory) {
 
         return movementPathService.reserveHopLocations(fromLocationId, toLocationId, inventory);

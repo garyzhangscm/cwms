@@ -69,6 +69,20 @@ public class MenuGroup implements Comparable<MenuGroup>{
         return this.getSequence() - anotherMenuGroup.getSequence();
     }
 
+    @Override
+    public String toString() {
+        return "MenuGroup{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", text='" + text + '\'' +
+                ", i18n='" + i18n + '\'' +
+                ", groupFlag=" + groupFlag +
+                ", hideInBreadcrumb=" + hideInBreadcrumb +
+                ", menuSubGroups=" + menuSubGroups +
+                ", sequence=" + sequence +
+                '}';
+    }
+
     public String getName() {
         return name;
     }

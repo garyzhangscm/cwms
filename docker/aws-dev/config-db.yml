@@ -14,22 +14,23 @@ services:
     environment:
       ENCRYPT_KEY:       "CWMS2018"
       COMPOSE_PROJECT_NAME: "CONFIGURATION"
-## Move database from docker based to AWS RDS
-#  database:
-#    image: mysql
-#    command: --default-authentication-plugin=mysql_native_password
-#    restart: "no"
-#    ports:
-#      - 3306:3306
-#    networks:
-#      - vpcbr
-     #   ipv4_address: 10.5.0.5
-#    environment:
-#      MYSQL_ROOT_PASSWORD: garyzhangscm
-#      MYSQL_DATABASE: cwms
-#      MYSQL_USER: cwms_dba
-#      MYSQL_PASSWORD: cwms@2019
-#      COMPOSE_PROJECT_NAME: "DATABASE"
+
+  database:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    # restart: "no"
+    restart: always
+    ports:
+      - 3306:3306
+    # networks:
+    #  - vpcbr
+    #   ipv4_address: 10.5.0.5
+    environment:
+      MYSQL_ROOT_PASSWORD: garyzhangscm
+      MYSQL_DATABASE: cwms
+      MYSQL_USER: cwms_dba
+      MYSQL_PASSWORD: cwms@2018
+      COMPOSE_PROJECT_NAME: "DATABASE"
 
 # adminer is a standard dock to configure database
 # database name will be "database", which is the service name

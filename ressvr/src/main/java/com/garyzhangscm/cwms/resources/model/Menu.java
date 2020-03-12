@@ -73,6 +73,19 @@ public class Menu implements Comparable<Menu> {
         return Objects.hash(id);
     }
 
+    @Override
+    public String toString() {
+        return "Menu{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", text='" + text + '\'' +
+                ", i18n='" + i18n + '\'' +
+                ", link='" + link + '\'' +
+                ", sequence=" + sequence +
+                ", menuSubGroup=" + menuSubGroup +
+                '}';
+    }
+
     public String getName() {
         return name;
     }

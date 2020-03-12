@@ -76,6 +76,23 @@ public class MenuSubGroup implements Comparable<MenuSubGroup>{
         return this.getSequence().compareTo(anotherMenuSubGroup.getSequence());
     }
 
+    @Override
+    public String toString() {
+        return "MenuSubGroup{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", text='" + text + '\'' +
+                ", i18n='" + i18n + '\'' +
+                ", icon='" + icon + '\'' +
+                ", shortcutRoot=" + shortcutRoot +
+                ", menuGroup=" + menuGroup +
+                ", menus=" + menus +
+                ", sequence=" + sequence +
+                ", link='" + link + '\'' +
+                ", badge=" + badge +
+                '}';
+    }
+
     public String getName() {
         return name;
     }

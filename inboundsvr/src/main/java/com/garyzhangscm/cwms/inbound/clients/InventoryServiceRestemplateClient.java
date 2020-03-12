@@ -30,6 +30,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -42,13 +43,25 @@ public class InventoryServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryServiceRestemplateClient.class);
     private ObjectMapper mapper = new ObjectMapper();
+
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
 
     public Item getItemById(Long id) {
 
-        ResponseBodyWrapper<Item> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/item/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Item>>() {}, id).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/item/{id}");
+
+
+        ResponseBodyWrapper<Item> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(id).toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Item>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
@@ -56,15 +69,20 @@ public class InventoryServiceRestemplateClient {
 
     public Item getItemByName(Long warehouseId, String name) {
 
-        StringBuilder url = new StringBuilder()
-                                .append("http://zuulserver:5555/api/inventory/items?")
-                                .append("name={name}")
-                                .append("&warehouseId={warehouseId}");
 
-        ResponseBodyWrapper<List<Item>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {},
-                name, warehouseId).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/items")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Item>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                    null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
 
         List<Item> items = responseBodyWrapper.getData();
         if (items.size() == 0) {
@@ -78,8 +96,17 @@ public class InventoryServiceRestemplateClient {
 
     public ItemFamily getItemFamilyById(Long id) {
 
-        ResponseBodyWrapper<ItemFamily> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/item-family/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<ItemFamily>>() {}, id).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/item-family/{id}");
+
+        ResponseBodyWrapper<ItemFamily> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(id).toUriString(),
+                        HttpMethod.GET,
+                    null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<ItemFamily>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
@@ -87,15 +114,19 @@ public class InventoryServiceRestemplateClient {
 
     public ItemFamily getItemFamilyByName(Long warehouseId, String name) {
 
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/inventory/item-families?")
-                .append("name={name}")
-                .append("&warehouseId={warehouseId}");
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/item-families")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
+
 
         ResponseBodyWrapper<List<ItemFamily>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<ItemFamily>>>() {},
-                name, warehouseId).getBody();
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<ItemFamily>>>() {}).getBody();
 
         List<ItemFamily> itemFamilies = responseBodyWrapper.getData();
         if (itemFamilies.size() == 0) {
@@ -108,9 +139,18 @@ public class InventoryServiceRestemplateClient {
 
 
     public InventoryStatus getInventoryStatusById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-status/{id}");
 
-        ResponseBodyWrapper<InventoryStatus> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventory-status/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<InventoryStatus>>() {}, id).getBody();
+
+        ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(id).toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<InventoryStatus>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
@@ -118,15 +158,19 @@ public class InventoryServiceRestemplateClient {
 
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
 
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/inventory/inventory-statuses?")
-                .append("name={name}")
-                .append("&warehouseId={warehouseId}");
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-statuses")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
 
-        ResponseBodyWrapper<List<InventoryStatus>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryStatus>>>() {},
-                name, warehouseId).getBody();
+        ResponseBodyWrapper<List<InventoryStatus>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryStatus>>>() {}).getBody();
 
         List<InventoryStatus> inventoryStatuses = responseBodyWrapper.getData();
         if (inventoryStatuses.size() == 0) {
@@ -141,39 +185,63 @@ public class InventoryServiceRestemplateClient {
 
         // Convert the inventory to JSON and send to the inventory service
 
-        logger.debug("start to addInventory");
-        String requestBody = mapper.writeValueAsString(inventory);
-        logger.debug("add inventory: {}", requestBody);
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
 
-        ResponseBodyWrapper<Inventory> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories",
-                HttpMethod.POST, httpEntity, new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.POST,
+                        getHttpEntity(mapper.writeValueAsString(inventory)),
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
 
-    public List<Inventory> findInventoryByReceipt(Long warehouseId, Long receiptId) {
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/inventory/inventories?")
-                .append("receiptId={receiptId}")
-                .append("&warehouseId={warehouseId}");
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
+    }
 
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {},
-                receiptId, warehouseId).getBody();
+    public List<Inventory> findInventoryByReceipt(Long warehouseId, Long receiptId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("receiptId", receiptId)
+                        .queryParam("warehouseId", warehouseId);
+
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
 
     public List<Inventory> findInventoryByItem(Item item) {
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventories?itemName={itemName}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}, item.getName()).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("itemName", item.getName());
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
@@ -181,28 +249,22 @@ public class InventoryServiceRestemplateClient {
 
     public Inventory setupMovementPath(long inventoryId, List<InventoryMovement> inventoryMovements) throws IOException {
 
-        String requestBody = mapper.writeValueAsString(inventoryMovements);
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
-        logger.debug("start to call inventory / movements with payload:\n{}", requestBody);
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/{id}/movements");
 
-        ResponseBodyWrapper<Inventory> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/inventory/inventory/{id}/movements",
-                HttpMethod.POST, httpEntity, new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}, inventoryId).getBody();
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(inventoryId).toUriString(),
+                        HttpMethod.POST,
+                        getHttpEntity(mapper.writeValueAsString(inventoryMovements)),
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
 
         Inventory inventory = responseBodyWrapper.getData();
         logger.debug("setupMovementPath returns {}", inventory.getInventoryMovements());
         return responseBodyWrapper.getData();
 
     }
-
-
-
-
-
-
-
 
 }

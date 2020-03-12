@@ -19,12 +19,10 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderInstructionRepository;
-import com.garyzhangscm.cwms.workorder.repository.WorkOrderInstructionTemplateRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +46,6 @@ public class WorkOrderInstructionService implements TestDataInitiableService {
     @Autowired
     private WorkOrderService workOrderService;
 
-    @Autowired
-    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired

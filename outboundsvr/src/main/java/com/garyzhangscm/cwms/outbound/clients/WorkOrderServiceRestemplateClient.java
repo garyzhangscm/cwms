@@ -30,8 +30,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,39 +45,57 @@ public class WorkOrderServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(WorkOrderServiceRestemplateClient.class);
     private ObjectMapper mapper = new ObjectMapper();
     @Autowired
-    OAuth2RestTemplate restTemplate;
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
 
     public WorkOrder getWorkOrderById(Long id) {
 
-        ResponseBodyWrapper<WorkOrder> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/workorder/work-orders/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}, id).getBody();
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/workorder/work-orders/{id}");
+
+        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(id).toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
     }
 
     public WorkOrder registerPickCancelled(Long workOrderLineId, Long cancelledQuantity){
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/workorder/work-orders/lines/{id}/pick-cancelled")
+                        .queryParam("cancelledQuantity", cancelledQuantity);
 
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/workorder/work-orders/lines/{id}/pick-cancelled?")
-                .append("cancelledQuantity={cancelledQuantity}");
-        ResponseBodyWrapper<WorkOrder> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {},
-                workOrderLineId, cancelledQuantity).getBody();
+        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(workOrderLineId).toUriString(),
+                        HttpMethod.POST,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
 
     public WorkOrder registerShortAllocationCancelled(Long workOrderLineId, Long cancelledQuantity){
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/workorder/work-orders/lines/{id}/short-allocation-cancelled")
+                        .queryParam("cancelledQuantity", cancelledQuantity);
 
-        StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/workorder/work-orders/lines/{id}/short-allocation-cancelled?")
-                .append("cancelledQuantity={cancelledQuantity}");
-        ResponseBodyWrapper<WorkOrder> responseBodyWrapper = restTemplate.exchange(
-                url.toString(),
-                HttpMethod.POST, null, new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {},
-                workOrderLineId, cancelledQuantity).getBody();
+        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.buildAndExpand(workOrderLineId).toUriString(),
+                        HttpMethod.POST,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
