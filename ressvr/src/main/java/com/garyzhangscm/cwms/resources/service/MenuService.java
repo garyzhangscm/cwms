@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.Menu;
 import com.garyzhangscm.cwms.resources.model.MenuCSVWrapper;
 import com.garyzhangscm.cwms.resources.model.MenuSubGroup;
@@ -51,7 +52,8 @@ public class MenuService  implements TestDataInitiableService{
     String testDataFile;
 
     public Menu findById(Long id) {
-        return menuRepository.findById(id).orElse(null);
+        return menuRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("menu  not found by id: " + id));
     }
 
     public List<Menu> findAll() {

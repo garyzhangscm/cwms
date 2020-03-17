@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.Role;
 import com.garyzhangscm.cwms.resources.repository.RoleRepository;
 import org.apache.commons.lang.StringUtils;
@@ -46,7 +47,8 @@ public class RoleUserService implements TestDataInitiableService{
     String testDataFile;
 
     public Role findById(Long id) {
-        return roleRepository.findById(id).orElse(null);
+        return roleRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("role not found by id: " + id));
     }
 
     public List<Role> findAll() {

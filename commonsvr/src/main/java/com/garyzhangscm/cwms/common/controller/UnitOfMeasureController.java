@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -57,7 +58,8 @@ public class UnitOfMeasureController {
     @RequestMapping(value="/unit-of-measure/{id}", method = RequestMethod.PUT)
     public UnitOfMeasure changeUnitOfMeasure(@PathVariable Long id, @RequestBody UnitOfMeasure unitOfMeasure) {
         if (unitOfMeasure.getId() != null && unitOfMeasure.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; unitOfMeasure.getId(): " + unitOfMeasure.getId());
         }
         return unitOfMeasureService.save(unitOfMeasure);
     }

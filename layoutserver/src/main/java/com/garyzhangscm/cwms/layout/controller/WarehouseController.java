@@ -18,8 +18,8 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
-import com.garyzhangscm.cwms.layout.Exception.GenericException;
-import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.WarehouseService;
 import org.slf4j.Logger;
@@ -50,7 +50,8 @@ public class WarehouseController {
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.PUT)
     public Warehouse changeWarehouse(@PathVariable long id, @RequestBody Warehouse warehouse) {
         if (warehouse.getId() != null && warehouse.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; warehouse.getId(): " + warehouse.getId());
         }
         return warehouseService.save(warehouse);
     }

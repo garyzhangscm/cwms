@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.StopRepository;
 import com.garyzhangscm.cwms.outbound.repository.TrailerRepository;
@@ -57,7 +59,8 @@ public class TrailerService {
 
 
     public Trailer findById(Long id) {
-        return trailerRepository.findById(id).orElse(null);
+        return trailerRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("trailer not found by id: " + id));
     }
 
 
@@ -113,7 +116,7 @@ public class TrailerService {
     }
     public Trailer loadShipment(Shipment shipment) throws IOException {
         if (shipment.getStop() == null || shipment.getStop().getTrailer() == null) {
-            throw  new GenericException(10000, "The shipment is not assigned to any trailer yet");
+            throw ShippingException.raiseException( "The shipment is not assigned to any trailer yet");
         }
         return loadShipment(shipment, shipment.getStop().getTrailer());
     }
@@ -157,7 +160,7 @@ public class TrailerService {
         if (dockLocations.size() > 0) {
             return checkInTrailer(trailer, dockLocations.get(0));
         }
-        throw new GenericException(10000, "Can't find empty dock location to check in");
+        throw ShippingException.raiseException(  "Can't find empty dock location to check in");
     }
 
     public Trailer checkInTrailer(Long trailerId, Location dockLocation) {

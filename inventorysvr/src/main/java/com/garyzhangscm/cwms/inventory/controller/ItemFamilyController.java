@@ -18,7 +18,7 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
-import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.ItemFamily;
 import com.garyzhangscm.cwms.inventory.service.ItemFamilyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,8 @@ public class ItemFamilyController {
     public ItemFamily changeItemFamily(@PathVariable long id,
                                        @RequestBody ItemFamily itemFamily) {
         if (itemFamily.getId() != null && itemFamily.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; itemFamily.getId(): " + itemFamily.getId());
         }
         return itemFamilyService.save(itemFamily);
     }

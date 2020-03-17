@@ -18,14 +18,12 @@
 
 package com.garyzhangscm.cwms.layout.service;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.GenericException;
 import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.layout.exception.LocationOperationException;
+import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.*;
-import com.garyzhangscm.cwms.layout.repository.LocationGroupRepository;
 import com.garyzhangscm.cwms.layout.repository.LocationRepository;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -34,21 +32,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.EntityManager;
 import javax.persistence.criteria.*;
-import javax.validation.constraints.Null;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,7 +63,8 @@ public class LocationService implements TestDataInitiableService {
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     public Location findById(Long id) {
-        return locationRepository.findById(id).orElse(null);
+        return locationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("location not found by id: " + id));
     }
 
     public List<Location> findAll() {
@@ -376,7 +368,7 @@ public class LocationService implements TestDataInitiableService {
             // Current location is already reserved but not the same
             // as the one we are trying to reserve. we will raise
             // an exception
-            throw new GenericException(10000, "Location is already reserved by other code");
+            throw LocationOperationException.raiseException("Location is already reserved by other code");
         }
 
         location.setPendingVolume(location.getPendingVolume() + pendingVolume);
@@ -404,7 +396,7 @@ public class LocationService implements TestDataInitiableService {
                 return reserveLocation(location, reservedCode, (double)pendingPalletQuantity);
 
         }
-        throw  new GenericException(10000, "can't find the right volume tracking policy for the location:" + location.getLocationGroup().getName());
+        throw  LocationOperationException.raiseException("can't find the right volume tracking policy for the location:" + location.getLocationGroup().getName());
     }
 
     public Location allocateLocation(Long id, Double inventorySize) {

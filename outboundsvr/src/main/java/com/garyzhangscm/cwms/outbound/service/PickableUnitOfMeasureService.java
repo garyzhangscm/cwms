@@ -18,26 +18,19 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
+
 import com.garyzhangscm.cwms.outbound.repository.PickableUnitOfMeasureRepository;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
+
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 
 @Service
@@ -49,7 +42,8 @@ public class PickableUnitOfMeasureService {
 
 
     public PickableUnitOfMeasure findById(Long id) {
-        return pickableUnitOfMeasureRepository.findById(id).orElse(null);
+        return pickableUnitOfMeasureRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("pickable unit of measure not found by id: " + id));
     }
 
     public List<PickableUnitOfMeasure> findAll() {

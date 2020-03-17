@@ -18,7 +18,7 @@
 
 package com.garyzhangscm.cwms.layout;
 
-import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.GenericException;
 
 public class ResponseBodyWrapper<T> {
     private int result;
@@ -35,13 +35,7 @@ public class ResponseBodyWrapper<T> {
         this.message = message;
         this.data = data;
     }
-    public static ResponseBodyWrapper raiseError(int errorCode, String errorMessage) {
-        return new ResponseBodyWrapper<String>(errorCode, errorMessage, "");
-    }
 
-    public static ResponseBodyWrapper raiseError(GenericException exception) {
-        return new ResponseBodyWrapper<String>(exception.getCode(), exception.getMessage(), "");
-    }
     public static ResponseBodyWrapper success(String message, String body) {
         return new ResponseBodyWrapper<String>(0,  message, body);
     }

@@ -18,9 +18,11 @@
 
 package com.garyzhangscm.cwms.workorder.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -55,7 +57,7 @@ public class OutboundServiceRestemplateClient {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public AllocationResult allocateWorkOrder(WorkOrder workOrder) throws IOException {
+    public AllocationResult allocateWorkOrder(WorkOrder workOrder) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -63,11 +65,16 @@ public class OutboundServiceRestemplateClient {
                         .path("/api/outbound/allocation/work-order");
 
         ResponseBodyWrapper<AllocationResult> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.POST,
-                        getHttpEntity(mapper.writeValueAsString(workOrder)),
-                        new ParameterizedTypeReference<ResponseBodyWrapper<AllocationResult>>() {}).getBody();
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(mapper.writeValueAsString(workOrder)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<AllocationResult>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw WorkOrderException.raiseException("Can't allocate work order due to JsonProcessingException: " + e.getMessage());
+        }
 
         return responseBodyWrapper.getData();
 

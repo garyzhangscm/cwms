@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import com.garyzhangscm.cwms.common.repository.UnitOfMeasureRepository;
@@ -49,8 +50,8 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
     String testDataFile;
 
     public UnitOfMeasure findById(Long id) {
-        return unitOfMeasureRepository.findById(id).orElse(null);
-    }
+        return unitOfMeasureRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("unit of measure not found by id: " + id));}
 
     public List<UnitOfMeasure> findAll() {
 

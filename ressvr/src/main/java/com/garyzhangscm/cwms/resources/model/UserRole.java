@@ -1,9 +1,6 @@
 package com.garyzhangscm.cwms.resources.model;
 
-import javax.persistence.*;
-
 public class UserRole {
-
 
     private String username;
 

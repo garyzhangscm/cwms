@@ -82,24 +82,14 @@ public class ReceiptController {
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,
                                @RequestBody Inventory inventory) {
-        try {
             return receiptLineService.receive(receiptId, receiptLineId, inventory);
-        }
-        catch (IOException ex) {
-            throw new GenericException(99999, ex.getMessage());
-        }
     }
 
 
     @RequestMapping(value="/receipts/{id}/check-in", method = RequestMethod.PUT)
     public Receipt checkInReceipt(@PathVariable Long id){
 
-        try {
             return receiptService.checkInReceipt(id);
-        }
-        catch (Exception ex) {
-            throw new GenericException(99999, ex.getMessage());
-        }
     }
     @RequestMapping(value="/receipts/{id}/inventories", method = RequestMethod.GET)
     public List<Inventory> findInventoryByReceipt(@PathVariable Long id){

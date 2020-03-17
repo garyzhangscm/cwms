@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import com.garyzhangscm.cwms.outbound.repository.WaveRepository;
@@ -62,8 +63,9 @@ public class WaveService {
 
     public Wave findById(Long id, boolean loadAttribute) {
 
-        Wave wave =  waveRepository.findById(id).orElse(null);
-        if (wave != null && loadAttribute) {
+        Wave wave =  waveRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("wave not found by id: " + id));
+        if (loadAttribute) {
             loadAttribute(wave);
         }
         return wave;

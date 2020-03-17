@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,8 @@ public class ClientController {
     @RequestMapping(value="/client/{id}", method = RequestMethod.PUT)
     public Client changeClient(@PathVariable Long id, @RequestBody Client client) {
         if (client.getId() != null && client.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; client.getId(): " + client.getId());
         }
         return clientService.save(client);
     }

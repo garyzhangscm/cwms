@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.BillOfMaterialRepository;
 import org.apache.commons.lang.StringUtils;
@@ -57,8 +58,9 @@ public class BillOfMaterialService implements TestDataInitiableService {
     String testDataFile;
 
     public BillOfMaterial findById(Long id, boolean loadDetails) {
-        BillOfMaterial billOfMaterial = billOfMaterialRepository.findById(id).orElse(null);
-        if (billOfMaterial != null && loadDetails) {
+        BillOfMaterial billOfMaterial = billOfMaterialRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("bill of material not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(billOfMaterial);
         }
         return billOfMaterial;

@@ -19,11 +19,10 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
-import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
 import com.garyzhangscm.cwms.inventory.repository.MovementPathRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -32,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
@@ -64,9 +61,9 @@ public class MovementPathService implements TestDataInitiableService{
         return findById(id, true);
     }
     public MovementPath findById(Long id, boolean includeDetails) {
-        MovementPath movementPath = movementPathRepository.findById(id).orElse(null);
-        logger.debug("load details? {} for inventory id: {}", includeDetails, id);
-        if (includeDetails && movementPath != null) {
+        MovementPath movementPath = movementPathRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("movement path not found by id: " + id));
+        if (includeDetails) {
             loadMovementPathAttribute(movementPath);
         }
         return movementPath;

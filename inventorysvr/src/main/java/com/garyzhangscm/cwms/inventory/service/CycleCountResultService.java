@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.CycleCountRequestRepository;
 import com.garyzhangscm.cwms.inventory.repository.CycleCountResultRepository;
@@ -48,7 +49,8 @@ public class CycleCountResultService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     public CycleCountResult findById(Long id) {
-        return cycleCountResultRepository.findById(id).orElse(null);
+        return cycleCountResultRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("cycle count result not found by id: " + id));
     }
     public List<CycleCountResult> findByBatchId(String batchId) {
         return warehouseLayoutServiceRestemplateClient.setupCycleCountResultLocations(cycleCountResultRepository.findByBatchId(batchId));

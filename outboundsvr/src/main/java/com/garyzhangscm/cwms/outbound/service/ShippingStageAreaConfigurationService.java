@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
 import com.garyzhangscm.cwms.outbound.repository.ShippingStageAreaConfigurationRepository;
@@ -63,8 +65,10 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     String testDataFile;
 
     public ShippingStageAreaConfiguration findById(Long id, boolean loadDetails) {
-        ShippingStageAreaConfiguration shippingStageAreaConfiguration = shippingStageAreaConfigurationRepository.findById(id).orElse(null);
-        if (shippingStageAreaConfiguration != null && loadDetails) {
+        ShippingStageAreaConfiguration shippingStageAreaConfiguration
+                = shippingStageAreaConfigurationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("shipping stage area configuration not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(shippingStageAreaConfiguration);
         }
         return shippingStageAreaConfiguration;
@@ -216,7 +220,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         logger.debug(" will reserve ship stage with code: {}", reserveCode);
 
         if (StringUtils.isBlank(reserveCode)) {
-            throw new GenericException(10000, "Shipping Stage Area Configuration is no correctly defined");
+            throw ShippingException.raiseException("Shipping Stage Area Configuration is no correctly defined");
         }
 
         return warehouseLayoutServiceRestemplateClient.reserveLocationFromGroup(
@@ -240,7 +244,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
             }
 
         }
-        throw new GenericException(10000, "Can't find matching shipping stage area");
+        throw ShippingException.raiseException("Can't find matching shipping stage area");
 
     }
     public ShippingStageAreaConfiguration getShippingStageArea(Pick pick) {
@@ -248,7 +252,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         List<ShippingStageAreaConfiguration> shippingStageAreaConfigurations = findAll();
         logger.debug(">> We have {} ship stage area configurations", shippingStageAreaConfigurations.size());
         if (shippingStageAreaConfigurations.size() == 0) {
-            throw new GenericException(10000, "no ship stage area configuration defined!");
+            throw ShippingException.raiseException("no ship stage area configuration defined!");
         }
         for (ShippingStageAreaConfiguration shippingStageAreaConfiguration : shippingStageAreaConfigurations) {
             // Check if the pick match with the configuration, if so,
@@ -261,7 +265,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
             }
 
         }
-        throw new GenericException(10000, "Can't find matching shipping stage area");
+        throw ShippingException.raiseException("Can't find matching shipping stage area");
     }
 
     private boolean match(Pick pick, ShippingStageAreaConfiguration shippingStageAreaConfiguration) {

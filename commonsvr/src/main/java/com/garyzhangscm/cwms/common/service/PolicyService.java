@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Policy;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
@@ -53,7 +54,8 @@ public class PolicyService implements  TestDataInitiableService{
     String testDataFile;
 
     public Policy findById(Long id) {
-        return policyRepository.findById(id).orElse(null);
+        return policyRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("policy not found by id: " + id));
     }
 
     public List<Policy> findAll(String key) {

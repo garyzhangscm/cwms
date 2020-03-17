@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
 import com.garyzhangscm.cwms.inventory.model.Location;
@@ -44,12 +45,10 @@ public class InventoryMovementService{
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     public InventoryMovement findById(Long id) {
-        return inventoryMovementRepository.findById(id).orElse(null);
+        return inventoryMovementRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("inventory movement not found by id: " + id));
     }
 
-    public List<InventoryMovement> findByInventory(Inventory inventory) {
-        return findByInventoryId(inventory.getId());
-    }
     public List<InventoryMovement> findByInventoryId(Long inventoryId) {
         return inventoryMovementRepository.findByInventoryId(inventoryId);
     }

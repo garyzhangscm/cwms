@@ -18,7 +18,8 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
-import com.garyzhangscm.cwms.inventory.exception.GenericException;
+
+import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.Location;
 import com.garyzhangscm.cwms.inventory.model.MovementPath;
@@ -70,7 +71,8 @@ public class MovementPathController {
     public MovementPath changeMovementPath(@PathVariable Long id,
                                            @RequestBody MovementPath movementPath) {
         if (id != movementPath.getId()) {
-            throw new GenericException(10000, "Id passed in doesn't match with the movement path passed in");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; movementPath.getId(): " + movementPath.getId());
         }
         return movementPathService.save(movementPath);
     }

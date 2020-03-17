@@ -19,10 +19,9 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.resources.clients.AuthServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.RoleRepository;
-import com.garyzhangscm.cwms.resources.repository.UserRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -40,7 +38,6 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class RoleService implements TestDataInitiableService{
@@ -59,7 +56,8 @@ public class RoleService implements TestDataInitiableService{
     String testDataFile;
 
     public Role findById(Long id) {
-        return roleRepository.findById(id).orElse(null);
+        return roleRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("role  not found by id: " + id));
     }
 
     public List<Role> findAll(String name, Boolean enabled) {

@@ -19,8 +19,10 @@
 package com.garyzhangscm.cwms.resources.clients;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.exception.UserOperationException;
 import com.garyzhangscm.cwms.resources.model.UserAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,17 +89,21 @@ public class AuthServiceRestemplateClient {
         return userAuths.get(0);
     }
 
-    public UserAuth changeUserAuth(UserAuth userAuth) throws IOException {
+    public UserAuth changeUserAuth(UserAuth userAuth)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/auth/users");
 
-        return restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.POST,
-                getHttpEntity(mapper.writeValueAsString(userAuth)),
-                new ParameterizedTypeReference<UserAuth>() {}).getBody();
+        try {
+            return restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(mapper.writeValueAsString(userAuth)),
+                    new ParameterizedTypeReference<UserAuth>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw UserOperationException.raiseException("Can't change user's auth information due to JsonProcessingException: " + e.getMessage());
+        }
 
 
     }

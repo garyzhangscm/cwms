@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
@@ -56,7 +57,8 @@ public class TrailerTemplateService implements TestDataInitiableService {
     String testDataFile;
 
     public TrailerTemplate findById(Long id) {
-        return trailerTemplateRepository.findById(id).orElse(null);
+        return trailerTemplateRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("trailer template not found by id: " + id));
     }
 
 

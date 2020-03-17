@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.Location;
 import com.garyzhangscm.cwms.outbound.model.LocationGroup;
 import com.garyzhangscm.cwms.outbound.model.LocationGroupType;
@@ -73,7 +74,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location getLocationByName(String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(warehouseName);
         if (warehouse == null) {
-            throw new GenericException(10000, "warehouse name is not valid");
+            throw ResourceNotFoundException.raiseException("warehouse name (" + warehouseName +  ")is not valid");
         }
         return getLocationByName(warehouse.getId(), name);
     }
@@ -170,7 +171,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public LocationGroup getLocationGroupByName(String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(warehouseName);
         if (warehouse == null) {
-            throw new GenericException(10000, "Can't find the warehouse name");
+            throw ResourceNotFoundException.raiseException("warehouse name (" + warehouseName +  ")is not valid");
         }
         return getLocationGroupByName(warehouse.getId(), name);
     }
@@ -370,7 +371,9 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         List<Location> locations = responseBodyWrapper.getData();
         if (locations.size() == 0) {
-            throw new GenericException(10000, "Can't find suitable empty location from group: " + locationGroup.getName());
+            throw ResourceNotFoundException.raiseException(
+                    "Can't find suitable empty location from group: " + locationGroup.getName()
+            );
         }
         return locations.get(0);
     }

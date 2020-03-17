@@ -80,7 +80,8 @@ public class UserService {
     public User saveOrUpdate(User user) {
         // Save the user with encrypted password
         encryptPassword(user);
-        if (Objects.isNull(user.getId()) && !StringUtils.isBlank(user.getUsername())) {
+        if (Objects.isNull(user.getId()) &&
+                !Objects.isNull(findByUsername(user.getUsername()))) {
             user.setId(findByUsername(user.getUsername()).getId());
         }
 

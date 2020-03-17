@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.AuthServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.exception.GenericException;
+import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.UserRepository;
 import org.apache.commons.lang.StringUtils;
@@ -35,6 +37,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,8 +65,9 @@ public class UserService  implements TestDataInitiableService{
         return findById(id, true);
     }
     public User findById(Long id, boolean loadAttribute) {
-        User user =  userRepository.findById(id).orElse(null);
-        if (user != null && loadAttribute) {
+        User user =  userRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("user not found by id: " + id));
+        if (loadAttribute) {
             loadAttribute(user);
         }
         return user;
@@ -149,6 +153,7 @@ public class UserService  implements TestDataInitiableService{
         user.setEnabled(userAuth.isEnabled());
     }
     public User save(User user) {
+
         return userRepository.save(user);
     }
 
@@ -157,7 +162,7 @@ public class UserService  implements TestDataInitiableService{
                 !Objects.isNull(findByUsername(user.getUsername()))) {
             user.setId(findByUsername(user.getUsername()).getId());
         }
-        return userRepository.save(user);
+        return save(user);
     }
     public SiteInformation getSiteInformaiton(String username) {
         return getSiteInformaiton(findByUsername(username));
@@ -202,16 +207,11 @@ public class UserService  implements TestDataInitiableService{
     }
 
     private void saveWithCredential(User user) {
-        try {
             saveOrUpdate(user);
 
             // save the password , email, enabled, locked in the auth server
             UserAuth userAuth = user.getUserAuth();
             authServiceRestemplateClient.changeUserAuth(userAuth);
-        }
-        catch (IOException ex) {
-            logger.debug("Exception while save user data: {}", ex.getMessage());
-        }
     }
 
 
@@ -226,10 +226,34 @@ public class UserService  implements TestDataInitiableService{
         }
     }
 
+    @Transactional
     public User addUser(User user) {
-        return save(user);
+        // Save the user without role first
+        // since we are adding new user, the user doesn't have an ID yet.
+        // user / role are many to many relationship so we need both
+        // user and role having the ID so that the relationship can be
+        // persist in the user_role table
+        // So we will save the user without role,
+        // then attach all the roles to the saved user and persist the
+        // relationship again
+        List<Role> roles = user.getRoles();
+        user.setRoles(new ArrayList<>());
+        User newUser = save(user);
+
+        // save the password , email, enabled, locked in the auth server
+        UserAuth userAuth = newUser.getUserAuth();
+
+        authServiceRestemplateClient.changeUserAuth(userAuth);
+
+        // refresh role information from database
+        roles.forEach(role -> {
+            Role newRole = roleService.findById(role.getId());
+            newUser.assignRole(newRole);
+        });
+        return saveOrUpdate(newUser);
     }
 
+    @Transactional
     public User processRoles(Long userId, String assignedRoleIds, String deassignedRoleIds) {
 
         User user = findById(userId);

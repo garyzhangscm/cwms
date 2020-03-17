@@ -19,11 +19,11 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Carrier;
 import com.garyzhangscm.cwms.common.model.CarrierServiceLevel;
 import com.garyzhangscm.cwms.common.model.CarrierServiceLevelCSVWrapper;
 import com.garyzhangscm.cwms.common.model.CarrierServiceLevelType;
-import com.garyzhangscm.cwms.common.repository.CarrierRepository;
 import com.garyzhangscm.cwms.common.repository.CarrierServiceLevelRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -56,7 +56,8 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
     String testDataFile;
 
     public CarrierServiceLevel findById(Long id) {
-        return carrierServiceLevelRepository.findById(id).orElse(null);
+        return carrierServiceLevelRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("carrier service level not found by id: " + id));
     }
 
     public List<CarrierServiceLevel> findAll( ) {

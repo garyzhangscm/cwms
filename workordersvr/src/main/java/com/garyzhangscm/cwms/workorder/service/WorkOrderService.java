@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
 import org.apache.commons.lang.StringUtils;
@@ -70,8 +72,9 @@ public class WorkOrderService implements TestDataInitiableService {
     String testDataFile;
 
     public WorkOrder findById(Long id, boolean loadDetails) {
-        WorkOrder workOrder = workOrderRepository.findById(id).orElse(null);
-        if (workOrder != null && loadDetails) {
+        WorkOrder workOrder = workOrderRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("work order not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(workOrder);
         }
         return workOrder;
@@ -267,7 +270,6 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public WorkOrder allocateWorkOrder(Long workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
-        try {
             AllocationResult allocationResult
                     = outboundServiceRestemplateClient.allocateWorkOrder(workOrder);
 
@@ -311,10 +313,6 @@ public class WorkOrderService implements TestDataInitiableService {
                 saveOrUpdate(workOrder);
             }
 
-        }
-        catch (IOException ex) {
-            throw new GenericException(10000, ex.getMessage());
-        }
 
         // return the latest work order information
         return findById(workOrderId);
@@ -327,7 +325,7 @@ public class WorkOrderService implements TestDataInitiableService {
         // still pending
         WorkOrder workOrder = findById(id);
         if (!workOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
-            throw new GenericException(10000,"Can't change the production line once the work order is started");
+            throw WorkOrderException.raiseException("Can't change the production line once the work order is started");
         }
 
         ProductionLine newProductionLine = productionLineService.findById(productionLineId);
@@ -336,7 +334,7 @@ public class WorkOrderService implements TestDataInitiableService {
             newProductionLine.getWorkOrders().size() > 0) {
             // the production line is set to be exclusively occupies by
             // any work order and there's already some work work on this production line
-            throw new GenericException(10000, "There's already work order " +newProductionLine.getWorkOrders().get(0).getNumber()
+            throw WorkOrderException.raiseException("There's already work order " +newProductionLine.getWorkOrders().get(0).getNumber()
                   + " on this production line");
         }
 

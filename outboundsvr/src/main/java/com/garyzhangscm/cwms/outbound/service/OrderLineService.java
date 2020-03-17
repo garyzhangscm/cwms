@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.OrderLineRepository;
@@ -70,8 +72,9 @@ public class OrderLineService implements TestDataInitiableService{
     }
 
     public OrderLine findById(Long id, boolean includeDetails) {
-        OrderLine orderLine = orderLineRepository.findById(id).orElse(null);
-        if (orderLine != null && includeDetails) {
+        OrderLine orderLine = orderLineRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("order line not found by id: " + id));
+        if (includeDetails) {
             loadOrderLineAttribute(orderLine);
         }
         return orderLine;
@@ -240,7 +243,7 @@ public class OrderLineService implements TestDataInitiableService{
         Long openQuantity = orderLine.getOpenQuantity();
         if (openQuantity < inprocessQuantity) {
             logger.debug("expected inprocess quantity {} exceeds the open quantity {} ", inprocessQuantity, openQuantity);
-            throw new GenericException(10000, "Inprocess quantity can't exceed the open quantity");
+            throw OrderOperationException.raiseException("Inprocess quantity can't exceed the open quantity");
         }
         orderLine.setOpenQuantity(openQuantity - inprocessQuantity);
         orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() + inprocessQuantity);

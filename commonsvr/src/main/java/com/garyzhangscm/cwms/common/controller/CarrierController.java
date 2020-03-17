@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.Carrier;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.service.CarrierService;
@@ -51,7 +52,8 @@ public class CarrierController {
     @RequestMapping(value="/carriers/{id}", method = RequestMethod.PUT)
     public Carrier changeCarrier(@PathVariable Long id, @RequestBody Carrier carrier) {
         if (carrier.getId() != null && carrier.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; carrier.getId(): " + carrier.getId());
         }
         return carrierService.save(carrier);
     }

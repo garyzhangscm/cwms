@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import com.garyzhangscm.cwms.outbound.repository.StopRepository;
@@ -53,7 +54,8 @@ public class StopService {
 
 
     public Stop findById(Long id) {
-        return stopRepository.findById(id).orElse(null);
+        return stopRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("stop not found by id: " + id));
     }
 
 

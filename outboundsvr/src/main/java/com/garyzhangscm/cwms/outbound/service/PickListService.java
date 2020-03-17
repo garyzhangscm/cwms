@@ -22,23 +22,21 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.PickingException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.PickListRepository;
-import com.garyzhangscm.cwms.outbound.repository.PickRepository;
-import org.apache.commons.lang.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.awt.image.ImageCache;
+
 
 import javax.transaction.Transactional;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
+
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 
 @Service
@@ -59,7 +57,8 @@ public class PickListService {
 
     public PickList findById(Long id) {
 
-        return pickListRepository.findById(id).orElse(null);
+        return pickListRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException(" pick list not found by id: " + id));
     }
 
     public PickList save(PickList pickList) {
@@ -108,7 +107,7 @@ public class PickListService {
         List<ListPickingConfiguration> listPickingConfigurations
                 = listPickingConfigurationService.findMatchedListPickingConfiguration(pick);
         if (listPickingConfigurations.size() == 0) {
-            throw new GenericException(10000," Can't find any list picking configuration for the pick ");
+            throw PickingException.raiseException(" Can't find any list picking configuration for the pick ");
         }
 
         return listPickingConfigurations;
@@ -127,7 +126,7 @@ public class PickListService {
                         listPickingConfiguration.getId(), ex.getMessage());
             }
         }
-        throw new GenericException(10000, "Can't find matched open list while trying all the list pick configurations");
+        throw PickingException.raiseException( "Can't find matched open list while trying all the list pick configurations");
 
     }
 
@@ -138,7 +137,7 @@ public class PickListService {
         // Only return the open list with same group key
         List<PickList> pickLists = findByGroupKeyAndStatus(groupKey, PickListStatus.PENDING);
         if (pickLists.size() == 0) {
-            throw new GenericException(10000, "Can't find matched open list with the configuration");
+            throw PickingException.raiseException( "Can't find matched open list with the configuration");
         }
         return pickLists.get(0);
     }

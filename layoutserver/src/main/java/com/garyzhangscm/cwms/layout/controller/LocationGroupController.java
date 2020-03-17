@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
-import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.layout.model.InventoryConsolidationStrategy;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import com.garyzhangscm.cwms.layout.service.LocationGroupService;
@@ -48,6 +50,11 @@ public class LocationGroupController {
         return locationGroupService.findById(id);
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/locationgroups/{id}/inventory-consolidation-strategy")
+    public InventoryConsolidationStrategy getInventoryConsolidationStrategy(@PathVariable long id) {
+        return locationGroupService.findById(id).getInventoryConsolidationStrategy();
+    }
+
     @RequestMapping(method=RequestMethod.POST, value="/locationgroups")
     public LocationGroup addLocationGroups(@RequestBody LocationGroup locationGroup) {
         return locationGroupService.save(locationGroup);
@@ -56,7 +63,8 @@ public class LocationGroupController {
     public LocationGroup changeLocationGroups(@PathVariable long id,
                                               @RequestBody LocationGroup locationGroup) {
         if (locationGroup.getId() != null && locationGroup.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; locationGroup.getId(): " + locationGroup.getId());
         }
         return locationGroupService.save(locationGroup);
     }

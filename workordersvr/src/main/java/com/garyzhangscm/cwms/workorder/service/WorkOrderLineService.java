@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderLineRepository;
 import org.apache.commons.lang.StringUtils;
@@ -61,8 +62,9 @@ public class WorkOrderLineService implements TestDataInitiableService {
     String testDataFile;
 
     public WorkOrderLine findById(Long id, boolean loadDetails) {
-        WorkOrderLine workOrderLine = workOrderLineRepository.findById(id).orElse(null);
-        if (workOrderLine != null && loadDetails) {
+        WorkOrderLine workOrderLine = workOrderLineRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("work order line not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(workOrderLine);
         }
         return workOrderLine;

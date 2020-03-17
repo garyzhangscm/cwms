@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.CycleCountRequestRepository;
 
@@ -55,7 +56,8 @@ public class CycleCountRequestService{
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     public CycleCountRequest findById(Long id) {
-        return cycleCountRequestRepository.findById(id).orElse(null);
+        return cycleCountRequestRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("cycle count request not found by id: " + id));
     }
     public boolean exists(Long id) {
         return findById(id) != null;
@@ -119,13 +121,13 @@ public class CycleCountRequestService{
     }
 
     @Transactional
-    private CycleCountResult confirmCycleCountRequest(CycleCountResult cycleCountResult) {
+    CycleCountResult confirmCycleCountRequest(CycleCountResult cycleCountResult) {
         return confirmCycleCountRequest(cycleCountResult, cycleCountResult.getQuantity());
     }
 
 
     @Transactional
-    private CycleCountResult confirmCycleCountRequest(CycleCountResult cycleCountResult, Long countQuantity) {
+    CycleCountResult confirmCycleCountRequest(CycleCountResult cycleCountResult, Long countQuantity) {
         cycleCountResult.setCountQuantity(countQuantity);
         logger.debug("confirm request with quantity: {}. Inventory Quantity: {}", countQuantity, cycleCountResult.getQuantity());
         if (cycleCountResult.getCountQuantity() != cycleCountResult.getQuantity()) {
@@ -137,13 +139,13 @@ public class CycleCountRequestService{
     }
 
     @Transactional
-    private CycleCountResult confirmCycleCountRequest(Long cycleCountResultId) {
+    CycleCountResult confirmCycleCountRequest(Long cycleCountResultId) {
         return confirmCycleCountRequest(cycleCountResultService.findById(cycleCountResultId));
     }
 
 
     @Transactional
-    private CycleCountResult confirmCycleCountRequest(Long cycleCountResultId, Long countQuantity) {
+    CycleCountResult confirmCycleCountRequest(Long cycleCountResultId, Long countQuantity) {
         return confirmCycleCountRequest(cycleCountResultService.findById(cycleCountResultId), countQuantity);
     }
 
@@ -430,11 +432,11 @@ public class CycleCountRequestService{
         else {
             Location beginLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, beginValue);
             if (beginLocation == null) {
-                throw new GenericException(10000, "can't find the begin location by value: " + beginValue);
+                throw ResourceNotFoundException.raiseException( "can't find the begin location by value: " + beginValue);
             }
             Location endLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, endValue);
             if (endLocation == null) {
-                throw new GenericException(10000, "can't find the end location by value: " + endValue);
+                throw ResourceNotFoundException.raiseException( "can't find the end location by value: " + endValue);
             }
 
             // Ok we got begin location and end location, let's get all locations between the begin

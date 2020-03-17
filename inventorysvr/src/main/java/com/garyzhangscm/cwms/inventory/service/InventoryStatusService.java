@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryStatusRepository;
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +53,8 @@ public class InventoryStatusService implements TestDataInitiableService{
     String testDataFile;
 
     public InventoryStatus findById(Long id) {
-        return inventoryStatusRepository.findById(id).orElse(null);
+        return inventoryStatusRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("inventory status not found by id: " + id));
     }
 
 

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.LocationCSVWrapper;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
@@ -51,7 +52,8 @@ public class WarehouseService implements TestDataInitiableService {
     String testDataFile;
 
     public Warehouse findById(Long id) {
-        return warehouseRepository.findById(id).orElse(null);
+        return warehouseRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("warehouse not found by id: " + id));
     }
 
     public List<Warehouse> findAll() {

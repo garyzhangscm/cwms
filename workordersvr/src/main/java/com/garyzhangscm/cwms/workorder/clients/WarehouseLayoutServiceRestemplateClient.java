@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.clients;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.Location;
 
 import com.garyzhangscm.cwms.workorder.model.Warehouse;
@@ -68,7 +69,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location getLocationByName(String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(warehouseName);
         if (warehouse == null) {
-            throw new GenericException(10000, "warehouse name is not valid");
+            throw ResourceNotFoundException.raiseException("warehouse name (" + warehouseName +  ")is not valid");
         }
         return getLocationByName(warehouse.getId(), name);
     }

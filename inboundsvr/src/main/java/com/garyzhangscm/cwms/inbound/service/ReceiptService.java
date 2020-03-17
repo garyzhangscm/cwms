@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
+import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
+import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptRepository;
 import org.apache.commons.lang.StringUtils;
@@ -62,8 +64,9 @@ public class ReceiptService implements TestDataInitiableService{
     String testDataFile;
 
     public Receipt findById(Long id, boolean loadDetails) {
-        Receipt receipt =  receiptRepository.findById(id).orElse(null);
-        if (receipt != null && loadDetails) {
+        Receipt receipt =  receiptRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("receipt not found by id: " + id));
+        if (loadDetails) {
             loadReceiptAttribute(receipt);
         }
         return receipt;
@@ -152,7 +155,7 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
     @Transactional
-    public Receipt checkInReceipt(Long receiptId) throws Exception {
+    public Receipt checkInReceipt(Long receiptId) {
         Receipt receipt = findById(receiptId);
         logger.debug("receipt ID: {}, status: {}", receiptId, receipt.getReceiptStatus());
         logger.debug("receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)? {}", receipt.getReceiptStatus().equals(ReceiptStatus.OPEN));
@@ -171,7 +174,7 @@ public class ReceiptService implements TestDataInitiableService{
             warehouseLayoutServiceRestemplateClient.createLocationForReceipt(newReceipt);
             return newReceipt;
         }
-        throw new GenericException(10000, "Receipt not in right status");
+        throw ReceiptOperationException.raiseException("Can't check in the receipt due to not correct status. Current Status: " + receipt.getReceiptStatus());
     }
 
     @Transactional

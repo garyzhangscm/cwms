@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
+import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
+import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptLineRepository;
 import org.apache.commons.lang.StringUtils;
@@ -64,8 +66,9 @@ public class ReceiptLineService implements TestDataInitiableService{
     }
 
     public ReceiptLine findById(Long id, boolean includeDetails) {
-        ReceiptLine receiptLine = receiptLineRepository.findById(id).orElse(null);
-        if (receiptLine != null && includeDetails) {
+        ReceiptLine receiptLine = receiptLineRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("receipt line not found by id: " + id));
+        if (includeDetails) {
             loadReceiptLineAttribute(receiptLine);
         }
         return receiptLine;
@@ -209,7 +212,7 @@ public class ReceiptLineService implements TestDataInitiableService{
 
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
-                             Inventory inventory) throws IOException{
+                             Inventory inventory){
         // Receive inventory and save it on the receipt
 
         Receipt receipt = receiptService.findById(receiptId);
@@ -254,7 +257,7 @@ public class ReceiptLineService implements TestDataInitiableService{
         // unexpected item number?
         if (!receipt.getAllowUnexpectedItem() &&
              !receiptLine.getItemId().equals(inventory.getItem().getId())) {
-            throw  new GenericException(10000, "Unexpected item not allowed for this receipt");
+            throw ReceiptOperationException.raiseException("Unexpected item not allowed for this receipt");
         }
 
         // check how many more we can receive against this receipt line
@@ -277,11 +280,11 @@ public class ReceiptLineService implements TestDataInitiableService{
                 receiptLine.getExpectedQuantity() + maxOverReceivingQuantityAllowed) {
             if (maxOverReceivingQuantityAllowed == 0) {
                 // over receiving is not allowed in this receipt line
-                throw  new GenericException(10000, "Over receiving is not allowed");
+                throw ReceiptOperationException.raiseException("Over receiving is not allowed");
             }
             if (maxOverReceivingQuantityAllowed > 0) {
                 // over receiving is not allowed in this receipt line
-                throw  new GenericException(10000, "Over receiving. The maximum you can receive for this line is " +
+                throw ReceiptOperationException.raiseException("Over receiving. The maximum you can receive for this line is " +
                         (receiptLine.getExpectedQuantity() + maxOverReceivingQuantityAllowed - receiptLine.getReceivedQuantity()));
             }
         }

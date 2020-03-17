@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.EmergencyReplenishmentConfigurationRepository;
 import com.garyzhangscm.cwms.outbound.repository.ListPickingConfigurationRepository;
@@ -63,8 +64,10 @@ public class ListPickingConfigurationService implements TestDataInitiableService
     String testDataFile;
 
     public ListPickingConfiguration findById(Long id, boolean loadDetails) {
-        ListPickingConfiguration listPickingConfiguration = listPickingConfigurationRepository.findById(id).orElse(null);
-        if (listPickingConfiguration != null && loadDetails) {
+        ListPickingConfiguration listPickingConfiguration
+                = listPickingConfigurationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("list picking configuration not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(listPickingConfiguration);
         }
         return listPickingConfiguration;

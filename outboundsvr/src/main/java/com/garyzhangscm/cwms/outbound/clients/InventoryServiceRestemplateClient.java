@@ -19,8 +19,10 @@
 package com.garyzhangscm.cwms.outbound.clients;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.outbound.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -315,7 +317,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Inventory moveInventory(Inventory inventory, Pick pick, Location nextLocation) throws IOException {
+    public Inventory moveInventory(Inventory inventory, Pick pick, Location nextLocation)   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
@@ -324,11 +326,16 @@ public class InventoryServiceRestemplateClient {
 
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(inventory.getId()).toUriString(),
-                        HttpMethod.POST,
-                        getHttpEntity(mapper.writeValueAsString(nextLocation)),
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.buildAndExpand(inventory.getId()).toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(mapper.writeValueAsString(nextLocation)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw RequestValidationFailException.raiseException("Can't move inventory due to JsonProcessingException: " + e.getMessage());
+        }
 
         return responseBodyWrapper.getData();
     }
