@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentLineRepository;
@@ -62,7 +63,8 @@ public class ShipmentLineService {
 
 
     public ShipmentLine findById(Long id) {
-        return shipmentLineRepository.findById(id).orElse(null);
+        return shipmentLineRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("shipment line not found by id: " + id));
     }
 
     public List<ShipmentLine> findByOrderNumber(Long warehouseId, String orderNumber){

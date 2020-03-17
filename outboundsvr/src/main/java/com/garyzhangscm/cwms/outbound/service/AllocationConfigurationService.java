@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
@@ -68,8 +69,11 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     String testDataFile;
 
     public AllocationConfiguration findById(Long id, boolean loadDetails) {
-        AllocationConfiguration allocationConfiguration = allocationConfigurationRepository.findById(id).orElse(null);
-        if (allocationConfiguration != null && loadDetails) {
+        AllocationConfiguration allocationConfiguration
+                = allocationConfigurationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("allocation configuration not found by id: " + id));
+
+        if (loadDetails) {
             loadAttribute(allocationConfiguration);
         }
         return allocationConfiguration;

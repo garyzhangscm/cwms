@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.ReasonCode;
 import com.garyzhangscm.cwms.common.model.ReasonCodeType;
@@ -53,7 +54,8 @@ public class ReasonCodeService implements  TestDataInitiableService{
     String testDataFile;
 
     public ReasonCode findById(Long id) {
-        return reasonCodeRepository.findById(id).orElse(null);
+        return reasonCodeRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("reason code not found by id: " + id));
     }
 
     public List<ReasonCode> findAll() {

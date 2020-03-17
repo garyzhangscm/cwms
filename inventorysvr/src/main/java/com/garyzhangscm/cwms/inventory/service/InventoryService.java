@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
@@ -40,12 +41,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.swing.text.html.HTMLDocument;
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ *
+ */
 @Service
 public class InventoryService implements TestDataInitiableService{
     private static final Logger logger = LoggerFactory.getLogger(InventoryService.class);
@@ -63,6 +68,8 @@ public class InventoryService implements TestDataInitiableService{
     private InventoryMovementService inventoryMovementService;
     @Autowired
     private MovementPathService movementPathService;
+    @Autowired
+    private InventoryConsolidationService inventoryConsolidationService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -80,9 +87,9 @@ public class InventoryService implements TestDataInitiableService{
         return findById(id, true);
     }
     public Inventory findById(Long id, boolean includeDetails) {
-        Inventory inventory = inventoryRepository.findById(id).orElse(null);
-        logger.debug("load details? {} for inventory id: {}", includeDetails, id);
-        if (includeDetails && inventory != null) {
+        Inventory inventory = inventoryRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("inventory not found by id: " + id));
+        if (includeDetails) {
             loadInventoryAttribute(inventory);
         }
         return inventory;
@@ -107,11 +114,13 @@ public class InventoryService implements TestDataInitiableService{
                                    String itemFamilyIds,
                                    Long inventoryStatusId,
                                    String locationName,
+                                   Long locationId,
                                    Long locationGroupId,
                                    String receiptId,
                                    String pickIds,
                                    String lpn) {
-        return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId, locationName, locationGroupId, receiptId, pickIds, lpn, true);
+        return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
+                locationName, locationId, locationGroupId, receiptId, pickIds, lpn, true);
     }
 
 
@@ -121,6 +130,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String itemFamilyIds,
                                    Long inventoryStatusId,
                                    String locationName,
+                                   Long locationId,
                                    Long locationGroupId,
                                    String receiptId,
                                    String pickIds,
@@ -159,7 +169,14 @@ public class InventoryService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.equal(joinInventoryStatus.get("id"), inventoryStatusId));
 
                     }
-                    if (!StringUtils.isBlank(locationName) &&
+
+                    // if location ID is passed in, we will only filter by location id, no matter whether
+                    // the location name is passed in or not
+                    // otherwise, we will try to filter by location name
+                    if (locationId != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("locationId"), locationId));
+                    }
+                    else if (!StringUtils.isBlank(locationName) &&
                             warehouseId != null) {
                         Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
                         if (location != null) {
@@ -457,12 +474,14 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
+    @Transactional
     public Inventory moveInventory(Inventory inventory, Location destination, Long pickId) {
-        logger.debug("Start to move inventory {} to destination {}",
-                inventory.getLpn(), destination.getName());
+        logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}",
+                inventory.getLpn(), destination.getName(), pickId, Objects.isNull(pickId));
+
         Location sourceLocation = inventory.getLocation();
         inventory.setLocationId(destination.getId());
-        if (pickId != null) {
+        if (!Objects.isNull(pickId)) {
             markAsPicked(inventory, pickId);
         }
 
@@ -477,12 +496,32 @@ public class InventoryService implements TestDataInitiableService{
             // as virtual
             inventory.setVirtual(true);
         }
+        else {
+
+            inventory.setVirtual(false);
+        }
         // Check if we have finished any movement
         recalculateMovementPathForInventoryMovement(inventory, destination);
 
         // Reset the destination location's size
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
 
+        // consolidate the inventory at the destination, if necessary
+        Inventory consolidatedInventory = inventoryConsolidationService.consolidateInventoryAtLocation(destination, inventory);
+
+        logger.debug("6. destination {} has {} inventory",
+                destination.getName(), findByLocationId(destination.getId()).size());
+        // check if we will need to remove the original inventory
+        if (!Objects.isNull(inventory.getId()) &&
+            !consolidatedInventory.equals(inventory)) {
+            // the original inventory is already persist but
+            // is consolidated into an existing inventory, let's
+            // remove it from the db
+            delete(inventory);
+        }
+        logger.debug("7. destination {} has {} inventory",
+                destination.getName(), findByLocationId(destination.getId()).size());
+        /***
         logger.debug("Location {}'s  consolidate LPN policy: ",
                 destination.getName(), destination.getLocationGroup().getConsolidateLpn());
         if (destination.getLocationGroup().getConsolidateLpn() == true) {
@@ -491,8 +530,10 @@ public class InventoryService implements TestDataInitiableService{
             consolidateLpn(inventory, destination);
             logger.debug("LPN consolidated! Now inventory has new LPN {}", inventory.getLpn());
         }
-        return save(inventory);
+         ***/
+        return save(consolidatedInventory);
     }
+    /****
     private void consolidateLpn(Inventory inventory, Location destination) {
         // see if there's already LPN in the location
         List<Inventory> inventories = findByLocationId(destination.getId());
@@ -510,6 +551,7 @@ public class InventoryService implements TestDataInitiableService{
             inventory.setLpn(existingLPN.get(0));
         }
     }
+     ***/
     private void recalculateLocationSizeForInventoryMovement(Location sourceLocation, Location destination, double volume) {
         if (sourceLocation != null && sourceLocation.getLocationGroup().getTrackingVolume()) {
             logger.debug("re-calculate the source location {} 's size by reduce {}",
@@ -718,17 +760,52 @@ public class InventoryService implements TestDataInitiableService{
         }
     }
 
-    public Inventory addInventory(Inventory inventory) {
 
-        logger.debug("Location {}'s  consolidate LPN policy: ",
-                inventory.getLocation().getName(), inventory.getLocation().getLocationGroup().getConsolidateLpn());
-        if (inventory.getLocation().getLocationGroup().getConsolidateLpn() == true) {
-            // check if we can consolidate the inventory with LPN that
-            // already in the location
-            consolidateLpn(inventory, inventory.getLocation());
-            logger.debug("LPN consolidated! Now inventory has new LPN {}", inventory.getLpn());
+    /**
+     * Add new invenotry to the system, To make it easy, we will always create the inventory structure in a temporary location
+     *  based on the inventoryQuantityChangeType and then move the inventory to the destination. So all the complicated logic
+     *  will be handled in the 'move inventory' routine
+     * @param inventory : Inventory to be added
+     * @param inventoryQuantityChangeType: Action type: RECEIVING / INVENTORY ADJUST / COUNT / etc.
+     * @return Inventory being added
+     */
+    @Transactional
+    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
+
+        Location location =
+                warehouseLayoutServiceRestemplateClient.getLogicalLocationForAddingInventory(
+                        inventoryQuantityChangeType,inventory.getWarehouseId());
+        // consolidate the inventory at the destination, if necessary
+        Location destinationLocation = inventory.getLocation();
+
+        // create the inventory at the logic location
+        // then move the inventory to the final location
+        inventory.setLocation(location);
+        inventory.setLocationId(location.getId());
+        inventory.setVirtual(warehouseLayoutServiceRestemplateClient.isVirtualLocation(location));
+
+        inventory = saveOrUpdate(inventory);
+
+        return moveInventory(inventory, destinationLocation);
+
+
+        /***********
+
+        Inventory consolidatedInventory = inventoryConsolidationService.consolidateInventoryAtLocation(inventory.getLocation(), inventory);
+
+        // check if we will need to remove the original inventory
+        if (!Objects.isNull(inventory.getId()) &&
+                !consolidatedInventory.equals(inventory)) {
+            // the original inventory is already persist but
+            // is consolidated into an existing inventory, let's
+            // remove it from the db
+            delete(inventory);
         }
-        return save(inventory);
+        if (inventory.getVirtual() == null) {
+            inventory.setVirtual(warehouseLayoutServiceRestemplateClient.isVirtualLocation(inventory.getLocation()));
+        }
+        return save(consolidatedInventory);
+        *********/
     }
 
 }

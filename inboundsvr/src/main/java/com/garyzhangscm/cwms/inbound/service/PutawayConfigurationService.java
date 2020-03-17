@@ -22,6 +22,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
+import com.garyzhangscm.cwms.inbound.exception.PutawayException;
+import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.PutawayConfigurationRepository;
 import net.bytebuddy.asm.Advice;
@@ -60,7 +62,8 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     String testDataFile;
 
     public PutawayConfiguration findById(Long id) {
-        return putawayConfigurationRepository.findById(id).orElse(null);
+        return putawayConfigurationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("putaway configuration not found by id: " + id));
     }
 
     public List<PutawayConfiguration> findAll() {
@@ -281,11 +284,11 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     }
 
     @Transactional
-    public Inventory allocateLocation(Inventory inventory) throws Exception{
+    public Inventory allocateLocation(Inventory inventory){
         logger.debug("start to allocate location for inventory: {}", inventory.getLpn());
         Location location = allocateSuitableLocation(inventory);
         if (location == null) {
-            throw new GenericException(99999, "fail to allocate location for the inventory");
+            throw PutawayException.raiseException("fail to allocate location for the inventory");
         }
         else {
             warehouseLayoutServiceRestemplateClient.allocateLocation(location, inventory.getSize());

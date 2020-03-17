@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.common;
 
+import com.garyzhangscm.cwms.common.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
 
@@ -61,8 +63,11 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     }
 
     @ExceptionHandler(GenericException.class)
-    public ResponseBodyWrapper defaultErrorHandler(GenericException ex) {
-        return new ResponseBodyWrapper(ex.getCode(), ex.getMessage(), "");
+    public ResponseBodyWrapper defaultErrorHandler(GenericException ex, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+        return new ResponseBodyWrapper(
+                ex.getExceptionCode().getCode(),
+                ex.getExceptionCode().getMessage(), exceptionResponse);
     }
 
     @Override

@@ -18,8 +18,10 @@
 
 package com.garyzhangscm.cwms.inbound.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -294,7 +296,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    public Location createLocationForReceipt(Receipt receipt) throws IOException {
+    public Location createLocationForReceipt(Receipt receipt) {
         Location location = new Location();
         location.setName(receipt.getNumber());
         location.setEnabled(true);
@@ -310,11 +312,17 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/locations");
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.POST,
-                        getHttpEntity(mapper.writeValueAsString(location)),
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(mapper.writeValueAsString(location)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw ReceiptOperationException.raiseException(
+                    "Can't create the location for receipt due to JsonProcessingException: " + e.getMessage());
+        }
 
         return responseBodyWrapper.getData();
     }

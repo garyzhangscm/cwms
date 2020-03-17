@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
@@ -51,7 +52,8 @@ public class SupplierService implements  TestDataInitiableService{
     String testDataFile;
 
     public Supplier findById(Long id) {
-        return supplierRepository.findById(id).orElse(null);
+        return supplierRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("supplier not found by id: " + id));
     }
 
     public List<Supplier> findAll(String name) {

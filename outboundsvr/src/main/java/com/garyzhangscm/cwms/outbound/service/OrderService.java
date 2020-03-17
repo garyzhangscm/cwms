@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
@@ -71,8 +73,9 @@ public class OrderService implements TestDataInitiableService {
     String testDataFile;
 
     public Order findById(Long id, boolean loadDetails) {
-        Order order = orderRepository.findById(id).orElse(null);
-        if (order != null && loadDetails) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("order not found by id: " + id));
+        if (loadDetails) {
             loadOrderAttribute(order);
         }
         return order;
@@ -490,7 +493,7 @@ public class OrderService implements TestDataInitiableService {
                         shipmentService.loadShipment(shipment);
                         logger.debug(">> Shipment {} loaded", shipment.getNumber());
                     } catch (IOException e) {
-                        throw new GenericException(10000, e.getMessage());
+                        throw OrderOperationException.raiseException(e.getMessage());
                     }
                 });
 
@@ -535,7 +538,7 @@ public class OrderService implements TestDataInitiableService {
                         shipmentService.autoCompleteShipment(shipment);
                         logger.debug(">> Shipment {} completed!", shipment.getNumber());
                     } catch (IOException e) {
-                        throw  new GenericException(10000, "Can't complete the shipment. Error message: " + e.getMessage());
+                        throw  OrderOperationException.raiseException("Can't complete the shipment. Error message: " + e.getMessage());
                     }
                 });
         return findById(orderId);
@@ -564,7 +567,7 @@ public class OrderService implements TestDataInitiableService {
                         shipment.getStatus() != ShipmentStatus.DISPATCHED)
                 .count();
         if (activeShipmentsCount > 1) {
-            throw new GenericException(10000,
+            throw  OrderOperationException.raiseException(
                     "There's multiple in process shipment for this order, please process each shipment individually");
         }
         else if (activeShipmentsCount == 1 &&
@@ -585,7 +588,7 @@ public class OrderService implements TestDataInitiableService {
                 // Let's see how many shipments this stop have
                 int shipmentInTheSameStop = shipmentService.findByStop(order.getWarehouseId(), activeShipment.getStop().getId()).size();
                 if (shipmentInTheSameStop > 1) {
-                    throw new GenericException(10000,
+                    throw  OrderOperationException.raiseException(
                             "There's multiple shipments in the same stop, please process each shipment individually");
 
                 }
@@ -595,7 +598,7 @@ public class OrderService implements TestDataInitiableService {
                             order.getWarehouseId(),
                             activeShipment.getStop().getTrailer().getId()).size();
                     if (shipmentInTheSameTrailer > 1) {
-                        throw new GenericException(10000,
+                        throw  OrderOperationException.raiseException(
                                 "There's multiple shipments in the same trailer, please process each shipment individually");
 
                     }

@@ -19,8 +19,10 @@
 package com.garyzhangscm.cwms.inbound.clients;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -181,7 +183,7 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
-    public Inventory addInventory(Inventory inventory) throws IOException {
+    public Inventory addInventory(Inventory inventory) {
 
         // Convert the inventory to JSON and send to the inventory service
 
@@ -192,11 +194,16 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/inventories");
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.POST,
-                        getHttpEntity(mapper.writeValueAsString(inventory)),
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(mapper.writeValueAsString(inventory)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw ReceiptOperationException.raiseException("Can't add inventory due to JsonProcessingException: " + e.getMessage());
+        }
 
         return responseBodyWrapper.getData();
     }
@@ -247,7 +254,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public Inventory setupMovementPath(long inventoryId, List<InventoryMovement> inventoryMovements) throws IOException {
+    public Inventory setupMovementPath(long inventoryId, List<InventoryMovement> inventoryMovements) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -255,11 +262,16 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/inventory/{id}/movements");
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(inventoryId).toUriString(),
-                        HttpMethod.POST,
-                        getHttpEntity(mapper.writeValueAsString(inventoryMovements)),
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.buildAndExpand(inventoryId).toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(mapper.writeValueAsString(inventoryMovements)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw ReceiptOperationException.raiseException("Can't setup the movement path due to JsonProcessingException: " + e.getMessage());
+        }
 
         Inventory inventory = responseBodyWrapper.getData();
         logger.debug("setupMovementPath returns {}", inventory.getInventoryMovements());

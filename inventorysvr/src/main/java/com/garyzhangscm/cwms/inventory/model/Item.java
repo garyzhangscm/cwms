@@ -25,6 +25,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "item")
@@ -76,7 +77,12 @@ public class Item implements Serializable {
         if (!(anotherItem instanceof Item)) {
             return false;
         }
-        return this.getName().equals(((Item)anotherItem).getName());
+
+        Item that = (Item) anotherItem;
+        if (Objects.nonNull(id) && Objects.nonNull(that.id)) {
+            return Objects.equals(id, that.id);
+        }
+        return Objects.equals(name, that.name);
     }
     @Override
     public int hashCode() {

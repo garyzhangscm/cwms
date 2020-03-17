@@ -23,6 +23,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Table(name = "inventory_status")
@@ -59,6 +60,26 @@ public class InventoryStatus implements Serializable {
             inventoryStatus.setDescription(description);
         }
         return inventoryStatus;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InventoryStatus that = (InventoryStatus) o;
+
+        // If both record has ID set, make sure the IDs are the same,
+        // otherwise, make sure the names are the same in the same warehouse
+        if (Objects.nonNull(id) && Objects.nonNull(that.id)) {
+            return Objects.equals(id, that.id);
+        }
+        return Objects.equals(name, that.name) &&
+                Objects.equals(warehouseId, that.warehouseId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, warehouseId, warehouse);
     }
 
     public Long getId() {

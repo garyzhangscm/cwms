@@ -85,12 +85,7 @@ public class PickController {
     public Pick confirmPick(@PathVariable Long id,
                             @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
                             @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId) {
-        try {
             return pickService.confirmPick(id, quantity, nextLocationId);
-        }
-        catch (IOException exception) {
-            throw  new GenericException(10000, exception.getMessage());
-        }
     }
 
 

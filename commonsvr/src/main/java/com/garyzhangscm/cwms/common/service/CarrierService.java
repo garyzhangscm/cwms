@@ -19,10 +19,9 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Carrier;
-import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.repository.CarrierRepository;
-import com.garyzhangscm.cwms.common.repository.ClientRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,8 @@ public class CarrierService implements  TestDataInitiableService{
     String testDataFile;
 
     public Carrier findById(Long id) {
-        return carrierRepository.findById(id).orElse(null);
+        return carrierRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("carrier not found by id: " + id));
     }
 
     public List<Carrier> findAll(String name) {

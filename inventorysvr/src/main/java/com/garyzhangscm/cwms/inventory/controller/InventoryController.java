@@ -18,9 +18,10 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
-import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
+import com.garyzhangscm.cwms.inventory.model.InventoryQuantityChangeType;
 import com.garyzhangscm.cwms.inventory.model.Location;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +41,12 @@ public class InventoryController {
                                               @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
                                               @RequestParam(name="location", required = false, defaultValue = "") String locationName,
+                                              @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
                                               @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
                                               @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
-        return inventoryService.findAll(warehouseId, itemName, clientIds, itemFamilyIds,inventoryStatusId,  locationName, locationGroupId, receiptId, pickIds, lpn);
+        return inventoryService.findAll(warehouseId, itemName, clientIds, itemFamilyIds,inventoryStatusId,  locationName, locationId, locationGroupId, receiptId, pickIds, lpn);
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
@@ -70,22 +72,29 @@ public class InventoryController {
     public void adjustDownInventory(@PathVariable Long id, @RequestParam Long warehouseId) {
         inventoryService.adjustDownInventory(id, warehouseId);
     }
+    // Adjust down the inventory to 0
+    @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
+    public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory) {
+        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST);
+    }
+    // Adjust down the inventory to 0
+    @RequestMapping(method=RequestMethod.PUT, value="/receive")
+    public Inventory addInventoryByReceiving(@RequestBody Inventory inventory) {
+        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING);
+    }
 
     @RequestMapping(method=RequestMethod.GET, value="/inventory/{id}")
     public Inventory getInventory(@PathVariable Long id) {
         return inventoryService.findById(id);
     }
 
-    @RequestMapping(method=RequestMethod.POST, value="/inventories")
-    public Inventory addInventory(@RequestBody Inventory inventory) {
-        return inventoryService.addInventory(inventory);
-    }
 
     @RequestMapping(method=RequestMethod.PUT, value="/inventory/{id}")
     public Inventory changeInventory(@PathVariable long id,
                                      @RequestBody Inventory inventory) {
         if (inventory.getId() != null && inventory.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; inventory.getId(): " + inventory.getId());
         }
         return inventoryService.save(inventory);
     }

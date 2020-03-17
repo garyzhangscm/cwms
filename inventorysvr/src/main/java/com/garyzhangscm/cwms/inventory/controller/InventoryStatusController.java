@@ -18,11 +18,9 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
-import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.InventoryStatus;
-import com.garyzhangscm.cwms.inventory.model.ItemFamily;
 import com.garyzhangscm.cwms.inventory.service.InventoryStatusService;
-import com.garyzhangscm.cwms.inventory.service.ItemFamilyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +50,8 @@ public class InventoryStatusController {
     public InventoryStatus changeInventoryStatus(@PathVariable long id,
                                        @RequestBody InventoryStatus inventoryStatus) {
         if (inventoryStatus.getId() != null && inventoryStatus.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; inventoryStatus.getId(): " + inventoryStatus.getId());
         }
         return inventoryStatusService.save(inventoryStatus);
     }

@@ -19,8 +19,10 @@
 package com.garyzhangscm.cwms.inventory.clients;
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import org.apache.commons.lang.ObjectUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +35,6 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -312,6 +313,23 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+    public Location getLocationForCount(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/logic/count")
+                        .queryParam("warehouseId", warehouseId);
+
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
     public Location getLocationForInventoryAdjustment(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -329,6 +347,19 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+
+    public Location getLogicalLocationForAddingInventory(InventoryQuantityChangeType inventoryQuantityChangeType, Long warehouseId) {
+        switch (inventoryQuantityChangeType){
+            case INVENTORY_ADJUST:
+                return getLocationForInventoryAdjustment(warehouseId);
+            case AUDIT_COUNT:
+                return getLocationForAuditCount(warehouseId);
+                case CYCLE_COUNT:
+                return getLocationForCount(warehouseId);
+            default:
+                return getDefaultRemovedInventoryLocation(warehouseId);
+        }
+    }
     public LocationGroup getLocationGroupById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -455,5 +486,35 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    public InventoryConsolidationStrategy getInventoryConsolidationStrategy(LocationGroup locationGroup) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locationgroups/{id}/inventory-consolidation-strategy");
+
+        ResponseBodyWrapper<InventoryConsolidationStrategy> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(locationGroup.getId()).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<InventoryConsolidationStrategy>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public boolean isVirtualLocation(Location location) {
+
+        if (Objects.isNull(location.getLocationGroup()) ||
+                Objects.isNull(location.getLocationGroup().getLocationGroupType())) {
+            throw MissingInformationException.raiseException(
+                    "Objects.isNull(location.getLocationGroup())?: " + Objects.isNull(location.getLocationGroup()) +
+                    "Objects.isNull(location.getLocationGroup().getLocationGroupType())?: " + Objects.isNull(location.getLocationGroup().getLocationGroupType()));
+        }
+
+        return location.getLocationGroup().getLocationGroupType().getVirtual();
+    }
+
 
 }

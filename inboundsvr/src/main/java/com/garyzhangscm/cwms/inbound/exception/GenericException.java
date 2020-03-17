@@ -18,18 +18,49 @@
 
 package com.garyzhangscm.cwms.inbound.exception;
 
+import org.springframework.util.ObjectUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class GenericException extends RuntimeException {
-    private int code;
-    public GenericException(int code, String message) {
-        super(message);
-        this.code = code;
+
+
+    private final ExceptionCode exceptionCode;
+    private final HashMap<String, Object> data = new HashMap<>();
+
+    public GenericException(ExceptionCode exceptionCode, Map<String, Object> data) {
+        super(exceptionCode.getMessage());
+        this.exceptionCode = exceptionCode;
+        if (!ObjectUtils.isEmpty(data)) {
+            this.data.putAll(data);
+        }
     }
 
-    public int getCode() {
-        return code;
+    protected GenericException(ExceptionCode exceptionCode, Map<String, Object> data, Throwable cause) {
+        super(exceptionCode.getMessage(), cause);
+        this.exceptionCode = exceptionCode;
+        if (!ObjectUtils.isEmpty(data)) {
+            this.data.putAll(data);
+        }
     }
 
-    public void setCode(int code) {
-        this.code = code;
+    public ExceptionCode getExceptionCode() {
+        return exceptionCode;
+    }
+
+    public HashMap<String, Object> getData() {
+        return data;
+    }
+
+    public static Map<String, Object> createDefaultData(String message) {
+        // Get the method / class that raise the exception
+        // new Throwable().getStackTrace() will get the stack information and
+        // we will assume the second line in the stack should be the method
+        // that raise the exception
+        String path = new Throwable().getStackTrace()[1].toString();
+        Map<String, Object> data = new HashMap<>();
+        data.put(path, message);
+        return data;
     }
 }

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -51,7 +52,9 @@ public class SupplierController {
     @RequestMapping(value="/supplier/{id}", method = RequestMethod.PUT)
     public Supplier changeSupplier(@PathVariable Long id, @RequestBody Supplier supplier) {
         if (supplier.getId() != null && supplier.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; supplier.getId(): " + supplier.getId());
+
         }
         return supplierService.save(supplier);
     }

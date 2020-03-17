@@ -9,6 +9,7 @@ text,i18n,link,sequence,menuSubGruop,name
 "Item Family",menu.main.inventory.item-family,/inventory/item-family,1,Main-Menu-Inventory,Inventory-ItemFamily
 "Item",menu.main.inventory.item,/inventory/item,2,Main-Menu-Inventory,Inventory-Item
 "inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory
+"inventory adjust",menu.main.inventory.inventory-adjust,/inventory/inventory-adjust,4,Main-Menu-Inventory,Inventory-InventoryAdjust
 "Movement Path",menu.main.inventory.movement-path,/inventory/movement-path,4,Main-Menu-Inventory,Inventory-MovementPath
 "Cycle Count",menu.main.inventory.count.cycle-count,/inventory/count/cycle-count,5,Main-Menu-Inventory,Inventory-CycleCount
 "Emergency Replenishment Configuration",menu.main.inventory.replenishment.emergency.config,/inventory/replenishment/emergency/config,6,Main-Menu-Inventory,Inventory-EmerReplConfig

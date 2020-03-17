@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemUnitOfMeasureRepository;
 import org.apache.commons.lang.StringUtils;
@@ -56,7 +57,8 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
     String testDataFile;
 
     public ItemUnitOfMeasure findById(Long id) {
-        return itemUnitOfMeasureRepository.findById(id).orElse(null);
+        return itemUnitOfMeasureRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("item unit of measure not found by id: " + id));
     }
 
     public List<ItemUnitOfMeasure> findAll() {

@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ReplenishmentException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
 import com.garyzhangscm.cwms.outbound.repository.EmergencyReplenishmentConfigurationRepository;
@@ -71,8 +73,10 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     String testDataFile;
 
     public EmergencyReplenishmentConfiguration findById(Long id, boolean loadDetails) {
-        EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration = emergencyReplenishmentConfigurationRepository.findById(id).orElse(null);
-        if (emergencyReplenishmentConfiguration != null && loadDetails) {
+        EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration
+                = emergencyReplenishmentConfigurationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("emergency replenishment configuration not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(emergencyReplenishmentConfiguration);
         }
         return emergencyReplenishmentConfiguration;
@@ -278,7 +282,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     public Location getEmergencyReplenishmentDestination(Pick pick) {
         // make sure the pick is a emergency replneishment type of pick
         if (pick.getShortAllocation() == null) {
-            throw new GenericException(10000, "The pick is not type of emergency replenishment");
+            throw ReplenishmentException.raiseException("The pick is not type of emergency replenishment");
 
         }
 
@@ -290,7 +294,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
             // so that we won't even generate the pick.
             // The emergency replenishment configuration needs to be defined so that we can
             // find the destination location for the pick
-            throw new GenericException(10000, "No emergency replenishment found for the pick");
+            throw ReplenishmentException.raiseException("No emergency replenishment found for the pick");
         }
 
         // Let's loop through each emergency replenishment until we find a suitable location
@@ -358,7 +362,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         // If we are still here, it means we already looped through all the configuration but still
         // not able to find any destination location
-        throw new GenericException(10000, "Can't find any destination location for the emergency replenishment");
+        throw ReplenishmentException.raiseException("Can't find any destination location for the emergency replenishment");
     }
 
     private List<EmergencyReplenishmentConfiguration> getMatchedEmergencyReplenishmentConfiguration(Pick pick) {

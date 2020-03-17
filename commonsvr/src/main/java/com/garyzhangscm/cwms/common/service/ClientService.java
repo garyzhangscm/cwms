@@ -19,9 +19,8 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.common.controller.TestDataInitController;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Client;
-import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -52,7 +51,8 @@ public class ClientService implements  TestDataInitiableService{
     String testDataFile;
 
     public Client findById(Long id) {
-        return clientRepository.findById(id).orElse(null);
+        return clientRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("client not found by id: " + id));
     }
 
     public List<Client> findAll(String name) {

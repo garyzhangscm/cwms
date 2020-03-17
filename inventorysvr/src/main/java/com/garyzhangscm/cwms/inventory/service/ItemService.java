@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
 import org.apache.commons.lang.StringUtils;
@@ -61,8 +62,9 @@ public class ItemService implements TestDataInitiableService{
     String testDataFile;
 
     public Item findById(Long id, boolean includeDetails) {
-         Item item = itemRepository.findById(id).orElse(null);
-         if (item != null && includeDetails) {
+         Item item = itemRepository.findById(id)
+                 .orElseThrow(() -> ResourceNotFoundException.raiseException("item not found by id: " + id));
+         if (includeDetails) {
              loadAttribute(item);
          }
          return item;

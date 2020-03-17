@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.common.exception.SystemControlledNumberException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.SystemControlledNumber;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
@@ -71,7 +73,8 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     }
 
     public SystemControlledNumber findById(Long id) {
-        return systemControlledNumberRepository.findById(id).orElse(null);
+        return systemControlledNumberRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("system controlled number not found by id: " + id));
     }
 
     public List<SystemControlledNumber> findAll() {
@@ -109,7 +112,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
             int maxNumber = (int)Math.pow(10, systemControlledNumber.getLength());
             int nextNumber = systemControlledNumber.getCurrentNumber() + 1;
             if (nextNumber > maxNumber && !systemControlledNumber.getRollover()) {
-                throw new GenericException(10000, variable + " has reached the maximum number allowed and Rollover now allowed for this variable");
+                throw SystemControlledNumberException.raiseException(variable + " has reached the maximum number allowed and Rollover now allowed for this variable");
             }
             else if (nextNumber > maxNumber) {
                 // next number is bigger than the maximum number allowed but

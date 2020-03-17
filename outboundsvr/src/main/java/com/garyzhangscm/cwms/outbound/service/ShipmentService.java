@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
@@ -78,8 +80,9 @@ public class ShipmentService {
     }
     public Shipment findById(Long id, boolean includeDetails) {
 
-        Shipment shipment = shipmentRepository.findById(id).orElse(null);
-        if (shipment != null && includeDetails) {
+        Shipment shipment = shipmentRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("shipment not found by id: " + id));
+        if (includeDetails) {
             loadAttribute(shipment);
         }
         return shipment;
@@ -411,7 +414,7 @@ public class ShipmentService {
         }
         if (!shipment.getStatus().equals(ShipmentStatus.LOADED)) {
             logger.debug(">> Shipment {} is in not in 'LOADED' status, we will not complete it", shipment.getNumber());
-            throw new GenericException(10000, "Can't complete the shipment, shipment's status " + shipment.getStatus()
+            throw ShippingException.raiseException("Can't complete the shipment, shipment's status " + shipment.getStatus()
                             + "is not ready for complete.");
         }
         // if we are here, we know for sure
@@ -450,7 +453,7 @@ public class ShipmentService {
             int shipmentInTheSameStop =
                     findByStop(shipment.getWarehouseId(), shipment.getStop().getId()).size();
             if (shipmentInTheSameStop > 1) {
-                throw new GenericException(10000,
+                throw ShippingException.raiseException(
                         "There's multiple shipments in the same stop, please process each shipment individually");
 
             }
@@ -460,7 +463,7 @@ public class ShipmentService {
                         shipment.getWarehouseId(),
                         shipment.getStop().getTrailer().getId()).size();
                 if (shipmentInTheSameTrailer > 1) {
-                    throw new GenericException(10000,
+                    throw ShippingException.raiseException(
                             "There's multiple shipments in the same trailer, please process each shipment individually");
 
                 }
@@ -474,7 +477,7 @@ public class ShipmentService {
 
         }
         catch (IOException ex) {
-            throw  new GenericException(10000, ex.getMessage());
+            throw  ShippingException.raiseException( ex.getMessage());
         }
     }
 
@@ -530,7 +533,7 @@ public class ShipmentService {
         if (!readyForStage(shipment, ignoreUnfinishedPicks)) {
             logger.debug("Shipment {} is not ready for stage",
                     shipment.getNumber());
-            throw new GenericException(10000,"Shipment is not ready for stage yet");
+            throw ShippingException.raiseException("Shipment is not ready for stage yet");
         }
 
         shipment.setStatus(ShipmentStatus.STAGED);

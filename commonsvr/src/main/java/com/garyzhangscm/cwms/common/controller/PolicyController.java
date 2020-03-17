@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Policy;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -53,7 +54,8 @@ public class PolicyController {
     public Policy changePolicy(@PathVariable Long id,
                              @RequestBody Policy policy) {
         if (policy.getId() != null && policy.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; policy.getId(): " + policy.getId());
         }
         policy.setId(id);
         return policyService.saveOrUpdate(policy);

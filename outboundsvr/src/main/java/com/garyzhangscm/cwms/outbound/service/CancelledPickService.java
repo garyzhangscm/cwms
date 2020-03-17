@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.CancelledPickRepository;
@@ -63,8 +64,9 @@ public class CancelledPickService {
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
     public CancelledPick findById(Long id, boolean loadDetails) {
-        CancelledPick cancelledPick = cancelledPickRepository.findById(id).orElse(null);
-        if (cancelledPick != null && loadDetails) {
+        CancelledPick cancelledPick = cancelledPickRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("cancelled pick not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(cancelledPick);
         }
         return cancelledPick;

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.ReasonCode;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -59,7 +60,8 @@ public class ReasonCodeController {
     @RequestMapping(value="/reason-code/{id}", method = RequestMethod.PUT)
     public ReasonCode changeReasonCode(@PathVariable Long id, @RequestBody ReasonCode reasonCode) {
         if (reasonCode.getId() != null && reasonCode.getId() != id) {
-            throw new GenericException(10000, "ID in the URL doesn't match with the data passed in the request");
+            throw RequestValidationFailException.raiseException(
+                    "id(in URI): " + id + "; reasonCode.getId(): " + reasonCode.getId());
         }
         return reasonCodeService.save(reasonCode);
     }

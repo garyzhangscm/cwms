@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderInstructionRepository;
 import org.apache.commons.lang.StringUtils;
@@ -59,7 +60,8 @@ public class WorkOrderInstructionService implements TestDataInitiableService {
 
 
     public WorkOrderInstruction findById(Long id) {
-        return workOrderInstructionRepository.findById(id).orElse(null);
+        return workOrderInstructionRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("work order instruction not found by id: " + id));
     }
 
 

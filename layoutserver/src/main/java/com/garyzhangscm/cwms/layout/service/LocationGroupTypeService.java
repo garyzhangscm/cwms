@@ -19,11 +19,9 @@
 package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.layout.model.LocationGroupCSVWrapper;
+import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.LocationGroupType;
-import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupTypeRepository;
-import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +51,8 @@ public class LocationGroupTypeService implements TestDataInitiableService {
     String testDataFile;
 
     public LocationGroupType findById(Long id) {
-        return locationGroupTypeRepository.findById(id).orElse(null);
+        return locationGroupTypeRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("location group type not found by id: " + id));
     }
 
     public List<LocationGroupType> findAll(String name) {

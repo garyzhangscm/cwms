@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.MenuGroupRepository;
 import com.garyzhangscm.cwms.resources.repository.MenuSubGroupRepository;
@@ -53,7 +54,8 @@ public class MenuSubGroupService implements TestDataInitiableService{
     String testDataFile;
 
     public MenuSubGroup findById(Long id) {
-        return menuSubGroupRepository.findById(id).orElse(null);
+        return menuSubGroupRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("menu sub group not found by id: " + id));
     }
 
     public List<MenuSubGroup> findAll() {

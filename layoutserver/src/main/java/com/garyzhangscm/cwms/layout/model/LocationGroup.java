@@ -54,11 +54,13 @@ public class LocationGroup {
     private Boolean countable;
     @Column(name = "tracking_volume")
     private Boolean trackingVolume;
-    @Column(name = "consolidate_lpn")
-    private Boolean consolidateLpn;
 
     @Column(name = "volume_tracking_policy")
     private LocationVolumeTrackingPolicy volumeTrackingPolicy;
+
+
+    @Column(name = "inventory_consolidation_strategy")
+    private InventoryConsolidationStrategy inventoryConsolidationStrategy = InventoryConsolidationStrategy.NONE;
 
 
 
@@ -143,11 +145,11 @@ public class LocationGroup {
         this.warehouse = warehouse;
     }
 
-    public Boolean getConsolidateLpn() {
-        return consolidateLpn;
+    public InventoryConsolidationStrategy getInventoryConsolidationStrategy() {
+        return inventoryConsolidationStrategy;
     }
 
-    public void setConsolidateLpn(Boolean consolidateLpn) {
-        this.consolidateLpn = consolidateLpn;
+    public void setInventoryConsolidationStrategy(InventoryConsolidationStrategy inventoryConsolidationStrategy) {
+        this.inventoryConsolidationStrategy = inventoryConsolidationStrategy;
     }
 }

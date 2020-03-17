@@ -19,7 +19,9 @@
 package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.layout.Exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.LocationOperationException;
+import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupRepository;
 import org.apache.commons.lang.StringUtils;
@@ -31,11 +33,8 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
-import java.beans.Transient;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +64,8 @@ public class LocationGroupService implements TestDataInitiableService {
 
     @Cacheable
     public LocationGroup findById(Long id) {
-        return locationGroupRepository.findById(id).orElse(null);
+        return locationGroupRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("location group not found by id: " + id));
     }
 
     public List<LocationGroup> findAll(Long warehouseId) {
@@ -154,7 +154,7 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("countable").
                 addColumn("trackingVolume").
                 addColumn("volumeTrackingPolicy").
-                addColumn("consolidateLpn").
+                addColumn("inventoryConsolidationStrategy").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupCSVWrapper.class);
     }
@@ -170,7 +170,7 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("countable").
                 addColumn("trackingVolume").
                 addColumn("volumeTrackingPolicy").
-                addColumn("consolidateLpn").
+                addColumn("inventoryConsolidationStrategy").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupCSVWrapper.class);
@@ -206,7 +206,6 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.setPickable(locationGroupCSVWrapper.getPickable());
         locationGroup.setCountable(locationGroupCSVWrapper.getCountable());
         locationGroup.setStorable(locationGroupCSVWrapper.getStorable());
-        locationGroup.setConsolidateLpn(locationGroupCSVWrapper.getConsolidateLpn());
 
         locationGroup.setWarehouse(warehouseService.findByName(locationGroupCSVWrapper.getWarehouse()));
 
@@ -214,6 +213,10 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.setTrackingVolume(locationGroupCSVWrapper.getTrackingVolume());
         if (!StringUtils.isBlank(locationGroupCSVWrapper.getVolumeTrackingPolicy())) {
             locationGroup.setVolumeTrackingPolicy(LocationVolumeTrackingPolicy.valueOf(locationGroupCSVWrapper.getVolumeTrackingPolicy()));
+        }
+
+        if (!StringUtils.isBlank(locationGroupCSVWrapper.getInventoryConsolidationStrategy())) {
+            locationGroup.setInventoryConsolidationStrategy(InventoryConsolidationStrategy.valueOf(locationGroupCSVWrapper.getInventoryConsolidationStrategy()));
         }
         logger.debug("locationGroupCSVWrapper.getLocationGroupType().isEmpty()? " + locationGroupCSVWrapper.getLocationGroupType().isEmpty());
         if (!locationGroupCSVWrapper.getLocationGroupType().isEmpty()) {
@@ -294,7 +297,7 @@ public class LocationGroupService implements TestDataInitiableService {
 
         logger.debug(">> No location has been found");
         // If we are here, we fail to find any location
-        throw new GenericException(1000, "fail to reserve a location from the group");
+        throw LocationOperationException.raiseException("fail to reserve a location from the group");
     }
 
     private boolean ifVolumeFitForLocation(LocationVolumeTrackingPolicy locationVolumeTrackingPolicy,

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemFamilyRepository;
 import org.apache.commons.lang.StringUtils;
@@ -53,7 +54,8 @@ public class ItemFamilyService implements TestDataInitiableService{
     String testDataFile;
 
     public ItemFamily findById(Long id) {
-        return itemFamilyRepository.findById(id).orElse(null);
+        return itemFamilyRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("item family not found by id: " + id));
     }
 
     public List<ItemFamily> findAll(Long warehouseId, String name) {

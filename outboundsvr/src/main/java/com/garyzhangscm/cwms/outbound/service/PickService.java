@@ -22,7 +22,8 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.PickingException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickRepository;
@@ -35,7 +36,6 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -75,8 +75,9 @@ public class PickService {
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
     public Pick findById(Long id, boolean loadDetails) {
-        Pick pick = pickRepository.findById(id).orElse(null);
-        if (pick != null && loadDetails) {
+        Pick pick = pickRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("pick not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(pick);
         }
         return pick;
@@ -247,7 +248,7 @@ public class PickService {
     }
     public Pick cancelPick(Pick pick, Long cancelledQuantity) {
         if (pick.getStatus().equals(PickStatus.COMPLETED)) {
-            throw new GenericException(10000, "Can't cancel pick that is already cancelled");
+            throw PickingException.raiseException("Can't cancel pick that is already cancelled");
         }
 
         // we have nothing left to cancel
@@ -415,7 +416,7 @@ public class PickService {
                     workOrder.getProductionLine().getName() );
             return workOrder.getProductionLine().getInboundStageLocation().getId();
         }
-        throw new GenericException(10000, "Can't get inbound location for the work order: " + workOrder.getNumber());
+        throw PickingException.raiseException("Can't get inbound location for the work order: " + workOrder.getNumber());
 
     }
     private Location getDestinationLocationForPick(ShipmentLine shipmentLine, Pick pick) {
@@ -511,7 +512,7 @@ public class PickService {
                     getReserveCode(pick, movementPathDetail), pick.getSize(), pick.getQuantity(), 1);
             return new PickMovement(pick, hopLocation, movementPathDetail.getSequence());
         }
-        throw new GenericException(10000, "Can't reserve any location by the movement path detail configuration: " + movementPathDetail.getSequence());
+        throw PickingException.raiseException("Can't reserve any location by the movement path detail configuration: " + movementPathDetail.getSequence());
     }
 
     private String getReserveCode(Pick pick, MovementPathDetail movementPathDetail) {
@@ -521,11 +522,11 @@ public class PickService {
             case BY_CUSTOMER:
                 return pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomer().getName();
         }
-        throw new GenericException(10000, "not possible to get reserve code for pick from the strategy: " + movementPathDetail.getStrategy());
+        throw PickingException.raiseException("not possible to get reserve code for pick from the strategy: " + movementPathDetail.getStrategy());
     }
 
 
-    public Pick confirmPick(Pick pick, Long quantity) throws IOException {
+    public Pick confirmPick(Pick pick, Long quantity) {
         if (pick.getPickMovements().size() == 0) {
             return confirmPick(pick, quantity, pick.getDestinationLocation());
         }
@@ -533,14 +534,14 @@ public class PickService {
             return confirmPick(pick, quantity, pick.getPickMovements().get(0).getLocation());
         }
     }
-    public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId) throws IOException {
+    public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId)  {
         if (nextLocationId != null) {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
             if (nextLocation != null) {
                 return confirmPick(findById(pickId), quantity, nextLocation);
             }
             else {
-                throw new GenericException(10000,
+                throw PickingException.raiseException(
                         "Can't confirm the pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
             }
         }
@@ -548,7 +549,7 @@ public class PickService {
             return confirmPick(findById(pickId), quantity);
         }
     }
-    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation) throws IOException {
+    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {
 
         List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick);
         logger.debug(" Get {} valid inventory for pick {}",
@@ -576,12 +577,12 @@ public class PickService {
         return pickRepository.getPicksByShipmentId(shipmentId);
     }
 
-    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation) throws IOException {
+    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation)   {
         return confirmPick(inventory, pick, quantityToBePicked, nextLocation, "");
     }
-    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation, String newLpn) throws IOException {
+    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation, String newLpn)  {
         if (!match(inventory, pick)) {
-            throw new GenericException(10000, "inventory can't be picked for the pick. Attribute discrepancy found");
+            throw PickingException.raiseException( "inventory can't be picked for the pick. Attribute discrepancy found");
         }
 
         logger.debug("Start to pick from inventory\n inventory quantity: {} \n pick's quantity {} / {} "
@@ -605,7 +606,7 @@ public class PickService {
             }
             List<Inventory> inventories = inventoryServiceRestemplateClient.split(inventory, newLpn, quantityToBePicked);
             if (inventories.size() != 2) {
-                throw new GenericException(10000, "Inventory split for pick error! Inventory is not split into 2");
+                throw PickingException.raiseException("Inventory split for pick error! Inventory is not split into 2");
             }
             inventoryToBePicked = inventories.get(1);
         }

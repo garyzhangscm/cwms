@@ -26,6 +26,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "item_package_type")
@@ -88,6 +89,24 @@ public class ItemPackageType implements Serializable {
                 ", warehouseId=" + warehouseId +
                 ", warehouse=" + warehouse +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemPackageType that = (ItemPackageType) o;
+        if (Objects.nonNull(id) && Objects.nonNull(that.id)) {
+            return Objects.equals(id, that.id);
+        }
+        return Objects.equals(item, that.item) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(warehouseId, that.warehouseId) ;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, clientId, client, supplierId, supplier, item, itemUnitOfMeasures, warehouseId, warehouse);
     }
 
     public Long getId() {

@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
@@ -43,7 +42,7 @@ public class User  {
     @Column(name = "last_name")
     private String lastname;
     @Column(name = "is_admin")
-    private Boolean isAdmin;
+    private Boolean isAdmin = false;
 
     @Transient
     private String email;

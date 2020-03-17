@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShortAllocationException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.PickRepository;
 import com.garyzhangscm.cwms.outbound.repository.ShortAllocationRepository;
@@ -69,8 +71,10 @@ public class ShortAllocationService {
 
 
     public ShortAllocation findById(Long id, boolean loadDetails) {
-        ShortAllocation shortAllocation = shortAllocationRepository.findById(id).orElse(null);
-        if (shortAllocation != null && loadDetails) {
+        ShortAllocation shortAllocation
+                = shortAllocationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("short allocation not found by id: " + id));
+        if (loadDetails) {
             loadOrderAttribute(shortAllocation);
         }
         return shortAllocation;
@@ -153,7 +157,7 @@ public class ShortAllocationService {
     }
     public ShortAllocation cancelShortAllocation(ShortAllocation shortAllocation) {
         if (shortAllocation.getStatus().equals(ShortAllocationStatus.COMPLETED)) {
-            throw new GenericException(10000, "Can't cancel short allocation that is already cancelled");
+            throw ShortAllocationException.raiseException("Can't cancel short allocation that is already cancelled");
         }
 
 

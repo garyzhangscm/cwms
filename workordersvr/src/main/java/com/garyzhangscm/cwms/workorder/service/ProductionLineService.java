@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
 import org.apache.commons.lang.StringUtils;
@@ -61,8 +62,9 @@ public class ProductionLineService implements TestDataInitiableService {
     String testDataFile;
 
     public ProductionLine findById(Long id, boolean loadDetails) {
-        ProductionLine productionLine = productionLineRepository.findById(id).orElse(null);
-        if (productionLine != null && loadDetails) {
+        ProductionLine productionLine = productionLineRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("production line not found by id: " + id));
+        if (loadDetails) {
             loadAttribute(productionLine);
         }
         return productionLine;
