@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "inventory")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Inventory implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(Inventory.class);
@@ -207,7 +209,7 @@ public class Inventory implements Serializable {
 
     public Double getSize() {
 
-        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()

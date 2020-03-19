@@ -8,6 +8,7 @@ drop table if exists audit_count_request;
 
 DROP TABLE if exists inventory_movement;
 DROP TABLE if exists inventory;
+DROP TABLE if exists inventory_activity;
 drop table if exists inventory_status;
 DROP TABLE IF EXISTS item_unit_of_measure;
 DROP TABLE IF EXISTS item_package_type;
@@ -84,6 +85,32 @@ CREATE TABLE inventory(
   inventory_status_id bigint not null,
   virtual_inventory boolean not null default 0,
   receipt_id BIGINT,
+  foreign key(item_id) references item(item_id),
+  foreign key(item_package_type_id) references item_package_type(item_package_type_id),
+  foreign key(inventory_status_id) references inventory_status(inventory_status_id)
+);
+
+
+CREATE TABLE inventory_activity(
+  inventory_activity_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  lpn   VARCHAR(100) NOT NULL,
+  location_id    BIGINT NOT NULL,
+  pick_id    BIGINT,
+  item_id BIGINT not null,
+  warehouse_id BIGINT NOT NULL,
+  item_package_type_id BIGINT not null,
+  quantity bigint not null,
+  inventory_status_id bigint not null,
+  virtual_inventory boolean not null default 0,
+  receipt_id BIGINT,
+  type VARCHAR(20) NOT NULL,
+  activity_datetime datetime not null ,
+  username VARCHAR(50) NOT NULL,
+  value_type VARCHAR(50),
+  from_value VARCHAR(50),
+  to_value VARCHAR(50),
+  document_number VARCHAR(50),
+  comment VARCHAR(2000),
   foreign key(item_id) references item(item_id),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),
   foreign key(inventory_status_id) references inventory_status(inventory_status_id)

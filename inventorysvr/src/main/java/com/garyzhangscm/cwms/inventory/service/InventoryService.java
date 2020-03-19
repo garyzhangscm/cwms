@@ -70,6 +70,8 @@ public class InventoryService implements TestDataInitiableService{
     private MovementPathService movementPathService;
     @Autowired
     private InventoryConsolidationService inventoryConsolidationService;
+    @Autowired
+    private InventoryActivityService inventoryActivityService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -449,16 +451,14 @@ public class InventoryService implements TestDataInitiableService{
 
     // To remove inventory, we won't actually remove the record.
     // Instead we move the inventory to a 'logical' location
-    public void removeInventory(Long id, Location destination) {
+    public Inventory removeInventory(Long id, Location destination) {
         Inventory inventory = findById(id);
-        if (inventory != null) {
-            moveInventory(inventory, destination);
-        }
+        return moveInventory(inventory, destination);
     }
-    public void removeInventory(Inventory inventory, Location destination) {
-        if (inventory != null) {
-            moveInventory(inventory, destination);
-        }
+    public Inventory removeInventory(Inventory inventory, Location destination) {
+
+        return moveInventory(inventory, destination);
+
     }
 
     public Inventory moveInventory(Long inventoryId, Location destination) {
@@ -505,6 +505,12 @@ public class InventoryService implements TestDataInitiableService{
 
         // Reset the destination location's size
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
+
+        // Log a inventory movement activity before we can log
+        // another possible inventory consolidation activity
+
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_MOVEMENT,
+                                        "location", sourceLocation.getName(), destination.getName());
 
         // consolidate the inventory at the destination, if necessary
         Inventory consolidatedInventory = inventoryConsolidationService.consolidateInventoryAtLocation(destination, inventory);
@@ -566,6 +572,9 @@ public class InventoryService implements TestDataInitiableService{
     }
     private void recalculateMovementPathForInventoryMovement(Inventory inventory, Location destination) {
 
+        if (Objects.isNull(inventory.getInventoryMovements()) || inventory.getInventoryMovements().size() == 0) {
+            return;
+        }
         List<InventoryMovement> matchedMovements = inventory.getInventoryMovements().stream()
                          .filter(inventoryMovement ->  inventoryMovement.getLocationId().equals(destination.getId()))
                          .collect(Collectors.toList());
@@ -609,7 +618,10 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public void adjustDownInventory(Long id, Long warehouseId) {
-        removeInventory(id, warehouseLayoutServiceRestemplateClient.getLocationForInventoryAdjustment(warehouseId));
+        Inventory inventory =
+                removeInventory(id, warehouseLayoutServiceRestemplateClient.getLocationForInventoryAdjustment(warehouseId));
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
+                "Adjust Down", String.valueOf(inventory.getQuantity()), "0");
     }
 
 
@@ -683,11 +695,14 @@ public class InventoryService implements TestDataInitiableService{
     }
     public Inventory markAsPicked(Inventory inventory, Long pickId) {
         inventory.setPickId(pickId);
+        Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
         if (inventory.getInventoryMovements().size() == 0) {
             // copy the pick movement and assign it to the inventory's movement
-            Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
             copyMovementsFromPick(pick, inventory);
+
         }
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.PICKING,
+                "pick", String.valueOf(pickId), "", pick.getNumber());
         return inventory;
     }
     private void copyMovementsFromPick(Pick pick, Inventory inventory) {
@@ -718,6 +733,9 @@ public class InventoryService implements TestDataInitiableService{
         List<Inventory> inventories = new ArrayList<>();
         inventories.add(saveOrUpdate(inventory));
         inventories.add(saveOrUpdate(newInventory));
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_SPLIT,
+                "Lpn,Quantity", inventory.getLpn() + "," + inventory.getQuantity(),
+                newLpn + "," + newQuantity);
         return inventories;
     }
 
@@ -739,12 +757,15 @@ public class InventoryService implements TestDataInitiableService{
         }
 
         // update the pick
-        outbuondServiceRestemplateClient.unpick(inventory.getPickId(), inventory.getQuantity());
+        Pick cancelledPick =
+                outbuondServiceRestemplateClient.unpick(inventory.getPickId(), inventory.getQuantity());
 
         // disconnect the inventory from the pick and
         // clear all the movement path
         inventory.setPickId(null);
         inventoryMovementService.clearInventoryMovement(inventory);
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.UNPICKING,
+                "quantity", String.valueOf(inventory.getQuantity()), "", cancelledPick.getNumber());
 
         return saveOrUpdate(inventory);
 
@@ -785,6 +806,24 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setVirtual(warehouseLayoutServiceRestemplateClient.isVirtualLocation(location));
 
         inventory = saveOrUpdate(inventory);
+
+        // Save the activity
+        InventoryActivityType inventoryActivityType;
+        switch (inventoryQuantityChangeType) {
+            case RECEIVING:
+                inventoryActivityType = InventoryActivityType.RECEIVING;
+                break;
+            case AUDIT_COUNT:
+                inventoryActivityType = InventoryActivityType.AUDIT_COUNT;
+                break;
+            case CYCLE_COUNT:
+                inventoryActivityType = InventoryActivityType.CYCLE_COUNT;
+                break;
+            default:
+                inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
+        }
+        inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
+                "quantity", "0", String.valueOf(inventory.getQuantity()));
 
         return moveInventory(inventory, destinationLocation);
 
