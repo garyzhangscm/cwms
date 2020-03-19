@@ -2,13 +2,16 @@ package com.garyzhangscm.cwms.inventory.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
 import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
 import com.garyzhangscm.cwms.inventory.service.IntegrationService;
+import com.garyzhangscm.cwms.inventory.service.InventoryActivityService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -28,7 +31,12 @@ public class KafkaReceiver {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     IntegrationService integrationService;
+    @Autowired
+    InventoryActivityService inventoryActivityService;
 
     @KafkaListener(topics = {"short-allocation"})
     public void listen(ConsumerRecord<?, ?> record) {
@@ -51,6 +59,21 @@ public class KafkaReceiver {
             logger.info("itemUnitOfMeasure: {}", itemUnitOfMeasure);
 
             integrationService.process(item, itemUnitOfMeasure);
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
+    @KafkaListener(topics = {"INVENTORY-ACTIVITY"})
+    public void processInventoryActivity(@Payload String inventoryActivityJsonRepresent)  {
+        logger.info("# received inventory activity data: {}", inventoryActivityJsonRepresent);
+        try {
+            InventoryActivity inventoryActivity = objectMapper.readValue(inventoryActivityJsonRepresent, InventoryActivity.class);
+            logger.info("InventoryActivity: {}", inventoryActivity);
+
+            inventoryActivityService.processInventoryActivityMessage(inventoryActivity);
 
         }
         catch (JsonProcessingException ex) {

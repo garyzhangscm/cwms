@@ -1,0 +1,47 @@
+package com.garyzhangscm.cwms.inventory.clients;
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+public class KafkaSender {
+    private static final Logger logger = LoggerFactory.getLogger(KafkaSender.class);
+
+    @Autowired
+    private KafkaTemplate kafkaTemplate;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private ObjectMapper mapper = new ObjectMapper();
+
+    public void send(String topic, String message) {
+
+        logger.debug("====> Start to send to kafka: {} / {}"
+                     ,topic, message);
+        kafkaTemplate.send(topic, message);
+    }
+    public void send(String topic, String key, String message) {
+
+        logger.debug("====> Start to send to kafka: {} / {} / {}"
+                ,topic, key, message);
+        kafkaTemplate.send(topic, key, message);
+    }
+
+
+    public void send(InventoryActivity inventoryActivity) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("INVENTORY-ACTIVITY", objectMapper.writeValueAsString(inventoryActivity));
+        }
+        catch (Exception ex) {
+            send("SYSTEM-ERROR", ex.getMessage());
+        }
+    }
+}

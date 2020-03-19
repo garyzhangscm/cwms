@@ -244,7 +244,7 @@ public class ReceiptLineService implements TestDataInitiableService{
         inventory.setReceiptId(receiptId);
         inventory.setWarehouseId(receipt.getWarehouseId());
 
-        Inventory newInventory = inventoryServiceRestemplateClient.addInventory(inventory);
+        Inventory newInventory = inventoryServiceRestemplateClient.receiveInventory(inventory);
         receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() + newInventory.getQuantity());
         save(receiptLine);
         return newInventory;

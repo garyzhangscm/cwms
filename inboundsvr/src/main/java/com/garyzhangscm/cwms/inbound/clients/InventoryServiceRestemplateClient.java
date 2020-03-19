@@ -183,7 +183,7 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
-    public Inventory addInventory(Inventory inventory) {
+    public Inventory receiveInventory(Inventory inventory) {
 
         // Convert the inventory to JSON and send to the inventory service
 
@@ -191,14 +191,14 @@ public class InventoryServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/inventory/inventories");
+                        .path("/api/inventory/receive");
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = null;
         try {
             responseBodyWrapper = restTemplate.exchange(
                     builder.toUriString(),
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     getHttpEntity(mapper.writeValueAsString(inventory)),
                     new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
         } catch (JsonProcessingException e) {

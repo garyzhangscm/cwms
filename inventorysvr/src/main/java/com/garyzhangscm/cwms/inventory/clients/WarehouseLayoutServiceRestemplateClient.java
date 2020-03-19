@@ -346,6 +346,23 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+    public Location getLocationForReceiving(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/logic/receiving")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 
     public Location getLogicalLocationForAddingInventory(InventoryQuantityChangeType inventoryQuantityChangeType, Long warehouseId) {
@@ -354,8 +371,10 @@ public class WarehouseLayoutServiceRestemplateClient {
                 return getLocationForInventoryAdjustment(warehouseId);
             case AUDIT_COUNT:
                 return getLocationForAuditCount(warehouseId);
-                case CYCLE_COUNT:
+            case CYCLE_COUNT:
                 return getLocationForCount(warehouseId);
+            case RECEIVING:
+                return getLocationForReceiving(warehouseId);
             default:
                 return getDefaultRemovedInventoryLocation(warehouseId);
         }

@@ -60,6 +60,8 @@ public class ItemPackageType implements Serializable {
     @JoinColumn(name = "item_id")
     private Item item;
 
+    @Transient
+    private ItemUnitOfMeasure stockItemUnitOfMeasure;
 
     @OneToMany(
             mappedBy = "itemPackageType",
@@ -181,7 +183,7 @@ public class ItemPackageType implements Serializable {
         this.itemUnitOfMeasures = itemUnitOfMeasures;
     }
 
-    public ItemUnitOfMeasure getStockItemUnitOfMeasures() {
+    public ItemUnitOfMeasure getStockItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {
             return null;
         }
@@ -193,6 +195,10 @@ public class ItemPackageType implements Serializable {
             }
         }
         return stockItemUnitOfMeasure;
+    }
+
+    public void setStockItemUnitOfMeasure(ItemUnitOfMeasure stockItemUnitOfMeasure) {
+        this.stockItemUnitOfMeasure = stockItemUnitOfMeasure;
     }
 
     public Long getWarehouseId() {
