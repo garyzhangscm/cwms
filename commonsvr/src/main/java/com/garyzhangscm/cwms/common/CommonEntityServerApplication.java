@@ -1,9 +1,16 @@
 package com.garyzhangscm.cwms.common;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 @SpringBootApplication
@@ -20,4 +27,17 @@ public class CommonEntityServerApplication {
 		SpringApplication.run(CommonEntityServerApplication.class, args);
 	}
 
+	@Bean
+	@Primary
+	public ObjectMapper getObjMapper(){
+		// JavaTimeModule timeModule = new JavaTimeModule();
+		// timeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer());
+		// timeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer());
+
+		return new ObjectMapper()
+				.registerModule(new ParameterNamesModule())
+				.registerModule(new Jdk8Module())
+				.registerModule(new JavaTimeModule())
+				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	}
 }

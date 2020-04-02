@@ -32,11 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpSession;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,6 +58,8 @@ public class InventoryActivityService{
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private HttpSession httpSession;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
@@ -294,7 +298,7 @@ public class InventoryActivityService{
                                       String valueType, String fromValue, String toValue,
                                       String documentNumber, String comment) {
         InventoryActivity inventoryActivity = new InventoryActivity(
-                inventory, inventoryActivityType,
+                inventory, inventoryActivityType, getTransactionId(),
                 activityDateTime, username,
                 valueType, fromValue, toValue,
                 documentNumber, comment
@@ -325,6 +329,21 @@ public class InventoryActivityService{
 
     public void processInventoryActivityMessage(InventoryActivity inventoryActivity){
         save(inventoryActivity);
+    }
+
+    private String getTransactionId() {
+        String transactionId;
+        if (Objects.isNull(httpSession.getAttribute("Inventory-Activity-Transaction-Id"))) {
+            logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
+            transactionId = commonServiceRestemplateClient.getNextInventoryActivityTransactionId();
+            httpSession.setAttribute("Inventory-Activity-Transaction-Id", transactionId);
+            logger.debug(">> {}", transactionId);
+        }
+        else {
+            transactionId = httpSession.getAttribute("Inventory-Activity-Transaction-Id").toString();
+            logger.debug("Get transaction ID {} from current session", transactionId);
+        }
+        return transactionId;
     }
 
 

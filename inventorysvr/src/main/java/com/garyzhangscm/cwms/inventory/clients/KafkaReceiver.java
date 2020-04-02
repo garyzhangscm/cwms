@@ -28,8 +28,6 @@ import java.util.Optional;
 public class KafkaReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaReceiver.class);
 
-    private ObjectMapper mapper = new ObjectMapper();
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -53,9 +51,9 @@ public class KafkaReceiver {
         logger.info("# received item unit of measure data: {}", itemUnitOfMeasureJsonRepresent);
         logger.debug("# received item unit of measure data's  header: {}", itemJsonRepresent);
         try {
-            Item item = mapper.readValue(itemJsonRepresent, Item.class);
+            Item item = objectMapper.readValue(itemJsonRepresent, Item.class);
             logger.info("Item: {}", item);
-            ItemUnitOfMeasure itemUnitOfMeasure = mapper.readValue(itemUnitOfMeasureJsonRepresent, ItemUnitOfMeasure.class);
+            ItemUnitOfMeasure itemUnitOfMeasure = objectMapper.readValue(itemUnitOfMeasureJsonRepresent, ItemUnitOfMeasure.class);
             logger.info("itemUnitOfMeasure: {}", itemUnitOfMeasure);
 
             integrationService.process(item, itemUnitOfMeasure);

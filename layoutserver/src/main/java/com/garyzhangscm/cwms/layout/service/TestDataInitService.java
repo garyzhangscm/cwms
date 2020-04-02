@@ -18,13 +18,20 @@
 
 package com.garyzhangscm.cwms.layout.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class TestDataInitService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TestDataInitService.class);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     // WarehouseService warehouseService;
 
@@ -69,4 +76,19 @@ public class TestDataInitService {
         return initiableServices.get(name);
     }
 
+    public void clear(Long warehouseId) {
+
+        jdbcTemplate.update("delete from location where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("location records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from location_group where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("location_group records from warehouse ID {} removed!", warehouseId);
+
+
+
+        // We will keep the warehouse information
+        // jdbcTemplate.update("delete from warehouse where warehouse_id = ?", new Object[] { warehouseId });
+        // logger.debug("warehouse records from warehouse ID {} removed!", warehouseId);
+
+    }
 }

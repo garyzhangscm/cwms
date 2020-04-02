@@ -18,7 +18,10 @@
 
 package com.garyzhangscm.cwms.inbound.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,6 +31,10 @@ import java.util.Map;
 
 @Service
 public class TestDataInitService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TestDataInitService.class);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     ReceiptService receiptService;
 
@@ -68,4 +75,16 @@ public class TestDataInitService {
         return initiableServices.get(name);
     }
 
+    public void clear(Long warehouseId) {
+
+        jdbcTemplate.update("delete from receipt_line where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("receipt_line records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from receipt where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("receipt records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from putaway_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("putaway_configuration records from warehouse ID {} removed!", warehouseId);
+
+    }
 }

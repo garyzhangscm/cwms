@@ -16,9 +16,20 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.inbound.service;
+package com.garyzhangscm.cwms.inventory.model;
 
-public interface TestDataInitiableService {
-    public void initTestData(String warehouseName);
+import java.io.Serializable;
 
+public class SystemControlledNumber implements Serializable {
+
+
+    private String nextNumber;
+
+    public String getNextNumber() {
+        return nextNumber;
+    }
+
+    public void setNextNumber(String nextNumber) {
+        this.nextNumber = nextNumber;
+    }
 }

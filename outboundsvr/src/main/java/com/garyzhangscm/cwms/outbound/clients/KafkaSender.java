@@ -16,7 +16,9 @@ public class KafkaSender {
     @Autowired
     private KafkaTemplate kafkaTemplate;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
 
     public void send(String topic, String message) {
 
@@ -27,7 +29,7 @@ public class KafkaSender {
 
     public void send(OrderActivity orderActivity) {
         try {
-            send(orderActivity.getOrderActivityType().toString(), mapper.writeValueAsString(orderActivity));
+            send(orderActivity.getOrderActivityType().toString(), objectMapper.writeValueAsString(orderActivity));
         }
         catch (Exception ex) {
             send("SYSTEM-ERROR", ex.getMessage());

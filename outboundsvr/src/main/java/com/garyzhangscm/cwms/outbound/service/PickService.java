@@ -526,6 +526,13 @@ public class PickService {
     }
 
 
+    /**
+     * Confirm pick. No destination location is passed in, we will move the picked inventory
+     * according to the movement path
+     * @param pick The pick to be confirmed
+     * @param quantity The quantity that will be picked
+     * @return
+     */
     public Pick confirmPick(Pick pick, Long quantity) {
         if (pick.getPickMovements().size() == 0) {
             return confirmPick(pick, quantity, pick.getDestinationLocation());
@@ -551,12 +558,17 @@ public class PickService {
     }
     public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {
 
+        // make sure we are not over pick. At this moment, over pick is not allowed
+        // If the quantity is not passed in, we will pick the whole quantity that is still left
+        Long quantityToBePicked = quantity == null ? pick.getQuantity() - pick.getPickedQuantity() : quantity;
+        if (quantityToBePicked <= 0 ||  quantityToBePicked > pick.getQuantity() - pick.getPickedQuantity()) {
+            throw PickingException.raiseException("Over pick is not allowed. Try to pick: " + quantityToBePicked +
+                    ", Quantity left: " + (pick.getQuantity() - pick.getPickedQuantity()));
+        }
         List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick);
         logger.debug(" Get {} valid inventory for pick {}",
                 pickableInventories.size(), pick.getNumber());
         pickableInventories.stream().forEach(System.out::print);
-        // If the quantity is not passed in, we will pick the whole quantity that is still left
-        Long quantityToBePicked = quantity == null ? pick.getQuantity() - pick.getPickedQuantity() : quantity;
         logger.debug(" start to pick with quantity {}",quantityToBePicked);
         Iterator<Inventory> inventoryIterator = pickableInventories.iterator();
         while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
@@ -647,18 +659,29 @@ public class PickService {
     }
 
 
-    public Pick unpick(Long id, Long unpickQuantity) {
-        return unpick(findById(id), unpickQuantity);
+    /**
+     * Unpick the inventory and return to stock. We will cancel the pick as well
+     * @param id Pick Id
+     * @param unpickedQuantity: quantity of the inventory being unpicked
+     * @return pick that being cancelled
+     */
+    //
+    public Pick unpick(Long id, Long unpickedQuantity) {
+        return unpick(findById(id), unpickedQuantity);
     }
 
-    // unpick will
-    // 1. reset the picked quantity by deduct
-    //    the unpickedquantity from the picked quantity
-    // 2. return the unpicked quantity back to the shipment's open quantity
-    //    so that we can re-allocate
+    /**
+     * unpick will
+     * 1. reset the picked quantity by deduct
+     *    the unpickedquantity from the picked quantity
+     * 2. return the unpicked quantity back to the shipment's open quantity
+     *    so that we can re-allocate
+     * @param pick Pick being unpicked
+     * @param unpickedQuantity: quantity of the inventory being unpicked
+     * @return pick that being cancelled
+     */
     public Pick unpick(Pick pick, Long unpickedQuantity) {
-        pick.setPickedQuantity(pick.getPickedQuantity() - unpickedQuantity);
-
+        // Cancel the pick with unpicked quantity
         return cancelPick(pick, unpickedQuantity);
     }
 

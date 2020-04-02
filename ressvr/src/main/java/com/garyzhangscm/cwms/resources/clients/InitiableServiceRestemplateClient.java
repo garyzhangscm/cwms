@@ -26,4 +26,6 @@ public interface InitiableServiceRestemplateClient {
     public String[] getTestDataNames();
 
     public boolean contains(String name);
+
+    public String clearData(Long warehouseId);
 }

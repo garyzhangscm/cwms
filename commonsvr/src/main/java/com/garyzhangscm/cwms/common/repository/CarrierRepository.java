@@ -26,4 +26,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CarrierRepository extends JpaRepository<Carrier, Long>, JpaSpecificationExecutor<Carrier> {
     Carrier findByName(String name);
+
 }

@@ -53,4 +53,11 @@ public class TestDataInitController {
         logger.debug("End initiate {} / {}", name, warehouseName);
         return ResponseBodyWrapper.success("data " + name + " init succeed!");
     }
+
+    @RequestMapping(value = "/clear", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> clear(@RequestParam Long warehouseId) {
+
+        testDataInitService.clear( warehouseId);
+        return ResponseBodyWrapper.success("data from warehouse " + warehouseId + " clear succeed!");
+    }
 }

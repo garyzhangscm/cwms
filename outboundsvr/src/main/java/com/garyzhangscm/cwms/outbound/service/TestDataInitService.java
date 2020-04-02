@@ -18,7 +18,10 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +33,11 @@ import java.util.Map;
 
 @Service
 public class TestDataInitService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TestDataInitService.class);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
 
     OrderService orderService;
 
@@ -93,4 +101,69 @@ public class TestDataInitService {
         return initiableServices.get(name);
     }
 
+    public void clear(Long warehouseId) {
+
+        jdbcTemplate.update("delete from pick_movement where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("pick_movement records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from pick where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("pick records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from cancelled_pick where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("cancelled_pick records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from pick_list where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("pick_list records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from short_allocation where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("short_allocation records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from cancelled_short_allocation where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("cancelled_short_allocation records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from shipment_line where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("shipment_line records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from shipment where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("shipment records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from stop where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("stop records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from trailer where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("trailer records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from wave where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("wave records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from outbound_order_line where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("outbound_order_line records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from outbound_order where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("outbound_order records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from pickable_unit_of_measure where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("pickable_unit_of_measure records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from allocation_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("allocation_configuration records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from shipping_stage_area_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("shipping_stage_area_configuration records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from emergency_replenishment_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("emergency_replenishment_configuration records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from trailer_template where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("trailer_template records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from list_picking_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("list_picking_configuration records from warehouse ID {} removed!", warehouseId);
+
+
+    }
 }

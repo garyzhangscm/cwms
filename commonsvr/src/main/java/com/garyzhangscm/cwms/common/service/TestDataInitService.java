@@ -18,13 +18,22 @@
 
 package com.garyzhangscm.cwms.common.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class TestDataInitService {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(TestDataInitService.class);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     ClientService clientService;
 
     SupplierService supplierService;
@@ -99,5 +108,34 @@ public class TestDataInitService {
     }
     public TestDataInitiableService getInitiableService(String name) {
         return initiableServices.get(name);
+    }
+
+    public void clear(Long warehouseId) {
+
+        jdbcTemplate.execute("delete from client");
+        logger.debug("client records removed!");
+
+        jdbcTemplate.execute("delete from supplier");
+        logger.debug("supplier records removed!");
+
+        jdbcTemplate.execute("delete from customer");
+        logger.debug("customer records removed!");
+
+        jdbcTemplate.execute("delete from unit_of_measure");
+        logger.debug("unit_of_measure records removed!");
+
+        jdbcTemplate.execute("delete from reason_code");
+        logger.debug("reason_code records removed!");
+
+        jdbcTemplate.execute("delete from system_controlled_number");
+        logger.debug("system_controlled_number records removed!");
+
+        jdbcTemplate.execute("delete from policy");
+        logger.debug("policy records removed!");
+        jdbcTemplate.execute("delete from carrier_service_level");
+        logger.debug("carrier_service_level records removed!");
+        jdbcTemplate.execute("delete from carrier");
+        logger.debug("carrier records removed!");
+
     }
 }

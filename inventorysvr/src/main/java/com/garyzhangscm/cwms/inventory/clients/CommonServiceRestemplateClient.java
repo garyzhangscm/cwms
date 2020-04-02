@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.clients;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.Client;
 import com.garyzhangscm.cwms.inventory.model.Supplier;
+import com.garyzhangscm.cwms.inventory.model.SystemControlledNumber;
 import com.garyzhangscm.cwms.inventory.model.UnitOfMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +140,28 @@ public class CommonServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+    }
+
+    public String getNextNumber(String variable) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/common/system-controlled-number/{variable}/next");
+        ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(variable).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
+
+        return responseBodyWrapper.getData().getNextNumber();
+    }
+    public String getNextLpn() {
+        return getNextNumber("lpn");
+    }
+    public String getNextInventoryActivityTransactionId() {
+        return getNextNumber("inventory-activity-transaction-id");
     }
 
 }

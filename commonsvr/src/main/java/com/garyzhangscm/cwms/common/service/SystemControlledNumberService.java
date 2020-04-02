@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class SystemControlledNumberService implements  TestDataInitiableService{
@@ -68,8 +69,9 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     }
 
     private void initSystemControlledNumberLocks() {
-        systemControlledNumberLocks.clear();
+        logger.debug("Start to init system controller locks");
         findAll().stream().forEach(systemControlledNumber -> systemControlledNumberLocks.put(systemControlledNumber.getVariable(), systemControlledNumber.getVariable()));
+        logger.debug("After initiated, we have\n{}", systemControlledNumberLocks);
     }
 
     public SystemControlledNumber findById(Long id) {
@@ -89,9 +91,15 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     @Transactional
     public SystemControlledNumber save(SystemControlledNumber systemControlledNumber) {
 
+        return save(systemControlledNumber, true);
+    }
+    public SystemControlledNumber save(SystemControlledNumber systemControlledNumber, boolean initSystemControlledNumberLocks) {
+
         systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
         SystemControlledNumber newSystemControlledNumber = systemControlledNumberRepository.save(systemControlledNumber);
-        initSystemControlledNumberLocks();
+        if (initSystemControlledNumberLocks) {
+            initSystemControlledNumberLocks();
+        }
         return newSystemControlledNumber;
     }
     // Save when the client's name doesn't exists
@@ -106,6 +114,9 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     }
 
     public SystemControlledNumber getNextNumber(String variable) {
+        logger.debug("Will lock by ");
+        logger.debug(">> variable: {} ", variable);
+        logger.debug(">> value: {}", systemControlledNumberLocks.get(variable));
         synchronized (systemControlledNumberLocks.get(variable)) {
             SystemControlledNumber systemControlledNumber = findByVariable(variable);
             // Check if we already reaches the maximum number allowed
@@ -122,7 +133,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
 
             systemControlledNumber.setCurrentNumber(nextNumber);
 
-            systemControlledNumber = save(systemControlledNumber);
+            systemControlledNumber = save(systemControlledNumber, false);
 
             systemControlledNumber.setNextNumber(
                     systemControlledNumber.getPrefix()
@@ -180,4 +191,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+
+
+
 }

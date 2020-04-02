@@ -7,8 +7,10 @@ docker push garyzhangscm/cwms-inventoryserver:latest
 docker push garyzhangscm/cwms-workorderserver:latest
 
 docker push garyzhangscm/cwms-auth:latest
-docker push garyzhangscm/cwms-confsvr:latest
+
 docker push garyzhangscm/cwms-zuulsvr:latest
+
+docker push garyzhangscm/cwms-confsvr:latest
 docker push garyzhangscm/cwms-eurekasvr:latest
 
 
@@ -23,8 +25,9 @@ docker pull garyzhangscm/cwms-workorderserver:latest
 
 
 docker pull garyzhangscm/cwms-auth:latest
-docker pull garyzhangscm/cwms-confsvr:latest
 docker pull garyzhangscm/cwms-zuulsvr:latest
+
+docker pull garyzhangscm/cwms-confsvr:latest
 docker pull garyzhangscm/cwms-eurekasvr:latest
 
 

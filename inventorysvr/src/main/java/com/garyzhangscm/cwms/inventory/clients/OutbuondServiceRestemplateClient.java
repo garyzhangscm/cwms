@@ -73,7 +73,7 @@ public class OutbuondServiceRestemplateClient {
         ResponseBodyWrapper<Pick> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(pickId).toUriString(),
-                        HttpMethod.GET,
+                        HttpMethod.POST,
                         null,
                         new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
 

@@ -11,11 +11,12 @@ text,i18n,link,sequence,menuSubGruop,name
 "inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory
 "inventory activity",menu.main.inventory.inventory-activity,/inventory/inventory-activity,4,Main-Menu-Inventory,Inventory-InventoryActivity
 "inventory adjust",menu.main.inventory.inventory-adjust,/inventory/inventory-adjust,5,Main-Menu-Inventory,Inventory-InventoryAdjust
-"Movement Path",menu.main.inventory.movement-path,/inventory/movement-path,6,Main-Menu-Inventory,Inventory-MovementPath
-"Cycle Count",menu.main.inventory.count.cycle-count,/inventory/count/cycle-count,7,Main-Menu-Inventory,Inventory-CycleCount
-"Emergency Replenishment Configuration",menu.main.inventory.replenishment.emergency.config,/inventory/replenishment/emergency/config,8,Main-Menu-Inventory,Inventory-EmerReplConfig
-"Trigger Replenishment Configuration",menu.main.inventory.replenishment.trigger.config,/inventory/replenishment/trigger/config,9,Main-Menu-Inventory,Inventory-TriggerReplConfig
-"Replenishment Display",menu.main.inventory.replenishment.display,/inventory/replenishment,10,Main-Menu-Inventory,Inventory-ReplDisplay
+"inventory move",menu.main.inventory.inventory-move,/inventory/inventory-move,6,Main-Menu-Inventory,Inventory-InventoryMove
+"Movement Path",menu.main.inventory.movement-path,/inventory/movement-path,7,Main-Menu-Inventory,Inventory-MovementPath
+"Cycle Count",menu.main.inventory.count.cycle-count,/inventory/count/cycle-count,8,Main-Menu-Inventory,Inventory-CycleCount
+"Emergency Replenishment Configuration",menu.main.inventory.replenishment.emergency.config,/inventory/replenishment/emergency/config,9,Main-Menu-Inventory,Inventory-EmerReplConfig
+"Trigger Replenishment Configuration",menu.main.inventory.replenishment.trigger.config,/inventory/replenishment/trigger/config,10,Main-Menu-Inventory,Inventory-TriggerReplConfig
+"Replenishment Display",menu.main.inventory.replenishment.display,/inventory/replenishment,11,Main-Menu-Inventory,Inventory-ReplDisplay
 "Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt
 "Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,2,Main-Menu-Inbound,Inbound-PutawayConfig
 "Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order

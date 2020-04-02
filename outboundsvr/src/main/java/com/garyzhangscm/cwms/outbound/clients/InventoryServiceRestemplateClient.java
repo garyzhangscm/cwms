@@ -45,7 +45,11 @@ import java.util.stream.Collectors;
 public class InventoryServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryServiceRestemplateClient.class);
-    private ObjectMapper mapper = new ObjectMapper();
+
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
+
     @Autowired
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
@@ -331,7 +335,7 @@ public class InventoryServiceRestemplateClient {
             responseBodyWrapper = restTemplate.exchange(
                     builder.buildAndExpand(inventory.getId()).toUriString(),
                     HttpMethod.POST,
-                    getHttpEntity(mapper.writeValueAsString(nextLocation)),
+                    getHttpEntity(objectMapper.writeValueAsString(nextLocation)),
                     new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
         } catch (JsonProcessingException e) {
             throw RequestValidationFailException.raiseException("Can't move inventory due to JsonProcessingException: " + e.getMessage());
@@ -361,40 +365,6 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public List<Inventory> unpick(String lpn) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
-                        .path("/api/inventory/inventories/unpick")
-                        .queryParam("lpn", lpn);
-
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
-    public Inventory unpick(Inventory inventory) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
-                        .path("/api/inventory/inventory/{id}/unpick");
-
-        ResponseBodyWrapper<Inventory> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(inventory.getId()).toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
-
     public Inventory moveInventory(Inventory inventory, Location nextLocation) throws IOException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -405,7 +375,7 @@ public class InventoryServiceRestemplateClient {
                 = restTemplate.exchange(
                         builder.buildAndExpand(inventory.getId()).toUriString(),
                         HttpMethod.POST,
-                        getHttpEntity(mapper.writeValueAsString(nextLocation)),
+                        getHttpEntity(objectMapper.writeValueAsString(nextLocation)),
                         new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
 
         return responseBodyWrapper.getData();

@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserRoleService implements TestDataInitiableService{
@@ -47,8 +48,6 @@ public class UserRoleService implements TestDataInitiableService{
 
     @Value("${fileupload.test-data.user-roles:user-roles}")
     String testDataFile;
-
-
 
     public List<UserRole> loadData(InputStream inputStream) throws IOException {
 

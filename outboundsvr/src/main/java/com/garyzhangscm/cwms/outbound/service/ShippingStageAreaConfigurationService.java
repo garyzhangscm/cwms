@@ -148,6 +148,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         }
     }
 
+
     public List<ShippingStageAreaConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().

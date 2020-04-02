@@ -22,8 +22,6 @@ import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
-import org.apache.commons.lang.ObjectUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +42,6 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WarehouseLayoutServiceRestemplateClient.class);
 
-    ObjectMapper mapper = new ObjectMapper();
     @Autowired
     OAuth2RestOperations restTemplate;
 
@@ -365,7 +362,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    public Location getLogicalLocationForAddingInventory(InventoryQuantityChangeType inventoryQuantityChangeType, Long warehouseId) {
+    public Location getLogicalLocationForAdjustInventory(InventoryQuantityChangeType inventoryQuantityChangeType, Long warehouseId) {
         switch (inventoryQuantityChangeType){
             case INVENTORY_ADJUST:
                 return getLocationForInventoryAdjustment(warehouseId);

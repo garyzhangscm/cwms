@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -54,6 +55,7 @@ public class RoleService implements TestDataInitiableService{
 
     @Value("${fileupload.test-data.roles:roles}")
     String testDataFile;
+
 
     public Role findById(Long id) {
         return roleRepository.findById(id)
@@ -205,6 +207,17 @@ public class RoleService implements TestDataInitiableService{
 
 
 
+    }
+
+    public Role disableRole(Long id){
+        Role role = findById(id);
+        role.setEnabled(false);
+        return saveOrUpdate(role);
+    }
+    public Role enableRole(Long id){
+        Role role = findById(id);
+        role.setEnabled(true);
+        return saveOrUpdate(role);
     }
 
 

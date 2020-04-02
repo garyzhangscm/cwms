@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.GenericException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.resources.exception.UserOperationException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.UserRepository;
 import org.apache.commons.lang.StringUtils;
@@ -32,11 +33,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +51,8 @@ public class UserService  implements TestDataInitiableService{
     @Autowired
     private MenuGroupService menuGroupService;
     @Autowired
+    private MenuService menuService;
+    @Autowired
     private RoleService roleService;
     @Autowired
     private AuthServiceRestemplateClient authServiceRestemplateClient;
@@ -60,6 +61,8 @@ public class UserService  implements TestDataInitiableService{
 
     @Value("${fileupload.test-data.users:users}")
     String testDataFile;
+
+
 
     public User findById(Long id) {
         return findById(id, true);
@@ -93,6 +96,7 @@ public class UserService  implements TestDataInitiableService{
     }
 
     public List<User> findAll(String username,
+                              String rolename,
                               String firstname,
                               String lastname,
                               Boolean enabled,
@@ -104,6 +108,10 @@ public class UserService  implements TestDataInitiableService{
 
                     if (!StringUtils.isBlank(username)) {
                         predicates.add(criteriaBuilder.equal(root.get("username"), username));
+                    }
+                    if (!StringUtils.isBlank(rolename)) {
+                        Join<User,Role> joinRole = root.join("roles",JoinType.LEFT);
+                        predicates.add(criteriaBuilder.equal(joinRole.get("name"), rolename));
                     }
 
                     if (!StringUtils.isBlank(firstname)) {
@@ -149,6 +157,7 @@ public class UserService  implements TestDataInitiableService{
     }
     private void setUserAuthInformation(User user, UserAuth userAuth) {
         user.setEmail(userAuth.getEmail());
+        user.setPassword(userAuth.getPassword());
         user.setLocked(userAuth.isLocked());
         user.setEnabled(userAuth.isEnabled());
     }
@@ -226,6 +235,10 @@ public class UserService  implements TestDataInitiableService{
         }
     }
 
+    public User getCurrentUser() {
+        return findByUsername(getCurrentUserName());
+    }
+
     @Transactional
     public User addUser(User user) {
         // Save the user without role first
@@ -241,7 +254,7 @@ public class UserService  implements TestDataInitiableService{
         User newUser = save(user);
 
         // save the password , email, enabled, locked in the auth server
-        UserAuth userAuth = newUser.getUserAuth();
+        UserAuth userAuth = user.getUserAuth();
 
         authServiceRestemplateClient.changeUserAuth(userAuth);
 
@@ -277,4 +290,100 @@ public class UserService  implements TestDataInitiableService{
         return saveOrUpdate(user);
 
     }
+
+    /**
+     * Check if the current login user can access the url
+     * @param url
+     * @return true if the current login user can access the url
+     */
+    public boolean validateURLAccess(String url) {
+
+        User user = getCurrentUser();
+        logger.debug("Check if user {} has access to url: {}", user.getUsername(), url);
+        return validateURLAccess(user, url);
+
+    }
+    public boolean validateURLAccess(User user, String url) {
+
+        // Get the menu that associated with the URL
+
+        try {
+            Menu menu = menuService.getMenuByUrl(url);
+
+            // loop through each role of the user and see
+            // if the role has access to the menu
+            // we will short circuit after we find the first
+            // role that has access to the menu
+            user.getRoles().stream()
+                    .filter(role -> role.getMenus().contains(menu))
+                    .findFirst()
+                    .orElseThrow(() -> UserOperationException.raiseException("The user doesn't have access to the url: " + url));
+
+            return true;
+
+        }
+        catch (ResourceNotFoundException ex) {
+            logger.debug("ResourceNotFoundException while validateURLAccess: {}", ex);
+            // ResourceNotFoundException when we can't find the menu by URL
+            // so probably this is not a menu. At this moment we allow all
+            // web service call as long as the user log in
+            return true;
+        }
+        catch (GenericException ex) {
+            logger.debug("GenericException while validateURLAccess: {}", ex);
+            return false;
+
+        }
+    }
+
+    public List<User> disableUsers(String userIds) {
+
+        return Arrays.stream(userIds.split(","))
+                .mapToLong(Long::parseLong)
+                .mapToObj(userId -> disableUser(userId, false))
+                .collect(Collectors.toList());
+    }
+    public List<User> enableUsers(String userIds) {
+
+        return Arrays.stream(userIds.split(","))
+                .mapToLong(Long::parseLong)
+                .mapToObj(userId -> disableUser(userId, true))
+                .collect(Collectors.toList());
+    }
+
+    public User disableUser(Long userId, boolean enabled) {
+        User user = findById(userId);
+        // Disable the user @Auth service
+        user.setEnabled(enabled);
+        UserAuth userAuth = user.getUserAuth();
+        authServiceRestemplateClient.changeUserAuth(userAuth);
+        logger.debug("Disable User: {}  / {}", user.getId(), user.getUsername());
+        return user;
+    }
+
+    public List<User> lockUsers(String userIds) {
+
+        return Arrays.stream(userIds.split(","))
+                .mapToLong(Long::parseLong)
+                .mapToObj(userId -> lockUser(userId,true))
+                .collect(Collectors.toList());
+    }
+    public List<User> unlockUsers(String userIds) {
+
+        return Arrays.stream(userIds.split(","))
+                .mapToLong(Long::parseLong)
+                .mapToObj(userId -> lockUser(userId,false))
+                .collect(Collectors.toList());
+    }
+
+    public User lockUser(Long userId, boolean locked) {
+        User user = findById(userId);
+        // lock the user @Auth service
+        user.setLocked(locked);
+        UserAuth userAuth = user.getUserAuth();
+        authServiceRestemplateClient.changeUserAuth(userAuth);
+        logger.debug("Lock User: {}  / {}", user.getId(), user.getUsername());
+        return saveOrUpdate(user);
+    }
+
 }

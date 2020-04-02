@@ -56,6 +56,16 @@ public class RoleController {
     }
 
 
+    @RequestMapping(value="/roles/{id}/disable", method = RequestMethod.POST)
+    public Role disableRole(@PathVariable Long id) {
+        return roleService.disableRole(id);
+    }
+    @RequestMapping(value="/roles/{id}/enable", method = RequestMethod.POST)
+    public Role enableRole(@PathVariable Long id) {
+        return roleService.enableRole(id);
+    }
+
+
     @RequestMapping(value="/roles/{id}/menus", method = RequestMethod.GET)
     public List<MenuGroup> getAccessibleMenus(@PathVariable Long id) {
 

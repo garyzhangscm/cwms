@@ -58,7 +58,6 @@ public class WorkOrderInstructionTemplateService implements TestDataInitiableSer
     String testDataFile;
 
 
-
     public WorkOrderInstructionTemplate findById(Long id) {
         return workOrderInstructionTemplateRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("work order instruction template not found by id: " + id));

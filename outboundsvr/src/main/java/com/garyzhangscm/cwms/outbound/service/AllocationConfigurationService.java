@@ -133,6 +133,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
 
 
+
     private void loadAttribute(AllocationConfiguration allocationConfiguration) {
 
         if (allocationConfiguration.getItemId() != null && allocationConfiguration.getItem() == null) {

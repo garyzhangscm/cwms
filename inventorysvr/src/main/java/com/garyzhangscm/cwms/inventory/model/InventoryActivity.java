@@ -61,6 +61,8 @@ public class InventoryActivity implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "transaction_id")
+    private String transactionId;
 
     /**
      * All the inventory attribute
@@ -152,10 +154,12 @@ public class InventoryActivity implements Serializable {
     public InventoryActivity(){}
 
     public InventoryActivity(Inventory inventory, InventoryActivityType inventoryActivityType,
+                             String transactionId,
                              LocalDateTime activityDateTime, String username,
                              String valueType, String fromValue, String toValue,
                              String documentNumber, String comment) {
         setLpn(inventory.getLpn());
+        setTransactionId(transactionId);
         setLocationId(inventory.getLocationId());
         setLocation(inventory.getLocation());
         setPickId(inventory.getPickId());
@@ -353,5 +357,13 @@ public class InventoryActivity implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 }

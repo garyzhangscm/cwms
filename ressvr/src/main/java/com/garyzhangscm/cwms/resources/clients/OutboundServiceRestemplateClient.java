@@ -91,4 +91,21 @@ public class OutboundServiceRestemplateClient implements  InitiableServiceRestem
         return Arrays.stream(getTestDataNames()).anyMatch(dataName -> dataName.equals(name));
     }
 
+    public String clearData(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/test-data/clear")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseEntity<String> restExchange
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                String.class);
+        return restExchange.getBody();
+    }
+
 }

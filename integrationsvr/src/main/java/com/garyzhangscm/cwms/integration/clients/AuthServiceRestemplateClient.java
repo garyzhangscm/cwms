@@ -47,7 +47,9 @@ public class AuthServiceRestemplateClient {
 
     private User currentLoginUser;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
 
     // User a new rest template for login. The global auto-wirable
     // rest template will try to add an user token to the http header
@@ -67,7 +69,7 @@ public class AuthServiceRestemplateClient {
                 .append("http://zuulservice/api/auth/login?")
                 .append("_allow_anonymous=true");
 
-        String requestBody = mapper.writeValueAsString(loginCredential);
+        String requestBody = objectMapper.writeValueAsString(loginCredential);
         logger.debug("LOGIN WITH: {}", requestBody);
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");

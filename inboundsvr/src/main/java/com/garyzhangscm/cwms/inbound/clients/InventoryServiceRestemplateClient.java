@@ -44,7 +44,10 @@ import java.util.List;
 public class InventoryServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryServiceRestemplateClient.class);
-    private ObjectMapper mapper = new ObjectMapper();
+
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     // OAuth2RestTemplate restTemplate;
@@ -199,7 +202,7 @@ public class InventoryServiceRestemplateClient {
             responseBodyWrapper = restTemplate.exchange(
                     builder.toUriString(),
                     HttpMethod.PUT,
-                    getHttpEntity(mapper.writeValueAsString(inventory)),
+                    getHttpEntity(objectMapper.writeValueAsString(inventory)),
                     new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
         } catch (JsonProcessingException e) {
             throw ReceiptOperationException.raiseException("Can't add inventory due to JsonProcessingException: " + e.getMessage());
@@ -267,7 +270,7 @@ public class InventoryServiceRestemplateClient {
             responseBodyWrapper = restTemplate.exchange(
                     builder.buildAndExpand(inventoryId).toUriString(),
                     HttpMethod.POST,
-                    getHttpEntity(mapper.writeValueAsString(inventoryMovements)),
+                    getHttpEntity(objectMapper.writeValueAsString(inventoryMovements)),
                     new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
         } catch (JsonProcessingException e) {
             throw ReceiptOperationException.raiseException("Can't setup the movement path due to JsonProcessingException: " + e.getMessage());

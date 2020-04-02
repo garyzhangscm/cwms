@@ -34,7 +34,7 @@ public class InventoryConsolidationService {
         // Let's get all the inventory that already in the location
         List<Inventory> inventories = inventoryService.findByLocationId(location.getId(), false);
 
-        logger.debug(">> we found {} existing inventory record in the location, exclude the current moved one", inventories.size());
+        logger.debug(">> we found {} existing inventory record in the location, included the current moved one", inventories.size());
         Inventory consolidatedInventory = getInventoryConsolidationHandler(location).consolidate(inventory, inventories);
         logInventoryActivity(location, inventory, consolidatedInventory);
         return consolidatedInventory;

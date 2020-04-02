@@ -152,6 +152,7 @@ public class ListPickingConfigurationService implements TestDataInitiableService
         }
     }
 
+
     public List<ListPickingConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().

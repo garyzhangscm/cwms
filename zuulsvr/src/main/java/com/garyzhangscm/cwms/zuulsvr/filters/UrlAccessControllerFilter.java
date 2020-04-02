@@ -18,21 +18,24 @@
 
 package com.garyzhangscm.cwms.zuulsvr.filters;
 
+import brave.Tracer;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import brave.Tracer;
 
 
+/**
+ * Access controller based on url.
+ */
 @Component
-public class TrackingFilter extends ZuulFilter {
+public class UrlAccessControllerFilter extends ZuulFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrackingFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(UrlAccessControllerFilter.class);
 
-    private static final int      FILTER_ORDER =  2;
+    private static final int      FILTER_ORDER =  1;
     private static final boolean  SHOULD_FILTER=true;
 
     /****
@@ -56,32 +59,24 @@ public class TrackingFilter extends ZuulFilter {
     }
 
 
-    /*****
-    private boolean isCorrelationIdPresent(){
-        if (filterUtils.getCorrelationId() != null){
-            return true;
-        }
-        return false;
-    }
-
-    private String generateCorrelationId(){
-        return java.util.UUID.randomUUID().toString();
-    }
-     ****/
 
     public Object run() {
 
-        /****
-         * We will use sleuth, which will automatically generate a unique id for
-         * all the call in the same transaction, instead of this customized solution
-        if (!isCorrelationIdPresent()) {
-            filterUtils.setCorrelationId(generateCorrelationId());
-        }
-
-        logger.debug(">>Auth Token: " + filterUtils.getAuthToken());
-        ***/
         RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.getResponse().addHeader("cwms-current-trace-id", tracer.currentSpan().context().traceIdString());
+        logger.debug("ctx.getRequest().getContextPath(): " + ctx.getRequest().getContextPath());
+        logger.debug("ctx.getRequest().getPathInfo(): " + ctx.getRequest().getPathInfo());
+        logger.debug("ctx.getRequest().getPathTranslated(): " + ctx.getRequest().getPathTranslated());
+        logger.debug("ctx.getRequest().getRequestURI(): " + ctx.getRequest().getRequestURI());
+        logger.debug("ctx.getRequest().getServletPath(): " + ctx.getRequest().getServletPath());
+        logger.debug("ctx.getRequest().getRemoteAddr(): " + ctx.getRequest().getRemoteAddr());
+        logger.debug("ctx.getRequest().getRequestURL().toString(): " + ctx.getRequest().getRequestURL().toString());
+        /****
+         * not valid the URL for now
+        if (!resourceServiceRestemplateClient.validateURLAccess(ctx.getRequest().getRequestURI())) {
+            logger.debug("The current user doesn't have access to the url");
+            throw UserOperationException.raiseException("The current user doesn't have access to the url");
+        }
+         ***/
         return null;
     }
 }

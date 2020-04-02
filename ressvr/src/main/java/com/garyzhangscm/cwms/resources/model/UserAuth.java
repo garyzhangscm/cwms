@@ -31,6 +31,17 @@ public class UserAuth {
     private boolean enabled;
     private boolean locked;
 
+    @Override
+    public String toString() {
+        return "UserAuth{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", enabled=" + enabled +
+                ", locked=" + locked +
+                '}';
+    }
 
     public Long getId() {
         return id;

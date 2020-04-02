@@ -55,7 +55,9 @@ public class OutboundServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
 
     public AllocationResult allocateWorkOrder(WorkOrder workOrder) {
 
@@ -70,7 +72,7 @@ public class OutboundServiceRestemplateClient {
             responseBodyWrapper = restTemplate.exchange(
                     builder.toUriString(),
                     HttpMethod.POST,
-                    getHttpEntity(mapper.writeValueAsString(workOrder)),
+                    getHttpEntity(objectMapper.writeValueAsString(workOrder)),
                     new ParameterizedTypeReference<ResponseBodyWrapper<AllocationResult>>() {}).getBody();
         } catch (JsonProcessingException e) {
             throw WorkOrderException.raiseException("Can't allocate work order due to JsonProcessingException: " + e.getMessage());

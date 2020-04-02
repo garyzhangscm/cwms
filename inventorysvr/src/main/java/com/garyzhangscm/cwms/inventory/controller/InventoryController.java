@@ -70,7 +70,7 @@ public class InventoryController {
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-adj/{id}")
     public void adjustDownInventory(@PathVariable Long id, @RequestParam Long warehouseId) {
-        inventoryService.adjustDownInventory(id, warehouseId);
+        inventoryService.removeInventory(id);
     }
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
@@ -96,7 +96,13 @@ public class InventoryController {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; inventory.getId(): " + inventory.getId());
         }
-        return inventoryService.save(inventory);
+        return inventoryService.changeInventory(id, inventory);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/adjust-quantity")
+    public Inventory adjustInventoryQuantity(@PathVariable long id,
+                                     @RequestParam Long newQuantity) {
+        return inventoryService.adjustInventoryQuantity(id, newQuantity);
     }
 
 
@@ -130,15 +136,14 @@ public class InventoryController {
 
 
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/unpick")
-    public Inventory unpick(@PathVariable long id) {
+    public Inventory unpick(@PathVariable long id,
+                            @RequestParam Long warehouseId,
+                            @RequestParam(name = "destinationLocationId", required = false, defaultValue = "") Long destinationLocationId,
+                            @RequestParam(name = "destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
+                            @RequestParam(name = "immediateMove", required = false, defaultValue = "true") boolean immediateMove) {
 
-        return inventoryService.unpick(id);
+        return inventoryService.unpick(id, warehouseId,  destinationLocationId, destinationLocationName, immediateMove);
     }
 
-    @RequestMapping(method=RequestMethod.POST, value="/inventories/unpick")
-    public List<Inventory> unpick(@RequestParam String lpn) {
-
-        return inventoryService.unpick(lpn);
-    }
 
 }

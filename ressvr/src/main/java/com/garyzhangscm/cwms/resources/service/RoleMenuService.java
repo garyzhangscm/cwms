@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RoleMenuService implements TestDataInitiableService{
@@ -47,8 +48,6 @@ public class RoleMenuService implements TestDataInitiableService{
 
     @Value("${fileupload.test-data.role-menus:role-menus}")
     String testDataFile;
-
-
 
     public List<RoleMenu> loadData(InputStream inputStream) throws IOException {
 

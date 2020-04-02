@@ -1,5 +1,10 @@
 package com.garyzhangscm.cwms.resources;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.garyzhangscm.cwms.resources.service.InitTestDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,6 +16,7 @@ import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -56,5 +62,19 @@ public class ResourceServerApplication {
 		restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
 		customizer.customize(restTemplate);
 		return restTemplate;
+	}
+
+	@Bean
+	@Primary
+	public ObjectMapper getObjMapper(){
+		// JavaTimeModule timeModule = new JavaTimeModule();
+		// timeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer());
+		// timeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer());
+
+		return new ObjectMapper()
+				.registerModule(new ParameterNamesModule())
+				.registerModule(new Jdk8Module())
+				.registerModule(new JavaTimeModule())
+				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 }
