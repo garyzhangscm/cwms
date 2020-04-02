@@ -18,9 +18,12 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.garyzhangscm.cwms.workorder.model.WorkOrderInstructionTemplate;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,6 +33,10 @@ import java.util.Map;
 
 @Service
 public class TestDataInitService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TestDataInitService.class);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     BillOfMaterialService billOfMaterialService;
 
@@ -103,4 +110,41 @@ public class TestDataInitService {
         return initiableServices.get(name);
     }
 
+    public void clear(Long warehouseId) {
+        jdbcTemplate.update("delete from bill_of_material_line where bill_of_material_id in " +
+                             "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("bill_of_material_line records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from work_order_instruction_template where bill_of_material_id in " +
+                "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_instruction_template records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from bill_of_material where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("bill_of_material records from warehouse ID {} removed!", warehouseId);
+
+
+
+        jdbcTemplate.update("delete from production_line_activity where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("production_line_activity records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from  work_order_assignment where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_assignment records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from work_order_instruction where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_instruction records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from work_order_line where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_line records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from work_order where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("work_order records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from production_line where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("production_line records from warehouse ID {} removed!", warehouseId);
+
+    }
 }

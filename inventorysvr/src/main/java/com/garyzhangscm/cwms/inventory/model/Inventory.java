@@ -117,6 +117,7 @@ public class Inventory implements Serializable {
         inventory.setItem(getItem());
         inventory.setItemPackageType(getItemPackageType());
         inventory.setLocationId(getLocationId());
+        inventory.setLocation(getLocation());
         inventory.setQuantity(newQuantity);
         inventory.setReceiptId(getReceiptId());
         inventory.setVirtual(getVirtual());

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InventoryConsolidationByInventory implements InventoryConsolidationHandler {
 
@@ -23,31 +24,29 @@ public class InventoryConsolidationByInventory implements InventoryConsolidation
         if (inventories.contains(inventory)){
             logger.debug(">> the inventory array already contains the current inventory, will remove it first");
             inventories.remove(inventory);
-
         }
+        // Let's only consolidate into the inventory with same attribute
+        inventories = inventories.stream()
+                .filter(destinationInventory -> canConsolidate(inventory, destinationInventory))
+                .collect(Collectors.toList());
         // make sure we will only have one destination inventory
         if (inventories.size() == 0) {
             // nothing to be consolidated into
-            logger.debug(">> no existing inventory to be consolidated with");
+            logger.debug(">> no suitable existing inventory to be consolidated with");
             return inventory;
         }
         else if (inventories.size() > 1) {
+            logger.debug("We got {} inventory record that we can consolidate into", inventories.size());
             throw InventoryConsolidationException.raiseException(
                 "Too many inventory records in the destination, don't know how to consolidate");
 
         }
         // make sure we can consolidate
         Inventory destinationInventory = inventories.get(0);
-        if (canConsolidate(inventory, destinationInventory)) {
-            // Move the quantity from source inventory to destination inventory
-            destinationInventory.setQuantity(destinationInventory.getQuantity() + inventory.getQuantity());
-            logger.debug(">> Will consolidate the inventory with the existing one: {} / {}", destinationInventory.getId(),  destinationInventory.getLpn());
-            return destinationInventory;
-        }
-        else {
-            logger.debug(">> can't consolidate the new inventory with existing one as some attribute doesn't match");
-            return inventory;
-        }
+        // Move the quantity from source inventory to destination inventory
+        destinationInventory.setQuantity(destinationInventory.getQuantity() + inventory.getQuantity());
+        logger.debug(">> Will consolidate the inventory with the existing one: {} / {}", destinationInventory.getId(),  destinationInventory.getLpn());
+        return destinationInventory;
     }
 
     private boolean canConsolidate(Inventory sourceInventory, Inventory destinationInventory) {

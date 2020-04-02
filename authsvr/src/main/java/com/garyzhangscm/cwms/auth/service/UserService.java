@@ -78,11 +78,18 @@ public class UserService {
     }
     @Transactional
     public User saveOrUpdate(User user) {
-        // Save the user with encrypted password
-        encryptPassword(user);
+        // In case the user's password is passed in, encrypt and save
+        // otherwise, we will save other information without
+        // changing the password
+        if (!StringUtils.isBlank(user.getPassword())) {
+            encryptPassword(user);
+        }
         if (Objects.isNull(user.getId()) &&
                 !Objects.isNull(findByUsername(user.getUsername()))) {
             user.setId(findByUsername(user.getUsername()).getId());
+            if (StringUtils.isBlank(user.getPassword())) {
+                user.setPassword(findByUsername(user.getUsername()).getPassword());
+            }
         }
 
         return userRepository.save(user);

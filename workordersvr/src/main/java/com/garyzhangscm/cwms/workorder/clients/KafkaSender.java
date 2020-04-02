@@ -15,7 +15,9 @@ public class KafkaSender {
     @Autowired
     private KafkaTemplate kafkaTemplate;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
 
     public void send(String topic, String message) {
 

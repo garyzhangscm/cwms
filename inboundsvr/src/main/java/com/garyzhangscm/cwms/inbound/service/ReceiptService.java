@@ -154,6 +154,7 @@ public class ReceiptService implements TestDataInitiableService{
         return save(receipt);
     }
 
+
     @Transactional
     public Receipt checkInReceipt(Long receiptId) {
         Receipt receipt = findById(receiptId);

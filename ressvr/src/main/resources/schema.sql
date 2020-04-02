@@ -15,13 +15,14 @@ CREATE TABLE user_info (
   username   VARCHAR(100) NOT NULL  UNIQUE,
   first_name  VARCHAR(100) NOT NULL,
   last_name  VARCHAR(100) NOT NULL,
-  is_admin boolean not null
+  is_admin boolean not null,
+  change_password_at_next_logon  boolean not null
 );
 
 
 
 
-INSERT INTO user_info (username,  first_name, last_name, is_admin) VALUES ("GZHANG",  "Gary", "Zhang", true);
+INSERT INTO user_info (username,  first_name, last_name, is_admin, change_password_at_next_logon) VALUES ("GZHANG",  "Gary", "Zhang", true, false);
 
 -- INSERT INTO user_info (username,  first_name, last_name, is_admin) VALUES ("RWU",  "Rainbow", "Wu", false);
 

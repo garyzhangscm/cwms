@@ -44,6 +44,9 @@ public class User  {
     @Column(name = "is_admin")
     private Boolean isAdmin = false;
 
+    @Column(name = "change_password_at_next_logon")
+    private Boolean changePasswordAtNextLogon = false;
+
     @Transient
     private String email;
 
@@ -177,6 +180,14 @@ public class User  {
         if (!getRoles().contains(role)) {
             getRoles().add(role);
         }
+    }
+
+    public Boolean getChangePasswordAtNextLogon() {
+        return changePasswordAtNextLogon;
+    }
+
+    public void setChangePasswordAtNextLogon(Boolean changePasswordAtNextLogon) {
+        this.changePasswordAtNextLogon = changePasswordAtNextLogon;
     }
 
     public void deassignRole(Role role) {

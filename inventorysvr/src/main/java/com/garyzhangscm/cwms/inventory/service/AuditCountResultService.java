@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.model.AuditCountResult;
-import com.garyzhangscm.cwms.inventory.model.CycleCountResult;
-import com.garyzhangscm.cwms.inventory.model.Inventory;
-import com.garyzhangscm.cwms.inventory.model.Location;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.AuditCountResultRepository;
 import com.garyzhangscm.cwms.inventory.repository.CycleCountResultRepository;
 import org.slf4j.Logger;
@@ -122,8 +119,8 @@ public class AuditCountResultService {
         // If the inventory doesn't exits, let's create the new inventory
         if (auditCountResult.getInventory().getId() != null) {
             if (auditCountResult.getCountQuantity() == 0) {
-                inventoryService.removeInventory(auditCountResult.getInventory().getId(),
-                        warehouseLayoutServiceRestemplateClient.getLocationForAuditCount(auditCountResult.getWarehouseId()));
+                inventoryService.removeInventory(auditCountResult.getInventory(),
+                        InventoryQuantityChangeType.AUDIT_COUNT);
             }
             else {
                 auditCountResult.getInventory().setQuantity(auditCountResult.getCountQuantity());

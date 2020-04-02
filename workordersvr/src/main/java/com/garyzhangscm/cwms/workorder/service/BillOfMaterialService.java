@@ -141,7 +141,6 @@ public class BillOfMaterialService implements TestDataInitiableService {
     }
 
 
-
     public BillOfMaterial save(BillOfMaterial billOfMaterial) {
         BillOfMaterial newBillOfMaterial = billOfMaterialRepository.save(billOfMaterial);
         loadAttribute(newBillOfMaterial);

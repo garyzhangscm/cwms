@@ -20,4 +20,6 @@ package com.garyzhangscm.cwms.common.service;
 
 public interface TestDataInitiableService {
     public void initTestData(String warehouseName);
+
+
 }

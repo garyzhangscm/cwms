@@ -183,6 +183,8 @@ public class LocationService implements TestDataInitiableService {
 
     }
 
+
+
     public Location findLogicLocation(String locationType, Long warehouseId) {
 
         // Get the logic location's name by policy

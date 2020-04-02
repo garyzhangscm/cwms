@@ -24,18 +24,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import brave.Tracer;
+
 
 @Component
 public class TrackingFilter extends ZuulFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackingFilter.class);
 
-    private static final int      FILTER_ORDER =  1;
+    private static final int      FILTER_ORDER =  2;
     private static final boolean  SHOULD_FILTER=true;
 
+    /****
     @Autowired
     FilterUtils filterUtils;
-
+***/
+    @Autowired
+    Tracer tracer;
     @Override
     public String filterType() {
         return FilterUtils.PRE_FILTER_TYPE;
@@ -50,6 +55,8 @@ public class TrackingFilter extends ZuulFilter {
         return SHOULD_FILTER;
     }
 
+
+    /*****
     private boolean isCorrelationIdPresent(){
         if (filterUtils.getCorrelationId() != null){
             return true;
@@ -60,15 +67,21 @@ public class TrackingFilter extends ZuulFilter {
     private String generateCorrelationId(){
         return java.util.UUID.randomUUID().toString();
     }
+     ****/
 
     public Object run() {
 
+        /****
+         * We will use sleuth, which will automatically generate a unique id for
+         * all the call in the same transaction, instead of this customized solution
         if (!isCorrelationIdPresent()) {
             filterUtils.setCorrelationId(generateCorrelationId());
         }
 
         logger.debug(">>Auth Token: " + filterUtils.getAuthToken());
-
+        ***/
+        RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.getResponse().addHeader("cwms-current-trace-id", tracer.currentSpan().context().traceIdString());
         return null;
     }
 }

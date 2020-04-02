@@ -26,9 +26,7 @@ import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
-import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.util.PropertySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +37,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+
 import javax.persistence.criteria.*;
-import javax.swing.text.html.HTMLDocument;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
@@ -312,6 +310,7 @@ public class InventoryService implements TestDataInitiableService{
         }
     }
 
+
     public void loadInventoryAttribute(List<Inventory> inventories) {
         for(Inventory inventory : inventories) {
             loadInventoryAttribute(inventory);
@@ -451,14 +450,35 @@ public class InventoryService implements TestDataInitiableService{
 
     // To remove inventory, we won't actually remove the record.
     // Instead we move the inventory to a 'logical' location
-    public Inventory removeInventory(Long id, Location destination) {
+    public Inventory removeInventory(Long id) {
         Inventory inventory = findById(id);
-        return moveInventory(inventory, destination);
+        return removeInventory(inventory);
     }
-    public Inventory removeInventory(Inventory inventory, Location destination) {
+    public Inventory removeInventory(Inventory inventory) {
+        return removeInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST);
+    }
 
+    public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
+
+        InventoryActivityType inventoryActivityType;
+        switch (inventoryQuantityChangeType) {
+            case CYCLE_COUNT:
+                inventoryActivityType = InventoryActivityType.CYCLE_COUNT;
+                break;
+            case AUDIT_COUNT:
+                inventoryActivityType = InventoryActivityType.AUDIT_COUNT;
+                break;
+            default:
+                inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
+        }
+        inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
+                "quantity", String.valueOf(inventory.getQuantity()), "0");
+
+        Location destination
+                = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
+                inventoryQuantityChangeType, inventory.getWarehouseId()
+        );
         return moveInventory(inventory, destination);
-
     }
 
     public Inventory moveInventory(Long inventoryId, Location destination) {
@@ -480,6 +500,12 @@ public class InventoryService implements TestDataInitiableService{
                 inventory.getLpn(), destination.getName(), pickId, Objects.isNull(pickId));
 
         Location sourceLocation = inventory.getLocation();
+
+        // quick check. If the source location equals the
+        // destination, then we don't have to move
+        if (sourceLocation.equals(destination)) {
+            return inventory;
+        }
         inventory.setLocationId(destination.getId());
         if (!Objects.isNull(pickId)) {
             markAsPicked(inventory, pickId);
@@ -617,14 +643,6 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
-    public void adjustDownInventory(Long id, Long warehouseId) {
-        Inventory inventory =
-                removeInventory(id, warehouseLayoutServiceRestemplateClient.getLocationForInventoryAdjustment(warehouseId));
-        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
-                "Adjust Down", String.valueOf(inventory.getQuantity()), "0");
-    }
-
-
     // Note here the movement path only contains final destination location. We will need to get the
     // hop location as well and save it
     public Inventory setupMovementPath(Long inventoryId, List<InventoryMovement> inventoryMovements) {
@@ -739,18 +757,39 @@ public class InventoryService implements TestDataInitiableService{
         return inventories;
     }
 
-    public List<Inventory> unpick(String lpn) {
-        List<Inventory> inventories = findByLpn(lpn);
-        List<Inventory> unpickedInventory = new ArrayList<>();
-        return inventories.stream().map(this::unpick).collect(Collectors.toList());
+    /**
+     * unpick an inventory, deattach from pick work and put it back to stock location
+     * @param id Inventory ID
+     * @param destinationLocationId ID of destination location
+     * @param immediateMove immediate move the inventory to the destination, or generate a work
+     *                      so someone can do the mvoement later(TO-DO)
+     * @return inventory being unpick
+     */
+    public Inventory unpick(long id,
+                            Long warehouseId,
+                            Long destinationLocationId,
+                            String destinationLocationName,
+                            boolean immediateMove) {
+        Inventory inventory = findById(id);
+        Location destinationLocation;
+        if (Objects.nonNull(destinationLocationId)) {
+            destinationLocation =
+                    warehouseLayoutServiceRestemplateClient.getLocationById(destinationLocationId);
+        }
+        else if (Objects.nonNull(destinationLocationName)) {
+            destinationLocation =
+                    warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, destinationLocationName);
+        }
+        else {
+            // if we don't pass in the destination ID or name, the inventory will
+            // stay where it is after unpick
+            destinationLocation = inventory.getLocation();
+        }
+        return unpick(inventory, destinationLocation, immediateMove);
+
     }
 
-    public Inventory unpick(Long id) {
-        return unpick(findById(id));
-
-    }
-
-    public Inventory unpick(Inventory inventory) {
+    public Inventory unpick(Inventory inventory, Location destinationLocation, boolean immediateMove) {
         if (inventory.getPickId() == null) {
             // The inventory is not a picked inventory
             return inventory;
@@ -767,8 +806,20 @@ public class InventoryService implements TestDataInitiableService{
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.UNPICKING,
                 "quantity", String.valueOf(inventory.getQuantity()), "", cancelledPick.getNumber());
 
+
+        // Move the inventory to the destination location
+        if (immediateMove) {
+            moveInventory(inventory, destinationLocation);
+        }
+        else {
+            generateMovementWork(inventory, destinationLocation);
+        }
         return saveOrUpdate(inventory);
 
+    }
+
+    private void generateMovementWork(Inventory inventory, Location destinationLocation) {
+        throw new UnsupportedOperationException();
     }
 
     private Long getWarehouseId(String warehouseName) {
@@ -794,7 +845,7 @@ public class InventoryService implements TestDataInitiableService{
     public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
 
         Location location =
-                warehouseLayoutServiceRestemplateClient.getLogicalLocationForAddingInventory(
+                warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
                         inventoryQuantityChangeType,inventory.getWarehouseId());
         // consolidate the inventory at the destination, if necessary
         Location destinationLocation = inventory.getLocation();
@@ -847,4 +898,93 @@ public class InventoryService implements TestDataInitiableService{
         *********/
     }
 
+
+    /**
+     * Adjust the quantity of inventory.
+     * 1. When we adjust up, we will actually create inventory
+     *    somewhere (a designated location for inventory creation and removal)
+     *    and then move inventory to the final location
+     * 2. When we adjust down, we will actually move the difference from the
+     *     original LPN to a fake location
+     * @param id ID of the inventory
+     * @param newQuantity new quantity
+     * @return inventory after adjust
+     */
+    public Inventory adjustInventoryQuantity(long id, Long newQuantity) {
+        Inventory inventory = findById(id);
+        if (inventory.getQuantity().equals(newQuantity)) {
+            // nothing changed, let just return
+            return inventory;
+        }
+        else if (newQuantity == 0) {
+            // a specific case where we are actually removing an inventory
+            return removeInventory(inventory);
+        }
+        else if (inventory.getQuantity() > newQuantity) {
+            // OK we are adjust down, let's split the original inventory
+            // and move the difference into a new location
+
+            inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
+                    "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity));
+
+            String newLpn = commonServiceRestemplateClient.getNextLpn();
+            Inventory newInventory = inventory.split(newLpn, inventory.getQuantity() - newQuantity);
+            // Save both inventory before move
+            inventory = saveOrUpdate(inventory);
+            newInventory = save(newInventory);
+            // Remove the new inventory
+            removeInventory(newInventory);
+            return inventory;
+        }
+        else {
+            // if we are here, we are adjust quantity up
+            // We will create a inventory in a logic location
+            // and then move the inventory onto the existing inventory
+
+            inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
+                    "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity));
+
+            String newLpn = commonServiceRestemplateClient.getNextLpn();
+            // Trick: Split 0 quantity from original inventory, which is
+            // actually a copy
+            Inventory newInventory = inventory.split(newLpn, 0L);
+            newInventory.setQuantity(newQuantity - inventory.getQuantity());
+            // Add the inventory to the current location
+            newInventory = addInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST);
+
+
+            // In case the new LPN is not combined with old LPN, let's do the manual consolidation
+            if (!newInventory.getLpn().equals(inventory.getLpn())) {
+                newInventory.setLpn(inventory.getLpn());
+                return saveOrUpdate(newInventory);
+            }
+            else {
+                return newInventory;
+            }
+        }
+    }
+
+    public Inventory changeInventory( long id, Inventory inventory) {
+        Inventory originalInventory = findById(id);
+        // Let's see which attribute has been changed
+        if (!originalInventory.getLpn().equals(inventory.getLpn())) {
+
+            inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.RELABEL_LPN,
+                    "lpn", originalInventory.getLpn(), inventory.getLpn());
+        }
+
+        if (!originalInventory.getInventoryStatus().equals(inventory.getInventoryStatus())) {
+
+            inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_STATUS_CHANGE,
+                    "inventory status", originalInventory.getInventoryStatus().getName(),
+                    inventory.getInventoryStatus().getName());
+        }
+
+        if (!originalInventory.getItemPackageType().equals(inventory.getItemPackageType())) {
+
+            inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_PACKAGE_TYPE_CHANGE,
+                    "item package type", originalInventory.getItemPackageType().getName(), inventory.getItemPackageType().getName());
+        }
+        return saveOrUpdate(inventory);
+    }
 }

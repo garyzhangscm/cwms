@@ -19,7 +19,10 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.clients.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -28,11 +31,14 @@ import java.util.*;
 public class InitTestDataService {
 
 
+    private static final Logger logger = LoggerFactory.getLogger(InitTestDataService.class);
     UserService userService;
     RoleService roleService;
     UserRoleService userRoleService;
     RoleMenuService roleMenuService;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     /***
      * Menus will be init when the server is started
@@ -166,5 +172,46 @@ public class InitTestDataService {
 
             initiableServiceRestemplateClient.initTestData(warehouseName);
         }
+    }
+
+    public void clear(Long warehouseId) {
+
+        // clear all data from resource service
+        // which including menus / users / roles
+
+        // We should remove from the last table , by taking the dependence into
+        // consideration
+
+        jdbcTemplate.execute("delete from user_role");
+        logger.debug("user_role records removed!");
+        jdbcTemplate.execute("delete from role_menu");
+        logger.debug("role_menu records removed!");
+
+        // we will keep user!
+        // jdbcTemplate.execute("delete from user_info");
+        // logger.debug("user_info records removed!");
+        jdbcTemplate.execute("delete from role");
+        logger.debug("role records removed!");
+
+        // we will keep menu info
+        // jdbcTemplate.execute("delete from menu");
+        // logger.debug("menu records removed!");
+        // jdbcTemplate.execute("delete from menu_sub_group");
+        // logger.debug("menu_sub_group records removed!");
+        // jdbcTemplate.execute("delete from menu_group");
+        // logger.debug("menu_group records removed!");
+        /***
+        for(int i = serviceNames.size() - 1; i >= 0; i--) {
+
+            logger.debug("Start to clear {}", serviceNames.get(i));
+            initiableServices.get(serviceNames.get(i)).deleteAll(warehouseName);
+        }
+         **/
+
+        for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
+
+            initiableServiceRestemplateClient.clearData(warehouseId);
+        }
+
     }
 }

@@ -18,7 +18,6 @@ public class KafkaSender {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private ObjectMapper mapper = new ObjectMapper();
 
     public void send(String topic, String message) {
 

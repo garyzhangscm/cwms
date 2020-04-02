@@ -1,5 +1,10 @@
 package com.garyzhangscm.cwms.integration;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -53,5 +58,19 @@ public class IntegrationServerApplication {
         // Interceptor to add accept = JSON to the http header
         oAuth2RestTemplate.setInterceptors(Collections.singletonList(new RequestInterceptor()));
         return oAuth2RestTemplate;
+    }
+
+    @Bean
+    @Primary
+    public ObjectMapper getObjMapper(){
+        // JavaTimeModule timeModule = new JavaTimeModule();
+        // timeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer());
+        // timeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer());
+
+        return new ObjectMapper()
+                .registerModule(new ParameterNamesModule())
+                .registerModule(new Jdk8Module())
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 }

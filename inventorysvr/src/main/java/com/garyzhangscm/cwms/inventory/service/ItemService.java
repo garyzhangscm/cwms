@@ -145,6 +145,7 @@ public class ItemService implements TestDataInitiableService{
         });
     }
 
+
     public Item findByName(Long warehouseId, String name, boolean includeDetails){
         Item item = itemRepository.findByWarehouseIdAndName(warehouseId, name);
         if (item != null && includeDetails) {

@@ -18,13 +18,19 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class TestDataInitService {
+    private static final Logger logger = LoggerFactory.getLogger(TestDataInitService.class);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     ItemService itemService;
 
     ItemFamilyService itemFamilyService;
@@ -88,4 +94,52 @@ public class TestDataInitService {
         return initiableServices.get(name);
     }
 
+    public void clear(Long warehouseId) {
+
+        jdbcTemplate.update("delete from cycle_count_batch where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("cycle_count_batch records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from cycle_count_result where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("cycle_count_result records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from cycle_count_request where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("cycle_count_request records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from audit_count_result where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("audit_count_result records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from audit_count_request where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("audit_count_request records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from inventory_movement where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory_movement records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from inventory where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from inventory_activity where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory_activity records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from inventory_status where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory_status records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from item_unit_of_measure where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("item_unit_of_measure records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from item_package_type where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("item_package_type records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from item where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("item records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from item_family where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("item_family records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from movement_path_detail where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("movement_path_detail records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from movement_path where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("movement_path records from warehouse ID {} removed!", warehouseId);
+
+    }
 }

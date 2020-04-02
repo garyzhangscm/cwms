@@ -85,6 +85,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
         return save(locationGroupType);
     }
 
+
     public void delete(LocationGroupType locationGroupType) {
         locationGroupTypeRepository.delete(locationGroupType);
     }

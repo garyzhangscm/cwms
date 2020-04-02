@@ -55,7 +55,9 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
 
     public Location getLocationById(Long id) {
 
@@ -317,7 +319,7 @@ public class WarehouseLayoutServiceRestemplateClient {
             responseBodyWrapper = restTemplate.exchange(
                     builder.toUriString(),
                     HttpMethod.POST,
-                    getHttpEntity(mapper.writeValueAsString(location)),
+                    getHttpEntity(objectMapper.writeValueAsString(location)),
                     new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
         } catch (JsonProcessingException e) {
             throw ReceiptOperationException.raiseException(

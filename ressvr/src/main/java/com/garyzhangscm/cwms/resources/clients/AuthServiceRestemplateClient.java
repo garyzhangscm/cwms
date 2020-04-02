@@ -21,7 +21,6 @@ package com.garyzhangscm.cwms.resources.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.exception.UserOperationException;
 import com.garyzhangscm.cwms.resources.model.UserAuth;
 import org.slf4j.Logger;
@@ -33,12 +32,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-
-import java.io.IOException;
 import java.util.List;
 
 @Component
@@ -49,7 +45,10 @@ public class AuthServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    private ObjectMapper mapper = new ObjectMapper();
+
+    @Autowired
+    private ObjectMapper objectMapper;
+    // private ObjectMapper mapper = new ObjectMapper();
 
     public List<UserAuth> getUserAuthByUsernames(String usernames) {
         UriComponentsBuilder builder =
@@ -90,6 +89,7 @@ public class AuthServiceRestemplateClient {
     }
 
     public UserAuth changeUserAuth(UserAuth userAuth)  {
+        logger.debug("Start to change user auth: {}", userAuth);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
@@ -99,7 +99,7 @@ public class AuthServiceRestemplateClient {
             return restTemplate.exchange(
                     builder.toUriString(),
                     HttpMethod.POST,
-                    getHttpEntity(mapper.writeValueAsString(userAuth)),
+                    getHttpEntity(objectMapper.writeValueAsString(userAuth)),
                     new ParameterizedTypeReference<UserAuth>() {}).getBody();
         } catch (JsonProcessingException e) {
             throw UserOperationException.raiseException("Can't change user's auth information due to JsonProcessingException: " + e.getMessage());

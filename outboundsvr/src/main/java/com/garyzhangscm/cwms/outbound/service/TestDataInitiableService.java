@@ -20,4 +20,5 @@ package com.garyzhangscm.cwms.outbound.service;
 
 public interface TestDataInitiableService {
     public void initTestData(String warehouseName);
+
 }

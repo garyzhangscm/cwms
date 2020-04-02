@@ -211,6 +211,8 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, PutawayConfigurationCSVWrapper.class);
     }
 
+
+
     @Transactional
     public void initTestData(String warehouseName) {
         try {
@@ -302,7 +304,6 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     }
 
 
-    @Transactional
     private Location allocateSuitableLocation(Inventory inventory) {
         // First of all, let's find all suitable putaway configuration and
         // sort by sequence

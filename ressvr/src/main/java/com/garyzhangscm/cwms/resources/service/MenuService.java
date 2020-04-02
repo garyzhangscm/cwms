@@ -68,6 +68,7 @@ public class MenuService  implements TestDataInitiableService{
     }
 
 
+
     public List<MenuCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -108,6 +109,15 @@ public class MenuService  implements TestDataInitiableService{
         return menu;
 
 
+    }
+
+    public Menu getMenuByUrl(String url) {
+        List<Menu> menus = findAll();
+        return
+                menus.stream()
+                        .filter(menu -> menu.getLink().equals(url))
+                        .findFirst()
+                        .orElseThrow(() -> ResourceNotFoundException.raiseException("Menu not found for url: " + url));
     }
 
 

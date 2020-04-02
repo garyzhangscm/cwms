@@ -161,4 +161,5 @@ public class ClientService implements  TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+
 }

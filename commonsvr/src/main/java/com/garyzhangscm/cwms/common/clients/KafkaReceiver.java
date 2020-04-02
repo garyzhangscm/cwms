@@ -23,13 +23,16 @@ public class KafkaReceiver {
     @Autowired
     IntegrationService integrationService;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // private ObjectMapper mapper = new ObjectMapper();
 
     @KafkaListener(topics = {"INTEGRATION-CUSTOMER"})
     public void listen(@Payload String customerJsonRepresent,
                        @Headers MessageHeaders headers) throws JsonProcessingException {
         logger.info("# received customer data: {}", customerJsonRepresent);
-        Customer customer = mapper.readValue(customerJsonRepresent, Customer.class);
+        Customer customer = objectMapper.readValue(customerJsonRepresent, Customer.class);
         logger.info("# customer data after parsing: {}", customer);
         integrationService.save(customer);
 
