@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
 #  eurekaserver:
     # 默认情况下，其他服务可以使用服务名称连接到该服务。
@@ -14,6 +14,10 @@ services:
     environment:
       ENCRYPT_KEY:       "CWMS2018"
       COMPOSE_PROJECT_NAME: "CONFIGURATION"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
 
   database:
     image: mysql
@@ -43,6 +47,11 @@ services:
       - 8080:8080
     environment:
       COMPOSE_PROJECT_NAME: "DATABASE"
+      
+    deploy:
+      resources:
+        limits:
+          memory: 500m
 #    image: postgres:9.5
 #    ports:
 #      - "5432:5432"

@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   authserver:
     image: garyzhangscm/cwms-auth
@@ -13,3 +13,7 @@ services:
       DATABASESERVER_PORT: "3306"
       ENCRYPT_KEY:       "CWMS2018"
       COMPOSE_PROJECT_NAME: "CWMS-APP"
+    deploy:
+      resources:
+        limits:
+          memory: 500m

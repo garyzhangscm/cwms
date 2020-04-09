@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_client")
-public class DBBasedClient implements Serializable {
+public class DBBasedClient implements Serializable, IntegrationClientData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

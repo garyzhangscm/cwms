@@ -34,6 +34,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.*;
@@ -470,6 +472,15 @@ public class LocationService implements TestDataInitiableService {
         location.setEnabled(true);
         location.setWarehouse(warehouseService.findById(warehouseId));
         return saveOrUpdate(location);
+    }
+
+
+    public Location processLocationLock(Long id, Boolean lock) {
+
+        Location location = findById(id);
+        location.setLocked(lock);
+        return saveOrUpdate(location);
+
     }
 
 }

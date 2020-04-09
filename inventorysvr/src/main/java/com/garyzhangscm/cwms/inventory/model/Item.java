@@ -82,7 +82,8 @@ public class Item implements Serializable {
         if (Objects.nonNull(id) && Objects.nonNull(that.id)) {
             return Objects.equals(id, that.id);
         }
-        return Objects.equals(name, that.name);
+        return Objects.equals(name, that.name) &&
+                Objects.equals(warehouseId, that.warehouseId);
     }
     @Override
     public int hashCode() {

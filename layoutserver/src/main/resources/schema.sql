@@ -99,6 +99,7 @@ CREATE TABLE location(
   pending_volume double,
   location_group_id  BIGINT not null,
   enabled boolean not null default 0,
+  locked boolean not null default 0,
   reserved_code VARCHAR(100),
   foreign key(location_group_id) references location_group(location_group_id),
   foreign key(warehouse_id) references warehouse(warehouse_id));

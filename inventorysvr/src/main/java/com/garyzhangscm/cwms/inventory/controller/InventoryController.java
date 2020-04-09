@@ -69,13 +69,17 @@ public class InventoryController {
 
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-adj/{id}")
-    public void adjustDownInventory(@PathVariable Long id, @RequestParam Long warehouseId) {
-        inventoryService.removeInventory(id);
+    public void adjustDownInventory(@PathVariable Long id,
+                                    @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
+                                    @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
+        inventoryService.removeInventory(id, documentNumber, comment);
     }
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
-    public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory) {
-        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST);
+    public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory,
+                                                   @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
+                                                   @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
+        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
     }
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/receive")
@@ -92,7 +96,7 @@ public class InventoryController {
     @RequestMapping(method=RequestMethod.PUT, value="/inventory/{id}")
     public Inventory changeInventory(@PathVariable long id,
                                      @RequestBody Inventory inventory) {
-        if (inventory.getId() != null && inventory.getId() != id) {
+        if (inventory.getId() != null && !inventory.getId().equals(id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; inventory.getId(): " + inventory.getId());
         }
@@ -101,8 +105,10 @@ public class InventoryController {
 
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/adjust-quantity")
     public Inventory adjustInventoryQuantity(@PathVariable long id,
-                                     @RequestParam Long newQuantity) {
-        return inventoryService.adjustInventoryQuantity(id, newQuantity);
+                                             @RequestParam Long newQuantity,
+                                             @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
+                                             @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
+        return inventoryService.adjustInventoryQuantity(id, newQuantity, documentNumber, comment);
     }
 
 
@@ -118,10 +124,11 @@ public class InventoryController {
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/move")
     public Inventory moveInventory(@PathVariable long id,
                                    @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
+                                   @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
                                    @RequestBody Location location) {
 
 
-        return inventoryService.moveInventory(id, location , pickId);
+        return inventoryService.moveInventory(id, location , pickId, immediateMove);
     }
 
 

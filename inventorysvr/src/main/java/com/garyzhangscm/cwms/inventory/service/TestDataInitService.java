@@ -44,6 +44,7 @@ public class TestDataInitService {
     InventoryService inventoryService;
 
     MovementPathService movementPathService;
+    InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService;
 
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
@@ -54,7 +55,8 @@ public class TestDataInitService {
                                ItemPackageTypeService itemPackageTypeService,
                                InventoryStatusService inventoryStatusService,
                                InventoryService inventoryService,
-                               MovementPathService movementPathService) {
+                               MovementPathService movementPathService,
+                               InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService) {
         this.itemFamilyService = itemFamilyService;
         this.itemService = itemService;
         this.itemPackageTypeService = itemPackageTypeService;
@@ -62,6 +64,7 @@ public class TestDataInitService {
         this.inventoryStatusService = inventoryStatusService;
         this.inventoryService = inventoryService;
         this.movementPathService = movementPathService;
+        this.inventoryAdjustmentThresholdService = inventoryAdjustmentThresholdService;
 
 
         initiableServices.put("Item Family", itemFamilyService);
@@ -78,6 +81,8 @@ public class TestDataInitService {
         serviceNames.add("Inventory");
         initiableServices.put("Movement Path", movementPathService);
         serviceNames.add("Movement Path");
+        initiableServices.put("Inventory Adjustment Threshold", inventoryAdjustmentThresholdService);
+        serviceNames.add("Inventory Adjustment Threshold");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
@@ -116,6 +121,14 @@ public class TestDataInitService {
 
         jdbcTemplate.update("delete from inventory where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("inventory records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from inventory_adjustment_request where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory_adjustment_request records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from inventory_adjustment_threshold where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory_adjustment_threshold records from warehouse ID {} removed!", warehouseId);
 
         jdbcTemplate.update("delete from inventory_activity where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("inventory_activity records from warehouse ID {} removed!", warehouseId);

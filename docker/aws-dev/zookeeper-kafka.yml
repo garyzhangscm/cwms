@@ -14,7 +14,7 @@ services:
       KAFKA_CREATE_TOPICS: "ops_transaction:1:1,order_activity:1:1,test_data_init:1:1,short-allocation:1:1,
                      INTEGRATION-CUSTOMER:1:1,INTEGRATION-CLIENT:1:1,INTEGRATION-SUPPLIER:1:1,
                      INTEGRATION-ITEM:1:1,INTEGRATION-ITEM-FAMILY:1:1,INTEGRATION-ITEM-PACKAGE-TYPE:1:1,INTEGRATION-ITEM-UNIT-OF-MEASURE:1:1,
-                     INVENTORY-ACTIVITY:1:1"
+                     INVENTORY-ACTIVITY:1:1,INVENTORY-ADJUSTMENT-REQUEST-PROCESSED:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper

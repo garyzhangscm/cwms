@@ -244,13 +244,14 @@ public class WorkOrderService implements TestDataInitiableService {
 
         WorkOrder workOrder = new WorkOrder();
         workOrder.setNumber(workOrderNumber);
-        if (productionLineId != null) {
+        if (Objects.nonNull(productionLineId)) {
             workOrder.setProductionLine(productionLineService.findById(productionLineId));
         }
         workOrder.setItemId(billOfMaterial.getItemId());
         workOrder.setWarehouseId(billOfMaterial.getWarehouseId());
         workOrder.setExpectedQuantity(expectedQuantity);
         workOrder.setProducedQuantity(0L);
+        workOrder.setStatus(WorkOrderStatus.PENDING);
 
         WorkOrder savedWorkOrder = save(workOrder);
 

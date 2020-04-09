@@ -1,13 +1,15 @@
-version: '2'
+version: '3'
 services:
 
   # Redirect all output to cloud based log server:
   # papertrailer.com
-  logspout:
-    image: gliderlabs/logspout
-    command: syslog://logs5.papertrailapp.com:28234
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+  #
+  #
+  # logspout:
+  #   image: gliderlabs/logspout
+  #  command: syslog://logs5.papertrailapp.com:28234
+  #   volumes:
+  #    - /var/run/docker.sock:/var/run/docker.sock
 
   layoutservice:
       image: garyzhangscm/cwms-layoutserver
@@ -125,3 +127,8 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
+      
+      deploy:
+        resources:
+          limits:
+            memory: 500m

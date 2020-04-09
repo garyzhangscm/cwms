@@ -70,6 +70,11 @@ public class InventoryService implements TestDataInitiableService{
     private InventoryConsolidationService inventoryConsolidationService;
     @Autowired
     private InventoryActivityService inventoryActivityService;
+    @Autowired
+    private InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService;
+    @Autowired
+    private InventoryAdjustmentRequestService inventoryAdjustmentRequestService;
+
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -450,15 +455,35 @@ public class InventoryService implements TestDataInitiableService{
 
     // To remove inventory, we won't actually remove the record.
     // Instead we move the inventory to a 'logical' location
-    public Inventory removeInventory(Long id) {
+    public Inventory removeInventory(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
-        return removeInventory(inventory);
+        return removeInventory(inventory, documentNumber, comment);
     }
-    public Inventory removeInventory(Inventory inventory) {
-        return removeInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST);
+    public Inventory removeInventory(Inventory inventory, String documentNumber, String comment) {
+        return removeInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
     }
 
     public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
+        return removeInventory(inventory, inventoryQuantityChangeType, "", "");
+
+    }
+    public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                            String documentNumber, String comment) {
+
+        logger.debug("Start to remove inventory");
+        if (isApprovalNeededForInventoryAdjust(inventory, inventory.getQuantity(), inventoryQuantityChangeType)) {
+
+            logger.debug("We will need to get approval, so here we just save the request");
+            writeInventoryAdjustRequest(inventory, 0L,
+                    inventoryQuantityChangeType, documentNumber, comment);
+            return inventory;
+        } else {
+            logger.debug("No approval needed, let's just go ahread with the adding inventory!");
+            return processRemoveInventory(inventory, inventoryQuantityChangeType, documentNumber, comment);
+        }
+    }
+    public Inventory processRemoveInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                     String documentNumber, String comment) {
 
         InventoryActivityType inventoryActivityType;
         switch (inventoryQuantityChangeType) {
@@ -472,7 +497,8 @@ public class InventoryService implements TestDataInitiableService{
                 inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
         }
         inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
-                "quantity", String.valueOf(inventory.getQuantity()), "0");
+                "quantity", String.valueOf(inventory.getQuantity()), "0",
+                documentNumber, comment);
 
         Location destination
                 = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
@@ -481,21 +507,31 @@ public class InventoryService implements TestDataInitiableService{
         return moveInventory(inventory, destination);
     }
 
+
     public Inventory moveInventory(Long inventoryId, Location destination) {
-        return moveInventory(findById(inventoryId), destination, null);
+        return moveInventory(findById(inventoryId), destination, null, true);
 
     }
 
     public Inventory moveInventory(Inventory inventory, Location destination) {
-        return moveInventory(inventory, destination, null);
+        return moveInventory(inventory, destination, null, true);
     }
-    public Inventory moveInventory(Long inventoryId, Location destination, Long pickId) {
-        return moveInventory(findById(inventoryId), destination, pickId);
+    public Inventory moveInventory(Long inventoryId, Location destination, Long pickId, boolean immediateMove) {
+        return moveInventory(findById(inventoryId), destination, pickId, immediateMove);
 
     }
 
+    /**
+     * Move the inventory into the new location, either immediately confirm the movement, or generate a work
+     * so we can assign the movement work to someone to finish it.
+     * @param inventory Inventory to be moved
+     * @param destination destination fo the inventory
+     * @param pickId pick work related to the inventory movement
+     * @param immediateMove if we generate work queue or immediately move the inventory
+     * @return inventory after the movement(can be consolidated with the existing invenotry in the destination)
+     */
     @Transactional
-    public Inventory moveInventory(Inventory inventory, Location destination, Long pickId) {
+    public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove) {
         logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}",
                 inventory.getLpn(), destination.getName(), pickId, Objects.isNull(pickId));
 
@@ -544,11 +580,17 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("6. destination {} has {} inventory",
                 destination.getName(), findByLocationId(destination.getId()).size());
         // check if we will need to remove the original inventory
-        if (!Objects.isNull(inventory.getId()) &&
-            !consolidatedInventory.equals(inventory)) {
+
+        logger.debug(">> after consolidation, the original inventory is \n>> {}", inventory);
+        logger.debug(">> Objects.nonNull(inventory.getId()):  {}", Objects.nonNull(inventory.getId()) );
+        logger.debug(">> inventory.getQuantity(): {}", inventory.getQuantity());
+
+        if (Objects.nonNull(inventory.getId()) &&
+            inventory.getQuantity() == 0) {
             // the original inventory is already persist but
             // is consolidated into an existing inventory, let's
             // remove it from the db
+            logger.debug(">> after consolidation, we will remove the original inventory");
             delete(inventory);
         }
         logger.debug("7. destination {} has {} inventory",
@@ -809,7 +851,7 @@ public class InventoryService implements TestDataInitiableService{
 
         // Move the inventory to the destination location
         if (immediateMove) {
-            moveInventory(inventory, destinationLocation);
+            inventory = moveInventory(inventory, destinationLocation);
         }
         else {
             generateMovementWork(inventory, destinationLocation);
@@ -832,6 +874,10 @@ public class InventoryService implements TestDataInitiableService{
         }
     }
 
+    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
+        return addInventory(inventory, inventoryQuantityChangeType, "", "");
+
+    }
 
     /**
      * Add new invenotry to the system, To make it easy, we will always create the inventory structure in a temporary location
@@ -842,8 +888,62 @@ public class InventoryService implements TestDataInitiableService{
      * @return Inventory being added
      */
     @Transactional
-    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
+    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                  String documentNumber, String comment) {
 
+        logger.debug("Start to add inventory");
+        if (isApprovalNeededForInventoryAdjust(inventory, inventory.getQuantity(), inventoryQuantityChangeType)) {
+
+            logger.debug("We will need to get approval, so here we just save the request");
+            writeInventoryAdjustRequest(inventory, inventory.getQuantity(),
+                    inventoryQuantityChangeType, documentNumber, comment);
+            return inventory;
+        } else {
+            logger.debug("No approval needed, let's just go ahread with the adding inventory!");
+            return processAddInventory(inventory, inventoryQuantityChangeType, documentNumber, comment);
+        }
+    }
+
+    private void lockInventory(Long id) {
+        Inventory inventory = findById(id);
+        inventory.setLockedForAdjust(true);
+        saveOrUpdate(inventory);
+    }
+    public void releaseInventory(Long id) {
+        Inventory inventory = findById(id);
+        inventory.setLockedForAdjust(false);
+        saveOrUpdate(inventory);
+    }
+
+
+    private void writeInventoryAdjustRequest(Inventory inventory, Long quantity,
+                                             InventoryQuantityChangeType inventoryQuantityChangeType,
+                                             String documentNumber, String comment) {
+
+        // if we are manupulating an existing inventory, let's lock teh inventory first
+        if (Objects.nonNull(inventory.getId())) {
+            lockInventory(inventory.getId());
+        }
+        inventoryAdjustmentRequestService.writeInventoryAdjustRequest(inventory, quantity, inventoryQuantityChangeType,
+                  documentNumber,  comment);
+
+    }
+
+    private boolean isApprovalNeededForInventoryAdjust(Inventory inventory, Long quantity, InventoryQuantityChangeType inventoryQuantityChangeType) {
+        // Receiving is always allowed without any approval
+        logger.debug("Check if we need approval for this adjust. inventory: {}, quantity: {}, change type: {}",
+                inventory, quantity, inventoryQuantityChangeType);
+        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING)) {
+            logger.debug("Receiving doesn't needs any approve");
+            return false;
+        }
+
+        // we will need approval only when the inventory adjust exceed the threshold of adjustment
+        return inventoryAdjustmentThresholdService.isInventoryAdjustExceedThreshold(inventory, inventoryQuantityChangeType, quantity);
+    }
+
+    public Inventory processAddInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                         String documentNumber, String comment) {
         Location location =
                 warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
                         inventoryQuantityChangeType,inventory.getWarehouseId());
@@ -874,7 +974,10 @@ public class InventoryService implements TestDataInitiableService{
                 inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
         }
         inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
-                "quantity", "0", String.valueOf(inventory.getQuantity()));
+                "quantity", "0", String.valueOf(inventory.getQuantity()),
+                documentNumber, comment);
+
+
 
         return moveInventory(inventory, destinationLocation);
 
@@ -910,22 +1013,33 @@ public class InventoryService implements TestDataInitiableService{
      * @param newQuantity new quantity
      * @return inventory after adjust
      */
-    public Inventory adjustInventoryQuantity(long id, Long newQuantity) {
+    public Inventory adjustInventoryQuantity(long id, Long newQuantity, String documentNumber, String comment) {
         Inventory inventory = findById(id);
         if (inventory.getQuantity().equals(newQuantity)) {
             // nothing changed, let just return
             return inventory;
         }
-        else if (newQuantity == 0) {
+
+        if (isApprovalNeededForInventoryAdjust(inventory, newQuantity, InventoryQuantityChangeType.INVENTORY_ADJUST)) {
+            writeInventoryAdjustRequest(inventory, newQuantity, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
+            return inventory;
+        } else {
+            return processAdjustInventoryQuantity(inventory, newQuantity, documentNumber, comment);
+        }
+    }
+
+    public Inventory processAdjustInventoryQuantity(Inventory inventory, Long newQuantity, String documentNumber, String comment) {
+        if (newQuantity == 0) {
             // a specific case where we are actually removing an inventory
-            return removeInventory(inventory);
+            return processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment);
         }
         else if (inventory.getQuantity() > newQuantity) {
             // OK we are adjust down, let's split the original inventory
             // and move the difference into a new location
 
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
-                    "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity));
+                    "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
+                    documentNumber, comment);
 
             String newLpn = commonServiceRestemplateClient.getNextLpn();
             Inventory newInventory = inventory.split(newLpn, inventory.getQuantity() - newQuantity);
@@ -933,7 +1047,7 @@ public class InventoryService implements TestDataInitiableService{
             inventory = saveOrUpdate(inventory);
             newInventory = save(newInventory);
             // Remove the new inventory
-            removeInventory(newInventory);
+            processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "");
             return inventory;
         }
         else {
@@ -942,7 +1056,8 @@ public class InventoryService implements TestDataInitiableService{
             // and then move the inventory onto the existing inventory
 
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
-                    "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity));
+                    "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
+                    documentNumber, comment);
 
             String newLpn = commonServiceRestemplateClient.getNextLpn();
             // Trick: Split 0 quantity from original inventory, which is
@@ -950,7 +1065,7 @@ public class InventoryService implements TestDataInitiableService{
             Inventory newInventory = inventory.split(newLpn, 0L);
             newInventory.setQuantity(newQuantity - inventory.getQuantity());
             // Add the inventory to the current location
-            newInventory = addInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST);
+            newInventory = processAddInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST, "", "");
 
 
             // In case the new LPN is not combined with old LPN, let's do the manual consolidation
@@ -962,6 +1077,54 @@ public class InventoryService implements TestDataInitiableService{
                 return newInventory;
             }
         }
+    }
+
+    public void processInventoryAdjustRequest(InventoryAdjustmentRequest inventoryAdjustmentRequest) {
+        // We will only process those request that has been approved
+        if (!inventoryAdjustmentRequest.getStatus().equals(InventoryAdjustmentRequestStatus.APPROVED)) {
+            return;
+        }
+
+        Inventory inventory = getInventoryFromAdjustRequest(inventoryAdjustmentRequest);
+        if (Objects.isNull(inventory.getId())) {
+            // if the inventory doesn't have ID yet, we assume we are adding
+
+            processAddInventory(inventory, inventoryAdjustmentRequest.getInventoryQuantityChangeType(),
+                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment());
+        }
+        else {
+            processAdjustInventoryQuantity(inventory, inventoryAdjustmentRequest.getNewQuantity(),
+                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment());
+        }
+
+        // check if we can release the location after the request is approved
+        inventoryAdjustmentRequestService.releaseLocationLock(inventoryAdjustmentRequest);
+    }
+
+
+    public Inventory getInventoryFromAdjustRequest(InventoryAdjustmentRequest inventoryAdjustmentRequest) {
+        if (Objects.nonNull(inventoryAdjustmentRequest.getInventoryId())) {
+            return findById(inventoryAdjustmentRequest.getInventoryId());
+        }
+        Inventory inventory = new Inventory();
+        inventory.setLpn(inventoryAdjustmentRequest.getLpn());
+
+        inventory.setLocationId(inventoryAdjustmentRequest.getLocationId());
+        inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(
+                inventoryAdjustmentRequest.getLocationId()
+        ));
+
+        inventory.setItem(inventoryAdjustmentRequest.getItem());
+        inventory.setItemPackageType(inventoryAdjustmentRequest.getItemPackageType());
+        inventory.setQuantity(inventoryAdjustmentRequest.getQuantity());
+        inventory.setVirtual(inventoryAdjustmentRequest.getVirtual());
+        inventory.setInventoryStatus(inventoryAdjustmentRequest.getInventoryStatus());
+        inventory.setWarehouseId(inventoryAdjustmentRequest.getWarehouseId());
+        inventory.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                inventoryAdjustmentRequest.getWarehouseId()
+        ));
+
+        return inventory;
     }
 
     public Inventory changeInventory( long id, Inventory inventory) {

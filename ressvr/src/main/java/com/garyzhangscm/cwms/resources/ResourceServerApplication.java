@@ -47,6 +47,7 @@ public class ResourceServerApplication {
 	}
 
 
+
 	@Bean
 	@ConfigurationProperties("security.oauth2.client")
 	public ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails() {
