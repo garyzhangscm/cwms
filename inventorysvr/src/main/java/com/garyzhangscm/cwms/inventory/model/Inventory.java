@@ -86,6 +86,9 @@ public class Inventory implements Serializable {
     @Transient
     private Warehouse warehouse;
 
+    @Column(name = "locked_for_adjust")
+    private Boolean lockedForAdjust = false;
+
     @OneToMany(
             mappedBy = "inventory",
             cascade = CascadeType.REMOVE,
@@ -272,5 +275,13 @@ public class Inventory implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getLockedForAdjust() {
+        return lockedForAdjust;
+    }
+
+    public void setLockedForAdjust(Boolean lockedForAdjust) {
+        this.lockedForAdjust = lockedForAdjust;
     }
 }

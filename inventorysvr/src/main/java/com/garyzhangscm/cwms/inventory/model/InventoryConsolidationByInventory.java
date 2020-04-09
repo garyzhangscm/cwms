@@ -45,6 +45,7 @@ public class InventoryConsolidationByInventory implements InventoryConsolidation
         Inventory destinationInventory = inventories.get(0);
         // Move the quantity from source inventory to destination inventory
         destinationInventory.setQuantity(destinationInventory.getQuantity() + inventory.getQuantity());
+        inventory.setQuantity(0L);
         logger.debug(">> Will consolidate the inventory with the existing one: {} / {}", destinationInventory.getId(),  destinationInventory.getLpn());
         return destinationInventory;
     }

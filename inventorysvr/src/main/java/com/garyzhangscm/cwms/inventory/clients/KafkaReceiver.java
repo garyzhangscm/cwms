@@ -3,10 +3,12 @@ package com.garyzhangscm.cwms.inventory.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
+import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentRequest;
 import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
 import com.garyzhangscm.cwms.inventory.service.IntegrationService;
 import com.garyzhangscm.cwms.inventory.service.InventoryActivityService;
+import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,8 @@ public class KafkaReceiver {
     IntegrationService integrationService;
     @Autowired
     InventoryActivityService inventoryActivityService;
+    @Autowired
+    InventoryService inventoryService;
 
     @KafkaListener(topics = {"short-allocation"})
     public void listen(ConsumerRecord<?, ?> record) {
@@ -72,6 +76,22 @@ public class KafkaReceiver {
             logger.info("InventoryActivity: {}", inventoryActivity);
 
             inventoryActivityService.processInventoryActivityMessage(inventoryActivity);
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
+    @KafkaListener(topics = {"INVENTORY-ADJUSTMENT-REQUEST-PROCESSED"})
+    public void processInventoryAdjustRequest(@Payload String processInventoryAdjustRequestJsonRepresent)  {
+        logger.info("# received inventory adjust request data: {}", processInventoryAdjustRequestJsonRepresent);
+        try {
+            InventoryAdjustmentRequest inventoryAdjustmentRequest
+                    = objectMapper.readValue(processInventoryAdjustRequestJsonRepresent, InventoryAdjustmentRequest.class);
+            logger.info("InventoryActivity: {}", inventoryAdjustmentRequest);
+
+            inventoryService.processInventoryAdjustRequest(inventoryAdjustmentRequest);
 
         }
         catch (JsonProcessingException ex) {

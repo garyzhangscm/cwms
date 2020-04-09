@@ -126,6 +126,60 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+    @Cacheable
+    public Warehouse getWarehouseById(Long warehouseId)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/warehouses/{id}");
+
+        ResponseBodyWrapper<Warehouse> responseBodyWrapper
+             = restTemplate.exchange(
+                   builder.buildAndExpand(warehouseId).toUriString(),
+                   HttpMethod.GET,
+                 null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location lockLocation(Long locationId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/{id}/lock")
+                        .queryParam("locked", true);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(locationId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location releaseLocationLock(Long locationId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/{id}/lock")
+                        .queryParam("locked", false);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(locationId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
     public List<Location> getLocationByLocationGroups(String locationGroupIds) {
         UriComponentsBuilder builder =

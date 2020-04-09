@@ -80,6 +80,9 @@ public class Location {
     @Column(name = "reserved_code")
     private String reservedCode;
 
+    @Column(name = "locked")
+    private Boolean locked = false;
+
     @ManyToOne
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
@@ -251,5 +254,14 @@ public class Location {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+
+    public Boolean getLocked() {
+        return locked;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
     }
 }

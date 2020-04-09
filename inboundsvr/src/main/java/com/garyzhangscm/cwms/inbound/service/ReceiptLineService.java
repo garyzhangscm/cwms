@@ -245,7 +245,11 @@ public class ReceiptLineService implements TestDataInitiableService{
         inventory.setWarehouseId(receipt.getWarehouseId());
 
         Inventory newInventory = inventoryServiceRestemplateClient.receiveInventory(inventory);
-        receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() + newInventory.getQuantity());
+        // Note here when we receive, the inventory may already consolidate with existing inventory
+        // in the location and the newInventory may represent the inventory after consolidated.
+        // so we need to calculate the received quantity on the line based off the original
+        // inventory structure
+        receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() + inventory.getQuantity());
         save(receiptLine);
         return newInventory;
     }

@@ -8,6 +8,8 @@ drop table if exists audit_count_request;
 
 DROP TABLE if exists inventory_movement;
 DROP TABLE if exists inventory;
+DROP TABLE if exists inventory_adjustment_request;
+DROP TABLE if exists inventory_adjustment_threshold;
 DROP TABLE if exists inventory_activity;
 drop table if exists inventory_status;
 DROP TABLE IF EXISTS item_unit_of_measure;
@@ -85,9 +87,53 @@ CREATE TABLE inventory(
   inventory_status_id bigint not null,
   virtual_inventory boolean not null default 0,
   receipt_id BIGINT,
+  locked_for_adjust  boolean not null default 0,
   foreign key(item_id) references item(item_id),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),
   foreign key(inventory_status_id) references inventory_status(inventory_status_id)
+);
+
+CREATE TABLE inventory_adjustment_request(
+  inventory_adjustment_request_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  inventory_id      BIGINT,
+  lpn   VARCHAR(100) NOT NULL,
+  location_id    BIGINT NOT NULL,
+  item_id BIGINT not null,
+  item_package_type_id BIGINT not null,
+  warehouse_id BIGINT NOT NULL,
+  quantity bigint not null,
+  new_quantity bigint not null,
+  inventory_status_id bigint not null,
+  virtual_inventory boolean,
+  inventory_quantity_change_type   VARCHAR(20) NOT NULL,
+  status   VARCHAR(20) NOT NULL,
+  requested_by_username VARCHAR(50) NOT NULL,
+  requested_by_datetime datetime not null ,
+  processed_by_username VARCHAR(50),
+  processed_by_datetime datetime ,
+  document_number VARCHAR(200),
+  comment VARCHAR(2000),
+  foreign key(item_id) references item(item_id),
+  foreign key(item_package_type_id) references item_package_type(item_package_type_id),
+  foreign key(inventory_status_id) references inventory_status(inventory_status_id)
+);
+
+
+
+CREATE TABLE inventory_adjustment_threshold(
+  inventory_adjustment_threshold_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  item_id BIGINT,
+  client_id BIGINT,
+  item_family_id BIGINT,
+  inventory_quantity_change_type VARCHAR(20),
+  warehouse_id BIGINT NOT NULL,
+  user_id BIGINT,
+  role_id BIGINT,
+  quantity_threshold BIGINT,
+  cost_threshold    double,
+  enabled    boolean not null default 0,
+  foreign key(item_id) references item(item_id),
+  foreign key(item_family_id) references item_family(item_family_id)
 );
 
 

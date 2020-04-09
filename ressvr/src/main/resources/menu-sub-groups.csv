@@ -6,5 +6,6 @@ text,i18n,icon,shortcutRoot,sequence,link,badge,menuGroup,name
 "Inbound",menu.main.inbound,anticon-exception,,4,,,Main-Menu,Main-Menu-Inbound
 "Outbound",menu.main.outbound,anticon-global,,5,,,Main-Menu,Main-Menu-Outbound
 "WorkOrder",menu.main.work-order,anticon-global,,6,,,Main-Menu,Main-Menu-WorkOrder
-"Common",menu.main.common,anticon-setting,,7,,,Main-Menu,Main-Menu-Common
-"Util",menu.main.util,anticon-tool,,8,,,Main-Menu,Main-Menu-Util
+"Integration",menu.main.integration,anticon-global,,7,,,Main-Menu,Main-Menu-Integration
+"Common",menu.main.common,anticon-setting,,8,,,Main-Menu,Main-Menu-Common
+"Util",menu.main.util,anticon-tool,,9,,,Main-Menu,Main-Menu-Util

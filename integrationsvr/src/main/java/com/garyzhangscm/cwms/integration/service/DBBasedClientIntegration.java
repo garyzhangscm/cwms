@@ -28,6 +28,10 @@ public class DBBasedClientIntegration {
     DBBasedClientRepository dbBasedClientRepository;
 
 
+    public List<DBBasedClient> findAll() {
+        return dbBasedClientRepository.findAll();
+    }
+
     private List<DBBasedClient> findPendingIntegration() {
         return dbBasedClientRepository.findAll(
                 (Root<DBBasedClient> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {

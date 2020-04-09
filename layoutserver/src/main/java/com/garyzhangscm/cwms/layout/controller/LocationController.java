@@ -217,5 +217,12 @@ public class LocationController {
     }
 
 
+    @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/lock")
+    public Location processLocationLock(@PathVariable Long id,
+                                 @RequestParam Boolean locked) {
+
+        return locationService.processLocationLock(id, locked);
+    }
+
 
 }

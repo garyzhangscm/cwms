@@ -39,7 +39,6 @@ public class AuthenticationServerApplication {
 		return userInfo;
 	}
 
-
 	// Rest Template with Robbin
 	@LoadBalanced
 	@Bean

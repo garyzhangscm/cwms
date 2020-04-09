@@ -321,10 +321,19 @@ public class InventoryActivityService{
     }
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
-                                       String valueType, String fromValue, String toValue) {
+                                      String valueType, String fromValue, String toValue) {
         logInventoryActivitiy(inventory, inventoryActivityType,
                 LocalDateTime.now(), userService.getCurrentUserName(),
                 valueType, fromValue, toValue, "", "");
+    }
+
+
+    public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
+                                       String valueType, String fromValue, String toValue,
+                                      String documentNumber, String comment) {
+        logInventoryActivitiy(inventory, inventoryActivityType,
+                LocalDateTime.now(), userService.getCurrentUserName(),
+                valueType, fromValue, toValue, documentNumber, comment);
     }
 
     public void processInventoryActivityMessage(InventoryActivity inventoryActivity){

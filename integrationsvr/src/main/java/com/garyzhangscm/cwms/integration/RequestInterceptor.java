@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration;
 
 import com.garyzhangscm.cwms.integration.clients.AuthServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.service.UserService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +43,23 @@ public class RequestInterceptor implements ClientHttpRequestInterceptor {
     AuthServiceRestemplateClient authServiceRestemplateClient;
 
 
+    @Autowired
+    UserService userService;
+
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body,
                                         ClientHttpRequestExecution execution) throws IOException {
+        // If the call is from a web client, then we will do nothing.
+        // Otherwise, we will log in as a specific predefined user
+        // so that we can still use the OAuth2 framework
+        /****
+        if (StringUtils.isNotBlank(userService.getCurrentUserName())) {
+
+            logger.debug("web service call from web client by user {}", userService.getCurrentUserName());
+            return execution.execute(request, body);
+        }
+         ***/
+        logger.debug("Start to get current token");
         String token = authServiceRestemplateClient.getCurrentLoginUser().getToken();
 
         HttpHeaders headers = request.getHeaders();

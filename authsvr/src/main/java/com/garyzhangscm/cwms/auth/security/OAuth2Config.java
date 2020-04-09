@@ -20,8 +20,8 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-        oauthServer.tokenKeyAccess("permitAll()")
-                .checkTokenAccess("isAuthenticated()");
+        oauthServer.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()");
+                // .checkTokenAccess("isAuthenticated()");
     }
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
