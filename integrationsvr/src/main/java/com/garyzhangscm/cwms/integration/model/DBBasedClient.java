@@ -89,6 +89,30 @@ public class DBBasedClient implements Serializable, IntegrationClientData {
         client.setAddressPostcode(getAddressPostcode());
         return client;
     }
+
+    public DBBasedClient(){}
+
+
+    public DBBasedClient(Client client) {
+
+        setName(client.getName());
+        setDescription(client.getDescription());
+
+        setContactorFirstname(client.getContactorFirstname());
+        setContactorLastname(client.getContactorLastname());
+
+        setAddressCountry(client.getAddressCountry());
+        setAddressState(client.getAddressState());
+        setAddressCounty(client.getAddressCounty());
+        setAddressCity(client.getAddressCity());
+        setAddressDistrict(client.getAddressDistrict());
+        setAddressLine1(client.getAddressLine1());
+        setAddressLine2(client.getAddressLine2());
+        setAddressPostcode(client.getAddressPostcode());
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
+    }
     public Long getId() {
         return id;
     }

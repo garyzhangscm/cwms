@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_customer")
-public class DBBasedCustomer implements Serializable {
+public class DBBasedCustomer implements Serializable , IntegrationCustomerData{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,6 +89,28 @@ public class DBBasedCustomer implements Serializable {
         customer.setAddressLine2(getAddressLine2());
         customer.setAddressPostcode(getAddressPostcode());
         return customer;
+    }
+
+    public DBBasedCustomer() {}
+    public DBBasedCustomer(Customer customer) {
+
+
+        setName(customer.getName());
+        setDescription(customer.getDescription());
+
+        setContactorFirstname(customer.getContactorFirstname());
+        setContactorLastname(customer.getContactorLastname());
+
+        setAddressCountry(customer.getAddressCountry());
+        setAddressState(customer.getAddressState());
+        setAddressCounty(customer.getAddressCounty());
+        setAddressCity(customer.getAddressCity());
+        setAddressDistrict(customer.getAddressDistrict());
+        setAddressLine1(customer.getAddressLine1());
+        setAddressLine2(customer.getAddressLine2());
+        setAddressPostcode(customer.getAddressPostcode());
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
     }
 
     public Long getId() {

@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_item_unit_of_measure")
-public class DBBasedItemUnitOfMeasure implements Serializable {
+public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUnitOfMeasureData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,6 +98,23 @@ public class DBBasedItemUnitOfMeasure implements Serializable {
         itemUnitOfMeasure.setHeight(getHeight());
         itemUnitOfMeasure.setWarehouseId(getWarehouseId());
         return itemUnitOfMeasure;
+
+    }
+
+    public DBBasedItemUnitOfMeasure() {}
+
+    public DBBasedItemUnitOfMeasure(ItemUnitOfMeasure itemUnitOfMeasure) {
+
+        setUnitOfMeasureId(itemUnitOfMeasure.getUnitOfMeasureId());
+        setQuantity(itemUnitOfMeasure.getQuantity());
+        setWeight(itemUnitOfMeasure.getWeight());
+        setLength(itemUnitOfMeasure.getLength());
+        setWidth(itemUnitOfMeasure.getWidth());
+        setHeight(itemUnitOfMeasure.getHeight());
+        setWarehouseId(itemUnitOfMeasure.getWarehouseId());
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
 
     }
 

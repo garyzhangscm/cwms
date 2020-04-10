@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedItemRepository;
 import org.slf4j.Logger;
@@ -30,6 +31,18 @@ public class DBBasedItemIntegration {
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
+    public List<DBBasedItem> findAll() {
+        return dbBasedItemRepository.findAll();
+    }
+    public DBBasedItem findById(Long id) {
+        return dbBasedItemRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("item data not found by id: " + id));
+    }
+
+    public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem) {
+
+        return dbBasedItemRepository.save(dbBasedItem);
+    }
 
     private List<DBBasedItem> findPendingIntegration() {
         return dbBasedItemRepository.findAll(

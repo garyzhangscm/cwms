@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_supplier")
-public class DBBasedSupplier implements Serializable {
+public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,6 +89,31 @@ public class DBBasedSupplier implements Serializable {
         supplier.setAddressLine2(getAddressLine2());
         supplier.setAddressPostcode(getAddressPostcode());
         return supplier;
+    }
+
+
+    public DBBasedSupplier() {}
+    public DBBasedSupplier(Supplier supplier) {
+
+
+        setName(supplier.getName());
+        setDescription(supplier.getDescription());
+
+        setContactorFirstname(supplier.getContactorFirstname());
+        setContactorLastname(supplier.getContactorLastname());
+
+        setAddressCountry(supplier.getAddressCountry());
+        setAddressState(supplier.getAddressState());
+        setAddressCounty(supplier.getAddressCounty());
+        setAddressCity(supplier.getAddressCity());
+        setAddressDistrict(supplier.getAddressDistrict());
+        setAddressLine1(supplier.getAddressLine1());
+        setAddressLine2(supplier.getAddressLine2());
+        setAddressPostcode(supplier.getAddressPostcode());
+
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
     }
 
     public Long getId() {

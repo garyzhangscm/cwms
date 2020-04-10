@@ -30,7 +30,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "integration_item_package_type")
-public class DBBasedItemPackageType implements Serializable {
+public class DBBasedItemPackageType implements Serializable, IntegrationItemPackageTypeData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,6 +102,29 @@ public class DBBasedItemPackageType implements Serializable {
         itemPackageType.setWarehouseId(getWarehouseId());
 
         return itemPackageType;
+    }
+
+    public DBBasedItemPackageType() {}
+    public DBBasedItemPackageType(ItemPackageType itemPackageType) {
+
+
+        setName(itemPackageType.getName());
+        setDescription(itemPackageType.getDescription());
+        setClientId(itemPackageType.getClientId());
+        setSupplierId(itemPackageType.getSupplierId());
+        itemPackageType.getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
+            addItemUnitOfMeasure(new DBBasedItemUnitOfMeasure(itemUnitOfMeasure));
+        });
+        setWarehouseId(getWarehouseId());
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
+
+    }
+
+
+    public void addItemUnitOfMeasure(DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure) {
+        getItemUnitOfMeasures().add(dbBasedItemUnitOfMeasure);
     }
 
     public Long getId() {

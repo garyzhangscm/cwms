@@ -29,7 +29,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "integration_item")
-public class DBBasedItem implements Serializable {
+public class DBBasedItem implements Serializable, IntegrationItemData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -91,6 +91,32 @@ public class DBBasedItem implements Serializable {
 
         return item;
 
+    }
+
+    public DBBasedItem() {}
+    public DBBasedItem(Item item) {
+
+
+        setName(item.getName());
+        setDescription(item.getDescription());
+        setClientId(item.getClientId());
+        setItemFamily(new DBBasedItemFamily(item.getItemFamily()));
+        item.getItemPackageTypes().forEach(itemPackageType -> {
+            addItemPackageType(new DBBasedItemPackageType(itemPackageType));
+        });
+        setUnitCost(getUnitCost());
+        setWarehouseId(getWarehouseId());
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
+
+
+
+    }
+
+
+    public void addItemPackageType(DBBasedItemPackageType dbBasedItemPackageType) {
+        getItemPackageTypes().add(dbBasedItemPackageType);
     }
 
     public Long getId() {

@@ -1,9 +1,8 @@
 package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
-import com.garyzhangscm.cwms.integration.model.Customer;
-import com.garyzhangscm.cwms.integration.model.DBBasedCustomer;
-import com.garyzhangscm.cwms.integration.model.IntegrationStatus;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedCustomerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,19 @@ public class DBBasedCustomerIntegration {
     KafkaSender kafkaSender;
     @Autowired
     DBBasedCustomerRepository dbBasedCustomerRepository;
+
+    public List<DBBasedCustomer> findAll() {
+        return dbBasedCustomerRepository.findAll();
+    }
+    public DBBasedCustomer findById(Long id) {
+        return dbBasedCustomerRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("customer data not found by id: " + id));
+    }
+
+    public IntegrationCustomerData addIntegrationCustomerData(DBBasedCustomer dbBasedCustomer) {
+
+        return dbBasedCustomerRepository.save(dbBasedCustomer);
+    }
 
 
     private List<DBBasedCustomer> findPendingIntegration() {
