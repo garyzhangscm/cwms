@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.integration.service;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 
 import com.garyzhangscm.cwms.integration.repository.DBBasedItemUnitOfMeasureRepository;
@@ -33,6 +34,20 @@ public class DBBasedItemUnitOfMeasureIntegration {
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
+
+
+    public List<DBBasedItemUnitOfMeasure> findAll() {
+        return dbBasedItemUnitOfMeasureRepository.findAll();
+    }
+    public DBBasedItemUnitOfMeasure findById(Long id) {
+        return dbBasedItemUnitOfMeasureRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("item unit of measure data not found by id: " + id));
+    }
+
+    public IntegrationItemUnitOfMeasureData addIntegrationItemUnitOfMeasureData(DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure) {
+
+        return dbBasedItemUnitOfMeasureRepository.save(dbBasedItemUnitOfMeasure);
+    }
 
 
 

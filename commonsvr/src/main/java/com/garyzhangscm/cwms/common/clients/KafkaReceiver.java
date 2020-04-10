@@ -2,7 +2,9 @@ package com.garyzhangscm.cwms.common.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Customer;
+import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.service.IntegrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +31,28 @@ public class KafkaReceiver {
     // private ObjectMapper mapper = new ObjectMapper();
 
     @KafkaListener(topics = {"INTEGRATION-CUSTOMER"})
-    public void listen(@Payload String customerJsonRepresent,
-                       @Headers MessageHeaders headers) throws JsonProcessingException {
+    public void listenForCustomer(@Payload String customerJsonRepresent) throws JsonProcessingException {
         logger.info("# received customer data: {}", customerJsonRepresent);
         Customer customer = objectMapper.readValue(customerJsonRepresent, Customer.class);
         logger.info("# customer data after parsing: {}", customer);
         integrationService.save(customer);
 
-        logger.debug("# received customer data's  header:");
-        headers.keySet().forEach(key -> {
-            logger.info("{}: {}", key, headers.get(key));
-        });
+    }
+
+    @KafkaListener(topics = {"INTEGRATION-CLIENT"})
+    public void listenForClient(@Payload String clientJsonRepresent) throws JsonProcessingException {
+        logger.info("# received client data: {}", clientJsonRepresent);
+        Client client = objectMapper.readValue(clientJsonRepresent, Client.class);
+        logger.info("# client data after parsing: {}", client);
+        integrationService.save(client);
+    }
+
+    @KafkaListener(topics = {"INTEGRATION-SUPPLIER"})
+    public void listenForSupplier(@Payload String supplierJsonRepresent) throws JsonProcessingException {
+        logger.info("# received supplier data: {}", supplierJsonRepresent);
+        Supplier supplier = objectMapper.readValue(supplierJsonRepresent, Supplier.class);
+        logger.info("# supplier data after parsing: {}", supplier);
+        integrationService.save(supplier);
     }
 
 }

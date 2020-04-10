@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_item_family")
-public class DBBasedItemFamily implements Serializable {
+public class DBBasedItemFamily implements Serializable, IntegrationItemFamilyData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +62,17 @@ public class DBBasedItemFamily implements Serializable {
         itemFamily.setDescription(getDescription());
         itemFamily.setWarehouseId(getWarehouseId());
         return itemFamily;
+    }
+
+    public DBBasedItemFamily() {}
+    public DBBasedItemFamily(ItemFamily itemFamily) {
+
+        setName(itemFamily.getName());
+        setDescription(itemFamily.getDescription());
+        setWarehouseId(itemFamily.getWarehouseId());
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
     }
 
     public Long getId() {

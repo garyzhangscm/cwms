@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedClientRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedCustomerRepository;
@@ -30,6 +31,14 @@ public class DBBasedClientIntegration {
 
     public List<DBBasedClient> findAll() {
         return dbBasedClientRepository.findAll();
+    }
+    public DBBasedClient findById(Long id) {
+        return dbBasedClientRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("client data not found by id: " + id));
+    }
+
+    public IntegrationClientData addIntegrationClientData(DBBasedClient dbBasedClient) {
+        return dbBasedClientRepository.save(dbBasedClient);
     }
 
     private List<DBBasedClient> findPendingIntegration() {

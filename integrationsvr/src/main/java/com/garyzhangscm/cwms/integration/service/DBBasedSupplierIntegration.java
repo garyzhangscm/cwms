@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedClientRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedSupplierRepository;
@@ -26,6 +27,19 @@ public class DBBasedSupplierIntegration {
     KafkaSender kafkaSender;
     @Autowired
     DBBasedSupplierRepository dbBasedSupplierRepository;
+
+    public List<DBBasedSupplier> findAll() {
+        return dbBasedSupplierRepository.findAll();
+    }
+    public DBBasedSupplier findById(Long id) {
+        return dbBasedSupplierRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("supplier data not found by id: " + id));
+    }
+
+    public IntegrationSupplierData addIntegrationSupplierData(DBBasedSupplier dbBasedSupplier) {
+
+        return dbBasedSupplierRepository.save(dbBasedSupplier);
+    }
 
 
     private List<DBBasedSupplier> findPendingIntegration() {
