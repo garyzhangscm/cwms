@@ -36,10 +36,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -88,7 +85,7 @@ public class PickService {
     }
 
 
-    public List<Pick> findAll(String number, Long orderId,
+    public List<Pick> findAll(String number, Long orderId, Long shipmentId, Long waveId,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,  boolean loadDetails) {
 
@@ -96,16 +93,27 @@ public class PickService {
                 (Root<Pick> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    if (!StringUtils.isBlank(number)) {
+                    if (StringUtils.isNotBlank(number)) {
                         predicates.add(criteriaBuilder.equal(root.get("number"), number));
 
                     }
-                    if (orderId != null) {
-                        logger.debug("Will only find picks for order id: {}", orderId);
+                    if (Objects.nonNull(orderId)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, OrderLine> joinOrderLine= joinShipmentLine.join("orderLine", JoinType.INNER);
                         Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinOrder.get("id"), orderId));
+
+                    }
+                    if (Objects.nonNull(shipmentId)) {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, Shipment> joinShipment= joinShipmentLine.join("shipment", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
+
+                    }
+                    if (Objects.nonNull(waveId)) {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, Wave> joinWave = joinShipmentLine.join("wave", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
 
                     }
 
@@ -141,10 +149,10 @@ public class PickService {
         return picks;
     }
 
-    public List<Pick> findAll(String number, Long orderId,
+    public List<Pick> findAll(String number, Long orderId, Long shipmentId,Long waveId,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds) {
-        return findAll(number, orderId,
+        return findAll(number, orderId,shipmentId, waveId,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, true);
     }
@@ -158,7 +166,7 @@ public class PickService {
     }
 
     public List<Pick> findByOrder(Order order) {
-        return findAll(null, order.getId(), null, null, null, null, null);
+        return findAll(null, order.getId(), null, null, null, null, null, null, null);
     }
 
     public Pick findByNumber(String number) {

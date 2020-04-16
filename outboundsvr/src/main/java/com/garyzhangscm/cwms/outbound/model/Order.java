@@ -104,6 +104,17 @@ public class Order implements Serializable {
     @Column(name = "bill_to_address_postcode")
     private String billToAddressPostcode;
 
+    @Column(name = "carrier_id")
+    private Long carrierId;
+
+    @Transient
+    private Carrier carrier;
+
+    @Column(name = "carrier_service_level_id")
+    private Long carrierServiceLevelId;
+
+    @Transient
+    private CarrierServiceLevel carrierServiceLevel;
 
 
     @Column(name = "client_id")
@@ -501,5 +512,37 @@ public class Order implements Serializable {
 
     public void setTotalShippedQuantity(Long totalShippedQuantity) {
         this.totalShippedQuantity = totalShippedQuantity;
+    }
+
+    public Long getCarrierId() {
+        return carrierId;
+    }
+
+    public void setCarrierId(Long carrierId) {
+        this.carrierId = carrierId;
+    }
+
+    public Carrier getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(Carrier carrier) {
+        this.carrier = carrier;
+    }
+
+    public Long getCarrierServiceLevelId() {
+        return carrierServiceLevelId;
+    }
+
+    public void setCarrierServiceLevelId(Long carrierServiceLevelId) {
+        this.carrierServiceLevelId = carrierServiceLevelId;
+    }
+
+    public CarrierServiceLevel getCarrierServiceLevel() {
+        return carrierServiceLevel;
+    }
+
+    public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
+        this.carrierServiceLevel = carrierServiceLevel;
     }
 }

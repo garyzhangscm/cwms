@@ -1,5 +1,5 @@
 name,size,addressCountry,addressState,addressCounty,addressCity,addressDistrict,addressLine1,addressLine2,addressPostcode
-WMOR,50000 sqft,U.S,CA,Orange,Orange,,2164 N Batavia ST,,92865
-SH,75000 sqft,China,Shanghai,Shanghai,Shanghai,Pudong,68 Yuheng Road,,201203
-WMNE,100000 sqft,U.S,NY,New York,New York,,#1 5th Ave,,100001
-WMEC,100000 sqft,U.S,CA,Ontario,Ontario,,C st Mira Loma,,91752
+WMOR,50000,U.S,CA,Orange,Orange,,2164 N Batavia ST,,92865
+SH,75000,China,Shanghai,Shanghai,Shanghai,Pudong,68 Yuheng Road,,201203
+WMNE,100000,U.S,NY,New York,New York,,#1 5th Ave,,100001
+WMEC,100000,U.S,CA,Ontario,Ontario,,C st Mira Loma,,91752

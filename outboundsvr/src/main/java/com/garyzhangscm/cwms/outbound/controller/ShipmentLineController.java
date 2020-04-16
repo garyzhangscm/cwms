@@ -36,8 +36,10 @@ public class ShipmentLineController {
     public List<ShipmentLine> findAllShipmentLines(@RequestParam Long warehouseId,
                                                    @RequestParam(name="number", required = false, defaultValue = "") String number,
                                                    @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
-                                                   @RequestParam(name="orderLineId", required = false, defaultValue = "") Long orderLineId) {
-        return shipmentLineService.findAll(warehouseId, number, orderNumber, orderLineId);
+                                                   @RequestParam(name="orderLineId", required = false, defaultValue = "") Long orderLineId,
+                                                   @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
+                                                   @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId) {
+        return shipmentLineService.findAll(warehouseId, number, orderNumber, orderLineId, orderId, waveId);
     }
 
 

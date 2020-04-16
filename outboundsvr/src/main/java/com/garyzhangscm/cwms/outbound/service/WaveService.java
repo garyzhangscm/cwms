@@ -46,6 +46,8 @@ public class WaveService {
     private ShipmentService shipmentService;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private OrderLineService orderLineService;
 
     @Autowired
     private ShipmentLineService shipmentLineService;
@@ -99,8 +101,9 @@ public class WaveService {
     }
 
     public Wave findByNumber(String number, boolean loadAttribute) {
+        logger.debug("start to find wave by number {}", number);
         Wave wave = waveRepository.findByNumber(number);
-        if (wave != null && loadAttribute) {
+        if (Objects.nonNull(wave) && loadAttribute) {
             loadAttribute(wave);
         }
         return wave;
@@ -112,7 +115,7 @@ public class WaveService {
     private void loadAttribute(Wave wave) {
         wave.getShipmentLines().forEach(shipmentLine -> {
             loadOrderLineAttribute(shipmentLine.getOrderLine());
-            if (shipmentLine.getShortAllocations() != null) {
+            if (shipmentLine.getShortAllocations().size() > 0) {
                 loadShortAllocationAttribute(shipmentLine.getShortAllocations());
             }
             loadPickAttribute(shipmentLine.getPicks());
@@ -184,26 +187,73 @@ public class WaveService {
 
     // Plan a list of order lines into a wave
     @Transactional
-    public Wave planWave(Long warehouseId, String waveNumber, List<OrderLine> orderLines) {
+    public Wave planWave(Long warehouseId, String waveNumber, List<Long> orderLineIds) {
 
         if (StringUtils.isBlank(waveNumber)) {
             waveNumber = getNextWaveNumber();
-            logger.debug("wave number is not passed in during plan wave, auto generated number: {}", waveNumber);
+            logger.debug(">> wave number is not passed in during plan wave, auto generated number: {}", waveNumber);
         }
 
-        logger.debug("Start to plan {} order lines into wave # {}", orderLines.size(), waveNumber);
+        logger.debug(">> Start to plan {} order lines into wave # {}", orderLineIds.size(), waveNumber);
         Wave wave = findByNumber(waveNumber);
-        if (wave == null) {
+        if (Objects.isNull(wave)) {
             wave = new Wave();
             wave.setNumber(waveNumber);
             wave.setStatus(WaveStatus.PLANED);
             wave.setWarehouseId(warehouseId);
             wave = save(wave);
         }
-        String shipmentNumber = shipmentService.getNextShipmentNumber();
+        List<Shipment> shipments = planShipments(wave, orderLineIds);
+        Collections.sort(shipments, Comparator.comparing(Shipment::getId));
+        for(Shipment shipment : shipments) {
+            for(ShipmentLine shipmentLine : shipment.getShipmentLines()) {
+                wave.getShipmentLines().add(shipmentLine);
+            }
+        }
 
-        shipmentService.planShipments(wave, shipmentNumber, orderLines);
-        return findByNumber(waveNumber);
+        logger.debug(">> we get {} shipment lines",
+                shipments.stream().map(shipment -> shipment.getShipmentLines()).flatMap(shipmentLines -> shipmentLines.stream()).count()
+        );
+        logger.debug(">> The wave has {} shipment lines", wave.getShipmentLines().size());
+
+        return wave;
+
+    }
+
+    /**
+     * create shipment for each order and plan the shipment into the wave
+     * @param wave Wave
+     * @param orderLineIds order line IDs
+     */
+    private List<Shipment> planShipments(Wave wave, List<Long> orderLineIds) {
+        List<Shipment> shipments = new ArrayList<>();
+        logger.debug(">> start to plan {} lines into wave {}",
+                orderLineIds.size(), wave.getNumber());
+        Map<String, List<OrderLine>> orders = new HashMap<>();
+        orderLineIds.forEach(orderLineId -> {
+            OrderLine orderLine = orderLineService.findById(orderLineId);
+
+            List<OrderLine> orderLines = orders.getOrDefault(
+                    orderLine.getOrderNumber(), new ArrayList<>()
+            );
+            orderLines.add(orderLine);
+            orders.put(orderLine.getOrderNumber(), orderLines);
+        });
+
+        logger.debug(">> we find {} orders out of those order lines",
+                orders.size());
+
+        // Let's plan a shipment for each order
+        orders.entrySet().forEach(entry -> {
+            String shipmentNumber = shipmentService.getNextShipmentNumber();
+            logger.debug("Start to plan shipment for order: {}, line # {}, into shipment {}",
+                    entry.getKey(), entry.getValue().size(), shipmentNumber);
+
+            shipments.add(shipmentService.planShipments(wave, shipmentNumber, entry.getValue()));
+
+        });
+
+            return shipments;
     }
 
     public Wave createWave(Long warehouseId, String waveNumber) {

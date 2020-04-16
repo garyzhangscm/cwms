@@ -52,8 +52,8 @@ public class WaveController {
     @RequestMapping(value="/waves/plan", method = RequestMethod.POST)
     public Wave planWave(@RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
                          @RequestParam Long warehouseId,
-                         @RequestBody List<OrderLine> orderLines) {
-        return waveService.planWave(warehouseId, waveNumber, orderLines);
+                         @RequestBody List<Long> orderLineIds) {
+        return waveService.planWave(warehouseId, waveNumber, orderLineIds);
     }
 
     @RequestMapping(value="/waves/{id}/allocate", method = RequestMethod.POST)

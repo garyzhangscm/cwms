@@ -18,9 +18,9 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.garyzhangscm.cwms.outbound.model.Pick;
+
 import com.garyzhangscm.cwms.outbound.model.ShortAllocation;
-import com.garyzhangscm.cwms.outbound.service.PickService;
+
 import com.garyzhangscm.cwms.outbound.service.ShortAllocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -34,9 +34,16 @@ public class ShortAllocationController {
 
     @RequestMapping(value="/shortAllocations", method = RequestMethod.GET)
     public List<ShortAllocation> findAllShortAllocations(
+            @RequestParam Long warehouseId,
             @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
-            @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds) {
-        return shortAllocationService.findAll(workOrderLineId, workOrderLineIds);
+            @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
+            @RequestParam(name="itemNumber", required = false, defaultValue = "") String itemNumber,
+            @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
+            @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
+            @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
+            @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId) {
+        return shortAllocationService.findAll(warehouseId, workOrderLineId, workOrderLineIds,
+                itemNumber, orderId, workOrderId, shipmentId, waveId);
     }
 
     @RequestMapping(value="/shortAllocations/{id}", method = RequestMethod.GET)

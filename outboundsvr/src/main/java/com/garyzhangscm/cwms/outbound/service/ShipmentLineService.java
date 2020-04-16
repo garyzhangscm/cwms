@@ -36,6 +36,7 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,13 +72,14 @@ public class ShipmentLineService {
         return shipmentLineRepository.findByOrderNumber(warehouseId, orderNumber);
     }
     public List<ShipmentLine> findAll(Long warehouseId, String number,
-                                       String orderNumber, Long orderLineId) {
+                                       String orderNumber, Long orderLineId,
+                                      Long orderId, Long waveId) {
         List<ShipmentLine> shipmentLines =  shipmentLineRepository.findAll(
                 (Root<ShipmentLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
-                    if (warehouseId != null) {
-                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
-                    }
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
                     if (!StringUtils.isBlank(number)) {
                         predicates.add(criteriaBuilder.equal(root.get("number"), number));
                     }
@@ -89,9 +91,21 @@ public class ShipmentLineService {
                         predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
                     }
 
-                    if (orderLineId != null) {
+                    if (Objects.nonNull(orderLineId)) {
                         Join<ShipmentLine, OrderLine> joinOrderLine = root.join("orderLine", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinOrderLine.get("id"), orderLineId));
+
+                    }
+                    if (Objects.nonNull(orderId)) {
+                        Join<ShipmentLine, OrderLine> joinOrderLine = root.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("id"), orderId));
+
+                    }
+                    if (Objects.nonNull(waveId)) {
+                        Join<ShipmentLine, Wave> joinWave = root.join("wave", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
 
                     }
 
@@ -104,11 +118,11 @@ public class ShipmentLineService {
     }
 
     public List<ShipmentLine> findByOrderLine(OrderLine orderLine) {
-        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId());
+        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null);
     }
 
     public List<ShipmentLine> findByOrder(Order order) {
-        return findAll(order.getWarehouseId(), null, order.getNumber(), null);
+        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null);
     }
 
     public ShipmentLine save(ShipmentLine shipmentLine) {
@@ -151,7 +165,10 @@ public class ShipmentLineService {
         shipmentLine.setShippedQuantity(0L);
         shipmentLine.setWave(wave);
         shipmentLine.setShipment(shipment);
-        return save(shipmentLine);
+        shipmentLine = save(shipmentLine);
+        logger.debug("Save shipment line # {} with wave # {}",
+                shipmentLine.getId(), wave.getNumber());
+        return shipmentLine;
     }
 
     private String getNextShipmentLineNumber(Shipment shipment) {

@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -35,6 +36,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
@@ -42,6 +46,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -203,63 +208,133 @@ public class ShipmentService {
 
     }
 
+
     @Transactional
-    public List<Shipment> planShipments(Wave wave, String shipmentNumber, List<OrderLine> orderLines){
-        // Let's split the list of order line by order number first
+    public Shipment allocateShipment(Long id){
 
-        Map<Order, List<OrderLine>> orderListMap = new HashMap<>();
-        // We will only plan shipment for those lines with open quantity
-        orderLines.stream()
-                .filter(orderLine -> orderLine.getOpenQuantity() > 0)
-                .forEach(orderLine ->
-                {
-                    // in case the order line doesn't have the order setup yet, load the order line again from the db
-                    Order order = orderLineService.findById(orderLine.getId()).getOrder();
-                    logger.debug("Find order: {} for order line: {}", order.getNumber(), orderLine.getId());
-                    orderLine.setOrder(order);
-                    List<OrderLine> existingOrderLines = orderListMap.getOrDefault(order, new ArrayList<>());
-                    existingOrderLines.add(orderLine);
-                    orderListMap.put(order, existingOrderLines);
-                });
+        Shipment shipment = findById(id);
+        // Allocate each line
+        shipment.getShipmentLines().
+                forEach(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine));
 
-        List<Shipment> shipments = new ArrayList<>();
-        orderListMap.entrySet().stream().forEach(orderListEntry ->{
-            logger.debug("Start to process order line entry: key: {}, value: {}", orderListEntry.getKey().getNumber(), orderListEntry.getValue().size());
-            logger.debug("## With user: {}", SecurityContextHolder.getContext().getAuthentication().getName());
-            kafkaSender.send(OrderActivity.build()
-                    .withOrder(orderService.findById(orderListEntry.getKey().getId()))
-                    .withOrderActivityType(OrderActivityType.ORDER_PLAN));
-            shipments.add(createShipment(wave, shipmentNumber, orderListEntry.getKey(), orderListEntry.getValue()));
-
-        });
-
-        return shipments;
+        // return the result after the allocation
+        return findById(id);
     }
 
     @Transactional
-    public List<Shipment> planShipments(Long warehouseId, List<OrderLine> orderLines){
-        // Plan one wave for each shipment, wave number will be the shipment number
-        String shipmentNumber = getNextShipmentNumber();
+    public List<Shipment> planShipments(Wave wave, List<OrderLine> orderLines){
+
+        List<Shipment> shipments = new ArrayList<>();
+
+        Map<Order, List<OrderLine>> orderListMap = segregateOrderLinesBasedOnOrder(orderLines, false);
+        // for each order, generate a shipment number and plan the order lines
+        // into the shipment
+        orderListMap.entrySet().forEach(entrySet -> {
+            String shipmentNumber = getNextShipmentNumber();
+            Shipment shipment = planShipments(wave, shipmentNumber, entrySet.getValue());
+            if (Objects.nonNull(shipment)) {
+                shipments.add(shipment);
+            }
+        });
+        return shipments;
+    }
+    @Transactional
+    public Shipment planShipments(Wave wave, String shipmentNumber, List<OrderLine> orderLines){
+
+        // Let's split the list of order line by order number first
+
+        Map<Order, List<OrderLine>> orderListMap = segregateOrderLinesBasedOnOrder(orderLines, true);
+
+        // Make sure we only have one order
+        if (orderListMap.keySet().size() > 1) {
+            throw OrderOperationException.raiseException("Can't plan multiple orders into a single shipment");
+        }
+        else if (orderListMap.keySet().size() == 0) {
+            // There's nothing to be planned, return nothing
+            return null;
+        }
+
+        // If we are here, we know we will only have one order
+        // and the orderListMap only contains the plannable lines
+        Order order = orderListMap.keySet().iterator().next();
+        List<OrderLine> plannableOrderLines = orderListMap.values().iterator().next();
+        if (plannableOrderLines.size() == 0) {
+            // there's nothing to be planned, return nothing
+            return null;
+        }
+
+        kafkaSender.send(OrderActivity.build()
+                .withOrder(orderService.findById(order.getId()))
+                .withOrderActivityType(OrderActivityType.ORDER_PLAN));
+
+        return createShipment(wave, shipmentNumber, order, plannableOrderLines);
+
+    }
+
+    @Transactional
+    public Shipment planShipments(Long warehouseId, String shipmentNumber, List<OrderLine> orderLines){
 
         Wave wave = waveService.createWave(warehouseId, shipmentNumber);
         return planShipments(wave, shipmentNumber, orderLines);
 
+    }
+
+    @Transactional
+    public List<Shipment> planShipments(Long warehouseId, List<OrderLine> orderLines){
+        List<Shipment> shipments = new ArrayList<>();
+        // Plan one wave for each shipment, wave number will be the shipment number
+        Map<Order, List<OrderLine>> orderListMap = segregateOrderLinesBasedOnOrder(orderLines, true);
+
+        orderListMap.entrySet().forEach(entrySet -> {
+
+            String shipmentNumber = getNextShipmentNumber();
+            Wave wave = waveService.createWave(warehouseId, shipmentNumber);
+            Shipment shipment = planShipments(wave, shipmentNumber, entrySet.getValue());
+            shipments.add(shipment);
+
+        });
+
+
+        return shipments;
 
     }
+
+    private Map<Order, List<OrderLine>> segregateOrderLinesBasedOnOrder(List<OrderLine> orderLines, boolean plannableOrderLine) {
+
+        Map<Order, List<OrderLine>> orderListMap = new HashMap<>();
+        Stream<OrderLine> orderLineStream = orderLines.stream();
+        if (plannableOrderLine) {
+            orderLineStream = orderLineStream
+                    .filter(orderLine -> orderLine.getOpenQuantity() > 0);
+        }
+        // We will only plan shipment for those lines with open quantity
+        // We will plan one shipment per order.
+        orderLineStream
+                .forEach(orderLine ->
+                {
+                    // in case the order line doesn't have the order setup yet, load the order line again from the db
+                    Order order = orderLine.getOrder();
+                    if (Objects.isNull(order)) {
+                        order = orderLineService.findById(orderLine.getId()).getOrder();
+                    }
+                    logger.debug("Find order: {} for order line: {}", order.getNumber(), orderLine.getId());
+                    List<OrderLine> existingOrderLines = orderListMap.getOrDefault(order, new ArrayList<>());
+                    existingOrderLines.add(orderLine);
+                    orderListMap.put(order, existingOrderLines);
+                });
+        return orderListMap;
+    }
+
     private Shipment createShipment(Wave wave, String shipmentNumber, Order order, List<OrderLine> orderLines) {
 
-        Shipment shipment = new Shipment();
-        shipment.setNumber(shipmentNumber);
-        shipment.setStatus(ShipmentStatus.PENDING);
-        shipment.setWarehouseId(order.getWarehouseId());
-
+        Shipment shipment = new Shipment(shipmentNumber, order);
         Shipment newShipment = save(shipment);
 
         orderLines.forEach(orderLine -> {
             ShipmentLine shipmentLine = shipmentLineService.createShipmentLine(wave, newShipment, orderLine);
 
             // Add the new shipment line to the shipment
-            shipment.getShipmentLines().add(shipmentLine);
+            newShipment.getShipmentLines().add(shipmentLine);
         });
 
         return newShipment;
@@ -329,7 +404,7 @@ public class ShipmentService {
                 .collect(Collectors.toList());
     }
 
-    public Shipment loadShipment(Shipment shipment, Trailer trailer) throws IOException {
+    public Shipment loadShipment(Shipment shipment, Trailer trailer)   {
         // load everything of the shipment onto the trailer
         // We will only load the inventory that is picked and staged
         List<Inventory> stagedInventory = getStagedInventory(shipment);
@@ -524,6 +599,9 @@ public class ShipmentService {
         return true;
     }
 
+    public Shipment stage(Long id, boolean ignoreUnfinishedPicks) {
+        return stage(findById(id), ignoreUnfinishedPicks);
+    }
     public Shipment stage(Shipment shipment) {
         return stage(shipment, false);
     }
@@ -540,7 +618,16 @@ public class ShipmentService {
         return save(shipment);
     }
 
-    public Shipment loadShipment(Shipment shipment) throws IOException {
+    public Shipment load(Long shipmentId, boolean ignoreUnfinishedPicks)   {
+        Shipment shipment = findById(shipmentId);
+        // make sure the shipment is already staged, if not, let's try to stage it first
+        if (shipment.getStatus() == ShipmentStatus.INPROCESS) {
+            shipment = stage(shipment, ignoreUnfinishedPicks);
+        }
+        return loadShipment(shipment);
+
+    }
+    public Shipment loadShipment(Shipment shipment)  {
         // See if we have already had a trailer / stop assigned for this shipment
         if (shipment.getStop() == null) {
             logger.debug("Shipment {} doesn't have any stop yet, let's create a fake stop for this shipment",
@@ -569,10 +656,23 @@ public class ShipmentService {
 
     }
 
+    @Transactional
+    public Shipment dispatch(Long shipmentId, boolean ignoreUnfinishedPicks) {
+
+        Shipment shipment = findById(shipmentId);
+        // make sure the shipment is already staged, if not, let's try to stage it first
+        if (shipment.getStatus() == ShipmentStatus.INPROCESS ||
+                shipment.getStatus() == ShipmentStatus.STAGED) {
+            shipment = load(shipmentId, ignoreUnfinishedPicks);
+        }
+        return dispatchShipment(shipment);
+
+    }
+
 
     // When a stop complete, we will complete all the shipments in this
     // stop
-    public void dispatchShipment(Shipment shipment) {
+    public Shipment dispatchShipment(Shipment shipment) {
         shipment.setStatus(ShipmentStatus.DISPATCHED);
         shipment = save(shipment);
 
@@ -581,7 +681,9 @@ public class ShipmentService {
                 shipmentLine ->
                         shipmentLineService.completeShipmentLine(shipmentLine)
         );
+        return shipment;
 
     }
+
 
 }

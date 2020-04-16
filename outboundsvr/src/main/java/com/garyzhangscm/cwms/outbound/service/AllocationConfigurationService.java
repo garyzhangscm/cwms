@@ -311,6 +311,11 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         // After we get all the strategy, we will loop through each strategy until
         // we either generate enough picks, or we generate emergency replenishment for the shortage
         Item item = shipmentLine.getOrderLine().getItem();
+        if (Objects.isNull(item)) {
+            // In case the item is not loaded, let's get by item id
+            item = inventoryServiceRestemplateClient.getItemById(
+                    shipmentLine.getOrderLine().getItemId());
+        }
 
 
         // Get all allocation configuration that match with the item

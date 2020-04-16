@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.exception.ShortAllocationException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickRepository;
 import com.garyzhangscm.cwms.outbound.repository.ShortAllocationRepository;
 import org.apache.commons.lang.StringUtils;
@@ -33,14 +34,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -85,23 +85,58 @@ public class ShortAllocationService {
     }
 
 
-    public List<ShortAllocation> findAll(Long workOrderLineId, String workOrderLineIds, boolean loadDetails) {
+    public List<ShortAllocation> findAll(Long warehouseId,
+                                         Long workOrderLineId, String workOrderLineIds,
+                                         String itemNumber, Long orderId,  Long workOrderId,
+                                         Long shipmentId, Long waveId, boolean loadDetails) {
 
 
         List<ShortAllocation> shortAllocations =  shortAllocationRepository.findAll(
                 (Root<ShortAllocation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    if (workOrderLineId != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(workOrderLineId)) {
                         predicates.add(criteriaBuilder.equal(root.get("workOrderLineId"), workOrderLineId));
                     }
-                    else if (!StringUtils.isBlank(workOrderLineIds)){
+                    else if (StringUtils.isNotBlank(workOrderLineIds)){
                         CriteriaBuilder.In<Long> inWorkOrderLineIds = criteriaBuilder.in(root.get("workOrderLineId"));
                         for(String id : workOrderLineIds.split(",")) {
                             inWorkOrderLineIds.value(Long.parseLong(id));
                         }
                         predicates.add(criteriaBuilder.and(inWorkOrderLineIds));
                     }
+
+                    if (StringUtils.isNotBlank(itemNumber)) {
+                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemNumber);
+                        predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
+                    }
+
+                    if (Objects.nonNull(orderId)) {
+
+                        Join<ShortAllocation, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, OrderLine> joinOrderLine = joinShipmentLine.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("id"), orderId));
+
+                    }
+
+                    if (Objects.nonNull(shipmentId)) {
+
+                        Join<ShortAllocation, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, Shipment> joinShipment = joinShipmentLine.join("shipment", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
+                    }
+
+                    if (Objects.nonNull(waveId)) {
+
+                        Join<ShortAllocation, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, Wave> joinWave = joinShipmentLine.join("wave", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
+                    }
+
+
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
@@ -113,8 +148,11 @@ public class ShortAllocationService {
         return shortAllocations;
     }
 
-    public List<ShortAllocation> findAll(Long workOrderLineId, String workOrderLineIds) {
-        return findAll(workOrderLineId, workOrderLineIds, true);
+    public List<ShortAllocation> findAll(Long warehouseId,
+                                         Long workOrderLineId, String workOrderLineIds,
+                                         String itemNumber, Long orderId,  Long workOrderId, Long shipmentId, Long waveId) {
+        return findAll(warehouseId, workOrderLineId, workOrderLineIds,
+                itemNumber, orderId,  workOrderId, shipmentId, waveId, true);
     }
 
     public void loadOrderAttribute(List<ShortAllocation> shortAllocations) {

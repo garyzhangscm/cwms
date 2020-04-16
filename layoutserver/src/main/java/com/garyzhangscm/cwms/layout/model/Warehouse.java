@@ -37,7 +37,7 @@ public class Warehouse implements Serializable {
     private String name;
 
     @Column(name = "size")
-    private String size;
+    private Double size;
 
     @Column(name = "address_country")
     private String addressCountry;
@@ -72,11 +72,11 @@ public class Warehouse implements Serializable {
         this.name = name;
     }
 
-    public String getSize() {
+    public Double getSize() {
         return size;
     }
 
-    public void setSize(String size) {
+    public void setSize(Double size) {
         this.size = size;
     }
 
