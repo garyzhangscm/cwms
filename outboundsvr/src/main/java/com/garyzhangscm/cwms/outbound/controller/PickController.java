@@ -39,12 +39,14 @@ public class PickController {
     @RequestMapping(value="/picks", method = RequestMethod.GET)
     public List<Pick> findAllPicks(@RequestParam(name="number", required = false, defaultValue = "") String number,
                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
+                                   @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
+                                   @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
                                    @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                    @RequestParam(name="sourceLocationId", required = false, defaultValue = "") Long sourceLocationId,
                                    @RequestParam(name="destinationLocationId", required = false, defaultValue = "") Long destinationLocationId,
                                    @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
                                    @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds) {
-        return pickService.findAll(number, orderId,
+        return pickService.findAll(number, orderId, shipmentId, waveId,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds);
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)

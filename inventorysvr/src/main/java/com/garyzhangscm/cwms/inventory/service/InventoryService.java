@@ -533,7 +533,10 @@ public class InventoryService implements TestDataInitiableService{
     @Transactional
     public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove) {
         logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}",
-                inventory.getLpn(), destination.getName(), pickId, Objects.isNull(pickId));
+                inventory.getLpn(),
+                destination.getName(),
+                pickId,
+                Objects.isNull(pickId));
 
         Location sourceLocation = inventory.getLocation();
 
@@ -818,7 +821,7 @@ public class InventoryService implements TestDataInitiableService{
             destinationLocation =
                     warehouseLayoutServiceRestemplateClient.getLocationById(destinationLocationId);
         }
-        else if (Objects.nonNull(destinationLocationName)) {
+        else if (StringUtils.isNotBlank(destinationLocationName)) {
             destinationLocation =
                     warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, destinationLocationName);
         }
@@ -826,6 +829,9 @@ public class InventoryService implements TestDataInitiableService{
             // if we don't pass in the destination ID or name, the inventory will
             // stay where it is after unpick
             destinationLocation = inventory.getLocation();
+        }
+        if (Objects.isNull(destinationLocation)) {
+            throw ResourceNotFoundException.raiseException("Unable to unpick. Can't find the destination location for the unpicked inventory");
         }
         return unpick(inventory, destinationLocation, immediateMove);
 
@@ -851,6 +857,8 @@ public class InventoryService implements TestDataInitiableService{
 
         // Move the inventory to the destination location
         if (immediateMove) {
+            logger.debug("Immediate move the unpicked inventory {} to the destinationLocation {}",
+                    inventory.getLpn(), destinationLocation.getName());
             inventory = moveInventory(inventory, destinationLocation);
         }
         else {

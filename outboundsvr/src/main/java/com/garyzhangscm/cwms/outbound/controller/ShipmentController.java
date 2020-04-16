@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
@@ -76,4 +77,27 @@ public class ShipmentController {
         return shipmentService.autoCompleteShipment(id);
     }
 
+    @RequestMapping(value="/shipments/{id}/stage", method = RequestMethod.POST)
+    public Shipment stageShipment(@PathVariable Long id,
+                            @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
+        return shipmentService.stage(id, ignoreUnfinishedPicks);
+    }
+
+    @RequestMapping(value="/shipments/{id}/load", method = RequestMethod.POST)
+    public Shipment loadShipment(@PathVariable Long id,
+                           @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
+        return shipmentService.load(id, ignoreUnfinishedPicks);
+    }
+
+    @RequestMapping(value="/shipments/{id}/dispatch", method = RequestMethod.POST)
+    public Shipment dispatchShipment(@PathVariable Long id,
+                               @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
+        return shipmentService.dispatch(id, ignoreUnfinishedPicks);
+    }
+
+    @RequestMapping(value="/shipments/{id}/allocate", method = RequestMethod.PUT)
+    public Shipment allocateShipment(@PathVariable Long id){
+
+        return shipmentService.allocateShipment(id);
+    }
 }

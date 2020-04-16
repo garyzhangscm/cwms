@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS warehouse;
 CREATE TABLE warehouse (
   warehouse_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL unique,
-  size   VARCHAR(100) NOT NULL,
+  size   double NOT NULL,
   address_country   VARCHAR(100) NOT NULL,
   address_state   VARCHAR(100) NOT NULL,
   address_county   VARCHAR(100) NOT NULL,
@@ -19,9 +19,9 @@ CREATE TABLE warehouse (
 
 
 INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
-     VALUES ("WMEC", "50000 sqft", "U.S", "CA", "San Bernardino", "Ontario", "", "C st Mira Loma", "", "91752");
+     VALUES ("WMEC", 50000, "U.S", "CA", "San Bernardino", "Ontario", "", "C st Mira Loma", "", "91752");
 INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
-     VALUES ("WMOR", "50000 sqft", "U.S", "CA", "Orange", "Orange", "", "2164 N Batavia ST", "", "92865");
+     VALUES ("WMOR", 50000, "U.S", "CA", "Orange", "Orange", "", "2164 N Batavia ST", "", "92865");
 
 -- INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
 --     VALUES ("SH", "75000 sqft", "China", "Shanghai", "Shanghai", "Shanghai", "Pudong", "68 Yuheng Road", "", "201203");

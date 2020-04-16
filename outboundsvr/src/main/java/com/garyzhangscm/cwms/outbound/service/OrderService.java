@@ -489,13 +489,9 @@ public class OrderService implements TestDataInitiableService {
         }
         shipments.stream()
                 .filter(shipment -> shipment.getStatus() == ShipmentStatus.STAGED).forEach(shipment -> {
-                    try {
                         logger.debug(">> Start to load shipment {}", shipment.getNumber());
                         shipmentService.loadShipment(shipment);
                         logger.debug(">> Shipment {} loaded", shipment.getNumber());
-                    } catch (IOException e) {
-                        throw OrderOperationException.raiseException(e.getMessage());
-                    }
                 });
 
 

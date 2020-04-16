@@ -50,6 +50,8 @@ CREATE TABLE outbound_order (
   bill_to_address_line2   VARCHAR(100),
   bill_to_address_postcode   VARCHAR(100),
   stage_location_group_id BIGINT,
+  carrier_id BIGINT,
+  carrier_service_level_id BIGINT,
   client_id  BIGINT,
   warehouse_id BIGINT not null
   );
@@ -98,9 +100,21 @@ CREATE TABLE shipment(
   warehouse_id BIGINT not null,
   number   VARCHAR(100) NOT NULL,
   status   VARCHAR(20) NOT NULL,
+  client_id BIGINT,
   stop_id BIGINT,
   carrier_id BIGINT,
   carrier_service_level_id BIGINT,
+  ship_to_customer_id   BIGINT,
+  ship_to_contactor_firstname   VARCHAR(100),
+  ship_to_contactor_lastname   VARCHAR(100),
+  ship_to_address_country   VARCHAR(100),
+  ship_to_address_state   VARCHAR(100),
+  ship_to_address_county   VARCHAR(100),
+  ship_to_address_city   VARCHAR(100),
+  ship_to_address_district   VARCHAR(100),
+  ship_to_address_line1   VARCHAR(100),
+  ship_to_address_line2   VARCHAR(100),
+  ship_to_address_postcode   VARCHAR(100),
   foreign key(stop_id) references stop(stop_id));
 
 
@@ -122,6 +136,7 @@ CREATE TABLE shipment_line(
   inprocess_quantity BIGINT  NOT NULL,
   loaded_quantity BIGINT  NOT NULL,
   shipped_quantity BIGINT  NOT NULL,
+  status VARCHAR(20) NOT NULL,
   foreign key(shipment_id) references shipment(shipment_id),
   foreign key(outbound_order_line_id) references outbound_order_line(outbound_order_line_id),
   foreign key(wave_id) references wave(wave_id));

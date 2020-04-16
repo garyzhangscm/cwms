@@ -93,6 +93,9 @@ public class ShipmentLine implements Serializable {
     )
     private List<ShortAllocation> shortAllocations = new ArrayList<>();
 
+    @Column(name="status")
+    private ShipmentLineStatus status = ShipmentLineStatus.PENDING;
+
     @Override
     public String toString() {
         return new StringBuilder()

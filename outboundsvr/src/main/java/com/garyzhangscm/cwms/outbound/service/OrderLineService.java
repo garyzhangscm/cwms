@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OrderLineService implements TestDataInitiableService{
@@ -92,6 +93,41 @@ public class OrderLineService implements TestDataInitiableService{
         return orderLines;
     }
 
+    public List<OrderLine> findAll(Long warehouseId, Long shipmentId) {
+        return findAll(warehouseId, shipmentId, true);
+    }
+
+    public List<OrderLine> findAll(Long warehouseId, Long shipmentId,
+                                   boolean includeDetails) {
+        logger.debug("## Will find order line with shipment ID: {} / {} ", shipmentId,  Objects.nonNull(shipmentId));
+
+        List<OrderLine> orderLines =  orderLineRepository.findAll(
+                (Root<OrderLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(shipmentId)) {
+
+                        Join<OrderLine, ShipmentLine> joinShipmentLine = root.join("shipmentLines", JoinType.INNER);
+                        Join<ShipmentLine, Shipment> joinShipment = joinShipmentLine.join("shipment", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
+                        // only return the order line with shipment line that is not cancelled
+                        predicates.add(criteriaBuilder.notEqual(joinShipmentLine.get("status"), ShipmentLineStatus.CANCELLED));
+
+                    }
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+        if (orderLines.size() > 0 && includeDetails) {
+            loadOrderLineAttribute(orderLines);
+        }
+        return orderLines;
+    }
+
     public OrderLine findByNaturalKey(Long orderId, String number) {
         return orderLineRepository.findByNaturalKey(orderId, number);
 
@@ -102,6 +138,7 @@ public class OrderLineService implements TestDataInitiableService{
         for(OrderLine orderLine : orderLines) {
             loadOrderLineAttribute(orderLine);
         }
+
     }
 
     public void loadOrderLineAttribute(OrderLine orderLine) {

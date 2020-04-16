@@ -106,6 +106,7 @@ public class OutboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/outbound/shortAllocations")
+                        .queryParam("warehouseId", workOrder.getWarehouseId())
                         .queryParam("workOrderLineIds", getWorkOrderLineIds(workOrder));
 
         ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper
@@ -151,6 +152,7 @@ public class OutboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/outbound/shortAllocations")
+                        .queryParam("warehouseId", workOrderLine.getWorkOrder().getWarehouseId())
                         .queryParam("workOrderLineId", workOrderLine.getId());
 
         ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper

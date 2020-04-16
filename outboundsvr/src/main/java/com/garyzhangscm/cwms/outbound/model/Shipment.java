@@ -69,11 +69,68 @@ public class Shipment implements Serializable {
     @Transient
     private CarrierServiceLevel carrierServiceLevel;
 
+    @Column(name = "ship_to_customer_id")
+    private Long shipToCustomerId;
+
+    @Transient
+    private Customer shipToCustomer;
+    // Ship to Address
+    @Column(name = "ship_to_contactor_firstname")
+    private String shipToContactorFirstname;
+    @Column(name = "ship_to_contactor_lastname")
+    private String shipToContactorLastname;
+
+    @Column(name = "ship_to_address_country")
+    private String shipToAddressCountry;
+    @Column(name = "ship_to_address_state")
+    private String shipToAddressState;
+    @Column(name = "ship_to_address_county")
+    private String shipToAddressCounty;
+    @Column(name = "ship_to_address_city")
+    private String shipToAddressCity;
+    @Column(name = "ship_to_address_district")
+    private String shipToAddressDistrict;
+    @Column(name = "ship_to_address_line1")
+    private String shipToAddressLine1;
+    @Column(name = "ship_to_address_line2")
+    private String shipToAddressLine2;
+    @Column(name = "ship_to_address_postcode")
+    private String shipToAddressPostcode;
+
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
     @ManyToOne
     @JoinColumn(name="stop_id")
     @JsonIgnore
     private Stop stop;
 
+    public Shipment() {}
+
+    public Shipment(String number, Order order) {
+        setNumber(number);
+        setWarehouseId(order.getWarehouseId());
+        setStatus(ShipmentStatus.PENDING);
+        setCarrierId(order.getCarrierId());
+        setCarrierServiceLevelId(order.getCarrierServiceLevelId());
+        setClientId(order.getClientId());
+
+        setShipToCustomer(order.getShipToCustomer());
+        setShipToContactorFirstname(order.getShipToContactorFirstname());
+        setShipToContactorLastname(order.getShipToContactorLastname());
+
+        setShipToAddressCountry(order.getShipToAddressCountry());
+        setShipToAddressState(order.getShipToAddressState());
+        setShipToAddressCounty(order.getShipToAddressCounty());
+        setShipToAddressCity(order.getShipToAddressCity());
+        setShipToAddressDistrict(order.getShipToAddressDistrict());
+        setShipToAddressLine1(order.getShipToAddressLine1());
+        setShipToAddressLine2(order.getShipToAddressLine2());
+        setShipToAddressPostcode(order.getShipToAddressPostcode());
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -198,5 +255,117 @@ public class Shipment implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getShipToCustomerId() {
+        return shipToCustomerId;
+    }
+
+    public void setShipToCustomerId(Long shipToCustomerId) {
+        this.shipToCustomerId = shipToCustomerId;
+    }
+
+    public Customer getShipToCustomer() {
+        return shipToCustomer;
+    }
+
+    public void setShipToCustomer(Customer shipToCustomer) {
+        this.shipToCustomer = shipToCustomer;
+    }
+
+    public String getShipToContactorFirstname() {
+        return shipToContactorFirstname;
+    }
+
+    public void setShipToContactorFirstname(String shipToContactorFirstname) {
+        this.shipToContactorFirstname = shipToContactorFirstname;
+    }
+
+    public String getShipToContactorLastname() {
+        return shipToContactorLastname;
+    }
+
+    public void setShipToContactorLastname(String shipToContactorLastname) {
+        this.shipToContactorLastname = shipToContactorLastname;
+    }
+
+    public String getShipToAddressCountry() {
+        return shipToAddressCountry;
+    }
+
+    public void setShipToAddressCountry(String shipToAddressCountry) {
+        this.shipToAddressCountry = shipToAddressCountry;
+    }
+
+    public String getShipToAddressState() {
+        return shipToAddressState;
+    }
+
+    public void setShipToAddressState(String shipToAddressState) {
+        this.shipToAddressState = shipToAddressState;
+    }
+
+    public String getShipToAddressCounty() {
+        return shipToAddressCounty;
+    }
+
+    public void setShipToAddressCounty(String shipToAddressCounty) {
+        this.shipToAddressCounty = shipToAddressCounty;
+    }
+
+    public String getShipToAddressCity() {
+        return shipToAddressCity;
+    }
+
+    public void setShipToAddressCity(String shipToAddressCity) {
+        this.shipToAddressCity = shipToAddressCity;
+    }
+
+    public String getShipToAddressDistrict() {
+        return shipToAddressDistrict;
+    }
+
+    public void setShipToAddressDistrict(String shipToAddressDistrict) {
+        this.shipToAddressDistrict = shipToAddressDistrict;
+    }
+
+    public String getShipToAddressLine1() {
+        return shipToAddressLine1;
+    }
+
+    public void setShipToAddressLine1(String shipToAddressLine1) {
+        this.shipToAddressLine1 = shipToAddressLine1;
+    }
+
+    public String getShipToAddressLine2() {
+        return shipToAddressLine2;
+    }
+
+    public void setShipToAddressLine2(String shipToAddressLine2) {
+        this.shipToAddressLine2 = shipToAddressLine2;
+    }
+
+    public String getShipToAddressPostcode() {
+        return shipToAddressPostcode;
+    }
+
+    public void setShipToAddressPostcode(String shipToAddressPostcode) {
+        this.shipToAddressPostcode = shipToAddressPostcode;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

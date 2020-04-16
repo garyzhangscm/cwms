@@ -23,6 +23,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "outbound_order_line")
@@ -75,6 +77,16 @@ public class OrderLine implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "outbound_order_id")
     private Order order;
+
+
+    @JsonIgnore
+    @OneToMany(
+            mappedBy = "orderLine",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<ShipmentLine> shipmentLines = new ArrayList<>();
 
     @Column(name = "carrier_id")
     private Long carrierId;
@@ -248,5 +260,13 @@ public class OrderLine implements Serializable {
 
     public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
         this.carrierServiceLevel = carrierServiceLevel;
+    }
+
+    public List<ShipmentLine> getShipmentLines() {
+        return shipmentLines;
+    }
+
+    public void setShipmentLines(List<ShipmentLine> shipmentLines) {
+        this.shipmentLines = shipmentLines;
     }
 }
