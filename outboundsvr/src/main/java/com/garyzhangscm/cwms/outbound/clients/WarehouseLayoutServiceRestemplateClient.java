@@ -348,7 +348,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         return getLocationByName(warehouseId, locationName);
     }
 
-    public Location findEmptyDestinationLocationForEmergencyReplenishment(LocationGroup locationGroup,
+    public Location findEmptyDestinationLocationForEmergencyReplenishment(Long warehouseId,
+                                                                          LocationGroup locationGroup,
                                                                           Double replenishmentSize) {
         logger.debug("Start to find an empty location in group {}, with at least empty capacity of {}, for emergency replenishment"
                         , locationGroup.getName(), replenishmentSize);
@@ -356,6 +357,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/locations")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("locationGroupIds", locationGroup.getId())
                         .queryParam("emptyLocationOnly", true)
                         .queryParam("minEmptyCapacity", replenishmentSize)
@@ -365,7 +367,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
-                        HttpMethod.POST,
+                        HttpMethod.GET,
                         null,
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
 

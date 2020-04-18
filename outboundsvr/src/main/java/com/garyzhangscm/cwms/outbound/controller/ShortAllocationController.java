@@ -62,6 +62,11 @@ public class ShortAllocationController {
         return shortAllocationService.save(shortAllocation);
     }
 
+    @RequestMapping(value="/shortAllocations/{id}/allocate", method = RequestMethod.POST)
+    public ShortAllocation allocateShortAllocation(@PathVariable Long id){
+        return shortAllocationService.allocateShortAllocation(id);
+    }
+
 
     @RequestMapping(value="/shortAllocations", method = RequestMethod.DELETE)
     public List<ShortAllocation> cancelShortAllocations(@RequestParam(name = "shortAllocation_ids") String shortAllocationIds) {

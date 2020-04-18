@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +60,8 @@ public class ShortAllocationService {
 
     @Autowired
     private ShipmentLineService shipmentLineService;
+    @Autowired
+    private ShortAllocationConfigurationService shortAllocationConfigurationService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -276,6 +279,9 @@ public class ShortAllocationService {
 
     }
 
+    public ShortAllocation allocateShortAllocation(Long id) {
+        return allocateShortAllocation(findById(id));
+    }
     public ShortAllocation allocateShortAllocation(ShortAllocation shortAllocation) {
         logger.debug("Start to allocate short allocation: {} / {}",
                 shortAllocation.getItem(), shortAllocation.getItem().getItemFamily());
@@ -284,51 +290,50 @@ public class ShortAllocationService {
                     isAllocatable(shortAllocation), shortAllocation.getOpenQuantity());
             return shortAllocation;
         }
+        shortAllocation =  allocationConfigurationService.allocate(shortAllocation);
 
-        // Let's get all the pickable inventory and existing picking so we can start to calculate
-        // how to generate picks for the shipment
-        Long itemId = shortAllocation.getItemId();
-
-        List<Pick> existingPicks = pickService.getOpenPicksByItemId(itemId);
-        logger.debug("We have {} existing picks against the item with id {}",
-                existingPicks.size(), itemId);
-
-        // Get all pickable inventory
-        List<Inventory> pickableInventory
-                = inventoryServiceRestemplateClient.getPickableInventory(
-                        itemId, shortAllocation.getShipmentLine().getOrderLine().getInventoryStatusId());
-        logger.debug("We have {} pickable inventory against the item with id {} / {}",
-                pickableInventory.size(), itemId, shortAllocation.getShipmentLine().getOrderLine().getInventoryStatusId());
-
-
-        List<Pick> picks = allocationConfigurationService.allocate(shortAllocation, existingPicks, pickableInventory);
-
-        if (picks.size() > 0) {
-            // We allocated some quantity for the short allocation, let's deduct the quantity
-            // from the short allocation record
-
-            // Deduct the quantity from short allocation
-            // There're 2 options to track the quantity of a short allocation
-            // Option 1: keep the original short quantity
-            //     -- We will keep the original short quantity. So if we cancel any pick of the short allocation, we
-            //        can always re-allocate the cancelled quantity later on
-            // Option 2: Not keep the original short quantity
-            //     -- We won't track the original short quantity. So if we cancel any pick of the short allocation,
-            //        there's no way to re-allocate those cancelled quantity
-            // Since we will use a scheduled job to allocate the short allocation, we will use option 2 for now.
-            // Should we choose option 1, then in case any use cancels the pick of the allocation, the schedule job
-            //     will just pickup the short allocation again and re-allocate the quantity, which may not be
-            //     what the user want.
-            Long totalPickQuantity = picks.stream().map(Pick::getQuantity).mapToLong(Long::longValue).sum();
-            logger.debug("We allocate {} of the item {} for the short allocation",
-                    totalPickQuantity, shortAllocation.getItem().getName());
-
-            shortAllocation.setQuantity(shortAllocation.getQuantity() - totalPickQuantity);
-        }
-        shortAllocation.setStatus(ShortAllocationStatus.INPROCESS);
-
-        return save(shortAllocation);
+        return resetShortAllocationStatus(shortAllocation);
     }
+
+    private ShortAllocation resetShortAllocationStatus(ShortAllocation shortAllocation) {
+        switch (shortAllocation.getStatus()) {
+            case ALLOCATION_FAIL:
+                // OK, it seems we were fail to full fill the short allocation with either
+                // pick or emergency replenishment during last round of allocation, let's reset
+                // the status back to Inprocess so the background job can pickup this
+                // short allocation again
+                ShortAllocationConfiguration shortAllocationConfiguration =
+                        shortAllocationConfigurationService.getShortAllocationConfiguration(
+                                shortAllocation.getWarehouseId());
+
+                if (Objects.nonNull(shortAllocationConfiguration) ||
+                        shortAllocationConfiguration.getEnabled()) {
+                    // let's see if we are good to reset the short allocation's status
+                    Long retryInterval = shortAllocationConfiguration.getRetryInterval();
+                    // see how many seconds has been passed since we last fail
+                    if (Objects.isNull(shortAllocation.getLastAllocationDatetime())) {
+                        shortAllocation.setLastAllocationDatetime(LocalDateTime.now());
+                    }
+                    else if (shortAllocation.getLastAllocationDatetime().
+                            plusSeconds(retryInterval).isBefore(LocalDateTime.now())){
+                        shortAllocation.setStatus(ShortAllocationStatus.INPROCESS);
+                    }
+                }
+                break;
+
+            case INPROCESS:
+                // Let's see if we can complete this short allocation
+                if (shortAllocation.getOpenQuantity() == 0 &&
+                    shortAllocation.getDeliveredQuantity() >= shortAllocation.getInprocessQuantity()) {
+                    shortAllocation.setStatus(ShortAllocationStatus.COMPLETED);
+                }
+                break;
+        }
+        return save(shortAllocation);
+
+    }
+
+
 
     private boolean isAllocatable(ShortAllocation shortAllocation) {
         return shortAllocation.getStatus().equals(ShortAllocationStatus.PENDING) ||

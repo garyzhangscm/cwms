@@ -25,3 +25,4 @@ WMOR,P&D,Pickup and Deposit,PickupDeposit, false, false, false,false,,NONE
 WMOR,Default_Removed_Inventory_Location,Default Location For Removed Inventory,Removed_Inventory, false, false, false,false,,NONE
 WMOR,Audit_Count_Inventory_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE
 WMOR,Inventory_Adjustment_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE
+WMOR,Inventory_Receiving_Location,Location For Receiving inventory,Removed_Inventory, false, false, false,false,,NONE

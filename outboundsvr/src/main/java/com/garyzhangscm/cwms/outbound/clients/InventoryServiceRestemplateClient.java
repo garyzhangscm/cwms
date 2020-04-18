@@ -254,14 +254,15 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public List<Inventory> getInventoryByLocationGroup(Item item, InventoryStatus inventoryStatus, LocationGroup locationGroup) {
+    public List<Inventory> getInventoryByLocationGroup(Long warehouseId, Item item, Long inventoryStatusId, LocationGroup locationGroup) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("itemName", item.getName())
-                        .queryParam("inventoryStatusId", inventoryStatus.getId())
+                        .queryParam("inventoryStatusId", inventoryStatusId)
                         .queryParam("locationGroupId", locationGroup.getId());
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper

@@ -45,9 +45,11 @@ public class PickController {
                                    @RequestParam(name="sourceLocationId", required = false, defaultValue = "") Long sourceLocationId,
                                    @RequestParam(name="destinationLocationId", required = false, defaultValue = "") Long destinationLocationId,
                                    @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
-                                   @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds) {
+                                   @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
+                                   @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId) {
         return pickService.findAll(number, orderId, shipmentId, waveId,
-                itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds);
+                itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
+                shortAllocationId);
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)
     public Pick findPick(@PathVariable Long id) {

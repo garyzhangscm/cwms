@@ -199,23 +199,7 @@ public class ShipmentLineService {
             return new AllocationResult();
         }
 
-        // Let's get all the pickable inventory and existing picking so we can start to calculate
-        // how to generate picks for the shipment
-        Long itemId = shipmentLine.getOrderLine().getItemId();
-
-        List<Pick> existingPicks = pickService.getOpenPicksByItemId(itemId);
-        logger.debug("We have {} existing picks against the item with id {}",
-                existingPicks.size(), itemId);
-
-        // Get all pickable inventory
-        List<Inventory> pickableInventory
-                = inventoryServiceRestemplateClient.getPickableInventory(
-                        itemId, shipmentLine.getOrderLine().getInventoryStatusId());
-        logger.debug("We have {} pickable inventory against the item with id {}",
-                pickableInventory.size(), itemId);
-
-
-        AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine, existingPicks, pickableInventory);
+        AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine);
 
         // Move the open quantity into the in process quantity and start allocation
         logger.debug("Allocation Step 1: Move quantity {} from open quantity to in process quantity",

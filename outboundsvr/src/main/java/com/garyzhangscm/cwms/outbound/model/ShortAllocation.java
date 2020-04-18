@@ -5,6 +5,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -27,6 +28,14 @@ public class ShortAllocation  implements Serializable {
 
     @Transient
     private Warehouse warehouse;
+
+
+    // re-allocate the short allocation based upon
+    // the last allocation time, to make sure we
+    // will only re-try after certain amount time
+    // has been passed.
+    @Column(name = "last_allocation_datetime")
+    private LocalDateTime lastAllocationDatetime;
 
     @OneToMany(
             mappedBy = "shortAllocation",
@@ -181,5 +190,13 @@ public class ShortAllocation  implements Serializable {
 
     public void setAllocationCount(Long allocationCount) {
         this.allocationCount = allocationCount;
+    }
+
+    public LocalDateTime getLastAllocationDatetime() {
+        return lastAllocationDatetime;
+    }
+
+    public void setLastAllocationDatetime(LocalDateTime lastAllocationDatetime) {
+        this.lastAllocationDatetime = lastAllocationDatetime;
     }
 }

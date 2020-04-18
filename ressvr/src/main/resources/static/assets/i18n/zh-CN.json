@@ -502,6 +502,7 @@
   "shipment.line.shippedQuantity":"已发货数量",
   "pick":"拣货单",
   "pick.number":"拣货单号",
+  "pick.type": "类型",
   "pick.quantity":"拣货单数量",
   "pick.pickedQuantity":"已拣数量",
   "pick.confirmQuantity":"确认数量",
@@ -513,6 +514,7 @@
   "short-allocation.deliveredQuantity":"已补货数量",
   "short-allocation.allocationCount":"重分配次数",
   "short-allocation.status":"状态",
+  "short-allocation.lastAllocationDatetime":"上次分配时间",
   "sourceLocation":"源库位",
   "destinationLocation":"目标库位",
   "trailer.number":"车辆号",
@@ -799,5 +801,13 @@
   "WAVE-STATUS-PICKING": "拣货中",
   "WAVE-STATUS-STAGED": "已集货",
   "WAVE-STATUS-LOADED": "已装车",
-  "WAVE-STATUS-COMPLETED": "已完成"
+  "WAVE-STATUS-COMPLETED": "已完成",
+  "SHORT-ALLOCATION-STATUS-PENDING": "新建",
+  "SHORT-ALLOCATION-STATUS-INPROCESS": "处理中",
+  "SHORT-ALLOCATION-STATUS-CANCELLED": "已取消",
+  "SHORT-ALLOCATION-STATUS-COMPLETED": "已完成",
+  "PICK-TYPE-OUTBOUND": "出库拣货",
+  "PICK-TYPE-EMERGENCY_REPLENISHMENT": "紧急补货",
+  "PICK-TYPE-TRIGGER_REPLENISHMENT": "触发式补货",
+  "PICK-TYPE-WORK_ORDER": "工单拣货"
 }
