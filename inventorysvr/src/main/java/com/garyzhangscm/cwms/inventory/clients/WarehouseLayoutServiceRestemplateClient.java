@@ -181,11 +181,12 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public List<Location> getLocationByLocationGroups(String locationGroupIds) {
+    public List<Location> getLocationByLocationGroups(Long warehouseId, String locationGroupIds) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/locations")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("locationGroupIds", locationGroupIds);
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper

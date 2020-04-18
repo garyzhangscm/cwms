@@ -218,7 +218,9 @@ public class InventoryService implements TestDataInitiableService{
 
         // When location group id is passed in, we will only return inventory from this location group
         if (locationGroupId != null) {
-            List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(String.valueOf(locationGroupId));
+            List<Location> locations =
+                    warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(
+                            warehouseId, String.valueOf(locationGroupId));
             // convert the list of locations to map of Long so as to speed up
             // when compare the inventory's location id with the locations from the group
             Map<Long, Long> locationMap = new HashMap<>();

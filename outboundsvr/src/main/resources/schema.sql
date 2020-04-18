@@ -4,6 +4,7 @@ drop table if exists pick;
 drop  table  if exists cancelled_pick;
 drop table if exists pick_list;
 drop table if exists short_allocation;
+drop table if exists short_allocation_configuration;
 drop table if exists cancelled_short_allocation;
 drop table if exists shipment_line;
 DROP TABLE if exists shipment;
@@ -153,9 +154,19 @@ CREATE TABLE short_allocation(
   inprocess_quantity BIGINT  NOT NULL,
   delivered_quantity BIGINT  NOT NULL,
   allocation_count BIGINT not null,
+  last_allocation_datetime datetime,
   status VARCHAR(20) not null,
   foreign key(shipment_line_id) references shipment_line(shipment_line_id));
 
+
+CREATE TABLE short_allocation_configuration(
+  short_allocation_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  last_modify_datetime datetime,
+  last_modify_username VARCHAR(50),
+  enabled boolean not null,
+  retry_interval BIGINT
+);
 
 CREATE TABLE cancelled_short_allocation(
   cancelled_short_allocation_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

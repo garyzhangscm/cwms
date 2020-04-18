@@ -281,8 +281,10 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     }
 
     public Location getEmergencyReplenishmentDestination(Pick pick) {
+        logger.debug("Will try to get destination for the emergency replenishment {}", pick);
         // make sure the pick is a emergency replneishment type of pick
         if (pick.getShortAllocation() == null) {
+            logger.debug("current pick is not an emergency replenishment!");
             throw ReplenishmentException.raiseException("The pick is not type of emergency replenishment");
 
         }
@@ -295,6 +297,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
             // so that we won't even generate the pick.
             // The emergency replenishment configuration needs to be defined so that we can
             // find the destination location for the pick
+            logger.debug("Not able to find any matched emergency replenishment configuration");
             throw ReplenishmentException.raiseException("No emergency replenishment found for the pick");
         }
 
@@ -307,7 +310,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         matchedEmergencyReplenishmentConfigurations.sort(Comparator.comparing(EmergencyReplenishmentConfiguration::getSequence));
         for(EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration : matchedEmergencyReplenishmentConfigurations) {
-            if (emergencyReplenishmentConfiguration.getDestinationLocation() != null) {
+            if (Objects.nonNull(emergencyReplenishmentConfiguration.getDestinationLocation())) {
                 // The configuration want us to replenish into a specific location.
                 // check if we can replenish into this location
                 Location location = emergencyReplenishmentConfiguration.getDestinationLocation();
@@ -318,11 +321,12 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
                     continue;
                 }
             }
-            else if (emergencyReplenishmentConfiguration.getDestinationLocationGroup() != null) {
+            else if (Objects.nonNull(emergencyReplenishmentConfiguration.getDestinationLocationGroup())) {
                 // first, let's check if there's any location in the destination location group
                 // that already have the same item and inventory status
                 List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLocationGroup(
-                        pick.getItem(),pick.getInventoryStatus(),emergencyReplenishmentConfiguration.getDestinationLocationGroup()
+                                pick.getWarehouseId(), pick.getItem(),
+                        pick.getInventoryStatusId(),emergencyReplenishmentConfiguration.getDestinationLocationGroup()
                 );
                 if (inventories.size() > 0) {
                     // Ok we found inventory with same item and inventory status exists in the
@@ -346,6 +350,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
                 // as the destination of the emergency replenishment
                 try {
                     Location location = warehouseLayoutServiceRestemplateClient.findEmptyDestinationLocationForEmergencyReplenishment(
+                            pick.getWarehouseId(),
                             emergencyReplenishmentConfiguration.getDestinationLocationGroup(), pick.getSize());
                     if (location != null) {
                         return location;
@@ -384,9 +389,9 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     // if configuration has source location group defined and match with the pick's source location group
     private boolean match(Pick pick, EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration) {
         logger.debug("==================   Emergency Replenishment VS Pick ======================");
-        logger.debug("Step 1.1 check {} matches with item {}", emergencyReplenishmentConfiguration.getId(), pick.getNumber());
-        if (emergencyReplenishmentConfiguration.getItemId() != null &&
-                pick.getItem().getId() != emergencyReplenishmentConfiguration.getItemId()) {
+        logger.debug("Step 1.1 check {} matches with item {}", emergencyReplenishmentConfiguration.getId(), pick.getItem().getName());
+        if (Objects.nonNull(emergencyReplenishmentConfiguration.getItemId())&&
+                !emergencyReplenishmentConfiguration.getItemId().equals(pick.getItem().getId())) {
 
             logger.debug("Step 1.2 >> fail as the item doesn't match.");
             logger.debug(">>>>>>>>>>> emergencyReplenishmentConfiguration.getItemId(): {} / pick.getItem().getId(): {}",
@@ -394,8 +399,8 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
             return false;
         }
 
-        if (emergencyReplenishmentConfiguration.getItemFamilyId() != null &&
-                pick.getItem().getItemFamily().getId() != emergencyReplenishmentConfiguration.getItemFamilyId()) {
+        if (Objects.nonNull(emergencyReplenishmentConfiguration.getItemFamilyId()) &&
+                !emergencyReplenishmentConfiguration.getItemFamilyId().equals(pick.getItem().getItemFamily().getId())) {
 
             logger.debug("Step 1.2 >> fail as the item family doesn't match.");
             logger.debug(">>>>>>>>>>> emergencyReplenishmentConfiguration.getItemFamilyId(): {} / pick.getItem().getItemFamily().getId(): {}",
@@ -404,16 +409,16 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
         }
 
 
-        if (emergencyReplenishmentConfiguration.getSourceLocationId() != null &&
-                pick.getSourceLocationId() != emergencyReplenishmentConfiguration.getSourceLocationId()) {
+        if (Objects.nonNull(emergencyReplenishmentConfiguration.getSourceLocationId()) &&
+                !emergencyReplenishmentConfiguration.getSourceLocationId().equals(pick.getSourceLocationId())) {
 
             logger.debug("Step 1.2 >> fail as the item family doesn't match.");
             logger.debug(">>>>>>>>>>> emergencyReplenishmentConfiguration.getSourceLocationId(): {} / pick.getSourceLocationId(): {}",
                     emergencyReplenishmentConfiguration.getSourceLocationId(), pick.getSourceLocationId());
             return false;
         }
-        if (emergencyReplenishmentConfiguration.getSourceLocationGroupId() != null &&
-                pick.getSourceLocation().getLocationGroup().getId() != emergencyReplenishmentConfiguration.getSourceLocationGroupId()) {
+        if (Objects.nonNull(emergencyReplenishmentConfiguration.getSourceLocationGroupId()) &&
+                !emergencyReplenishmentConfiguration.getSourceLocationGroupId().equals(pick.getSourceLocation().getLocationGroup().getId())) {
 
             logger.debug("Step 1.2 >> fail as the item family doesn't match.");
             logger.debug(">>>>>>>>>>> emergencyReplenishmentConfiguration.getSourceLocationGroupId(): {} / pick.getSourceLocation().getLocationGroup().getId(): {}",

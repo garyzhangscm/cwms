@@ -187,8 +187,12 @@ public class ReceiptLineService implements TestDataInitiableService{
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptLineCSVWrapper.getWarehouse());
         receiptLine.setWarehouseId(warehouse.getId());
 
+        logger.debug("Start to create receipt line {} with item {}, in receipt {} / warehouse id: {}",
+                receiptLineCSVWrapper.getNumber(),
+                receiptLineCSVWrapper.getItem(), receiptLineCSVWrapper.getReceipt(),
+                warehouse.getId());
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getReceipt())) {
-            Receipt receipt = receiptService.findByNumber(getWarehouseId(receiptLineCSVWrapper.getWarehouse()), receiptLineCSVWrapper.getReceipt());
+            Receipt receipt = receiptService.findByNumber(warehouse.getId(), receiptLineCSVWrapper.getReceipt());
             receiptLine.setReceipt(receipt);
         }
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getItem())) {

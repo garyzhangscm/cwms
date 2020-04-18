@@ -333,7 +333,10 @@ public class LocationService implements TestDataInitiableService {
 
         location.setWarehouse(warehouseService.findByName(locationCSVWrapper.getWarehouse()));
 
-        if (!locationCSVWrapper.getLocationGroup().isEmpty()) {
+        logger.debug("process location {} with group {}",
+                locationCSVWrapper.getName(),
+                locationCSVWrapper.getLocationGroup());
+        if (StringUtils.isNotBlank(locationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup = locationGroupService.findByName(
                     warehouseService.findByName(locationCSVWrapper.getWarehouse()).getId(),locationCSVWrapper.getLocationGroup());
             location.setLocationGroup(locationGroup);

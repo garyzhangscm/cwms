@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
+import com.garyzhangscm.cwms.outbound.exception.ReplenishmentException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -87,7 +88,8 @@ public class PickService {
 
     public List<Pick> findAll(String number, Long orderId, Long shipmentId, Long waveId,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
-                              Long workOrderLineId, String workOrderLineIds,  boolean loadDetails) {
+                              Long workOrderLineId, String workOrderLineIds,
+                              Long shortAllocationId, boolean loadDetails) {
 
         List<Pick> picks =  pickRepository.findAll(
                 (Root<Pick> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -117,17 +119,21 @@ public class PickService {
 
                     }
 
-                    if (itemId != null) {
+                    if (Objects.nonNull(itemId)) {
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
                     }
-                    if (sourceLocationId != null) {
+                    if (Objects.nonNull(sourceLocationId)) {
                         predicates.add(criteriaBuilder.equal(root.get("sourceLocationId"), sourceLocationId));
                     }
-                    if (destinationLocationId != null) {
+                    if (Objects.nonNull(destinationLocationId)) {
                         predicates.add(criteriaBuilder.equal(root.get("destinationLocationId"), destinationLocationId));
                     }
+                    if (Objects.nonNull(shortAllocationId )) {
+                        Join<Pick, ShortAllocation> joinShortAllocation = root.join("shortAllocation", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinShortAllocation.get("id"), shortAllocationId));
+                    }
 
-                    if (workOrderLineId != null) {
+                    if (Objects.nonNull(workOrderLineId)) {
                         predicates.add(criteriaBuilder.equal(root.get("workOrderLineId"), workOrderLineId));
                     }
                     else if (!StringUtils.isBlank(workOrderLineIds)){
@@ -151,10 +157,11 @@ public class PickService {
 
     public List<Pick> findAll(String number, Long orderId, Long shipmentId,Long waveId,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
-                              Long workOrderLineId, String workOrderLineIds) {
+                              Long workOrderLineId, String workOrderLineIds,
+                              Long shortAllocationId) {
         return findAll(number, orderId,shipmentId, waveId,
                 itemId, sourceLocationId, destinationLocationId,
-                workOrderLineId, workOrderLineIds, true);
+                workOrderLineId, workOrderLineIds, shortAllocationId, true);
     }
 
     public Pick findByNumber(String number, boolean loadDetails) {
@@ -166,7 +173,9 @@ public class PickService {
     }
 
     public List<Pick> findByOrder(Order order) {
-        return findAll(null, order.getId(), null, null, null, null, null, null, null);
+        return findAll(null, order.getId(), null,
+                null, null, null, null,
+                null, null, null);
     }
 
     public Pick findByNumber(String number) {
@@ -312,6 +321,8 @@ public class PickService {
         return pick;
     }
 
+
+
     @Transactional
     public Pick generatePick(InventorySummary inventorySummary, ShipmentLine shipmentLine, Long quantity) {
         Pick pick = generatePick(inventorySummary, quantity);
@@ -395,9 +406,10 @@ public class PickService {
         pick.setPickType(PickType.EMERGENCY_REPLENISHMENT);
 
         // Setup the destination, get from ship staging area
-
-
         Location destinationLocation = getDestinationLocationForPick(pick);
+        if (Objects.isNull(destinationLocation)) {
+            throw ReplenishmentException.raiseException("Can't find any destination location for the replenishment");
+        }
         pick.setDestinationLocation(destinationLocation);
         pick.setDestinationLocationId(destinationLocation.getId());
 
