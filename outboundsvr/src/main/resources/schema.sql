@@ -188,6 +188,7 @@ CREATE TABLE cancelled_short_allocation(
 CREATE TABLE pick_list(
   pick_list_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
+  number  VARCHAR(20) NOT NULL,
   group_key  VARCHAR(100) NOT NULL,
   status   VARCHAR(20) NOT NULL);
 
@@ -305,7 +306,6 @@ CREATE TABLE list_picking_configuration(
   sequence int  NOT NULL,
   client_id BIGINT,
   pick_type  VARCHAR(20) NOT NULL,
-  status  VARCHAR(20) NOT NULL,
   group_rule  VARCHAR(20) NOT NULL,
   enabled boolean not null default 0);
 

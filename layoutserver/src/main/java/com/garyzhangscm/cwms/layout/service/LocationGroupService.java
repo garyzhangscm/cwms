@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -118,10 +119,11 @@ public class LocationGroupService implements TestDataInitiableService {
     public LocationGroup saveOrUpdate(LocationGroup locationGroup) {
         logger.debug("Will try to find existing location group by \n ==> {} / {}"
                 ,locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName());
-        if (findByName(locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName()) != null) {
+        if (Objects.isNull(locationGroup.getId()) &&
+                Objects.nonNull(findByName(locationGroup.getWarehouse().getId(), locationGroup.getName()))) {
             logger.debug("===> Find such location group {}",
-                    findByName(locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName()).getId());
-            locationGroup.setId(findByName(locationGroup.getWarehouse().getId(), locationGroup.getWarehouse().getName()).getId());
+                    findByName(locationGroup.getWarehouse().getId(), locationGroup.getName()).getId());
+            locationGroup.setId(findByName(locationGroup.getWarehouse().getId(), locationGroup.getName()).getId());
         }
         return save(locationGroup);
     }

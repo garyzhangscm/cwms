@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class InventoryStatusService implements TestDataInitiableService{
@@ -58,12 +59,12 @@ public class InventoryStatusService implements TestDataInitiableService{
     }
 
 
-    public List<InventoryStatus> findAll(String name) {
+    public List<InventoryStatus> findAll(Long warehouseId, String name) {
         if (StringUtils.isBlank(name)) {
             return inventoryStatusRepository.findAll();
         }
         else {
-            InventoryStatus inventoryStatus = findByName(name);
+            InventoryStatus inventoryStatus = findByName(warehouseId, name);
             if (inventoryStatus == null) {
                 return new ArrayList<>();
             }
@@ -74,8 +75,8 @@ public class InventoryStatusService implements TestDataInitiableService{
     }
 
 
-    public InventoryStatus findByName(String name){
-        return inventoryStatusRepository.findByName(name);
+    public InventoryStatus findByName(Long warehouseId, String name){
+        return inventoryStatusRepository.findByWarehouseIdAndName(warehouseId, name);
     }
 
     public InventoryStatus save(InventoryStatus inventoryStatus) {
@@ -83,8 +84,13 @@ public class InventoryStatusService implements TestDataInitiableService{
     }
 
     public InventoryStatus saveOrUpdate(InventoryStatus inventoryStatus) {
-        if (inventoryStatus.getId() == null && findByName(inventoryStatus.getName()) != null) {
-            inventoryStatus.setId(findByName(inventoryStatus.getName()).getId());
+        if (Objects.isNull(inventoryStatus.getId()) &&
+                Objects.nonNull(findByName(inventoryStatus.getWarehouseId(), inventoryStatus.getName()))) {
+            logger.debug("InventoryStatusService.saveOrUpdate: find existing inventory status with id : {}, from warehouse id {}, name {}",
+                    findByName(inventoryStatus.getWarehouseId(), inventoryStatus.getName()).getId(),
+                    inventoryStatus.getWarehouseId(),
+                    inventoryStatus.getName());
+            inventoryStatus.setId(findByName(inventoryStatus.getWarehouseId(), inventoryStatus.getName()).getId());
         }
         return save(inventoryStatus);
     }
@@ -134,13 +140,16 @@ public class InventoryStatusService implements TestDataInitiableService{
         inventoryStatus.setDescription(inventoryStatusCSVWrapper.getDescription());
 
 
+
         // warehouse
-        if (!StringUtils.isBlank(inventoryStatusCSVWrapper.getWarehouse())) {
+        if (StringUtils.isNotBlank(inventoryStatusCSVWrapper.getWarehouse())) {
             Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(inventoryStatusCSVWrapper.getWarehouse());
             if (warehouse != null) {
                 inventoryStatus.setWarehouseId(warehouse.getId());
             }
         }
+        logger.debug("Start to save invenotry status, warehouse id {}, name {}",
+                inventoryStatus.getWarehouseId(), inventoryStatus.getName());
         return inventoryStatus;
     }
 }

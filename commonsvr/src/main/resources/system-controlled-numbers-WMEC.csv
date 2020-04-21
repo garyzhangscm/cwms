@@ -9,3 +9,4 @@ pick-number,PICK,,10,0,true
 work-order-number,WO,,10,0,true
 cancelled-pick-number,CPK,,10,0,true
 inventory-activity-transaction-id,INVACT,,10,0,true
+list-pick,LPICK,,10,0,true

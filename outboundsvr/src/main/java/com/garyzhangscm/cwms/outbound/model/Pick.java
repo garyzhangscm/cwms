@@ -19,12 +19,13 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "pick")
@@ -111,6 +112,7 @@ public class Pick implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "pick_list_id")
+    @JsonIgnore
     private PickList pickList;
 
     @JsonIgnore
@@ -145,6 +147,15 @@ public class Pick implements Serializable {
                 .append("pickedQuantity: ").append(pickedQuantity).append(",")
                 .append("status: ").append(status).append("}").toString();
 
+    }
+
+    public String getPickListNumber() {
+        if (Objects.isNull(pickList)) {
+            return null;
+        }
+        else {
+            return pickList.getNumber();
+        }
     }
 
     public Long getId() {
@@ -325,4 +336,5 @@ public class Pick implements Serializable {
     public void setInventoryStatusId(Long inventoryStatusId) {
         this.inventoryStatusId = inventoryStatusId;
     }
+
 }

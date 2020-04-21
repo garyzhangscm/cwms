@@ -143,7 +143,7 @@ public class InventoryActivityService{
                             predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
                         }
 
-                        if (!clientIds.isEmpty()) {
+                        if (StringUtils.isNotBlank(clientIds)) {
                             CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(joinItem.get("clientId"));
                             for(String id : clientIds.split(",")) {
                                 inClientIds.value(Long.parseLong(id));

@@ -78,7 +78,7 @@ public class ShortAllocationService {
                 = shortAllocationRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("short allocation not found by id: " + id));
         if (loadDetails) {
-            loadOrderAttribute(shortAllocation);
+            loadAttribute(shortAllocation);
         }
         return shortAllocation;
     }
@@ -146,7 +146,7 @@ public class ShortAllocationService {
         );
 
         if (shortAllocations.size() > 0 && loadDetails) {
-            loadOrderAttribute(shortAllocations);
+            loadAttribute(shortAllocations);
         }
         return shortAllocations;
     }
@@ -158,24 +158,36 @@ public class ShortAllocationService {
                 itemNumber, orderId,  workOrderId, shipmentId, waveId, true);
     }
 
-    public void loadOrderAttribute(List<ShortAllocation> shortAllocations) {
+    public void loadAttribute(List<ShortAllocation> shortAllocations) {
         for (ShortAllocation shortAllocation : shortAllocations) {
-            loadOrderAttribute(shortAllocation);
+            loadAttribute(shortAllocation);
         }
     }
 
-    public void loadOrderAttribute(ShortAllocation shortAllocation) {
+    public void loadAttribute(ShortAllocation shortAllocation) {
 
         // Load the item and inventory status information for each lines
         if (shortAllocation.getItemId() != null && shortAllocation.getItem() == null) {
             shortAllocation.setItem(inventoryServiceRestemplateClient.getItemById(shortAllocation.getItemId()));
+        }
+        if (Objects.nonNull(shortAllocation.getShipmentLine())) {
+            shortAllocation.setOrderNumber(
+                    shortAllocation.getShipmentLine().getOrderNumber()
+            );
+        }
+        if (Objects.nonNull(shortAllocation.getWorkOrderLineId())) {
+            shortAllocation.setWorkOrderNumber(
+                    workOrderServiceRestemplateClient.getWorkOrderById(
+                            shortAllocation.getWorkOrderLineId()
+                    ).getNumber()
+            );
         }
 
 
     }
     public ShortAllocation save(ShortAllocation shortAllocation) {
         ShortAllocation newShortAllocation = shortAllocationRepository.save(shortAllocation);
-        loadOrderAttribute(newShortAllocation);
+        loadAttribute(newShortAllocation);
         return newShortAllocation;
     }
 
@@ -292,6 +304,7 @@ public class ShortAllocationService {
         }
         shortAllocation =  allocationConfigurationService.allocate(shortAllocation);
 
+        logger.debug("After allocation, we get short allocation: {}", shortAllocation);
         return resetShortAllocationStatus(shortAllocation);
     }
 

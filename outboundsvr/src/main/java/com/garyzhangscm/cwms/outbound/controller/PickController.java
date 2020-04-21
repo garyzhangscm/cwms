@@ -41,13 +41,15 @@ public class PickController {
                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
                                    @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                    @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
+                                   @RequestParam(name="listId", required = false, defaultValue = "") Long listId,
+                                   @RequestParam(name="ids", required = false, defaultValue = "") String ids,
                                    @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                    @RequestParam(name="sourceLocationId", required = false, defaultValue = "") Long sourceLocationId,
                                    @RequestParam(name="destinationLocationId", required = false, defaultValue = "") Long destinationLocationId,
                                    @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
                                    @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                    @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId) {
-        return pickService.findAll(number, orderId, shipmentId, waveId,
+        return pickService.findAll(number, orderId, shipmentId, waveId, listId, ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId);
     }

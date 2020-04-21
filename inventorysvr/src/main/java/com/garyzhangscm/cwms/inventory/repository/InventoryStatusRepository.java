@@ -25,5 +25,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InventoryStatusRepository extends JpaRepository<InventoryStatus, Long>, JpaSpecificationExecutor<InventoryStatus> {
-    InventoryStatus findByName(String name);
+    InventoryStatus findByWarehouseIdAndName(Long warehouseId, String name);
 }

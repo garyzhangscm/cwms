@@ -339,6 +339,9 @@ public class LocationService implements TestDataInitiableService {
         if (StringUtils.isNotBlank(locationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup = locationGroupService.findByName(
                     warehouseService.findByName(locationCSVWrapper.getWarehouse()).getId(),locationCSVWrapper.getLocationGroup());
+            logger.debug("Get location group id {} by warehouse {} / name {}",
+                    locationGroup.getId(), warehouseService.findByName(locationCSVWrapper.getWarehouse()).getId(),
+                    locationCSVWrapper.getLocationGroup());
             location.setLocationGroup(locationGroup);
         }
         return location;

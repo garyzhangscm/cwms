@@ -142,16 +142,16 @@ public class OrderService implements TestDataInitiableService {
         return new ArrayList<>(wavableOrderMap.values());
     }
 
-    public Order findByNumber(String number, boolean loadDetails) {
-        Order order = orderRepository.findByNumber(number);
+    public Order findByNumber(Long warehouseId, String number, boolean loadDetails) {
+        Order order = orderRepository.findByWarehouseIdAndNumber(warehouseId, number);
         if (order != null && loadDetails) {
             loadOrderAttribute(order);
         }
         return order;
     }
 
-    public Order findByNumber(String number) {
-        return findByNumber(number, true);
+    public Order findByNumber(Long warehouseId, String number) {
+        return findByNumber(warehouseId, number, true);
     }
 
 
@@ -247,8 +247,9 @@ public class OrderService implements TestDataInitiableService {
     }
 
     public Order saveOrUpdate(Order order) {
-        if (order.getId() == null && findByNumber(order.getNumber()) != null) {
-            order.setId(findByNumber(order.getNumber()).getId());
+        if (Objects.isNull(order.getId()) &&
+                Objects.nonNull(findByNumber(order.getWarehouseId(),order.getNumber()))) {
+            order.setId(findByNumber(order.getWarehouseId(),order.getNumber()).getId());
         }
         return save(order);
     }

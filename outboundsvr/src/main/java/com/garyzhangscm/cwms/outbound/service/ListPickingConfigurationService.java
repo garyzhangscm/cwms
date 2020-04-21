@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateC
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.EmergencyReplenishmentConfigurationRepository;
 import com.garyzhangscm.cwms.outbound.repository.ListPickingConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
@@ -35,11 +36,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -104,19 +104,42 @@ public class ListPickingConfigurationService implements TestDataInitiableService
         return findAll(true);
     }
 
+    public List<ListPickingConfiguration> findAll(Long warehouseId) {
+        return findAll(warehouseId, true);
+    }
+
+    public List<ListPickingConfiguration> findAll(Long warehouseId, boolean loadDetails) {
+        List<ListPickingConfiguration> listPickingConfigurations =  listPickingConfigurationRepository.findAll(
+                (Root<ListPickingConfiguration> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+        logger.debug("## Find {} list picking configuration by warehouse Id {}",
+                listPickingConfigurations.size(), warehouseId);
+
+        if (listPickingConfigurations.size() > 0 && loadDetails) {
+            loadAttribute(listPickingConfigurations);
+        }
+        return listPickingConfigurations;
+    }
 
 
     private void loadAttribute(ListPickingConfiguration listPickingConfiguration) {
 
-        if (listPickingConfiguration.getWarehouseId() != null && listPickingConfiguration.getWarehouse() == null) {
+        if (Objects.nonNull(listPickingConfiguration.getWarehouseId()) &&
+                Objects.isNull(listPickingConfiguration.getWarehouse())) {
             listPickingConfiguration.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(listPickingConfiguration.getWarehouseId()));
         }
-        if (listPickingConfiguration.getClientId() != null && listPickingConfiguration.getClient() == null) {
+        if (Objects.nonNull(listPickingConfiguration.getClientId()) &&
+                Objects.isNull(listPickingConfiguration.getClient())) {
             listPickingConfiguration.setClient(commonServiceRestemplateClient.getClientById(listPickingConfiguration.getClientId()));
         }
-
-
-
     }
 
     private void loadAttribute(List<ListPickingConfiguration> listPickingConfigurations) {
@@ -160,7 +183,6 @@ public class ListPickingConfigurationService implements TestDataInitiableService
                 addColumn("warehouse").
                 addColumn("client").
                 addColumn("pickType").
-                addColumn("status").
                 addColumn("groupRule").
                 addColumn("enabled").
                 build().withHeader();
@@ -220,7 +242,9 @@ public class ListPickingConfigurationService implements TestDataInitiableService
     }
 
     public List<ListPickingConfiguration> findMatchedListPickingConfiguration(Pick pick) {
-        List<ListPickingConfiguration> listPickingConfigurations = findAll();
+        List<ListPickingConfiguration> listPickingConfigurations = findAll(pick.getWarehouseId());
+        logger.debug("Start to find matched list picking configuration for pick: {} / from {} configuration",
+                pick, listPickingConfigurations.size());
 
         return listPickingConfigurations.stream()
                 .filter(listPickingConfiguration -> match(listPickingConfiguration,pick))
@@ -228,26 +252,42 @@ public class ListPickingConfigurationService implements TestDataInitiableService
     }
 
     private boolean match(ListPickingConfiguration listPickingConfiguration, Pick pick) {
+        logger.debug("Start to match list picking configuration {} with pick {}",
+                listPickingConfiguration, pick);
         if (!listPickingConfiguration.getEnabled()) {
+            logger.debug("{} is not enabled! Non match", listPickingConfiguration);
             return false;
         }
 
-        if (listPickingConfiguration.getWarehouseId() != null &&
-                !pick.getWarehouseId().equals(listPickingConfiguration.getWarehouseId())) {
+        if (Objects.nonNull(listPickingConfiguration.getWarehouseId())&&
+                !listPickingConfiguration.getWarehouseId().equals(pick.getWarehouseId())) {
+            logger.debug("The warehouse ID doesn't match!warehouse ID in configuration {} " +
+                    "doesnt match with pick's warehouse id {}",
+                    listPickingConfiguration.getWarehouseId(), pick.getWarehouseId());
             return false;
         }
 
         if (!listPickingConfiguration.getPickType().equals(pick.getPickType())) {
+
+            logger.debug("The type doesn't match! type in configuration {} " +
+                            "doesnt match with pick's type {}",
+                    listPickingConfiguration.getPickType(), pick.getPickType());
             return false;
         }
         // If the configuraiton has client id defined, we will need to make sure
         // the pick's client id not null
         //
-        if (listPickingConfiguration.getClientId() != null &&
-                (pick.getClient() == null || !pick.getClient().getId().equals(listPickingConfiguration.getClientId()))) {
+        if (Objects.nonNull(listPickingConfiguration.getClientId()) &&
+                (Objects.isNull(pick.getClient())
+                        || !pick.getClient().getId().equals(listPickingConfiguration.getClientId()))) {
+
+            logger.debug("The client doesn't match! client id in configuration {} " +
+                            "doesnt match with pick's client id {}",
+                    listPickingConfiguration.getClientId(), pick.getClient());
             return false;
         }
 
+        logger.debug(">> list picking configuraiton matches with the pick!");
         return true;
 
     }

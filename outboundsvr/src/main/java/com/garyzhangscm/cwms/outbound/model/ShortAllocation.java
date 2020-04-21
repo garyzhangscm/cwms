@@ -23,6 +23,12 @@ public class ShortAllocation  implements Serializable {
     @JsonIgnore
     private ShipmentLine shipmentLine;
 
+    @Transient
+    private String orderNumber;
+
+    @Transient
+    private String workOrderNumber;
+
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
@@ -75,6 +81,27 @@ public class ShortAllocation  implements Serializable {
 
     @Column(name = "work_order_line_id")
     private Long workOrderLineId;
+
+    @Override
+    public String toString() {
+        return "ShortAllocation{" +
+                "id=" + id +
+                ", shipmentLine=" + shipmentLine +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                ", lastAllocationDatetime=" + lastAllocationDatetime +
+                ", picks=" + picks +
+                ", itemId=" + itemId +
+                ", item=" + item +
+                ", quantity=" + quantity +
+                ", openQuantity=" + openQuantity +
+                ", inprocessQuantity=" + inprocessQuantity +
+                ", deliveredQuantity=" + deliveredQuantity +
+                ", allocationCount=" + allocationCount +
+                ", status=" + status +
+                ", workOrderLineId=" + workOrderLineId +
+                '}';
+    }
 
     public Long getId() {
         return id;
@@ -198,5 +225,17 @@ public class ShortAllocation  implements Serializable {
 
     public void setLastAllocationDatetime(LocalDateTime lastAllocationDatetime) {
         this.lastAllocationDatetime = lastAllocationDatetime;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public String getWorkOrderNumber() {
+        return workOrderNumber;
+    }
+
+    public void setWorkOrderNumber(String workOrderNumber) {
+        this.workOrderNumber = workOrderNumber;
     }
 }

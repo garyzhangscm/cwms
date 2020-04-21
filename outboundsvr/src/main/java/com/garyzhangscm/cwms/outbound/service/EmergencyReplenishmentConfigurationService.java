@@ -280,13 +280,27 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
     }
 
+    /**
+     * Get a destination location for a emergency type of pick
+     * @param pick Emergency type of pick
+     * @return
+     */
     public Location getEmergencyReplenishmentDestination(Pick pick) {
         logger.debug("Will try to get destination for the emergency replenishment {}", pick);
         // make sure the pick is a emergency replneishment type of pick
-        if (pick.getShortAllocation() == null) {
+        if (!pick.getPickType().equals(PickType.EMERGENCY_REPLENISHMENT)) {
             logger.debug("current pick is not an emergency replenishment!");
             throw ReplenishmentException.raiseException("The pick is not type of emergency replenishment");
+        }
 
+        if (Objects.nonNull(pick.getDestinationLocationId())) {
+            logger.debug("Current replenishment already has a destination");
+            if (Objects.nonNull(pick.getDestinationLocation())) {
+                return pick.getDestinationLocation();
+            }
+            else {
+                return warehouseLayoutServiceRestemplateClient.getLocationById(pick.getDestinationLocationId());
+            }
         }
 
         List<EmergencyReplenishmentConfiguration> matchedEmergencyReplenishmentConfigurations
@@ -309,6 +323,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
         // pickable
 
         matchedEmergencyReplenishmentConfigurations.sort(Comparator.comparing(EmergencyReplenishmentConfiguration::getSequence));
+
         for(EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration : matchedEmergencyReplenishmentConfigurations) {
             if (Objects.nonNull(emergencyReplenishmentConfiguration.getDestinationLocation())) {
                 // The configuration want us to replenish into a specific location.

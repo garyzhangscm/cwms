@@ -112,6 +112,9 @@ public class TestDataInitService {
 
     public void clear(Long warehouseId) {
 
+        // Since all those records are not warehouse related, we will
+        // remove them here
+        /***
         jdbcTemplate.execute("delete from client");
         logger.debug("client records removed!");
 
@@ -136,6 +139,7 @@ public class TestDataInitService {
         logger.debug("carrier_service_level records removed!");
         jdbcTemplate.execute("delete from carrier");
         logger.debug("carrier records removed!");
+         ***/
 
     }
 }

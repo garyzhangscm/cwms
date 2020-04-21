@@ -25,18 +25,22 @@ import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickListRepository;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects;
 
 
 @Service
@@ -66,6 +70,46 @@ public class PickListService {
 
     }
 
+    public List<PickList> findAll(Long warehouseId, String number) {
+        return findAll(warehouseId, number, true);
+    }
+    public List<PickList> findAll(Long warehouseId, String number, boolean loadDetails) {
+
+        List<PickList> pickLists =  pickListRepository.findAll(
+                (Root<PickList> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (StringUtils.isNotBlank(number)) {
+                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+
+                    }
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+        if (pickLists.size() > 0 && loadDetails) {
+            loadAttribute(pickLists);
+        }
+        return pickLists;
+    }
+
+    private void loadAttribute(List<PickList> pickLists) {
+        pickLists.forEach(this::loadAttribute);
+    }
+
+    private void loadAttribute(PickList pickList) {
+        if (Objects.nonNull(pickList.getWarehouseId()) &&
+               Objects.isNull(pickList.getWarehouse())) {
+            pickList.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                    pickList.getWarehouseId()
+            ));
+        }
+    }
+
     public List<PickList> findByGroupKey(String groupKey) {
         return pickListRepository.findByGroupKey(groupKey);
     }
@@ -90,6 +134,11 @@ public class PickListService {
         // Step 1. Find the matched configuration
         List<ListPickingConfiguration> listPickingConfigurations = findMatchedListPickingConfiguration(pick);
 
+        logger.debug("We find {} list picking configuration that match with current pick",
+                listPickingConfigurations.size());
+        if (listPickingConfigurations.size() == 0) {
+            throw PickingException.raiseException("No list picking configuration defined for the current pick " + pick);
+        }
         try {
             PickList  pickList = findMatchedPickList(listPickingConfigurations, pick);
             return pickList;
@@ -97,6 +146,7 @@ public class PickListService {
         catch (GenericException ex) {
             // OK we can't find any existing pick list for the pick. Let's
             // create a new list based upon the first available pick list
+            logger.debug("We can't find any existing picking list, let's try to create one based on the configuration");
             return createPickList(listPickingConfigurations, pick);
 
         }
@@ -104,19 +154,16 @@ public class PickListService {
     }
 
     private List<ListPickingConfiguration> findMatchedListPickingConfiguration(Pick pick) {
-        List<ListPickingConfiguration> listPickingConfigurations
-                = listPickingConfigurationService.findMatchedListPickingConfiguration(pick);
-        if (listPickingConfigurations.size() == 0) {
-            throw PickingException.raiseException(" Can't find any list picking configuration for the pick ");
-        }
+        return listPickingConfigurationService.findMatchedListPickingConfiguration(pick);
 
-        return listPickingConfigurations;
     }
 
     private PickList findMatchedPickList(List<ListPickingConfiguration> listPickingConfigurations, Pick pick) {
 
         for(ListPickingConfiguration listPickingConfiguration : listPickingConfigurations) {
             try {
+                logger.debug("Start to find existing PENDING picking list based on the configuraiton {}",
+                        listPickingConfiguration);
                 PickList pickList = findMatchedPickList(listPickingConfiguration, pick);
                 return pickList;
             }
@@ -134,6 +181,8 @@ public class PickListService {
 
         String groupKey = getGroupKey(listPickingConfiguration, pick);
 
+        logger.debug("Will try to find existing list picking based on groupKey: {}",
+                groupKey);
         // Only return the open list with same group key
         List<PickList> pickLists = findByGroupKeyAndStatus(groupKey, PickListStatus.PENDING);
         if (pickLists.size() == 0) {
@@ -163,11 +212,14 @@ public class PickListService {
 
         // Create the pick list based upon the first configuration
         ListPickingConfiguration listPickingConfiguration = listPickingConfigurations.get(0);
+        logger.debug("try to create picking list based on the configuration {}", listPickingConfiguration);
         String groupKey = getGroupKey(listPickingConfiguration, pick);
 
         PickList pickList = new PickList();
         pickList.setGroupKey(groupKey);
         pickList.setStatus(PickListStatus.PENDING);
+        pickList.setWarehouseId(pick.getWarehouseId());
+        pickList.setNumber(getNextPickListNumber());
         return save(pickList);
     }
 
@@ -212,6 +264,10 @@ public class PickListService {
             updatedPickList.setStatus(suggestedPickListStatus);
             save(updatedPickList);
         }
+    }
+
+    private String getNextPickListNumber() {
+        return commonServiceRestemplateClient.getNextNumber("list-pick");
     }
 
 

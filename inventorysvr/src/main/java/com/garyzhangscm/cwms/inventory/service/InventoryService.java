@@ -342,8 +342,12 @@ public class InventoryService implements TestDataInitiableService{
         }
 
         // load the unit of measure details for the packate types
-        inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure ->
-                itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId())));
+        logger.debug("Start to load item unit of measure for item package type: {}",
+                inventory.getItemPackageType());
+        inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
+            logger.debug(">> Load information for item unit of measure: {}", itemUnitOfMeasure);
+            itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId()));
+        });
 
         if (inventory.getPickId() != null) {
             inventory.setPick(outbuondServiceRestemplateClient.getPickById(inventory.getPickId()));
@@ -439,7 +443,11 @@ public class InventoryService implements TestDataInitiableService{
 
         // inventoryStatus
         if (!inventoryCSVWrapper.getInventoryStatus().isEmpty()) {
-            inventory.setInventoryStatus(inventoryStatusService.findByName(inventoryCSVWrapper.getInventoryStatus()));
+            logger.debug("will set inventory status: {} / {}",
+                    warehouse.getId(),
+                    inventoryCSVWrapper.getInventoryStatus());
+            inventory.setInventoryStatus(inventoryStatusService.findByName(
+                    warehouse.getId(), inventoryCSVWrapper.getInventoryStatus()));
         }
 
         // location

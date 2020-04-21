@@ -1,6 +1,6 @@
 package com.garyzhangscm.cwms.outbound.model;
 
-import com.garyzhangscm.cwms.outbound.service.PickListService;
+
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -18,6 +18,9 @@ public class PickList {
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "number")
+    private String number;
+
     @OneToMany(
             mappedBy = "pickList"
     )
@@ -25,6 +28,7 @@ public class PickList {
 
     @Column(name = "group_key")
     private String groupKey;
+
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -35,6 +39,18 @@ public class PickList {
 
     @Column(name = "status")
     private PickListStatus status;
+
+    @Override
+    public String toString() {
+        return "PickList{" +
+                "id=" + id +
+                ", picks=" + picks +
+                ", groupKey='" + groupKey + '\'' +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                ", status=" + status +
+                '}';
+    }
 
     public Long getId() {
         return id;
@@ -82,5 +98,13 @@ public class PickList {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
     }
 }
