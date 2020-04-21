@@ -395,13 +395,24 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 logger.debug("We can pick {} from location {}, item {}", pickableQuantity,
                         inventorySummary.getLocation().getName(), inventorySummary.getItem().getName());
 
-                logger.debug("Start to generate pick\n pickable quantity {}\n open quantity {}\n pickable unit of measure quantity {}",
-                        pickableQuantity, openQuantity, smallestPickableUnitOfMeasureQuantity);
-                if (Math.min(pickableQuantity, openQuantity) > smallestPickableUnitOfMeasureQuantity) {
-                    Long pickQuantity = Math.min(pickableQuantity, openQuantity);
-                    // Make sure we pick by unit of measure
-                    pickQuantity = (pickQuantity / smallestPickableUnitOfMeasureQuantity) * smallestPickableUnitOfMeasureQuantity;
 
+                Long pickQuantity = calculatePickQuantity(pickableQuantity,
+                        openQuantity, smallestPickableUnitOfMeasureQuantity, AllocationConfigurationType.PICKING);
+                logger.debug("We can pick {} from location {}, item {}, the open quantity is {}, " +
+                                "we will pick by UOM quantity {}, Concolusion: we will pick {} from the location",
+                        pickableQuantity,
+                        inventorySummary.getLocation().getName(),
+                        inventorySummary.getItem().getName(),
+                        openQuantity,
+                        smallestPickableUnitOfMeasureQuantity,
+                        pickQuantity);
+
+                // Seems we can't pick from this inventory summary
+                if (pickQuantity == 0L) {
+                    continue;
+                }
+
+                try {
                     Pick pick = pickService.generatePick(inventorySummary, shipmentLine, pickQuantity);
                     picks.add(pick);
                     openQuantity -= pickQuantity;
@@ -411,8 +422,13 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                     // deduct the quantity from inventory summary so that we can have the right available quantity
                     // in the following round
                     inventorySummary.setQuantity(inventorySummary.getQuantity() - pickQuantity);
-                }
 
+                }
+                catch (GenericException ex) {
+                    // in case we can't generate the pick from this location, let's
+                    // continue and try next location
+                    continue;
+                }
             }
         }
 

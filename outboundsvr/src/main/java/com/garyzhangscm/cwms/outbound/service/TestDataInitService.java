@@ -49,6 +49,8 @@ public class TestDataInitService {
 
     EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService;
 
+    ListPickingConfigurationService listPickingConfigurationService;
+
     TrailerTemplateService trailerTemplateService;
 
     @Autowired
@@ -58,16 +60,18 @@ public class TestDataInitService {
     List<String> serviceNames = new ArrayList<>();
     @Autowired
     public TestDataInitService(OrderService orderService,
-                              OrderLineService orderLineService,
+                               OrderLineService orderLineService,
                                AllocationConfigurationService allocationConfigurationService,
                                ShippingStageAreaConfigurationService shippingStageAreaConfigurationService,
                                EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService,
+                               ListPickingConfigurationService listPickingConfigurationService,
                                TrailerTemplateService trailerTemplateService) {
         this.orderService = orderService;
         this.orderLineService = orderLineService;
         this.allocationConfigurationService = allocationConfigurationService;
         this.shippingStageAreaConfigurationService = shippingStageAreaConfigurationService;
         this.emergencyReplenishmentConfigurationService = emergencyReplenishmentConfigurationService;
+        this.listPickingConfigurationService = listPickingConfigurationService;
 
         this.trailerTemplateService = trailerTemplateService;
 
@@ -82,6 +86,8 @@ public class TestDataInitService {
         serviceNames.add("Shipping Stage Area Configuration");
         initiableServices.put("Emergency Replenishment Configuration", emergencyReplenishmentConfigurationService);
         serviceNames.add("Emergency Replenishment Configuration");
+        initiableServices.put("List Picking Configuration", listPickingConfigurationService);
+        serviceNames.add("List Picking Configuration");
         initiableServices.put("Trailer Template", trailerTemplateService);
         serviceNames.add("Trailer Template");
 

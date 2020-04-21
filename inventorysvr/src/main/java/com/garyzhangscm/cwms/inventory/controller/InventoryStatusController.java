@@ -32,8 +32,9 @@ public class InventoryStatusController {
     InventoryStatusService inventoryStatusService;
 
     @RequestMapping(value="/inventory-statuses", method = RequestMethod.GET)
-    public List<InventoryStatus> findAllInventoryStatuses(@RequestParam(name="name", required = false, defaultValue = "") String name) {
-        return inventoryStatusService.findAll(name);
+    public List<InventoryStatus> findAllInventoryStatuses(@RequestParam Long warehouseId,
+                                                          @RequestParam(name="name", required = false, defaultValue = "") String name) {
+        return inventoryStatusService.findAll(warehouseId, name);
     }
 
     @RequestMapping(value="/inventory-status/{id}", method = RequestMethod.GET)

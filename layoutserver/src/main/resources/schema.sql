@@ -59,7 +59,7 @@ CREATE TABLE location_group_type (
 
 CREATE TABLE location_group(
   location_group_id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name   VARCHAR(100) NOT NULL unique,
+  name   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL,
   location_group_type_id BIGINT NOT NULL,
   warehouse_id BIGINT NOT NULL,

@@ -197,7 +197,8 @@ public class OrderLineService implements TestDataInitiableService{
 
     public OrderLine saveOrUpdate(OrderLine orderLine) {
 
-        if (orderLine.getId() == null && findByNaturalKey(orderLine.getOrder().getId(), orderLine.getNumber()) != null) {
+        if (Objects.isNull(orderLine.getId()) &&
+                Objects.nonNull(findByNaturalKey(orderLine.getOrder().getId(), orderLine.getNumber()))) {
             orderLine.setId(findByNaturalKey(orderLine.getOrder().getId(), orderLine.getNumber()).getId());
         }
         return save(orderLine);
@@ -260,7 +261,7 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setWarehouseId(warehouse.getId());
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getOrder())) {
-            Order order = orderService.findByNumber(orderLineCSVWrapper.getOrder());
+            Order order = orderService.findByNumber(warehouse.getId(), orderLineCSVWrapper.getOrder());
             orderLine.setOrder(order);
         }
         if (!StringUtils.isBlank(orderLineCSVWrapper.getItem())) {

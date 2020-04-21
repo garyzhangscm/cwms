@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ReplenishmentException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -87,6 +88,7 @@ public class PickService {
 
 
     public List<Pick> findAll(String number, Long orderId, Long shipmentId, Long waveId,
+                              Long  listId, String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
                               Long shortAllocationId, boolean loadDetails) {
@@ -117,6 +119,19 @@ public class PickService {
                         Join<ShipmentLine, Wave> joinWave = joinShipmentLine.join("wave", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
 
+                    }
+                    if (Objects.nonNull(listId)) {
+                        Join<Pick, PickList> joinPickList = root.join("pickList", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinPickList.get("id"), listId));
+
+                    }
+                    if (StringUtils.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : ids.split(",")) {
+                            inIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inIds));
                     }
 
                     if (Objects.nonNull(itemId)) {
@@ -156,10 +171,11 @@ public class PickService {
     }
 
     public List<Pick> findAll(String number, Long orderId, Long shipmentId,Long waveId,
+                              Long  listId, String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
                               Long shortAllocationId) {
-        return findAll(number, orderId,shipmentId, waveId,
+        return findAll(number, orderId,shipmentId, waveId, listId, ids,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, shortAllocationId, true);
     }
@@ -174,7 +190,7 @@ public class PickService {
 
     public List<Pick> findByOrder(Order order) {
         return findAll(null, order.getId(), null,
-                null, null, null, null,
+                null, null, null, null, null, null,
                 null, null, null);
     }
 
@@ -388,13 +404,16 @@ public class PickService {
     @Transactional
     public void processPickList(Pick pick) {
         try {
+            logger.debug("Start to find pick list candidate");
             PickList pickList = pickListService.getPickList(pick);
+            logger.debug("We will assign pick list {} to the current pick", pickList);
+
             pick.setPickList(pickList);
             saveOrUpdate(pick);
         }
-        catch (Exception ex) {
-            logger.debug("Exception while trying group the pick {} to list\n{}"
-                         , pick.getNumber(), ex.getMessage());
+        catch (GenericException ex) {
+            logger.debug("Exception while trying group the pick {} to list\n{} / data: {}"
+                         , pick.getNumber(), ex.getMessage(), ex.getData());
         }
     }
 

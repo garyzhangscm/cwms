@@ -24,8 +24,9 @@ text,i18n,link,sequence,menuSubGruop,name
 "Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment
 "Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave
 "Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick
-"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,5,Main-Menu-Outbound,Outbound-ShortAllocation
-"Trailer",menu.main.outbound.trailer,/outbound/trailer,6,Main-Menu-Outbound,Outbound-Trailer
+"Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList
+"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,6,Main-Menu-Outbound,Outbound-ShortAllocation
+"Trailer",menu.main.outbound.trailer,/outbound/trailer,7,Main-Menu-Outbound,Outbound-Trailer
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,2,Main-Menu-WorkOrder,Work-Order
 "Production Line",menu.main.work-order.production-line,/work-order/production-line,3,Main-Menu-WorkOrder,Production-Line
