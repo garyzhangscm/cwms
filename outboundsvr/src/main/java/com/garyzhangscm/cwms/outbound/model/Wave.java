@@ -48,6 +48,7 @@ public class Wave implements Serializable {
     private String number;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private WaveStatus status;
 
 

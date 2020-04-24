@@ -18,21 +18,19 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.Pick;
-import com.garyzhangscm.cwms.outbound.model.Wave;
 import com.garyzhangscm.cwms.outbound.service.PickService;
-import com.garyzhangscm.cwms.outbound.service.WaveService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+
 import java.util.List;
 
 @RestController
 public class PickController {
+    private static final Logger logger = LoggerFactory.getLogger(PickController.class);
     @Autowired
     PickService pickService;
 
@@ -42,6 +40,7 @@ public class PickController {
                                    @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                    @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
                                    @RequestParam(name="listId", required = false, defaultValue = "") Long listId,
+                                   @RequestParam(name="cartonizationId", required = false, defaultValue = "") Long cartonizationId,
                                    @RequestParam(name="ids", required = false, defaultValue = "") String ids,
                                    @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                    @RequestParam(name="sourceLocationId", required = false, defaultValue = "") Long sourceLocationId,
@@ -49,7 +48,9 @@ public class PickController {
                                    @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
                                    @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                    @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId) {
-        return pickService.findAll(number, orderId, shipmentId, waveId, listId, ids,
+
+        logger.debug("Start to find pick by: {}", listId);
+        return pickService.findAll(number, orderId, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId);
     }

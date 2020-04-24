@@ -44,6 +44,7 @@ CREATE TABLE item(
   client_id BIGINT,
   item_family_id BIGINT,
   unit_cost double,
+  allow_cartonization boolean not null default 0,
   foreign key(item_family_id) references item_family(item_family_id));
 
 CREATE TABLE item_package_type(

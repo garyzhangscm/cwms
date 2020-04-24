@@ -66,6 +66,10 @@ public class Item implements Serializable {
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+
+    @Column(name = "allow_cartonization")
+    private Boolean allowCartonization = false;
+
     @Transient
     private Warehouse warehouse;
 
@@ -184,5 +188,13 @@ public class Item implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getAllowCartonization() {
+        return allowCartonization;
+    }
+
+    public void setAllowCartonization(Boolean allowCartonization) {
+        this.allowCartonization = allowCartonization;
     }
 }

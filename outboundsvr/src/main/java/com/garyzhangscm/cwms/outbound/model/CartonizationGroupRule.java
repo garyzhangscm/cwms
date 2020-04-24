@@ -1,6 +1,6 @@
 package com.garyzhangscm.cwms.outbound.model;
 
-public enum ListPickingGroupRule {
+public enum CartonizationGroupRule {
     BY_ORDER,
     BY_SHIPMENT,
     BY_CARRIER,

@@ -50,6 +50,7 @@ public class Trailer {
     private String size;
 
     @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private TrailerType type;
 
     @Column(name = "carrier_id")

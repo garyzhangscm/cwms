@@ -52,6 +52,8 @@ public class LocationGroup {
     private Boolean storable;
     @Column(name = "countable")
     private Boolean countable;
+    @Column(name = "allow_cartonization")
+    private Boolean allowCartonization = false;
     @Column(name = "tracking_volume")
     private Boolean trackingVolume;
 
@@ -151,5 +153,13 @@ public class LocationGroup {
 
     public void setInventoryConsolidationStrategy(InventoryConsolidationStrategy inventoryConsolidationStrategy) {
         this.inventoryConsolidationStrategy = inventoryConsolidationStrategy;
+    }
+
+    public Boolean getAllowCartonization() {
+        return allowCartonization;
+    }
+
+    public void setAllowCartonization(Boolean allowCartonization) {
+        this.allowCartonization = allowCartonization;
     }
 }

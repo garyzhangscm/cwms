@@ -41,6 +41,23 @@ public class LocationGroupType {
     private Boolean storage;
     private Boolean pickupAndDeposit;
 
+    @Override
+    public String toString() {
+        return "LocationGroupType{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", fourWallInventory=" + fourWallInventory +
+                ", virtual=" + virtual +
+                ", receivingStage=" + receivingStage +
+                ", shippingStage=" + shippingStage +
+                ", dock=" + dock +
+                ", yard=" + yard +
+                ", storage=" + storage +
+                ", pickupAndDeposit=" + pickupAndDeposit +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }

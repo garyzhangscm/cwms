@@ -1,0 +1,6 @@
+warehouse,name,length,width,height,fillRate,enabled
+WMOR,XS,10,10,10,100,true
+WMOR,S,20,20,10,100,true
+WMOR,M,40,20,20,100,true
+WMOR,L,40,40,40,100,true
+WMOR,XL,100,100,100,100,true

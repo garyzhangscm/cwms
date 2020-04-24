@@ -76,6 +76,7 @@ public class ShortAllocation  implements Serializable {
     private Long allocationCount;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private ShortAllocationStatus status;
 
 

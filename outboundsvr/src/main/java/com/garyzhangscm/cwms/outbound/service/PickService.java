@@ -60,6 +60,8 @@ public class PickService {
     private CancelledPickService cancelledPickService;
     @Autowired
     private ShortAllocationService shortAllocationService;
+    @Autowired
+    private CartonizationService cartonizationService;
 
     @Autowired
     private PickListService pickListService;
@@ -88,7 +90,7 @@ public class PickService {
 
 
     public List<Pick> findAll(String number, Long orderId, Long shipmentId, Long waveId,
-                              Long  listId, String ids,
+                              Long  listId, Long cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
                               Long shortAllocationId, boolean loadDetails) {
@@ -121,8 +123,14 @@ public class PickService {
 
                     }
                     if (Objects.nonNull(listId)) {
+                        logger.debug("Start to find pick by list id: {}", listId);
                         Join<Pick, PickList> joinPickList = root.join("pickList", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinPickList.get("id"), listId));
+
+                    }
+                    if (Objects.nonNull(cartonizationId)) {
+                        Join<Pick, Cartonization> joinCartonization = root.join("cartonization", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinCartonization.get("id"), cartonizationId));
 
                     }
                     if (StringUtils.isNotBlank(ids)) {
@@ -171,11 +179,11 @@ public class PickService {
     }
 
     public List<Pick> findAll(String number, Long orderId, Long shipmentId,Long waveId,
-                              Long  listId, String ids,
+                              Long  listId, Long  cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
                               Long shortAllocationId) {
-        return findAll(number, orderId,shipmentId, waveId, listId, ids,
+        return findAll(number, orderId,shipmentId, waveId, listId, cartonizationId, ids,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, shortAllocationId, true);
     }
@@ -190,7 +198,7 @@ public class PickService {
 
     public List<Pick> findByOrder(Order order) {
         return findAll(null, order.getId(), null,
-                null, null, null, null, null, null,
+                null, null,  null,null, null, null, null,
                 null, null, null);
     }
 
@@ -362,6 +370,8 @@ public class PickService {
         logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
 
 
+        processCartonization(savedPick);
+
         // Let's see if we can group the pick either
         // 1. into an existing pick list
         // 2. or create a new picking list so other picks can be grouped
@@ -393,6 +403,7 @@ public class PickService {
         logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
 
 
+        processCartonization(savedPick);
         // Let's see if we can group the pick either
         // 1. into an existing pick list
         // 2. or create a new picking list so other picks can be grouped
@@ -401,13 +412,27 @@ public class PickService {
         return findById(savedPick.getId());
     }
 
-    @Transactional
-    public void processPickList(Pick pick) {
+    private void processCartonization(Pick pick) {
+        logger.debug(">> Start to process cartonization for pick: {}", pick);
+        Cartonization cartonization = cartonizationService.processCartonization(pick);
+        if (Objects.nonNull(cartonization)){
+            // OK, we got a suitable cartonization, let's assign it to the pick
+            pick.setCartonization(cartonization);
+        }
+        saveOrUpdate(pick);
+
+
+    }
+    private void processPickList(Pick pick) {
         try {
             logger.debug("Start to find pick list candidate");
-            PickList pickList = pickListService.getPickList(pick);
-            logger.debug("We will assign pick list {} to the current pick", pickList);
+            PickList pickList = pickListService.processPickList(pick);
+            logger.debug("We will assign pick list {} to the current {}", pickList,
+                    (Objects.nonNull(pick.getCartonization()) ? "Cartonization" : "Pick"));
 
+            if (Objects.nonNull(pick.getCartonization())) {
+                cartonizationService.processPickList(pick.getCartonization(), pickList);
+            }
             pick.setPickList(pickList);
             saveOrUpdate(pick);
         }

@@ -3,14 +3,15 @@ package com.garyzhangscm.cwms.outbound.model;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name = "list_picking_configuration")
-public class ListPickingConfiguration {
+@Table(name = "cartonization_configuration")
+public class CartonizationConfiguration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "list_picking_configuration_id")
+    @Column(name = "cartonization_configuration_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -37,27 +38,15 @@ public class ListPickingConfiguration {
     private PickType pickType;
 
     // Group Rule
-    @Column(name = "group_rule")
+    @ElementCollection(targetClass=CartonizationGroupRule.class)
     @Enumerated(EnumType.STRING)
-    private ListPickingGroupRule groupRule;
+    @CollectionTable(name="cartonization_configuration_group_rule",
+            joinColumns = @JoinColumn(name = "cartonization_configuration_id"))
+    @Column(name="group_rule")
+    private List<CartonizationGroupRule> groupRules;
 
     @Column(name = "enabled")
     private Boolean enabled;
-
-    @Override
-    public String toString() {
-        return "ListPickingConfiguration{" +
-                "id=" + id +
-                ", sequence=" + sequence +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", clientId=" + clientId +
-                ", client=" + client +
-                ", pickType=" + pickType +
-                ", groupRule=" + groupRule +
-                ", enabled=" + enabled +
-                '}';
-    }
 
     public Long getId() {
         return id;
@@ -107,12 +96,12 @@ public class ListPickingConfiguration {
         this.client = client;
     }
 
-    public ListPickingGroupRule getGroupRule() {
-        return groupRule;
+    public PickType getPickType() {
+        return pickType;
     }
 
-    public void setGroupRule(ListPickingGroupRule groupRule) {
-        this.groupRule = groupRule;
+    public void setPickType(PickType pickType) {
+        this.pickType = pickType;
     }
 
     public Boolean getEnabled() {
@@ -123,12 +112,11 @@ public class ListPickingConfiguration {
         this.enabled = enabled;
     }
 
-    public PickType getPickType() {
-        return pickType;
+    public List<CartonizationGroupRule> getGroupRules() {
+        return groupRules;
     }
 
-    public void setPickType(PickType pickType) {
-        this.pickType = pickType;
+    public void setGroupRules(List<CartonizationGroupRule> groupRules) {
+        this.groupRules = groupRules;
     }
-
 }

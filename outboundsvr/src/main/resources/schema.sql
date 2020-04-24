@@ -2,6 +2,8 @@
 drop table if exists  pick_movement;
 drop table if exists pick;
 drop  table  if exists cancelled_pick;
+drop  table  if exists  cartonization;
+drop table if exists  carton;
 drop table if exists pick_list;
 drop table if exists short_allocation;
 drop table if exists short_allocation_configuration;
@@ -23,6 +25,8 @@ drop table if exists emergency_replenishment_configuration;
 drop table if exists trailer_template;
 
 drop table if exists list_picking_configuration;
+drop table if exists cartonization_configuration_group_rule;
+drop table if exists cartonization_configuration;
 
 
 CREATE TABLE outbound_order (
@@ -193,6 +197,29 @@ CREATE TABLE pick_list(
   status   VARCHAR(20) NOT NULL);
 
 
+CREATE TABLE carton(
+  carton_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  name  VARCHAR(20) NOT NULL,
+  length  double not null ,
+  width  double not null ,
+  height  double not null ,
+  fill_rate  double not null ,
+  enabled boolean not null);
+
+CREATE TABLE cartonization(
+  cartonization_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  group_key_value  VARCHAR(100) NOT NULL,
+  number  VARCHAR(20) NOT NULL,
+  carton_id  BIGINT not null,
+  pick_list_id  BIGINT ,
+  carton_status VARCHAR(20) NOT NULL,
+  foreign key(carton_id) references carton(carton_id));
+
+
+
+
 CREATE TABLE pick(
   pick_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
@@ -209,9 +236,11 @@ CREATE TABLE pick(
   picked_quantity BIGINT  NOT NULL,
   pick_list_id BIGINT,
   inventory_status_id BIGINT NOT NULL,
+  cartonization_id   BIGINT,
   foreign key(shipment_line_id) references shipment_line(shipment_line_id),
   foreign key(pick_list_id) references pick_list(pick_list_id),
-  foreign key(short_allocation_id) references short_allocation(short_allocation_id));
+  foreign key(short_allocation_id) references short_allocation(short_allocation_id),
+  foreign key(cartonization_id) references cartonization(cartonization_id));
 
 
 CREATE TABLE cancelled_pick(
@@ -232,11 +261,13 @@ CREATE TABLE cancelled_pick(
   cancelled_quantity BIGINT  NOT NULL,
   pick_list_id BIGINT,
   inventory_status_id BIGINT NOT NULL,
+  cartonization_id   BIGINT,
   cancelled_username VARCHAR(100) not null,
   cancelled_date datetime not null,
   foreign key(shipment_line_id) references shipment_line(shipment_line_id),
   foreign key(pick_list_id) references pick_list(pick_list_id),
-  foreign key(short_allocation_id) references short_allocation(short_allocation_id));
+  foreign key(short_allocation_id) references short_allocation(short_allocation_id),
+  foreign key(cartonization_id) references cartonization(cartonization_id));
 
 CREATE TABLE pick_movement(
   pick_movement_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -252,7 +283,7 @@ CREATE TABLE allocation_configuration(
   allocation_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
   sequence int  NOT NULL,
-  type int not null,
+  type VARCHAR(20)  not null,
   item_id BIGINT,
   item_family_id BIGINT,
   location_id BIGINT,
@@ -308,5 +339,22 @@ CREATE TABLE list_picking_configuration(
   pick_type  VARCHAR(20) NOT NULL,
   group_rule  VARCHAR(20) NOT NULL,
   enabled boolean not null default 0);
+
+
+CREATE TABLE cartonization_configuration(
+  cartonization_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  sequence int  NOT NULL,
+  client_id BIGINT,
+  pick_type  VARCHAR(20) NOT NULL,
+  enabled boolean not null default 0);
+
+create table cartonization_configuration_group_rule (
+    cartonization_configuration_id bigint not null,
+    group_rule VARCHAR(20) NOT NULL,
+    primary key (cartonization_configuration_id, group_rule)
+);
+
+
 
 

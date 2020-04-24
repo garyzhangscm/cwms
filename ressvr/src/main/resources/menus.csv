@@ -25,6 +25,9 @@ text,i18n,link,sequence,menuSubGruop,name
 "Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave
 "Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick
 "Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList
+"Carton",menu.main.outbound.carton,/outbound/carton,5,Main-Menu-Outbound,Outbound-Carton
+"Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,5,Main-Menu-Outbound,Outbound-CartonizationConfiguration
+"Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,5,Main-Menu-Outbound,Outbound-Cartonization
 "Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,6,Main-Menu-Outbound,Outbound-ShortAllocation
 "Trailer",menu.main.outbound.trailer,/outbound/trailer,7,Main-Menu-Outbound,Outbound-Trailer
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material

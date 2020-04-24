@@ -66,6 +66,7 @@ CREATE TABLE location_group(
   pickable  boolean not null default 0,
   storable  boolean not null default 0,
   countable  boolean not null default 0,
+  allow_cartonization boolean not null default 0,
   tracking_volume  boolean not null default 0,
   volume_tracking_policy VARCHAR(20),
   inventory_consolidation_strategy VARCHAR(20),

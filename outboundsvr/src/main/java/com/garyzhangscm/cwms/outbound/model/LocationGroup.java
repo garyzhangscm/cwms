@@ -30,10 +30,27 @@ public class LocationGroup {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean allowCartonization;
     private Boolean trackingVolume;
     private Boolean consolidateLpn;
 
     private LocationGroupType locationGroupType;
+
+    @Override
+    public String toString() {
+        return "LocationGroup{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", pickable=" + pickable +
+                ", storable=" + storable +
+                ", countable=" + countable +
+                ", allowCartonization=" + allowCartonization +
+                ", trackingVolume=" + trackingVolume +
+                ", consolidateLpn=" + consolidateLpn +
+                ", locationGroupType=" + locationGroupType +
+                '}';
+    }
 
     public Long getId() {
         return id;
@@ -105,5 +122,13 @@ public class LocationGroup {
 
     public void setConsolidateLpn(Boolean consolidateLpn) {
         this.consolidateLpn = consolidateLpn;
+    }
+
+    public Boolean getAllowCartonization() {
+        return allowCartonization;
+    }
+
+    public void setAllowCartonization(Boolean allowCartonization) {
+        this.allowCartonization = allowCartonization;
     }
 }

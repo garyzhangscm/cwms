@@ -53,6 +53,10 @@ public class TestDataInitService {
 
     TrailerTemplateService trailerTemplateService;
 
+    CartonizationConfigurationService cartonizationConfigurationService;
+
+    CartonService cartonService;
+
     @Autowired
     private KafkaTemplate kafkaTemplate;
 
@@ -65,13 +69,17 @@ public class TestDataInitService {
                                ShippingStageAreaConfigurationService shippingStageAreaConfigurationService,
                                EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService,
                                ListPickingConfigurationService listPickingConfigurationService,
-                               TrailerTemplateService trailerTemplateService) {
+                               TrailerTemplateService trailerTemplateService,
+                               CartonService cartonService,
+                               CartonizationConfigurationService cartonizationConfigurationService) {
         this.orderService = orderService;
         this.orderLineService = orderLineService;
         this.allocationConfigurationService = allocationConfigurationService;
         this.shippingStageAreaConfigurationService = shippingStageAreaConfigurationService;
         this.emergencyReplenishmentConfigurationService = emergencyReplenishmentConfigurationService;
         this.listPickingConfigurationService = listPickingConfigurationService;
+        this.cartonService = cartonService;
+        this.cartonizationConfigurationService = cartonizationConfigurationService;
 
         this.trailerTemplateService = trailerTemplateService;
 
@@ -88,6 +96,10 @@ public class TestDataInitService {
         serviceNames.add("Emergency Replenishment Configuration");
         initiableServices.put("List Picking Configuration", listPickingConfigurationService);
         serviceNames.add("List Picking Configuration");
+        initiableServices.put("Carton", cartonService);
+        serviceNames.add("Carton");
+        initiableServices.put("Cartonization Configuration", cartonizationConfigurationService);
+        serviceNames.add("Cartonization Configuration");
         initiableServices.put("Trailer Template", trailerTemplateService);
         serviceNames.add("Trailer Template");
 
@@ -117,6 +129,12 @@ public class TestDataInitService {
 
         jdbcTemplate.update("delete from cancelled_pick where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("cancelled_pick records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from cartonization where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("cartonization records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from carton where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("carton records from warehouse ID {} removed!", warehouseId);
 
         jdbcTemplate.update("delete from pick_list where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("pick_list records from warehouse ID {} removed!", warehouseId);
@@ -171,5 +189,12 @@ public class TestDataInitService {
         logger.debug("list_picking_configuration records from warehouse ID {} removed!", warehouseId);
 
 
+        jdbcTemplate.update("delete from cartonization_configuration_group_rule " +
+                " where cartonization_configuration_id in (select  cartonization_configuration_id from cartonization_configuration where warehouse_id = ?)",
+                new Object[] { warehouseId });
+        logger.debug("cartonization_configuration_group_rule records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from cartonization_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("cartonization_configuration records from warehouse ID {} removed!", warehouseId);
     }
 }

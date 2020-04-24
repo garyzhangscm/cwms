@@ -60,6 +60,7 @@ public class AllocationConfiguration implements Serializable {
     private ItemFamily itemFamily;
 
     @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private AllocationConfigurationType type;
 
     // source
@@ -81,6 +82,7 @@ public class AllocationConfiguration implements Serializable {
     private LocationGroupType locationGroupType;
 
     @Column(name ="allocation_strategy")
+    @Enumerated(EnumType.STRING)
     private AllocationStrategy allocationStrategy;
 
     @OneToMany(

@@ -34,6 +34,7 @@ public class ItemCSVWrapper implements Serializable {
     private String client;
     private String itemFamily;
     private Double unitCost;
+    private Boolean allowCartonization;
 
     private String warehouse;
 
@@ -83,5 +84,13 @@ public class ItemCSVWrapper implements Serializable {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getAllowCartonization() {
+        return allowCartonization;
+    }
+
+    public void setAllowCartonization(Boolean allowCartonization) {
+        this.allowCartonization = allowCartonization;
     }
 }

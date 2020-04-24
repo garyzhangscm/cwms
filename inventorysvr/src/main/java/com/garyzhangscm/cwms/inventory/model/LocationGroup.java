@@ -32,6 +32,7 @@ public class LocationGroup {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean allowCartonization;
     private Boolean trackingVolume;
     private Boolean consolidateLpn;
 
@@ -106,5 +107,13 @@ public class LocationGroup {
 
     public void setConsolidateLpn(Boolean consolidateLpn) {
         this.consolidateLpn = consolidateLpn;
+    }
+
+    public Boolean getAllowCartonization() {
+        return allowCartonization;
+    }
+
+    public void setAllowCartonization(Boolean allowCartonization) {
+        this.allowCartonization = allowCartonization;
     }
 }

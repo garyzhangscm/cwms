@@ -38,6 +38,7 @@ public class PickList {
 
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private PickListStatus status;
 
     @Override
