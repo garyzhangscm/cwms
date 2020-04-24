@@ -36,6 +36,7 @@ public class ShippingStageAreaConfiguration {
     private LocationGroup locationGroup;
 
     @Column(name="location_reserve_strategy")
+    @Enumerated(EnumType.STRING)
     private ShippingStageLocationReserveStrategy locationReserveStrategy;
 
     public Long getId() {

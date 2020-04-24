@@ -35,6 +35,8 @@ public class Item implements Serializable {
 
     private ItemFamily itemFamily;
 
+    private Boolean allowCartonization;
+
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
 
     private double unitCost;
@@ -56,8 +58,17 @@ public class Item implements Serializable {
 
     @Override
     public String toString() {
-        return "name: " + getName() + "\n"
-                + "description: " + getDescription() + "\n";
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", clientId=" + clientId +
+                ", client=" + client +
+                ", itemFamily=" + itemFamily +
+                ", allowCartonization=" + allowCartonization +
+                ", itemPackageTypes=" + itemPackageTypes +
+                ", unitCost=" + unitCost +
+                '}';
     }
 
     public Long getId() {
@@ -122,5 +133,13 @@ public class Item implements Serializable {
 
     public void setUnitCost(double unitCost) {
         this.unitCost = unitCost;
+    }
+
+    public Boolean getAllowCartonization() {
+        return allowCartonization;
+    }
+
+    public void setAllowCartonization(Boolean allowCartonization) {
+        this.allowCartonization = allowCartonization;
     }
 }

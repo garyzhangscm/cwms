@@ -31,6 +31,7 @@ public class LocationGroupCSVWrapper {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean allowCartonization;
     private Boolean trackingVolume;
     private String volumeTrackingPolicy;
     private String inventoryConsolidationStrategy;
@@ -115,5 +116,13 @@ public class LocationGroupCSVWrapper {
 
     public void setInventoryConsolidationStrategy(String inventoryConsolidationStrategy) {
         this.inventoryConsolidationStrategy = inventoryConsolidationStrategy;
+    }
+
+    public Boolean getAllowCartonization() {
+        return allowCartonization;
+    }
+
+    public void setAllowCartonization(Boolean allowCartonization) {
+        this.allowCartonization = allowCartonization;
     }
 }

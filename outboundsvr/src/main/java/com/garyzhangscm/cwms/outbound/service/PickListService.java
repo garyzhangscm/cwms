@@ -38,9 +38,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @Service
@@ -130,7 +128,8 @@ public class PickListService {
     // Group the pick into a list and return the list
     // if we don't have the list picking policy turned on, or
     // we don't have the matched policy, return null
-    public PickList getPickList(Pick pick) {
+    @Transactional
+    public PickList processPickList(Pick pick) {
         // Step 1. Find the matched configuration
         List<ListPickingConfiguration> listPickingConfigurations = findMatchedListPickingConfiguration(pick);
 
@@ -193,6 +192,15 @@ public class PickListService {
 
     private String getGroupKey(ListPickingConfiguration listPickingConfiguration, Pick pick) {
 
+        if (Objects.nonNull(pick.getCartonization()) &&
+                !validategroupKeyByCartonization(listPickingConfiguration, pick)) {
+            String errorMessage = "The picks in the cartonization: " +
+                                   pick.getCartonization() +
+                                    ", have different group key";
+
+            logger.debug(errorMessage);
+            throw PickingException.raiseException(errorMessage);
+        }
         String groupKey = "";
         switch (listPickingConfiguration.getGroupRule()) {
             case BY_ORDER:
@@ -202,9 +210,29 @@ public class PickListService {
                 groupKey = pick.getShipmentLine().getShipmentNumber();
                 break;
             default:
-                groupKey = "";
+                throw PickingException.raiseException( "Can't get group key from the pick: " + pick);
         }
         return groupKey;
+    }
+
+    private boolean validategroupKeyByCartonization(ListPickingConfiguration listPickingConfiguration, Pick pick) {
+
+        Cartonization cartonization = pick.getCartonization();
+        // We will get the group key's values from each pick in the cartonization
+        // then make sure the value is unique in all the
+        Set<String> keyValue = new HashSet<>();
+        switch (listPickingConfiguration.getGroupRule()) {
+            case BY_ORDER:
+                keyValue.add(pick.getOrderNumber());
+                break;
+            case BY_SHIPMENT:
+                keyValue.add(pick.getShipmentLine().getShipmentNumber() );
+                break;
+            default:
+                throw PickingException.raiseException( "Can't get group key from the pick: " + pick);
+
+        }
+        return keyValue.size() == 1;
     }
 
     @Transactional

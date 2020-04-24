@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "cancelled_pick")
@@ -109,6 +110,11 @@ public class CancelledPick implements Serializable {
     @JoinColumn(name = "pick_list_id")
     private PickList pickList;
 
+
+    @ManyToOne
+    @JoinColumn(name = "cartonization_id")
+    @JsonIgnore
+    private Cartonization cartonization;
 
 
     @Column(name = "cancelled_username")
@@ -319,5 +325,17 @@ public class CancelledPick implements Serializable {
 
     public void setPickNumber(String pickNumber) {
         this.pickNumber = pickNumber;
+    }
+
+
+    public Cartonization getCartonization() {
+        return cartonization;
+    }
+
+    public void setCartonization(Cartonization cartonization) {
+        this.cartonization = cartonization;
+    }
+    public String getCartonizationNumber(){
+        return Objects.isNull(getCartonization()) ? "" : getCartonization().getNumber();
     }
 }

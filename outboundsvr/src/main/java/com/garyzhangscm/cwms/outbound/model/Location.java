@@ -32,6 +32,18 @@ public class Location {
 
     private LocationGroup locationGroup;
 
+    @Override
+    public String toString() {
+        return "Location{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", currentVolume=" + currentVolume +
+                ", pendingVolume=" + pendingVolume +
+                ", enabled=" + enabled +
+                ", locationGroup=" + locationGroup +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }

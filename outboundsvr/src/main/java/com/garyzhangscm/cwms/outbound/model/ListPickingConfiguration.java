@@ -33,10 +33,12 @@ public class ListPickingConfiguration {
     private Client client;
 
     @Column(name = "pick_type")
+    @Enumerated(EnumType.STRING)
     private PickType pickType;
 
     // Group Rule
     @Column(name = "group_rule")
+    @Enumerated(EnumType.STRING)
     private ListPickingGroupRule groupRule;
 
     @Column(name = "enabled")

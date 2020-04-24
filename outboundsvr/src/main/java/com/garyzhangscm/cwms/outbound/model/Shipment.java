@@ -55,6 +55,7 @@ public class Shipment implements Serializable {
     private List<ShipmentLine> shipmentLines = new ArrayList<>();
 
     @Column(name="status")
+    @Enumerated(EnumType.STRING)
     private ShipmentStatus status;
 
     @Column(name = "carrier_id")

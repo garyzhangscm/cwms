@@ -197,6 +197,7 @@ public class ItemService implements TestDataInitiableService{
                 addColumn("client").
                 addColumn("itemFamily").
                 addColumn("unitCost").
+                addColumn("allowCartonization").
                 build().withHeader();
         return fileService.loadData(file, schema, ItemCSVWrapper.class);
     }
@@ -211,6 +212,7 @@ public class ItemService implements TestDataInitiableService{
                 addColumn("client").
                 addColumn("itemFamily").
                 addColumn("unitCost").
+                addColumn("allowCartonization").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, ItemCSVWrapper.class);
@@ -234,6 +236,7 @@ public class ItemService implements TestDataInitiableService{
         item.setName(itemCSVWrapper.getName());
         item.setDescription(itemCSVWrapper.getDescription());
         item.setUnitCost(itemCSVWrapper.getUnitCost());
+        item.setAllowCartonization(itemCSVWrapper.getAllowCartonization());
 
         // warehouse
         if (!StringUtils.isBlank(itemCSVWrapper.getWarehouse())) {

@@ -75,6 +75,11 @@ public class Pick implements Serializable {
     @JsonIgnore
     private ShipmentLine shipmentLine;
 
+    @ManyToOne
+    @JoinColumn(name = "cartonization_id")
+    @JsonIgnore
+    private Cartonization cartonization;
+
 
     @Column(name = "work_order_line_id")
     private Long workOrderLineId;
@@ -85,6 +90,7 @@ public class Pick implements Serializable {
     private ShortAllocation shortAllocation;
 
     @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private PickType pickType;
 
     @Column(name = "quantity")
@@ -94,6 +100,7 @@ public class Pick implements Serializable {
     private Long pickedQuantity;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private PickStatus status;
 
     @Column(name = "inventory_status_id")
@@ -151,7 +158,18 @@ public class Pick implements Serializable {
 
     public String getPickListNumber() {
         if (Objects.isNull(pickList)) {
-            return null;
+            // If the pick list is empty, let's check if it belongs
+            // to a cartonization pick
+            if (Objects.isNull(cartonization) ||
+                    Objects.isNull(cartonization.getPickList())) {
+                return null;
+            }
+            else {
+                // the pick belongs to a cartonization,
+                // let's return the list of the cartonization
+                return cartonization.getPickList().getNumber();
+
+            }
         }
         else {
             return pickList.getNumber();
@@ -337,4 +355,15 @@ public class Pick implements Serializable {
         this.inventoryStatusId = inventoryStatusId;
     }
 
+    public Cartonization getCartonization() {
+        return cartonization;
+    }
+
+    public void setCartonization(Cartonization cartonization) {
+        this.cartonization = cartonization;
+    }
+
+    public String getCartonizationNumber(){
+        return Objects.isNull(getCartonization()) ? "" : getCartonization().getNumber();
+    }
 }
