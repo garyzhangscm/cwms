@@ -11,6 +11,8 @@ WMOR,PALLET_PICK_HV,Pallet Picking Area - High Value,Storage, true, true, true,t
 WMOR,EACH_PICK_OZ,Each Picking Area - Over Size,Storage, true, true, true,true,BY_EACH,CONSOLIDATE_BY_INVENTORY,true
 WMOR,CASE_PICK_OZ,Case Picking Area - Over Size,Storage, true, true, true,true,BY_VOLUME,CONSOLIDATE_BY_INVENTORY,false
 WMOR,PALLET_PICK_OZ,Pallet Picking Area - Over Size,Storage, true, true, true,true,BY_PALLET,CONSOLIDATE_BY_INVENTORY,false
+WMOR,GRID-A,Grid Wall - A,Grid,false,false,false,false,,NONE,false
+WMOR,GRID-B,Grid Wall - B,Grid,false,false,false,false,,NONE,false
 WMOR,DAMAGED,Damaged Inventory Area,Damaged, true, true, true,false,,NONE,false
 WMOR,RECV_STG,Receiving Stage,Receive_Stage, false, false, false,false,,NONE,false
 WMOR,RECV_DCK,Receiving Dock,Receive_Dock, false, false, false,false,,NONE,false

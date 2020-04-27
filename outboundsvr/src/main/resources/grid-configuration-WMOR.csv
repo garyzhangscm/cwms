@@ -1,0 +1,3 @@
+warehouse,locationGroup,preAssignedLocation,allowConfirmByGroup,depositOnConfirm
+WMOR,GRID-A,true,true,true
+WMOR,GRID-B,false,false,false

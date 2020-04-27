@@ -107,6 +107,28 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+
+    public List<Location> getLocationByLocationGroupId(Long warehouseId, Long locationGroupId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations")
+                        .queryParam("locationGroupIds", String.valueOf(locationGroupId))
+                        .queryParam("warehouseId", warehouseId);
+
+
+        ResponseBodyWrapper<List<Location>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

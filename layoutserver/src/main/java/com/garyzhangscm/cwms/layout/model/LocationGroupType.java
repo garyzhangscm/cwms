@@ -63,6 +63,9 @@ public class LocationGroupType {
     private Boolean yard;
     @Column(name = "storage_locations")
     private Boolean storage;
+    // a typical grid is a distribution wall
+    @Column(name = "grid")
+    private Boolean grid;
     @Column(name = "pickup_and_deposit_locations")
     private Boolean pickupAndDeposit;
     @Column(name = "trailer_locations")
@@ -187,5 +190,13 @@ public class LocationGroupType {
 
     public void setProductionLineOutbound(Boolean productionLineOutbound) {
         this.productionLineOutbound = productionLineOutbound;
+    }
+
+    public Boolean getGrid() {
+        return grid;
+    }
+
+    public void setGrid(Boolean grid) {
+        this.grid = grid;
     }
 }

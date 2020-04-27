@@ -108,6 +108,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("productionLine").
                 addColumn("productionLineInbound").
                 addColumn("productionLineOutbound").
+                addColumn("grid").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupType.class);
     }
@@ -128,6 +129,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("productionLine").
                 addColumn("productionLineInbound").
                 addColumn("productionLineOutbound").
+                addColumn("grid").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupType.class);

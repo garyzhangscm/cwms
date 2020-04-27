@@ -30,6 +30,7 @@ public class LocationGroup {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean grid;
     private Boolean allowCartonization;
     private Boolean trackingVolume;
     private Boolean consolidateLpn;
@@ -130,5 +131,13 @@ public class LocationGroup {
 
     public void setAllowCartonization(Boolean allowCartonization) {
         this.allowCartonization = allowCartonization;
+    }
+
+    public Boolean getGrid() {
+        return grid;
+    }
+
+    public void setGrid(Boolean grid) {
+        this.grid = grid;
     }
 }

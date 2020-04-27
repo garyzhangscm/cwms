@@ -45,6 +45,7 @@
   "menu.main.outbound.carton": "装箱基础数据",
   "menu.main.outbound.cartonization-configuration": "装箱拣货配置",
   "menu.main.outbound.cartonization": "装箱拣货",
+  "menu.main.outbound.grid": "播种墙",
   "menu.main.work-order":"加工",
   "menu.main.work-order.bill-of-material":"BOM",
   "menu.main.work-order.work-order":"加工工单",

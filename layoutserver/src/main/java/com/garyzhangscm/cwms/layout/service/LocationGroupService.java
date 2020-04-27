@@ -213,6 +213,7 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.setCountable(locationGroupCSVWrapper.getCountable());
         locationGroup.setStorable(locationGroupCSVWrapper.getStorable());
 
+
         locationGroup.setAllowCartonization(locationGroupCSVWrapper.getAllowCartonization());
         locationGroup.setWarehouse(warehouseService.findByName(locationGroupCSVWrapper.getWarehouse()));
 
