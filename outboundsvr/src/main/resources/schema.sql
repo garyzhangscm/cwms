@@ -28,6 +28,9 @@ drop table if exists list_picking_configuration;
 drop table if exists cartonization_configuration_group_rule;
 drop table if exists cartonization_configuration;
 
+drop table if exists grid_configuration;
+drop table  if exists grid_location_configuration;
+
 
 CREATE TABLE outbound_order (
   outbound_order_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -217,6 +220,24 @@ CREATE TABLE cartonization(
   carton_status VARCHAR(20) NOT NULL,
   foreign key(carton_id) references carton(carton_id));
 
+
+CREATE TABLE grid_configuration(
+  grid_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  location_group_id  BIGINT not null,
+  pre_assigned_location boolean not null,
+  allow_confirm_by_group boolean not null,
+  deposit_on_confirm  boolean not null);
+
+
+CREATE TABLE grid_location_configuration(
+  grid_location_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  location_group_id  BIGINT not null,
+  location_id  BIGINT not null,
+  row_num INT not null,
+  column_span INT not null,
+  sequence INT not null);
 
 
 

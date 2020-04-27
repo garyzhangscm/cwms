@@ -162,4 +162,5 @@ public class LocationGroup {
     public void setAllowCartonization(Boolean allowCartonization) {
         this.allowCartonization = allowCartonization;
     }
+
 }

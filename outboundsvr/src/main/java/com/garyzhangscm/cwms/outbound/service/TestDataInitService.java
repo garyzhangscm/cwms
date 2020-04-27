@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.model.GridConfiguration;
+import com.garyzhangscm.cwms.outbound.model.GridLocationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,10 @@ public class TestDataInitService {
 
     CartonService cartonService;
 
+    GridConfigurationService gridConfigurationService;
+
+    GridLocationConfigurationService gridLocationConfigurationService;
+
     @Autowired
     private KafkaTemplate kafkaTemplate;
 
@@ -71,7 +77,9 @@ public class TestDataInitService {
                                ListPickingConfigurationService listPickingConfigurationService,
                                TrailerTemplateService trailerTemplateService,
                                CartonService cartonService,
-                               CartonizationConfigurationService cartonizationConfigurationService) {
+                               CartonizationConfigurationService cartonizationConfigurationService,
+                               GridConfigurationService gridConfigurationService,
+                               GridLocationConfigurationService gridLocationConfigurationService) {
         this.orderService = orderService;
         this.orderLineService = orderLineService;
         this.allocationConfigurationService = allocationConfigurationService;
@@ -80,6 +88,8 @@ public class TestDataInitService {
         this.listPickingConfigurationService = listPickingConfigurationService;
         this.cartonService = cartonService;
         this.cartonizationConfigurationService = cartonizationConfigurationService;
+        this.gridConfigurationService = gridConfigurationService;
+        this.gridLocationConfigurationService = gridLocationConfigurationService;
 
         this.trailerTemplateService = trailerTemplateService;
 
@@ -102,6 +112,12 @@ public class TestDataInitService {
         serviceNames.add("Cartonization Configuration");
         initiableServices.put("Trailer Template", trailerTemplateService);
         serviceNames.add("Trailer Template");
+
+        initiableServices.put("Grid Configuration", gridConfigurationService);
+        serviceNames.add("Grid Configuration");
+
+        initiableServices.put("Grid Location Configuration", gridLocationConfigurationService);
+        serviceNames.add("Grid Location Configuration");
 
     }
     public String[] getTestDataNames() {
@@ -196,5 +212,12 @@ public class TestDataInitService {
 
         jdbcTemplate.update("delete from cartonization_configuration where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("cartonization_configuration records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from grid_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("grid_configuration records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from grid_location_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("grid_location_configuration records from warehouse ID {} removed!", warehouseId);
     }
 }
