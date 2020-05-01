@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import com.garyzhangscm.cwms.outbound.service.PickService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,8 @@ public class PickController {
     PickService pickService;
 
     @RequestMapping(value="/picks", method = RequestMethod.GET)
-    public List<Pick> findAllPicks(@RequestParam(name="number", required = false, defaultValue = "") String number,
+    public List<Pick> findAllPicks(@RequestParam Long warehouseId,
+                                   @RequestParam(name="number", required = false, defaultValue = "") String number,
                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
                                    @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                    @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
@@ -47,9 +49,13 @@ public class PickController {
                                    @RequestParam(name="destinationLocationId", required = false, defaultValue = "") Long destinationLocationId,
                                    @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
                                    @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
-                                   @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId) {
+                                   @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId,
+                                   @RequestParam(name="containerId", required = false, defaultValue = "") String containerId) {
 
         logger.debug("Start to find pick by: {}", listId);
+        if (StringUtils.isNotBlank(containerId)) {
+            return pickService.getPicksByContainer(warehouseId, containerId);
+        }
         return pickService.findAll(number, orderId, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId);
@@ -91,8 +97,10 @@ public class PickController {
     @RequestMapping(value="/picks/{id}/confirm", method = RequestMethod.POST)
     public Pick confirmPick(@PathVariable Long id,
                             @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
-                            @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId) {
-            return pickService.confirmPick(id, quantity, nextLocationId);
+                            @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId,
+                            @RequestParam(name="pickToContainer", required = false, defaultValue = "false") boolean pickToContainer,
+                            @RequestParam(name="containerId", required = false, defaultValue = "") String containerId) {
+            return pickService.confirmPick(id, quantity, nextLocationId, pickToContainer, containerId);
     }
 
 

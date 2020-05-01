@@ -70,6 +70,8 @@ public class LocationGroupType {
     private Boolean pickupAndDeposit;
     @Column(name = "trailer_locations")
     private Boolean trailer;
+    @Column(name = "container_locations")
+    private Boolean container;
 
 
     public Long getId() {
@@ -198,5 +200,13 @@ public class LocationGroupType {
 
     public void setGrid(Boolean grid) {
         this.grid = grid;
+    }
+
+    public Boolean getContainer() {
+        return container;
+    }
+
+    public void setContainer(Boolean container) {
+        this.container = container;
     }
 }

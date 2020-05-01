@@ -42,6 +42,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -487,6 +488,38 @@ public class LocationService implements TestDataInitiableService {
         location.setLocked(lock);
         return saveOrUpdate(location);
 
+    }
+
+
+    public Location getOrCreateContainerLocation(Long warehouseId,
+                                                 String containerName) {
+        if (Objects.nonNull(findByName(containerName, warehouseId))) {
+            return findByName(containerName, warehouseId);
+        }
+
+        // The location for the container is not created yet, let's
+        // create one in the specific location group
+        LocationGroup locationGroup  = locationGroupService.getContainerLocationGroup(warehouseId);
+        return createContainerLocation(warehouseId, containerName, locationGroup);
+
+
+
+    }
+
+    public Location createContainerLocation(Long warehouseId,
+                                            String containerName,
+                                            LocationGroup locationGroup) {
+        Location location = new Location();
+        location.setName(containerName);
+        location.setLocationGroup(locationGroup);
+        location.setWarehouse(warehouseService.findById(warehouseId));
+        location.setEnabled(true);
+        location.setCapacity(Double.valueOf(Integer.MAX_VALUE));
+        location.setCurrentVolume(0.0);
+        location.setPendingVolume(0.0);
+        location.setLocked(false);
+        location.setFillPercentage(100.0);
+        return save(location);
     }
 
 }

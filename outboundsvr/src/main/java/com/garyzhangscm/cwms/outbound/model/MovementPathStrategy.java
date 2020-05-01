@@ -23,6 +23,7 @@ public enum MovementPathStrategy {
     BY_SUPPLIER,
     BY_CUSTOMER,
     BY_ORDER,
+    BY_SHIPMENT,
     BY_STOP,
     BY_TRAILER,
     BY_ITEM_FAMILY,

@@ -55,7 +55,15 @@ public class MovementPathDetail {
     @Column(name = "sequence")
     private Integer sequence;
 
+    /**
+     * When the movement path detail is defined by location group, then
+     * the strategy defines how we reserve a location from the group.
+     * For example, if the strategy is BY_SHIPMENT, then all the
+     * inventory picked for the same shipment will reserve the same
+     * hop location.
+     */
     @Column(name = "strategy")
+    @Enumerated(EnumType.STRING)
     private MovementPathStrategy strategy;
 
     @Override

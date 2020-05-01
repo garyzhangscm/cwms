@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
@@ -62,6 +63,12 @@ public class PickService {
     private ShortAllocationService shortAllocationService;
     @Autowired
     private CartonizationService cartonizationService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private ShipmentService shipmentService;
+    @Autowired
+    private WaveService waveService;
 
     @Autowired
     private PickListService pickListService;
@@ -202,6 +209,40 @@ public class PickService {
                 null, null, null);
     }
 
+    public List<Pick> findByShipment(Shipment shipment) {
+        return findAll(null, null, shipment.getId(),
+                null, null,  null,null, null, null, null,
+                null, null, null);
+    }
+    public List<Pick> findByWorkOrder(WorkOrder workOrder) {
+        String workOrderLineIds
+                = workOrder.getWorkOrderLines().stream().
+                        map(WorkOrderLine::getId).
+                        map(Object::toString).
+                        collect( Collectors.joining( "," ) );
+        return findAll(null, null, null,
+                null, null,  null,null, null, null, null,
+                null, workOrderLineIds, null);
+    }
+    public List<Pick> findByWave(Wave wave) {
+
+        return findAll(null, null, null,
+                wave.getId(), null,  null,null, null, null, null,
+                null, null, null);
+    }
+    public List<Pick> findByPickList(PickList pickList) {
+
+        return findAll(null, null, null,
+                null, pickList.getId(),  null,null, null, null, null,
+                null, null, null);
+    }
+    public List<Pick> findByCartonization(Cartonization cartonization) {
+
+        return findAll(null, null, null,
+                null, null,  cartonization.getId(),null, null, null, null,
+                null, null, null);
+    }
+
     public Pick findByNumber(String number) {
         return findByNumber(number, true);
     }
@@ -239,6 +280,54 @@ public class PickService {
 
     }
 
+    /**
+     * We will allow the user to find pick by any one of the following id
+     * 1. Pick work's number:
+     * 2. Order Number:
+     * 3. Shipment Number:
+     * 4. Work Order Number:
+     * 5. List Pick Number
+     * 6. Carton Number
+     * @param warehouseId
+     * @param containerId
+     * @return
+     */
+    public List<Pick> getPicksByContainer(Long warehouseId, String containerId) {
+        // check if the container id is a pick work number
+
+        if (Objects.nonNull(findByNumber(containerId, false))) {
+            return Collections.singletonList(findByNumber(containerId));
+        }
+
+        // Check if the container id is a order number
+        if (Objects.nonNull(orderService.findByNumber(warehouseId, containerId, false))) {
+            return findByOrder(orderService.findByNumber(warehouseId, containerId));
+        }
+        // Check if the container id is a shipment number
+        if (Objects.nonNull(shipmentService.findByNumber(containerId, false))) {
+            return findByShipment(shipmentService.findByNumber( containerId, false));
+        }
+        // Check if the container id is a work order number
+        if (Objects.nonNull(workOrderServiceRestemplateClient.getWorkOrderByNumber(warehouseId, containerId))) {
+            return findByWorkOrder(workOrderServiceRestemplateClient.getWorkOrderByNumber(warehouseId, containerId));
+        }
+        // Check if the container id is a wave
+        if (Objects.nonNull(waveService.findByNumber(containerId, false))) {
+            return findByWave(waveService.findByNumber(containerId, false));
+        }
+        // Check if the container id is pick list
+        if (Objects.nonNull(pickListService.findByNumber(warehouseId, containerId, false))) {
+            return findByPickList(pickListService.findByNumber(warehouseId, containerId, false));
+        }
+        // Check if the container id is cartonization
+        if (Objects.nonNull(cartonizationService.findByNumber(warehouseId, containerId))) {
+            return findByCartonization(cartonizationService.findByNumber(warehouseId, containerId));
+        }
+
+        return new ArrayList<>();
+
+
+    }
 
 
     public Pick save(Pick pick) {
@@ -516,13 +605,23 @@ public class PickService {
     // the pick. THe movement path will guide the user to drop in different hops when moving inventory
     // from the source to the destination
     private void setupMovementPath(Pick pick) {
+        logger.debug("Start to generate movement for pick {}, from {} / {} to {} / {}",
+                pick.getNumber(),
+                pick.getSourceLocationId(),
+                Objects.nonNull(pick.getSourceLocation()) ? pick.getSourceLocation().getName() : "",
+                pick.getDestinationLocationId(),
+                Objects.nonNull(pick.getDestinationLocation()) ? pick.getDestinationLocation().getName() : "");
         List<MovementPath> movementPaths = inventoryServiceRestemplateClient.getPickMovementPath(pick);
 
         if (movementPaths.size() == 0) {
             // No hop area / location defined
+            logger.debug("No movement path defined!");
+
             return;
         }
 
+        logger.debug(">> We find {} movement path configuration available, we will go through one by one until we find a suitable configuration",
+                movementPaths.size());
         // Loop through each configuraion until we can find a good hop chain from the source to the destination
         for(MovementPath movementPath : movementPaths) {
             if (setupMovementPath(pick, movementPath)) {
@@ -534,12 +633,17 @@ public class PickService {
 
     }
     private boolean setupMovementPath(Pick pick, MovementPath movementPath) {
+        logger.debug("Try movement path configuration: {} with {} details",
+                movementPath, movementPath.getMovementPathDetails().size());
         List<MovementPathDetail> movementPathDetails = movementPath.getMovementPathDetails();
 
         List<PickMovement> pickMovements = new ArrayList<>();
         try {
             for (MovementPathDetail movementPathDetail : movementPathDetails) {
-                pickMovements.add(getPickMovement(pick, movementPathDetail));
+                PickMovement pickMovement = getPickMovement(pick, movementPathDetail);
+                logger.debug("Get pickmove: {} \n from movement configuration {}",
+                        pickMovement, movementPathDetail);
+                pickMovements.add(pickMovement);
             }
         }
         catch(Exception exception) {
@@ -548,6 +652,7 @@ public class PickService {
             return false;
         }
 
+        logger.debug("By the end, we get {} pick movement", pickMovements.size());
         if (pickMovements.size() == 0) {
             return false;
         }
@@ -560,20 +665,30 @@ public class PickService {
     }
     private PickMovement getPickMovement(Pick pick, MovementPathDetail movementPathDetail) {
 
+        logger.debug("## getPickMovement: \n >> pick: {} \n movement path details: {}",
+                        pick, movementPathDetail);
         if (movementPathDetail.getHopLocationId() != null) {
             // OK we are suppose to reserve a location by the specific ID.
             // Let's see if we can reserve this typical location
+            logger.debug("## Start to get location by id {}",
+                    movementPathDetail.getHopLocationId() );
 
             Location hopLocation = warehouseLayoutServiceRestemplateClient.reserveLocation(movementPathDetail.getHopLocationId(),
                     getReserveCode(pick, movementPathDetail), pick.getSize(), pick.getQuantity(), 1);
+            logger.debug("## we get location {}",
+                    hopLocation);
             return new PickMovement(pick, hopLocation, movementPathDetail.getSequence());
         }
         else if (movementPathDetail.getHopLocationGroupId() != null) {
             // OK we are suppose to reserve a location from a group
             // Let's see if we can reserve any location from a typical group
+            logger.debug("## Start to get location by group id {}",
+                    movementPathDetail.getHopLocationGroupId() );
 
             Location hopLocation = warehouseLayoutServiceRestemplateClient.reserveLocationFromGroup(movementPathDetail.getHopLocationGroupId(),
                     getReserveCode(pick, movementPathDetail), pick.getSize(), pick.getQuantity(), 1);
+            logger.debug("## we get location {}",
+                    hopLocation);
             return new PickMovement(pick, hopLocation, movementPathDetail.getSequence());
         }
         throw PickingException.raiseException("Can't reserve any location by the movement path detail configuration: " + movementPathDetail.getSequence());
@@ -585,6 +700,8 @@ public class PickService {
                 return pick.getOrderNumber();
             case BY_CUSTOMER:
                 return pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomer().getName();
+            case BY_SHIPMENT:
+                return pick.getShipmentLine().getShipmentNumber();
         }
         throw PickingException.raiseException("not possible to get reserve code for pick from the strategy: " + movementPathDetail.getStrategy());
     }
@@ -605,11 +722,22 @@ public class PickService {
             return confirmPick(pick, quantity, pick.getPickMovements().get(0).getLocation());
         }
     }
-    public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId)  {
-        if (nextLocationId != null) {
+    public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
+                            boolean pickToContainer, String containerId)  {
+        Pick pick = findById(pickId);
+        if (pickToContainer) {
+            // OK we are picking to container, let's check if we already have
+            // a location for the container. If not, we will create the location
+            // on the fly
+            Location nextLocation =
+                    warehouseLayoutServiceRestemplateClient.getLocationByContainerId(pick.getWarehouseId(), containerId);
+            return confirmPick(pick, quantity, nextLocation);
+
+        }
+        if (Objects.nonNull(nextLocationId)) {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
-            if (nextLocation != null) {
-                return confirmPick(findById(pickId), quantity, nextLocation);
+            if (Objects.nonNull(nextLocation)) {
+                return confirmPick(pick, quantity, nextLocation);
             }
             else {
                 throw PickingException.raiseException(
@@ -617,7 +745,7 @@ public class PickService {
             }
         }
         else {
-            return confirmPick(findById(pickId), quantity);
+            return confirmPick(pick, quantity);
         }
     }
     public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {

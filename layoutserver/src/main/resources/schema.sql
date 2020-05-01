@@ -45,7 +45,8 @@ CREATE TABLE location_group_type (
   grid  boolean not null default 0,
   production_line_locations  boolean not null default 0,
   production_line_inbound_locations  boolean not null default 0,
-  production_line_outbound_locations  boolean not null default 0
+  production_line_outbound_locations  boolean not null default 0,
+  container_locations  boolean not null default 0
   );
 
 -- INSERT INTO location_group_type(name, description, four_wall_inventory, virtual_locations) VALUES("Storage", "Storage Locations", 1, 0);
@@ -83,7 +84,7 @@ CREATE TABLE location_group(
 
 CREATE TABLE location(
   location_id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name   VARCHAR(100) NOT NULL unique,
+  name   VARCHAR(100) NOT NULL,
   warehouse_id BIGINT NOT NULL,
   aisle   VARCHAR(100),
   x double,

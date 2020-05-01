@@ -29,6 +29,7 @@ text,i18n,link,sequence,menuSubGruop,name
 "Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,5,Main-Menu-Outbound,Outbound-CartonizationConfiguration
 "Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,5,Main-Menu-Outbound,Outbound-Cartonization
 "Grid",menu.main.outbound.grid,/outbound/grid,5,Main-Menu-Outbound,Outbound-Grid
+"Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,5,Main-Menu-Outbound,Outbound-PickConfirm
 "Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,6,Main-Menu-Outbound,Outbound-ShortAllocation
 "Trailer",menu.main.outbound.trailer,/outbound/trailer,7,Main-Menu-Outbound,Outbound-Trailer
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material

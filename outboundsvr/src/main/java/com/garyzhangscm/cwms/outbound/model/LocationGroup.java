@@ -19,9 +19,13 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import java.util.Objects;
+
 public class LocationGroup {
 
     private Long id;
+
+    private Warehouse warehouse;
 
     private String name;
 
@@ -38,14 +42,33 @@ public class LocationGroup {
     private LocationGroupType locationGroupType;
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LocationGroup that = (LocationGroup) o;
+        if (Objects.nonNull(id) && Objects.nonNull(that.id)) {
+            return Objects.equals(id, that.id);
+        }
+        return  Objects.equals(name, that.name) &&
+                Objects.equals(warehouse, that.warehouse);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, warehouse);
+    }
+
+    @Override
     public String toString() {
         return "LocationGroup{" +
                 "id=" + id +
+                ", warehouse=" + warehouse +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", pickable=" + pickable +
                 ", storable=" + storable +
                 ", countable=" + countable +
+                ", grid=" + grid +
                 ", allowCartonization=" + allowCartonization +
                 ", trackingVolume=" + trackingVolume +
                 ", consolidateLpn=" + consolidateLpn +
@@ -139,5 +162,13 @@ public class LocationGroup {
 
     public void setGrid(Boolean grid) {
         this.grid = grid;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

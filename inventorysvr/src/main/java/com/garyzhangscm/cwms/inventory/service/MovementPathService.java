@@ -171,12 +171,23 @@ public class MovementPathService implements TestDataInitiableService{
         return movementPaths;
     }
 
-    // Get matched movement path based upon the from / to location or location group
-    // We will only get by 3 pairs of parameters
-    // 1. from / to location id
-    // 2. from / to location name
-    // 3. from / to location group
-    // Then we will group all the results together
+    /**
+     * Get matched movement path based upon the from / to location or location group
+     * We will only get by 3 pairs of parameters
+     * 1. from / to location id
+     * 2. from / to location name
+     * 3. from / to location group
+     * If both location(either id pair or name pair) and location group are passed in, then
+     * we will try both criteria and group the result together for returnning
+     * @param warehouseId
+     * @param fromLocationId
+     * @param fromLocationName
+     * @param fromLocationGroupId
+     * @param toLocationId
+     * @param toLocationName
+     * @param toLocationGroupId
+     * @return
+     */
     public List<MovementPath> findMatchedMovementPaths(Long warehouseId,
                                                        Long fromLocationId,
                              String fromLocationName,
@@ -184,6 +195,13 @@ public class MovementPathService implements TestDataInitiableService{
                              Long toLocationId,
                              String toLocationName,
                              Long toLocationGroupId) {
+        logger.debug("Will try to find movement path by \n" +
+                "from / to location id: {} / {} \n " +
+                "from / to location name: {} / {} \n " +
+                "from / to location group id: {} / {} ",
+                fromLocationId, toLocationId,
+                fromLocationName, toLocationName,
+                fromLocationGroupId, toLocationGroupId);
         Set<MovementPath> matchedMovementPathSet = new HashSet<>();
         if (fromLocationId != null && toLocationId != null) {
             List<MovementPath> matchedMovementPath = findAll(warehouseId,
@@ -201,7 +219,8 @@ public class MovementPathService implements TestDataInitiableService{
                 matchedMovementPathSet.addAll(matchedMovementPath);
             }
         }
-        else if (fromLocationGroupId != null && toLocationGroupId != null) {
+
+        if (fromLocationGroupId != null && toLocationGroupId != null) {
             List<MovementPath> matchedMovementPath = findAll(warehouseId,
                     null, "", fromLocationGroupId,
                     null, "", toLocationGroupId);
@@ -249,8 +268,8 @@ public class MovementPathService implements TestDataInitiableService{
         if (movementPath.getFromLocationId() != null && movementPath.getFromLocation() == null) {
             movementPath.setFromLocation(warehouseLayoutServiceRestemplateClient.getLocationById(movementPath.getFromLocationId()));
         }
-        if (movementPath.getToLocationGroupId() != null && movementPath.getToLocation() == null) {
-            movementPath.setToLocation(warehouseLayoutServiceRestemplateClient.getLocationById(movementPath.getToLocationGroupId()));
+        if (movementPath.getToLocationId() != null && movementPath.getToLocation() == null) {
+            movementPath.setToLocation(warehouseLayoutServiceRestemplateClient.getLocationById(movementPath.getToLocationId()));
         }
         // load from / to location group
         if (movementPath.getFromLocationGroupId() != null && movementPath.getFromLocationGroup() == null) {

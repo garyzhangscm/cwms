@@ -16,3 +16,9 @@ WMOR,20007,Coca Cola,,LOW_TEMP,3.79,true
 WMOR,30001,Shrimp,,FROZEN,15,true
 WMOR,30002,Craw Fish,,FROZEN,12.29,true
 WMOR,30003,Dumpling,,FROZEN,5.79,true
+WMOR,40001,Think In Java,,BOOK,13.99,true
+WMOR,40002,Core Jav - 1,,BOOK,11.99,true
+WMOR,40003,Core Java - 2,,BOOK,11.99,true
+WMOR,40004,Effective Java,,BOOK,21.99,true
+WMOR,40005,Spring Boot in Action,,BOOK,5.99,true
+WMOR,40006,Micro Service in Action,,BOOK,8.75,true

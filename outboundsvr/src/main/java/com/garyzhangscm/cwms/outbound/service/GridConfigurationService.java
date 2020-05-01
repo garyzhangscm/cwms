@@ -95,7 +95,18 @@ public class GridConfigurationService implements TestDataInitiableService {
         return gridConfigurationRepository.save(gridConfiguration);
     }
     public GridConfiguration findByWarehouseIdAndLocationGroupId(Long warehouseId, Long locationGroupId) {
-        return gridConfigurationRepository.findByWarehouseIdAndLocationGroupId(warehouseId, locationGroupId);
+        return findByWarehouseIdAndLocationGroupId(warehouseId, locationGroupId, true);
+    }
+    public GridConfiguration findByWarehouseIdAndLocationGroupId(Long warehouseId, Long locationGroupId,
+                                                                 boolean loadDetails) {
+        GridConfiguration gridConfiguration =
+                gridConfigurationRepository.findByWarehouseIdAndLocationGroupId(warehouseId, locationGroupId);
+
+        if (Objects.nonNull(gridConfiguration) && loadDetails) {
+            loadAttribute(gridConfiguration);
+        }
+
+        return gridConfiguration;
     }
     public GridConfiguration addGridConfiguration(Long warehouseId,
                                        GridConfiguration gridConfiguration) {
@@ -203,7 +214,6 @@ public class GridConfigurationService implements TestDataInitiableService {
         return  gridConfiguration;
 
     }
-
 
 
 }
