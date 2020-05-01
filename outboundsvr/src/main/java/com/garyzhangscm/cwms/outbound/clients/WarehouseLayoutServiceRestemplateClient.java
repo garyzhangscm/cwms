@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.outbound.clients;
 
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.Location;
 import com.garyzhangscm.cwms.outbound.model.LocationGroup;
@@ -28,14 +27,11 @@ import com.garyzhangscm.cwms.outbound.model.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
-
 import org.springframework.core.ParameterizedTypeReference;
 
 import org.springframework.http.HttpMethod;
 
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -43,7 +39,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @Component
-@CacheConfig(cacheNames = "locations")
 public class WarehouseLayoutServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WarehouseLayoutServiceRestemplateClient.class);
@@ -66,6 +61,33 @@ public class WarehouseLayoutServiceRestemplateClient {
                         HttpMethod.GET,
                         null,
                         new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    /**
+     * Get the location that represent the container. A typical container is
+     * 1. Pick List
+     * 2. Carton
+     * If the location doesn't exist yet, we will create the location on the fly
+     * @param warehouseId Warehouse Id
+     * @param containerName Container Name
+     * @return
+     */
+    public Location getLocationByContainerId(Long warehouseId, String containerName) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/container/{containerName}")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(containerName).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
@@ -271,6 +293,9 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     public Location reserveLocationFromGroup(Long locationGroupId, String reservedCode,
                                     Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
+        logger.debug("Start to reserve location from group {} \n reserve code: {}, " +
+                "pending size: {} \n pending quantity: {} \n pending pallet quantity: {}",
+                locationGroupId, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")

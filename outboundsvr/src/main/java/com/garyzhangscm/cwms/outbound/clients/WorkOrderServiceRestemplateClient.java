@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.outbound.clients;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
@@ -30,6 +29,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 
 @Component
@@ -56,6 +57,33 @@ public class WorkOrderServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+
+    }
+    public WorkOrder getWorkOrderByNumber(Long warehouseId, String number) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/workorder/work-orders")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("number", number);
+
+        ResponseBodyWrapper<List<WorkOrder>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<WorkOrder>>>() {}).getBody();
+
+        // Even the web call will return a list of work order, since we specify the number and warehouse id
+        // we are expecting only one result(or null)
+        List<WorkOrder> workOrders = responseBodyWrapper.getData();
+        if (workOrders.size() != 1) {
+            return null;
+        }
+        else {
+            return workOrders.get(0);
+        }
 
     }
 

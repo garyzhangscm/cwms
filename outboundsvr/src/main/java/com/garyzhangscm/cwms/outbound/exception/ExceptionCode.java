@@ -26,7 +26,8 @@ public enum ExceptionCode {
     SHIPPING_EXCEPTION(45004, HttpStatus.BAD_REQUEST, "Shipping Exception"),
     REPLENISHMENT_EXCEPTION(45005, HttpStatus.BAD_REQUEST, "Replenishment Exception"),
     ORDER_OPERATION_EXCEPTION(45006, HttpStatus.BAD_REQUEST, "Order Operation Exception"),
-    SHORT_ALLOCATION_EXCEPTION(45007, HttpStatus.BAD_REQUEST, "Short Allocation Operation Exception");
+    SHORT_ALLOCATION_EXCEPTION(45007, HttpStatus.BAD_REQUEST, "Short Allocation Operation Exception"),
+    GRID_EXCEPTION(45008, HttpStatus.BAD_REQUEST, "Grid Exception");
 
     private final int code;
 

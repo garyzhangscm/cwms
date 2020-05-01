@@ -22,12 +22,9 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -35,7 +32,6 @@ import java.util.List;
 
 
 @Component
-@CacheConfig(cacheNames = "common")
 public class CommonServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);

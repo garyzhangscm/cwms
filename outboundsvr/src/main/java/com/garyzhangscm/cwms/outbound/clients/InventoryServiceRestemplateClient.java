@@ -203,7 +203,8 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inventory/inventories")
-                        .queryParam("location", location.getName());
+                        .queryParam("locationId", location.getId())
+                        .queryParam("warehouseId", location.getWarehouse().getId());
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(

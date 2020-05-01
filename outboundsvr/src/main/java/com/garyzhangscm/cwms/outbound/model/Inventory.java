@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Inventory implements Serializable {
 
@@ -47,23 +49,25 @@ public class Inventory implements Serializable {
 
     private Pick pick;
 
+    List<InventoryMovement> inventoryMovements = new ArrayList<>();
+
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append(" lpn: ").append(lpn).append(",")
-                .append(" locationId: ").append(locationId).append(",")
-                .append(" location: ").append(location).append(",")
-                .append(" receiptId: ").append(receiptId).append(",")
-                .append(" item: ").append(item).append(",")
-                .append(" itemPackageType: ").append(itemPackageType).append(",")
-                .append(" quantity: ").append(quantity).append(",")
-                .append(" virtual: ").append(virtual).append(",")
-                .append(" inventoryStatus: ").append(inventoryStatus).append(",")
-                .append(" pickId: ").append(pickId).append(",")
-                .append(" pick: ").append(pick).append("}")
-                .toString();
-
+        return "Inventory{" +
+                "id=" + id +
+                ", lpn='" + lpn + '\'' +
+                ", locationId=" + locationId +
+                ", location=" + location +
+                ", receiptId=" + receiptId +
+                ", item=" + item +
+                ", itemPackageType=" + itemPackageType +
+                ", quantity=" + quantity +
+                ", virtual=" + virtual +
+                ", inventoryStatus=" + inventoryStatus +
+                ", pickId=" + pickId +
+                ", pick=" + pick +
+                ", inventoryMovements=" + inventoryMovements +
+                '}';
     }
 
     public Long getId() {
@@ -173,5 +177,13 @@ public class Inventory implements Serializable {
 
     public void setPick(Pick pick) {
         this.pick = pick;
+    }
+
+    public List<InventoryMovement> getInventoryMovements() {
+        return inventoryMovements;
+    }
+
+    public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
+        this.inventoryMovements = inventoryMovements;
     }
 }

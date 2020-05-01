@@ -20,21 +20,17 @@ package com.garyzhangscm.cwms.inventory.clients;
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.Pick;
-import com.garyzhangscm.cwms.inventory.model.Receipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
-@CacheConfig(cacheNames = "outbound")
+
 public class OutbuondServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(OutbuondServiceRestemplateClient.class);
@@ -43,7 +39,7 @@ public class OutbuondServiceRestemplateClient {
     OAuth2RestOperations restTemplate;
 
 
-    @Cacheable
+
     public Pick getPickById(Long id) {
 
         UriComponentsBuilder builder =

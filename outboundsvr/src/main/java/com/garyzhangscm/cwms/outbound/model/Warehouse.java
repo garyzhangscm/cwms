@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Warehouse implements Serializable {
 
@@ -37,6 +38,40 @@ public class Warehouse implements Serializable {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Warehouse warehouse = (Warehouse) o;
+        if (Objects.nonNull(id) && Objects.nonNull(warehouse.id)) {
+            return Objects.equals(id, warehouse.id);
+        }
+        return  Objects.equals(name, warehouse.name);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, size, addressCountry, addressState, addressCounty, addressCity, addressDistrict, addressLine1, addressLine2, addressPostcode);
+    }
+
+    @Override
+    public String toString() {
+        return "Warehouse{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", size='" + size + '\'' +
+                ", addressCountry='" + addressCountry + '\'' +
+                ", addressState='" + addressState + '\'' +
+                ", addressCounty='" + addressCounty + '\'' +
+                ", addressCity='" + addressCity + '\'' +
+                ", addressDistrict='" + addressDistrict + '\'' +
+                ", addressLine1='" + addressLine1 + '\'' +
+                ", addressLine2='" + addressLine2 + '\'' +
+                ", addressPostcode='" + addressPostcode + '\'' +
+                '}';
+    }
 
     public Long getId() {
         return id;

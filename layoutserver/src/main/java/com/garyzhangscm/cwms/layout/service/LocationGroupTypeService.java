@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LocationGroupTypeService implements TestDataInitiableService {
@@ -69,6 +70,10 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 return new ArrayList<>();
             }
         }
+    }
+
+    public List<LocationGroupType> getContainerLocationGroupType() {
+        return findAll("").stream().filter(locationGroupType -> locationGroupType.getContainer() == true).collect(Collectors.toList());
     }
 
     public LocationGroupType findByName(String name){
@@ -109,6 +114,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("productionLineInbound").
                 addColumn("productionLineOutbound").
                 addColumn("grid").
+                addColumn("container").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupType.class);
     }
@@ -130,6 +136,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("productionLineInbound").
                 addColumn("productionLineOutbound").
                 addColumn("grid").
+                addColumn("container").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupType.class);

@@ -235,6 +235,6 @@ CREATE TABLE movement_path_detail(
   hop_location_group_id BIGINT,
   warehouse_id BIGINT NOT NULL,
   sequence INT not null,
-  strategy INT not null,
+  strategy VARCHAR(20)  not null,
   foreign key(movement_path_id) references movement_path(movement_path_id)
 );

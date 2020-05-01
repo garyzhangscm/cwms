@@ -63,6 +63,7 @@ public class PickMovement implements Serializable {
 
     public PickMovement(Pick pick, Location location, Integer sequence) {
         this.pick = pick;
+        this.warehouseId = pick.getWarehouseId();
         this.locationId = location.getId();
         this.location = location;
         this.sequence = sequence;
@@ -70,14 +71,17 @@ public class PickMovement implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append("pick: ").append(pick).append(",")
-                .append("locationId: ").append(locationId).append(",")
-                .append("location: ").append(location).append(",")
-                .append("sequence: ").append(sequence).append("}").toString();
-
+        return "PickMovement{" +
+                "id=" + id +
+                ", pick=" + pick +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                ", locationId=" + locationId +
+                ", location=" + location +
+                ", sequence=" + sequence +
+                '}';
     }
+
     public Long getId() {
         return id;
     }

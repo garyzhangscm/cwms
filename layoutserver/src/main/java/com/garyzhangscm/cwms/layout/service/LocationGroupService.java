@@ -240,6 +240,15 @@ public class LocationGroupService implements TestDataInitiableService {
 
     }
 
+    public LocationGroup getContainerLocationGroup(Long warehouseId) {
+
+        long[] locationGroupTypeIdArray =
+                locationGroupTypeService.getContainerLocationGroupType().stream()
+                    .mapToLong(locationGroupType -> locationGroupType.getId()).toArray();
+
+        return findAll( warehouseId,  locationGroupTypeIdArray).stream().findFirst()
+                .orElseThrow(() -> LocationOperationException.raiseException("Can't find location group for container on the fly"));
+    }
 
     // Reserve a location from a group with the specific code.
     // We will first try to allocate a location with the same reserve code. If

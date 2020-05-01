@@ -95,6 +95,19 @@ public class PickListService {
         return pickLists;
     }
 
+    public PickList findByNumber(Long warehouseId, String number) {
+        return findByNumber(warehouseId, number, true);
+
+    }
+    public PickList findByNumber(Long warehouseId, String number, boolean loadDetails) {
+
+        PickList pickList =  pickListRepository.findByWarehouseIdAndNumber(warehouseId, number);
+        if (Objects.nonNull(pickList) && loadDetails) {
+            loadAttribute(pickList);
+        }
+        return pickList;
+    }
+
     private void loadAttribute(List<PickList> pickLists) {
         pickLists.forEach(this::loadAttribute);
     }

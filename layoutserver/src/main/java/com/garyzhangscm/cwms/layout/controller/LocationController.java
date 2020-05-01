@@ -224,5 +224,12 @@ public class LocationController {
         return locationService.processLocationLock(id, locked);
     }
 
+    @RequestMapping(method=RequestMethod.POST, value="/locations/container/{containerName}")
+    public Location getOrCreateContainerLocation(@PathVariable String containerName,
+                                        @RequestParam Long warehouseId) {
+
+        return locationService.getOrCreateContainerLocation(warehouseId, containerName);
+    }
+
 
 }

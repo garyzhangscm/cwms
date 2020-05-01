@@ -31,6 +31,7 @@ import java.util.List;
 @Repository
 public interface PickListRepository extends JpaRepository<PickList, Long>, JpaSpecificationExecutor<PickList> {
 
+    PickList findByWarehouseIdAndNumber(Long warehouseId, String number);
 
     List<PickList> findByGroupKey(String groupKey);
 

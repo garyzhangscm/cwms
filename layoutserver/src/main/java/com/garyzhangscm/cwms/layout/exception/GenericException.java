@@ -20,17 +20,18 @@ package com.garyzhangscm.cwms.layout.exception;
 
 import org.springframework.util.ObjectUtils;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GenericException extends RuntimeException {
+public class GenericException extends RuntimeException implements Serializable {
 
 
     private final ExceptionCode exceptionCode;
     private final HashMap<String, Object> data = new HashMap<>();
 
     public GenericException(ExceptionCode exceptionCode, Map<String, Object> data) {
-        super(exceptionCode.getMessage());
+        super(exceptionCode.getMessage() + " / " + data);
         this.exceptionCode = exceptionCode;
         if (!ObjectUtils.isEmpty(data)) {
             this.data.putAll(data);
@@ -38,7 +39,7 @@ public class GenericException extends RuntimeException {
     }
 
     protected GenericException(ExceptionCode exceptionCode, Map<String, Object> data, Throwable cause) {
-        super(exceptionCode.getMessage(), cause);
+        super(exceptionCode.getMessage() + " / " + data, cause);
         this.exceptionCode = exceptionCode;
         if (!ObjectUtils.isEmpty(data)) {
             this.data.putAll(data);
