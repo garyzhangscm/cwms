@@ -161,6 +161,7 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
                 addColumn("rowNumber").
                 addColumn("columnSpan").
                 addColumn("sequence").
+                addColumn("pendingQuantity").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, GridLocationConfigurationCSVWrapper.class);
@@ -211,11 +212,33 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
                 gridLocationConfigurationCSVWrapper.getSequence()
         );
 
+        gridLocationConfiguration.setPendingQuantity(
+                gridLocationConfigurationCSVWrapper.getPendingQuantity()
+        );
+
 
         return  gridLocationConfiguration;
 
     }
 
+    public void increasePendingQuantity(GridLocationConfiguration gridLocation, Long quantity) {
+        gridLocation.increasePendingQuantity(quantity);
+        saveOrUpdate(gridLocation);
+    }
+
+    public void confirmGridDistributionWork(Long warehouseId,
+                                            Location location, Inventory inventory) {
+        GridLocationConfiguration gridLocationConfiguration
+                = findByWarehouseIdAndLocationId(warehouseId, location.getId());
+
+        synchronized (this) {
+            logger.debug("Will increase grid location {}'s quantity by {}",
+                    location.getName(), inventory.getQuantity());
+            gridLocationConfiguration.increaseArrivedQuantity(inventory.getQuantity());
+
+            saveOrUpdate(gridLocationConfiguration);
+        }
+    }
 
 
 }

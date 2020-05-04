@@ -72,6 +72,8 @@ public class PickService {
 
     @Autowired
     private PickListService pickListService;
+    @Autowired
+    private GridLocationConfigurationService gridLocationConfigurationService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -657,10 +659,20 @@ public class PickService {
             return false;
         }
         // Save the pick movement
-        pickMovements.stream().forEach(pickMovement -> pickMovementService.save(pickMovement));
+        pickMovements.stream().forEach(pickMovement -> savePickMove(pickMovement));
         return  true;
+    }
+    private void savePickMove(PickMovement pickMovement) {
+        pickMovement = pickMovementService.save(pickMovement);
 
-
+        // If the pick move is going through a grid location, then we
+        // will setup the grid location's pending quantity
+        GridLocationConfiguration gridLocation =
+                gridLocationConfigurationService.findByWarehouseIdAndLocationId(
+                        pickMovement.getWarehouseId(), pickMovement.getLocationId());
+        if(Objects.nonNull(gridLocation)) {
+            gridLocationConfigurationService.increasePendingQuantity(gridLocation, pickMovement.getPick().getQuantity());
+        }
 
     }
     private PickMovement getPickMovement(Pick pick, MovementPathDetail movementPathDetail) {
@@ -728,7 +740,7 @@ public class PickService {
         if (pickToContainer) {
             // OK we are picking to container, let's check if we already have
             // a location for the container. If not, we will create the location
-            // on the fly
+            // on the fly.
             Location nextLocation =
                     warehouseLayoutServiceRestemplateClient.getLocationByContainerId(pick.getWarehouseId(), containerId);
             return confirmPick(pick, quantity, nextLocation);

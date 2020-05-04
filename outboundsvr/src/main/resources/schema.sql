@@ -237,7 +237,9 @@ CREATE TABLE grid_location_configuration(
   location_id  BIGINT not null,
   row_num INT not null,
   column_span INT not null,
-  sequence INT not null);
+  sequence INT not null,
+  pending_quantity BIGINT not null,
+  arrived_quantity BIGINT not null);
 
 
 

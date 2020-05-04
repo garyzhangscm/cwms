@@ -218,6 +218,7 @@ public class LocationService implements TestDataInitiableService {
     }
 
     public Location findByName(String name, Long warehouseId){
+        logger.debug("Start to find by name {} /  {}", warehouseId, name);
         return locationRepository.findByName(warehouseId, name);
     }
 
@@ -491,17 +492,28 @@ public class LocationService implements TestDataInitiableService {
     }
 
 
+    /**
+     * @param warehouseId
+     * @param containerName
+     * @return
+     */
     public Location getOrCreateContainerLocation(Long warehouseId,
                                                  String containerName) {
-        if (Objects.nonNull(findByName(containerName, warehouseId))) {
-            return findByName(containerName, warehouseId);
+        // Make sure we will only have one thread that create the container
+        // This normally happens when the use is confirm multiple picks
+        // from the same container at the same time, which may cause
+        // multiple threads try to get or create containers at the same time
+        synchronized (this) {
+            if (Objects.nonNull(findByName(containerName, warehouseId))) {
+                return findByName(containerName, warehouseId);
+            }
+
+            // The location for the container is not created yet, let's
+            // create one in the specific location group
+            LocationGroup locationGroup = locationGroupService.getContainerLocationGroup(warehouseId);
+
+            return createContainerLocation(warehouseId, containerName, locationGroup);
         }
-
-        // The location for the container is not created yet, let's
-        // create one in the specific location group
-        LocationGroup locationGroup  = locationGroupService.getContainerLocationGroup(warehouseId);
-        return createContainerLocation(warehouseId, containerName, locationGroup);
-
 
 
     }

@@ -32,6 +32,7 @@ public class GridLocationConfigurationCSVWrapper implements Serializable {
 
     private Integer columnSpan;
     private Integer sequence;
+    private Long pendingQuantity;
 
     public String getWarehouse() {
         return warehouse;
@@ -71,5 +72,13 @@ public class GridLocationConfigurationCSVWrapper implements Serializable {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public Long getPendingQuantity() {
+        return pendingQuantity;
+    }
+
+    public void setPendingQuantity(Long pendingQuantity) {
+        this.pendingQuantity = pendingQuantity;
     }
 }
