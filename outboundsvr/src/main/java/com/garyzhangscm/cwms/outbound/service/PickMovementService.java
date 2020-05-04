@@ -18,24 +18,22 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
+
 import com.garyzhangscm.cwms.outbound.repository.PickMovementRepository;
-import org.apache.commons.lang.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
+
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.util.*;
 
 
@@ -107,5 +105,8 @@ public class PickMovementService{
             }
         }
     }
+
+
+
 
 }

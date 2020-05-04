@@ -23,6 +23,9 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 
+/**
+ *
+ */
 @Entity
 @Table(name = "grid_location_configuration")
 public class GridLocationConfiguration implements Serializable {
@@ -64,6 +67,24 @@ public class GridLocationConfiguration implements Serializable {
     @Column(name = "sequence")
     private Integer sequence;
 
+    /**
+     * The quantity the will be / already being
+     * directed into the grid location
+     */
+    @Column(name = "pending_quantity")
+    private Long pendingQuantity = 0L;
+
+
+    @Column(name = "arrived_quantity")
+    private Long arrivedQuantity = 0L;
+
+    public void increasePendingQuantity(Long increasedQuantity) {
+        pendingQuantity += increasedQuantity;
+    }
+
+    public void increaseArrivedQuantity(Long increasedQuantity) {
+        arrivedQuantity += increasedQuantity;
+    }
     public Long getId() {
         return id;
     }
@@ -142,5 +163,21 @@ public class GridLocationConfiguration implements Serializable {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public Long getPendingQuantity() {
+        return pendingQuantity;
+    }
+
+    public void setPendingQuantity(Long pendingQuantity) {
+        this.pendingQuantity = pendingQuantity;
+    }
+
+    public Long getArrivedQuantity() {
+        return arrivedQuantity;
+    }
+
+    public void setArrivedQuantity(Long arrivedQuantity) {
+        this.arrivedQuantity = arrivedQuantity;
     }
 }

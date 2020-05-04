@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
+
+import java.io.IOException;
 import java.util.*;
 
 
@@ -38,6 +39,8 @@ public class GridDistributionWorkService {
 
     @Autowired
     private GridConfigurationService gridConfigurationService;
+    @Autowired
+    private GridLocationConfigurationService gridLocationConfigurationService;
     @Autowired
     private PickListService pickListService;
     @Autowired
@@ -139,7 +142,93 @@ public class GridDistributionWorkService {
     }
 
 
+    /**
+     * confirm and move all the inventory on the list / carton / LPN / P&D location
+     * the destination
+     * ID can be list id / carton id / LPN / P&D location
+     * @param warehouseId warehouse id
+     * @param id list id / carton id / LPN / P&D location
+     * @param gridLocationConfigurationId The destination grid location
+     * @throws IOException
+     */
+    public void confirmGridDistributionWork(Long warehouseId,
+                                            String id,
+                                            Long gridLocationConfigurationId){
+        GridLocationConfiguration gridLocationConfiguration =
+                gridLocationConfigurationService.findById(gridLocationConfigurationId);
+        logger.debug("Confirm by moving all inventory from id {} into location {} ",
+                id, gridLocationConfiguration.getLocation().getName());
 
+        // See if the ID is list number
+        PickList pickList = pickListService.findByNumber(warehouseId, id);
+        if (Objects.nonNull(pickList)) {
+
+            logger.debug("Current ID {} is a list identifier. FInd list:\n {}", id, pickList);
+            confirmGridDistributionWork(warehouseId, pickList, gridLocationConfiguration.getLocation());
+            return ;
+
+        }
+
+        // check if the id is a cartonization number
+        Cartonization cartonization = cartonizationService.findByNumber(warehouseId, id);
+        if (Objects.nonNull(cartonization)) {
+
+            logger.debug("Current ID {} is a cartonization identifier. FInd cartonization:\n {}", id, cartonization);
+            confirmGridDistributionWork(warehouseId, cartonization, gridLocationConfiguration.getLocation());
+            return ;
+        }
+
+        logger.debug(" We can't recognize this id: {}", id);
+        throw GridException.raiseException("ID not support");
+    }
+
+
+    public void confirmGridDistributionWork(Long warehouseId, PickList pickList, Location location) {
+
+
+
+        confirmGridDistributionWork(warehouseId, pickList.getNumber(), location);
+
+    }
+    public void confirmGridDistributionWork(Long warehouseId,
+                                            Cartonization cartonization,
+                                            Location location)  {
+        confirmGridDistributionWork(warehouseId, cartonization.getNumber(), location);
+
+    }
+
+    public void confirmGridDistributionWork(Long warehouseId,
+                                            String sourceLocationNumber,
+                                            Location nextLocation)   {
+
+        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, sourceLocationNumber);
+        if (Objects.isNull(location)) {
+
+            logger.debug(" Fail to get location by name {}", sourceLocationNumber);
+            return ;
+        }
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLocation(location);
+        if (inventories.size() == 0) {
+            logger.debug(" There's no inventory at location {}", sourceLocationNumber);
+            return ;
+        }
+        try {
+            Iterator<Inventory> inventoryIterator = inventories.iterator();
+            while (inventoryIterator.hasNext()) {
+                Inventory inventory = inventoryIterator.next();
+                inventoryServiceRestemplateClient.moveInventory(inventory, nextLocation);
+
+                // Update the status of the grid location after we move the inventory
+                // into the location
+                gridLocationConfigurationService.confirmGridDistributionWork(warehouseId, nextLocation, inventory);
+
+            }
+        }
+        catch (IOException ex) {
+            throw GridException.raiseException("Can't get any inventory by id:" + sourceLocationNumber);
+        }
+
+    }
 
 
 }

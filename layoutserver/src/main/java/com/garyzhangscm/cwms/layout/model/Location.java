@@ -24,7 +24,10 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "location")
+@Table(name = "location",
+        uniqueConstraints={
+            @UniqueConstraint(columnNames = {"warehouse_id", "name"})
+        })
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +35,7 @@ public class Location {
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "name", unique = true)
+    @Column(name = "name")
     private String name;
 
     @Column(name = "aisle")

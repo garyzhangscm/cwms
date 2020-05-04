@@ -38,4 +38,11 @@ public class GridDistributionWorkController {
         return gridDistributionWorkService.getGridDistributionWork(warehouseId, locationGroupId, id);
     }
 
+    @RequestMapping(value="/grid-distribution-work/confirm", method = RequestMethod.POST)
+    public void confirmGridDistributionWork(@RequestParam Long warehouseId,
+                                            @RequestParam String id,
+                                            @RequestParam Long gridLocationConfigurationId) {
+        gridDistributionWorkService.confirmGridDistributionWork(warehouseId, id, gridLocationConfigurationId);
+    }
+
 }
