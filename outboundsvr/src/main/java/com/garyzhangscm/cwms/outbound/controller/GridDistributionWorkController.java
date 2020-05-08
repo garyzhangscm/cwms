@@ -33,16 +33,20 @@ public class GridDistributionWorkController {
 
     @RequestMapping(value="/grid-distribution-work", method = RequestMethod.GET)
     public List<GridDistributionWork> findAllGridDistributionWorks(@RequestParam Long warehouseId,
-                                                                   @RequestParam Long locationGroupId,
-                                                                   @RequestParam String id) {
-        return gridDistributionWorkService.getGridDistributionWork(warehouseId, locationGroupId, id);
+                                                                   @RequestParam(name = "locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                                                   @RequestParam(name = "id", required = false, defaultValue = "") String id,
+                                                                   @RequestParam(name = "gridLocationConfigurationId", required = false, defaultValue = "") Long gridLocationConfigurationId) {
+        return gridDistributionWorkService.getGridDistributionWork(warehouseId, locationGroupId, id, gridLocationConfigurationId);
     }
 
     @RequestMapping(value="/grid-distribution-work/confirm", method = RequestMethod.POST)
     public void confirmGridDistributionWork(@RequestParam Long warehouseId,
                                             @RequestParam String id,
-                                            @RequestParam Long gridLocationConfigurationId) {
-        gridDistributionWorkService.confirmGridDistributionWork(warehouseId, id, gridLocationConfigurationId);
+                                            @RequestParam Long gridLocationConfigurationId,
+                                            @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName,
+                                            @RequestParam(name = "quantity", required = false, defaultValue = "") Long quantity) {
+        gridDistributionWorkService.confirmGridDistributionWork(warehouseId, id, gridLocationConfigurationId,
+                itemName, quantity);
     }
 
 }

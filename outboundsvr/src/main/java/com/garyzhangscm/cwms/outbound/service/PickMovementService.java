@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 import java.util.*;
@@ -106,6 +107,32 @@ public class PickMovementService{
         }
     }
 
+
+    /**
+     * Find all the pick movement that will hop through one specific location
+     * @param locationId Hop through location's id
+     * @return
+     */
+    public List<PickMovement> findByHopLocation(Long locationId) {
+        return pickMovementRepository.findByLocationId(locationId);
+
+    }
+
+    private PickMovement findByPickIdAndLocationId(Long pickId, Long locationId){
+        return  pickMovementRepository.findByPickIdAndLocationId(pickId, locationId);
+    }
+
+    public void refreshPickMovement(Long pickId,
+                                    Long destinationLocationId,
+                                    Long quantity) {
+
+        PickMovement pickMovement =findByPickIdAndLocationId(pickId, destinationLocationId);
+        if (Objects.nonNull(pickMovement)) {
+            pickMovement.setArrivedQuantity(pickMovement.getArrivedQuantity() + quantity);
+            save(pickMovement);
+        }
+
+    }
 
 
 

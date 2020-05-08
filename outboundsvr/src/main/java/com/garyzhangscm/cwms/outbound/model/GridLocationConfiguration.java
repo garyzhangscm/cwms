@@ -81,10 +81,17 @@ public class GridLocationConfiguration implements Serializable {
     public void increasePendingQuantity(Long increasedQuantity) {
         pendingQuantity += increasedQuantity;
     }
+    public void decreasePendingQuantity(Long decreasedQuantity) {
+        pendingQuantity -= decreasedQuantity;
+    }
 
     public void increaseArrivedQuantity(Long increasedQuantity) {
         arrivedQuantity += increasedQuantity;
     }
+    public void decreaseArrivedQuantity(Long decreasedQuantity) {
+        arrivedQuantity -= decreasedQuantity;
+    }
+
     public Long getId() {
         return id;
     }

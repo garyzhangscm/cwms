@@ -22,10 +22,18 @@ import com.garyzhangscm.cwms.outbound.model.PickMovement;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 
 @Repository
 public interface PickMovementRepository extends JpaRepository<PickMovement, Long>, JpaSpecificationExecutor<PickMovement> {
 
+    List<PickMovement> findByLocationId(Long locationId);
+
+
+    @Query("select pm from PickMovement pm inner join pm.pick p where pm.locationId = :locationId and p.id = :pickId  ")
+    PickMovement findByPickIdAndLocationId(Long pickId, Long locationId);
 }
