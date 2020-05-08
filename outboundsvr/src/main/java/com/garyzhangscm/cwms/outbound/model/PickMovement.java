@@ -59,6 +59,9 @@ public class PickMovement implements Serializable {
     @Column(name = "sequence")
     private Integer sequence;
 
+    @Column(name = "arrived_quantity")
+    private Long arrivedQuantity = 0L;
+
     public PickMovement(){}
 
     public PickMovement(Pick pick, Location location, Integer sequence) {
@@ -139,5 +142,13 @@ public class PickMovement implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getArrivedQuantity() {
+        return arrivedQuantity;
+    }
+
+    public void setArrivedQuantity(Long arrivedQuantity) {
+        this.arrivedQuantity = arrivedQuantity;
     }
 }

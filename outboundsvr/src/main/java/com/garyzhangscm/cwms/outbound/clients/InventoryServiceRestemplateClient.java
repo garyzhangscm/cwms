@@ -198,6 +198,25 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public List<Inventory> getInventoryByLocationAndItemName(Location location, String itemName) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("locationId", location.getId())
+                        .queryParam("warehouseId", location.getWarehouse().getId())
+                        .queryParam("itemName", itemName);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
     public List<Inventory> getInventoryByLocation(Location location) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

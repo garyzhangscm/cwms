@@ -77,6 +77,25 @@ public class OutbuondServiceRestemplateClient {
 
     }
 
+    public void refreshPickMovement(Long pickId, Long destinationLocationId,Long quantity) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/pick-movement/refresh")
+                        .queryParam("pickId", pickId)
+                        .queryParam("destinationLocationId", destinationLocationId)
+                        .queryParam("quantity", quantity);
+
+        restTemplate.exchange(
+                builder.buildAndExpand(pickId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+
+    }
+
 
 
 }

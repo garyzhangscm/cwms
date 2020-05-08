@@ -235,6 +235,7 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
             logger.debug("Will increase grid location {}'s quantity by {}",
                     location.getName(), inventory.getQuantity());
             gridLocationConfiguration.increaseArrivedQuantity(inventory.getQuantity());
+            gridLocationConfiguration.decreasePendingQuantity(inventory.getQuantity());
 
             saveOrUpdate(gridLocationConfiguration);
         }

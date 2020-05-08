@@ -19,10 +19,13 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 
+import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GridException;
+import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -45,13 +49,72 @@ public class GridDistributionWorkService {
     private PickListService pickListService;
     @Autowired
     private CartonizationService cartonizationService;
+    @Autowired
+    private PickMovementService pickMovementService;
 
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
+
+
+    public List<GridDistributionWork> getGridDistributionWork(Long warehouseId,
+                                                              Long locationGroupId, String id,
+                                                              Long gridLocationConfigurationId) {
+
+        if (Objects.nonNull(gridLocationConfigurationId)) {
+            return getGridDistributionWorkByGridLocation(warehouseId, gridLocationConfigurationId);
+
+        } else {
+
+            return getGridDistributionWorkByContainer(warehouseId, locationGroupId, id);
+        }
+    }
+
+
+    public List<GridDistributionWork> getGridDistributionWorkByGridLocation(Long warehouseId,
+                                                                         Long gridLocationConfigurationId) {
+
+        GridLocationConfiguration gridLocationConfiguration =
+                gridLocationConfigurationService.findById(gridLocationConfigurationId);
+        List<PickMovement> pickMovements = pickMovementService.findByHopLocation(
+                gridLocationConfiguration.getLocationId()
+        );
+        if (pickMovements.size() == 0) {
+            return new ArrayList<>();
+        }
+
+        // Sum up the quantity for each item that will be moved through
+        // this hop location
+        Map<String, Long> pendingItemQuantity = new HashMap<>();
+        pickMovements.forEach(pickMovement -> {
+            Item item = Optional.ofNullable(pickMovement.getPick().getItem()).orElse(
+                    inventoryServiceRestemplateClient.getItemById(
+                            pickMovement.getPick().getItemId()
+                    )
+            );
+            Long quantity = pendingItemQuantity.getOrDefault(
+                    item.getName(), 0L
+            );
+            quantity +=   (pickMovement.getPick().getPickedQuantity() - pickMovement.getArrivedQuantity()) ;
+            pendingItemQuantity.put(item.getName(), quantity);
+        });
+
+        return pendingItemQuantity.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() > 0)
+                .map(entry -> {
+                    GridDistributionWork gridDistributionWork = new GridDistributionWork();
+                    gridDistributionWork.setGridLocationName(gridLocationConfiguration.getLocation().getName());
+                    gridDistributionWork.setItemName(entry.getKey());
+                    gridDistributionWork.setQuantity(entry.getValue());
+                    return gridDistributionWork;
+        }).collect(Collectors.toList());
+    }
 
     /**
      * Get grid distribution work basedon the ID passed in
@@ -60,8 +123,8 @@ public class GridDistributionWorkService {
      * @param id list id / carton id / LPN / P&D location
      * @return
      */
-    public List<GridDistributionWork> getGridDistributionWork(Long warehouseId, Long locationGroupId, String id) {
-
+    public List<GridDistributionWork> getGridDistributionWorkByContainer(Long warehouseId,
+                                                              Long locationGroupId, String id) {
         // Get the Grid information first
         GridConfiguration gridConfiguration = gridConfigurationService.findByWarehouseIdAndLocationGroupId(warehouseId, locationGroupId);
         logger.debug("Get grid configuration by location group id: {}, \n {}", locationGroupId, gridConfiguration);
@@ -142,18 +205,12 @@ public class GridDistributionWorkService {
     }
 
 
-    /**
-     * confirm and move all the inventory on the list / carton / LPN / P&D location
-     * the destination
-     * ID can be list id / carton id / LPN / P&D location
-     * @param warehouseId warehouse id
-     * @param id list id / carton id / LPN / P&D location
-     * @param gridLocationConfigurationId The destination grid location
-     * @throws IOException
-     */
     public void confirmGridDistributionWork(Long warehouseId,
                                             String id,
-                                            Long gridLocationConfigurationId){
+                                            Long gridLocationConfigurationId,
+                                            String itemName,
+                                            Long quantity) {
+
         GridLocationConfiguration gridLocationConfiguration =
                 gridLocationConfigurationService.findById(gridLocationConfigurationId);
         logger.debug("Confirm by moving all inventory from id {} into location {} ",
@@ -164,7 +221,8 @@ public class GridDistributionWorkService {
         if (Objects.nonNull(pickList)) {
 
             logger.debug("Current ID {} is a list identifier. FInd list:\n {}", id, pickList);
-            confirmGridDistributionWork(warehouseId, pickList, gridLocationConfiguration.getLocation());
+            confirmGridDistributionWork(warehouseId, pickList, gridLocationConfiguration.getLocation(),
+                    itemName, quantity);
             return ;
 
         }
@@ -174,7 +232,8 @@ public class GridDistributionWorkService {
         if (Objects.nonNull(cartonization)) {
 
             logger.debug("Current ID {} is a cartonization identifier. FInd cartonization:\n {}", id, cartonization);
-            confirmGridDistributionWork(warehouseId, cartonization, gridLocationConfiguration.getLocation());
+            confirmGridDistributionWork(warehouseId, cartonization, gridLocationConfiguration.getLocation(),
+                    itemName, quantity);
             return ;
         }
 
@@ -183,23 +242,30 @@ public class GridDistributionWorkService {
     }
 
 
-    public void confirmGridDistributionWork(Long warehouseId, PickList pickList, Location location) {
+    public void confirmGridDistributionWork(Long warehouseId, PickList pickList, Location location,
+                                            String itemName,
+                                            Long quantity) {
 
 
 
-        confirmGridDistributionWork(warehouseId, pickList.getNumber(), location);
+        confirmGridDistributionWork(warehouseId, pickList.getNumber(), location,
+                itemName, quantity);
 
     }
     public void confirmGridDistributionWork(Long warehouseId,
                                             Cartonization cartonization,
-                                            Location location)  {
-        confirmGridDistributionWork(warehouseId, cartonization.getNumber(), location);
+                                            Location location,
+                                            String itemName,
+                                            Long quantity)  {
+        confirmGridDistributionWork(warehouseId, cartonization.getNumber(), location, itemName, quantity);
 
     }
 
     public void confirmGridDistributionWork(Long warehouseId,
                                             String sourceLocationNumber,
-                                            Location nextLocation)   {
+                                            Location nextLocation,
+                                            String itemName,
+                                            Long quantity)   {
 
         Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, sourceLocationNumber);
         if (Objects.isNull(location)) {
@@ -207,7 +273,46 @@ public class GridDistributionWorkService {
             logger.debug(" Fail to get location by name {}", sourceLocationNumber);
             return ;
         }
-        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLocation(location);
+        List<Inventory> inventories;
+        if (StringUtils.isNotBlank(itemName) ) {
+
+            logger.debug("# Start to confirm grid distribution work by {}, quantity {}",
+                    itemName, quantity);
+            inventories = new ArrayList<>();
+            List<Inventory> matchedInventory = inventoryServiceRestemplateClient.getInventoryByLocationAndItemName(location, itemName);
+            logger.debug("# Find {} inventory record by item {} in location {}",
+                    matchedInventory.size(), itemName, location.getName());
+            // We will sort by quantity
+            matchedInventory.sort(Comparator.comparingLong(o -> Math.abs(o.getQuantity() - quantity)));
+
+            Long quantityToBeMoved = quantity;
+            Iterator<Inventory> inventoryIterator = matchedInventory.iterator();
+            while(quantityToBeMoved > 0 && inventoryIterator.hasNext()) {
+                Inventory inventory = inventoryIterator.next();
+                logger.debug("## Will confirm with inventory id {}, quantity {}. Quantity left: {}",
+                        inventory.getId(), inventory.getQuantity(), quantityToBeMoved);
+                if (inventory.getQuantity() > quantityToBeMoved) {
+                    // Current inventory is enough for the quantity to be moved
+                    // let's split the inventory
+
+                    String newLpn = commonServiceRestemplateClient.getNextNumber("lpn");
+                    List<Inventory> splitInventory = inventoryServiceRestemplateClient.split(inventory, newLpn, quantityToBeMoved);
+                    if (splitInventory.size() != 2) {
+                        throw GridException.raiseException("Inventory split for pick error! Inventory is not split into 2");
+                    }
+                    inventories.add(splitInventory.get(1));
+                    break;
+                }
+                else {
+                    inventories.add(inventory);
+                    quantityToBeMoved -= inventory.getQuantity();
+                }
+            }
+        }
+        else {
+            inventories = inventoryServiceRestemplateClient.getInventoryByLocation(location);
+
+        }
         if (inventories.size() == 0) {
             logger.debug(" There's no inventory at location {}", sourceLocationNumber);
             return ;

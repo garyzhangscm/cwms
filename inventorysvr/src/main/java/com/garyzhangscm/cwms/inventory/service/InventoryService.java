@@ -587,6 +587,9 @@ public class InventoryService implements TestDataInitiableService{
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_MOVEMENT,
                                         "location", sourceLocation.getName(), destination.getName());
 
+        if (Objects.nonNull(inventory.getPickId())) {
+            outbuondServiceRestemplateClient.refreshPickMovement(inventory.getPickId(), destination.getId(), inventory.getQuantity());
+        }
         // consolidate the inventory at the destination, if necessary
         Inventory consolidatedInventory = inventoryConsolidationService.consolidateInventoryAtLocation(destination, inventory);
 

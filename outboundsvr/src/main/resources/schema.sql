@@ -298,6 +298,7 @@ CREATE TABLE pick_movement(
   pick_id   BIGINT  NOT NULL,
   location_id BIGINT  NOT NULL,
   sequence int  NOT NULL,
+  arrived_quantity BIGINT  NOT NULL,
   foreign key(pick_id) references pick(pick_id));
 
 
