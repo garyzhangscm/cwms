@@ -35,8 +35,10 @@ public class CartonController {
     @RequestMapping(value="/cartons", method = RequestMethod.GET)
     public List<Carton> findAllCartons(@RequestParam Long warehouseId,
                                        @RequestParam(name = "name", required = false, defaultValue = "") String name,
-                                       @RequestParam(name = "enabled", required = false, defaultValue = "") Boolean enabled) {
-        return cartonService.findAll(warehouseId, name, enabled);
+                                       @RequestParam(name = "enabled", required = false, defaultValue = "") Boolean enabled,
+                                       @RequestParam(name = "pickingCartonFlag", required = false, defaultValue = "") Boolean pickingCartonFlag,
+                                       @RequestParam(name = "shippingCartonFlag", required = false, defaultValue = "") Boolean shippingCartonFlag) {
+        return cartonService.findAll(warehouseId, name, enabled, pickingCartonFlag, shippingCartonFlag);
     }
 
     @RequestMapping(value="/cartons", method = RequestMethod.POST)

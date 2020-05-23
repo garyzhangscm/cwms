@@ -125,16 +125,26 @@ public class InventoryController {
     public Inventory moveInventory(@PathVariable long id,
                                    @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
                                    @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
+                                   @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
                                    @RequestBody Location location) {
 
 
-        return inventoryService.moveInventory(id, location , pickId, immediateMove);
+        return inventoryService.moveInventory(id, location , pickId, immediateMove, destinationLpn);
     }
 
 
+    /**
+     * Split the inventory into 2,
+     * the first one in the list is the original inventory with updated quantity
+     * the second one in the list is the new inventory
+     * @param id
+     * @param newLpn
+     * @param newQuantity
+     * @return
+     */
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/split")
     public List<Inventory> splitInventory(@PathVariable long id,
-                                          @RequestParam String newLpn,
+                                          @RequestParam(name = "newLpn", required = false, defaultValue = "")  String newLpn,
                                           @RequestParam Long newQuantity) {
 
 

@@ -162,6 +162,8 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
                 addColumn("columnSpan").
                 addColumn("sequence").
                 addColumn("pendingQuantity").
+                addColumn("permanentLPNFlag").
+                addColumn("permanentLPN").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, GridLocationConfigurationCSVWrapper.class);
@@ -216,6 +218,13 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
                 gridLocationConfigurationCSVWrapper.getPendingQuantity()
         );
 
+        gridLocationConfiguration.setPermanentLPNFlag(
+                gridLocationConfigurationCSVWrapper.isPermanentLPNFlag()
+        );
+
+        gridLocationConfiguration.setPermanentLPN(
+                gridLocationConfigurationCSVWrapper.getPermanentLPN()
+        );
 
         return  gridLocationConfiguration;
 

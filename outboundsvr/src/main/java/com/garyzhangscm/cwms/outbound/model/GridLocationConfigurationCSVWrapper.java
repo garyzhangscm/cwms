@@ -34,6 +34,10 @@ public class GridLocationConfigurationCSVWrapper implements Serializable {
     private Integer sequence;
     private Long pendingQuantity;
 
+
+    private boolean permanentLPNFlag;
+    private String permanentLPN;
+
     public String getWarehouse() {
         return warehouse;
     }
@@ -80,5 +84,21 @@ public class GridLocationConfigurationCSVWrapper implements Serializable {
 
     public void setPendingQuantity(Long pendingQuantity) {
         this.pendingQuantity = pendingQuantity;
+    }
+
+    public String getPermanentLPN() {
+        return permanentLPN;
+    }
+
+    public void setPermanentLPN(String permanentLPN) {
+        this.permanentLPN = permanentLPN;
+    }
+
+    public boolean isPermanentLPNFlag() {
+        return permanentLPNFlag;
+    }
+
+    public void setPermanentLPNFlag(boolean permanentLPNFlag) {
+        this.permanentLPNFlag = permanentLPNFlag;
     }
 }

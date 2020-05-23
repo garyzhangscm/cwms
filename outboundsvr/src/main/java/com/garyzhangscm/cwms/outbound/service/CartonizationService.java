@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
@@ -26,21 +25,15 @@ import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.repository.CartonRepository;
 import com.garyzhangscm.cwms.outbound.repository.CartonizationRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

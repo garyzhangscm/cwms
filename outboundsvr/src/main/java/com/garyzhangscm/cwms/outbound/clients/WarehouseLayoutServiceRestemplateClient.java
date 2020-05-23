@@ -33,6 +33,8 @@ import org.springframework.http.HttpMethod;
 
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
@@ -91,6 +93,31 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
 
+    }
+
+    public Location getDefaultPackingStation(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/packing-stations")
+                        .queryParam("warehouseId", warehouseId);
+
+
+        ResponseBodyWrapper<List<Location>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
+
+        List<Location> locations = responseBodyWrapper.getData();
+        if (locations.size() == 0) {
+            return null;
+        }
+        else {
+            return locations.get(0);
+        }
     }
 
     public Location getLocationByName(String warehouseName, String name) {
@@ -425,6 +452,29 @@ public class WarehouseLayoutServiceRestemplateClient {
             );
         }
         return locations.get(0);
+    }
+
+
+    public Location getShippedParcelLocation(Long warehouseId,
+                                             String carrierName,
+                                             String serviceLevelName) {
+
+        logger.debug("getShippedParcelLocation: {} / {} / {}",
+                warehouseId, carrierName, serviceLevelName);
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/parcel-locations/{carrierName}/{serviceLevelName}")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(carrierName, serviceLevelName).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
 

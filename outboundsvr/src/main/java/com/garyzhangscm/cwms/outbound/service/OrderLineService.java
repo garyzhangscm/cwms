@@ -298,4 +298,13 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setShippedQuantity(orderLine.getShippedQuantity() + quantity);
         saveOrUpdate(orderLine);
     }
+
+    @Transactional
+    public void shippingPackage(OrderLine orderLine, Inventory inventory) {
+
+        orderLine.setShippedQuantity(orderLine.getShippedQuantity() + inventory.getQuantity());
+        orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() - inventory.getQuantity());
+        saveOrUpdate(orderLine);
+
+    }
 }

@@ -24,6 +24,11 @@ public class CartonCSVWrapper implements Serializable {
     private Boolean enabled;
 
 
+    private Boolean shippingCartonFlag;
+
+    private Boolean pickingCartonFlag;
+
+
     public String getName() {
         return name;
     }
@@ -78,5 +83,21 @@ public class CartonCSVWrapper implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getShippingCartonFlag() {
+        return shippingCartonFlag;
+    }
+
+    public void setShippingCartonFlag(Boolean shippingCartonFlag) {
+        this.shippingCartonFlag = shippingCartonFlag;
+    }
+
+    public Boolean getPickingCartonFlag() {
+        return pickingCartonFlag;
+    }
+
+    public void setPickingCartonFlag(Boolean pickingCartonFlag) {
+        this.pickingCartonFlag = pickingCartonFlag;
     }
 }
