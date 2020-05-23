@@ -45,6 +45,29 @@ public class Carton implements Serializable {
     @Column(name = "enabled")
     private Boolean enabled;
 
+    @Column(name = "shipping_carton_flag")
+    private Boolean shippingCartonFlag;
+
+    @Column(name = "picking_carton_flag")
+    private Boolean pickingCartonFlag;
+
+    @Override
+    public String toString() {
+        return "Carton{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                ", length=" + length +
+                ", width=" + width +
+                ", height=" + height +
+                ", fillRate=" + fillRate +
+                ", enabled=" + enabled +
+                ", shippingCartonFlag=" + shippingCartonFlag +
+                ", pickingCartonFlag=" + pickingCartonFlag +
+                '}';
+    }
+
     public Double getTotalSpace() {
         return length * width * height * fillRate / 100;
     }
@@ -119,5 +142,21 @@ public class Carton implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getShippingCartonFlag() {
+        return shippingCartonFlag;
+    }
+
+    public void setShippingCartonFlag(Boolean shippingCartonFlag) {
+        this.shippingCartonFlag = shippingCartonFlag;
+    }
+
+    public Boolean getPickingCartonFlag() {
+        return pickingCartonFlag;
+    }
+
+    public void setPickingCartonFlag(Boolean pickingCartonFlag) {
+        this.pickingCartonFlag = pickingCartonFlag;
     }
 }

@@ -78,7 +78,7 @@ public class Location {
     private LocationGroup locationGroup;
 
     @Column(name = "enabled")
-    private Boolean enabled;
+    private Boolean enabled = true;
 
     @Column(name = "reserved_code")
     private String reservedCode;
@@ -89,6 +89,15 @@ public class Location {
     @ManyToOne
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
+
+    public Location(){}
+
+    public Location(Warehouse warehouse, String name, LocationGroup locationGroup) {
+        this.name = name;
+        this.warehouse = warehouse;
+        this.locationGroup = locationGroup;
+
+    }
 
     @JsonIgnore
     public boolean hasInventory() {

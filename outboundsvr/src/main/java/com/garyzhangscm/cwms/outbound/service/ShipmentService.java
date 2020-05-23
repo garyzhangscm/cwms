@@ -419,7 +419,7 @@ public class ShipmentService {
             }
         });
 
-        // reload the shipment from db since some quantity informaiton may be changed
+        // reload the shipment from db since some quantity information may be changed
         shipment = findById(shipment.getId());
         // check if we can mark the shipment as loaded
         // only if we don't have any in process quantity and open quantity
@@ -684,6 +684,37 @@ public class ShipmentService {
         return shipment;
 
     }
+
+    public List<Shipment> getShipmentsByPickedInventory(List<Inventory> inventories) {
+
+        Map<String, Shipment> shipments = new HashMap<>();
+
+        inventories.forEach(inventory -> {
+            Shipment shipment = getShipmentByPickedInventory(inventory);
+            if (Objects.nonNull(shipment)) {
+                shipments.putIfAbsent(shipment.getNumber(), shipment);
+            }
+            else {
+
+                shipments.putIfAbsent("NULL-SHIPMENT", null);
+            }
+        });
+
+        return new ArrayList<>(shipments.values());
+
+    }
+    public Shipment getShipmentByPickedInventory(Inventory inventory) {
+        logger.debug("getShipmentByPickedInventory: \n {}", inventory);
+        ShipmentLine shipmentLine = shipmentLineService.getShipmentLineByPickedInventory(inventory);
+        if (Objects.nonNull(shipmentLine)) {
+            return shipmentLine.getShipment();
+        }
+        else {
+            return null;
+        }
+    }
+
+
 
 
 }

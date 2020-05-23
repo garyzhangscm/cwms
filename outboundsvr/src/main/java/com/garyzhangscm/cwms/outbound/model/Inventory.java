@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,11 @@ public class Inventory implements Serializable {
 
     private Long pickId;
 
+    private Long warehouseId;
+
+
+    private Warehouse warehouse;
+
     private Pick pick;
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
@@ -65,6 +71,8 @@ public class Inventory implements Serializable {
                 ", virtual=" + virtual +
                 ", inventoryStatus=" + inventoryStatus +
                 ", pickId=" + pickId +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
                 ", pick=" + pick +
                 ", inventoryMovements=" + inventoryMovements +
                 '}';
@@ -185,5 +193,21 @@ public class Inventory implements Serializable {
 
     public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
         this.inventoryMovements = inventoryMovements;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

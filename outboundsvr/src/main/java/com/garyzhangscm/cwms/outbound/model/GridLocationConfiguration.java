@@ -78,6 +78,18 @@ public class GridLocationConfiguration implements Serializable {
     @Column(name = "arrived_quantity")
     private Long arrivedQuantity = 0L;
 
+    /**
+     * Whether there's a permanent LPN assign
+     * to this location.
+     */
+    @Column(name = "permanent_lpn_flag")
+    private boolean permanentLPNFlag;
+    @Column(name = "permanent_lpn")
+    private String permanentLPN;
+    @Column(name = "current_lpn")
+    private String currentLPN;
+
+
     public void increasePendingQuantity(Long increasedQuantity) {
         pendingQuantity += increasedQuantity;
     }
@@ -186,5 +198,29 @@ public class GridLocationConfiguration implements Serializable {
 
     public void setArrivedQuantity(Long arrivedQuantity) {
         this.arrivedQuantity = arrivedQuantity;
+    }
+
+    public boolean isPermanentLPNFlag() {
+        return permanentLPNFlag;
+    }
+
+    public void setPermanentLPNFlag(boolean permanentLPNFlag) {
+        this.permanentLPNFlag = permanentLPNFlag;
+    }
+
+    public String getPermanentLPN() {
+        return permanentLPN;
+    }
+
+    public void setPermanentLPN(String permanentLPN) {
+        this.permanentLPN = permanentLPN;
+    }
+
+    public String getCurrentLPN() {
+        return currentLPN;
+    }
+
+    public void setCurrentLPN(String currentLPN) {
+        this.currentLPN = currentLPN;
     }
 }

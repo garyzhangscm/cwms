@@ -39,10 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +51,8 @@ public class LocationService implements TestDataInitiableService {
 
     @Autowired
     private LocationGroupService locationGroupService;
+    @Autowired
+    private LocationGroupTypeService locationGroupTypeService;
     @Autowired
     private WarehouseService warehouseService;
     @Autowired
@@ -90,12 +89,12 @@ public class LocationService implements TestDataInitiableService {
         return locationRepository.findAll(
             (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
-                if (!locationGroupTypeIds.isEmpty()) {
+                if (StringUtils.isNotBlank(locationGroupTypeIds)) {
 
                     Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
                     Join<LocationGroup, LocationGroupType> joinLocationGroupType = joinLocationGroup.join("locationGroupType", JoinType.INNER);
 
-                    if (!locationGroupIds.isEmpty()) {
+                    if (StringUtils.isNotBlank(locationGroupIds)) {
 
                         CriteriaBuilder.In<Long> inLocationGroupIds = criteriaBuilder.in(joinLocationGroup.get("id"));
                         for(String id : locationGroupIds.split(",")) {
@@ -110,7 +109,7 @@ public class LocationService implements TestDataInitiableService {
                     }
                     predicates.add(criteriaBuilder.and(inLocationGroupTypeIds));
                 }
-                else if (!locationGroupIds.isEmpty()) {
+                else if (StringUtils.isNotBlank(locationGroupIds)) {
 
                     Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
                     CriteriaBuilder.In<Long> in = criteriaBuilder.in(joinLocationGroup.get("id"));
@@ -120,10 +119,10 @@ public class LocationService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.and(in));
                 }
 
-                if (!name.isEmpty()) {
+                if (StringUtils.isNotBlank(name)) {
                     predicates.add(criteriaBuilder.equal(root.get("name"), name));
                 }
-                if (beginSequence != null  && endSequence != null) {
+                if (Objects.nonNull(beginSequence)  && Objects.nonNull(endSequence)) {
                     if (sequenceType.equals("count")) {
 
                         predicates.add(criteriaBuilder.between(root.get("countSequence"), beginSequence, endSequence));
@@ -135,23 +134,23 @@ public class LocationService implements TestDataInitiableService {
                         predicates.add(criteriaBuilder.between(root.get("pickSequence"), beginSequence, endSequence));
                     }
                 }
-                if (!includeEmptyLocation) {
+                if (Objects.nonNull(includeEmptyLocation) && !includeEmptyLocation) {
                     Expression<Double> totalVolume = criteriaBuilder.sum(root.get("currentVolume"), root.get("pendingVolume"));
 
                     predicates.add(criteriaBuilder.greaterThan(totalVolume, 0.0));
                 }
-                if (emptyLocationOnly == true) {
+                if (Objects.nonNull(emptyLocationOnly) && emptyLocationOnly == true) {
                     Expression<Double> totalVolume = criteriaBuilder.sum(root.get("currentVolume"), root.get("pendingVolume"));
 
                     predicates.add(criteriaBuilder.equal(totalVolume, 0.0));
 
                 }
-                if (pickableLocationOnly == true ) {
+                if (Objects.nonNull(pickableLocationOnly) && pickableLocationOnly == true ) {
                     // only return pickable location
                     Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
                     predicates.add(criteriaBuilder.equal(joinLocationGroup.get("pickable"), true));
                 }
-                if (minEmptyCapacity > 0.0) {
+                if (Objects.nonNull(minEmptyCapacity) && minEmptyCapacity > 0.0) {
                     // current capacity = total capacity * capacity fill rate - current volume - pending volume
                     Expression<Double> emptyCapacity =
                             criteriaBuilder.diff(
@@ -169,11 +168,11 @@ public class LocationService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.ge(emptyCapacity, minEmptyCapacity));
 
                 }
-                if (!includeDisabledLocation){
+                if (Objects.nonNull(includeDisabledLocation) && !includeDisabledLocation){
 
                     predicates.add(criteriaBuilder.equal(root.get("enabled"), true));
                 }
-                if (warehouseId != null) {
+                if (Objects.nonNull(warehouseId)) {
 
                     Join<Location, Warehouse> joinWarehouse = root.join("warehouse", JoinType.INNER);
                     predicates.add(criteriaBuilder.equal(joinWarehouse.get("id"), warehouseId));
@@ -533,5 +532,52 @@ public class LocationService implements TestDataInitiableService {
         location.setFillPercentage(100.0);
         return save(location);
     }
+
+    /**
+     * Get all the packing stations
+     * @param warehouseId
+     * @return
+     */
+    public List<Location> getPackingStations(Long warehouseId) {
+        List<LocationGroupType> locationGroupTypes
+                = locationGroupTypeService.findAll(null)
+                .stream()
+                .filter(locationGroupType -> locationGroupType.getPackingStation() == true)
+                .collect(Collectors.toList());
+        if (locationGroupTypes.size() == 0) {
+            return new ArrayList<>();
+        }
+        String locationGroupTypeIds = locationGroupTypes.stream()
+                .map(locationGroupType -> locationGroupType.getId())
+                .map(String::valueOf).collect(Collectors.joining(","));
+        return findAll(warehouseId,locationGroupTypeIds,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+    }
+
+    public Location getShippedParcelLocation(Long warehouseId, String carrierName, String serviceLevelName) {
+        String locationName = carrierName + "-" + serviceLevelName;
+        Optional<Location> locationOptional = Optional.of(findByName(locationName, warehouseId));
+        return locationOptional.orElse(createShippedParcelLocation(warehouseId, locationName));
+
+
+    }
+
+    public Location createShippedParcelLocation(Long warehouseId, String locationName) {
+
+
+        return new Location(warehouseService.findById(warehouseId),
+                locationName, locationGroupService.getShippedParcelLocationGroup(warehouseId));
+    }
+
 
 }

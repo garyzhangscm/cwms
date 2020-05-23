@@ -56,6 +56,13 @@ public class LocationController {
         return locationService.findLogicLocation(locationType, warehouseId);
     }
 
+    @RequestMapping(value="/locations/packing-stations", method = RequestMethod.GET)
+    public  List<Location> getPackingStations(@RequestParam Long warehouseId) {
+
+        return locationService.getPackingStations(warehouseId);
+    }
+
+
 
     @RequestMapping(method=RequestMethod.POST, value="/locations/upload")
     public ResponseBodyWrapper uploadLocations(@RequestParam("file") MultipartFile file) throws IOException {
@@ -232,4 +239,11 @@ public class LocationController {
     }
 
 
+    @RequestMapping(method=RequestMethod.GET, value="/locations/parcel-locations/{carrierName}/{serviceLevelName}")
+    public Location getShippedParcelLocation(@RequestParam Long warehouseId,
+                                             @PathVariable String carrierName,
+                                             @PathVariable String serviceLevelName) {
+        return locationService.getShippedParcelLocation(warehouseId, carrierName, serviceLevelName);
+
+    }
 }

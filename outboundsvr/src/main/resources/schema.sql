@@ -3,6 +3,7 @@ drop table if exists  pick_movement;
 drop table if exists pick;
 drop  table  if exists cancelled_pick;
 drop  table  if exists  cartonization;
+drop  table  if exists shipping_cartonization;
 drop table if exists  carton;
 drop table if exists pick_list;
 drop table if exists short_allocation;
@@ -208,7 +209,9 @@ CREATE TABLE carton(
   width  double not null ,
   height  double not null ,
   fill_rate  double not null ,
-  enabled boolean not null);
+  enabled boolean not null,
+  shipping_carton_flag boolean not null,
+  picking_carton_flag boolean not null);
 
 CREATE TABLE cartonization(
   cartonization_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -220,6 +223,12 @@ CREATE TABLE cartonization(
   carton_status VARCHAR(20) NOT NULL,
   foreign key(carton_id) references carton(carton_id));
 
+CREATE TABLE shipping_cartonization(
+  shipping_cartonization_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  number  VARCHAR(20) NOT NULL,
+  carton_id  BIGINT not null,
+  foreign key(carton_id) references carton(carton_id));
 
 CREATE TABLE grid_configuration(
   grid_configuration_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -238,6 +247,9 @@ CREATE TABLE grid_location_configuration(
   row_num INT not null,
   column_span INT not null,
   sequence INT not null,
+  permanent_lpn_flag boolean not null,
+  permanent_lpn VARCHAR(25),
+  current_lpn VARCHAR(25),
   pending_quantity BIGINT not null,
   arrived_quantity BIGINT not null);
 

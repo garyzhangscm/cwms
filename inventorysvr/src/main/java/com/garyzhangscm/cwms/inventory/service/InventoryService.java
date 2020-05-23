@@ -517,17 +517,11 @@ public class InventoryService implements TestDataInitiableService{
         return moveInventory(inventory, destination);
     }
 
-
-    public Inventory moveInventory(Long inventoryId, Location destination) {
-        return moveInventory(findById(inventoryId), destination, null, true);
-
-    }
-
     public Inventory moveInventory(Inventory inventory, Location destination) {
-        return moveInventory(inventory, destination, null, true);
+        return moveInventory(inventory, destination, null, true, null);
     }
-    public Inventory moveInventory(Long inventoryId, Location destination, Long pickId, boolean immediateMove) {
-        return moveInventory(findById(inventoryId), destination, pickId, immediateMove);
+    public Inventory moveInventory(Long inventoryId, Location destination, Long pickId, boolean immediateMove, String destinationLpn) {
+        return moveInventory(findById(inventoryId), destination, pickId, immediateMove, destinationLpn);
 
     }
 
@@ -541,19 +535,26 @@ public class InventoryService implements TestDataInitiableService{
      * @return inventory after the movement(can be consolidated with the existing invenotry in the destination)
      */
     @Transactional
-    public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove) {
-        logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}",
+    public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove, String destinationLpn) {
+        logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}, new LPN? {}",
                 inventory.getLpn(),
                 destination.getName(),
                 pickId,
-                Objects.isNull(pickId));
+                Objects.isNull(pickId),
+                destinationLpn);
 
+        // If we passed in a destination LPN, Let's replace the LPN first
+        // before the same location check.
+        if (StringUtils.isNotBlank(destinationLpn) && !destinationLpn.equals(inventory.getLpn())) {
+            inventory.setLpn(destinationLpn);
+
+        }
         Location sourceLocation = inventory.getLocation();
 
         // quick check. If the source location equals the
         // destination, then we don't have to move
         if (sourceLocation.equals(destination)) {
-            return inventory;
+            return saveOrUpdate(inventory);
         }
         inventory.setLocationId(destination.getId());
         if (!Objects.isNull(pickId)) {
@@ -805,6 +806,9 @@ public class InventoryService implements TestDataInitiableService{
     // the first one in the list is the original inventory with updated quantity
     // the second one in the list is the new inventory
     public List<Inventory> splitInventory(Inventory inventory, String newLpn, Long newQuantity) {
+        if (StringUtils.isBlank(newLpn)) {
+            newLpn = commonServiceRestemplateClient.getNextLpn();
+        }
         Inventory newInventory = inventory.split(newLpn, newQuantity);
         List<Inventory> inventories = new ArrayList<>();
         inventories.add(saveOrUpdate(inventory));

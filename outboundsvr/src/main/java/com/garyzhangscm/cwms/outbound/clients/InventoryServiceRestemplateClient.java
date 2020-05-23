@@ -217,6 +217,24 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    public List<Inventory> getInventoryByLpn(Long warehouseId, String lpn) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("lpn", lpn)
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
     public List<Inventory> getInventoryByLocation(Location location) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -324,6 +342,19 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public List<Inventory> split(Inventory inventory, Long newQuantity) {
+        return split(inventory, "", newQuantity);
+    }
+
+    /**
+     * Split the inventory into 2,
+     * the first one in the list is the original inventory with updated quantity
+     * the second one in the list is the new inventory
+     * @param inventory the inventory to be split
+     * @param newLpn the new LPN for the split inventory
+     * @param newQuantity The new quantity for the split inventory
+     * @return A list of 2 inventory, the 1st is the original inventory with reduced quantity
+     */
     public List<Inventory> split(Inventory inventory, String newLpn, Long newQuantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -342,7 +373,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Inventory moveInventory(Inventory inventory, Pick pick, Location nextLocation)   {
+    public Inventory moveInventory(Inventory inventory, Pick pick, Location nextLocation )   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
@@ -387,10 +418,14 @@ public class InventoryServiceRestemplateClient {
     }
 
     public Inventory moveInventory(Inventory inventory, Location nextLocation) throws IOException {
+        return moveInventory(inventory, nextLocation, "");
+    }
+    public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn) throws IOException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/inventory/inventory/{id}/move");
+                        .path("/api/inventory/inventory/{id}/move")
+                .queryParam("destinationLpn", destinationLpn);
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = restTemplate.exchange(

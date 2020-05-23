@@ -259,4 +259,28 @@ public class ShipmentLineService {
     }
 
 
+    public ShipmentLine getShipmentLineByPickedInventory(Inventory inventory) {
+        logger.debug("getShipmentLineByPickedInventory: \n {}", inventory);
+        if (Objects.nonNull(inventory.getPick())) {
+            return inventory.getPick().getShipmentLine();
+        }
+        else if (Objects.nonNull(inventory.getPickId())){
+            return pickService.findById(inventory.getPickId()).getShipmentLine();
+        }
+        else {
+            return null;
+        }
+    }
+
+
+
+    public void shippingPackage(ShipmentLine shipmentLine, Inventory inventory) {
+        shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - inventory.getQuantity());
+        shipmentLine.setShippedQuantity(shipmentLine.getShippedQuantity() + inventory.getQuantity());
+        save(shipmentLine);
+
+        OrderLine orderLine = shipmentLine.getOrderLine();
+        orderLineService.shippingPackage(orderLine, inventory);
+
+    }
 }

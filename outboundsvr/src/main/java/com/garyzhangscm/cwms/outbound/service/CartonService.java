@@ -84,7 +84,9 @@ public class CartonService implements TestDataInitiableService {
 
     public List<Carton> findAll(Long warehouseId,
                                 String name,
-                                Boolean enabled) {
+                                Boolean enabled,
+                                Boolean pickingCartonFlag,
+                                Boolean shippingCartonFlag) {
 
         List<Carton> cartons =  cartonRepository.findAll(
                 (Root<Carton> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -99,6 +101,14 @@ public class CartonService implements TestDataInitiableService {
                         predicates.add(criteriaBuilder.equal(root.get("enabled"), enabled));
 
                     }
+                    if (Objects.nonNull(pickingCartonFlag)) {
+                        predicates.add(criteriaBuilder.equal(root.get("pickingCartonFlag"), pickingCartonFlag));
+
+                    }
+                    if (Objects.nonNull(shippingCartonFlag)) {
+                        predicates.add(criteriaBuilder.equal(root.get("shippingCartonFlag"), shippingCartonFlag));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -109,7 +119,7 @@ public class CartonService implements TestDataInitiableService {
     }
 
     public List<Carton> findEnabledCarton(Long warehouseId) {
-        return findAll(warehouseId, "", true);
+        return findAll(warehouseId, "", true, null, null);
     }
 
 
@@ -133,6 +143,8 @@ public class CartonService implements TestDataInitiableService {
                 addColumn("height").
                 addColumn("fillRate").
                 addColumn("enabled").
+                addColumn("shippingCartonFlag").
+                addColumn("pickingCartonFlag").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, CartonCSVWrapper.class);
@@ -165,6 +177,9 @@ public class CartonService implements TestDataInitiableService {
         carton.setFillRate(cartonCSVWrapper.getFillRate());
 
         carton.setEnabled(cartonCSVWrapper.getEnabled());
+
+        carton.setPickingCartonFlag(cartonCSVWrapper.getPickingCartonFlag());
+        carton.setShippingCartonFlag(cartonCSVWrapper.getShippingCartonFlag());
 
         return  carton;
 

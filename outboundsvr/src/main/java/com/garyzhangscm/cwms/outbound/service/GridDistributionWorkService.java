@@ -213,6 +213,17 @@ public class GridDistributionWorkService {
 
         GridLocationConfiguration gridLocationConfiguration =
                 gridLocationConfigurationService.findById(gridLocationConfigurationId);
+        String destinationLpn =
+                gridLocationConfiguration.isPermanentLPNFlag() ?
+                        gridLocationConfiguration.getPermanentLPN() : gridLocationConfiguration.getCurrentLPN();
+
+        if (StringUtils.isBlank(destinationLpn)) {
+            // If we can't get the destination LPN yet, it is probably that we don't have
+            // a permanent LPN setup for the grid location and there's no inventory
+            // in the location yet
+            destinationLpn = commonServiceRestemplateClient.getNextNumber("lpn");
+        }
+
         logger.debug("Confirm by moving all inventory from id {} into location {} ",
                 id, gridLocationConfiguration.getLocation().getName());
 
@@ -222,7 +233,7 @@ public class GridDistributionWorkService {
 
             logger.debug("Current ID {} is a list identifier. FInd list:\n {}", id, pickList);
             confirmGridDistributionWork(warehouseId, pickList, gridLocationConfiguration.getLocation(),
-                    itemName, quantity);
+                    itemName, quantity, destinationLpn);
             return ;
 
         }
@@ -233,7 +244,7 @@ public class GridDistributionWorkService {
 
             logger.debug("Current ID {} is a cartonization identifier. FInd cartonization:\n {}", id, cartonization);
             confirmGridDistributionWork(warehouseId, cartonization, gridLocationConfiguration.getLocation(),
-                    itemName, quantity);
+                    itemName, quantity, destinationLpn);
             return ;
         }
 
@@ -244,20 +255,21 @@ public class GridDistributionWorkService {
 
     public void confirmGridDistributionWork(Long warehouseId, PickList pickList, Location location,
                                             String itemName,
-                                            Long quantity) {
+                                            Long quantity, String destinationLpn) {
 
 
 
         confirmGridDistributionWork(warehouseId, pickList.getNumber(), location,
-                itemName, quantity);
+                itemName, quantity, destinationLpn);
 
     }
     public void confirmGridDistributionWork(Long warehouseId,
                                             Cartonization cartonization,
                                             Location location,
                                             String itemName,
-                                            Long quantity)  {
-        confirmGridDistributionWork(warehouseId, cartonization.getNumber(), location, itemName, quantity);
+                                            Long quantity,
+                                            String destinationLpn)  {
+        confirmGridDistributionWork(warehouseId, cartonization.getNumber(), location, itemName, quantity, destinationLpn);
 
     }
 
@@ -265,7 +277,8 @@ public class GridDistributionWorkService {
                                             String sourceLocationNumber,
                                             Location nextLocation,
                                             String itemName,
-                                            Long quantity)   {
+                                            Long quantity,
+                                            String destinationLpn)   {
 
         Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, sourceLocationNumber);
         if (Objects.isNull(location)) {
@@ -321,7 +334,7 @@ public class GridDistributionWorkService {
             Iterator<Inventory> inventoryIterator = inventories.iterator();
             while (inventoryIterator.hasNext()) {
                 Inventory inventory = inventoryIterator.next();
-                inventoryServiceRestemplateClient.moveInventory(inventory, nextLocation);
+                inventoryServiceRestemplateClient.moveInventory(inventory, nextLocation, destinationLpn);
 
                 // Update the status of the grid location after we move the inventory
                 // into the location

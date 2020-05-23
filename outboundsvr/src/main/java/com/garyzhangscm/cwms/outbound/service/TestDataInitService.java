@@ -149,6 +149,9 @@ public class TestDataInitService {
         jdbcTemplate.update("delete from cartonization where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("cartonization records from warehouse ID {} removed!", warehouseId);
 
+        jdbcTemplate.update("delete from shipping_cartonization where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("shipping_cartonization records from warehouse ID {} removed!", warehouseId);
+
         jdbcTemplate.update("delete from carton where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("carton records from warehouse ID {} removed!", warehouseId);
 

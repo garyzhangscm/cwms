@@ -27,7 +27,8 @@ public enum ExceptionCode {
     REPLENISHMENT_EXCEPTION(45005, HttpStatus.BAD_REQUEST, "Replenishment Exception"),
     ORDER_OPERATION_EXCEPTION(45006, HttpStatus.BAD_REQUEST, "Order Operation Exception"),
     SHORT_ALLOCATION_EXCEPTION(45007, HttpStatus.BAD_REQUEST, "Short Allocation Operation Exception"),
-    GRID_EXCEPTION(45008, HttpStatus.BAD_REQUEST, "Grid Exception");
+    GRID_EXCEPTION(45008, HttpStatus.BAD_REQUEST, "Grid Exception"),
+    PACKING_EXCEPTION(45009, HttpStatus.BAD_REQUEST, "Packing Exception");
 
     private final int code;
 
