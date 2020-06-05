@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.integration.model;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,29 +26,91 @@ import java.util.List;
 
 public class ItemPackageType implements Serializable {
 
+    private Long id;
+
+    private Long itemId;
+
+    private String itemName;
 
     private String name;
 
     private String description;
 
     private Long clientId;
+    private String clientName;
 
     private Long supplierId;
+    private String supplierName;
 
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 
     private Long warehouseId;
+    private String warehouseName;
 
     @Override
     public String toString() {
         return "ItemPackageType{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", itemId=" + itemId +
+                ", itemName='" + itemName + '\'' +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", clientId=" + clientId +
+                ", clientName='" + clientName + '\'' +
                 ", supplierId=" + supplierId +
+                ", supplierName='" + supplierName + '\'' +
                 ", itemUnitOfMeasures=" + itemUnitOfMeasures +
                 ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
                 '}';
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
     }
 
     public String getName() {

@@ -96,37 +96,35 @@ public class TestDataInitService {
 
         initiableServices.put("Order", orderService);
         serviceNames.add("Order");
-        initiableServices.put("Order Line", orderLineService);
-        serviceNames.add("Order Line");
-        initiableServices.put("Allocation Configuration", allocationConfigurationService);
-        serviceNames.add("Allocation Configuration");
-        initiableServices.put("Shipping Stage Area Configuration", shippingStageAreaConfigurationService);
-        serviceNames.add("Shipping Stage Area Configuration");
-        initiableServices.put("Emergency Replenishment Configuration", emergencyReplenishmentConfigurationService);
-        serviceNames.add("Emergency Replenishment Configuration");
-        initiableServices.put("List Picking Configuration", listPickingConfigurationService);
-        serviceNames.add("List Picking Configuration");
+        initiableServices.put("Order_Line", orderLineService);
+        serviceNames.add("Order_Line");
+        initiableServices.put("Allocation_Configuration", allocationConfigurationService);
+        serviceNames.add("Allocation_Configuration");
+        initiableServices.put("Shipping_Stage_Area_Configuration", shippingStageAreaConfigurationService);
+        serviceNames.add("Shipping_Stage_Area_Configuration");
+        initiableServices.put("Emergency_Replenishment_Configuration", emergencyReplenishmentConfigurationService);
+        serviceNames.add("Emergency_Replenishment_Configuration");
+        initiableServices.put("List_Picking_Configuration", listPickingConfigurationService);
+        serviceNames.add("List_Picking_Configuration");
         initiableServices.put("Carton", cartonService);
         serviceNames.add("Carton");
-        initiableServices.put("Cartonization Configuration", cartonizationConfigurationService);
-        serviceNames.add("Cartonization Configuration");
-        initiableServices.put("Trailer Template", trailerTemplateService);
-        serviceNames.add("Trailer Template");
+        initiableServices.put("Cartonization_Configuration", cartonizationConfigurationService);
+        serviceNames.add("Cartonization_Configuration");
+        initiableServices.put("Trailer_Template", trailerTemplateService);
+        serviceNames.add("Trailer_Template");
 
-        initiableServices.put("Grid Configuration", gridConfigurationService);
-        serviceNames.add("Grid Configuration");
+        initiableServices.put("Grid_Configuration", gridConfigurationService);
+        serviceNames.add("Grid_Configuration");
 
-        initiableServices.put("Grid Location Configuration", gridLocationConfigurationService);
-        serviceNames.add("Grid Location Configuration");
+        initiableServices.put("Grid_Location_Configuration", gridLocationConfigurationService);
+        serviceNames.add("Grid_Location_Configuration");
 
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
     }
     public void init(String warehouseName) {
-        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData(warehouseName);
-        }
+        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
     }
     public void init(String name, String warehouseName) {
         initiableServices.get(name).initTestData(warehouseName);

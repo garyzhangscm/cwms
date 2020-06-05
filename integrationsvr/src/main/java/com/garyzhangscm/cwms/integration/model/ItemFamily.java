@@ -25,6 +25,8 @@ import java.io.Serializable;
 public class ItemFamily implements Serializable {
 
 
+    private Long id;
+
     private String name;
 
 
@@ -32,14 +34,33 @@ public class ItemFamily implements Serializable {
 
 
     private Long warehouseId;
+    private String warehouseName;
 
     @Override
     public String toString() {
         return "ItemFamily{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
                 '}';
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
     }
 
     public String getName() {

@@ -144,15 +144,23 @@ public class OrderLineService implements TestDataInitiableService{
     public void loadOrderLineAttribute(OrderLine orderLine) {
 
         // Load Item information
-        if (orderLine.getItemId() != null && orderLine.getItem() == null) {
+        if (Objects.nonNull(orderLine.getItemId()) && Objects.isNull(orderLine.getItem())) {
             orderLine.setItem(inventoryServiceRestemplateClient.getItemById(orderLine.getItemId()));
 
         }
-        if (orderLine.getInventoryStatusId() != null && orderLine.getInventoryStatus() == null) {
+        if (Objects.nonNull(orderLine.getInventoryStatusId()) && Objects.isNull(orderLine.getInventoryStatus())) {
             orderLine.setInventoryStatus(inventoryServiceRestemplateClient.getInventoryStatusById(orderLine.getInventoryStatusId()));
 
         }
 
+        if (Objects.nonNull(orderLine.getCarrierId()) && Objects.isNull(orderLine.getCarrier())) {
+            orderLine.setCarrier(commonServiceRestemplateClient.getCarrierById(orderLine.getCarrierId()));
+        }
+        if (Objects.nonNull(orderLine.getCarrierServiceLevelId()) && Objects.isNull(orderLine.getCarrierServiceLevel())) {
+            orderLine.setCarrierServiceLevel(commonServiceRestemplateClient.getCarrierServiceLevelById(
+                    orderLine.getCarrierServiceLevelId()
+            ));
+        }
     }
 
 

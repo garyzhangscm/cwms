@@ -49,7 +49,31 @@ public class KafkaReceiver {
             logger.info("------------------ message =" + message);
         }
     }
-    @KafkaListener(topics = {"INTEGRATION-ITEM-UNIT-OF-MEASURE"})
+
+    /*
+     * Integration process
+     * -- item
+     * -- item package type
+     * -- Item unit of measure
+     * */
+
+    @KafkaListener(topics = {"INTEGRATION_ITEM"})
+    public void processItem(@Payload String itemJsonRepresent)  {
+        logger.info("# received integration - item data: {}", itemJsonRepresent);
+        try {
+            Item item = objectMapper.readValue(itemJsonRepresent, Item.class);
+            logger.info("Item: {}", item);
+
+            integrationService.process(item);
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
+
+    @KafkaListener(topics = {"INTEGRATION_ITEM_UNIT_OF_MEASURE"})
     public void processItemUnitOfMeasureIntegration(@Payload String itemUnitOfMeasureJsonRepresent,
                                                     @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String itemJsonRepresent)  {
         logger.info("# received item unit of measure data: {}", itemUnitOfMeasureJsonRepresent);
@@ -68,7 +92,7 @@ public class KafkaReceiver {
         }
 
     }
-    @KafkaListener(topics = {"INVENTORY-ACTIVITY"})
+    @KafkaListener(topics = {"INVENTORY_ACTIVITY"})
     public void processInventoryActivity(@Payload String inventoryActivityJsonRepresent)  {
         logger.info("# received inventory activity data: {}", inventoryActivityJsonRepresent);
         try {
@@ -83,7 +107,7 @@ public class KafkaReceiver {
         }
 
     }
-    @KafkaListener(topics = {"INVENTORY-ADJUSTMENT-REQUEST-PROCESSED"})
+    @KafkaListener(topics = {"INVENTORY_ADJUSTMENT_REQUEST_PROCESSED"})
     public void processInventoryAdjustRequest(@Payload String processInventoryAdjustRequestJsonRepresent)  {
         logger.info("# received inventory adjust request data: {}", processInventoryAdjustRequestJsonRepresent);
         try {

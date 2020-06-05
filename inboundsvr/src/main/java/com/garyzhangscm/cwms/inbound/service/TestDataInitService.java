@@ -54,19 +54,17 @@ public class TestDataInitService {
 
         initiableServices.put("Receipt", receiptService);
         serviceNames.add("Receipt");
-        initiableServices.put("Receipt Line", receiptLineService);
-        serviceNames.add("Receipt Line");
+        initiableServices.put("Receipt_Line", receiptLineService);
+        serviceNames.add("Receipt_Line");
 
-        initiableServices.put("Putaway Configuration", putawayConfigurationService);
-        serviceNames.add("Putaway Configuration");
+        initiableServices.put("Putaway_Configuration", putawayConfigurationService);
+        serviceNames.add("Putaway_Configuration");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
     }
     public void init(String warehouseName) {
-        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData(warehouseName);
-        }
+        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
     }
     public void init(String name, String warehouseName) {
         initiableServices.get(name).initTestData(warehouseName);

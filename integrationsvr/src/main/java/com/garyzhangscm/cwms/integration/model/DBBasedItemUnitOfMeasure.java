@@ -20,10 +20,15 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_item_unit_of_measure")
@@ -82,21 +87,65 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
     private String warehouseName;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
     @Column(name = "insert_time")
     private LocalDateTime insertTime;
     @Column(name = "last_update_time")
     private LocalDateTime lastUpdateTime;
+    @Column(name = "error_message")
+    private String errorMessage;
 
-    public ItemUnitOfMeasure convertToItemUnitOfMeasure() {
+    public ItemUnitOfMeasure convertToItemUnitOfMeasure(
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+            CommonServiceRestemplateClient commonServiceRestemplateClient,
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient
+    ) {
         ItemUnitOfMeasure itemUnitOfMeasure = new ItemUnitOfMeasure();
-        itemUnitOfMeasure.setUnitOfMeasureId(getUnitOfMeasureId());
-        itemUnitOfMeasure.setQuantity(getQuantity());
-        itemUnitOfMeasure.setWeight(getWeight());
-        itemUnitOfMeasure.setLength(getLength());
-        itemUnitOfMeasure.setWidth(getWidth());
-        itemUnitOfMeasure.setHeight(getHeight());
-        itemUnitOfMeasure.setWarehouseId(getWarehouseId());
+
+        String[] fieldNames = {
+                "itemId","itemName",
+                "itemPackageTypeId", "itemPackageTypeName",
+                "unitOfMeasureId", "unitOfMeasureName",
+                "quantity","weight",
+                "length","width","height",
+                "warehouseId","warehouseName"
+        };
+
+        ObjectCopyUtil.copyValue( this, itemUnitOfMeasure,  fieldNames);
+
+        Long warehouseId = getWarehouseId();
+        if (Objects.isNull(warehouseId)) {
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    getWarehouseName()
+            ).getId();
+            itemUnitOfMeasure.setWarehouseId(warehouseId);
+        }
+
+        if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+            itemUnitOfMeasure.setItemId(
+                    inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                            getItemName()).getId()
+            );
+        }
+
+        if (Objects.isNull(getItemPackageTypeId()) && Objects.nonNull(getItemPackageTypeName())) {
+            itemUnitOfMeasure.setItemPackageTypeId(
+                    inventoryServiceRestemplateClient.getItemPackageTypeByName(
+                            warehouseId,
+                            getItemId(),
+                            getItemPackageTypeName()).getId()
+            );
+        }
+        if (Objects.isNull(getUnitOfMeasureId()) && !Objects.nonNull(getUnitOfMeasureName())) {
+            itemUnitOfMeasure.setUnitOfMeasureId(
+                    commonServiceRestemplateClient.getUnitOfMeasureByName(
+                            getUnitOfMeasureName()
+                    ).getId()
+            );
+        }
+
+
         return itemUnitOfMeasure;
 
     }
@@ -105,19 +154,54 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
 
     public DBBasedItemUnitOfMeasure(ItemUnitOfMeasure itemUnitOfMeasure) {
 
-        setUnitOfMeasureId(itemUnitOfMeasure.getUnitOfMeasureId());
-        setQuantity(itemUnitOfMeasure.getQuantity());
-        setWeight(itemUnitOfMeasure.getWeight());
-        setLength(itemUnitOfMeasure.getLength());
-        setWidth(itemUnitOfMeasure.getWidth());
-        setHeight(itemUnitOfMeasure.getHeight());
-        setWarehouseId(itemUnitOfMeasure.getWarehouseId());
+        String[] fieldNames = {
+                "itemId","itemName",
+                "itemPackageTypeId", "itemPackageTypeName",
+                "unitOfMeasureId", "unitOfMeasureName",
+                "quantity","weight",
+                "length","width","height",
+                "warehouseId","warehouseName"
+        };
+
+        ObjectCopyUtil.copyValue(  itemUnitOfMeasure, this,  fieldNames);
 
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
 
     }
 
+    @Override
+    public String toString() {
+        return "DBBasedItemUnitOfMeasure{" +
+                "id=" + id +
+                ", itemId=" + itemId +
+                ", itemName='" + itemName + '\'' +
+                ", itemPackageTypeId=" + itemPackageTypeId +
+                ", itemPackageTypeName='" + itemPackageTypeName + '\'' +
+                ", unitOfMeasureId=" + unitOfMeasureId +
+                ", unitOfMeasureName='" + unitOfMeasureName + '\'' +
+                ", itemPackageType=" + (Objects.nonNull(itemPackageType) ? itemPackageType.getName() : "") +
+                ", quantity=" + quantity +
+                ", weight=" + weight +
+                ", length=" + length +
+                ", width=" + width +
+                ", height=" + height +
+                ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
+                ", status=" + status +
+                ", insertTime=" + insertTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                '}';
+    }
+
+    public void completeIntegration(IntegrationStatus integrationStatus) {
+        completeIntegration(integrationStatus, "");
+    }
+    public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
+        setStatus(integrationStatus);
+        setErrorMessage(errorMessage);
+        setLastUpdateTime(LocalDateTime.now());
+    }
     public Long getId() {
         return id;
     }
@@ -262,5 +346,13 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
 
     public void setItemPackageTypeName(String itemPackageTypeName) {
         this.itemPackageTypeName = itemPackageTypeName;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

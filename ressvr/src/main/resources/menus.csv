@@ -43,4 +43,5 @@ text,i18n,link,sequence,menuSubGruop,name
 "Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure
 "File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client
 "Test Data Initial",menu.main.util.test-data-init,/util/test-data-init,2,Main-Menu-Util,Util-TestDataInit
-"Valid Icon",menu.main.util.icon-list,/util/icon-list,3,Main-Menu-Util,Util-ValidIcon
+"Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester
+"Valid Icon",menu.main.util.icon-list,/util/icon-list,4,Main-Menu-Util,Util-ValidIcon

@@ -19,17 +19,27 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.service.DBBasedSupplierIntegration;
+import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_item")
 public class DBBasedItem implements Serializable, IntegrationItemData {
+
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedItem.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,13 +58,15 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     @Column(name = "client_name")
     private String clientName;
 
-    @ManyToOne
+    @OneToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(name="integration_item_family_id")
     private DBBasedItemFamily itemFamily;
 
     @OneToMany(
         mappedBy = "item",
-        cascade = CascadeType.REMOVE,
+        cascade = CascadeType.ALL,
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
@@ -70,24 +82,52 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     private String warehouseName;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
     @Column(name = "insert_time")
     private LocalDateTime insertTime;
     @Column(name = "last_update_time")
     private LocalDateTime lastUpdateTime;
+    @Column(name = "error_message")
+    private String errorMessage;
 
-    public Item convertToItem() {
+    public Item convertToItem(InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+                              CommonServiceRestemplateClient commonServiceRestemplateClient,
+                              WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
 
         Item item = new Item();
-        item.setName(getName());
-        item.setDescription(getDescription());
-        item.setClientId(getClientId());
-        item.setItemFamily(getItemFamily().convertToItemFamily());
+
+
+        String[] fieldNames = {
+                "name","description","clientId","clientName","unitCost","warehouseId","warehouseName"
+        };
+
+        ObjectCopyUtil.copyValue(this, item, fieldNames);
+
+        Long warehouseId = getWarehouseId();
+        if (Objects.isNull(warehouseId)) {
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    getWarehouseName()
+            ).getId();
+            item.setWarehouseId(warehouseId);
+        }
+
+        if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
+            item.setClientId(
+                    commonServiceRestemplateClient.getClientByName(
+                            getClientName()
+                    ).getId()
+            );
+        }
+
+
+        item.setItemFamily(getItemFamily().convertToItemFamily(warehouseLayoutServiceRestemplateClient));
         getItemPackageTypes().forEach(dbBasedItemPackageType -> {
-            item.addItemPackageType(dbBasedItemPackageType.convertToItemPackageType());
+            item.addItemPackageType(dbBasedItemPackageType.convertToItemPackageType(
+                    inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient));
         });
-        item.setUnitCost(getUnitCost());
-        item.setWarehouseId(getWarehouseId());
 
         return item;
 
@@ -96,27 +136,67 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     public DBBasedItem() {}
     public DBBasedItem(Item item) {
 
+        String[] fieldNames = {
+                "name","description","clientId","clientName","unitCost","warehouseId","warehouseName"
+        };
 
-        setName(item.getName());
-        setDescription(item.getDescription());
-        setClientId(item.getClientId());
+        ObjectCopyUtil.copyValue(item, this, fieldNames);
+
         setItemFamily(new DBBasedItemFamily(item.getItemFamily()));
+        getItemFamily().setStatus(IntegrationStatus.ATTACHED);
+
         item.getItemPackageTypes().forEach(itemPackageType -> {
-            addItemPackageType(new DBBasedItemPackageType(itemPackageType));
+            DBBasedItemPackageType dbBasedItemPackageType
+                    = new DBBasedItemPackageType(itemPackageType);
+            logger.debug("# Get DBBasedItemPackageType \n {} \n from itemPackageType: \n {}",
+                   dbBasedItemPackageType, itemPackageType);
+            dbBasedItemPackageType.setItem(this);
+            dbBasedItemPackageType.setStatus(IntegrationStatus.ATTACHED);
+            addItemPackageType(dbBasedItemPackageType);
         });
-        setUnitCost(getUnitCost());
-        setWarehouseId(getWarehouseId());
 
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
-
-
 
     }
 
 
     public void addItemPackageType(DBBasedItemPackageType dbBasedItemPackageType) {
         getItemPackageTypes().add(dbBasedItemPackageType);
+    }
+
+    @Override
+    public String toString() {
+        return "DBBasedItem{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", clientId=" + clientId +
+                ", clientName='" + clientName + '\'' +
+                ", itemFamily=" + itemFamily +
+                ", itemPackageTypes=" + itemPackageTypes +
+                ", unitCost=" + unitCost +
+                ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
+                ", status=" + status +
+                ", insertTime=" + insertTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                '}';
+    }
+
+    public void completeIntegration(IntegrationStatus integrationStatus) {
+        completeIntegration(integrationStatus, "");
+    }
+    public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
+        setStatus(integrationStatus);
+        setErrorMessage(errorMessage);
+        setLastUpdateTime(LocalDateTime.now());
+        // Complete related integration
+        if (Objects.nonNull(itemFamily)) {
+            itemFamily.completeIntegration(integrationStatus, errorMessage);
+        }
+        itemPackageTypes.forEach(dbBasedItemPackageType -> dbBasedItemPackageType.completeIntegration(integrationStatus, errorMessage));
+
     }
 
     public Long getId() {
@@ -224,5 +304,11 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 }

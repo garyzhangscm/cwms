@@ -37,6 +37,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -262,9 +263,12 @@ public class ShipmentLineService {
     public ShipmentLine getShipmentLineByPickedInventory(Inventory inventory) {
         logger.debug("getShipmentLineByPickedInventory: \n {}", inventory);
         if (Objects.nonNull(inventory.getPick())) {
-            return inventory.getPick().getShipmentLine();
+            logger.debug("Will find by pick: {}", inventory.getPick());
+            Optional<ShipmentLine> shipmentLineOptional = Optional.ofNullable(inventory.getPick().getShipmentLine());
+            return shipmentLineOptional.orElse(pickService.findById(inventory.getPick().getId()).getShipmentLine());
         }
         else if (Objects.nonNull(inventory.getPickId())){
+            logger.debug("Will find by pick id: {}", inventory.getPickId());
             return pickService.findById(inventory.getPickId()).getShipmentLine();
         }
         else {

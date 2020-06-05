@@ -64,4 +64,35 @@ public interface Integration {
     IntegrationSupplierData getSupplierData(Long id);
     IntegrationSupplierData addIntegrationSupplierData(Supplier supplier);
 
+
+    //
+    // Integration - Receipt and Receipt Line
+    //
+    List<? extends IntegrationReceiptData> getReceiptData();
+    IntegrationReceiptData getReceiptData(Long id);
+
+    //
+    // Integration - Order and Order Line
+    //
+    List<? extends IntegrationOrderData> getOrderData();
+    IntegrationOrderData getOrderData(Long id);
+
+
+    // Outbound
+    // Integration sent to HOST
+
+    // Inventory Adjustment Confirmation
+    List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData();
+    IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id);
+    IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation);
+
+    // Inventory Attribute Confirmation
+    List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData();
+    IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id);
+    IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation);
+
+    // Inventory Shipping Confirmation
+    List<? extends IntegrationInventoryShippingConfirmationData> getInventoryShippingConfirmationData();
+    IntegrationInventoryShippingConfirmationData getInventoryShippingConfirmationData(Long id);
+    IntegrationInventoryShippingConfirmationData sendInventoryShippingConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation);
 }

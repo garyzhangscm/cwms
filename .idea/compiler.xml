@@ -9,17 +9,18 @@
         <module name="inboundsvr" />
         <module name="authsvr" />
         <module name="configurationserver" />
-        <module name="zuulsvr" />
+        <module name="adminsvr" />
         <module name="inventorysvr" />
+        <module name="authenticationserver" />
         <module name="confsvr" />
         <module name="layoutserver" />
         <module name="inboundserver" />
         <module name="outboundserver" />
         <module name="workordersvr" />
         <module name="resourceserver" />
-        <module name="ressvr" />
+        <module name="zuulsvr" />
         <module name="commonserver" />
-        <module name="authenticationserver" />
+        <module name="ressvr" />
         <module name="integrationsvr" />
         <module name="outboundsvr" />
         <module name="inventoryserver" />
@@ -35,6 +36,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="adminsvr" options="-parameters" />
       <module name="authentication-service" options="-parameters" />
       <module name="authenticationserver" options="-parameters" />
       <module name="authserver" options="-parameters" />

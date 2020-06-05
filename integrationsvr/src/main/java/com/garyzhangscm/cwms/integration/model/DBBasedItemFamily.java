@@ -19,11 +19,14 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_item_family")
@@ -50,29 +53,72 @@ public class DBBasedItemFamily implements Serializable, IntegrationItemFamilyDat
 
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
     @Column(name = "insert_time")
     private LocalDateTime insertTime;
     @Column(name = "last_update_time")
     private LocalDateTime lastUpdateTime;
+    @Column(name = "error_message")
+    private String errorMessage;
 
-    public ItemFamily convertToItemFamily() {
+    public ItemFamily convertToItemFamily(
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
         ItemFamily itemFamily = new ItemFamily();
-        itemFamily.setName(getName());
-        itemFamily.setDescription(getDescription());
-        itemFamily.setWarehouseId(getWarehouseId());
+
+        String[] fieldNames = {
+                "name","description", "warehouseId","warehouseName"
+        };
+
+        ObjectCopyUtil.copyValue(this,itemFamily,  fieldNames);
+
+
+        Long warehouseId = getWarehouseId();
+        if (Objects.isNull(warehouseId)) {
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    getWarehouseName()
+            ).getId();
+            itemFamily.setWarehouseId(warehouseId);
+        }
+
+
         return itemFamily;
     }
 
     public DBBasedItemFamily() {}
     public DBBasedItemFamily(ItemFamily itemFamily) {
 
-        setName(itemFamily.getName());
-        setDescription(itemFamily.getDescription());
-        setWarehouseId(itemFamily.getWarehouseId());
+        String[] fieldNames = {
+                "name","description", "warehouseId","warehouseName"
+        };
+
+        ObjectCopyUtil.copyValue(itemFamily,this,  fieldNames);
 
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
+    }
+
+    public void completeIntegration(IntegrationStatus integrationStatus) {
+        completeIntegration(integrationStatus, "");
+    }
+    public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
+        setStatus(integrationStatus);
+        setErrorMessage(errorMessage);
+        setLastUpdateTime(LocalDateTime.now());
+    }
+
+        @Override
+    public String toString() {
+        return "DBBasedItemFamily{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
+                ", status=" + status +
+                ", insertTime=" + insertTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                '}';
     }
 
     public Long getId() {
@@ -138,5 +184,13 @@ public class DBBasedItemFamily implements Serializable, IntegrationItemFamilyDat
 
     public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

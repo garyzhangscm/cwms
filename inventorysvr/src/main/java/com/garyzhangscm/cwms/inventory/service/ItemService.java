@@ -226,6 +226,7 @@ public class ItemService implements TestDataInitiableService{
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ItemCSVWrapper> itemCSVWrappers = loadData(inputStream);
             itemCSVWrappers.stream().forEach(itemCSVWrapper -> saveOrUpdate(convertFromWrapper(itemCSVWrapper)));
+            itemRepository.flush();
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }

@@ -19,9 +19,11 @@
 package com.garyzhangscm.cwms.layout.controller;
 
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.service.FileService;
 import com.garyzhangscm.cwms.layout.service.LocationService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class LocationController {
@@ -144,10 +147,21 @@ public class LocationController {
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/locations")
-    public ResponseBodyWrapper removeLocations(@RequestParam("locationIds") String locationIds) {
+    public ResponseBodyWrapper removeLocations(@RequestParam(value = "locationIds", defaultValue = "", required = false) String locationIds,
+                                               @RequestParam(value = "locationId", defaultValue = "", required = false) Long locationId) {
 
-        locationService.delete(locationIds);
-        return  ResponseBodyWrapper.success(locationIds);
+        if (StringUtils.isNotBlank(locationIds)) {
+            locationService.delete(locationIds);
+            return  ResponseBodyWrapper.success(locationIds);
+        }
+        else if (Objects.nonNull(locationId)) {
+            locationService.delete(locationId);
+            return  ResponseBodyWrapper.success(String.valueOf(locationId));
+        }
+        else {
+
+            throw RequestValidationFailException.raiseException("You can delete by either id list or single id");
+        }
     }
 
 

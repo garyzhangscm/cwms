@@ -18,13 +18,13 @@ public class KafkaSender {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public void send(String topic, String message) {
+    private void send(String topic, String message) {
 
         logger.debug("====> Start to send to kafka: {} / {}"
                      ,topic, message);
         kafkaTemplate.send(topic, message);
     }
-    public void send(String topic, String key, String message) {
+    private void send(String topic, String key, String message) {
 
         logger.debug("====> Start to send to kafka: {} / {} / {}"
                 ,topic, key, message);
@@ -32,67 +32,22 @@ public class KafkaSender {
     }
 
 
-    public void send(Customer customer) {
+
+    public <T> void send(IntegrationType integrationType, T data) {
         try {
-            send("INTEGRATION-CUSTOMER", mapper.writeValueAsString(customer));
+            send(integrationType.name(), mapper.writeValueAsString(data));
         }
         catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
+            send("SYSTEM_ERROR", ex.getMessage());
         }
     }
 
-    public void send(Client client) {
+    public <K, V> void send(IntegrationType integrationType, K key, V value) {
         try {
-            send("INTEGRATION-CLIENT", mapper.writeValueAsString(client));
+            send(integrationType.name(), mapper.writeValueAsString(key), mapper.writeValueAsString(value));
         }
         catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
-        }
-    }
-
-    public void send(Supplier supplier) {
-        try {
-            send("INTEGRATION-SUPPLIER", mapper.writeValueAsString(supplier));
-        }
-        catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
-        }
-    }
-
-    public void send(Item item) {
-        try {
-            send("INTEGRATION-ITEM", mapper.writeValueAsString(item));
-        }
-        catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
-        }
-    }
-
-    public void send(ItemFamily itemFamily) {
-        try {
-            send("INTEGRATION-ITEM-FAMILY", mapper.writeValueAsString(itemFamily));
-        }
-        catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
-        }
-    }
-
-    public void send(ItemPackageType itemPackageType) {
-        try {
-            send("INTEGRATION-ITEM-PACKAGE-TYPE", mapper.writeValueAsString(itemPackageType));
-        }
-        catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
-        }
-    }
-
-    public void send(Item item, ItemUnitOfMeasure itemUnitOfMeasure) {
-        try {
-            send("INTEGRATION-ITEM-UNIT-OF-MEASURE",
-                    mapper.writeValueAsString(item), mapper.writeValueAsString(itemUnitOfMeasure));
-        }
-        catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
+            send("SYSTEM_ERROR", ex.getMessage());
         }
     }
 }

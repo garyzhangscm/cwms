@@ -1,5 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
@@ -17,6 +19,7 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class DBBasedItemIntegration {
@@ -28,7 +31,13 @@ public class DBBasedItemIntegration {
     @Autowired
     DBBasedItemRepository dbBasedItemRepository;
     @Autowired
+    DBBasedItemFamilyIntegration dbBasedItemFamilyIntegration;
+    @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    CommonServiceRestemplateClient commonServiceRestemplateClient;
 
 
     public List<DBBasedItem> findAll() {
@@ -40,6 +49,14 @@ public class DBBasedItemIntegration {
     }
 
     public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem) {
+/****
+        if (Objects.nonNull(dbBasedItem.getItemFamily())) {
+            IntegrationItemFamilyData integrationItemFamilyData =
+                    dbBasedItemFamilyIntegration.addIntegrationItemFamilyData(dbBasedItem.getItemFamily());
+            dbBasedItem.setItemFamily((DBBasedItemFamily)integrationItemFamilyData);
+
+        }
+***/
 
         return dbBasedItemRepository.save(dbBasedItem);
     }
@@ -70,18 +87,32 @@ public class DBBasedItemIntegration {
 
     private void process(DBBasedItem dbBasedItem) {
 
-        Item item = dbBasedItem.convertToItem();
-        // Item item = getItemFromDatabase(dbBasedItem);
-        logger.debug(">> will process Item:\n{}", item);
+        try {
 
-        kafkaSender.send(item);
+            Item item = dbBasedItem.convertToItem(inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient);
+            // setup the warehouse
+            // Item item = getItemFromDatabase(dbBasedItem);
+            logger.debug(">> will process Item:\n{}", item);
+
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM, item);
 
 
-        dbBasedItem.setStatus(IntegrationStatus.COMPLETED);
-        dbBasedItem.setLastUpdateTime(LocalDateTime.now());
+            dbBasedItem.completeIntegration(IntegrationStatus.COMPLETED);
+
+
+        }
+        catch(Exception ex) {
+            logger.debug("Exception : {} \n while process item integration: \n{}",
+                    ex.getMessage(), dbBasedItem);
+            dbBasedItem.completeIntegration(IntegrationStatus.ERROR, ex.getMessage());
+
+        }
+
         dbBasedItem = save(dbBasedItem);
 
-        logger.debug(">> Item data process, {}", dbBasedItem.getStatus());
+        logger.debug(">> Item data process, {}", dbBasedItem);
     }
 
 

@@ -65,11 +65,14 @@ public class DBBasedClient implements Serializable, IntegrationClientData {
     private String addressPostcode;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
     @Column(name = "insert_time")
     private LocalDateTime insertTime;
     @Column(name = "last_update_time")
     private LocalDateTime lastUpdateTime;
+    @Column(name = "error_message")
+    private String errorMessage;
 
     public Client convertToClient() {
         Client client = new Client();
@@ -113,6 +116,29 @@ public class DBBasedClient implements Serializable, IntegrationClientData {
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
     }
+
+    @Override
+    public String toString() {
+        return "DBBasedClient{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", contactorFirstname='" + contactorFirstname + '\'' +
+                ", contactorLastname='" + contactorLastname + '\'' +
+                ", addressCountry='" + addressCountry + '\'' +
+                ", addressState='" + addressState + '\'' +
+                ", addressCounty='" + addressCounty + '\'' +
+                ", addressCity='" + addressCity + '\'' +
+                ", addressDistrict='" + addressDistrict + '\'' +
+                ", addressLine1='" + addressLine1 + '\'' +
+                ", addressLine2='" + addressLine2 + '\'' +
+                ", addressPostcode='" + addressPostcode + '\'' +
+                ", status=" + status +
+                ", insertTime=" + insertTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }
@@ -239,5 +265,13 @@ public class DBBasedClient implements Serializable, IntegrationClientData {
 
     public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

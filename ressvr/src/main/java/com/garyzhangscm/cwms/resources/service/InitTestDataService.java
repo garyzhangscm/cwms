@@ -108,10 +108,10 @@ public class InitTestDataService {
         initiableServices.put("Menu", menuService);
         serviceNames.add("Menu");
          ****/
-        initiableServices.put("User's Role", userRoleService);
-        serviceNames.add("User's Role");
-        initiableServices.put("Role's Menu Access", roleMenuService);
-        serviceNames.add("Role's Menu Access");
+        initiableServices.put("User_Role", userRoleService);
+        serviceNames.add("User_Role");
+        initiableServices.put("Role_Menu_Access", roleMenuService);
+        serviceNames.add("Role_Menu_Access");
 
 
         // Add service from other servers
@@ -164,9 +164,7 @@ public class InitTestDataService {
     }
     private void initAll(String warehouseName) {
 
-        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData(warehouseName);
-        }
+        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
 
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
 

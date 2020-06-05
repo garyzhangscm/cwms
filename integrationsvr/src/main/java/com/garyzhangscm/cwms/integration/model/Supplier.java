@@ -19,13 +19,14 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 
 public class Supplier implements Serializable {
+
+    private Long id;
+
 
     private String name;
 
@@ -43,6 +44,13 @@ public class Supplier implements Serializable {
     private String addressLine2;
     private String addressPostcode;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

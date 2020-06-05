@@ -22,6 +22,9 @@ package com.garyzhangscm.cwms.integration.model;
 import java.io.Serializable;
 
 public class Customer implements Serializable {
+
+    private Long id;
+
     private String name;
 
     private String description;
@@ -133,5 +136,13 @@ public class Customer implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

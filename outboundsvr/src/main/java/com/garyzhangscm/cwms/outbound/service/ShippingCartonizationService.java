@@ -30,6 +30,8 @@ public class ShippingCartonizationService {
     ShippingCartonizationRepository shippingCartonizationRepository;
     @Autowired
     ShipmentLineService shipmentLineService;
+    @Autowired
+    OrderLineService orderLineService;
 
     @Autowired
     CartonService cartonService;
@@ -108,12 +110,12 @@ public class ShippingCartonizationService {
         // station
         Location packingStation;
         if (StringUtils.isNotBlank(packingStationName)) {
-            Optional<Location> location = Optional.of(warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, packingStationName));
+            Optional<Location> location = Optional.ofNullable(warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, packingStationName));
             packingStation = location.orElseThrow(() -> PackingException.raiseException("Can't find station by name: " + packingStationName));
 
         }
         else {
-            Optional<Location> location = Optional.of(warehouseLayoutServiceRestemplateClient.getDefaultPackingStation(warehouseId));
+            Optional<Location> location = Optional.ofNullable(warehouseLayoutServiceRestemplateClient.getDefaultPackingStation(warehouseId));
             packingStation = location.orElseThrow(() -> PackingException.raiseException("Can't find default packing station"));
         }
         // Now we only support pack by LPN so we will assume
@@ -124,6 +126,7 @@ public class ShippingCartonizationService {
         // new LPN standards for the shipping carton
         String shippingCartonNumber = getNextShippingCartonizationNumber();
         List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(warehouseId, inventoryId);
+        logger.debug("Get inventory by id: {} \n {}", inventoryId, inventories);
 
         // Get all the shipment according to the inventory.
         // We need to make sure there's only one shipment.
@@ -228,10 +231,39 @@ public class ShippingCartonizationService {
         inventories.forEach(inventory -> {
             ShipmentLine shipmentLine = shipmentLineService.getShipmentLineByPickedInventory(inventory);
             if (Objects.nonNull(shipmentLine)) {
+                // We will move packed inventory into a location that specific
+                // for the carrier. So we will need to get the carrier and
+                // service level first. It should be defined in the order line
+                OrderLine orderLine = shipmentLine.getOrderLine();
+                logger.debug("get order line: \n{}", orderLine);
+                // If the carrier and service level is not loaded yet,
+                // refresh the order line information by id
+                if(Objects.isNull(orderLine.getCarrier()) &&
+                        Objects.nonNull(orderLine.getCarrierId())) {
+                    orderLine.setCarrier(
+                            commonServiceRestemplateClient.getCarrierById(
+                                    orderLine.getCarrierId()
+                            )
+                    );
+                }
+                if(Objects.isNull(orderLine.getCarrierServiceLevel()) &&
+                        Objects.nonNull(orderLine.getCarrierServiceLevelId())) {
+                    orderLine.setCarrierServiceLevel(
+                            commonServiceRestemplateClient.getCarrierServiceLevelById(
+                                    orderLine.getCarrierServiceLevelId()
+                            )
+                    );
+                }
+
+                String carrierName = Objects.isNull(orderLine.getCarrier())?
+                        "DEFAULT" : orderLine.getCarrier().getName();
+                String carrierServiceLevel = Objects.isNull(orderLine.getCarrierServiceLevel())?
+                        "DEFAULT" : orderLine.getCarrierServiceLevel().getName();
+
                 Location location = warehouseLayoutServiceRestemplateClient.getShippedParcelLocation(
                         shipmentLine.getWarehouseId(),
-                        shipmentLine.getOrderLine().getCarrier().getName(),
-                        shipmentLine.getOrderLine().getCarrierServiceLevel().getName()
+                        carrierName,
+                        carrierServiceLevel
                 );
                 logger.debug("Will move inventory \n{} to location: {}",
                         inventory, location);

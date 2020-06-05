@@ -22,7 +22,7 @@ spring:
              searchPaths: cwms/zuulservice,cwms/layoutservice,cwms/resourceservice,
                           cwms/authservice,cwms/commonservice,cwms/inventoryservice,
                           cwms/inboundservice,cwms/outboundservice,cwms/workorderservice,
-                          cwms/integrationservice
+                          cwms/integrationservice,cwms/adminservice
 eureka:
   instance:
     preferIpAddress: true

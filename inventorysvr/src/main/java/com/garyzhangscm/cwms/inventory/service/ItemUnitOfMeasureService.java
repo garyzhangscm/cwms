@@ -136,7 +136,10 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             logger.debug(">> Start to get item unit of measure from {}", testDataFileName);
             List<ItemUnitOfMeasureCSVWrapper> itemUnitOfMeasureCSVWrappers = loadData(inputStream);
-            itemUnitOfMeasureCSVWrappers.stream().forEach(itemUnitOfMeasureCSVWrapper -> saveOrUpdate(convertFromWrapper(itemUnitOfMeasureCSVWrapper)));
+            itemUnitOfMeasureCSVWrappers.stream().forEach(
+                    itemUnitOfMeasureCSVWrapper ->
+                        saveOrUpdate(convertFromWrapper(itemUnitOfMeasureCSVWrapper)));
+            itemUnitOfMeasureRepository.flush();
             logger.debug(">> item unit of measure loaded from {}", testDataFile);
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());

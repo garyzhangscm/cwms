@@ -42,5 +42,10 @@ public class LocationGroupTypeController {
         return locationGroupTypeService.findById(id);
     }
 
+    @RequestMapping(method=RequestMethod.POST, value="/locationgrouptypes")
+    public LocationGroupType listLocationGroupTypes(@RequestBody LocationGroupType locationGroupType) {
+        return locationGroupTypeService.saveOrUpdate(locationGroupType);
+    }
+
 
 }
