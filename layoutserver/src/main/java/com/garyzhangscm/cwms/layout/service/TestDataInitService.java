@@ -54,10 +54,10 @@ public class TestDataInitService {
 
         // initiableServices.put("warehouse", warehouseService);
         // serviceNames.add("warehouse");
-        initiableServices.put("location group type", locationGroupTypeService);
-        serviceNames.add("location group type");
-        initiableServices.put("location group", locationGroupService);
-        serviceNames.add("location group");
+        initiableServices.put("location_group_type", locationGroupTypeService);
+        serviceNames.add("location_group_type");
+        initiableServices.put("location_group", locationGroupService);
+        serviceNames.add("location_group");
         initiableServices.put("location", locationService);
         serviceNames.add("location");
     }
@@ -65,9 +65,7 @@ public class TestDataInitService {
         return serviceNames.toArray(new String[0]);
     }
     public void init(String warehouseName) {
-        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData(warehouseName);
-        }
+        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
     }
     public void init(String name, String warehouseName) {
         initiableServices.get(name).initTestData(warehouseName);

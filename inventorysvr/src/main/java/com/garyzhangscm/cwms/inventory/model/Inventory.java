@@ -144,6 +144,29 @@ public class Inventory implements Serializable {
         return Objects.hash(id);
     }
 
+
+    @Override
+    public String toString() {
+        return "Inventory{" +
+                "id=" + id +
+                ", lpn='" + lpn + '\'' +
+                ", locationId=" + locationId +
+                ", location=" + location +
+                ", pickId=" + pickId +
+                ", pick=" + pick +
+                ", receiptId=" + receiptId +
+                ", item=" + item +
+                ", itemPackageType=" + itemPackageType +
+                ", quantity=" + quantity +
+                ", virtual=" + virtual +
+                ", inventoryStatus=" + inventoryStatus +
+                ", warehouseId=" + warehouseId +
+                ", warehouse=" + warehouse +
+                ", lockedForAdjust=" + lockedForAdjust +
+                ", inventoryMovements=" + inventoryMovements +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }

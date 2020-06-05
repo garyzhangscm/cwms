@@ -76,32 +76,30 @@ public class TestDataInitService {
 
 
 
-        initiableServices.put("Bill Of Material", billOfMaterialService);
-        serviceNames.add("Bill Of Material");
+        initiableServices.put("Bill_Of_Material", billOfMaterialService);
+        serviceNames.add("Bill_Of_Material");
 
-        initiableServices.put("Bill Of Material Line", billOfMaterialLineService);
-        serviceNames.add("Bill Of Material Line");
+        initiableServices.put("Bill_Of_Material_Line", billOfMaterialLineService);
+        serviceNames.add("Bill_Of_Material_Line");
 
-        initiableServices.put("Work Order Instruction Template", workOrderInstructionTemplateService);
-        serviceNames.add("Work Order Instruction Template");
+        initiableServices.put("Work_Order_Instruction_Template", workOrderInstructionTemplateService);
+        serviceNames.add("Work_Order_Instruction_Template");
 
-        initiableServices.put("Production Line", productionLineService);
-        serviceNames.add("Production Line");
+        initiableServices.put("Production_Line", productionLineService);
+        serviceNames.add("Production_Line");
 
-        initiableServices.put("Work Order", workOrderService);
-        serviceNames.add("Work Order");
-        initiableServices.put("Work Order Line", workOrderLineService);
-        serviceNames.add("Work Order Line");
-        initiableServices.put("Work Order Instruction", workOrderInstructionService);
-        serviceNames.add("Work Order Instruction");
+        initiableServices.put("Work_Order", workOrderService);
+        serviceNames.add("Work_Order");
+        initiableServices.put("Work_Order_Line", workOrderLineService);
+        serviceNames.add("Work_Order_Line");
+        initiableServices.put("Work_Order_Instruction", workOrderInstructionService);
+        serviceNames.add("Work_Order_Instruction");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
     }
     public void init(String warehouseName) {
-        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData(warehouseName);
-        }
+        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
     }
     public void init(String name, String warehouseName) {
         initiableServices.get(name).initTestData(warehouseName);

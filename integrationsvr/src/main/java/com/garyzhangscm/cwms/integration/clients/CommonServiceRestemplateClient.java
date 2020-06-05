@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.integration.clients;
 
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.integration.model.Client;
-import com.garyzhangscm.cwms.integration.model.Supplier;
-import com.garyzhangscm.cwms.integration.model.UnitOfMeasure;
+import com.garyzhangscm.cwms.integration.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,5 +101,58 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+    public Customer getCustomerByName(String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/common/customers")
+                        .queryParam("name", name);
+
+        ResponseBodyWrapper<List<Customer>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Customer>>>() {}).getBody();
+
+        List<Customer> customers = responseBodyWrapper.getData();
+        if (customers.size() == 0) {
+            return null;
+        }
+        else {
+            return customers.get(0);
+        }
+    }
+
+    public Carrier getCarrierByName(String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/common/carriers")
+                        .queryParam("name", name);
+
+        ResponseBodyWrapper<List<Carrier>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Carrier>>>() {}).getBody();
+
+        List<Carrier> carriers = responseBodyWrapper.getData();
+        if (carriers.size() == 0) {
+            return null;
+        }
+        else {
+            return carriers.get(0);
+        }
+    }
+    public Carrier getCarrierById(Long id) {
+
+        ResponseBodyWrapper<Carrier> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/carriers/{id}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Carrier>>() {}, id).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
 
 }

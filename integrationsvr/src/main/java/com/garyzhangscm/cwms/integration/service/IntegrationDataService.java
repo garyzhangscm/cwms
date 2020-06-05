@@ -108,4 +108,50 @@ public class IntegrationDataService {
     public IntegrationSupplierData addIntegrationSupplierData(Supplier supplier) {
         return integration.addIntegrationSupplierData(supplier);
     }
+
+
+    //
+    // Integration - Receipt and Receipt Line
+    //
+    public List<? extends IntegrationReceiptData> getReceiptData() {
+        return integration.getReceiptData();
+    }
+    public IntegrationReceiptData getReceiptData(Long id) {
+        return integration.getReceiptData(id);
+    }
+
+    //
+    // Integration - Order and Order Line
+    //
+    public List<? extends IntegrationOrderData> getOrderData() {
+        return integration.getOrderData();
+    }
+    public IntegrationOrderData getOrderData(Long id) {
+        return integration.getOrderData(id);
+    }
+
+
+    // Outbound
+    // Integration sent to HOST
+
+    // Inventory Adjustment Confirmation
+    public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData() {
+        return integration.getInventoryAdjustmentConfirmationData();
+    }
+    public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
+        return integration.getInventoryAdjustmentConfirmationData(id);
+    }
+    public IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
+        return integration.sendInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
+    }
+    // Inventory Attribute Change Confirmation
+    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData() {
+        return integration.getInventoryAttributeChangeConfirmationData();
+    }
+    public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {
+        return integration.getInventoryAttributeChangeConfirmationData(id);
+    }
+    public IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
+        return integration.sendInventoryAttributeChangeConfirmationData(inventoryAttributeChangeConfirmation);
+    }
 }

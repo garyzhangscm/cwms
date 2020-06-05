@@ -81,6 +81,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
     }
 
     public LocationGroupType save(LocationGroupType locationGroupType) {
+        logger.debug("Will save location group type: {}", locationGroupType);
         return locationGroupTypeRepository.save(locationGroupType);
     }
     public LocationGroupType saveOrUpdate(LocationGroupType locationGroupType) {
@@ -147,10 +148,13 @@ public class LocationGroupTypeService implements TestDataInitiableService {
     }
 
     public void initTestData(String warehouseName) {
+        logger.debug(">>Start to init location group type for warehouse {}", warehouseName);
         try {
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
+            logger.debug("Start to init location group type from {}", testDataFileName);
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<LocationGroupType> locationGroupTypes = loadData(inputStream);
             locationGroupTypes.stream().forEach(locationGroupType -> saveOrUpdate(locationGroupType));

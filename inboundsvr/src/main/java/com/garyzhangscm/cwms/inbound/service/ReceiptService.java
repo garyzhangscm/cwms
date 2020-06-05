@@ -22,7 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inbound.exception.GenericException;
+
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ReceiptService implements TestDataInitiableService{
@@ -277,9 +278,11 @@ public class ReceiptService implements TestDataInitiableService{
 
     public String getNextReceiptLineNumber(Long id) {
         Receipt receipt = findById(id);
-        if (receipt == null) {
+        if (Objects.isNull(receipt)) {
             return "";
         }
+
+
         else if (receipt.getReceiptLines().isEmpty()) {
             return "0";
         }
@@ -306,4 +309,6 @@ public class ReceiptService implements TestDataInitiableService{
 
         return inventoryServiceRestemplateClient.findInventoryByReceipt(receipt.getWarehouseId(), receiptId);
     }
+
+
 }

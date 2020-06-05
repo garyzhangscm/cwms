@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.integration.model;
 import java.io.Serializable;
 public class Client implements Serializable {
 
+    private Long id;
 
     private String name;
 
@@ -40,6 +41,14 @@ public class Client implements Serializable {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

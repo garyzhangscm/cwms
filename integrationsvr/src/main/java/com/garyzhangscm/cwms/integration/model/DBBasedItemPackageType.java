@@ -21,16 +21,25 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_item_package_type")
 public class DBBasedItemPackageType implements Serializable, IntegrationItemPackageTypeData {
+
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedItemPackageType.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,7 +80,7 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
 
     @OneToMany(
             mappedBy = "itemPackageType",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<DBBasedItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
@@ -83,23 +92,72 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     private String warehouseName;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
     @Column(name = "insert_time")
     private LocalDateTime insertTime;
     @Column(name = "last_update_time")
     private LocalDateTime lastUpdateTime;
+    @Column(name = "error_message")
+    private String errorMessage;
 
-    public ItemPackageType convertToItemPackageType() {
+    public ItemPackageType convertToItemPackageType(
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+            CommonServiceRestemplateClient commonServiceRestemplateClient,
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
 
         ItemPackageType itemPackageType = new ItemPackageType();
-        itemPackageType.setName(getName());
-        itemPackageType.setDescription(getDescription());
-        itemPackageType.setClientId(getClientId());
-        itemPackageType.setSupplierId(getSupplierId());
+
+
+        String[] fieldNames = {
+                "itemId","itemName",
+                "name","description",
+                "clientId","clientName",
+                "supplierId","supplierName",
+                "warehouseId","warehouseName"
+        };
+
+        ObjectCopyUtil.copyValue(this, itemPackageType,  fieldNames);
+
+
+        Long warehouseId = getWarehouseId();
+        if (Objects.isNull(warehouseId)) {
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    getWarehouseName()
+            ).getId();
+            itemPackageType.setWarehouseId(warehouseId);
+        }
+
+        if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+            itemPackageType.setItemId(
+                    inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                            getItemName()).getId()
+            );
+        }
+
+        if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
+            itemPackageType.setClientId(
+                    commonServiceRestemplateClient.getClientByName(
+                            getClientName()
+                    ).getId()
+            );
+        }
+
+        if (Objects.isNull(getSupplierId()) && Objects.nonNull(getSupplierName())) {
+            itemPackageType.setSupplierId(
+                    commonServiceRestemplateClient.getSupplierByName(
+                            getSupplierName()
+                    ).getId()
+            );
+        }
+
         getItemUnitOfMeasures().forEach(dbBasedItemUnitOfMeasure -> {
-            itemPackageType.addItemUnitOfMeasure(dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure());
+            itemPackageType.addItemUnitOfMeasure(dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure(
+                    inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient
+            ));
         });
-        itemPackageType.setWarehouseId(getWarehouseId());
 
         return itemPackageType;
     }
@@ -108,14 +166,28 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     public DBBasedItemPackageType(ItemPackageType itemPackageType) {
 
 
-        setName(itemPackageType.getName());
-        setDescription(itemPackageType.getDescription());
-        setClientId(itemPackageType.getClientId());
-        setSupplierId(itemPackageType.getSupplierId());
+        String[] fieldNames = {
+                "itemId","itemName",
+                "name","description",
+                "clientId","clientName",
+                "supplierId","supplierName",
+                "warehouseId","warehouseName"
+        };
+
+        ObjectCopyUtil.copyValue(itemPackageType, this,   fieldNames);
+
         itemPackageType.getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
-            addItemUnitOfMeasure(new DBBasedItemUnitOfMeasure(itemUnitOfMeasure));
+            DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure =
+                    new DBBasedItemUnitOfMeasure(itemUnitOfMeasure);
+
+            // logger.debug("Get DBBasedItemUnitOfMeasure \n {} \n from itemUnitOfMeasure: \n {}",
+            //        dbBasedItemUnitOfMeasure, itemUnitOfMeasure);
+
+            dbBasedItemUnitOfMeasure.setItemPackageType(this);
+            dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.ATTACHED);
+            addItemUnitOfMeasure(dbBasedItemUnitOfMeasure);
         });
-        setWarehouseId(getWarehouseId());
+
 
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
@@ -123,8 +195,39 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     }
 
 
+    public void completeIntegration(IntegrationStatus integrationStatus) {
+        completeIntegration(integrationStatus, "");
+    }
+    public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
+        setStatus(integrationStatus);
+        setErrorMessage(errorMessage);
+        setLastUpdateTime(LocalDateTime.now());
+        itemUnitOfMeasures.forEach(dbBasedItemUnitOfMeasure -> dbBasedItemUnitOfMeasure.completeIntegration(integrationStatus, errorMessage));
+    }
     public void addItemUnitOfMeasure(DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure) {
         getItemUnitOfMeasures().add(dbBasedItemUnitOfMeasure);
+    }
+
+    @Override
+    public String toString() {
+        return "DBBasedItemPackageType{" +
+                "id=" + id +
+                ", itemId=" + itemId +
+                ", itemName='" + itemName + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", clientId=" + clientId +
+                ", clientName='" + clientName + '\'' +
+                ", supplierId=" + supplierId +
+                ", supplierName='" + supplierName + '\'' +
+                ", item=" + (Objects.nonNull(item) ?  item.getName() : "")+
+                ", itemUnitOfMeasures=" + itemUnitOfMeasures +
+                ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
+                ", status=" + status +
+                ", insertTime=" + insertTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                '}';
     }
 
     public Long getId() {
@@ -256,5 +359,13 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

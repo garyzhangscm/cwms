@@ -10,9 +10,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * A DB based integraiton solution.
+ * All data will be fetched from / saved into database
+ */
 @Service
 @Profile({"aws-dev","default", "dev"})
 public class DBBasedIntegration implements Integration{
+
     private static final Logger logger = LoggerFactory.getLogger(DBBasedIntegration.class);
 
     @Autowired
@@ -35,6 +40,18 @@ public class DBBasedIntegration implements Integration{
     @Autowired
     DBBasedSupplierIntegration dbBasedSupplierIntegration;
 
+    @Autowired
+    DBBasedReceiptIntegration dbBasedReceiptIntegration;
+
+    @Autowired
+    DBBasedOrderIntegration dbBasedOrderIntegration;
+
+    @Autowired
+    DBBasedInventoryAdjustmentConfirmationIntegration dbBasedInventoryAdjustmentConfirmationIntegration;
+    @Autowired
+    DBBasedInventoryAttributeChangeConfirmationIntegration dbBasedInventoryAttributeChangeConfirmationIntegration;
+
+
 
 
     public void listen() {
@@ -49,8 +66,22 @@ public class DBBasedIntegration implements Integration{
         logger.debug("#3 Client data");
         dbBasedClientIntegration.listen();
 
+        logger.debug("#4 Item Family");
+        dbBasedItemFamilyIntegration.listen();
+        logger.debug("#5 Item");
+        dbBasedItemIntegration.listen();
+        logger.debug("#6 Item Package Type");
+        dbBasedItemPackageTypeIntegration.listen();
         logger.debug("#7 Item Unit Of Measure");
         dbBasedItemUnitOfMeasureIntegration.listen();
+
+
+
+        logger.debug("#8 Receipt");
+        dbBasedReceiptIntegration.listen();
+
+        logger.debug("#9 Sales Order");
+        dbBasedOrderIntegration.listen();
 
     }
 
@@ -105,7 +136,10 @@ public class DBBasedIntegration implements Integration{
 
     @Override
     public IntegrationItemData addIntegrationItemData(Item item) {
-        return dbBasedItemIntegration.addIntegrationItemData(new DBBasedItem(item));
+        DBBasedItem dbBasedItem = new DBBasedItem(item);
+        logger.debug("Get dbBasedItem\n{}\n from item : \n{}",
+                dbBasedItem, item);
+        return dbBasedItemIntegration.addIntegrationItemData(dbBasedItem);
     }
 
 
@@ -179,6 +213,67 @@ public class DBBasedIntegration implements Integration{
     @Override
     public IntegrationSupplierData addIntegrationSupplierData(Supplier supplier) {
         return dbBasedSupplierIntegration.addIntegrationSupplierData(new DBBasedSupplier(supplier));
+    }
+
+
+    //
+    // Integration - Receipt and Receipt Line
+    //
+    public List<? extends IntegrationReceiptData> getReceiptData() {
+        return dbBasedReceiptIntegration.findAll();
+    }
+    public IntegrationReceiptData getReceiptData(Long id) {
+        return dbBasedReceiptIntegration.findById(id);
+    }
+
+    //
+    // Integration - Order and Order Line
+    //
+    public List<? extends IntegrationOrderData> getOrderData() {
+        return dbBasedOrderIntegration.findAll();
+    }
+    public IntegrationOrderData getOrderData(Long id) {
+        return dbBasedOrderIntegration.findById(id);
+    }
+
+    public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData() {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.findAll();
+    }
+    public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.findById(id);
+    }
+    public IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.sendInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
+    }
+
+    @Override
+    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData() {
+        return dbBasedInventoryAttributeChangeConfirmationIntegration.findAll();
+    }
+
+    @Override
+    public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {
+        return dbBasedInventoryAttributeChangeConfirmationIntegration.findById(id);
+    }
+
+    @Override
+    public IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
+        return dbBasedInventoryAttributeChangeConfirmationIntegration.sendInventoryAdjustmentConfirmationData(inventoryAttributeChangeConfirmation);
+    }
+
+    @Override
+    public List<? extends IntegrationInventoryShippingConfirmationData> getInventoryShippingConfirmationData() {
+        return null;
+    }
+
+    @Override
+    public IntegrationInventoryShippingConfirmationData getInventoryShippingConfirmationData(Long id) {
+        return null;
+    }
+
+    @Override
+    public IntegrationInventoryShippingConfirmationData sendInventoryShippingConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
+        return null;
     }
 
 

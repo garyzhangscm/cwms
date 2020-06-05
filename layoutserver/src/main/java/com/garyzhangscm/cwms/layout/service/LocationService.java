@@ -566,7 +566,7 @@ public class LocationService implements TestDataInitiableService {
 
     public Location getShippedParcelLocation(Long warehouseId, String carrierName, String serviceLevelName) {
         String locationName = carrierName + "-" + serviceLevelName;
-        Optional<Location> locationOptional = Optional.of(findByName(locationName, warehouseId));
+        Optional<Location> locationOptional = Optional.ofNullable(findByName(locationName, warehouseId));
         return locationOptional.orElse(createShippedParcelLocation(warehouseId, locationName));
 
 
@@ -574,9 +574,10 @@ public class LocationService implements TestDataInitiableService {
 
     public Location createShippedParcelLocation(Long warehouseId, String locationName) {
 
-
-        return new Location(warehouseService.findById(warehouseId),
+        Location location = new Location(warehouseService.findById(warehouseId),
                 locationName, locationGroupService.getShippedParcelLocationGroup(warehouseId));
+
+        return saveOrUpdate(location);
     }
 
 

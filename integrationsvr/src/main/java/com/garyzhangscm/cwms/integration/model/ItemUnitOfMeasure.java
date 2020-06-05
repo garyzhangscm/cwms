@@ -19,13 +19,22 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import javax.persistence.Column;
 import java.io.Serializable;
 
 
 public class ItemUnitOfMeasure implements Serializable {
 
 
+    private Long id;
+    private Long itemId;
+    private String itemName;
+
+    private Long itemPackageTypeId;
+    private String itemPackageTypeName;
+
     private Long unitOfMeasureId;
+    private String unitOfMeasureName;
 
     private Integer quantity;
 
@@ -39,18 +48,82 @@ public class ItemUnitOfMeasure implements Serializable {
     private Double height;
 
     private Long warehouseId;
+    private String warehouseName;
 
     @Override
     public String toString() {
         return "ItemUnitOfMeasure{" +
-                "unitOfMeasureId=" + unitOfMeasureId +
+                "id=" + id +
+                ", itemId=" + itemId +
+                ", itemName='" + itemName + '\'' +
+                ", itemPackageTypeId=" + itemPackageTypeId +
+                ", itemPackageTypeName='" + itemPackageTypeName + '\'' +
+                ", unitOfMeasureId=" + unitOfMeasureId +
+                ", unitOfMeasureName='" + unitOfMeasureName + '\'' +
                 ", quantity=" + quantity +
                 ", weight=" + weight +
                 ", length=" + length +
                 ", width=" + width +
                 ", height=" + height +
                 ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
                 '}';
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public Long getItemPackageTypeId() {
+        return itemPackageTypeId;
+    }
+
+    public void setItemPackageTypeId(Long itemPackageTypeId) {
+        this.itemPackageTypeId = itemPackageTypeId;
+    }
+
+    public String getItemPackageTypeName() {
+        return itemPackageTypeName;
+    }
+
+    public void setItemPackageTypeName(String itemPackageTypeName) {
+        this.itemPackageTypeName = itemPackageTypeName;
+    }
+
+    public String getUnitOfMeasureName() {
+        return unitOfMeasureName;
+    }
+
+    public void setUnitOfMeasureName(String unitOfMeasureName) {
+        this.unitOfMeasureName = unitOfMeasureName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
     }
 
     public Long getUnitOfMeasureId() {

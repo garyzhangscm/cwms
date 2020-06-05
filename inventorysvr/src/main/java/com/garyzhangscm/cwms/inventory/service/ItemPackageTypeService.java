@@ -31,11 +31,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,8 +66,34 @@ public class ItemPackageTypeService implements TestDataInitiableService{
                  .orElseThrow(() -> ResourceNotFoundException.raiseException("item package type not found by id: " + id));
     }
 
-    public List<ItemPackageType> findAll(boolean includeDetails) {
-        return itemPackageTypeRepository.findAll();
+    public List<ItemPackageType> findAll(Long warehouseId,
+                                         String name,
+                                         Long itemId) {
+
+        return itemPackageTypeRepository.findAll(
+                (Root<ItemPackageType> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+
+                    if (Objects.nonNull(itemId)) {
+
+                        Join<ItemPackageType, Item> joinItem = root.join("item", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinItem.get("id"), itemId));
+
+
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
     public ItemPackageType save(ItemPackageType itemPackageType) {
@@ -143,6 +173,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ItemPackageTypeCSVWrapper> itemPackageTypeCSVWrappers = loadData(inputStream);
             itemPackageTypeCSVWrappers.stream().forEach(itemPackageTypeCSVWrapper -> saveOrUpdate(convertFromWrapper(itemPackageTypeCSVWrapper)));
+            itemPackageTypeRepository.flush();
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }

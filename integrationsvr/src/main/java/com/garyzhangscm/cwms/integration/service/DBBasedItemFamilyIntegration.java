@@ -71,11 +71,11 @@ public class DBBasedItemFamilyIntegration {
 
     private void process(DBBasedItemFamily dbBasedItemFamily) {
 
-        ItemFamily itemFamily = dbBasedItemFamily.convertToItemFamily();
+        ItemFamily itemFamily = dbBasedItemFamily.convertToItemFamily(warehouseLayoutServiceRestemplateClient);
         // Item item = getItemFromDatabase(dbBasedItem);
         logger.debug(">> will process Item Family:\n{}", itemFamily);
 
-        kafkaSender.send(itemFamily);
+        kafkaSender.send(IntegrationType.INTEGRATION_ITEM_FAMILY, itemFamily);
 
 
         dbBasedItemFamily.setStatus(IntegrationStatus.COMPLETED);

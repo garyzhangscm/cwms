@@ -1,5 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
@@ -30,6 +32,10 @@ public class DBBasedItemPackageTypeIntegration {
     DBBasedItemPackageTypeRepository dbBasedItemPackageTypeRepository;
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    CommonServiceRestemplateClient commonServiceRestemplateClient;
 
 
     public List<DBBasedItemPackageType> findAll() {
@@ -71,11 +77,13 @@ public class DBBasedItemPackageTypeIntegration {
 
     private void process(DBBasedItemPackageType dbBasedItemPackageType) {
 
-        ItemPackageType itemPackageType = dbBasedItemPackageType.convertToItemPackageType();
+        ItemPackageType itemPackageType = dbBasedItemPackageType.convertToItemPackageType(inventoryServiceRestemplateClient,
+                commonServiceRestemplateClient,
+                warehouseLayoutServiceRestemplateClient);
         // Item item = getItemFromDatabase(dbBasedItem);
         logger.debug(">> will process Item Package Type:\n{}", itemPackageType);
 
-        kafkaSender.send(itemPackageType);
+        kafkaSender.send(IntegrationType.INTEGRATION_ITEM_PACKAGE_TYPE, itemPackageType);
 
 
         dbBasedItemPackageType.setStatus(IntegrationStatus.COMPLETED);

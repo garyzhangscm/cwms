@@ -135,6 +135,7 @@ public class ItemFamilyService implements TestDataInitiableService{
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ItemFamilyCSVWrapper> itemFamilyCSVWrappers = loadData(inputStream);
             itemFamilyCSVWrappers.stream().forEach(itemFamilyCSVWrapper -> saveOrUpdate(convertFromWrapper(itemFamilyCSVWrapper)));
+            itemFamilyRepository.flush();
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }

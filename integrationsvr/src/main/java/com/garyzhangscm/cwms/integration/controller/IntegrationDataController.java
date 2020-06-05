@@ -93,7 +93,7 @@ public class IntegrationDataController {
         return integrationDataService.getItemData(id);
     }
 
-    @RequestMapping(value="/items", method = RequestMethod.PUT)
+    @RequestMapping(value="/items", method = RequestMethod.POST)
     public IntegrationItemData addIntegrationItemData(@RequestBody Item item) {
 
         return integrationDataService.addIntegrationItemData(item);

@@ -84,14 +84,14 @@ public class TestDataInitService {
         serviceNames.add("Customer");
         initiableServices.put("Carrier", carrierService);
         serviceNames.add("Carrier");
-        initiableServices.put("Carrier Service Level", carrierServiceLevelService);
-        serviceNames.add("Carrier Service Level");
-        initiableServices.put("Unit of Measure", unitOfMeasureService);
-        serviceNames.add("Unit of Measure");
-        initiableServices.put("Reason Code", reasonCodeService);
-        serviceNames.add("Reason Code");
-        initiableServices.put("System Controlled Number", systemControlledNumberService);
-        serviceNames.add("System Controlled Number");
+        initiableServices.put("Carrier_Service_Level", carrierServiceLevelService);
+        serviceNames.add("Carrier_Service_Level");
+        initiableServices.put("Unit_of_Measure", unitOfMeasureService);
+        serviceNames.add("Unit_of_Measure");
+        initiableServices.put("Reason_Code", reasonCodeService);
+        serviceNames.add("Reason_Code");
+        initiableServices.put("System_Controlled_Number", systemControlledNumberService);
+        serviceNames.add("System_Controlled_Number");
         initiableServices.put("Policy", policyService);
         serviceNames.add("Policy");
     }
@@ -99,9 +99,7 @@ public class TestDataInitService {
         return serviceNames.toArray(new String[0]);
     }
     public void init(String warehouseName) {
-        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData(warehouseName);
-        }
+        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
     }
     public void init(String name, String warehouseName) {
         initiableServices.get(name).initTestData(warehouseName);

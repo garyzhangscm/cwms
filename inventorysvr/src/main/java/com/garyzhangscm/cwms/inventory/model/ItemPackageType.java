@@ -65,8 +65,9 @@ public class ItemPackageType implements Serializable {
 
     @OneToMany(
             mappedBy = "itemPackageType",
-            cascade = CascadeType.REMOVE,
-            orphanRemoval = true
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
     )
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 

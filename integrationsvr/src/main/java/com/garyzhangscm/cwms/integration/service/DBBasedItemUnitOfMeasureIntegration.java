@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
@@ -33,8 +34,9 @@ public class DBBasedItemUnitOfMeasureIntegration {
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
+    InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
-
 
     public List<DBBasedItemUnitOfMeasure> findAll() {
         return dbBasedItemUnitOfMeasureRepository.findAll();
@@ -94,7 +96,9 @@ public class DBBasedItemUnitOfMeasureIntegration {
 
             logger.debug(">> will process Item:\n{}", item);
 
-            ItemUnitOfMeasure itemUnitOfMeasure = dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure();
+            ItemUnitOfMeasure itemUnitOfMeasure = dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure(inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient);
             itemUnitOfMeasure.setWarehouseId(warehouseId);
 
             if (itemUnitOfMeasure.getUnitOfMeasureId() == null) {
@@ -107,7 +111,7 @@ public class DBBasedItemUnitOfMeasureIntegration {
 
             }
 
-            kafkaSender.send(item, itemUnitOfMeasure);
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_UNIT_OF_MEASURE, item, itemUnitOfMeasure);
 
 
             dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.COMPLETED);
@@ -119,7 +123,7 @@ public class DBBasedItemUnitOfMeasureIntegration {
         catch (Exception ex) {
             dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.ERROR);
             dbBasedItemUnitOfMeasure.setLastUpdateTime(LocalDateTime.now());
-            dbBasedItemUnitOfMeasure = save(dbBasedItemUnitOfMeasure);
+            save(dbBasedItemUnitOfMeasure);
         }
     }
 

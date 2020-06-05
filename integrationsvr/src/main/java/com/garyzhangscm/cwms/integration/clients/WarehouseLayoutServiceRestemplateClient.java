@@ -50,7 +50,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     RestTemplate restTemplate;
 
     @Cacheable
-    public Warehouse getWarehouseByName(String name) throws IOException {
+    public Warehouse getWarehouseByName(String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/layout/warehouses")

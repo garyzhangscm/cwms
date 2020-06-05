@@ -77,6 +77,30 @@ public class LocationGroupType {
     @Column(name = "packing_stations")
     private Boolean packingStation;
 
+    @Override
+    public String toString() {
+        return "LocationGroupType{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", fourWallInventory=" + fourWallInventory +
+                ", virtual=" + virtual +
+                ", receivingStage=" + receivingStage +
+                ", shippingStage=" + shippingStage +
+                ", productionLine=" + productionLine +
+                ", productionLineInbound=" + productionLineInbound +
+                ", productionLineOutbound=" + productionLineOutbound +
+                ", dock=" + dock +
+                ", yard=" + yard +
+                ", storage=" + storage +
+                ", grid=" + grid +
+                ", pickupAndDeposit=" + pickupAndDeposit +
+                ", trailer=" + trailer +
+                ", shippedParcel=" + shippedParcel +
+                ", container=" + container +
+                ", packingStation=" + packingStation +
+                '}';
+    }
 
     public Long getId() {
         return id;

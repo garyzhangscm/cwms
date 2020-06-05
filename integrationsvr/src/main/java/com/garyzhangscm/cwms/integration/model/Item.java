@@ -25,6 +25,7 @@ import java.util.List;
 
 public class Item implements Serializable {
 
+    private Long id;
 
     private String name;
 
@@ -32,6 +33,7 @@ public class Item implements Serializable {
 
 
     private Long clientId;
+    private String clientName;
 
 
     private ItemFamily itemFamily;
@@ -42,18 +44,30 @@ public class Item implements Serializable {
     private double unitCost;
 
     private Long warehouseId;
+    private String warehouseName;
 
     @Override
     public String toString() {
         return "Item{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", clientId=" + clientId +
+                ", clientName='" + clientName + '\'' +
                 ", itemFamily=" + itemFamily +
                 ", itemPackageTypes=" + itemPackageTypes +
                 ", unitCost=" + unitCost +
                 ", warehouseId=" + warehouseId +
+                ", warehouseName='" + warehouseName + '\'' +
                 '}';
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -113,5 +127,21 @@ public class Item implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
     }
 }

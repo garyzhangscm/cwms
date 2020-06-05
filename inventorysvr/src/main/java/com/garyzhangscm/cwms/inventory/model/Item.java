@@ -54,7 +54,7 @@ public class Item implements Serializable {
 
     @OneToMany(
         mappedBy = "item",
-        cascade = CascadeType.REMOVE,
+        cascade = CascadeType.ALL,
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )

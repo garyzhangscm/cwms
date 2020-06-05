@@ -279,6 +279,8 @@ public class InventoryService implements TestDataInitiableService{
         if (includeDetails && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
         }
+        logger.debug("Find inventory \n{}\n from location ID: {}",
+                inventories, locationId);
         return inventories;
     }
 
@@ -410,6 +412,7 @@ public class InventoryService implements TestDataInitiableService{
                         );
                 recalculateLocationSizeForInventoryMovement(null, destination, savedInvenotry.getSize());
             });
+            inventoryRepository.flush();
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }

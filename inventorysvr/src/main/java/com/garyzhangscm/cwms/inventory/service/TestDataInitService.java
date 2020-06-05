@@ -67,30 +67,28 @@ public class TestDataInitService {
         this.inventoryAdjustmentThresholdService = inventoryAdjustmentThresholdService;
 
 
-        initiableServices.put("Item Family", itemFamilyService);
-        serviceNames.add("Item Family");
+        initiableServices.put("Item_Family", itemFamilyService);
+        serviceNames.add("Item_Family");
         initiableServices.put("Item", itemService);
         serviceNames.add("Item");
-        initiableServices.put("Item Package Type", itemPackageTypeService);
-        serviceNames.add("Item Package Type");
-        initiableServices.put("Item Unit of Measure", itemUnitOfMeasureService);
-        serviceNames.add("Item Unit of Measure");
-        initiableServices.put("Inventory status", inventoryStatusService);
-        serviceNames.add("Inventory status");
+        initiableServices.put("Item_Package_Type", itemPackageTypeService);
+        serviceNames.add("Item_Package_Type");
+        initiableServices.put("Item_Unit_of_Measure", itemUnitOfMeasureService);
+        serviceNames.add("Item_Unit_of_Measure");
+        initiableServices.put("Inventory_status", inventoryStatusService);
+        serviceNames.add("Inventory_status");
         initiableServices.put("Inventory", inventoryService);
         serviceNames.add("Inventory");
-        initiableServices.put("Movement Path", movementPathService);
-        serviceNames.add("Movement Path");
-        initiableServices.put("Inventory Adjustment Threshold", inventoryAdjustmentThresholdService);
-        serviceNames.add("Inventory Adjustment Threshold");
+        initiableServices.put("Movement_Path", movementPathService);
+        serviceNames.add("Movement_Path");
+        initiableServices.put("Inventory_Adjustment_Threshold", inventoryAdjustmentThresholdService);
+        serviceNames.add("Inventory_Adjustment_Threshold");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
     }
     public void init(String warehouseName) {
-        for(TestDataInitiableService testDataInitiableService : initiableServices.values()) {
-            testDataInitiableService.initTestData(warehouseName);
-        }
+        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
     }
     public void init(String name, String warehouseName) {
         initiableServices.get(name).initTestData(warehouseName);

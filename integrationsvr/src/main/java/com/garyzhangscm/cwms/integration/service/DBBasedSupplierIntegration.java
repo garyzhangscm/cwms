@@ -70,7 +70,7 @@ public class DBBasedSupplierIntegration {
         Supplier supplier = dbBasedSupplier.convertToSupplier();
         logger.debug(">> will process Supplier :\n{}", supplier);
 
-        kafkaSender.send(supplier);
+        kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER, supplier);
 
 
         dbBasedSupplier.setStatus(IntegrationStatus.COMPLETED);

@@ -69,7 +69,7 @@ public class DBBasedClientIntegration {
         Client client = dbBasedClient.convertToClient();
         logger.debug(">> will process customer:\n{}", client);
 
-        kafkaSender.send(client);
+        kafkaSender.send(IntegrationType.INTEGRATION_CLIENT, client);
 
 
         dbBasedClient.setStatus(IntegrationStatus.COMPLETED);
