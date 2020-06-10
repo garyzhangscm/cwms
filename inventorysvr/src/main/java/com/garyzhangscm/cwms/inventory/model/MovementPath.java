@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -81,17 +83,14 @@ public class MovementPath {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("MovementPath: { ")
-                .append("fromLocation: ").append(fromLocation).append(",")
-                .append("toLocation: ").append(toLocation).append(",")
-                .append("fromLocationGroup: ").append(fromLocationGroup).append(",")
-                .append("toLocationGroup: ").append(toLocationGroup).append(",")
-                .append("sequence: ").append(sequence).append(",")
-                .append("movementPathDetails: ").append(movementPathDetails).append("}");
-
-        return stringBuilder.toString();
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
     @Override
     public boolean equals(Object anotherObject) {
         if (anotherObject == this) {

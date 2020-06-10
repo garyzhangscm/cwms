@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -89,26 +91,14 @@ public class InventoryAdjustmentThreshold implements Serializable {
     @Column(name = "enabled")
     private Boolean enabled = false;
 
-
     @Override
     public String toString() {
-        return "InventoryAdjustmentThreshold{" +
-                "id=" + id +
-                ", item=" + item +
-                ", clientId=" + clientId +
-                ", client=" + client +
-                ", itemFamily=" + itemFamily +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", type=" + type +
-                ", userId=" + userId +
-                ", user=" + user +
-                ", roleId=" + roleId +
-                ", role=" + role +
-                ", quantityThreshold=" + quantityThreshold +
-                ", costThreshold=" + costThreshold +
-                ", enabled=" + enabled +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

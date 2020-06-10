@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +28,7 @@ import java.util.List;
 
 public class ItemPackageType implements Serializable {
 
+    private Long id;
 
     private String name;
 
@@ -43,17 +47,20 @@ public class ItemPackageType implements Serializable {
 
     @Override
     public String toString() {
-        return "ItemPackageType{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", supplierId=" + supplierId +
-                ", supplierName='" + supplierName + '\'' +
-                ", itemUnitOfMeasures=" + itemUnitOfMeasures +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getClientName() {

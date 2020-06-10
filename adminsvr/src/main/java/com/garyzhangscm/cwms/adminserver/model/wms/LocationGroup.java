@@ -40,6 +40,26 @@ public class LocationGroup {
 
     private InventoryConsolidationStrategy inventoryConsolidationStrategy = InventoryConsolidationStrategy.NONE;
 
+    public LocationGroup() {}
+    public LocationGroup(Warehouse warehouse, LocationGroupType locationGroupType, String name, String description) {
+        this(warehouse, locationGroupType, name, description, InventoryConsolidationStrategy.NONE);
+    }
+
+    public LocationGroup(Warehouse warehouse, LocationGroupType locationGroupType,
+                         String name, String description,
+                         InventoryConsolidationStrategy inventoryConsolidationStrategy) {
+        this.name = name;
+        this.description = description;
+        this.warehouse = warehouse;
+        this.locationGroupType = locationGroupType;
+        this.pickable = true;
+        this.storable = true;
+        this.countable = true;
+        this.allowCartonization = true;
+        this.trackingVolume = true;
+        this.volumeTrackingPolicy = LocationVolumeTrackingPolicy.BY_VOLUME;
+        this.inventoryConsolidationStrategy = inventoryConsolidationStrategy;
+    }
 
     public Long getId() {
         return id;

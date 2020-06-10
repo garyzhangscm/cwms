@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
@@ -147,24 +149,12 @@ public class Inventory implements Serializable {
 
     @Override
     public String toString() {
-        return "Inventory{" +
-                "id=" + id +
-                ", lpn='" + lpn + '\'' +
-                ", locationId=" + locationId +
-                ", location=" + location +
-                ", pickId=" + pickId +
-                ", pick=" + pick +
-                ", receiptId=" + receiptId +
-                ", item=" + item +
-                ", itemPackageType=" + itemPackageType +
-                ", quantity=" + quantity +
-                ", virtual=" + virtual +
-                ", inventoryStatus=" + inventoryStatus +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", lockedForAdjust=" + lockedForAdjust +
-                ", inventoryMovements=" + inventoryMovements +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

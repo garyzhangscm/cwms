@@ -18,7 +18,7 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
-import com.garyzhangscm.cwms.layout.exception.GenericException;
+
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.InventoryConsolidationStrategy;
 import com.garyzhangscm.cwms.layout.model.Location;
@@ -43,6 +43,8 @@ public class LocationGroupController {
     public List<LocationGroup> listLocationGroups(@RequestParam Long warehouseId,
                                                   @RequestParam(name = "locationGroupTypes", required = false, defaultValue = "") String locationGroupTypes,
                                                   @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        logger.debug("Will list all groups by \n warehouseId {}\n locationGroupTypes{}\n name{}\n",
+                warehouseId, locationGroupTypes, name);
         return locationGroupService.findAll(warehouseId, locationGroupTypes, name);
     }
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups/{id}")
@@ -57,7 +59,9 @@ public class LocationGroupController {
 
     @RequestMapping(method=RequestMethod.POST, value="/locationgroups")
     public LocationGroup addLocationGroups(@RequestBody LocationGroup locationGroup) {
-        return locationGroupService.save(locationGroup);
+        LocationGroup newLocationGroup = locationGroupService.save(locationGroup);
+        logger.debug("created newLocationGroup: {}", newLocationGroup);
+        return newLocationGroup;
     }
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}")
     public LocationGroup changeLocationGroups(@PathVariable long id,

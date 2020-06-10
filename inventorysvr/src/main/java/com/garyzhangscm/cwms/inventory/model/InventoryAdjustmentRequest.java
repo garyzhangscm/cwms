@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
@@ -144,30 +146,14 @@ public class InventoryAdjustmentRequest implements Serializable {
         setComment(comment);
     }
 
-
     @Override
     public String toString() {
-        return "InventoryAdjustmentRequest{" +
-                "id=" + id +
-                ", inventoryId=" + inventoryId +
-                ", lpn='" + lpn + '\'' +
-                ", locationId=" + locationId +
-                ", location=" + location +
-                ", item=" + item +
-                ", itemPackageType=" + itemPackageType +
-                ", quantity=" + quantity +
-                ", newQuantity=" + newQuantity +
-                ", virtual=" + virtual +
-                ", inventoryStatus=" + inventoryStatus +
-                ", warehouseId=" + warehouseId +
-                ", inventoryQuantityChangeType=" + inventoryQuantityChangeType +
-                ", status=" + status +
-                ", requestedByUsername='" + requestedByUsername + '\'' +
-                ", requestedByDateTime=" + requestedByDateTime +
-                ", processedByUsername='" + processedByUsername + '\'' +
-                ", processedByDateTime=" + processedByDateTime +
-                ", comment='" + comment + '\'' +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void setId(Long id) {

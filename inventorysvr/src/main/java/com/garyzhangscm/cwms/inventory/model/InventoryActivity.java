@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -63,6 +65,9 @@ public class InventoryActivity implements Serializable {
 
     @Column(name = "transaction_id")
     private String transactionId;
+
+    @Column(name = "transaction_group_id")
+    private String transactionGroupId;
 
     /**
      * All the inventory attribute
@@ -155,11 +160,13 @@ public class InventoryActivity implements Serializable {
 
     public InventoryActivity(Inventory inventory, InventoryActivityType inventoryActivityType,
                              String transactionId,
+                             String transactionGroupId,
                              LocalDateTime activityDateTime, String username,
                              String valueType, String fromValue, String toValue,
                              String documentNumber, String comment) {
         setLpn(inventory.getLpn());
         setTransactionId(transactionId);
+        setTransactionGroupId(transactionGroupId);
         setLocationId(inventory.getLocationId());
         setLocation(inventory.getLocation());
         setPickId(inventory.getPickId());
@@ -181,6 +188,16 @@ public class InventoryActivity implements Serializable {
         this.toValue = toValue;
         this.documentNumber = documentNumber;
         this.comment = comment;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {
@@ -365,5 +382,13 @@ public class InventoryActivity implements Serializable {
 
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getTransactionGroupId() {
+        return transactionGroupId;
+    }
+
+    public void setTransactionGroupId(String transactionGroupId) {
+        this.transactionGroupId = transactionGroupId;
     }
 }

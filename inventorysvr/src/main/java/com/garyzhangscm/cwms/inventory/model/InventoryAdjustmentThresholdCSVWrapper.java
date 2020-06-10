@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 
 
@@ -50,18 +53,12 @@ public class InventoryAdjustmentThresholdCSVWrapper implements Serializable {
 
     @Override
     public String toString() {
-        return "InventoryAdjustmentThresholdCSVWrapper{" +
-                "item='" + item + '\'' +
-                ", client='" + client + '\'' +
-                ", itemFamily='" + itemFamily + '\'' +
-                ", warehouse='" + warehouse + '\'' +
-                ", type='" + type + '\'' +
-                ", user='" + user + '\'' +
-                ", role='" + role + '\'' +
-                ", quantityThreshold=" + quantityThreshold +
-                ", costThreshold=" + costThreshold +
-                ", enabled=" + enabled +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String getItem() {

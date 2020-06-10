@@ -90,12 +90,14 @@ public class LocationService implements TestDataInitiableService {
             (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
                 if (StringUtils.isNotBlank(locationGroupTypeIds)) {
+                    logger.debug("Will filter the location by group type id {}", locationGroupTypeIds);
 
                     Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
                     Join<LocationGroup, LocationGroupType> joinLocationGroupType = joinLocationGroup.join("locationGroupType", JoinType.INNER);
 
                     if (StringUtils.isNotBlank(locationGroupIds)) {
 
+                        logger.debug("Will filter the location by group id {}", locationGroupIds);
                         CriteriaBuilder.In<Long> inLocationGroupIds = criteriaBuilder.in(joinLocationGroup.get("id"));
                         for(String id : locationGroupIds.split(",")) {
                             inLocationGroupIds.value(Long.parseLong(id));
@@ -111,6 +113,7 @@ public class LocationService implements TestDataInitiableService {
                 }
                 else if (StringUtils.isNotBlank(locationGroupIds)) {
 
+                    logger.debug("Will filter the location by group id {}", locationGroupIds);
                     Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
                     CriteriaBuilder.In<Long> in = criteriaBuilder.in(joinLocationGroup.get("id"));
                     for(String id : locationGroupIds.split(",")) {
@@ -120,11 +123,16 @@ public class LocationService implements TestDataInitiableService {
                 }
 
                 if (StringUtils.isNotBlank(name)) {
+                    logger.debug("Will filter the location by name {}", name);
                     predicates.add(criteriaBuilder.equal(root.get("name"), name));
                 }
                 if (Objects.nonNull(beginSequence)  && Objects.nonNull(endSequence)) {
+                    logger.debug("Will filter the location by {} sequence [{}, {}]",
+                            sequenceType, beginSequence, endSequence);
                     if (sequenceType.equals("count")) {
 
+                        logger.debug("start to find locations with count sequence between [{}, {}]",
+                                beginSequence, endSequence);
                         predicates.add(criteriaBuilder.between(root.get("countSequence"), beginSequence, endSequence));
                     }
                     else if (sequenceType.equals("putaway")) {
@@ -135,22 +143,26 @@ public class LocationService implements TestDataInitiableService {
                     }
                 }
                 if (Objects.nonNull(includeEmptyLocation) && !includeEmptyLocation) {
+                    logger.debug("Will filter the location by includeEmptyLocation {}", includeEmptyLocation);
                     Expression<Double> totalVolume = criteriaBuilder.sum(root.get("currentVolume"), root.get("pendingVolume"));
 
                     predicates.add(criteriaBuilder.greaterThan(totalVolume, 0.0));
                 }
                 if (Objects.nonNull(emptyLocationOnly) && emptyLocationOnly == true) {
+                    logger.debug("Will filter the location by emptyLocationOnly {}", emptyLocationOnly);
                     Expression<Double> totalVolume = criteriaBuilder.sum(root.get("currentVolume"), root.get("pendingVolume"));
 
                     predicates.add(criteriaBuilder.equal(totalVolume, 0.0));
 
                 }
                 if (Objects.nonNull(pickableLocationOnly) && pickableLocationOnly == true ) {
+                    logger.debug("Will filter the location by pickableLocationOnly {}", pickableLocationOnly);
                     // only return pickable location
                     Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
                     predicates.add(criteriaBuilder.equal(joinLocationGroup.get("pickable"), true));
                 }
                 if (Objects.nonNull(minEmptyCapacity) && minEmptyCapacity > 0.0) {
+                    logger.debug("Will filter the location by minEmptyCapacity {}", minEmptyCapacity);
                     // current capacity = total capacity * capacity fill rate - current volume - pending volume
                     Expression<Double> emptyCapacity =
                             criteriaBuilder.diff(
@@ -170,10 +182,12 @@ public class LocationService implements TestDataInitiableService {
                 }
                 if (Objects.nonNull(includeDisabledLocation) && !includeDisabledLocation){
 
+                    logger.debug("Will filter the location by includeDisabledLocation {}", includeDisabledLocation);
                     predicates.add(criteriaBuilder.equal(root.get("enabled"), true));
                 }
                 if (Objects.nonNull(warehouseId)) {
 
+                    logger.debug("Will filter the location by warehouseId {}", warehouseId);
                     Join<Location, Warehouse> joinWarehouse = root.join("warehouse", JoinType.INNER);
                     predicates.add(criteriaBuilder.equal(joinWarehouse.get("id"), warehouseId));
                 }

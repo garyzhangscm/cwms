@@ -20,7 +20,8 @@ import org.springframework.http.HttpStatus;
 // =======      65000 ~ 69999  =========
 //
 public enum ExceptionCode {
-    RESOURCE_NOT_FOUND(65000, HttpStatus.NOT_FOUND, "Can't Find the Resource");
+    RESOURCE_NOT_FOUND(65000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
+    TEST_FAIL(65001, HttpStatus.NOT_FOUND, "Test fail");
 
 
     private final int code;

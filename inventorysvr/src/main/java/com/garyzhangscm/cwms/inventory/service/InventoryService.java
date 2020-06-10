@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
@@ -279,8 +280,8 @@ public class InventoryService implements TestDataInitiableService{
         if (includeDetails && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
         }
-        logger.debug("Find inventory \n{}\n from location ID: {}",
-                inventories, locationId);
+        // logger.debug("Find inventory \n{}\n from location ID: {}",
+        //        inventories, locationId);
         return inventories;
     }
 
@@ -344,10 +345,10 @@ public class InventoryService implements TestDataInitiableService{
         }
 
         // load the unit of measure details for the packate types
-        logger.debug("Start to load item unit of measure for item package type: {}",
-                inventory.getItemPackageType());
+        // logger.debug("Start to load item unit of measure for item package type: {}",
+        //         inventory.getItemPackageType());
         inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
-            logger.debug(">> Load information for item unit of measure: {}", itemUnitOfMeasure);
+            // logger.debug(">> Load information for item unit of measure: {}", itemUnitOfMeasure);
             itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId()));
         });
 
@@ -601,9 +602,9 @@ public class InventoryService implements TestDataInitiableService{
                 destination.getName(), findByLocationId(destination.getId()).size());
         // check if we will need to remove the original inventory
 
-        logger.debug(">> after consolidation, the original inventory is \n>> {}", inventory);
-        logger.debug(">> Objects.nonNull(inventory.getId()):  {}", Objects.nonNull(inventory.getId()) );
-        logger.debug(">> inventory.getQuantity(): {}", inventory.getQuantity());
+        // logger.debug(">> after consolidation, the original inventory is \n>> {}", inventory);
+        // logger.debug(">> Objects.nonNull(inventory.getId()):  {}", Objects.nonNull(inventory.getId()) );
+        // logger.debug(">> inventory.getQuantity(): {}", inventory.getQuantity());
 
         if (Objects.nonNull(inventory.getId()) &&
             inventory.getQuantity() == 0) {
@@ -960,7 +961,7 @@ public class InventoryService implements TestDataInitiableService{
     private boolean isApprovalNeededForInventoryAdjust(Inventory inventory, Long quantity, InventoryQuantityChangeType inventoryQuantityChangeType) {
         // Receiving is always allowed without any approval
         logger.debug("Check if we need approval for this adjust. inventory: {}, quantity: {}, change type: {}",
-                inventory, quantity, inventoryQuantityChangeType);
+                inventory.getId(), quantity, inventoryQuantityChangeType);
         if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING)) {
             logger.debug("Receiving doesn't needs any approve");
             return false;
@@ -976,7 +977,22 @@ public class InventoryService implements TestDataInitiableService{
                 warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
                         inventoryQuantityChangeType,inventory.getWarehouseId());
         // consolidate the inventory at the destination, if necessary
+
         Location destinationLocation = inventory.getLocation();
+
+        if (Objects.isNull(destinationLocation)) {
+            // Location is not setup yet, we should be able to get
+            // from the inventory's location id
+            destinationLocation = warehouseLayoutServiceRestemplateClient.getLocationById(
+                    inventory.getLocationId()
+            );
+        }
+
+        if (Objects.isNull(destinationLocation)) {
+            // If we still can't get destination here, we got
+            // some error
+            throw MissingInformationException.raiseException("Can't create inventory due to missing location information");
+        }
 
         // create the inventory at the logic location
         // then move the inventory to the final location
@@ -1070,10 +1086,23 @@ public class InventoryService implements TestDataInitiableService{
                     documentNumber, comment);
 
             String newLpn = commonServiceRestemplateClient.getNextLpn();
+
+            // log the activity for split inventory for inventory adjust
+            // LPN-quantity:
+            // from value: Original LPN and original quantity
+            // to value: split into the new LPN and new LPN's quantity
+            inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.SPLIT_FOR_INVENTORY_ADJUSTMENT,
+                    "LPN-quantity",
+                    inventory.getLpn() + "-" + inventory.getQuantity(),
+                    newLpn + "-" + (inventory.getQuantity() - newQuantity),
+                    documentNumber, comment);
+
             Inventory newInventory = inventory.split(newLpn, inventory.getQuantity() - newQuantity);
+
             // Save both inventory before move
             inventory = saveOrUpdate(inventory);
             newInventory = save(newInventory);
+
             // Remove the new inventory
             processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "");
             return inventory;

@@ -13,8 +13,8 @@ public abstract  class TestScenario {
 
     private final String defaultWarehouseName = "WMOR";
 
-    String name;
 
+    TestScenarioType testScenarioType;
 
     String warehouseName;
 
@@ -22,25 +22,32 @@ public abstract  class TestScenario {
 
     private String errorMessage;
 
+    private int sequence;
 
-    public TestScenario(String name){
-        this.name = name;
+
+
+
+    public TestScenario(TestScenarioType testScenarioType, int sequence){
+        this.testScenarioType = testScenarioType;
         this.warehouseName = defaultWarehouseName;
         status = TestScenarioStatus.PENDING;
+        this.sequence = sequence;
     }
 
-    public TestScenario(String name, String warehouseName){
-        this.name = name;
+    public TestScenario(TestScenarioType testScenarioType, String warehouseName, int sequence){
+        this.testScenarioType = testScenarioType;
         this.warehouseName = warehouseName;
         status = TestScenarioStatus.PENDING;
+        this.sequence = sequence;
     }
 
     public abstract boolean run(Warehouse warehouse);
 
     public boolean execute(Warehouse warehouse){
+        logger.debug("Start to run test scenario: {} - {}", warehouse.getName(), getName());
         status = TestScenarioStatus.RUNNING;
         logger.debug("test scenario {} - {} / status: {}",
-                warehouse.getName(), name, status);
+                warehouse.getName(), testScenarioType.name(), status);
         if (!run(warehouse)) {
             status = TestScenarioStatus.FAILED;
             return false;
@@ -58,22 +65,19 @@ public abstract  class TestScenario {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TestScenario that = (TestScenario) o;
-        return Objects.equals(name, that.name);
+        return Objects.equals(testScenarioType, that.testScenarioType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(testScenarioType);
     }
 
     public String getName() {
-        return name;
+        return testScenarioType.name();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    public String getDescription(){return testScenarioType.getDescription();}
 
     public String getWarehouseName() {
         return warehouseName;
@@ -103,5 +107,13 @@ public abstract  class TestScenario {
          status = TestScenarioStatus.PENDING;
 
          errorMessage = "";
+    }
+
+    public int getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
     }
 }

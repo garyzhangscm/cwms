@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,16 +39,16 @@ public class PickMovement implements Serializable {
 
     private Integer sequence;
 
-
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append("locationId: ").append(locationId).append(",")
-                .append("location: ").append(location).append(",")
-                .append("sequence: ").append(sequence).append("}").toString();
-
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
     public Long getId() {
         return id;
     }

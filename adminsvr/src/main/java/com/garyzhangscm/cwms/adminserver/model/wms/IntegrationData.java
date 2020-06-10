@@ -1,16 +1,29 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class IntegrationData implements Serializable {
 
     private Long id;
-    private IntegrationStatus integrationStatus;
+    private IntegrationStatus status;
 
     private LocalDateTime insertTime;
 
     private LocalDateTime lastUpdateTime;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Long getId() {
         return id;
@@ -20,12 +33,12 @@ public class IntegrationData implements Serializable {
         this.id = id;
     }
 
-    public IntegrationStatus getIntegrationStatus() {
-        return integrationStatus;
+    public IntegrationStatus getStatus() {
+        return status;
     }
 
-    public void setIntegrationStatus(IntegrationStatus integrationStatus) {
-        this.integrationStatus = integrationStatus;
+    public void setStatus(IntegrationStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getInsertTime() {

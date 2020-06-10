@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Location {
 
@@ -96,33 +98,12 @@ public class Location {
 
     @Override
     public String toString() {
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("id : " + id + ",\n");
-        builder.append("name : " + name + ",\n");
-        builder.append("aisle : " + aisle + ",\n");
-
-        builder.append("length : " + length + ",\n");
-        builder.append("width : " + width + ",\n");
-        builder.append("height : " + height + ",\n");
-
-        builder.append("pickSequence : " + pickSequence + ",\n");
-        builder.append("putawaySequence : " + putawaySequence + ",\n");
-        builder.append("countSequence : " + countSequence + ",\n");
-
-
-        builder.append("capacity : " + capacity + ",\n");
-        builder.append("fillPercentage : " + fillPercentage + ",\n");
-
-        builder.append("currentVolume : " + currentVolume + ",\n");
-        builder.append("pendingVolume : " + pendingVolume + ",\n");
-
-        builder.append("locationGroup : " + (locationGroup == null ? "\n" :  locationGroup.getName()) + ",\n");
-
-        builder.append("enabled : " + enabled + ",\n");
-        builder.append("reservedCode : " + reservedCode);
-
-        return builder.toString();
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @JsonIgnore

@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -67,21 +69,12 @@ public class ItemUnitOfMeasure implements Serializable {
 
     @Override
     public String toString() {
-        return "ItemUnitOfMeasure{" +
-                "id=" + id +
-                ", unitOfMeasureId=" + unitOfMeasureId +
-                ", unitOfMeasure=" + unitOfMeasure +
-                ", item=" + (itemPackageType == null? "" :
-                                 itemPackageType.getItem() == null ? "" : itemPackageType.getItem().getName()) +
-                ", itemPackageType=" + (itemPackageType == null ? "" : itemPackageType.getName()) +
-                ", quantity=" + quantity +
-                ", weight=" + weight +
-                ", length=" + length +
-                ", width=" + width +
-                ", height=" + height +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

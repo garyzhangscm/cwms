@@ -19,17 +19,19 @@
 package com.garyzhangscm.cwms.adminserver.clients;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.adminserver.model.wms.Location;
-import com.garyzhangscm.cwms.adminserver.model.wms.LocationGroup;
-import com.garyzhangscm.cwms.adminserver.model.wms.LocationGroupType;
-import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
+import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -46,7 +48,29 @@ public class WarehouseLayoutServiceRestemplateClient {
     RestTemplate restTemplate;
 
 
+    @Autowired
+    private ObjectMapper objectMapper;
 
+
+    private <T> T createEntity(String subUrl, T entity) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/" + subUrl);
+
+        logger.debug("Start to create entity by {}",
+                builder.toUriString());
+        ResponseBodyWrapper<T> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(entity)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<T>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
@@ -174,6 +198,41 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
+    public LocationGroup createLocationGroup(LocationGroup locationGroup) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locationgroups");
+
+        ResponseBodyWrapper<LocationGroup> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(locationGroup)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+
+    }
+    public Location createLocation(Location location) throws JsonProcessingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(location)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
 
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
@@ -474,5 +533,12 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
+    }
 
 }

@@ -31,6 +31,7 @@ public class Inventory implements Serializable {
     private String lpn;
 
     private Long locationId;
+    private Location location;
 
     private Long pickId;
 
@@ -51,6 +52,38 @@ public class Inventory implements Serializable {
     private Boolean lockedForAdjust = false;
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
+
+
+    public Inventory(){}
+    public Inventory(String lpn,
+                     Warehouse warehouse,
+                     Location location,
+                     Item item,
+                     ItemPackageType itemPackageType,
+                     InventoryStatus inventoryStatus,
+                     Long quantity) {
+        this.lpn = lpn;
+
+        this.locationId = location.getId();
+        this.location = location;
+
+        this.pickId = null;
+
+        this.receiptId = null;
+
+        this.item = item;
+
+        this.itemPackageType = itemPackageType;
+
+        this.quantity = quantity;
+
+        this.virtual = false;
+
+        this.inventoryStatus = inventoryStatus;
+
+        this.warehouseId = warehouse.getId();
+
+    }
 
     public Long getId() {
         return id;
@@ -154,5 +187,13 @@ public class Inventory implements Serializable {
 
     public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
         this.inventoryMovements = inventoryMovements;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 }

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.AuditCountRequest;
 import com.garyzhangscm.cwms.inventory.model.CycleCountResult;
 import com.garyzhangscm.cwms.inventory.repository.AuditCountRequestRepository;
@@ -43,6 +44,10 @@ public class AuditCountRequestService {
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
+    public AuditCountRequest findById(Long id) {
+        return auditCountRequestRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("audit count request not found by id: " + id));
+    }
     public List<AuditCountRequest> findByBatchId(String batchId) {
         return warehouseLayoutServiceRestemplateClient.setupAuditCountRequestLocations(auditCountRequestRepository.findByBatchId(batchId));
     }

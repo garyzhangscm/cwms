@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -88,11 +90,12 @@ public class CycleCountResult implements Serializable {
 
     @Override
     public String toString() {
-        return  "batch id: " + batchId + "\n" +
-                "Location id / name: " + (location == null ? "" : location.getId() + " / " + location.getName()) + "\n" +
-                "Item id / name "  + (item == null ? "" : item.getId() + " / " + item.getName()) +  "\n" +
-                "Quantity: " + quantity +  "\n" +
-                "Count Quantity: " + countQuantity;
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static CycleCountResult cycleCountResultForEmptyLocation(CycleCountRequest cycleCountRequest) {

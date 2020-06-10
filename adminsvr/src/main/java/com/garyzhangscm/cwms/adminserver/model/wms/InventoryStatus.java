@@ -18,12 +18,8 @@
 
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
-
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
+
 
 public class InventoryStatus implements Serializable {
 

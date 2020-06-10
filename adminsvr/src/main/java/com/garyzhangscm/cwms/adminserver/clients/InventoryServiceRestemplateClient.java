@@ -140,6 +140,23 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    public Inventory getInventoryById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/{id}");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -181,6 +198,22 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
+    public Inventory createInventory(Inventory inventory) throws JsonProcessingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-adj");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                    = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.PUT,
+                        getHttpEntity(objectMapper.writeValueAsString(inventory)),
+                        new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -438,6 +471,275 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Inventory adjustInventoryQuantity(Inventory inventory, Long newQuantity) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/{id}/adjust-quantity")
+                        .queryParam("newQuantity", newQuantity);
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(inventory.getId()).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public InventoryAdjustmentThreshold createInventoryAdjustmentThreshold(InventoryAdjustmentThreshold inventoryAdjustmentThreshold) throws JsonProcessingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-adjustment-thresholds");
+
+        ResponseBodyWrapper<InventoryAdjustmentThreshold> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.PUT,
+                getHttpEntity(objectMapper.writeValueAsString(inventoryAdjustmentThreshold)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<InventoryAdjustmentThreshold>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public List<InventoryAdjustmentThreshold> getInventoryAdjustmentThresholdByItem(Long warehouseId, String itemName) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-adjustment-thresholds")
+                .queryParam("itemName", itemName)
+                .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<InventoryAdjustmentThreshold>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryAdjustmentThreshold>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<InventoryAdjustmentThreshold> getInventoryAdjustmentThresholdByItemFamily(Long warehouseId, String itemFamilyName) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-adjustment-thresholds")
+                        .queryParam("itemFamilyName", itemFamilyName)
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<InventoryAdjustmentThreshold>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryAdjustmentThreshold>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public List<InventoryAdjustmentRequest> getPendingInventoryAdjustmentRequestByInventoryId(Long warehouseId, Long inventoryId) {
+
+        return getInventoryAdjustmentRequestByInventoryId(warehouseId, inventoryId, InventoryAdjustmentRequestStatus.PENDING);
+    }
+    public List<InventoryAdjustmentRequest> getInventoryAdjustmentRequestByInventoryId(Long warehouseId, Long inventoryId,
+                                                                                       InventoryAdjustmentRequestStatus status) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-adjustment-requests")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("inventoryId", inventoryId)
+                        .queryParam("status", status);
+
+        ResponseBodyWrapper<List<InventoryAdjustmentRequest>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryAdjustmentRequest>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<InventoryAdjustmentRequest> getInventoryAdjustmentRequestByItemName(Long warehouseId, String itemName) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-adjustment-requests")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("itemName", itemName);
+
+        ResponseBodyWrapper<List<InventoryAdjustmentRequest>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<InventoryAdjustmentRequest>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
+    public InventoryAdjustmentRequest approveInventoryAdjustmentRequest(Long inventoryAdjustmentRequestId) {
+        return processInventoryAdjustmentRequest(inventoryAdjustmentRequestId, true);
+    }
+    public InventoryAdjustmentRequest disapproveInventoryAdjustmentReuqest(Long inventoryAdjustmentRequestId) {
+        return processInventoryAdjustmentRequest(inventoryAdjustmentRequestId, false);
+    }
+
+    public InventoryAdjustmentRequest processInventoryAdjustmentRequest(Long inventoryAdjustmentRequestId, boolean approved) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory-adjustment-requests/{id}/process")
+                        .queryParam("approved", approved);
+
+        ResponseBodyWrapper<InventoryAdjustmentRequest> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(inventoryAdjustmentRequestId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<InventoryAdjustmentRequest>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
+    public List<CycleCountRequest> requestCycleCount(long warehouseId, String beginLocation,String endLocation, boolean includeEmptyLocation) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/cycle-count-requests")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("cycleCountRequestType", CycleCountRequestType.BY_LOCATION_RANGE)
+                        .queryParam("beginValue", beginLocation)
+                        .queryParam("endValue", endLocation)
+                        .queryParam("includeEmptyLocation", includeEmptyLocation);
+
+        ResponseBodyWrapper<List<CycleCountRequest>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<CycleCountRequest>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public List<CycleCountResult> confirmCycleCountRequests(CycleCountRequest cycleCountRequest, List<CycleCountResult> cycleCountResults)
+            throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/cycle-count-request/{id}/confirm");
+
+        ResponseBodyWrapper<List<CycleCountResult>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(cycleCountRequest.getId()).toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(cycleCountResults)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<CycleCountResult>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<CycleCountResult> confirmCycleCountRequests(List<CycleCountRequest> cycleCountRequests) {
+        String cycleCountRequestIds = cycleCountRequests.stream().map(CycleCountRequest::getId).
+                map(String::valueOf).collect(Collectors.joining(","));
+        return confirmCycleCountRequests(cycleCountRequestIds);
+
+    }
+    public List<CycleCountResult> confirmCycleCountRequests(String cycleCountRequestIds) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/cycle-count-request/confirm")
+                        .queryParam("cycleCountRequestIds", cycleCountRequestIds);
+
+        ResponseBodyWrapper<List<CycleCountResult>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<CycleCountResult>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public CycleCountRequest getCycleCountRequestById(long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/cycle-count-request/{id}");
+
+        ResponseBodyWrapper<CycleCountRequest> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<CycleCountRequest>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public AuditCountRequest getAuditCountRequestById(long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/audit-count-request/{id}");
+
+        ResponseBodyWrapper<AuditCountRequest> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<AuditCountRequest>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public List<CycleCountRequest> cancelCycleCountRequests(String cycleCountRequestIds) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/cycle-count-request/cancel")
+                        .queryParam("cycleCountRequestIds", cycleCountRequestIds);
+
+        ResponseBodyWrapper<List<CycleCountRequest>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<CycleCountRequest>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public List<CycleCountRequest> reopenCycleCountRequests(String cycleCountRequestIds) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/cycle-count-request/reopen")
+                        .queryParam("cycleCountRequestIds", cycleCountRequestIds);
+
+        ResponseBodyWrapper<List<CycleCountRequest>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<CycleCountRequest>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

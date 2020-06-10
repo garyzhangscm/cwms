@@ -141,6 +141,7 @@ CREATE TABLE inventory_adjustment_threshold(
 CREATE TABLE inventory_activity(
   inventory_activity_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   transaction_id  VARCHAR(20) NOT NULL,
+  transaction_group_id  VARCHAR(20) NOT NULL,
   lpn   VARCHAR(100) NOT NULL,
   location_id    BIGINT NOT NULL,
   pick_id    BIGINT,

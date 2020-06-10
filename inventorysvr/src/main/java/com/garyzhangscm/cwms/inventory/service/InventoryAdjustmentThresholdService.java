@@ -116,6 +116,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
 
     public List<InventoryAdjustmentThreshold> findAll(Long warehouseId,
                                                       String itemName,
+                                                      String itemFamilyName,
                                                       String clientIds,
                                                       String itemFamilyIds,
                                                       String inventoryQuantityChangeTypes,
@@ -130,7 +131,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
         if (StringUtils.isNotBlank(roleName)) {
             roleId = resourceServiceRestemplateClient.getUserByUsername(roleName).getId();
         }
-        return findAll(warehouseId, itemName, null, clientIds, null,itemFamilyIds,
+        return findAll(warehouseId, itemName, null, clientIds, itemFamilyName,itemFamilyIds,
                 null, inventoryQuantityChangeTypes, userId, roleId, enabled, true);
 
     }
@@ -211,11 +212,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
                     if (Objects.nonNull(enabled)) {
                         predicates.add(criteriaBuilder.equal(root.get("enabled"), enabled));
                     }
-                    else {
-                        // by default, only return enabled rules
-                        predicates.add(criteriaBuilder.equal(root.get("enabled"), true));
 
-                    }
 
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -417,14 +414,14 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
 
     public boolean isInventoryAdjustExceedThreshold(Inventory inventory,
                                                           InventoryQuantityChangeType type,
-                                                          Long adjustedQuantity) {
+                                                          Long newQuantity) {
 
-        return isInventoryAdjustExceedThreshold(inventory, type, adjustedQuantity, userService.getCurrentUser());
+        return isInventoryAdjustExceedThreshold(inventory, type, newQuantity, userService.getCurrentUser());
     }
 
     public boolean isInventoryAdjustExceedThreshold(Inventory inventory,
                                                           InventoryQuantityChangeType type,
-                                                          Long adjustedQuantity, User user) {
+                                                          Long newQuantity, User user) {
         List<InventoryAdjustmentThreshold> inventoryAdjustmentThresholds = findAll(inventory.getWarehouseId());
 
         // Loop through all the rules and find all the matched inventory adjustment threshold
@@ -435,8 +432,9 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
                         sorted((rule1, rule2) -> compareInventoryAdjustmentThreshold(rule1, rule2, inventory.getItem())).findFirst();
 
         if (mappedInventoryAdjustmentThreshold.isPresent()) {
+            long adjustedQuantity = Math.abs(inventory.getQuantity() - newQuantity);
             logger.debug("We find several adjust threashold defined that match with the inventory and the small one is: {}",
-                    mappedInventoryAdjustmentThreshold.get());
+                    mappedInventoryAdjustmentThreshold.get().getId());
             if (Objects.nonNull(mappedInventoryAdjustmentThreshold.get().getQuantityThreshold())) {
                 logger.debug("will compare the rule with the adjust, quantity: {}", adjustedQuantity);
                 return adjustedQuantity > mappedInventoryAdjustmentThreshold.get().getQuantityThreshold();

@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,18 +77,17 @@ public class InventoryMovement implements Serializable {
         inventoryMovement.setLocation((Location)(getLocation().clone()));
         return inventoryMovement;
     }
+
+    @Override
     public String toString() {
-        return "id: " + id + "\n"
-                + "Inventory: " + "\n"
-                + " >> LPN: " + (inventory == null ? "" : inventory.getLpn())  + "\n"
-                + " >> item: " + (inventory == null ? "" : inventory.getItem().getName() ) + "\n"
-                + " >> item description : " + (inventory == null ? "" : inventory.getItem().getDescription() ) + "\n"
-                + " >> inventory status : " + (inventory == null ? "" : inventory.getInventoryStatus().getName() ) + "\n"
-                + " >> quantity : " + (inventory == null ? "" : inventory.getQuantity())  + "\n"
-                + "Sequence : " + sequence   + "\n"
-                + "Location: " + (location == null ? "" :  location.getName())  + "\n"
-                + "Location ID: " + locationId;
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
     public Long getId() {
         return id;
     }

@@ -38,10 +38,10 @@ public class KafkaSender {
         try {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
-            send("INVENTORY-ACTIVITY", objectMapper.writeValueAsString(inventoryActivity));
+            send("INVENTORY_ACTIVITY", objectMapper.writeValueAsString(inventoryActivity));
         }
         catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
+            send("SYSTEM_ERROR", ex.getMessage());
         }
     }
 
@@ -49,10 +49,10 @@ public class KafkaSender {
         try {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
-            send("INVENTORY-ADJUSTMENT-REQUEST-PROCESSED", objectMapper.writeValueAsString(inventoryAdjustmentRequest));
+            send("INVENTORY_ADJUSTMENT_REQUEST_PROCESSED", objectMapper.writeValueAsString(inventoryAdjustmentRequest));
         }
         catch (Exception ex) {
-            send("SYSTEM-ERROR", ex.getMessage());
+            send("SYSTEM_ERROR", ex.getMessage());
         }
     }
 }
