@@ -19,11 +19,16 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 
 
 public class ItemFamily implements Serializable {
 
+
+    private Long id;
 
     private String name;
 
@@ -36,12 +41,20 @@ public class ItemFamily implements Serializable {
 
     @Override
     public String toString() {
-        return "ItemFamily{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getWarehouseName() {

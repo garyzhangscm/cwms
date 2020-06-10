@@ -36,6 +36,7 @@ public class InventoryAdjustmentThresholdController {
     @RequestMapping(value="/inventory-adjustment-thresholds", method = RequestMethod.GET)
     public List<InventoryAdjustmentThreshold> findAllInventoryAdjustmentThresholds(@RequestParam Long warehouseId,
                                                                                    @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                                                                   @RequestParam(name="itemFamilyName", required = false, defaultValue = "") String itemFamilyName,
                                                                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
                                                                                    @RequestParam(name="itemFamilyIds", required = false, defaultValue = "") String itemFamilyIds,
                                                                                    @RequestParam(name="inventoryQuantityChangeTypes", required = false, defaultValue = "") String inventoryQuantityChangeTypes,
@@ -43,7 +44,7 @@ public class InventoryAdjustmentThresholdController {
                                                                                    @RequestParam(name="roleName", required = false, defaultValue = "") String roleName,
                                                                                    @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled) {
         return inventoryAdjustmentThresholdService.findAll(warehouseId,
-                itemName,clientIds,
+                itemName, itemFamilyName, clientIds,
                 itemFamilyIds, inventoryQuantityChangeTypes, username,  roleName, enabled);
     }
 

@@ -20,6 +20,8 @@
         <version>2.0.4.RELEASE</version>
     </parent>
     <modules>
+        <!-- Admin Service: Console / System monitor / trace / tester / etc-->
+        <module>adminsvr</module>
         <!-- Authorization Service: User / Role / Menu / etc-->
         <module>authsvr</module>
         <!-- Common Service: Common Business Entites-->

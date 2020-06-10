@@ -300,7 +300,8 @@ public class InventoryActivityService{
                                       String valueType, String fromValue, String toValue,
                                       String documentNumber, String comment) {
         InventoryActivity inventoryActivity = new InventoryActivity(
-                inventory, inventoryActivityType, getTransactionId(),
+                inventory, inventoryActivityType,
+                getNextTransactionId(),getTransactionGroupId(),
                 activityDateTime, username,
                 valueType, fromValue, toValue,
                 documentNumber, comment
@@ -342,19 +343,23 @@ public class InventoryActivityService{
         save(inventoryActivity);
     }
 
-    private String getTransactionId() {
-        String transactionId;
+    private String getTransactionGroupId() {
+        String transactionGroupId;
         if (Objects.isNull(httpSession.getAttribute("Inventory-Activity-Transaction-Id"))) {
             logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
-            transactionId = commonServiceRestemplateClient.getNextInventoryActivityTransactionId();
-            httpSession.setAttribute("Inventory-Activity-Transaction-Id", transactionId);
-            logger.debug(">> {}", transactionId);
+            transactionGroupId = commonServiceRestemplateClient.getNextInventoryActivityTransactionGroupId();
+            httpSession.setAttribute("Inventory-Activity-Transaction-Id", transactionGroupId);
+            logger.debug(">> {}", transactionGroupId);
         }
         else {
-            transactionId = httpSession.getAttribute("Inventory-Activity-Transaction-Id").toString();
-            logger.debug("Get transaction ID {} from current session", transactionId);
+            transactionGroupId = httpSession.getAttribute("Inventory-Activity-Transaction-Id").toString();
+            logger.debug("Get transaction ID {} from current session", transactionGroupId);
         }
-        return transactionId;
+        return transactionGroupId;
+    }
+
+    private String getNextTransactionId() {
+        return commonServiceRestemplateClient.getNextInventoryActivityTransactionId();
     }
 
 

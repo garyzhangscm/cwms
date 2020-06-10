@@ -24,6 +24,8 @@ import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
 import com.garyzhangscm.cwms.inventory.model.InventoryQuantityChangeType;
 import com.garyzhangscm.cwms.inventory.model.Location;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +33,7 @@ import java.util.List;
 
 @RestController
 public class InventoryController {
+    private static final Logger logger = LoggerFactory.getLogger(InventoryController.class);
     @Autowired
     InventoryService inventoryService;
 
@@ -79,6 +82,8 @@ public class InventoryController {
     public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory,
                                                    @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
                                                    @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
+
+        logger.debug("Start to create inventory \n{}", inventory);
         return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
     }
     // Adjust down the inventory to 0

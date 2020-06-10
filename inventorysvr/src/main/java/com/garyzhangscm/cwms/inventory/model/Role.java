@@ -1,5 +1,8 @@
 package com.garyzhangscm.cwms.inventory.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 
@@ -19,6 +22,15 @@ public class Role {
     @Transient
     private List<User> users = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Long getId() {
         return id;

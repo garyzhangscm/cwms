@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class MovementPathCSVWrapper {
 
     private String fromLocation;
@@ -33,15 +36,12 @@ public class MovementPathCSVWrapper {
 
     @Override
     public String toString() {
-        return "MovementPathCSVWrapper: { "
-                + "fromLocation: " + fromLocation + ","
-                + "toLocation: " + toLocation+ ","
-                + "fromLocationGroup: " + fromLocationGroup+ ","
-                + "toLocationGroup: " + toLocationGroup+ ","
-                + "sequence: " + sequence+ ","
-                + "hopLocation: " + hopLocation+ ","
-                + "hopLocationGroup: " + hopLocationGroup+ ","
-                + "strategy: " + strategy + "}";
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String getFromLocation() {

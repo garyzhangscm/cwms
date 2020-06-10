@@ -84,12 +84,18 @@ public class ItemService implements TestDataInitiableService{
         return findAll(true);
     }
 
-    public List<Item> findAll(String name, String clientIds, String itemFamilyIds) {
+    public List<Item> findAll(Long warehouseId,
+                              String name,
+                              String clientIds,
+                              String itemFamilyIds) {
 
         List<Item> items = itemRepository.findAll(
             (Root<Item> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
-                if (!itemFamilyIds.isEmpty()) {
+
+                predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                if (StringUtils.isNotBlank(itemFamilyIds)) {
 
                     Join<Item, ItemFamily> joinItemFamily = root.join("itemFamily", JoinType.INNER);
                     CriteriaBuilder.In<Long> in = criteriaBuilder.in(joinItemFamily.get("id"));
@@ -99,11 +105,11 @@ public class ItemService implements TestDataInitiableService{
                     predicates.add(criteriaBuilder.and(in));
                 }
 
-                if (!name.isEmpty()) {
+                if (StringUtils.isNotBlank(name)) {
                     predicates.add(criteriaBuilder.equal(root.get("name"), name));
                 }
 
-                if (!clientIds.isEmpty()) {
+                if (StringUtils.isNotBlank(clientIds)) {
                     CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("clientId"));
                     for(String id : clientIds.split(",")) {
                         in.value(Long.parseLong(id));

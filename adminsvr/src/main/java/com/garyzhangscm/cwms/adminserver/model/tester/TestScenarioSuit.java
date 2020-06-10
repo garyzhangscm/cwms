@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -16,6 +17,8 @@ public class TestScenarioSuit {
     private static final Logger logger = LoggerFactory.getLogger(TestScenarioSuit.class);
 
     private List<TestScenario> testScenarios;
+
+    private TestScenario currentTestScenario;
 
     private TestScenarioSuitStatus status;
 
@@ -43,6 +46,8 @@ public class TestScenarioSuit {
     }
     public void registerTestScenario(TestScenario testScenario) {
         this.testScenarios.add(testScenario);
+        testScenarios.sort(Comparator.comparingInt(scenario -> scenario.getSequence()));
+
     }
     public boolean deregisterTestScenario(TestScenario testScenario) {
         boolean removed = false;
@@ -60,10 +65,10 @@ public class TestScenarioSuit {
     public void run(Warehouse warehouse) {
         status = TestScenarioSuitStatus.RUNNING;
         startDateTime = LocalDateTime.now();
+        for (TestScenario testScenario : getTestScenarios()) {
 
-
-        getTestScenarios().forEach(testScenario -> {
             try {
+                currentTestScenario = testScenario;
                 if (!testScenario.execute(warehouse)) {
                     status = TestScenarioSuitStatus.FAILED;
                     lastErrorMessage = testScenario.getErrorMessage();
@@ -83,7 +88,8 @@ public class TestScenarioSuit {
                 return;
 
             }
-        });
+        }
+        currentTestScenario = null;
         if (status.equals(TestScenarioSuitStatus.RUNNING)) {
             status = TestScenarioSuitStatus.COMPLETED;
 
@@ -132,5 +138,13 @@ public class TestScenarioSuit {
 
     public void setLastErrorMessage(String lastErrorMessage) {
         this.lastErrorMessage = lastErrorMessage;
+    }
+
+    public TestScenario getCurrentTestScenario() {
+        return currentTestScenario;
+    }
+
+    public void setCurrentTestScenario(TestScenario currentTestScenario) {
+        this.currentTestScenario = currentTestScenario;
     }
 }

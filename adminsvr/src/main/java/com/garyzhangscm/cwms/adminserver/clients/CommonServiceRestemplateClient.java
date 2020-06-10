@@ -185,4 +185,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData().getNextNumber();
     }
 
+    public String getNextLpn() {
+        return getNextNumber("lpn");
+    }
 }

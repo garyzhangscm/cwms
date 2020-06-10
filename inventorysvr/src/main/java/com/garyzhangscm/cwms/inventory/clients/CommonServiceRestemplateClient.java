@@ -163,5 +163,11 @@ public class CommonServiceRestemplateClient {
     public String getNextInventoryActivityTransactionId() {
         return getNextNumber("inventory-activity-transaction-id");
     }
+    public String getNextInventoryActivityTransactionGroupId() {
+        return getNextNumber("inventory-activity-transaction-group-id");
+    }
+    public String getNextCycleCountBatchId() {
+        return getNextNumber("cycle-count-batch-id");
+    }
 
 }

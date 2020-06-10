@@ -55,6 +55,41 @@ public class Location {
 
     private Warehouse warehouse;
 
+    public Location() {}
+    public Location(Warehouse warehouse, LocationGroup locationGroup,
+                    String name, int sequence) {
+        this.warehouse = warehouse;
+        this.locationGroup = locationGroup;
+        this.name = name;
+
+        this.aisle = "";
+
+        this.x = 0.0;
+        this.y = 0.0;
+        this.z = 0.0;
+
+        this.length = 64.0;
+        this.width = 64.0;
+        this.height = 64.0;
+
+        this.pickSequence = (long)sequence;
+        this.putawaySequence = (long)sequence;
+        this.countSequence = (long)sequence;
+
+        this.capacity = 262144.0;
+        this.fillPercentage= 100.0;
+
+        this.currentVolume = 0.0;
+
+        this.pendingVolume = 0.0;
+        this.enabled = true;
+
+        this.reservedCode = "";
+
+        this.locked = false;
+
+    }
+
     public Long getId() {
         return id;
     }

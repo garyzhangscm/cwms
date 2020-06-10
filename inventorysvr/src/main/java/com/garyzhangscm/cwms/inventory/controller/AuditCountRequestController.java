@@ -35,9 +35,13 @@ public class AuditCountRequestController {
     @Autowired
     AuditCountRequestService auditCountRequestService;
 
-    @RequestMapping(value = "/audit-count-request/{batchId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/audit-count-request/batch/{batchId}", method = RequestMethod.GET)
     public List<AuditCountRequest> getAuditCountRequestByBatch(@PathVariable String batchId){
         return auditCountRequestService.findByBatchId(batchId);
+    }
+    @RequestMapping(value = "/audit-count-request/{id}", method = RequestMethod.GET)
+    public AuditCountRequest getAuditCountRequestByBatch(@PathVariable Long id){
+        return auditCountRequestService.findById(id);
     }
 
 

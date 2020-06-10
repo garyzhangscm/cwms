@@ -19,12 +19,16 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 
 
 public class ItemUnitOfMeasure implements Serializable {
 
 
+    private Long id;
     private Long unitOfMeasureId;
     private String unitOfMeasureName;
 
@@ -44,17 +48,20 @@ public class ItemUnitOfMeasure implements Serializable {
 
     @Override
     public String toString() {
-        return "ItemUnitOfMeasure{" +
-                "unitOfMeasureId=" + unitOfMeasureId +
-                ", unitOfMeasureName='" + unitOfMeasureName + '\'' +
-                ", quantity=" + quantity +
-                ", weight=" + weight +
-                ", length=" + length +
-                ", width=" + width +
-                ", height=" + height +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getWarehouseName() {

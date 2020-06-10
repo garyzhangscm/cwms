@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -79,19 +81,12 @@ public class ItemPackageType implements Serializable {
 
     @Override
     public String toString() {
-        return "ItemPackageType{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", clientId=" + clientId +
-                ", client=" + client +
-                ", supplierId=" + supplierId +
-                ", supplier=" + supplier +
-                ", item=" + (item == null ? "" : item.getName()) +
-                ", itemUnitOfMeasures=" + itemUnitOfMeasures +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

@@ -69,6 +69,25 @@ public class IntegrationServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    private <T> IntegrationData getData(String subUrl, Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/integration/integration-data/" + subUrl + "/" + id);
+
+
+        ResponseBodyWrapper<IntegrationData> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<IntegrationData>>() {}).getBody();
+
+        logger.debug("get IntegrationData by id {}\n{}", id, responseBodyWrapper.getData());
+
+        return responseBodyWrapper.getData();
+
+    }
 
     public IntegrationData sendItemData(Item item) throws JsonProcessingException {
 
@@ -76,6 +95,11 @@ public class IntegrationServiceRestemplateClient {
 
     }
 
+    public IntegrationData getItemData(Long id)  {
+
+        return getData("items", id);
+
+    }
 
     public String clearData(String warehouseName) {
         Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName).getId();

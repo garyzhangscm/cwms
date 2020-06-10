@@ -18,25 +18,17 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.*;
-import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryAdjustmentRequestRepository;
-import com.garyzhangscm.cwms.inventory.repository.InventoryAdjustmentThresholdRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -205,11 +197,11 @@ public class InventoryAdjustmentRequestService{
         InventoryAdjustmentRequest inventoryAdjustmentRequest
                 = new InventoryAdjustmentRequest(inventory, quantity, inventoryQuantityChangeType, userService.getCurrentUserName(),
                                                  documentNumber, comment);
-        logger.debug("Will persist the adjust request: {}", inventoryAdjustmentRequest);
+        // logger.debug("Will persist the adjust request: {}", inventoryAdjustmentRequest);
         save(inventoryAdjustmentRequest);
 
         logger.debug("we will lock the location {} as well",
-                warehouseLayoutServiceRestemplateClient.getLocationById(inventoryAdjustmentRequest.getLocationId()));
+                warehouseLayoutServiceRestemplateClient.getLocationById(inventoryAdjustmentRequest.getLocationId()).getName());
 
         lockLocation(inventoryAdjustmentRequest);
 

@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -96,18 +98,12 @@ public class Item implements Serializable {
 
     @Override
     public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", clientId=" + clientId +
-                ", client=" + client +
-                ", itemFamily=" + itemFamily +
-                ", itemPackageTypes=" + itemPackageTypes +
-                ", unitCost=" + unitCost +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -66,23 +68,22 @@ public class MovementPathDetail {
     @Enumerated(EnumType.STRING)
     private MovementPathStrategy strategy;
 
-    @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("MovementPathDetail: { ")
-                .append("sequence: ").append(sequence)
-                .append("hopLocation: ").append(hopLocation).append(",")
-                .append("hopLocationGroup: ").append(hopLocationGroup).append(",")
-                .append("strategy: ").append(strategy).append("}");
-
-        return stringBuilder.toString();
-    }
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
     @Transient
     private Warehouse warehouse;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Long getId() {
         return id;

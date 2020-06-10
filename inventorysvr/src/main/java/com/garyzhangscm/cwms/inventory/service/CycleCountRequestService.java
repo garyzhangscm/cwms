@@ -19,12 +19,14 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 
+import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.CycleCountRequestRepository;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,6 +377,7 @@ public class CycleCountRequestService{
             String batchId, CycleCountRequestType cycleCountRequestType,
             Long warehouseId, String beginValue, String endValue,
             Boolean includeEmptyLocation) {
+
         List<Location> locations = getCycleCountRequestLocations(cycleCountRequestType, warehouseId, beginValue, endValue, includeEmptyLocation);
         logger.debug("Get {} potential locations for cycle count request",
                 locations.size());
@@ -408,6 +411,8 @@ public class CycleCountRequestService{
     }
 
     private List<Location> getCycleCountRequestLocationsByLocationRange(Long warehouseId, String beginValue, String endValue, Boolean includeEmptyLocation) {
+        logger.debug("Start to get locations by range, [{}, {}], including empty location: {}",
+                beginValue, endValue, includeEmptyLocation);
         if (beginValue.isEmpty() && endValue.isEmpty()) {
             return new ArrayList<>();
         }
