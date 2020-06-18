@@ -20,9 +20,13 @@ package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Inventory implements Serializable {
 
@@ -64,7 +68,10 @@ public class Inventory implements Serializable {
                      Long quantity) {
         this.lpn = lpn;
 
-        this.locationId = location.getId();
+        if (Objects.nonNull(location)) {
+
+            this.locationId = location.getId();
+        }
         this.location = location;
 
         this.pickId = null;
@@ -83,6 +90,16 @@ public class Inventory implements Serializable {
 
         this.warehouseId = warehouse.getId();
 
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

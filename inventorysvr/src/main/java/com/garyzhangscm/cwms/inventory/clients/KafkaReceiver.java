@@ -2,10 +2,7 @@ package com.garyzhangscm.cwms.inventory.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
-import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentRequest;
-import com.garyzhangscm.cwms.inventory.model.Item;
-import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.IntegrationService;
 import com.garyzhangscm.cwms.inventory.service.InventoryActivityService;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
@@ -56,6 +53,22 @@ public class KafkaReceiver {
      * -- item package type
      * -- Item unit of measure
      * */
+
+    @KafkaListener(topics = {"INTEGRATION_ITEM_FAMILY"})
+    public void processItemFamily(@Payload String itemFamilyJsonRepresent)  {
+        logger.info("# received integration - item family data: {}", itemFamilyJsonRepresent);
+        try {
+            ItemFamily itemFamily = objectMapper.readValue(itemFamilyJsonRepresent, ItemFamily.class);
+            logger.info("Item Family: {}", itemFamily);
+
+            integrationService.process(itemFamily);
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
 
     @KafkaListener(topics = {"INTEGRATION_ITEM"})
     public void processItem(@Payload String itemJsonRepresent)  {

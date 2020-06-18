@@ -27,23 +27,23 @@ public class OrderLine implements Serializable {
     private String number;
 
     private Long itemId;
+    private String itemName;
 
     private Long warehouseId;
+    private String warehouseName;
 
     private Long expectedQuantity;
 
-    private Long openQuantity;
-
-    private Long inprocessQuantity;
-
-    private Long shippedQuantity;
 
 
     private Long inventoryStatusId;
+    private String inventoryStatusName;
 
     private Long carrierId;
+    private String carrierName;
 
     private Long carrierServiceLevelId;
+    private String carrierServiceLevelName;
 
     public String getNumber() {
         return number;
@@ -77,28 +77,12 @@ public class OrderLine implements Serializable {
         this.expectedQuantity = expectedQuantity;
     }
 
-    public Long getOpenQuantity() {
-        return openQuantity;
+    public String getInventoryStatusName() {
+        return inventoryStatusName;
     }
 
-    public void setOpenQuantity(Long openQuantity) {
-        this.openQuantity = openQuantity;
-    }
-
-    public Long getInprocessQuantity() {
-        return inprocessQuantity;
-    }
-
-    public void setInprocessQuantity(Long inprocessQuantity) {
-        this.inprocessQuantity = inprocessQuantity;
-    }
-
-    public Long getShippedQuantity() {
-        return shippedQuantity;
-    }
-
-    public void setShippedQuantity(Long shippedQuantity) {
-        this.shippedQuantity = shippedQuantity;
+    public void setInventoryStatusName(String inventoryStatusName) {
+        this.inventoryStatusName = inventoryStatusName;
     }
 
     public Long getInventoryStatusId() {
@@ -123,5 +107,37 @@ public class OrderLine implements Serializable {
 
     public void setCarrierServiceLevelId(Long carrierServiceLevelId) {
         this.carrierServiceLevelId = carrierServiceLevelId;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getCarrierName() {
+        return carrierName;
+    }
+
+    public void setCarrierName(String carrierName) {
+        this.carrierName = carrierName;
+    }
+
+    public String getCarrierServiceLevelName() {
+        return carrierServiceLevelName;
+    }
+
+    public void setCarrierServiceLevelName(String carrierServiceLevelName) {
+        this.carrierServiceLevelName = carrierServiceLevelName;
     }
 }

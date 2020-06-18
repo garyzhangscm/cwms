@@ -48,7 +48,7 @@ public class CommonServiceRestemplateClient {
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
                     .scheme("http").host("zuulservice")
-                    .path("/api/common/client/{id}");
+                    .path("/api/common/clients/{id}");
 
         ResponseBodyWrapper<Client> responseBodyWrapper
                 = restTemplate.exchange(
@@ -113,7 +113,7 @@ public class CommonServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/common/unit-of-measure/{id}");
+                        .path("/api/common/unit-of-measures/{id}");
 
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
                 = restTemplate.exchange(
@@ -129,17 +129,24 @@ public class CommonServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/common/unit-of-measure")
+                        .path("/api/common/unit-of-measures")
                         .queryParam("name", name);
 
-        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
+        ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                         null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}).getBody();
+                        new ParameterizedTypeReference<ResponseBodyWrapper<List<UnitOfMeasure>>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+        List<UnitOfMeasure> unitOfMeasures = responseBodyWrapper.getData();
+
+        if (unitOfMeasures.size() != 1) {
+            return null;
+        }
+        else {
+            return unitOfMeasures.get(0);
+        }
     }
 
     public String getNextNumber(String variable) {

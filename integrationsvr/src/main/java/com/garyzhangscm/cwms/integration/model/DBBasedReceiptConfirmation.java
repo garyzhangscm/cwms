@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_receipt_confirmation")
@@ -62,7 +63,7 @@ public class DBBasedReceiptConfirmation implements Serializable, IntegrationRece
 
     @OneToMany(
             mappedBy = "receipt",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
@@ -84,23 +85,31 @@ public class DBBasedReceiptConfirmation implements Serializable, IntegrationRece
     private String errorMessage;
 
 
-    @Override
-    public String toString() {
-        return "DBBasedReceiptConfirmation{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", supplierId=" + supplierId +
-                ", supplierName='" + supplierName + '\'' +
-                ", receiptLines=" + receiptLines +
-                ", allowUnexpectedItem=" + allowUnexpectedItem +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+
+    public DBBasedReceiptConfirmation(){}
+
+    public DBBasedReceiptConfirmation(ReceiptConfirmation receiptConfirmation){
+
+        setNumber(receiptConfirmation.getNumber());
+
+        setWarehouseId(receiptConfirmation.getWarehouseId());
+        setWarehouseName(receiptConfirmation.getWarehouseName());
+
+        setClientId(receiptConfirmation.getClientId());
+        setClientName(receiptConfirmation.getClientName());
+
+        setSupplierId(receiptConfirmation.getSupplierId());
+        setSupplierName(receiptConfirmation.getSupplierName());
+
+        receiptConfirmation.getReceiptLines().forEach(receiptLineConfirmation -> {
+            DBBasedReceiptLineConfirmation dbBasedReceiptLineConfirmation =
+                    new DBBasedReceiptLineConfirmation(receiptLineConfirmation);
+            dbBasedReceiptLineConfirmation.setReceipt(this);
+            addReceiptLine(dbBasedReceiptLineConfirmation);
+        });
+
+        setAllowUnexpectedItem(receiptConfirmation.getAllowUnexpectedItem());
+
     }
 
     @Override
@@ -184,6 +193,12 @@ public class DBBasedReceiptConfirmation implements Serializable, IntegrationRece
         this.receiptLines = receiptLines;
     }
 
+    public void addReceiptLine(DBBasedReceiptLineConfirmation receiptLine) {
+        if (Objects.isNull(receiptLines)) {
+            receiptLines = new ArrayList<>();
+        }
+        receiptLines.add(receiptLine);
+    }
     @Override
     public Boolean getAllowUnexpectedItem() {
         return allowUnexpectedItem;

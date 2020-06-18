@@ -47,12 +47,15 @@ public class DBBasedOrderIntegration {
     public List<DBBasedOrder> findAll() {
         return dbBasedOrderRepository.findAll();
     }
-    public DBBasedOrder findById(Long id) {
+    public IntegrationOrderData findById(Long id) {
         return dbBasedOrderRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("order data not found by id: " + id));
     }
 
 
+    public IntegrationOrderData addIntegrationOrderData(DBBasedOrder dbBasedOrder) {
+        return dbBasedOrderRepository.save(dbBasedOrder);
+    }
 
     private List<DBBasedOrder> findPendingIntegration() {
         return dbBasedOrderRepository.findAll(

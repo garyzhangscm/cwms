@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -82,24 +84,33 @@ public class DBBasedReceiptLineConfirmation implements Serializable, Integration
     @Column(name = "error_message")
     private String errorMessage;
 
+
+    public DBBasedReceiptLineConfirmation(){}
+
+    public DBBasedReceiptLineConfirmation(ReceiptLineConfirmation receiptLineConfirmation){
+        setNumber(receiptLineConfirmation.getNumber());
+
+        setWarehouseId(receiptLineConfirmation.getWarehouseId());
+        setWarehouseName(receiptLineConfirmation.getWarehouseName());
+
+        setItemId(receiptLineConfirmation.getItemId());
+        setItemName(receiptLineConfirmation.getItemName());
+
+        setExpectedQuantity(receiptLineConfirmation.getExpectedQuantity());
+        setReceivedQuantity(receiptLineConfirmation.getReceivedQuantity());
+
+        setOverReceivingQuantity(receiptLineConfirmation.getOverReceivingQuantity());
+        setOverReceivingPercent(receiptLineConfirmation.getOverReceivingPercent());
+    }
+
     @Override
     public String toString() {
-        return "DBBasedReceiptLineConfirmation{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", expectedQuantity=" + expectedQuantity +
-                ", receivedQuantity=" + receivedQuantity +
-                ", receipt=" + receipt +
-                ", overReceivingQuantity=" + overReceivingQuantity +
-                ", overReceivingPercent=" + overReceivingPercent +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

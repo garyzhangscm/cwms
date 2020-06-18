@@ -60,6 +60,8 @@ public class ReceiptService implements TestDataInitiableService{
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private IntegrationService integrationService;
 
     @Value("${fileupload.test-data.receipts:receipts}")
     String testDataFile;
@@ -124,6 +126,9 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
     public void loadReceiptAttribute(Receipt receipt) {
+        if (receipt.getWarehouseId() != null && receipt.getWarehouse() == null) {
+            receipt.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(receipt.getWarehouseId()));
+        }
         // Load the details for client and supplier informaiton
         if (receipt.getClientId() != null && receipt.getClient() == null) {
             receipt.setClient(commonServiceRestemplateClient.getClientById(receipt.getClientId()));
@@ -141,24 +146,37 @@ public class ReceiptService implements TestDataInitiableService{
 
 
     @Transactional
-    public Receipt save(Receipt receipt) {
+    public Receipt save(Receipt receipt, boolean loadAttribute) {
         Receipt newReceipt = receiptRepository.save(receipt);
-        loadReceiptAttribute(newReceipt);
+        if (loadAttribute) {
+            loadReceiptAttribute(newReceipt);
+        }
         return newReceipt;
     }
 
     @Transactional
+    public Receipt save(Receipt receipt) {
+        return save(receipt, true);
+    }
+
+    @Transactional
     public Receipt saveOrUpdate(Receipt receipt) {
+        return saveOrUpdate(receipt, true);
+    }
+
+    @Transactional
+    public Receipt saveOrUpdate(Receipt receipt, boolean loadAttribute) {
         if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),receipt.getNumber()) != null) {
             receipt.setId(findByNumber(receipt.getWarehouseId(),receipt.getNumber()).getId());
         }
-        return save(receipt);
+        return save(receipt, loadAttribute);
     }
+
 
 
     @Transactional
     public Receipt checkInReceipt(Long receiptId) {
-        Receipt receipt = findById(receiptId);
+        Receipt receipt = findById(receiptId, false);
         logger.debug("receipt ID: {}, status: {}", receiptId, receipt.getReceiptStatus());
         logger.debug("receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)? {}", receipt.getReceiptStatus().equals(ReceiptStatus.OPEN));
         // only allow check in when the receipt is in OPEN status
@@ -166,7 +184,7 @@ public class ReceiptService implements TestDataInitiableService{
 
             receipt.setReceiptStatus(ReceiptStatus.CHECK_IN);
             logger.debug("update the receipt to check in");
-            Receipt newReceipt = save(receipt);
+            Receipt newReceipt = saveOrUpdate(receipt, false);
 
             // After we check in the receipt, we will create a location
             // with the same name of the receipt so that we can receive inventory
@@ -308,6 +326,24 @@ public class ReceiptService implements TestDataInitiableService{
         Receipt receipt = findById(receiptId);
 
         return inventoryServiceRestemplateClient.findInventoryByReceipt(receipt.getWarehouseId(), receiptId);
+    }
+
+    public Receipt completeReceipt(Receipt receipt) {
+
+        if (receipt.getReceiptStatus().equals(ReceiptStatus.CLOSED)) {
+            throw ReceiptOperationException.raiseException("Can't complete the receipt as it is already closed!");
+        }
+        receipt.setReceiptStatus(ReceiptStatus.CLOSED);
+        // Raise integration for receipt closing
+        receipt = saveOrUpdate(receipt);
+
+        integrationService.sendReceiptCompleteData(receipt);
+
+        return receipt;
+    }
+
+    public Receipt completeReceipt(Long receiptId) {
+        return completeReceipt(findById(receiptId));
     }
 
 

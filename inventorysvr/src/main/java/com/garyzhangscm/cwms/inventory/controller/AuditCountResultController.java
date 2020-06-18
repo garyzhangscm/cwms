@@ -54,6 +54,7 @@ public class AuditCountResultController {
                                                            @PathVariable Long locationId,
                                                            @RequestBody List<AuditCountResult> auditCountResults){
 
+        logger.debug("Start to confirm \n{}", auditCountResults);
         return auditCountResultService.confirmAuditCountResults(batchId, locationId, auditCountResults);
     }
 

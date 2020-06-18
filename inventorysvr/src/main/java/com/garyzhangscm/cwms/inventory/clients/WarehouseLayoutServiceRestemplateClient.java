@@ -29,6 +29,10 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
@@ -583,6 +587,9 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return location.getLocationGroup().getLocationGroupType().getVirtual();
     }
+
+
+
 
 
 }

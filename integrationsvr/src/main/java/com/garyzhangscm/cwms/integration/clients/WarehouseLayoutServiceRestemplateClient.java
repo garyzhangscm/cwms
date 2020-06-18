@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-@CacheConfig(cacheNames = "warehouse_layout")
 public class WarehouseLayoutServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WarehouseLayoutServiceRestemplateClient.class);
@@ -49,7 +48,6 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     RestTemplate restTemplate;
 
-    @Cacheable
     public Warehouse getWarehouseByName(String name) {
 
         UriComponentsBuilder builder =
@@ -70,6 +68,24 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+    public Warehouse getWarehouseById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/warehouses/{id}");
+
+
+        ResponseBodyWrapper<Warehouse> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
 
 

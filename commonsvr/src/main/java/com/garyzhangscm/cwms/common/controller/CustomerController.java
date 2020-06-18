@@ -39,17 +39,17 @@ public class CustomerController {
         return customerService.findAll(name);
     }
 
-    @RequestMapping(value="/customer/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/customers/{id}", method = RequestMethod.GET)
     public Customer findCustomer(@PathVariable Long id) {
         return customerService.findById(id);
     }
 
-    @RequestMapping(value="/customer", method = RequestMethod.POST)
+    @RequestMapping(value="/customers", method = RequestMethod.POST)
     public Customer addCustomer(@RequestBody Customer customer) {
         return customerService.save(customer);
     }
 
-    @RequestMapping(value="/customer/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/customers/{id}", method = RequestMethod.PUT)
     public Customer changeCustomer(@PathVariable Long id, @RequestBody Customer customer) {
         if (customer.getId() != null && customer.getId() != id) {
             throw RequestValidationFailException.raiseException(
@@ -58,8 +58,8 @@ public class CustomerController {
         return customerService.save(customer);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/customer")
-    public void deleteCustomers(@RequestParam(name = "customer_ids", required = false, defaultValue = "") String customerIds) {
+    @RequestMapping(method=RequestMethod.DELETE, value="/customers")
+    public void deleteCustomers(@RequestParam(name = "customerIds", required = false, defaultValue = "") String customerIds) {
         customerService.delete(customerIds);
     }
 }

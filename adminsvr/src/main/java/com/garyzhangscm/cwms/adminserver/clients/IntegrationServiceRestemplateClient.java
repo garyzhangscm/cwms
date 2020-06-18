@@ -22,11 +22,11 @@ package com.garyzhangscm.cwms.adminserver.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.adminserver.model.wms.IntegrationData;
-import com.garyzhangscm.cwms.adminserver.model.wms.Item;
+import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -37,6 +37,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+import java.util.Map;
+
 
 @Component
 public class IntegrationServiceRestemplateClient {
@@ -44,6 +47,8 @@ public class IntegrationServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(IntegrationServiceRestemplateClient.class);
 
 
+    // Customized
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
@@ -53,7 +58,7 @@ public class IntegrationServiceRestemplateClient {
     // private OAuth2RestOperations restTemplate;
     RestTemplate restTemplate;
 
-    private <T> IntegrationData sendData(String subUrl, T data) throws JsonProcessingException {
+    public <T> IntegrationData sendData(String subUrl, T data) throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
@@ -62,14 +67,37 @@ public class IntegrationServiceRestemplateClient {
         ResponseBodyWrapper<IntegrationData> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
-                HttpMethod.POST,
+                HttpMethod.PUT,
                 getHttpEntity(objectMapper.writeValueAsString(data)),
                 new ParameterizedTypeReference<ResponseBodyWrapper<IntegrationData>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
     }
-    private <T> IntegrationData getData(String subUrl, Long id) {
+    public List<IntegrationData> getDataByParams(String subUrl, Map<String, String> params) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/integration/integration-data/" + subUrl);
+
+        params.forEach((key, value) -> {
+            builder.queryParam(key, value);
+        });
+
+
+        ResponseBodyWrapper<List<IntegrationData>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<IntegrationData>>>() {}).getBody();
+
+        logger.debug("get IntegrationData by params {}\n{}", params, responseBodyWrapper.getData());
+
+        return responseBodyWrapper.getData();
+    }
+    public IntegrationData getData(String subUrl, Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
@@ -83,9 +111,39 @@ public class IntegrationServiceRestemplateClient {
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<IntegrationData>>() {}).getBody();
 
-        logger.debug("get IntegrationData by id {}\n{}", id, responseBodyWrapper.getData());
+        // logger.debug("get IntegrationData by id {}\n{}", id, responseBodyWrapper.getData());
 
         return responseBodyWrapper.getData();
+
+    }
+
+    public IntegrationData sendItemFamilyData(ItemFamily itemFamily) throws JsonProcessingException {
+
+        return sendData("item-families", itemFamily);
+
+    }
+
+    public IntegrationData sendClientData(Client client) throws JsonProcessingException {
+
+        return sendData("clients", client);
+
+    }
+
+    public IntegrationData sendSupplierData(Supplier supplier) throws JsonProcessingException {
+
+        return sendData("suppliers", supplier);
+
+    }
+
+    public IntegrationData sendCustomerData(Customer customer) throws JsonProcessingException {
+
+        return sendData("customers", customer);
+
+    }
+
+    public IntegrationData sendReceiptData(Receipt receipt) throws JsonProcessingException {
+
+        return sendData("receipts", receipt);
 
     }
 
@@ -98,6 +156,27 @@ public class IntegrationServiceRestemplateClient {
     public IntegrationData getItemData(Long id)  {
 
         return getData("items", id);
+
+    }
+
+    public IntegrationData getItemFamilyData(Long id)  {
+
+        return getData("item-families", id);
+
+    }
+    public IntegrationData getSupplierData(Long id)  {
+
+        return getData("suppliers", id);
+
+    }
+    public IntegrationData getCustomerData(Long id)  {
+
+        return getData("customers", id);
+
+    }
+    public IntegrationData getClientData(Long id)  {
+
+        return getData("clients", id);
 
     }
 

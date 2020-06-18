@@ -34,7 +34,6 @@ public interface CycleCountResultRepository extends JpaRepository<CycleCountResu
 
     CycleCountResult findByLocationId(Long locationId);
 
-    @Modifying
-    @Query("update CycleCountResult set auditCountRequest = null where audit_count_request_id = :auditCountRequestId")
-    void clearAuditCountRequest(Long auditCountRequestId);
+    @Query("select c from CycleCountResult c where c.auditCountRequest.id = :auditCountRequestId")
+    List<CycleCountResult> findByAuditCountRequestId(Long auditCountRequestId);
 }

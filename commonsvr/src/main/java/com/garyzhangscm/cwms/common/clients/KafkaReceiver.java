@@ -30,7 +30,7 @@ public class KafkaReceiver {
 
     // private ObjectMapper mapper = new ObjectMapper();
 
-    @KafkaListener(topics = {"INTEGRATION-CUSTOMER"})
+    @KafkaListener(topics = {"INTEGRATION_CUSTOMER"})
     public void listenForCustomer(@Payload String customerJsonRepresent) throws JsonProcessingException {
         logger.info("# received customer data: {}", customerJsonRepresent);
         Customer customer = objectMapper.readValue(customerJsonRepresent, Customer.class);
@@ -39,7 +39,7 @@ public class KafkaReceiver {
 
     }
 
-    @KafkaListener(topics = {"INTEGRATION-CLIENT"})
+    @KafkaListener(topics = {"INTEGRATION_CLIENT"})
     public void listenForClient(@Payload String clientJsonRepresent) throws JsonProcessingException {
         logger.info("# received client data: {}", clientJsonRepresent);
         Client client = objectMapper.readValue(clientJsonRepresent, Client.class);
@@ -47,7 +47,7 @@ public class KafkaReceiver {
         integrationService.save(client);
     }
 
-    @KafkaListener(topics = {"INTEGRATION-SUPPLIER"})
+    @KafkaListener(topics = {"INTEGRATION_SUPPLIER"})
     public void listenForSupplier(@Payload String supplierJsonRepresent) throws JsonProcessingException {
         logger.info("# received supplier data: {}", supplierJsonRepresent);
         Supplier supplier = objectMapper.readValue(supplierJsonRepresent, Supplier.class);

@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -106,21 +108,12 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
 
     @Override
     public String toString() {
-        return "DBBasedInventoryAdjustmentConfirmation{" +
-                "id=" + id +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", adjustQuantity=" + adjustQuantity +
-                ", inventoryStatusId=" + inventoryStatusId +
-                ", inventoryStatusName='" + inventoryStatusName + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

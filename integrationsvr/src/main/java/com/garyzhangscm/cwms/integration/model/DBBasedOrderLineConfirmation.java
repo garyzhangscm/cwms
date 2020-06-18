@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -104,30 +106,42 @@ public class DBBasedOrderLineConfirmation implements Serializable, IntegrationOr
     @Column(name = "error_message")
     private String errorMessage;
 
+
+    public DBBasedOrderLineConfirmation(){}
+
+    public DBBasedOrderLineConfirmation(OrderLineConfirmation orderLineConfirmation){
+
+        setNumber(orderLineConfirmation.getNumber());
+
+        setItemId(orderLineConfirmation.getItemId());
+        setItemName(orderLineConfirmation.getItemName());
+
+        setWarehouseId(orderLineConfirmation.getWarehouseId());
+        setWarehouseName(orderLineConfirmation.getWarehouseName());
+
+        setExpectedQuantity(orderLineConfirmation.getExpectedQuantity());
+        setOpenQuantity(orderLineConfirmation.getOpenQuantity());
+        setInprocessQuantity(orderLineConfirmation.getInprocessQuantity());
+        setShippedQuantity(orderLineConfirmation.getShippedQuantity());
+
+        setInventoryStatusId(orderLineConfirmation.getInventoryStatusId());
+        setInventoryStatusName(orderLineConfirmation.getInventoryStatusName());
+
+        setCarrierId(orderLineConfirmation.getCarrierId());
+        setCarrierName(orderLineConfirmation.getCarrierName());
+
+        setCarrierServiceLevelId(orderLineConfirmation.getCarrierServiceLevelId());
+        setCarrierServiceLevelName(orderLineConfirmation.getCarrierServiceLevelName());
+    }
+
     @Override
     public String toString() {
-        return "DBBasedOrderLineConfirmation{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", expectedQuantity=" + expectedQuantity +
-                ", openQuantity=" + openQuantity +
-                ", inprocessQuantity=" + inprocessQuantity +
-                ", shippedQuantity=" + shippedQuantity +
-                ", inventoryStatusId=" + inventoryStatusId +
-                ", inventoryStatusName='" + inventoryStatusName + '\'' +
-                ", order=" + order +
-                ", carrierId=" + carrierId +
-                ", carrierName='" + carrierName + '\'' +
-                ", carrierServiceLevelId=" + carrierServiceLevelId +
-                ", carrierServiceLevelName='" + carrierServiceLevelName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

@@ -37,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -505,6 +506,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+
     public List<InventoryAdjustmentThreshold> getInventoryAdjustmentThresholdByItem(Long warehouseId, String itemName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -739,6 +741,23 @@ public class InventoryServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
 
+    }
+    public List<AuditCountResult> confirmAuditCountRequest(AuditCountResult auditCountResult) throws JsonProcessingException {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/audit-count-result/{batchId}/{locationId}/confirm");
+
+        ResponseBodyWrapper<List<AuditCountResult>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(auditCountResult.getBatchId(), auditCountResult.getLocationId()).toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(Collections.singletonList(auditCountResult))),
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<AuditCountResult>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {

@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -132,7 +134,7 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
 
     @OneToMany(
             mappedBy = "order",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER
     )
@@ -156,6 +158,39 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
     @Column(name = "error_message")
     private String errorMessage;
 
+    public DBBasedOrder(){}
+
+
+    public DBBasedOrder(Order order) {
+
+
+        String[] fieldNames = {
+                "number", "shipToCustomerId", "shipToCustomerName", "warehouseId", "warehouseName",
+                "billToCustomerId", "billToCustomerName", "shipToContactorFirstname", "shipToContactorLastname",
+                "shipToAddressCountry", "shipToAddressState", "shipToAddressCounty", "shipToAddressCity", "shipToAddressDistrict",
+                "shipToAddressLine1", "shipToAddressLine2", "shipToAddressPostcode", "billToContactorFirstname",
+                "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty",
+                "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2", "billToAddressPostcode",
+                "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName"
+        };
+
+        ObjectCopyUtil.copyValue(order, this, fieldNames);
+
+
+        order.getOrderLines().forEach(orderLine -> {
+
+            DBBasedOrderLine dbBasedOrderLine
+                    = new DBBasedOrderLine(orderLine);
+
+            dbBasedOrderLine.setOrder(this);
+            dbBasedOrderLine.setStatus(IntegrationStatus.ATTACHED);
+            addOrderLine(dbBasedOrderLine);
+        });
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
+
+    }
 
     public Order convertToOrder() {
         Order order = new Order();
@@ -187,48 +222,12 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
 
     @Override
     public String toString() {
-        return "DBBasedOrder{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", shipToCustomerId=" + shipToCustomerId +
-                ", shipToCustomerName='" + shipToCustomerName + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", billToCustomerId=" + billToCustomerId +
-                ", billToCustomerName='" + billToCustomerName + '\'' +
-                ", shipToContactorFirstname='" + shipToContactorFirstname + '\'' +
-                ", shipToContactorLastname='" + shipToContactorLastname + '\'' +
-                ", shipToAddressCountry='" + shipToAddressCountry + '\'' +
-                ", shipToAddressState='" + shipToAddressState + '\'' +
-                ", shipToAddressCounty='" + shipToAddressCounty + '\'' +
-                ", shipToAddressCity='" + shipToAddressCity + '\'' +
-                ", shipToAddressDistrict='" + shipToAddressDistrict + '\'' +
-                ", shipToAddressLine1='" + shipToAddressLine1 + '\'' +
-                ", shipToAddressLine2='" + shipToAddressLine2 + '\'' +
-                ", shipToAddressPostcode='" + shipToAddressPostcode + '\'' +
-                ", billToContactorFirstname='" + billToContactorFirstname + '\'' +
-                ", billToContactorLastname='" + billToContactorLastname + '\'' +
-                ", billToAddressCountry='" + billToAddressCountry + '\'' +
-                ", billToAddressState='" + billToAddressState + '\'' +
-                ", billToAddressCounty='" + billToAddressCounty + '\'' +
-                ", billToAddressCity='" + billToAddressCity + '\'' +
-                ", billToAddressDistrict='" + billToAddressDistrict + '\'' +
-                ", billToAddressLine1='" + billToAddressLine1 + '\'' +
-                ", billToAddressLine2='" + billToAddressLine2 + '\'' +
-                ", billToAddressPostcode='" + billToAddressPostcode + '\'' +
-                ", carrierId=" + carrierId +
-                ", carrierName='" + carrierName + '\'' +
-                ", carrierServiceLevelId=" + carrierServiceLevelId +
-                ", carrierServiceLevelName='" + carrierServiceLevelName + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", orderLines=" + orderLines +
-                ", stageLocationGroupId=" + stageLocationGroupId +
-                ", stageLocationGroupName='" + stageLocationGroupName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {
@@ -554,6 +553,10 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
 
     public void setOrderLines(List<DBBasedOrderLine> orderLines) {
         this.orderLines = orderLines;
+    }
+
+    public void addOrderLine(DBBasedOrderLine orderLine) {
+        this.orderLines.add(orderLine);
     }
 
 

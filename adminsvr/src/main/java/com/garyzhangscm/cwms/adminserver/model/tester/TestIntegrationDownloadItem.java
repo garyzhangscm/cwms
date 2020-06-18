@@ -30,37 +30,27 @@ public class TestIntegrationDownloadItem extends TestScenario{
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
-    private IntegrationServiceRestemplateClient integrationServiceRestemplateClient;
-
+    private IntegrationUtil integrationUtil;
 
     public TestIntegrationDownloadItem() {
-        super(TestScenarioType.INTEGRATION_DOWNLOAD_ITEM, 10000);
+        super(TestScenarioType.INTEGRATION_DOWNLOAD_ITEM, 10100);
 
         for(int i = 1; i <= 5; i++) {
-            String itemName = "ITEM-HV-00" + i;
-            testingItems.put(itemName, "HIGH_VALUE");
-            itemName = "ITEM-FZ-00" + i;
+            String itemName = "TEST-ITEM-HV-00" + i;
+            testingItems.put(itemName, "TEST_HIGH_VALUE");
+            itemName = "TEST-ITEM-FZ-00" + i;
             testingItems.put(itemName, "FROZEN");
         }
 
     }
-    public boolean run(Warehouse warehouse) {
-
-        logger.debug("Start to run test scenario: {} - {}", warehouse.getName(), getName());
-        try {
+    @Override
+    public void runTest(Warehouse warehouse) {
             List<IntegrationData> integrationDataList = createItem(warehouse);
             integrationDataList.forEach(integrationData -> {
                 logger.debug("Created item integration data: {}", integrationData.getId());
             });
 
             assertResult(integrationDataList, warehouse);
-        } catch (Exception e) {
-            e.printStackTrace();
-            setErrorMessage(e.getMessage());
-            return false;
-        }
-
-        return true;
 
     }
 
@@ -77,66 +67,22 @@ public class TestIntegrationDownloadItem extends TestScenario{
 
 
     }
-    private void assertResultSaved(List<IntegrationData> integrationDataList) {
-        integrationDataList.forEach(integrationData -> {
-            // make sure we at least have the integration with the right id
 
-            IntegrationData savedIntegrationData
-                    = integrationServiceRestemplateClient.getItemData(integrationData.getId());
-            if (Objects.isNull(savedIntegrationData)) {
-                throw TestFailException.raiseException("Can't find integration data by id " + integrationData.getId());
-            }
-        });
+    private void assertResultSaved(List<IntegrationData> integrationDataList) {
+        integrationUtil.assertResultSaved(integrationDataList, Item.class);
     }
     private void assertResultProcessed(List<IntegrationData> integrationDataList)  {
-        // We will allow about 2 minutes for the system to process the integration data
-        int timeoutInTotal = 120000;
-        int timeout = 2000;
-        int i = 0;
-        boolean allProcessed;
-        while(i * timeout < timeoutInTotal) {
-            i++;
-            try {
-                allProcessed = true;
-                for (IntegrationData integrationData : integrationDataList) {
-
-                    IntegrationData savedIntegrationData
-                            = integrationServiceRestemplateClient.getItemData(integrationData.getId());
-                    if (Objects.isNull(savedIntegrationData)) {
-                        throw TestFailException.raiseException("Can't find integration data by id " + integrationData.getId());
-                    }
-                    if (!savedIntegrationData.getStatus().equals(IntegrationStatus.COMPLETED) &&
-                        !savedIntegrationData.getStatus().equals(IntegrationStatus.ERROR)) {
-                        allProcessed = false;
-                        break;
-                    }
-                }
-                if (allProcessed) {
-                    // OK, all the integration has been process, sounds good
-                    return;
-                }
-                else {
-
-                    //
-                    Thread.sleep(timeout);
-                }
-
-            } catch (InterruptedException e) {
-                throw TestFailException.raiseException("Thread interrupted: " + e.getMessage());
-            }
-        }
-
-        throw TestFailException.raiseException("Some integration has not been processed after  " +
-                (timeoutInTotal / (timeout * 1000)) + " seconds");
+        integrationUtil.assertResultProcessed(integrationDataList, Item.class);
     }
+
     private void assertResultConfirmed(Warehouse warehouse) {
 
         // Let's check from the inventory service to see if our item has been saved correctly
         // if we are here, we will assume we already passed assetResultProcessed()
         // which means the integration data has been processed correctly
 
-        // We will allow about 2 minutes for the system to send and process the integration data
-        int timeoutInTotal = 120000;
+        // We will allow about 3 minutes for the system to send and process the integration data
+        int timeoutInTotal = 180000;
         int timeout = 2000;
         int i = 0;
         boolean allProcessed;
@@ -198,7 +144,7 @@ public class TestIntegrationDownloadItem extends TestScenario{
         }
 
         throw TestFailException.raiseException("All integration has been processed but we can't find the item after  " +
-                (timeoutInTotal / (timeout * 1000)) + " seconds");
+                (timeoutInTotal / timeout ) + " seconds");
 
     }
 
@@ -235,7 +181,7 @@ public class TestIntegrationDownloadItem extends TestScenario{
         item.setItemFamily(itemFamily);
         item.setItemPackageTypes(createItemPackageTypes(item));
 
-        return integrationServiceRestemplateClient.sendItemData(item);
+        return integrationUtil.sendData(Item.class, item);
 
     }
     private List<ItemPackageType> createItemPackageTypes(Item item){
@@ -289,7 +235,8 @@ public class TestIntegrationDownloadItem extends TestScenario{
                                                       Double length, Double width, Double height,
                                                       Integer quantity, Double weight, String warehouseName){
         ItemUnitOfMeasure itemUnitOfMeasure = new ItemUnitOfMeasure();
-        itemUnitOfMeasure.setUnitOfMeasureId(unitOfMeasure.getId());
+        // itemUnitOfMeasure.setUnitOfMeasureId(unitOfMeasure.getId());
+        itemUnitOfMeasure.setUnitOfMeasureName(unitOfMeasure.getName());
         // itemUnitOfMeasure.setWarehouseId(warehouseId);
         itemUnitOfMeasure.setWarehouseName(warehouseName);
         itemUnitOfMeasure.setLength(length);

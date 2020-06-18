@@ -21,7 +21,7 @@ public class TestCycleCount extends TestScenario{
 
     private static final Logger logger = LoggerFactory.getLogger(TestCycleCount.class);
 
-    private final String itemName = "ITEM-HV-002";
+    private final String itemName = "TEST-ITEM-HV-002";
     private final String[] locationNamesEA = {"TEST-EA-010", "TEST-EA-011", "TEST-EA-012", "TEST-EA-013"};
     private final String[] locationNamesCS = {"TEST-CS-010", "TEST-CS-011", "TEST-CS-012", "TEST-CS-013"};
     private final String[] locationNamesPL = {"TEST-PL-010", "TEST-PL-011", "TEST-PL-012", "TEST-PL-013"};
@@ -42,20 +42,13 @@ public class TestCycleCount extends TestScenario{
 
         super(TestScenarioType.CYCLE_AUDIT_COUNT, 50100);
     }
-    public boolean run(Warehouse warehouse) {
+    @Override
+    public void runTest(Warehouse warehouse) {
 
-        try {
             testEALocations(warehouse);
             testCSLocations(warehouse);
             testPLLocations(warehouse);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            setErrorMessage(e.getMessage());
-            return false;
-        }
-
-        return true;
 
     }
 
@@ -96,7 +89,7 @@ public class TestCycleCount extends TestScenario{
 
         // Adjust one location up so it can have inventory
         String nonEmptyLocationName = "TEST-CS-010";
-        Location location = assertLocationEmpty(warehouse, nonEmptyLocationName);
+        Location cs010Location = assertLocationEmpty(warehouse, nonEmptyLocationName);
 
         Item item = assertItem(warehouse, itemName);
         logger.debug("Will start to adjust inventory with item \n{}", item);
@@ -104,10 +97,10 @@ public class TestCycleCount extends TestScenario{
 
         logger.debug("Start to test adding new inventory");
         Long quantity = 100L;
-        Inventory inventory = createInventory(warehouse, location, item, quantity, inventoryStatus);
+        Inventory cs010Inventory = createInventory(warehouse, cs010Location, item, quantity, inventoryStatus);
 
         // current inventory quantity: 100
-        assertInventory(inventory.getId(), warehouse, location, item, quantity, inventoryStatus);
+        assertInventory(cs010Inventory.getId(), warehouse, cs010Location, item, quantity, inventoryStatus);
         logger.debug("New inventory added");
         // Generate cycle count
 
@@ -122,24 +115,72 @@ public class TestCycleCount extends TestScenario{
         // TEST-CS-011      up                 0                     75
         // TEST-CS-012      --                 0                      0
         // TEST-CS-013      --                 0                      0
+        // We will test
+        // TEST-CS-010 :
+        //     1. We can get audit count when count down with existing inventory
+        //     2. We can finish the audit count and adjust the inventory
+        //     3. We can get intergration data for the adjustment(TO-DO)
+        // TEST-CS-011:
+        //     1. We can get audit count when count UP from empty location
+        //     2. We can finish the audit count and adjust the inventory
+        //     3. We can get intergration data for the adjustment(TO-DO)
+        // TEST-CS-012 / TEST-CS-013:
+        //     1. We can cancel the cycle count
+        //     2. we can reopen the count
+        //     3. We can finish the audit count and adjust the inventory
+        //     4. We can get intergration data for the adjustment(TO-DO)
 
+
+        /////////////   TEST-CS-010                               /////////
+        //     1. We can get audit count when count down with existing inventory
+        //     2. We can finish the audit count and adjust the inventory
+        //     3. We can get intergration data for the adjustment(TO-DO)
         Map<String, CycleCountRequest> cycleCountRequestMap = new HashMap<>();
         cycleCountRequests.forEach(cycleCountRequest ->
                 cycleCountRequestMap.put(cycleCountRequest.getLocation().getName(), cycleCountRequest));
 
         CycleCountRequest cs010Request = cycleCountRequestMap.get("TEST-CS-010");
-        List<CycleCountResult> cycleCountResults
+        List<CycleCountResult> cs010CycleCountResults
                 = confirmCycleCountRequests(cs010Request, item, 100L, 50L);
         // Make sure there's only one cycle count result
-        assertSingleCycleCountResultWithDiscrepancy(cycleCountResults);
+        assertSingleCycleCountResultWithDiscrepancy(cs010CycleCountResults);
         logger.debug("TEST-CS-010 was count down to 50 and audit count request is generated without any issue");
+        // make suer the inventory quantity has not been changed
+        assertInventoryQuantity(cs010Inventory, 100);
+        assertLocationLocked(warehouse, "TEST-CS-010");
+        // Let's process the audit count and adjust the inventory quantity to 50
+        // When we are here, we should be sure there's only one cycle count result regards to
+        // the location TEST-CS-010
+        AuditCountRequest cs010AuditCountRequest = cs010CycleCountResults.get(0).getAuditCountRequest();
+        List<AuditCountResult> cs010AuditCountResult = confirmAuditCountRequest(cs010AuditCountRequest, cs010Inventory,50L);
+        assertAuditCountResult(cs010AuditCountResult, cs010Inventory, 50L);
+        assertLocationUnLocked(warehouse, "TEST-CS-010");
 
-        CycleCountRequest cs011Request = cycleCountRequestMap.get("TEST-CS-011");
-        cycleCountResults = confirmCycleCountRequests(cs011Request, item, 0L, 75L);
-        assertSingleCycleCountResultWithDiscrepancy(cycleCountResults);
+
+        /////////////////// TEST-CS-011:   //////////////////////////////
+        //     1. We can get audit count when count UP from empty location
+        //     2. We can finish the audit count and adjust the inventory
+        //     3. We can get intergration data for the adjustment(TO-DO)
+        CycleCountRequest cs011CycleCountRequest = cycleCountRequestMap.get("TEST-CS-011");
+        List<CycleCountResult> cs011CycleCountResults = confirmCycleCountRequests(cs011CycleCountRequest, item, 0L, 75L);
+        assertSingleCycleCountResultWithDiscrepancy(cs011CycleCountResults);
         logger.debug("TEST-CS-011 was count up to 75 and audit count request is generated without any issue");
+        // Make sure the locatino is still empty
+        Location cs011Location = assertLocationEmpty(warehouse, "TEST-CS-011");
+        Inventory cs011Inventory = createInventoryStructure(warehouse, cs011Location, item,
+                inventoryStatus, 75L);
+        AuditCountRequest cs011AuditCountRequest = cs011CycleCountResults.get(0).getAuditCountRequest();
+        List<AuditCountResult> cs011AuditCountResult = confirmAuditCountRequest(cs011AuditCountRequest, cs011Inventory,75L);
+        logger.debug("cs011AuditCountResult: {} ", cs011AuditCountResult);
+        // assertAuditCountResult(cs011AuditCountResult, cs011Inventory, 75L);
 
 
+
+        ///////////////   TEST-CS-012 / TEST-CS-013:    ///////////////////////////
+        //     1. We can cancel the cycle count
+        //     2. we can reopen the count
+        //     3. We can get audit count when cycle counting with discrepancy
+        //     4. We can cancel the audit count --- TO-DO: Audit Count Cancellation is not support yet
         CycleCountRequest[] cycleCountRequestArray
                 = {cycleCountRequestMap.get("TEST-CS-012"), cycleCountRequestMap.get("TEST-CS-013")};
         String cycleCountRequestIds = Arrays.stream(cycleCountRequestArray).map(CycleCountRequest::getId)
@@ -156,6 +197,44 @@ public class TestCycleCount extends TestScenario{
         logger.debug("cycle count on TEST-CS-012 was reopened");
 
 
+    }
+
+    private void assertLocationUnLocked(Warehouse warehouse, String locationName) {
+        assertLocationLockStatus(warehouse, locationName, false);
+    }
+
+    private void assertLocationLocked(Warehouse warehouse, String locationName) {
+        assertLocationLockStatus(warehouse, locationName, true);
+    }
+    private void assertLocationLockStatus(Warehouse warehouse, String locationName, boolean locked) {
+        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouse.getId(), locationName);
+
+        logger.debug("Check if location {} is locked. Expected: {}, actual: {}",
+                locationName, locked, location.getLocked());
+
+        if (!location.getLocked().equals(locked)) {
+
+            throw TestFailException.raiseException("location " + locationName +
+                    ", expected lock status: " + locked +
+                    ", actual lock status: " + location.getLocked());
+        }
+
+    }
+
+    private void assertAuditCountResult(List<AuditCountResult> auditCountResult, Inventory inventory, long countQuantity) {
+        assertInventoryQuantity(inventory, countQuantity);
+    }
+
+
+    private List<AuditCountResult> confirmAuditCountRequest(AuditCountRequest auditCountRequest, Inventory inventory, long countQuantity) {
+
+        AuditCountResult auditCountResult = new AuditCountResult(auditCountRequest, inventory, countQuantity);
+        try {
+            return inventoryServiceRestemplateClient.confirmAuditCountRequest(auditCountResult);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw TestFailException.raiseException("Can't confirm the audit count request" + auditCountRequest);
+        }
     }
 
     private void assertCycleCountRequestStatus(List<CycleCountRequest> cancelledCycleCountRequests,
@@ -398,14 +477,9 @@ public class TestCycleCount extends TestScenario{
     private Inventory createInventory(Warehouse warehouse, Location location,
                                  Item item, Long quantity,
                                  InventoryStatus inventoryStatus) {
+        Inventory inventory = createInventoryStructure(warehouse, location, item,
+                                inventoryStatus, quantity);
 
-        String lpn = commonServiceRestemplateClient.getNextLpn();
-
-        ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
-
-        Inventory inventory = new Inventory(lpn,  warehouse, location,
-                  item, itemPackageType,  inventoryStatus,
-                 quantity);
         try {
             inventory = inventoryServiceRestemplateClient.createInventory(inventory);
         } catch (JsonProcessingException e) {
@@ -413,6 +487,17 @@ public class TestCycleCount extends TestScenario{
             throw TestFailException.raiseException("Error while creating create inventory. " + e.getMessage());
         }
         return inventory;
+    }
+
+    private Inventory createInventoryStructure(Warehouse warehouse, Location location, Item item,
+                                               InventoryStatus inventoryStatus, Long quantity) {
+        String lpn = commonServiceRestemplateClient.getNextLpn();
+
+        ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
+
+        return new Inventory(lpn,  warehouse, location,
+                item, itemPackageType,  inventoryStatus,
+                quantity);
     }
 
     private void assertInventory(Long inventoryId, Warehouse warehouse,
@@ -467,5 +552,18 @@ public class TestCycleCount extends TestScenario{
     }
 
 
+    private void assertInventoryQuantity(Inventory inventory, long quantity) {
+        Inventory existingInventory =
+                inventoryServiceRestemplateClient.getInventoryById(inventory.getId());
+        if (Objects.isNull(existingInventory)) {
+
+            throw TestFailException.raiseException("Error while get inventory we just created. ");
+        }
+        if (!existingInventory.getQuantity().equals(quantity)) {
+            throw TestFailException.raiseException("Error while verify quantity." +
+                    "Expected: " + quantity + ", got: " + existingInventory.getQuantity());
+
+        }
+    }
 
 }

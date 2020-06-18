@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -26,6 +28,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_order_confirmation")
@@ -50,7 +53,7 @@ public class DBBasedOrderConfirmation implements Serializable, IntegrationOrderC
 
     @OneToMany(
             mappedBy = "order",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER
     )
@@ -67,18 +70,31 @@ public class DBBasedOrderConfirmation implements Serializable, IntegrationOrderC
     @Column(name = "error_message")
     private String errorMessage;
 
+    public DBBasedOrderConfirmation(){}
+
+    public DBBasedOrderConfirmation(OrderConfirmation orderConfirmation){
+
+
+
+        setNumber(orderConfirmation.getNumber());
+        setWarehouseId(orderConfirmation.getWarehouseId());
+        setWarehouseName(orderConfirmation.getWarehouseName());
+
+
+        orderConfirmation.getOrderLines().forEach(orderLineConfirmation -> {
+            addOrderLine(new DBBasedOrderLineConfirmation(orderLineConfirmation));
+        });
+
+    }
+
     @Override
     public String toString() {
-        return "DBBasedOrderConfirmation{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", orderLines=" + orderLines +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {
@@ -119,6 +135,12 @@ public class DBBasedOrderConfirmation implements Serializable, IntegrationOrderC
     @Override
     public List<DBBasedOrderLineConfirmation> getOrderLines() {
         return orderLines;
+    }
+    public void addOrderLine(DBBasedOrderLineConfirmation dbBasedOrderLineConfirmation) {
+        if (Objects.isNull(orderLines)) {
+            orderLines = new ArrayList<>();
+        }
+        orderLines.add(dbBasedOrderLineConfirmation);
     }
 
     public void setOrderLines(List<DBBasedOrderLineConfirmation> orderLines) {

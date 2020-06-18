@@ -30,13 +30,17 @@ public class Order implements Serializable {
 
 
     private Long shipToCustomerId;
+    private String shipToCustomerName;
 
 
 
     private Long warehouseId;
+    private String warehouseName;
+
 
 
     private Long billToCustomerId;
+    private String billToCustomerName;
 
 
     private String shipToContactorFirstname;
@@ -74,16 +78,20 @@ public class Order implements Serializable {
     private String billToAddressPostcode;
 
     private Long carrierId;
+    private String carrierName;
 
     private Long carrierServiceLevelId;
+    private String carrierServiceLevelName;
 
     private Long clientId;
+    private String clientName;
 
 
     private List<OrderLine> orderLines = new ArrayList<>();
 
 
     private Long stageLocationGroupId;
+    private String stageLocationGroupName;
 
     public String getNumber() {
         return number;

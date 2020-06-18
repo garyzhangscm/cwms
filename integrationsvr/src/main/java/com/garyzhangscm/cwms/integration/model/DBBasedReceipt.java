@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -63,7 +65,7 @@ public class DBBasedReceipt implements Serializable, IntegrationReceiptData{
 
     @OneToMany(
             mappedBy = "receipt",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
@@ -107,23 +109,45 @@ public class DBBasedReceipt implements Serializable, IntegrationReceiptData{
         return receipt;
     }
 
+    public DBBasedReceipt(){}
+
+
+    public DBBasedReceipt(Receipt receipt) {
+
+        setNumber(receipt.getNumber());
+        setWarehouseId(receipt.getWarehouseId());
+        setWarehouseName(receipt.getWarehouseName());
+
+        setClientId(receipt.getClientId());
+        setClientName(receipt.getClientName());
+
+        setSupplierId(receipt.getSupplierId());
+        setSupplierName(receipt.getSupplierName());
+
+        setAllowUnexpectedItem(receipt.getAllowUnexpectedItem());
+
+        receipt.getReceiptLines().forEach(receiptLine -> {
+
+            DBBasedReceiptLine dbBasedReceiptLine
+                    = new DBBasedReceiptLine(receiptLine);
+
+            dbBasedReceiptLine.setReceipt(this);
+            dbBasedReceiptLine.setStatus(IntegrationStatus.ATTACHED);
+            addReceiptLine(dbBasedReceiptLine);
+        });
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
+    }
+
     @Override
     public String toString() {
-        return "DBBasedReceipt{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", supplierId=" + supplierId +
-                ", supplierName='" + supplierName + '\'' +
-                ", receiptLines=" + receiptLines +
-                ", allowUnexpectedItem=" + allowUnexpectedItem +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -205,6 +229,9 @@ public class DBBasedReceipt implements Serializable, IntegrationReceiptData{
 
     public void setReceiptLines(List<DBBasedReceiptLine> receiptLines) {
         this.receiptLines = receiptLines;
+    }
+    public void addReceiptLine(DBBasedReceiptLine receiptLine) {
+        this.receiptLines.add(receiptLine);
     }
 
     @Override

@@ -37,19 +37,23 @@ public class DBBasedInventoryAttributeChangeConfirmation implements Serializable
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "item_id")
-    private Long itemId;
-    @Column(name = "item_name")
-    private String itemName;
-
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
 
-    @Column(name = "quantity")
-    private Long quantity;
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Column(name = "client_name")
+    private String clientName;
+
+
+    @Column(name = "item_id")
+    private Long itemId;
+    @Column(name = "item_name")
+    private String itemName;
 
     // Specific the inventory status that
     // user ordered. For example, when return
@@ -60,12 +64,10 @@ public class DBBasedInventoryAttributeChangeConfirmation implements Serializable
     @Column(name = "inventory_status_name")
     private String inventoryStatusName;
 
+    @Column(name = "quantity")
+    private Long quantity;
 
-    @Column(name = "client_id")
-    private Long clientId;
 
-    @Column(name = "client_name")
-    private String clientName;
 
 
     @Column(name = "attribute_name")

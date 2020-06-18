@@ -22,7 +22,7 @@ public class TestAdjustInventory extends TestScenario{
 
     private static final Logger logger = LoggerFactory.getLogger(TestAdjustInventory.class);
 
-    private final String itemName = "ITEM-HV-001";
+    private final String itemName = "TEST-ITEM-HV-001";
     private final String locationName = "TEST-EA-001";
     private final String inventoryStatusName = "AVAL";
 
@@ -40,10 +40,9 @@ public class TestAdjustInventory extends TestScenario{
 
         super(TestScenarioType.INVENTORY_ADJUST, 50000);
     }
-    public boolean run(Warehouse warehouse) {
+    @Override
+    public void runTest(Warehouse warehouse) {
 
-        logger.debug("Start to run test scenario: {} - {}", warehouse.getName(), getName());
-        try {
             Location location = assertLocationEmpty(warehouse, locationName);
             Item item = assertItem(warehouse, itemName);
             logger.debug("Will start to adjust inventory with item \n{}", item);
@@ -119,15 +118,6 @@ public class TestAdjustInventory extends TestScenario{
             assertInventoryQuantity(inventory, resultQuantity);
             logger.debug("  inventory down by 2500 reject");
 
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            setErrorMessage(e.getMessage());
-            return false;
-        }
-
-        return true;
 
     }
 

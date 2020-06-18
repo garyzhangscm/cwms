@@ -11,11 +11,30 @@ services:
     environment:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_BROKER_ID: 10
-      KAFKA_CREATE_TOPICS: "ops_transaction:1:1,order_activity:1:1,test_data_init:1:1,short_allocation:1:1,
-                     INTEGRATION_CUSTOMER:1:1,INTEGRATION_CLIENT:1:1,INTEGRATION_SUPPLIER:1:1,
-                     INTEGRATION_ITEM:1:1,INTEGRATION_ITEM_FAMILY:1:1,INTEGRATION_ITEM_PACKAGE_TYPE:1:1,INTEGRATION_ITEM_UNIT_OF_MEASURE:1:1,
-                     INVENTORY_ACTIVITY:1:1,INVENTORY_ADJUSTMENT_REQUEST_PROCESSED:1:1,INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION:1:1,
-                     INTEGRATION_INVENTORY_ATTRIBUTE_CHANGE_CONFIRMATION:1:1,SYSTEM_ERROR:1:1"
+      KAFKA_CREATE_TOPICS: "ops_transaction:1:1,order_activity:1:1,
+                     test_data_init:1:1,
+                     short_allocation:1:1,
+                     INTEGRATION_CUSTOMER:1:1,
+                     INTEGRATION_CLIENT:1:1,
+                     INTEGRATION_SUPPLIER:1:1,
+                     INTEGRATION_ITEM:1:1,
+                     INTEGRATION_ITEM_FAMILY:1:1,
+                     INTEGRATION_ITEM_PACKAGE_TYPE:1:1,
+                     INTEGRATION_ITEM_UNIT_OF_MEASURE:1:1,
+                     INVENTORY_ACTIVITY:1:1,
+                     INVENTORY_ADJUSTMENT_REQUEST_PROCESSED:1:1,
+                     INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION:1:1,
+                     INTEGRATION_INVENTORY_ATTRIBUTE_CHANGE_CONFIRMATION:1:1,
+                     SYSTEM_ERROR:1:1,
+                     INTEGRATION_ORDER:1:1,
+                     INTEGRATION_ORDER_LINE:1:1,
+                     INTEGRATION_RECEIPT:1:1,
+                     INTEGRATION_RECEIPT_LINE:1:1,
+                     INTEGRATION_ORDER_CONFIRMATION:1:1,
+                     INTEGRATION_ORDER_LINE_CONFIRMATION:1:1,
+                     INTEGRATION_SHIPMENT_LINE_CONFIRMATION:1:1,
+                     INTEGRATION_RECEIPT_CONFIRMATION:1:1,
+                     INTEGRATION_RECEIPT_LINE_CONFIRMATION:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper

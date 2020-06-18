@@ -22,8 +22,8 @@ public class TestCreatingInventoryAdjustmentThreshold extends TestScenario{
     // Will create inventory adjustment
     // quantity: 1000
     // cost: $500
-    String[] itemNames = {"ITEM-HV-001", "ITEM-HV-002", "ITEM-HV-003"};
-    String itemFamilyName = "HIGH_VALUE";
+    String[] itemNames = {"TEST-ITEM-HV-001", "TEST-ITEM-HV-002", "TEST-ITEM-HV-003"};
+    String itemFamilyName = "TEST_HIGH_VALUE";
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -38,21 +38,12 @@ public class TestCreatingInventoryAdjustmentThreshold extends TestScenario{
 
 
     }
-    public boolean run(Warehouse warehouse) {
-
-        logger.debug("Start to run test scenario: {} - {}", warehouse.getName(), getName());
-        try {
+    @Override
+    public void runTest(Warehouse warehouse) {
             createInventoryAdjustmentThresholdsByItem(warehouse);
             createInventoryAdjustmentThresholdByItemFamily(warehouse, itemFamilyName);
 
             assertResult(warehouse);
-        } catch (Exception e) {
-            e.printStackTrace();
-            setErrorMessage(e.getMessage());
-            return false;
-        }
-
-        return true;
 
     }
 

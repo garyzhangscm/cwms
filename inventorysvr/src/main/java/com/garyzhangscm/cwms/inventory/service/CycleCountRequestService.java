@@ -33,6 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -132,12 +136,17 @@ public class CycleCountRequestService{
     CycleCountResult confirmCycleCountRequest(CycleCountResult cycleCountResult, Long countQuantity) {
         cycleCountResult.setCountQuantity(countQuantity);
         logger.debug("confirm request with quantity: {}. Inventory Quantity: {}", countQuantity, cycleCountResult.getQuantity());
-        if (cycleCountResult.getCountQuantity() != cycleCountResult.getQuantity()) {
+        if (!cycleCountResult.getCountQuantity().equals(cycleCountResult.getQuantity())) {
             // OK, we will need to generate a new audit count on this location
             AuditCountRequest auditCountRequest = auditCountRequestService.generateAuditCountRequest(cycleCountResult);
+            lockLocationForAuditCount(auditCountRequest.getLocationId());
             cycleCountResult.setAuditCountRequest(auditCountRequest);
         }
         return cycleCountResultService.save(cycleCountResult);
+    }
+
+    private void lockLocationForAuditCount(Long locationId) {
+        warehouseLayoutServiceRestemplateClient.lockLocation(locationId);
     }
 
     @Transactional

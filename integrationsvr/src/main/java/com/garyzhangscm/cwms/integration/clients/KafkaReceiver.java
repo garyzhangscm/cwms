@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.model.InventoryAdjustmentConfirmation;
 import com.garyzhangscm.cwms.integration.model.InventoryAttributeChangeConfirmation;
 
+import com.garyzhangscm.cwms.integration.model.OrderConfirmation;
+import com.garyzhangscm.cwms.integration.model.ReceiptConfirmation;
+import com.garyzhangscm.cwms.integration.service.IntegrationDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 
@@ -20,9 +24,13 @@ import org.springframework.stereotype.Component;
 public class KafkaReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaReceiver.class);
 
+    // Custmoized JSON mapper
     @Autowired
+    @Qualifier("getObjMapper")
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private IntegrationDataService integrationDataService;
 
 
     @KafkaListener(topics = {"INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION"})
@@ -34,6 +42,8 @@ public class KafkaReceiver {
                     = objectMapper.readValue(inventoryAdjustmentConfirmationJsonRepresent, InventoryAdjustmentConfirmation.class);
             logger.info("InventoryAdjustmentConfirmation: {}", inventoryAdjustmentConfirmation);
 
+
+            integrationDataService.sendInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
 
 
         }
@@ -54,6 +64,7 @@ public class KafkaReceiver {
             logger.info("inventoryAttributeChangeConfirmation: {}", inventoryAttributeChangeConfirmation);
 
 
+            integrationDataService.sendInventoryAttributeChangeConfirmationData(inventoryAttributeChangeConfirmation);
 
         }
         catch (JsonProcessingException ex) {
@@ -64,4 +75,44 @@ public class KafkaReceiver {
 
 
 
+    @KafkaListener(topics = {"INTEGRATION_ORDER_CONFIRMATION"})
+    public void processOrderConfirmationIntegration(@Payload String orderConfirmationJsonRepresent)  {
+        logger.info("# received order confirmation data: {}", orderConfirmationJsonRepresent);
+
+        try {
+            OrderConfirmation orderConfirmation
+                    = objectMapper.readValue(orderConfirmationJsonRepresent, OrderConfirmation.class);
+            logger.info("orderConfirmation: {}", orderConfirmation);
+
+
+            integrationDataService.sendIntegrationOrderConfirmationData(orderConfirmation);
+
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
+
+
+    @KafkaListener(topics = {"INTEGRATION_RECEIPT_CONFIRMATION"})
+    public void processReceiptConfirmationIntegration(@Payload String receiptConfirmationJsonRepresent)  {
+        logger.info("# received inventory adjustment confirmation data: {}", receiptConfirmationJsonRepresent);
+
+        try {
+            ReceiptConfirmation receiptConfirmation
+                    = objectMapper.readValue(receiptConfirmationJsonRepresent, ReceiptConfirmation.class);
+            logger.info("receiptConfirmation: {}", receiptConfirmation);
+
+
+            integrationDataService.sendIntegrationReceiptConfirmationData(receiptConfirmation);
+
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
 }

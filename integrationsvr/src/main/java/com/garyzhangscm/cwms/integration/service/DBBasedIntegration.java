@@ -51,6 +51,10 @@ public class DBBasedIntegration implements Integration{
     @Autowired
     DBBasedInventoryAttributeChangeConfirmationIntegration dbBasedInventoryAttributeChangeConfirmationIntegration;
 
+    @Autowired
+    DBBasedOrderConfirmationIntegration dbBasedOrderConfirmationIntegration;
+    @Autowired
+    DBBasedReceiptConfirmationIntegration dbBasedReceiptConfirmationIntegration;
 
 
 
@@ -225,6 +229,11 @@ public class DBBasedIntegration implements Integration{
     public IntegrationReceiptData getReceiptData(Long id) {
         return dbBasedReceiptIntegration.findById(id);
     }
+    public IntegrationReceiptData addReceiptData(Receipt receipt) {
+
+        return dbBasedReceiptIntegration.addIntegrationReceiptData(new DBBasedReceipt(receipt));
+
+    }
 
     //
     // Integration - Order and Order Line
@@ -234,6 +243,45 @@ public class DBBasedIntegration implements Integration{
     }
     public IntegrationOrderData getOrderData(Long id) {
         return dbBasedOrderIntegration.findById(id);
+    }
+    public IntegrationOrderData addOrderData(Order order) {
+        return dbBasedOrderIntegration.addIntegrationOrderData(new DBBasedOrder(order));
+    }
+
+
+
+    // Outbound
+    // Integration sent to HOST
+
+    // Order Confirmation Data
+    public List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(Long warehouseId, String warehouseName,
+                                                                                                String number){
+        return dbBasedOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
+                number);
+    }
+    public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
+        return dbBasedOrderConfirmationIntegration.findById(id);
+    }
+    public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
+        return dbBasedOrderConfirmationIntegration.sendIntegrationOrderConfirmationData(orderConfirmation);
+    }
+
+    // Receipt Confirmation Data
+    public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(Long warehouseId, String warehouseName,
+                                                                                                    String number, Long clientId, String clientName,
+                                                                                                    Long supplierId, String supplierName){
+
+        return dbBasedReceiptConfirmationIntegration.findAll(warehouseId, warehouseName,
+                number, clientId, clientName,
+                supplierId, supplierName);
+    }
+    public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
+
+        return dbBasedReceiptConfirmationIntegration.findById(id);
+    }
+    public IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation){
+
+        return dbBasedReceiptConfirmationIntegration.sendIntegrationReceiptConfirmationData(receiptConfirmation);
     }
 
     public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData() {

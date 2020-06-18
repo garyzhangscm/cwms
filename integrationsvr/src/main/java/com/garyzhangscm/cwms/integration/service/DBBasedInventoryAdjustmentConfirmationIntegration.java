@@ -42,6 +42,7 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                 getDBBasedInventoryAdjustmentConfirmation(inventoryAdjustmentConfirmation);
 
         dbBasedInventoryAdjustmentConfirmation.setStatus(IntegrationStatus.COMPLETED);
+        dbBasedInventoryAdjustmentConfirmation.setInsertTime(LocalDateTime.now());
         dbBasedInventoryAdjustmentConfirmation.setLastUpdateTime(LocalDateTime.now());
         return save(dbBasedInventoryAdjustmentConfirmation);
     }

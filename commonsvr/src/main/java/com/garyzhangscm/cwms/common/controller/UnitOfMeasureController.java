@@ -24,9 +24,11 @@ import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import com.garyzhangscm.cwms.common.service.UnitOfMeasureService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -35,27 +37,27 @@ public class UnitOfMeasureController {
     UnitOfMeasureService unitOfMeasureService;
 
     @RequestMapping(value="/unit-of-measures", method = RequestMethod.GET)
-    public List<UnitOfMeasure> findAllUnitOfMeasures() {
+    public List<UnitOfMeasure> findAllUnitOfMeasures(@RequestParam(required = false, name = "name", defaultValue = "") String name) {
+        if (StringUtils.isNotBlank(name)) {
+            return Collections.singletonList(unitOfMeasureService.findByName(name));
+        }
         return unitOfMeasureService.findAll();
     }
 
 
-    @RequestMapping(value="/unit-of-measure/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/unit-of-measures/{id}", method = RequestMethod.GET)
     public UnitOfMeasure findUnitOfMeasure(@PathVariable Long id) {
         return unitOfMeasureService.findById(id);
     }
 
-    @RequestMapping(value="/unit-of-measure", method = RequestMethod.GET)
-    public UnitOfMeasure findUnitOfMeasure(@RequestParam String name) {
-        return unitOfMeasureService.findByName(name);
-    }
 
-    @RequestMapping(value="/unit-of-measure", method = RequestMethod.POST)
+
+    @RequestMapping(value="/unit-of-measures", method = RequestMethod.POST)
     public UnitOfMeasure addUnitOfMeasure(@RequestBody UnitOfMeasure unitOfMeasure) {
         return unitOfMeasureService.save(unitOfMeasure);
     }
 
-    @RequestMapping(value="/unit-of-measure/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/unit-of-measures/{id}", method = RequestMethod.PUT)
     public UnitOfMeasure changeUnitOfMeasure(@PathVariable Long id, @RequestBody UnitOfMeasure unitOfMeasure) {
         if (unitOfMeasure.getId() != null && unitOfMeasure.getId() != id) {
             throw RequestValidationFailException.raiseException(
@@ -64,8 +66,8 @@ public class UnitOfMeasureController {
         return unitOfMeasureService.save(unitOfMeasure);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/unit-of-measure")
-    public void removeUnitOfMeasures(@RequestParam(name = "unit_of_measure_ids", required = false, defaultValue = "") String unitOfMeasureIds) {
+    @RequestMapping(method=RequestMethod.DELETE, value="/unit-of-measures")
+    public void removeUnitOfMeasures(@RequestParam(name = "unitOfMeasureIds", required = false, defaultValue = "") String unitOfMeasureIds) {
         unitOfMeasureService.delete(unitOfMeasureIds);
     }
 }

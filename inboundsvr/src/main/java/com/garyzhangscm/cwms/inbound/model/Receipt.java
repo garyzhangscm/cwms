@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.inbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -60,17 +62,27 @@ public class Receipt {
 
     @OneToMany(
             mappedBy = "receipt",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
     private List<ReceiptLine> receiptLines = new ArrayList<>();
 
     @Column(name = "status")
-    private ReceiptStatus receiptStatus;
+    private ReceiptStatus receiptStatus = ReceiptStatus.OPEN;
 
     @Column(name = "allow_unexpected_item")
-    private Boolean allowUnexpectedItem;
+    private Boolean allowUnexpectedItem = false;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Long getId() {
         return id;

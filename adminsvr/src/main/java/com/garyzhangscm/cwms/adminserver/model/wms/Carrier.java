@@ -1,5 +1,8 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +29,38 @@ public class Carrier {
 
 
     private List<CarrierServiceLevel> carrierServiceLevels = new ArrayList<>();
+
+
+    public Carrier(){}
+
+    public Carrier(String name, String description,String contactorFirstname,
+                  String contactorLastname,String addressCountry,String addressState,
+                  String addressCounty,String addressCity,String addressDistrict,
+                  String addressLine1,String addressLine2,String addressPostcode) {
+        this.name = name;
+        this.description = description;
+        this.contactorFirstname = contactorFirstname;
+        this.contactorLastname = contactorLastname;
+        this.addressCountry = addressCountry;
+        this.addressState = addressState;
+        this.addressCounty = addressCounty;
+        this.addressCity = addressCity;
+        this.addressDistrict = addressDistrict;
+        this.addressLine1 = addressLine1;
+        this.addressLine2 = addressLine2;
+        this.addressPostcode = addressPostcode;
+
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Long getId() {
         return id;

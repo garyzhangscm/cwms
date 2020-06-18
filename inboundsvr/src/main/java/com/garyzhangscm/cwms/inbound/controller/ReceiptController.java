@@ -61,6 +61,11 @@ public class ReceiptController {
         return receiptService.save(receipt);
     }
 
+    @RequestMapping(value="/receipts/{id}/complete", method = RequestMethod.POST)
+    public Receipt completeReceipt(@PathVariable Long id){
+        return receiptService.completeReceipt(id);
+    }
+
     @RequestMapping(value="/receipts", method = RequestMethod.DELETE)
     public void removeReceipts(@RequestParam(name = "receipt_ids", required = false, defaultValue = "") String receiptIds) {
         receiptService.delete(receiptIds);

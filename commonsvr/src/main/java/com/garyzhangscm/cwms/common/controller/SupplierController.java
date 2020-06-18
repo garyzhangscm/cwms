@@ -39,17 +39,17 @@ public class SupplierController {
         return supplierService.findAll(name);
     }
 
-    @RequestMapping(value="/supplier/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/suppliers/{id}", method = RequestMethod.GET)
     public Supplier findSupplier(@PathVariable Long id) {
         return supplierService.findById(id);
     }
 
-    @RequestMapping(value="/supplier", method = RequestMethod.POST)
+    @RequestMapping(value="/suppliers", method = RequestMethod.POST)
     public Supplier addSupplier(@RequestBody Supplier supplier) {
         return supplierService.save(supplier);
     }
 
-    @RequestMapping(value="/supplier/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/suppliers/{id}", method = RequestMethod.PUT)
     public Supplier changeSupplier(@PathVariable Long id, @RequestBody Supplier supplier) {
         if (supplier.getId() != null && supplier.getId() != id) {
             throw RequestValidationFailException.raiseException(
@@ -59,8 +59,8 @@ public class SupplierController {
         return supplierService.save(supplier);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/supplier")
-    public void deleteSuppliers(@RequestParam(name = "supplier_ids", required = false, defaultValue = "") String supplierIds) {
+    @RequestMapping(method=RequestMethod.DELETE, value="/suppliers")
+    public void deleteSuppliers(@RequestParam(name = "supplierIds", required = false, defaultValue = "") String supplierIds) {
         supplierService.delete(supplierIds);
     }
 }

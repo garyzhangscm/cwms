@@ -37,17 +37,17 @@ public class ClientController {
         return clientService.findAll(name);
     }
 
-    @RequestMapping(value="/client/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/clients/{id}", method = RequestMethod.GET)
     public Client findClient(@PathVariable Long id) {
         return clientService.findById(id);
     }
 
-    @RequestMapping(value="/client", method = RequestMethod.POST)
+    @RequestMapping(value="/clients", method = RequestMethod.POST)
     public Client addClient(@RequestBody Client client) {
         return clientService.save(client);
     }
 
-    @RequestMapping(value="/client/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/clients/{id}", method = RequestMethod.PUT)
     public Client changeClient(@PathVariable Long id, @RequestBody Client client) {
         if (client.getId() != null && client.getId() != id) {
             throw RequestValidationFailException.raiseException(
@@ -56,8 +56,8 @@ public class ClientController {
         return clientService.save(client);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/client")
-    public void deleteClients(@RequestParam(name = "client_ids", required = false, defaultValue = "") String clientIds) {
+    @RequestMapping(method=RequestMethod.DELETE, value="/clients")
+    public void deleteClients(@RequestParam(name = "clientIds", required = false, defaultValue = "") String clientIds) {
         clientService.delete(clientIds);
     }
 }

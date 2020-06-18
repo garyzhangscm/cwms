@@ -47,17 +47,17 @@ public class ReasonCodeController {
 
 
 
-    @RequestMapping(value="/reason-code/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/reason-codes/{id}", method = RequestMethod.GET)
     public ReasonCode findReasonCode(@PathVariable Long id) {
         return reasonCodeService.findById(id);
     }
 
-    @RequestMapping(value="/reason-code", method = RequestMethod.POST)
+    @RequestMapping(value="/reason-codes", method = RequestMethod.POST)
     public ReasonCode addReasonCode(@RequestBody ReasonCode reasonCode) {
         return reasonCodeService.save(reasonCode);
     }
 
-    @RequestMapping(value="/reason-code/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/reason-codes/{id}", method = RequestMethod.PUT)
     public ReasonCode changeReasonCode(@PathVariable Long id, @RequestBody ReasonCode reasonCode) {
         if (reasonCode.getId() != null && reasonCode.getId() != id) {
             throw RequestValidationFailException.raiseException(
@@ -66,7 +66,7 @@ public class ReasonCodeController {
         return reasonCodeService.save(reasonCode);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/reason-code")
+    @RequestMapping(method=RequestMethod.DELETE, value="/reason-codes")
     public void deleteReasonCodes(@RequestParam(name = "client_ids", required = false, defaultValue = "") String reasonCodeIds) {
         reasonCodeService.delete(reasonCodeIds);
     }

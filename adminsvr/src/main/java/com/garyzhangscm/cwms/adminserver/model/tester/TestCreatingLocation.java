@@ -74,10 +74,9 @@ public class TestCreatingLocation extends TestScenario{
         testingLocations.put(palletPickingLocationGroup, palletPickingLocationNames);
 
     }
-    public boolean run(Warehouse warehouse) {
+    @Override
+    public void runTest(Warehouse warehouse) {
 
-        logger.debug("Start to run test scenario: {} - {}", warehouse.getName(), getName());
-        try {
             // Get the location group type
             LocationGroupType storageLocationGroupType = getLocationGroupType(storageLocationGroupTypeName);
             // create location groups
@@ -86,13 +85,6 @@ public class TestCreatingLocation extends TestScenario{
 
             createLocations(warehouse, locationGroups);
             assertResult(warehouse);
-        } catch (Exception e) {
-            e.printStackTrace();
-            setErrorMessage(e.getMessage());
-            return false;
-        }
-
-        return true;
 
     }
 

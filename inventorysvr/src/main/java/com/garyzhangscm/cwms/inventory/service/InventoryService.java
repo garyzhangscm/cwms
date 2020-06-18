@@ -84,6 +84,8 @@ public class InventoryService implements TestDataInitiableService{
     @Autowired
     private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
     @Autowired
+    private IntegrationService integrationService;
+    @Autowired
     private FileService fileService;
 
     @Value("${fileupload.test-data.inventories:inventories}")
@@ -513,6 +515,7 @@ public class InventoryService implements TestDataInitiableService{
         inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
                 "quantity", String.valueOf(inventory.getQuantity()), "0",
                 documentNumber, comment);
+        integrationService.processInventoryAdjustment(inventory, inventory.getQuantity(), 0L);
 
         Location destination
                 = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
@@ -1022,6 +1025,9 @@ public class InventoryService implements TestDataInitiableService{
                 documentNumber, comment);
 
 
+        // send integration to add a new inventory
+        integrationService.processInventoryAdjustment(inventory,
+                0L, inventory.getQuantity());
 
         return moveInventory(inventory, destinationLocation);
 
@@ -1073,9 +1079,12 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public Inventory processAdjustInventoryQuantity(Inventory inventory, Long newQuantity, String documentNumber, String comment) {
+        Inventory resultInventory = null;
+        // Save the original quantity so we can send integration
+        Long originalQuantity = inventory.getQuantity();
         if (newQuantity == 0) {
             // a specific case where we are actually removing an inventory
-            return processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment);
+            resultInventory = processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment);
         }
         else if (inventory.getQuantity() > newQuantity) {
             // OK we are adjust down, let's split the original inventory
@@ -1105,7 +1114,7 @@ public class InventoryService implements TestDataInitiableService{
 
             // Remove the new inventory
             processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "");
-            return inventory;
+            resultInventory =  inventory;
         }
         else {
             // if we are here, we are adjust quantity up
@@ -1128,12 +1137,17 @@ public class InventoryService implements TestDataInitiableService{
             // In case the new LPN is not combined with old LPN, let's do the manual consolidation
             if (!newInventory.getLpn().equals(inventory.getLpn())) {
                 newInventory.setLpn(inventory.getLpn());
-                return saveOrUpdate(newInventory);
+                resultInventory =  saveOrUpdate(newInventory);
             }
             else {
-                return newInventory;
+                resultInventory =  newInventory;
             }
         }
+
+        // integration will be process by
+        // processRemoveInventory or processAddInventory method
+        // integrationService.processInventoryAdjustment(resultInventory, originalQuantity, newQuantity);
+        return resultInventory;
     }
 
     public void processInventoryAdjustRequest(InventoryAdjustmentRequest inventoryAdjustmentRequest) {
@@ -1143,6 +1157,7 @@ public class InventoryService implements TestDataInitiableService{
         }
 
         Inventory inventory = getInventoryFromAdjustRequest(inventoryAdjustmentRequest);
+
         if (Objects.isNull(inventory.getId())) {
             // if the inventory doesn't have ID yet, we assume we are adding
 
@@ -1206,5 +1221,15 @@ public class InventoryService implements TestDataInitiableService{
                     "item package type", originalInventory.getItemPackageType().getName(), inventory.getItemPackageType().getName());
         }
         return saveOrUpdate(inventory);
+    }
+
+    public Inventory changeQuantityByAuditCount(Inventory inventory, Long newQuantity) {
+        Long originalQuantity = Objects.isNull(inventory.getId()) ?
+                0L : inventory.getQuantity();
+        inventory.setQuantity(newQuantity);
+        inventory = saveOrUpdate(inventory);
+        integrationService.processInventoryAdjustment(inventory, originalQuantity, newQuantity);
+
+        return inventory;
     }
 }

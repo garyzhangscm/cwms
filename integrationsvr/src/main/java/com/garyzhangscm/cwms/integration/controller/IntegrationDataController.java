@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.integration.controller;
 
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.service.IntegrationDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +33,8 @@ import java.util.List;
 @RequestMapping(value = "/integration-data")
 public class IntegrationDataController {
 
+
+    private static final Logger logger = LoggerFactory.getLogger(IntegrationDataController.class);
 
     @Autowired
     private IntegrationDataService integrationDataService;
@@ -93,7 +97,7 @@ public class IntegrationDataController {
         return integrationDataService.getItemData(id);
     }
 
-    @RequestMapping(value="/items", method = RequestMethod.POST)
+    @RequestMapping(value="/items", method = RequestMethod.PUT)
     public IntegrationItemData addIntegrationItemData(@RequestBody Item item) {
 
         return integrationDataService.addIntegrationItemData(item);
@@ -181,5 +185,118 @@ public class IntegrationDataController {
     public IntegrationSupplierData addIntegrationClientData(@RequestBody Supplier supplier) {
 
         return integrationDataService.addIntegrationSupplierData(supplier);
+    }
+
+    //
+    // Order Related
+    //
+    @RequestMapping(value="/orders", method = RequestMethod.GET)
+    public List<? extends IntegrationOrderData> getIntegrationOrderData() {
+
+        return integrationDataService.getOrderData();
+    }
+
+    @RequestMapping(value="/orders/{id}", method = RequestMethod.GET)
+    public IntegrationOrderData getIntegrationOrderData(@PathVariable Long id) {
+
+        return integrationDataService.getOrderData(id);
+    }
+    @RequestMapping(value="/orders", method = RequestMethod.PUT)
+    public IntegrationOrderData addIntegrationOrderData(@RequestBody Order order) {
+
+        return integrationDataService.addOrderData(order);
+    }
+
+
+    //
+    // Receipt Related
+    //
+    @RequestMapping(value="/receipts", method = RequestMethod.GET)
+    public List<? extends IntegrationReceiptData> getIntegrationReceiptData() {
+
+        return integrationDataService.getReceiptData();
+    }
+
+    @RequestMapping(value="/receipts/{id}", method = RequestMethod.GET)
+    public IntegrationReceiptData getIntegrationReceiptData(@PathVariable Long id) {
+
+        return integrationDataService.getReceiptData(id);
+    }
+
+    @RequestMapping(value="/receipts", method = RequestMethod.PUT)
+    public IntegrationReceiptData addIntegrationReceiptData(@RequestBody Receipt receipt) {
+
+        logger.debug("Start to add receipt: \n{}", receipt);
+        return integrationDataService.addReceiptData(receipt);
+    }
+
+    //
+    // Order Confirmation Related
+    //
+    @RequestMapping(value="/order-confirmations", method = RequestMethod.GET)
+    public List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "") Long warehouseId,
+            @RequestParam(name = "warehouseName", required = false, defaultValue = "") String warehouseName,
+            @RequestParam(name = "number", required = false, defaultValue = "") String number) {
+
+        return integrationDataService.getIntegrationOrderConfirmationData(warehouseId, warehouseName,
+                number);
+    }
+
+    @RequestMapping(value="/order-confirmations/{id}", method = RequestMethod.GET)
+    public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.getIntegrationOrderConfirmationData(id);
+    }
+    //
+    // Receipt Confirmation Related
+    //
+    @RequestMapping(value="/receipt-confirmations", method = RequestMethod.GET)
+    public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "") Long warehouseId,
+            @RequestParam(name = "warehouseName", required = false, defaultValue = "") String warehouseName,
+            @RequestParam(name = "number", required = false, defaultValue = "") String number,
+            @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
+            @RequestParam(name = "clientName", required = false, defaultValue = "") String clientName,
+            @RequestParam(name = "supplierId", required = false, defaultValue = "") Long supplierId,
+            @RequestParam(name = "supplierName", required = false, defaultValue = "") String supplierName
+    ) {
+
+        return integrationDataService.getIntegrationReceiptConfirmationData(warehouseId, warehouseName,
+                number, clientId, clientName,
+                supplierId, supplierName);
+    }
+
+    @RequestMapping(value="/receipt-confirmations/{id}", method = RequestMethod.GET)
+    public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.getIntegrationReceiptConfirmationData(id);
+    }
+
+    //
+    // Inventory Adjustment Confirmation Related
+    //
+    @RequestMapping(value="/inventory-adjustment-confirmations", method = RequestMethod.GET)
+    public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData() {
+
+        return integrationDataService.getInventoryAdjustmentConfirmationData();
+    }
+
+    @RequestMapping(value="/inventory-adjustment-confirmations/{id}", method = RequestMethod.GET)
+    public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.getInventoryAdjustmentConfirmationData(id);
+    }
+
+    //
+    // Inventory Attribute Change Confirmation Related
+    //
+    @RequestMapping(value="/inventory-attribute-change-confirmations", method = RequestMethod.GET)
+    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData() {
+        return integrationDataService.getInventoryAttributeChangeConfirmationData();
+    }
+    @RequestMapping(value="/inventory-attribute-change-confirmations/{id}", method = RequestMethod.GET)
+    public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {
+        return integrationDataService.getInventoryAttributeChangeConfirmationData(id);
     }
 }

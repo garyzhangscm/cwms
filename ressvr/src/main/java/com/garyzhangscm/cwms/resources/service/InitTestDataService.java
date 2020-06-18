@@ -67,6 +67,8 @@ public class InitTestDataService {
 
     WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
+    IntegrationServiceRestemplateClient integrationServiceRestemplateClient;
+
 
 
 
@@ -78,6 +80,7 @@ public class InitTestDataService {
                                InboundServiceRestemplateClient inboundServiceRestemplateClient,
                                OutboundServiceRestemplateClient outboundServiceRestemplateClient,
                                WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient,
+                               IntegrationServiceRestemplateClient integrationServiceRestemplateClient,
                                UserService userService,
                                RoleService roleService,
                                // MenuGroupService menuGroupService,
@@ -121,6 +124,7 @@ public class InitTestDataService {
         this.inboundServiceRestemplateClient = inboundServiceRestemplateClient;
         this.outboundServiceRestemplateClient = outboundServiceRestemplateClient;
         this.workOrderServiceRestemplateClient = workOrderServiceRestemplateClient;
+        this.integrationServiceRestemplateClient = integrationServiceRestemplateClient;
 
         initiableServiceRestemplateClients.add(commonServiceRestemplateClient);
         initiableServiceRestemplateClients.add(layoutServiceRestemplateClient);
@@ -128,6 +132,7 @@ public class InitTestDataService {
         initiableServiceRestemplateClients.add(inboundServiceRestemplateClient);
         initiableServiceRestemplateClients.add(outboundServiceRestemplateClient);
         initiableServiceRestemplateClients.add(workOrderServiceRestemplateClient);
+        initiableServiceRestemplateClients.add(integrationServiceRestemplateClient);
 
     }
 

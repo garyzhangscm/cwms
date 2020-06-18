@@ -28,10 +28,13 @@ public class Receipt {
     private String number;
 
     private Long warehouseId;
+    private String warehouseName;
 
     private Long clientId;
+    private String clientName;
 
     private Long supplierId;
+    private String supplierName;
 
     private List<ReceiptLine> receiptLines = new ArrayList<>();
 
@@ -83,5 +86,29 @@ public class Receipt {
 
     public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
         this.allowUnexpectedItem = allowUnexpectedItem;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
     }
 }

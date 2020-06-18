@@ -45,12 +45,12 @@ public class PolicyController {
         return policyService.save(policy);
     }
 
-    @RequestMapping(value="/policy/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/policies/{id}", method = RequestMethod.GET)
     public Policy findPolicy(@PathVariable Long id) {
         return policyService.findById(id);
     }
 
-    @RequestMapping(value="/policy/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/policies/{id}", method = RequestMethod.PUT)
     public Policy changePolicy(@PathVariable Long id,
                              @RequestBody Policy policy) {
         if (policy.getId() != null && policy.getId() != id) {
@@ -61,7 +61,7 @@ public class PolicyController {
         return policyService.saveOrUpdate(policy);
     }
 
-    @RequestMapping(value="/policy/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value="/policies/{id}", method = RequestMethod.DELETE)
     public Policy removePolicy(@PathVariable Long id) {
         Policy policy = policyService.findById(id);
         policyService.delete(id);

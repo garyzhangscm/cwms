@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.inventory.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
+import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentConfirmation;
 import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,17 @@ public class KafkaSender {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
             send("INVENTORY_ADJUSTMENT_REQUEST_PROCESSED", objectMapper.writeValueAsString(inventoryAdjustmentRequest));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
+    public void send(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION", objectMapper.writeValueAsString(inventoryAdjustmentConfirmation));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());
