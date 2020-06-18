@@ -46,10 +46,10 @@ CREATE TABLE integration_customer (
   error_message VARCHAR(1000),
   status VARCHAR(10) NOT NULL);
 
--- insert into integration_customer
---   (name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
---   address_line2, address_postcode, status, insert_time)
---  values ("CST-A", "Customer A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "2", now())
+ insert into integration_customer
+   (name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
+   address_line2, address_postcode, status, insert_time)
+  values ("CST-A", "Customer A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
 
 
 CREATE TABLE integration_client (
@@ -71,6 +71,11 @@ CREATE TABLE integration_client (
   error_message VARCHAR(1000),
   status VARCHAR(10) NOT NULL);
 
+ insert into integration_client
+   (name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
+   address_line2, address_postcode, status, insert_time)
+  values ("CLIENT-A", "Client A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
+
 
 CREATE TABLE integration_supplier (
   integration_supplier_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -91,6 +96,10 @@ CREATE TABLE integration_supplier (
   error_message VARCHAR(1000),
   status VARCHAR(10) NOT NULL);
 
+ insert into integration_supplier
+   (name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
+   address_line2, address_postcode, status, insert_time)
+  values ("SUPPLIER-A", "Supplier A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
 
 CREATE TABLE integration_item_family (
   integration_item_family_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -102,6 +111,10 @@ CREATE TABLE integration_item_family (
   last_update_time  DATETIME,
   error_message VARCHAR(1000),
   status VARCHAR(10) NOT NULL);
+
+ insert into integration_item_family
+   (name, description,  warehouse_name, status, insert_time)
+  values ("ITEM-FAMILY-A", "Item Family A", "WMOR", "PENDING", now());
 
 CREATE TABLE integration_item (
   integration_item_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -119,6 +132,9 @@ CREATE TABLE integration_item (
   error_message VARCHAR(1000),
   foreign key(integration_item_family_id) references integration_item_family(integration_item_family_id));
 
+ insert into integration_item
+   (name, description,  client_name, unit_cost, warehouse_name, status, insert_time)
+  values ("ITEM-A", "Item A", "CLIENT-A", 5.0,  "WMOR", "PENDING", now());
 
 CREATE TABLE integration_item_package_type (
   integration_item_package_type_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

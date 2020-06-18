@@ -21,6 +21,9 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 
 
@@ -36,6 +39,16 @@ public class InventoryAdjustmentConfirmation implements Serializable {
     private InventoryStatus inventoryStatus;
 
     private Client client;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Item getItem() {
         return item;

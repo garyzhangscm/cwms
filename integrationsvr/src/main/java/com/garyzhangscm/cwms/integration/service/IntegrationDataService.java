@@ -119,6 +119,9 @@ public class IntegrationDataService {
     public IntegrationReceiptData getReceiptData(Long id) {
         return integration.getReceiptData(id);
     }
+    public IntegrationReceiptData addReceiptData(Receipt receipt) {
+        return integration.addReceiptData(receipt);
+    }
 
     //
     // Integration - Order and Order Line
@@ -129,10 +132,43 @@ public class IntegrationDataService {
     public IntegrationOrderData getOrderData(Long id) {
         return integration.getOrderData(id);
     }
+    public IntegrationOrderData addOrderData(Order order) {
+        return integration.addOrderData(order);
+    }
 
 
     // Outbound
     // Integration sent to HOST
+
+
+    // Order Confirmation Data
+    public List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(Long warehouseId, String warehouseName,
+                                                                                                String number){
+        return integration.getIntegrationOrderConfirmationData(warehouseId, warehouseName,
+                number);
+    }
+    public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
+        return integration.getIntegrationOrderConfirmationData(id);
+    }
+    public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
+        return integration.sendIntegrationOrderConfirmationData(orderConfirmation);
+    }
+
+    // Receipt Confirmation Data
+    public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(Long warehouseId, String warehouseName,
+                                                                                                    String number, Long clientId, String clientName,
+                                                                                                    Long supplierId, String supplierName){
+        return integration.getIntegrationReceiptConfirmationData(warehouseId, warehouseName,
+                number, clientId, clientName,
+                supplierId, supplierName);
+    }
+    public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
+        return integration.getIntegrationReceiptConfirmationData(id);
+    }
+    public IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation){
+        return integration.sendIntegrationReceiptConfirmationData(receiptConfirmation);
+    }
+
 
     // Inventory Adjustment Confirmation
     public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData() {

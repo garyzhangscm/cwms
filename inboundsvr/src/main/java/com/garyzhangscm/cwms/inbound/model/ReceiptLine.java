@@ -54,7 +54,7 @@ public class ReceiptLine {
 
 
     @Column(name = "received_quantity")
-    private Long receivedQuantity;
+    private Long receivedQuantity = 0L;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -62,9 +62,9 @@ public class ReceiptLine {
     private Receipt receipt;
 
     @Column(name = "over_receiving_quantity")
-    private Long overReceivingQuantity;
+    private Long overReceivingQuantity = 0L;
     @Column(name = "over_receiving_percent")
-    private Double overReceivingPercent;
+    private Double overReceivingPercent = 0.0;
 
     public Long getId() {
         return id;

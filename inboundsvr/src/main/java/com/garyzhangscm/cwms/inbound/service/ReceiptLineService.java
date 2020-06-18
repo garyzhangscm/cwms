@@ -100,6 +100,10 @@ public class ReceiptLineService implements TestDataInitiableService{
 
     public void loadReceiptLineAttribute(ReceiptLine receiptLine) {
 
+        if (receiptLine.getWarehouseId() != null && receiptLine.getWarehouse() == null) {
+            receiptLine.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(receiptLine.getWarehouseId()));
+
+        }
         // Load Item information
         if (receiptLine.getItemId() != null && receiptLine.getItem() == null) {
             receiptLine.setItem(inventoryServiceRestemplateClient.getItemById(receiptLine.getItemId()));

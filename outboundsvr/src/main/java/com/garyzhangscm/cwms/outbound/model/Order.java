@@ -125,7 +125,7 @@ public class Order implements Serializable {
 
     @OneToMany(
             mappedBy = "order",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER
     )

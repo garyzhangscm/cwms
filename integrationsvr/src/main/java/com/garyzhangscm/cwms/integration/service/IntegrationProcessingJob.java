@@ -16,7 +16,7 @@ public class IntegrationProcessingJob {
     @Autowired
     private Integration integration;
 
-    @Scheduled(fixedRate = 120000)
+    @Scheduled(fixedDelay = 15000)
     public void processIntegration() {
 
         logger.debug("# porcess integration data @ {}", LocalDateTime.now());

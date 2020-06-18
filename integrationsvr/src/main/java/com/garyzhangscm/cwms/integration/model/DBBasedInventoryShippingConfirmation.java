@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -111,31 +113,12 @@ public class DBBasedInventoryShippingConfirmation implements Serializable, Integ
 
     @Override
     public String toString() {
-        return "DBBasedInventoryShippingConfirmation{" +
-                "id=" + id +
-                ", shipmentNumber='" + shipmentNumber + '\'' +
-                ", shipmentLineNumber='" + shipmentLineNumber + '\'' +
-                ", orderNumber='" + orderNumber + '\'' +
-                ", orderLineNumber='" + orderLineNumber + '\'' +
-                ", lpn='" + lpn + '\'' +
-                ", quantity=" + quantity +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", orderExpectedQuantity=" + orderExpectedQuantity +
-                ", orderShippedQuantity=" + orderShippedQuantity +
-                ", shipmentShippedQuantity=" + shipmentShippedQuantity +
-                ", inventoryStatusId=" + inventoryStatusId +
-                ", inventoryStatusName='" + inventoryStatusName + '\'' +
-                ", carrierId=" + carrierId +
-                ", carrierName='" + carrierName + '\'' +
-                ", carrierServiceLevelId=" + carrierServiceLevelId +
-                ", carrierServiceLevelName='" + carrierServiceLevelName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

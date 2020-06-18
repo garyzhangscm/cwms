@@ -41,7 +41,21 @@ public abstract  class TestScenario {
         this.sequence = sequence;
     }
 
-    public abstract boolean run(Warehouse warehouse);
+    public boolean run(Warehouse warehouse) {
+
+        logger.debug("Start to run test scenario: {} - {}", warehouse.getName(), getName());
+        try{
+            runTest(warehouse);
+        } catch (Exception e) {
+            e.printStackTrace();
+            setErrorMessage(e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    public abstract void runTest(Warehouse warehouse);
 
     public boolean execute(Warehouse warehouse){
         logger.debug("Start to run test scenario: {} - {}", warehouse.getName(), getName());

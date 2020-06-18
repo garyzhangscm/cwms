@@ -54,6 +54,9 @@ public class DBBasedReceiptIntegration {
     }
 
 
+    public IntegrationReceiptData addIntegrationReceiptData(DBBasedReceipt dbBasedReceipt) {
+        return dbBasedReceiptRepository.save(dbBasedReceipt);
+    }
 
     private List<DBBasedReceipt> findPendingIntegration() {
         return dbBasedReceiptRepository.findAll(

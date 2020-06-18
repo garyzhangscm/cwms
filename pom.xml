@@ -42,8 +42,6 @@
         <module>ressvr</module>
         <!-- Integration Service: Integration -->
         <module>integrationsvr</module>
-        <!-- Admin Service: Admin -->
-        <module>adminsvr</module>
         <!--
         <module>licensing-service</module>
         -->

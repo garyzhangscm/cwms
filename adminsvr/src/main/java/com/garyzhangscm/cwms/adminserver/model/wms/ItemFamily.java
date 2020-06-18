@@ -39,6 +39,19 @@ public class ItemFamily implements Serializable {
     private Long warehouseId;
     private String warehouseName;
 
+    public ItemFamily() {
+
+    }
+    public ItemFamily(Warehouse warehouse, String name) {
+        this(warehouse, name, name);
+    }
+    public ItemFamily(Warehouse warehouse, String name, String description) {
+        this.name = name;
+        this.description = description;
+        this.warehouseId = warehouse.getId();
+        this.warehouseName = warehouse.getName();
+    }
+
     @Override
     public String toString() {
         try {

@@ -54,7 +54,7 @@ public class CommonServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/common/client/{id}");
+                        .path("/api/common/clients/{id}");
 
         ResponseBodyWrapper<Client> responseBodyWrapper
                 = restTemplate.exchange(
@@ -94,7 +94,7 @@ public class CommonServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/common/supplier/{id}");
+                        .path("/api/common/suppliers/{id}");
 
         ResponseBodyWrapper<Supplier> responseBodyWrapper
                 = restTemplate.exchange(

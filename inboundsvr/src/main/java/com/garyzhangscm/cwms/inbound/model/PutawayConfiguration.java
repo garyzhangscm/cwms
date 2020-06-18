@@ -38,7 +38,7 @@ public class PutawayConfiguration {
     private Long id;
 
 
-    @Column(name = "sequence", unique = true)
+    @Column(name = "sequence")
     private Integer sequence;
 
     // criteria: item / item group / inventory status

@@ -28,7 +28,7 @@ CREATE TABLE receipt_line(
 
 CREATE TABLE  putaway_configuration(
     putaway_configuration_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    sequence INT NOT NULL unique,
+    sequence INT NOT NULL,
     item_id BIGINT,
     warehouse_id   BIGINT,
     item_family_id BIGINT,

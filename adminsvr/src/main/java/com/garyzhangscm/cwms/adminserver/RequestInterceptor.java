@@ -59,7 +59,7 @@ public class RequestInterceptor implements ClientHttpRequestInterceptor {
             return execution.execute(request, body);
         }
          ***/
-        logger.debug("Start to get current token");
+        // logger.debug("Start to get current token");
         String token = authServiceRestemplateClient.getCurrentLoginUser().getToken();
 
         HttpHeaders headers = request.getHeaders();

@@ -107,6 +107,7 @@ public class AuditCountResultService {
         }
 
         auditCountRequestService.removeAuditCountRequestByBatchIdAndLocationId(batchId, locationId);
+        warehouseLayoutServiceRestemplateClient.releaseLocationLock(locationId);
         return confirmedAuditCountResults;
     }
 
@@ -123,16 +124,17 @@ public class AuditCountResultService {
                         InventoryQuantityChangeType.AUDIT_COUNT);
             }
             else {
-                auditCountResult.getInventory().setQuantity(auditCountResult.getCountQuantity());
-                inventoryService.save(auditCountResult.getInventory());
+                inventoryService.changeQuantityByAuditCount(auditCountResult.getInventory(), auditCountResult.getCountQuantity());
             }
-            return save(auditCountResult);
         }
         else {
-            auditCountResult.getInventory().setQuantity(auditCountResult.getCountQuantity());
-            auditCountResult.setInventory(inventoryService.save(auditCountResult.getInventory()));
-            return save(auditCountResult);
+
+            auditCountResult.setInventory(
+                    inventoryService.changeQuantityByAuditCount(
+                            auditCountResult.getInventory(), auditCountResult.getCountQuantity())
+            );
         }
+        return save(auditCountResult);
     }
 
     @Transactional

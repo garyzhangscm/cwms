@@ -61,6 +61,10 @@ public class CycleCountResultService {
         return cycleCountResultRepository.save(cycleCountResult);
     }
 
+    public List<CycleCountResult> findByAuditCountRequestId(AuditCountRequest auditCountRequest) {
+        return cycleCountResultRepository.findByAuditCountRequestId(auditCountRequest.getId());
+    }
+
     // After we finish the cycle count, we may move the request to the
     // result table, here we will clean the related cycle count result's
     // auditCountRequest field
@@ -68,7 +72,12 @@ public class CycleCountResultService {
     public void postActionOfAuditCountRequestComplete(AuditCountRequest auditCountRequest) {
 
         logger.debug("Start to disconnect cycle count result from audit count: {} ", auditCountRequest.getId());
-        cycleCountResultRepository.clearAuditCountRequest(auditCountRequest.getId());
+        List<CycleCountResult> cycleCountResults
+                = findByAuditCountRequestId(auditCountRequest);
+        cycleCountResults.forEach(cycleCountResult -> {
+            cycleCountResult.setAuditCountRequest(null);
+            save(cycleCountResult);
+        });
     }
 }
 

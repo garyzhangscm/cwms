@@ -137,7 +137,7 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
                             getItemPackageTypeName()).getId()
             );
         }
-        if (Objects.isNull(getUnitOfMeasureId()) && !Objects.nonNull(getUnitOfMeasureName())) {
+        if (Objects.isNull(getUnitOfMeasureId()) && Objects.nonNull(getUnitOfMeasureName())) {
             itemUnitOfMeasure.setUnitOfMeasureId(
                     commonServiceRestemplateClient.getUnitOfMeasureByName(
                             getUnitOfMeasureName()

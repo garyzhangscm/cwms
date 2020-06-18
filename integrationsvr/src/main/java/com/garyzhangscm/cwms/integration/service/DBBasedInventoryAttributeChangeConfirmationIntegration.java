@@ -43,6 +43,7 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
                 getDBBasedInventoryAttributeChangeConfirmation(inventoryAttributeChangeConfirmation);
 
         dbBasedInventoryAttributeChangeConfirmation.setStatus(IntegrationStatus.COMPLETED);
+        dbBasedInventoryAttributeChangeConfirmation.setInsertTime(LocalDateTime.now());
         dbBasedInventoryAttributeChangeConfirmation.setLastUpdateTime(LocalDateTime.now());
         return save(dbBasedInventoryAttributeChangeConfirmation);
     }

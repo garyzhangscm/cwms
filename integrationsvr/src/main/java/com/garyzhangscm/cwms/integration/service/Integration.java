@@ -70,16 +70,31 @@ public interface Integration {
     //
     List<? extends IntegrationReceiptData> getReceiptData();
     IntegrationReceiptData getReceiptData(Long id);
+    IntegrationReceiptData addReceiptData(Receipt receipt);
 
     //
     // Integration - Order and Order Line
     //
     List<? extends IntegrationOrderData> getOrderData();
     IntegrationOrderData getOrderData(Long id);
+    IntegrationOrderData addOrderData(Order order);
 
 
     // Outbound
     // Integration sent to HOST
+
+    // Order Confirmation Data
+    List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(Long warehouseId, String warehouseName,
+                                                                                         String number);
+    IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id);
+    IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation);
+
+    // Receipt Confirmation Data
+    List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(Long warehouseId, String warehouseName,
+                                                                                             String number, Long clientId, String clientName,
+                                                                                             Long supplierId, String supplierName);
+    IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id);
+    IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation);
 
     // Inventory Adjustment Confirmation
     List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData();

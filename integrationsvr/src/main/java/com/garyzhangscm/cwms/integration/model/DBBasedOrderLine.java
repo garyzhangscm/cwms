@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -96,27 +98,38 @@ public class DBBasedOrderLine implements Serializable, IntegrationOrderLineData 
     @Column(name = "error_message")
     private String errorMessage;
 
+    public DBBasedOrderLine(){}
+
+
+    public DBBasedOrderLine(OrderLine orderLine) {
+
+        setNumber(orderLine.getNumber());
+
+        setWarehouseId(orderLine.getWarehouseId());
+        setWarehouseName(orderLine.getWarehouseName());
+
+        setItemId(orderLine.getItemId());
+        setItemName(orderLine.getItemName());
+
+        setExpectedQuantity(orderLine.getExpectedQuantity());
+
+        setInventoryStatusId(orderLine.getInventoryStatusId());
+        setInventoryStatusName(orderLine.getInventoryStatusName());
+
+        setCarrierId(orderLine.getCarrierId());
+        setCarrierName(orderLine.getCarrierName());
+
+        setCarrierServiceLevelId(orderLine.getCarrierServiceLevelId());
+        setCarrierServiceLevelName(orderLine.getCarrierServiceLevelName());
+    }
     @Override
     public String toString() {
-        return "DBBasedOrderLine{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", expectedQuantity=" + expectedQuantity +
-                ", inventoryStatusId=" + inventoryStatusId +
-                ", inventoryStatusName='" + inventoryStatusName + '\'' +
-                ", order=" + order +
-                ", carrierId=" + carrierId +
-                ", carrierName='" + carrierName + '\'' +
-                ", carrierServiceLevelId=" + carrierServiceLevelId +
-                ", carrierServiceLevelName='" + carrierServiceLevelName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

@@ -25,6 +25,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AuditCountResult implements Serializable {
 
@@ -51,6 +52,7 @@ public class AuditCountResult implements Serializable {
         this.warehouseId = warehouseId;
         this.batchId = batchId;
         this.locationId = locationId;
+        this.location = inventory.getLocation();
         this.inventory = inventory;
         this.quantity = quantity;
         this.countQuantity = countQuantity;
@@ -64,6 +66,18 @@ public class AuditCountResult implements Serializable {
         this.location = location;
         this.inventory = inventory;
         this.quantity = quantity;
+        this.countQuantity = countQuantity;
+    }
+    public AuditCountResult(AuditCountRequest auditCountRequest, Inventory inventory,
+                            Long countQuantity) {
+        this.warehouseId = auditCountRequest.getWarehouseId();
+        this.warehouse = auditCountRequest.getWarehouse();
+        this.batchId = auditCountRequest.getBatchId();
+        this.locationId = auditCountRequest.getLocationId();
+        this.location = Objects.isNull(auditCountRequest.getLocation()) ?
+                inventory.getLocation() : auditCountRequest.getLocation();
+        this.inventory = inventory;
+        this.quantity = inventory.getQuantity();
         this.countQuantity = countQuantity;
     }
     public static AuditCountResult emptyLocationAuditCountResult(Long warehouseId, String batchId, Long locationId) {

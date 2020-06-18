@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -79,23 +81,35 @@ public class DBBasedReceiptLine implements Serializable, IntegrationReceiptLineD
     @Column(name = "error_message")
     private String errorMessage;
 
+    public DBBasedReceiptLine(){}
+
+
+    public DBBasedReceiptLine(ReceiptLine receiptLine) {
+
+        setNumber(receiptLine.getNumber());
+
+        setWarehouseId(receiptLine.getWarehouseId());
+        setWarehouseName(receiptLine.getWarehouseName());
+
+        setItemId(receiptLine.getItemId());
+        setItemName(receiptLine.getItemName());
+
+        setExpectedQuantity(receiptLine.getExpectedQuantity());
+        setOverReceivingPercent(receiptLine.getOverReceivingPercent());
+        setOverReceivingQuantity(receiptLine.getOverReceivingQuantity());
+
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
+    }
     @Override
     public String toString() {
-        return "DBBasedReceiptLine{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", expectedQuantity=" + expectedQuantity +
-                ", receipt=" + receipt +
-                ", overReceivingQuantity=" + overReceivingQuantity +
-                ", overReceivingPercent=" + overReceivingPercent +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
