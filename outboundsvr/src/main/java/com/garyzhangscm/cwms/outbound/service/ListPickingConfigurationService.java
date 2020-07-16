@@ -244,7 +244,7 @@ public class ListPickingConfigurationService implements TestDataInitiableService
     public List<ListPickingConfiguration> findMatchedListPickingConfiguration(Pick pick) {
         List<ListPickingConfiguration> listPickingConfigurations = findAll(pick.getWarehouseId());
         logger.debug("Start to find matched list picking configuration for pick: {} / from {} configuration",
-                pick, listPickingConfigurations.size());
+                pick.getNumber(), listPickingConfigurations.size());
 
         return listPickingConfigurations.stream()
                 .filter(listPickingConfiguration -> match(listPickingConfiguration,pick))
@@ -253,7 +253,7 @@ public class ListPickingConfigurationService implements TestDataInitiableService
 
     private boolean match(ListPickingConfiguration listPickingConfiguration, Pick pick) {
         logger.debug("Start to match list picking configuration {} with pick {}",
-                listPickingConfiguration, pick);
+                listPickingConfiguration.getId(), pick.getNumber());
         if (!listPickingConfiguration.getEnabled()) {
             logger.debug("{} is not enabled! Non match", listPickingConfiguration);
             return false;

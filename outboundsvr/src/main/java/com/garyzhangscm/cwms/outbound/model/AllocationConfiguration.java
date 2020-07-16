@@ -35,7 +35,7 @@ public class AllocationConfiguration implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "sequence", unique = true)
+    @Column(name = "sequence")
     private Integer sequence;
 
     // criteria: item / item group / inventory status
@@ -88,7 +88,7 @@ public class AllocationConfiguration implements Serializable {
     @OneToMany(
             mappedBy = "allocationConfiguration",
             orphanRemoval = true,
-            cascade = CascadeType.REMOVE
+            cascade = CascadeType.ALL
     )
     private List<PickableUnitOfMeasure> pickableUnitOfMeasures = new ArrayList<>();
 
@@ -202,6 +202,9 @@ public class AllocationConfiguration implements Serializable {
 
     public void setPickableUnitOfMeasures(List<PickableUnitOfMeasure> pickableUnitOfMeasures) {
         this.pickableUnitOfMeasures = pickableUnitOfMeasures;
+    }
+    public void addPickableUnitOfMeasure(PickableUnitOfMeasure pickableUnitOfMeasure) {
+        this.pickableUnitOfMeasures.add(pickableUnitOfMeasure);
     }
 
     public AllocationConfigurationType getType() {

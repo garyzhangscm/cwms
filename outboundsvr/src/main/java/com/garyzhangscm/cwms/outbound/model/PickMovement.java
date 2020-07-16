@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.outbound.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,15 +76,12 @@ public class PickMovement implements Serializable {
 
     @Override
     public String toString() {
-        return "PickMovement{" +
-                "id=" + id +
-                ", pick=" + pick +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", locationId=" + locationId +
-                ", location=" + location +
-                ", sequence=" + sequence +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

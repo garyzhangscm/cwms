@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -48,6 +49,7 @@ public class InventoryServiceRestemplateClient {
 
 
     @Autowired
+    @Qualifier("getObjMapper")
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
@@ -156,6 +158,26 @@ public class InventoryServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
 
+    }
+
+    public List<Inventory> findInventoryByReceipt(Long warehouseId, Long receiptId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("receiptId", receiptId)
+                        .queryParam("warehouseId", warehouseId);
+
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
     public InventoryStatus getInventoryStatusById(Long id) {
@@ -452,10 +474,10 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public Inventory moveInventory(Inventory inventory, Location nextLocation) throws IOException {
+    public Inventory moveInventory(Inventory inventory, Location nextLocation) throws JsonProcessingException {
         return moveInventory(inventory, nextLocation, "");
     }
-    public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn) throws IOException {
+    public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn) throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")

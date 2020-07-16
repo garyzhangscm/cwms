@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -154,19 +156,12 @@ public class Shipment implements Serializable {
 
     @Override
     public String toString() {
-        return "Shipment{" +
-                "id=" + id +
-                ", number='" + number + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", shipmentLines=" + shipmentLines +
-                ", status=" + status +
-                ", carrierId=" + carrierId +
-                ", carrier=" + carrier +
-                ", carrierServiceLevelId=" + carrierServiceLevelId +
-                ", carrierServiceLevel=" + carrierServiceLevel +
-                ", stop=" + stop +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

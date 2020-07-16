@@ -22,6 +22,7 @@ WMOR,SHIP_DCK,Shipping Dock,Shipping_Dock, false, false, false,false,,NONE,false
 WMOR,DISPATCHED,Dispatched Trailer,Dispatched, false, false, false,false,,NONE,false
 WMOR,TRAILER,Trailer,Trailer, false, false, false,false,,NONE,false
 WMOR,Parcel,Parcel and small package,Shipped_Parcel, false, false, false,false,,NONE,false
+WMOR,Order,Order,Shipped_Order, false, false, false,false,,NONE,false
 WMOR,RF,RF locations,RF, false, false, false,false,,NONE,false
 WMOR,YARD,Yard for parking,Yard, false, false, false,false,,NONE,false
 WMOR,P&D,Pickup and Deposit,PickupDeposit, false, false, false,false,,NONE,false

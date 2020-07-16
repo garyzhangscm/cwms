@@ -84,12 +84,13 @@ public class LocationController {
                                         @RequestParam(name = "beginSequence", required = false, defaultValue = "") Long beginSequence,
                                         @RequestParam(name = "endSequence", required = false, defaultValue = "") Long endSequence,
                                         @RequestParam(name = "sequenceType", required = false, defaultValue = "") String sequenceType,
-                                        @RequestParam(name = "includeEmptyLocation", required = false, defaultValue = "true") Boolean includeEmptyLocation,
-                                        @RequestParam(name = "emptyLocationOnly", required = false, defaultValue = "false") Boolean emptyLocationOnly,
-                                        @RequestParam(name = "minEmptyCapacity", required = false, defaultValue = "0.0") Double minEmptyCapacity,
-                                        @RequestParam(name = "pickableLocationOnly", required = false, defaultValue = "false") Boolean pickableLocationOnly,
-                                        @RequestParam(name = "includeDisabledLocation", required = false, defaultValue = "false") Boolean includeDisabledLocation,
-                                        @RequestParam(name = "maxResultCount", required =  false, defaultValue =  "0") Integer maxResultCount) {
+                                        @RequestParam(name = "includeEmptyLocation", required = false, defaultValue = "") Boolean includeEmptyLocation,
+                                        @RequestParam(name = "emptyLocationOnly", required = false, defaultValue = "") Boolean emptyLocationOnly,
+                                        @RequestParam(name = "minEmptyCapacity", required = false, defaultValue = "") Double minEmptyCapacity,
+                                        @RequestParam(name = "pickableLocationOnly", required = false, defaultValue = "") Boolean pickableLocationOnly,
+                                        @RequestParam(name = "includeDisabledLocation", required = false, defaultValue = "") Boolean includeDisabledLocation,
+                                        @RequestParam(name = "maxResultCount", required =  false, defaultValue =  "0") Integer maxResultCount,
+                                        @RequestParam(name = "reservedCode", required =  false, defaultValue =  "") String reservedCode) {
 
         StringBuilder params = new StringBuilder()
                 .append("Start to find location with params:")
@@ -114,7 +115,8 @@ public class LocationController {
                 warehouseId,
                 locationGroupTypeIds, locationGroupIds, name,
                 beginSequence, endSequence, sequenceType,
-                includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  includeDisabledLocation);
+                includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
+                includeDisabledLocation);
 
         logger.debug(">> Find {} locations", locations.size());
         if (locations.size() == 0) {
@@ -134,6 +136,13 @@ public class LocationController {
                                             @RequestParam(name = "empty", required = false, defaultValue = "false") boolean emptyDockOnly) {
 
         return locationService.getDockLocations(warehouseId, emptyDockOnly);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/locations/order-locations/{orderNumber}")
+    public Location findOrderLocation(@RequestParam Long warehouseId,
+                                      @PathVariable String orderNumber) {
+
+        return locationService.createOrderLocation(warehouseId, orderNumber);
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/dispatch-trailer")
@@ -165,23 +174,44 @@ public class LocationController {
     }
 
 
+    /**
+     * @param id
+     * @param enabled
+     * @param inventoryQuantity
+     * @param inventorySize
+     * @return
+     */
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}")
     public Location updateLocation(@PathVariable Long id,
-                                              @RequestParam(name = "enabled", defaultValue = "", required = false) Boolean enabled,
-                                              @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,
-                                              @RequestParam(name = "inventorySize", defaultValue = "", required = false) Double inventorySize) {
+                                   @RequestParam(name = "enabled", defaultValue = "", required = false) Boolean enabled,
+                                   @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,
+                                   @RequestParam(name = "inventorySize", defaultValue = "", required = false) Double inventorySize) {
+
+        logger.debug(">>> Start to handle updateLocation request with warehouseId: {}, inventoryQuantity: {} / {}",
+                id, inventoryQuantity, inventorySize);
 
         Location location = locationService.findById(id);
 
         if (enabled != null) {
             location.setEnabled(enabled);
         }
-        if (inventoryQuantity != null && inventorySize != null) {
-            location.setCurrentVolume(locationService.getLocationVolume(inventoryQuantity, inventorySize));
+        // reset the volume is the location is volume tracking
+
+        if (inventoryQuantity != null &&
+                inventorySize != null &&
+                location.getLocationGroup().getTrackingVolume() == true) {
+
+                location.setCurrentVolume(locationService.getLocationVolume(inventoryQuantity, inventorySize));
         }
         return locationService.saveOrUpdate(location);
     }
 
+
+    @RequestMapping(method=RequestMethod.POST, value="/locations/{id}")
+    public Location changeLocation(@RequestBody Location location) {
+
+        return locationService.saveOrUpdate(location);
+    }
 
     @RequestMapping(method=RequestMethod.POST, value="/locations")
     public Location addLocation(@RequestBody Location location) {
@@ -195,7 +225,25 @@ public class LocationController {
                                     @RequestParam(name = "reservedCode") String reservedCode) {
 
 
+        logger.debug(">>> Start to handle unreserveLocation request with id: {}, reservedCode: {}",
+                id, reservedCode);
         return locationService.reserveLocation(id, reservedCode);
+    }
+
+    /**
+     * release location from certain reserve code
+     * @param warehouseId warehouse id
+     * @param reservedCode reserve code
+     * @return all locations that used to have this reserve code
+     */
+    @RequestMapping(method=RequestMethod.POST, value="/locations/unreserve")
+    public List<Location> unreserveLocation(@RequestParam Long warehouseId,
+                                            @RequestParam String reservedCode) {
+
+
+        logger.debug(">>> Start to handle unreserveLocation request with warehouseId: {}, reservedCode: {}",
+                warehouseId, reservedCode);
+        return locationService.unreserveLocation(warehouseId, reservedCode);
     }
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory
@@ -207,6 +255,8 @@ public class LocationController {
                                     @RequestParam(name = "pendingPalletQuantity") Integer pendingPalletQuantity) {
 
 
+        logger.debug(">>> Start to handle changePendingVolume request with id: {}, reservedCode: {}",
+                id, reservedCode);
         return locationService.reserveLocation(id, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
     }
 
@@ -226,15 +276,20 @@ public class LocationController {
                                         @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedPendingVolume,
                                         @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedPendingVolume) {
 
+        logger.debug(">>> Start to handle changePendingVolume request with id: {}, increase: {}",
+                id, increasedPendingVolume);
         return locationService.changePendingVolume(id, reducedPendingVolume, increasedPendingVolume);
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/volume")
     public Location changeVolume(@PathVariable Long id,
-                                        @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedVolume,
-                                        @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedVolume) {
+                                 @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedVolume,
+                                 @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedVolume,
+                                 @RequestParam(name = "fromPendingVolume", required = false, defaultValue = "false") Boolean fromPendingVolume) {
 
-        return locationService.changeLocationVolume(id, reducedVolume, increasedVolume);
+        logger.debug(">>> Start to handle changeVolume request with id: {}, increase: {}",
+                id, increasedVolume);
+        return locationService.changeLocationVolume(id, reducedVolume, increasedVolume, fromPendingVolume);
     }
 
 

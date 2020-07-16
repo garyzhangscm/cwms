@@ -1,0 +1,147 @@
+# anything other than  app will be included here
+# 1. zookeeper + kafka
+# 2. ELK stack: filebeat + elasticsearch + kibana
+# 3. zuul
+# 4. auth(OAuth2 server)
+
+version: '3'
+services:
+
+######################################
+# 1. zookeeper + kafka
+#####################################
+
+
+######################################
+# 2. ELK stack: filebeat + elasticsearch + kibana
+#####################################
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    # container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02
+      - cluster.initial_master_nodes=es01,es02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - TZ=America/Los_Angeles
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    labels:
+      co.elastic.logs/enabled: false
+
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    # container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01
+      - cluster.initial_master_nodes=es01,es02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - TZ=America/Los_Angeles
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+    ports:
+      - 9201:9200
+    labels:
+      co.elastic.logs/enabled: false
+
+  filebeat:
+    image: garyzhangscm/filebeat
+    user: root
+    volumes:
+      # Will need to mount the follow 2 directory to the filebeat container
+      # so that it is able to read the logs from the other containers
+      # in the same host
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      co.elastic.logs/enabled: false
+    environment:
+      TZ: "America/Los_Angeles"
+    depends_on:
+        - kib01
+
+  kib01:
+    image: docker.elastic.co/kibana/kibana:7.8.0
+    container_name: kibana
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://es01:9200
+      ELASTICSEARCH_HOSTS: http://es01:9200
+      TZ: "America/Los_Angeles"
+    labels:
+      co.elastic.logs/enabled: false
+    depends_on:
+       - es01
+
+######################################
+# 3. zuul
+#####################################
+  zuulserver:
+    image: garyzhangscm/cwms-zuulsvr
+    ports:
+      - "5555:5555"
+    environment:
+      SPRING_PROFILE: "aws-dev"
+      CONFIGSERVER_URI: "http://configserver:8888"
+      CONFIGSERVER_PORT:   "8888"
+      ENCRYPT_KEY:       "CWMS2018"
+      COMPOSE_PROJECT_NAME: "CWMS-APP"
+      TZ: "America/Los_Angeles"
+    labels:
+      co.elastic.logs/enabled: false
+
+######################################
+# 4. auth(OAuth2 server)
+#####################################
+  authserver:
+    image: garyzhangscm/cwms-auth
+    ports:
+      - "8901:8901"
+    environment:
+      SPRING_PROFILE: "aws-dev"
+      CONFIGSERVER_URI: "http://configserver:8888"
+      # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+      DATABASE_URL: "database"
+      CONFIGSERVER_PORT:   "8888"
+      DATABASESERVER_PORT: "3306"
+      ENCRYPT_KEY:       "CWMS2018"
+      COMPOSE_PROJECT_NAME: "CWMS-APP"
+      TZ: "America/Los_Angeles"
+    labels:
+      co.elastic.logs/enabled: true
+
+# Setup Volumes for data
+# All elastic search 's data will be saved on the local volume
+# which is maintained by docker
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+
+
+

@@ -83,7 +83,7 @@ public class InventoryController {
                                                    @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
                                                    @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
 
-        logger.debug("Start to create inventory \n{}", inventory);
+        logger.debug("Start to create inventory \n{}", inventory.getLpn());
         return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
     }
     // Adjust down the inventory to 0

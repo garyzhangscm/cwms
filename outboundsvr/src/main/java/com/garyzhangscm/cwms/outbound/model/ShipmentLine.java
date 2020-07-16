@@ -249,4 +249,12 @@ public class ShipmentLine implements Serializable {
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
     }
+
+    public ShipmentLineStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ShipmentLineStatus status) {
+        this.status = status;
+    }
 }

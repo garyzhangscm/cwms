@@ -132,6 +132,10 @@ public class DBBasedOrderLineConfirmation implements Serializable, IntegrationOr
 
         setCarrierServiceLevelId(orderLineConfirmation.getCarrierServiceLevelId());
         setCarrierServiceLevelName(orderLineConfirmation.getCarrierServiceLevelName());
+
+
+        setInsertTime(LocalDateTime.now());
+        setStatus(IntegrationStatus.PENDING);
     }
 
     @Override

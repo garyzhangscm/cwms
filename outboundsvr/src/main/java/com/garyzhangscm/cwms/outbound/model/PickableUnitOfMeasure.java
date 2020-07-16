@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -17,6 +18,9 @@ public class PickableUnitOfMeasure {
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
 
+    @Transient
+    private UnitOfMeasure unitOfMeasure;
+
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
@@ -25,6 +29,7 @@ public class PickableUnitOfMeasure {
 
     @ManyToOne
     @JoinColumn(name = "allocation_configuration_id")
+    @JsonIgnore
     private AllocationConfiguration allocationConfiguration;
 
     public PickableUnitOfMeasure() {}
@@ -88,5 +93,13 @@ public class PickableUnitOfMeasure {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public UnitOfMeasure getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(UnitOfMeasure unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
     }
 }

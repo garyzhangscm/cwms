@@ -714,6 +714,70 @@ public class ShipmentService {
         }
     }
 
+    public void completeShipment(Shipment shipment, Order order) {
+        if (Objects.isNull(shipment.getStop())) {
+            completeShipmentByOrder(shipment, order);
+        }
+        else {
+            completeShipmentByTrailer(shipment, order);
+        }
+
+
+    }
+
+    /**
+     * Complete shipment by order, without any outbound
+     * structure(trailer / stop / truck / etc)
+     * @param shipment
+     */
+    @Transactional
+    public void completeShipmentByOrder(Shipment shipment, Order order) {
+
+        List<Inventory> stagedInventory = getStagedInventory(shipment);
+
+        // Move all the staged inventory to a location
+        // that stands for the order
+        Location location
+                = warehouseLayoutServiceRestemplateClient.createOrderLocation(order.getWarehouseId(), order);
+
+
+        // move inventory to the location and update the shipment line's quantity
+        stagedInventory.stream().forEach(inventory -> {
+
+            ShipmentLine shipmentLine = pickService.findById(inventory.getPickId()).getShipmentLine();
+
+            logger.debug("Start to move inventory {} onto order {} ",
+                    inventory.getLpn(), location);
+            try {
+                inventory = inventoryServiceRestemplateClient.moveInventory(inventory, location);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw OrderOperationException.raiseException("Error when moving inventory onto the order: " + order.getNumber());
+            }
+            shipmentLine.setLoadedQuantity(shipmentLine.getLoadedQuantity() + inventory.getQuantity());
+            shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - inventory.getQuantity());
+            shipmentLine.setStatus(ShipmentLineStatus.DISPATCHED);
+            shipmentLineService.save(shipmentLine);
+
+            OrderLine orderLine = shipmentLine.getOrderLine();
+            orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() - inventory.getQuantity());
+            orderLine.setShippedQuantity(orderLine.getShippedQuantity() + inventory.getQuantity());
+            orderLineService.saveOrUpdate(orderLine);
+        });
+
+        shipment.setStatus(ShipmentStatus.DISPATCHED);
+        save(shipment);
+        // after we complete the shipment, release all the locations
+        // that reserved by the shipment
+
+        logger.debug("# Will release the locations that reserved by the shipment {}",
+                shipment.getNumber());
+        warehouseLayoutServiceRestemplateClient.releaseLocations(shipment.getWarehouseId(), shipment);
+
+    }
+
+    public void completeShipmentByTrailer(Shipment shipment, Order order) {}
+
 
 
 

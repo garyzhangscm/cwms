@@ -18,13 +18,9 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
-import java.util.Arrays;
-import java.util.Collection;
+import java.sql.Timestamp;
+
 
 public class User {
 
@@ -38,6 +34,12 @@ public class User {
 
     private boolean enabled;
     private boolean locked;
+
+    private String token;
+    private String refreshToken;
+    private String name;
+    private Timestamp time;
+    private int refreshIn;
 
     public Integer getId() {
         return id;
@@ -101,5 +103,45 @@ public class User {
 
     public void setLocked(boolean locked) {
         this.locked = locked;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Timestamp getTime() {
+        return time;
+    }
+
+    public void setTime(Timestamp time) {
+        this.time = time;
+    }
+
+    public int getRefreshIn() {
+        return refreshIn;
+    }
+
+    public void setRefreshIn(int refreshIn) {
+        this.refreshIn = refreshIn;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

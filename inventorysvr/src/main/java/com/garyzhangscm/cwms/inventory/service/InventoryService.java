@@ -515,7 +515,7 @@ public class InventoryService implements TestDataInitiableService{
         inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
                 "quantity", String.valueOf(inventory.getQuantity()), "0",
                 documentNumber, comment);
-        integrationService.processInventoryAdjustment(inventory, inventory.getQuantity(), 0L);
+        integrationService.processInventoryAdjustment(InventoryQuantityChangeType.INVENTORY_ADJUST, inventory, inventory.getQuantity(), 0L);
 
         Location destination
                 = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
@@ -549,6 +549,11 @@ public class InventoryService implements TestDataInitiableService{
                 pickId,
                 Objects.isNull(pickId),
                 destinationLpn);
+
+        logger.debug("==> Before the inventory move, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getCurrentVolume());
+
 
         // If we passed in a destination LPN, Let's replace the LPN first
         // before the same location check.
@@ -629,6 +634,11 @@ public class InventoryService implements TestDataInitiableService{
             logger.debug("LPN consolidated! Now inventory has new LPN {}", inventory.getLpn());
         }
          ***/
+
+
+        logger.debug("==> after the inventory move, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getCurrentVolume());
         return save(consolidatedInventory);
     }
     /****
@@ -1026,7 +1036,7 @@ public class InventoryService implements TestDataInitiableService{
 
 
         // send integration to add a new inventory
-        integrationService.processInventoryAdjustment(inventory,
+        integrationService.processInventoryAdjustment(inventoryQuantityChangeType, inventory,
                 0L, inventory.getQuantity());
 
         return moveInventory(inventory, destinationLocation);
@@ -1228,7 +1238,8 @@ public class InventoryService implements TestDataInitiableService{
                 0L : inventory.getQuantity();
         inventory.setQuantity(newQuantity);
         inventory = saveOrUpdate(inventory);
-        integrationService.processInventoryAdjustment(inventory, originalQuantity, newQuantity);
+        integrationService.processInventoryAdjustment(InventoryQuantityChangeType.AUDIT_COUNT,
+                inventory, originalQuantity, newQuantity);
 
         return inventory;
     }

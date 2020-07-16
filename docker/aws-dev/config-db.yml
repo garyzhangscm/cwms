@@ -14,10 +14,9 @@ services:
     environment:
       ENCRYPT_KEY:       "CWMS2018"
       COMPOSE_PROJECT_NAME: "CONFIGURATION"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
+      TZ: "America/Los_Angeles"
+    labels:
+      - "co.elastic.logs/enabled=false"
 
   database:
     image: mysql
@@ -35,6 +34,8 @@ services:
       MYSQL_USER: cwms_dba
       MYSQL_PASSWORD: cwms@2018
       COMPOSE_PROJECT_NAME: "DATABASE"
+    labels:
+      - "co.elastic.logs/enabled=false"
 
 # adminer is a standard dock to configure database
 # database name will be "database", which is the service name
@@ -47,11 +48,9 @@ services:
       - 8080:8080
     environment:
       COMPOSE_PROJECT_NAME: "DATABASE"
-      
-    deploy:
-      resources:
-        limits:
-          memory: 500m
+      TZ: "America/Los_Angeles"
+    labels:
+      - "co.elastic.logs/enabled=false"
 #    image: postgres:9.5
 #    ports:
 #      - "5432:5432"

@@ -40,6 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -57,6 +58,7 @@ public class InventoryServiceRestemplateClient {
     private OAuth2RestOperations restTemplate;
 
     public Item getItemById(Long id) {
+
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

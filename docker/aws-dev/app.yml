@@ -1,16 +1,5 @@
 version: '3'
 services:
-
-  # Redirect all output to cloud based log server:
-  # papertrailer.com
-  #
-  #
-  # logspout:
-  #   image: gliderlabs/logspout
-  #  command: syslog://logs5.papertrailapp.com:28234
-  #   volumes:
-  #    - /var/run/docker.sock:/var/run/docker.sock
-
   layoutservice:
       image: garyzhangscm/cwms-layoutserver
       ports:
@@ -24,6 +13,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+      labels:
+         co.elastic.logs/enabled: true
 
   resourceservice:
       image: garyzhangscm/cwms-ressvr
@@ -38,7 +30,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
-
+          TZ: "America/Los_Angeles"
+      labels:
+           co.elastic.logs/enabled: true
 
   commonservice:
       image: garyzhangscm/cwms-commonserver
@@ -53,7 +47,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
-
+          TZ: "America/Los_Angeles"
+      labels:
+          co.elastic.logs/enabled: true
 
   inventoryservice:
       image: garyzhangscm/cwms-inventoryserver
@@ -68,6 +64,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+      labels:
+          co.elastic.logs/enabled: true
 
   inboundservice:
       image: garyzhangscm/cwms-inboundserver
@@ -82,7 +81,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
-
+          TZ: "America/Los_Angeles"
+      labels:
+          co.elastic.logs/enabled: true
 
   outboundservice:
       image: garyzhangscm/cwms-outboundserver
@@ -97,7 +98,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
-
+          TZ: "America/Los_Angeles"
+      labels:
+          co.elastic.logs/enabled: true
 
   workorderservice:
       image: garyzhangscm/cwms-workorderserver
@@ -112,7 +115,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
-
+          TZ: "America/Los_Angeles"
+      labels:
+          co.elastic.logs/enabled: true
 
   integrationservice:
       image: garyzhangscm/cwms-integrationserver
@@ -127,7 +132,9 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
-
+          TZ: "America/Los_Angeles"
+      labels:
+          co.elastic.logs/enabled: true
 
   adminservice:
       image: garyzhangscm/cwms-adminserver
@@ -142,3 +149,10 @@ services:
           DATABASESERVER_PORT: "3306"
           ENCRYPT_KEY:       "CWMS2018"
           COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+      labels:
+          co.elastic.logs/enabled: true
+#      volumes:
+#          - "/etc/localtime:/etc/localtime:ro"
+#          - "/etc/timezone:/etc/timezone:ro"
+

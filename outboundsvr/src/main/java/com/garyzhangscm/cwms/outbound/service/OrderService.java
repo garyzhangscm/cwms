@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Transient;
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,6 +70,8 @@ public class OrderService implements TestDataInitiableService {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private IntegrationService integrationService;
 
     @Value("${fileupload.test-data.orders:orders}")
     String testDataFile;
@@ -86,27 +90,38 @@ public class OrderService implements TestDataInitiableService {
     }
 
 
-    public List<Order> findAll(String number, boolean loadDetails) {
-        List<Order> orders;
+    public List<Order> findAll(Long warehouseId,
+                               String number,
+                               boolean loadDetails) {
 
-        if (StringUtils.isBlank(number)) {
-            orders = orderRepository.findAll();
-        } else {
-            Order order = orderRepository.findByNumber(number);
-            if (order != null) {
-                orders = Arrays.asList(new Order[]{order});
-            } else {
-                orders = new ArrayList<>();
-            }
-        }
+
+
+        List<Order> orders =  orderRepository.findAll(
+                (Root<Order> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (StringUtils.isNotBlank(number)) {
+                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
         if (orders.size() > 0 && loadDetails) {
             loadOrderAttribute(orders);
         }
         return orders;
+
     }
 
-    public List<Order> findAll(String number) {
-        return findAll(number, true);
+    public List<Order> findAll(Long warehouseId, String number) {
+        return findAll(warehouseId, number, true);
     }
 
 
@@ -171,6 +186,10 @@ public class OrderService implements TestDataInitiableService {
         }
         if (order.getShipToCustomerId() != null && order.getShipToCustomer() == null) {
             order.setShipToCustomer(commonServiceRestemplateClient.getCustomerById(order.getShipToCustomerId()));
+        }
+
+        if (order.getWarehouseId() != null && order.getWarehouse() == null) {
+            order.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId()));
         }
 
         // Load the item and inventory status information for each lines
@@ -440,7 +459,8 @@ public class OrderService implements TestDataInitiableService {
                         .collect(Collectors.toList());
 
         logger.debug("After allocation, we get the following result: \n {}", allocationResults);
-        return findById(orderId);
+        // return findById(orderId);
+        return order;
 
     }
     @Transactional
@@ -606,5 +626,40 @@ public class OrderService implements TestDataInitiableService {
 
     }
 
+
+    @Transactional
+    public Order completeOrder(Long orderId) {
+        Order order = findById(orderId);
+        // Let's make sure the order is still open
+        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+            throw  OrderOperationException.raiseException(
+                    "Complete the order " + order.getNumber() + " as it is already completed");
+        }
+
+        // Let's complete all the shipments related to this
+        // order
+        order.getOrderLines()
+                .stream()
+                .flatMap(orderLine -> orderLine.getShipmentLines().stream())
+                .map(shipmentLine -> shipmentLine.getShipment())
+                .distinct()
+                .forEach(shipment ->
+                        shipmentService.completeShipment(shipment, order));
+
+        order.setStatus(OrderStatus.COMPLETE);
+
+
+        logger.debug("Start to send order confirmation after the order {} is marked as completed",
+                order.getNumber());
+        sendOrderConfirmationIntegration(order);
+
+
+        return saveOrUpdate(order);
+    }
+
+    private void sendOrderConfirmationIntegration(Order order) {
+
+        integrationService.process(new OrderConfirmation(order));
+    }
 
 }

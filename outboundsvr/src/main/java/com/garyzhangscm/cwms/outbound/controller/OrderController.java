@@ -38,8 +38,9 @@ public class OrderController {
 
 
     @RequestMapping(value="/orders", method = RequestMethod.GET)
-    public List<Order> findAllOrders(@RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return orderService.findAll(number);
+    public List<Order> findAllOrders(@RequestParam Long warehouseId,
+                                     @RequestParam(name="number", required = false, defaultValue = "") String number) {
+        return orderService.findAll(warehouseId, number);
     }
 
     @RequestMapping(value="/orders", method = RequestMethod.POST)
@@ -61,6 +62,10 @@ public class OrderController {
     @RequestMapping(value="/orders/{id}/allocate", method = RequestMethod.POST)
     public Order allocateOrder(@PathVariable Long id){
         return orderService.allocate(id);
+    }
+    @RequestMapping(value="/orders/{id}/complete", method = RequestMethod.POST)
+    public Order completeOrder(@PathVariable Long id){
+        return orderService.completeOrder(id);
     }
 
     @RequestMapping(value="/orders/{id}/stage", method = RequestMethod.POST)

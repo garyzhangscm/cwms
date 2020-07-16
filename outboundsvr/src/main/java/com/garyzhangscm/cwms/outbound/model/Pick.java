@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -122,6 +124,10 @@ public class Pick implements Serializable {
     @JsonIgnore
     private PickList pickList;
 
+
+    @Column(name = "unit_of_measure_id")
+    private Long unitOfMeasureId;
+
     @JsonIgnore
     public Double getSize() {
 
@@ -138,22 +144,12 @@ public class Pick implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append("number: ").append(number).append(",")
-                .append("sourceLocationId: ").append(sourceLocationId).append(",")
-                .append("sourceLocation: ").append(sourceLocation).append(",")
-                .append("destinationLocationId: ").append(destinationLocationId).append(",")
-                .append("destinationLocation: ").append(destinationLocation).append(",")
-                .append("itemId: ").append(itemId).append(",")
-                .append("item: ").append(item).append(",")
-                .append("inventoryStatusId: ").append(inventoryStatusId).append(",")
-                .append("inventoryStatus: ").append(inventoryStatus).append(",")
-                .append("shipmentLine: ").append(shipmentLine).append(",")
-                .append("quantity: ").append(quantity).append(",")
-                .append("pickedQuantity: ").append(pickedQuantity).append(",")
-                .append("status: ").append(status).append("}").toString();
-
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String getPickListNumber() {
@@ -365,5 +361,13 @@ public class Pick implements Serializable {
 
     public String getCartonizationNumber(){
         return Objects.isNull(getCartonization()) ? "" : getCartonization().getNumber();
+    }
+
+    public Long getUnitOfMeasureId() {
+        return unitOfMeasureId;
+    }
+
+    public void setUnitOfMeasureId(Long unitOfMeasureId) {
+        this.unitOfMeasureId = unitOfMeasureId;
     }
 }

@@ -5,6 +5,8 @@ public class EmergencyReplenishmentConfigurationCSVWrapper {
 
     private Integer sequence;
 
+    private String unitOfMeasure;
+
     private String item;
 
     private String itemFamily;
@@ -78,5 +80,13 @@ public class EmergencyReplenishmentConfigurationCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(String unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
     }
 }

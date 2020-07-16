@@ -10,3 +10,5 @@ services:
        CONFIGSERVER_PORT:   "8888"
        ENCRYPT_KEY:       "CWMS2018"
        COMPOSE_PROJECT_NAME: "CWMS-APP"
+    labels:
+      - "co.elastic.logs/enabled=false"

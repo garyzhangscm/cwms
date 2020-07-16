@@ -53,6 +53,12 @@ public class TestCreatingLocation extends TestScenario{
         String[] casePickingLocationNames = new String[50];
         String[] palletPickingLocationNames = new String[50];
 
+        /*
+         * # 01 ~ 09: Test for inventory management
+         * # 10 ~ 19: Test for inbound
+         * # 20 ~ 29: Test for outbound
+         * # 30 ~ 39: Test for Work order
+        * */
         for(int i = 1; i <= 50; i++) {
 
             // each picking location

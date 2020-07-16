@@ -22,11 +22,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.wms.Inventory;
+import com.garyzhangscm.cwms.adminserver.model.wms.Location;
 import com.garyzhangscm.cwms.adminserver.model.wms.PutawayConfiguration;
 import com.garyzhangscm.cwms.adminserver.model.wms.Receipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
@@ -53,6 +55,7 @@ public class InboundServiceRestemplateClient {
     // private OAuth2RestOperations restTemplate;
     RestTemplate restTemplate;
 
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -183,6 +186,25 @@ public class InboundServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    public Inventory allocateLocationForPutaway(Inventory inventory) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inbound/putaway-configuration/allocate-location");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(inventory)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

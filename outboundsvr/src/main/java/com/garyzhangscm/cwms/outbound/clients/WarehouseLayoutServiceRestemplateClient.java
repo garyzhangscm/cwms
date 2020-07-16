@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.outbound.model.Location;
-import com.garyzhangscm.cwms.outbound.model.LocationGroup;
-import com.garyzhangscm.cwms.outbound.model.LocationGroupType;
-import com.garyzhangscm.cwms.outbound.model.Warehouse;
+import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -477,5 +474,40 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Location createOrderLocation(Long warehouseId, Order order) {
 
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/order-locations/{orderNumber}")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(order.getNumber()).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<Location> releaseLocations(Long warehouseId, Shipment shipment) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/unreserve")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("reservedCode", shipment.getNumber());
+
+        ResponseBodyWrapper<List<Location>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 }

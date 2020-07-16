@@ -87,6 +87,15 @@ public class ShortAllocationService {
         return findById(id, true);
     }
 
+    public List<ShortAllocation> findAll(boolean loadDetails) {
+        return findAll(null, null,
+                null, null, null,
+                null, null, null, loadDetails);
+    }
+
+    public List<ShortAllocation> findAll() {
+        return findAll(true);
+    }
 
     public List<ShortAllocation> findAll(Long warehouseId,
                                          Long workOrderLineId, String workOrderLineIds,
@@ -98,7 +107,10 @@ public class ShortAllocationService {
                 (Root<ShortAllocation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    if (Objects.nonNull(warehouseId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
 
                     if (Objects.nonNull(workOrderLineId)) {
                         predicates.add(criteriaBuilder.equal(root.get("workOrderLineId"), workOrderLineId));
@@ -304,12 +316,69 @@ public class ShortAllocationService {
         }
         shortAllocation =  allocationConfigurationService.allocate(shortAllocation);
 
-        logger.debug("After allocation, we get short allocation: {}", shortAllocation);
-        return resetShortAllocationStatus(shortAllocation);
+        if (readyToRemoveShortAllocation(shortAllocation)) {
+
+            // OK, the short allocation doesn't have any emergency replenishment related
+            // and the open quantity is already 0, which means we already allocated
+            // enough picks from the location, which means we can safely remove the
+            // short allocation
+            logger.debug("will remove short allocation id: {}", shortAllocation.getId());
+            delete(shortAllocation);
+            return null;
+        }
+        else  {
+
+            // After allocation, we either have picks instead of short allocation
+            // or we have emergency replenishment
+            return resetShortAllocationStatus(shortAllocation);
+        }
+
+    }
+
+    /**
+     * Check if we can remove the short allocation, only when
+     * 1. There's no open quantity
+     * 2. There's no open emergency replenishment for the short allocation
+     * Then we know that we actually allocate picks instead of emergency replenishment
+     * from this short allocation
+     * @param shortAllocation
+     * @return
+     */
+    private boolean readyToRemoveShortAllocation(ShortAllocation shortAllocation) {
+
+        if (shortAllocation.getOpenQuantity() > 0) {
+            logger.debug("current short allocation id {} still have open quantity {}, NOT ready for removing",
+                    shortAllocation.getId(), shortAllocation.getOpenQuantity());
+            return false;
+        }
+        // Let's make sure there's no open emergency replenishment relate to this
+        // short allocation
+        if (shortAllocation.getPicks().size() == 0) {
+            logger.debug("current short allocation id {}  has NO emergency replenishment, READY for removing",
+                    shortAllocation.getId());
+            return true;
+        }
+        for(Pick pick: shortAllocation.getPicks()) {
+            if (pick.getPickedQuantity() < pick.getQuantity()) {
+                logger.debug("current short allocation id {} still have open pick {}, NOT ready for removing",
+                        shortAllocation.getId(), pick.getNumber());
+                return false;
+            }
+        }
+        logger.debug("current short allocation id {}  pass all checks, READY for removing",
+                shortAllocation.getId());
+        return true;
     }
 
     private ShortAllocation resetShortAllocationStatus(ShortAllocation shortAllocation) {
         switch (shortAllocation.getStatus()) {
+            case PENDING:
+                if (shortAllocation.getInprocessQuantity() > 0 ||
+                    shortAllocation.getDeliveredQuantity() > 0) {
+
+                    shortAllocation.setStatus(ShortAllocationStatus.INPROCESS);
+                }
+                break;
             case ALLOCATION_FAIL:
                 // OK, it seems we were fail to full fill the short allocation with either
                 // pick or emergency replenishment during last round of allocation, let's reset
@@ -336,10 +405,20 @@ public class ShortAllocationService {
 
             case INPROCESS:
                 // Let's see if we can complete this short allocation
-                if (shortAllocation.getOpenQuantity() == 0 &&
-                    shortAllocation.getDeliveredQuantity() >= shortAllocation.getInprocessQuantity()) {
+                if (shortAllocation.getOpenQuantity()  + shortAllocation.getInprocessQuantity() <= 0 &&
+                    shortAllocation.getDeliveredQuantity() > 0) {
                     shortAllocation.setStatus(ShortAllocationStatus.COMPLETED);
                 }
+                break;
+            case COMPLETED:
+                // If the short allocation is already complete, which means we already
+                // finish the emergency replenishment. Let's reset the status to PENDING
+                // so the allocation logic will pickup this short allocaiton again and
+                // may allocate from the replenished inventory
+                shortAllocation.setStatus(ShortAllocationStatus.PENDING);
+                shortAllocation.setOpenQuantity(shortAllocation.getQuantity());
+                shortAllocation.setInprocessQuantity(0L);
+                shortAllocation.setDeliveredQuantity(0L);
                 break;
         }
         return save(shortAllocation);
@@ -348,7 +427,7 @@ public class ShortAllocationService {
 
 
 
-    private boolean isAllocatable(ShortAllocation shortAllocation) {
+    public boolean isAllocatable(ShortAllocation shortAllocation) {
         return shortAllocation.getStatus().equals(ShortAllocationStatus.PENDING) ||
                 shortAllocation.getStatus().equals(ShortAllocationStatus.INPROCESS);
     }
@@ -358,5 +437,67 @@ public class ShortAllocationService {
         shortAllocation.setOpenQuantity(shortAllocation.getOpenQuantity() + cancelledQuantity);
         shortAllocation.setInprocessQuantity(shortAllocation.getInprocessQuantity() - cancelledQuantity);
         save(shortAllocation);
+    }
+
+    public void processShortAllocation(ShortAllocation shortAllocation) {
+        logger.debug("# Start to process short allocation id {} @ {}, its status is {}",
+                shortAllocation.getId(), LocalDateTime.now(), shortAllocation.getStatus());
+        if (shortAllocation.getStatus().equals(ShortAllocationStatus.CANCELLED)) {
+            return;
+        }
+
+        shortAllocation = resetShortAllocationStatus(shortAllocation);
+        if (isAllocatable(shortAllocation) && shortAllocation.getOpenQuantity() > 0) {
+            allocateShortAllocation(shortAllocation);
+        }
+
+
+    }
+
+    /**
+     * When a emergency replenishment has been confirmed, reset the quantity and status
+     * of the emergency replenishment accordingly.
+     * @param pick The emergency replenishment that has been done
+     * @param quantityToBePicked Quantites that has been replenished into destination
+     */
+    public void processPickConfirmed(Pick pick, Long quantityToBePicked) {
+        logger.debug("Will reset short allocation's quantity after pick {} confirmed",
+                pick.getNumber());
+        ShortAllocation shortAllocation = pick.getShortAllocation();
+        if (Objects.isNull(shortAllocation)) {
+            logger.debug("The pick doesn't have any short allocation related");
+            return;
+        }
+        logger.debug("# after the pick is confirmed, we will reset short allocation id {} @ {}, its status is {}",
+                shortAllocation.getId(), LocalDateTime.now(), shortAllocation.getStatus());
+
+        shortAllocation.setDeliveredQuantity(
+                shortAllocation.getDeliveredQuantity() + quantityToBePicked
+        );
+        logger.debug("Will reset short allocation {} number based on ", shortAllocation.getId());
+        logger.debug("quantityToBePicked: {}， shortAllocation.getInprocessQuantity(): {}",
+                quantityToBePicked, shortAllocation.getInprocessQuantity());
+        if (quantityToBePicked > shortAllocation.getInprocessQuantity()) {
+            // we delivered more than necessary, which normally is true
+            // for most shortage
+            shortAllocation.setInprocessQuantity(0L);
+        }
+        else {
+
+            shortAllocation.setInprocessQuantity(
+                    shortAllocation.getInprocessQuantity() - quantityToBePicked
+            );
+        }
+
+        logger.debug(">>>>>><<<<<<<");
+
+        // reset the status of the short allocation
+        // which will persist the change as well
+        shortAllocation = resetShortAllocationStatus(shortAllocation);
+
+        logger.debug(">>>>>><<<<<<<");
+        logger.debug("# after reset short allocation id {} @ {}, its status is {}",
+                shortAllocation.getId(), LocalDateTime.now(), shortAllocation.getStatus());
+
     }
 }

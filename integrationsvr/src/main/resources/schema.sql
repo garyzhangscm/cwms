@@ -303,7 +303,10 @@ CREATE TABLE integration_order_line(
   carrier_name VARCHAR(100),
   carrier_service_level_id   BIGINT,
   carrier_service_level_name VARCHAR(100),
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
   error_message VARCHAR(1000),
+  status VARCHAR(10) NOT NULL,
   foreign key(integration_order_id) references integration_order(integration_order_id));
 
 

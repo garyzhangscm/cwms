@@ -105,10 +105,15 @@ public class DBBasedReceiptConfirmation implements Serializable, IntegrationRece
             DBBasedReceiptLineConfirmation dbBasedReceiptLineConfirmation =
                     new DBBasedReceiptLineConfirmation(receiptLineConfirmation);
             dbBasedReceiptLineConfirmation.setReceipt(this);
+            dbBasedReceiptLineConfirmation.setStatus(IntegrationStatus.ATTACHED);
             addReceiptLine(dbBasedReceiptLineConfirmation);
         });
 
         setAllowUnexpectedItem(receiptConfirmation.getAllowUnexpectedItem());
+
+
+        setInsertTime(LocalDateTime.now());
+        setStatus(IntegrationStatus.PENDING);
 
     }
 

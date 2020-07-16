@@ -420,7 +420,7 @@ public class PickService {
     }
 
 
-    public Pick generatePick(InventorySummary inventorySummary, Long quantity) {
+    public Pick generatePick(InventorySummary inventorySummary, Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
         logger.debug("Start to generate pick");
         Pick pick = new Pick();
         pick.setItem(inventorySummary.getItem());
@@ -432,6 +432,7 @@ public class PickService {
         pick.setNumber(getNextPickNumber());
         pick.setStatus(PickStatus.PENDING);
         pick.setInventoryStatusId(inventorySummary.getInventoryStatus().getId());
+        pick.setUnitOfMeasureId(pickableUnitOfMeasure.getUnitOfMeasureId());
 
         return pick;
     }
@@ -439,8 +440,10 @@ public class PickService {
 
 
     @Transactional
-    public Pick generatePick(InventorySummary inventorySummary, ShipmentLine shipmentLine, Long quantity) {
-        Pick pick = generatePick(inventorySummary, quantity);
+    public Pick generatePick(InventorySummary inventorySummary,
+                             ShipmentLine shipmentLine, Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+        Pick pick = generatePick(inventorySummary, quantity, pickableUnitOfMeasure);
 
         pick.setShipmentLine(shipmentLine);
         pick.setWarehouseId(shipmentLine.getWarehouseId());
@@ -473,8 +476,10 @@ public class PickService {
 
 
     @Transactional
-    public Pick generatePick(WorkOrder workOrder, InventorySummary inventorySummary, WorkOrderLine workOrderLine, Long quantity) {
-        Pick pick = generatePick(inventorySummary, quantity);
+    public Pick generatePick(WorkOrder workOrder, InventorySummary inventorySummary,
+                             WorkOrderLine workOrderLine, Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+        Pick pick = generatePick(inventorySummary, quantity, pickableUnitOfMeasure);
 
         pick.setWorkOrderLineId(workOrderLine.getId());
         pick.setWarehouseId(workOrder.getWarehouseId());
@@ -504,7 +509,7 @@ public class PickService {
     }
 
     private void processCartonization(Pick pick) {
-        logger.debug(">> Start to process cartonization for pick: {}", pick);
+        logger.debug(">> Start to process cartonization for pick: {}", pick.getNumber());
         Cartonization cartonization = cartonizationService.processCartonization(pick);
         if (Objects.nonNull(cartonization)){
             // OK, we got a suitable cartonization, let's assign it to the pick
@@ -518,6 +523,12 @@ public class PickService {
         try {
             logger.debug("Start to find pick list candidate");
             PickList pickList = pickListService.processPickList(pick);
+            if(Objects.isNull(pickList)) {
+                // We didn't get any potential pick list
+                // Which normally means we have the list pick
+                // function turned off
+                return;
+            }
             logger.debug("We will assign pick list {} to the current {}", pickList,
                     (Objects.nonNull(pick.getCartonization()) ? "Cartonization" : "Pick"));
 
@@ -533,8 +544,17 @@ public class PickService {
         }
     }
 
-    public Pick generatePick(InventorySummary inventorySummary, ShortAllocation shortAllocation, Long quantity) {
-        Pick pick = generatePick(inventorySummary, quantity);
+    /**
+     * Generate emergency replenishment type of picks for short allocation
+     * @param inventorySummary
+     * @param shortAllocation
+     * @param quantity
+     * @param pickableUnitOfMeasure
+     * @return
+     */
+    public Pick generatePick(InventorySummary inventorySummary, ShortAllocation shortAllocation,
+                             Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
+        Pick pick = generatePick(inventorySummary, quantity, pickableUnitOfMeasure);
 
         pick.setShortAllocation(shortAllocation);
         pick.setWarehouseId(shortAllocation.getWarehouseId());
@@ -550,12 +570,30 @@ public class PickService {
 
         Pick savedPick = save(pick);
 
+        resetDestinationLocationPendingVolume(pick);
+
+
         logger.debug("pick saved!!!! id : {}", savedPick.getId());
         // Setup the pick movement
         setupMovementPath(savedPick);
         logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
 
         return findById(savedPick.getId());
+    }
+
+    private void resetDestinationLocationPendingVolume(Pick pick) {
+        // reserve the destination location
+        // with empty reserve code so
+        // it will update the pending volume only
+        logger.debug("=> Will update the pending volume of location {}, SIZE {}, quantity {}",
+                pick.getDestinationLocationId(), pick.getSize(), pick.getQuantity());
+        warehouseLayoutServiceRestemplateClient.reserveLocation(
+                pick.getDestinationLocationId(),
+                "",
+                pick.getSize(),
+                pick.getQuantity(),
+                1
+        );
     }
 
     // For work order, the destination is always the inbound stage for the production line
@@ -728,10 +766,23 @@ public class PickService {
      */
     public Pick confirmPick(Pick pick, Long quantity) {
         if (pick.getPickMovements().size() == 0) {
+
             return confirmPick(pick, quantity, pick.getDestinationLocation());
         }
         else {
-            return confirmPick(pick, quantity, pick.getPickMovements().get(0).getLocation());
+            Location nextLocation = pick.getPickMovements().get(0).getLocation();
+            if (Objects.isNull(nextLocation) &&
+                Objects.nonNull(pick.getPickMovements().get(0).getLocationId())) {
+                nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(
+                        pick.getPickMovements().get(0).getLocationId()
+                );
+            }
+            if (Objects.isNull(nextLocation)) {
+
+                throw PickingException.raiseException("Can't find destination location from the pick move for the pick: " +
+                        pick.getNumber());
+            }
+            return confirmPick(pick, quantity, nextLocation);
         }
     }
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
@@ -762,6 +813,10 @@ public class PickService {
     }
     public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {
 
+        logger.debug("==> Before the pick confirm, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
+
         // make sure we are not over pick. At this moment, over pick is not allowed
         // If the quantity is not passed in, we will pick the whole quantity that is still left
         Long quantityToBePicked = quantity == null ? pick.getQuantity() - pick.getPickedQuantity() : quantity;
@@ -772,12 +827,13 @@ public class PickService {
         List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick);
         logger.debug(" Get {} valid inventory for pick {}",
                 pickableInventories.size(), pick.getNumber());
-        pickableInventories.stream().forEach(System.out::print);
+        // pickableInventories.stream().forEach(System.out::print);
         logger.debug(" start to pick with quantity {}",quantityToBePicked);
         Iterator<Inventory> inventoryIterator = pickableInventories.iterator();
         while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
             Inventory inventory = inventoryIterator.next();
-            logger.debug(" pick from inventory {}", quantityToBePicked, inventory.getLpn());
+            logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
+                    quantityToBePicked, inventory.getLpn(), nextLocation.getName());
             Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
             logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
             quantityToBePicked -= pickedQuantity;
@@ -785,6 +841,9 @@ public class PickService {
         }
 
 
+        logger.debug("==> after the pick confirm, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
         // Get the latest pick information
         return findById(pick.getId());
     }
@@ -828,9 +887,17 @@ public class PickService {
         }
         logger.debug("Will pick from inventory {} ", inventoryToBePicked.getLpn());
 
+        logger.debug("==> before move inventory, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
+
         // Move the inventory to the next location for pick
         // Move the inventory to the next location
         inventoryServiceRestemplateClient.moveInventory(inventoryToBePicked, pick, nextLocation);
+
+        logger.debug("==> after move inventory, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
         // update the quantity in the pick
         logger.debug(" change the picked quantity from {} to {}",
                 pick.getPickedQuantity(), (pick.getPickedQuantity() + quantityToBePicked));
@@ -839,6 +906,13 @@ public class PickService {
 
         // Let's update the list if the pick belongs to any list
         pickListService.processPickConfirmed(pick);
+
+        logger.debug("==> after processPickConfirmed, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
+        if (Objects.nonNull(pick.getShortAllocation())) {
+            shortAllocationService.processPickConfirmed(pick, quantityToBePicked);
+        }
         return quantityToBePicked;
 
     }
@@ -846,9 +920,9 @@ public class PickService {
     private boolean match(Inventory inventory, Pick pick) {
         logger.debug("check if the inventory match with the pick");
         logger.debug("========            Inventory   ===========");
-        logger.debug(inventory.toString());
+        logger.debug(inventory.getLpn());
         logger.debug("========            pick   ===========");
-        logger.debug(pick.toString());
+        logger.debug(pick.getNumber());
         if (!inventory.getItem().equals(pick.getItem())) {
             logger.debug("Inventory doesn't match with Pick. \n >> Inventory's item: {} \n >> Pick's item: {}",
                     inventory.getItem().getName(), pick.getItem().getName());

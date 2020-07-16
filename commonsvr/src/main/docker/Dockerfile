@@ -1,4 +1,5 @@
 FROM openjdk:8-jdk-alpine
+LABEL "co.elastic.logs/enabled"="filebeats"
 RUN apk update && apk upgrade && apk add netcat-openbsd
 RUN mkdir -p /usr/local/commonserver
 ADD @project.build.finalName@.jar /usr/local/commonserver/

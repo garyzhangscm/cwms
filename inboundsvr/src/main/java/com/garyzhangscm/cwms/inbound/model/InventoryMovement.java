@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,17 +40,14 @@ public class InventoryMovement implements Serializable {
 
     private Integer sequence;
 
+    @Override
     public String toString() {
-        return "id: " + id + "\n"
-                + "Inventory: " + "\n"
-                + " >> LPN: " + inventory.getLpn()  + "\n"
-                + " >> item: " + inventory.getItem().getName()  + "\n"
-                + " >> item description : " + inventory.getItem().getDescription()  + "\n"
-                + " >> inventory status : " + inventory.getInventoryStatus().getName()  + "\n"
-                + " >> quantity : " + inventory.getQuantity()  + "\n"
-                + "Sequence : " + sequence   + "\n"
-                + "Location: " + (location == null ? "" :  location.getName())  + "\n"
-                + "Location ID: " + locationId;
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

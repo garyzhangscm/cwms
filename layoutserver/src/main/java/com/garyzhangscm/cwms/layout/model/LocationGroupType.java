@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.layout.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -72,6 +74,8 @@ public class LocationGroupType {
     private Boolean trailer;
     @Column(name = "shipped_parcel_locations")
     private Boolean shippedParcel;
+    @Column(name = "shipped_order_locations")
+    private Boolean shippedOrder;
     @Column(name = "container_locations")
     private Boolean container;
     @Column(name = "packing_stations")
@@ -79,27 +83,12 @@ public class LocationGroupType {
 
     @Override
     public String toString() {
-        return "LocationGroupType{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", fourWallInventory=" + fourWallInventory +
-                ", virtual=" + virtual +
-                ", receivingStage=" + receivingStage +
-                ", shippingStage=" + shippingStage +
-                ", productionLine=" + productionLine +
-                ", productionLineInbound=" + productionLineInbound +
-                ", productionLineOutbound=" + productionLineOutbound +
-                ", dock=" + dock +
-                ", yard=" + yard +
-                ", storage=" + storage +
-                ", grid=" + grid +
-                ", pickupAndDeposit=" + pickupAndDeposit +
-                ", trailer=" + trailer +
-                ", shippedParcel=" + shippedParcel +
-                ", container=" + container +
-                ", packingStation=" + packingStation +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {
@@ -252,5 +241,13 @@ public class LocationGroupType {
 
     public void setShippedParcel(Boolean shippedParcel) {
         this.shippedParcel = shippedParcel;
+    }
+
+    public Boolean getShippedOrder() {
+        return shippedOrder;
+    }
+
+    public void setShippedOrder(Boolean shippedOrder) {
+        this.shippedOrder = shippedOrder;
     }
 }

@@ -18,13 +18,19 @@
 
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Pick implements Serializable {
+
     private Long id;
 
     private String number;
@@ -41,14 +47,61 @@ public class Pick implements Serializable {
 
     private Item item;
 
+    private Long warehouseId;
+
+    private Warehouse warehouse;
+
+    private Cartonization cartonization;
+
+    private Long workOrderLineId;
+
+    private ShortAllocation shortAllocation;
+
+    private PickType pickType;
+
     private Long quantity;
 
     private Long pickedQuantity;
 
-    private List<PickMovement> pickMovements = new ArrayList<>();
-    private Long warehouseId;
+    private PickStatus status;
 
-    private Warehouse warehouse;
+    private Long inventoryStatusId;
+
+    private InventoryStatus inventoryStatus;
+
+    List<PickMovement> pickMovements = new ArrayList<>();
+
+    private PickList pickList;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getPickListNumber() {
+        if (Objects.isNull(pickList)) {
+            // If the pick list is empty, let's check if it belongs
+            // to a cartonization pick
+            if (Objects.isNull(cartonization) ||
+                    Objects.isNull(cartonization.getPickList())) {
+                return null;
+            }
+            else {
+                // the pick belongs to a cartonization,
+                // let's return the list of the cartonization
+                return cartonization.getPickList().getNumber();
+
+            }
+        }
+        else {
+            return pickList.getNumber();
+        }
+    }
 
     public Long getId() {
         return id;
@@ -81,6 +134,7 @@ public class Pick implements Serializable {
     public void setSourceLocation(Location sourceLocation) {
         this.sourceLocation = sourceLocation;
     }
+
 
     public Long getDestinationLocationId() {
         return destinationLocationId;
@@ -130,12 +184,45 @@ public class Pick implements Serializable {
         this.pickedQuantity = pickedQuantity;
     }
 
+    public PickStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PickStatus status) {
+        this.status = status;
+    }
+
+
     public List<PickMovement> getPickMovements() {
         return pickMovements;
     }
 
     public void setPickMovements(List<PickMovement> pickMovements) {
         this.pickMovements = pickMovements;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
+    }
+
+    public ShortAllocation getShortAllocation() {
+        return shortAllocation;
+    }
+
+    public void setShortAllocation(ShortAllocation shortAllocation) {
+        this.shortAllocation = shortAllocation;
+    }
+
+    public PickList getPickList() {
+        return pickList;
+    }
+
+    public void setPickList(PickList pickList) {
+        this.pickList = pickList;
     }
 
     public Long getWarehouseId() {
@@ -152,5 +239,42 @@ public class Pick implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+
+    public PickType getPickType() {
+        return pickType;
+    }
+
+    public void setPickType(PickType pickType) {
+        this.pickType = pickType;
+    }
+
+    public Long getWorkOrderLineId() {
+        return workOrderLineId;
+    }
+
+    public void setWorkOrderLineId(Long workOrderLineId) {
+        this.workOrderLineId = workOrderLineId;
+    }
+
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public Cartonization getCartonization() {
+        return cartonization;
+    }
+
+    public void setCartonization(Cartonization cartonization) {
+        this.cartonization = cartonization;
+    }
+
+    public String getCartonizationNumber(){
+        return Objects.isNull(getCartonization()) ? "" : getCartonization().getNumber();
     }
 }

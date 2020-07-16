@@ -48,6 +48,10 @@ public class Order implements Serializable {
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status = OrderStatus.OPEN;
+
     @Transient
     private Warehouse warehouse;
 
@@ -544,5 +548,13 @@ public class Order implements Serializable {
 
     public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
         this.carrierServiceLevel = carrierServiceLevel;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 }
