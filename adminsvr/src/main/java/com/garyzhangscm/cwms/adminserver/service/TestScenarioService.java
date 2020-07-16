@@ -145,7 +145,6 @@ public class TestScenarioService {
                 return;
             }
             new Thread(() -> {
-
                 testScenarioSuit.reset();
                 testScenarioSuit.setStartDateTime(LocalDateTime.now());
 
@@ -173,9 +172,7 @@ public class TestScenarioService {
                 testScenarioSuit.setEndDateTime(LocalDateTime.now());
 
 
-
             }).start();
-
         }
 
 

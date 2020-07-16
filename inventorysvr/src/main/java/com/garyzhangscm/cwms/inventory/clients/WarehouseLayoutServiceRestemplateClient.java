@@ -502,6 +502,8 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location reduceLocationPendingVolume(Long id, Double pendingVolumeReduced) {
 
 
+        logger.debug("Will reduce pending volume of location for id {} by {}",
+                id, pendingVolumeReduced);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
@@ -542,12 +544,15 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location increaseLocationVolume(Long id, Double volumeIncreased) {
 
 
+        logger.debug("===> Start to increase location volume, location id: {}, volume: {}",
+                id, volumeIncreased);
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/locations/{id}/volume")
-                        .queryParam("increase", volumeIncreased);
+                        .queryParam("increase", volumeIncreased)
+                        .queryParam("fromPendingVolume", true);
 
         ResponseBodyWrapper<Location> responseBodyWrapper
                 = restTemplate.exchange(

@@ -121,6 +121,9 @@ public class DBBasedOrderLine implements Serializable, IntegrationOrderLineData 
 
         setCarrierServiceLevelId(orderLine.getCarrierServiceLevelId());
         setCarrierServiceLevelName(orderLine.getCarrierServiceLevelName());
+
+        setStatus(IntegrationStatus.PENDING);
+        setInsertTime(LocalDateTime.now());
     }
     @Override
     public String toString() {

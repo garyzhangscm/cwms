@@ -1,0 +1,47 @@
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+#      tempaltes:
+#        - condition:
+#            contains:
+#              docker.container.image: cwms
+#          config:
+#            - type: container
+#              paths:
+#                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+      hints.enabled: true
+      hints.default_config:
+        type: container
+        paths:
+          - /var/lib/docker/containers/${data.container.id}/*.log
+        multiline.pattern: '^[[:space:]]+(at|\.{3})[[:space:]]+\b|^Caused by:'
+        multiline.negate: false
+        multiline.match: after
+
+processors:
+  - include_fields:
+      fields: ["message"]
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+
+output.elasticsearch:
+  hosts: ["es01:9200"]
+
+# setup.kibana:
+#  hosts: ["kib01:5601"]
+#  http://localhost:5601/api/status
+# setup.kibana.host: "kib01:5601"
+
+# Will not load the default dashboards
+# as we will only use the kibana for log
+# No need to load the default dashbaord for log processing
+#setup.dashboards.enabled: true
+
+setup.template.overwrite: true
+
+# Use auto discover for more flexible configuration
+# filebeat.inputs:
+# - type: container
+#  paths:
+#  - '/var/lib/docker/containers/*/*.log'

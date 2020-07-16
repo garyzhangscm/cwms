@@ -35,10 +35,18 @@ public class TestIntegrationDownloadItem extends TestScenario{
     public TestIntegrationDownloadItem() {
         super(TestScenarioType.INTEGRATION_DOWNLOAD_ITEM, 10100);
 
-        for(int i = 1; i <= 5; i++) {
-            String itemName = "TEST-ITEM-HV-00" + i;
+        /*
+        * # 01 ~ 09: Test for inventory management
+        * # 10 ~ 19: Test for inbound
+        * # 20 ~ 29: Test for outbound
+        * ### 20 ~ 22: Basic sales order
+        * ### 23 / 24: Basic Emergency Replenishment
+        * # 30 ~ 39: Test for Work order
+        * */
+        for(int i = 1; i <= 39; i++) {
+            String itemName = "TEST-ITEM-HV-0" + String.format("%02d", i);
             testingItems.put(itemName, "TEST_HIGH_VALUE");
-            itemName = "TEST-ITEM-FZ-00" + i;
+            itemName = "TEST-ITEM-FZ-00" + String.format("%02d", i);
             testingItems.put(itemName, "FROZEN");
         }
 

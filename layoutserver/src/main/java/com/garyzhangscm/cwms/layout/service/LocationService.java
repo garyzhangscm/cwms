@@ -74,7 +74,8 @@ public class LocationService implements TestDataInitiableService {
         return locationRepository.findAll();
     }
 
-    public List<Location> findAll(Long warehouseId, String locationGroupTypeIds,
+    public List<Location> findAll(Long warehouseId,
+                                  String locationGroupTypeIds,
                                   String locationGroupIds,
                                   String name,
                                   Long beginSequence,
@@ -84,6 +85,7 @@ public class LocationService implements TestDataInitiableService {
                                   Boolean emptyLocationOnly,
                                   Double minEmptyCapacity,
                                   Boolean pickableLocationOnly,
+                                  String reservedCode,
                                   Boolean includeDisabledLocation) {
 
         return locationRepository.findAll(
@@ -192,6 +194,10 @@ public class LocationService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(joinWarehouse.get("id"), warehouseId));
                 }
 
+                if (StringUtils.isNotBlank(reservedCode)) {
+                    predicates.add(criteriaBuilder.equal(root.get("reservedCode"), reservedCode));
+
+                }
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
             }
@@ -236,6 +242,8 @@ public class LocationService implements TestDataInitiableService {
     }
 
     public Location save(Location location) {
+        logger.debug("Start to save location {} with volume {}",
+                location.getName(), location.getCurrentVolume());
         return locationRepository.save(location);
     }
     public Location saveOrUpdate(Location location) {
@@ -437,21 +445,48 @@ public class LocationService implements TestDataInitiableService {
     public Location changePendingVolume(Long id, Double reducedPendingVolume, Double increasedPendingVolume) {
 
         Location location = findById(id);
+        // we will reset the pending volume only if the location's group has the check volume setup
+        if (location.getLocationGroup().getTrackingVolume() == false) {
+            return location;
+        }
         logger.debug("Start to adjust pending volume for location: {}, current pending volume: {}, reduced by {}, increased by {}",
                 location.getName(), location.getPendingVolume(), reducedPendingVolume, increasedPendingVolume);
-        location.setPendingVolume(location.getPendingVolume() - reducedPendingVolume + increasedPendingVolume);
+
+        double pendingVolume = location.getPendingVolume() - reducedPendingVolume + increasedPendingVolume;
+        if (pendingVolume < 0) {
+            pendingVolume = 0.0;
+        }
+
+        location.setPendingVolume(pendingVolume);
         logger.debug("afect adjusting pending volume for location: {}, pending volume: {}",
                 location.getName(), location.getPendingVolume());
         return save(location);
 
     }
 
-    public Location changeLocationVolume(Long id, Double reducedVolume, Double increasedVolume) {
+    public Location changeLocationVolume(Long id, Double reducedVolume, Double increasedVolume, Boolean fromPendingVolume) {
 
         Location location = findById(id);
+        // we will reset the volume only if the location's group has the check volume setup
+        if (location.getLocationGroup().getTrackingVolume() == false) {
+            return location;
+        }
         logger.debug("Start to adjust location volume for location: {}, current volume: {}, reduced by {}, increased by {}",
                 location.getName(), location.getCurrentVolume(), reducedVolume, increasedVolume);
         location.setCurrentVolume(location.getCurrentVolume() - reducedVolume + increasedVolume);
+        if (increasedVolume > 0.0 && fromPendingVolume == true) {
+            // OK, we know we are increasing the volume and we need to reduce the same amount from
+            // the pending volume
+            // which is normally the case the we are moving inventory into the location
+            // which is supposed to be moved in(that's why the quantity is in the pending volume,
+            // and we have to deduct after the movement and increase the volume)
+            double pendingVolume = location.getPendingVolume();
+            pendingVolume = (pendingVolume >= increasedVolume ?
+                    (pendingVolume - increasedVolume) : 0.0);
+            location.setPendingVolume(pendingVolume);
+            logger.debug("# Will set location's pending volume to {} after we increase the location's volume by {}",
+                    pendingVolume, increasedVolume);
+        }
         logger.debug("afect adjusting location volume for location: {}, current volume: {}",
                 location.getName(), location.getCurrentVolume());
         return save(location);
@@ -574,6 +609,7 @@ public class LocationService implements TestDataInitiableService {
                 null,
                 null,
                 null,
+                null,
                 null);
 
     }
@@ -594,5 +630,43 @@ public class LocationService implements TestDataInitiableService {
         return saveOrUpdate(location);
     }
 
+
+    public Location createOrderLocation(Long warehouseId,String orderNumber) {
+        Location location = new Location(warehouseService.findById(warehouseId),
+                orderNumber, locationGroupService.getShippedOrderLocationGroup(warehouseId));
+
+        return saveOrUpdate(location);
+
+    }
+
+    /**
+     * release location from certain reserve code
+     * @param warehouseId warehouse id
+     * @param reservedCode reserve code
+     * @return all locations that used to have this reserve code
+     */
+    public List<Location> unreserveLocation(Long warehouseId, String reservedCode) {
+        List<Location> locations = findByReserveCode(warehouseId, reservedCode);
+        return locations.stream().map(location -> {
+            location.setReservedCode("");
+            return saveOrUpdate(location);
+        }).collect(Collectors.toList());
+    }
+
+    private List<Location> findByReserveCode(Long warehouseId, String reservedCode) {
+
+        return findAll(warehouseId,null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                reservedCode,
+                null);
+    }
 
 }

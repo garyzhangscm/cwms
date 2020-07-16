@@ -2,5 +2,10 @@ version: '2'
 services:
   eurekaserver:
     image: garyzhangscm/cwms-eurekasvr
+    restart: always
     ports:
       - "8761:8761"
+    labels:
+      - "co.elastic.logs/enabled=false"
+    environment:
+      TZ: "America/Los_Angeles"

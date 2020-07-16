@@ -37,7 +37,7 @@ public class KafkaReceiver {
     @Autowired
     InventoryService inventoryService;
 
-    @KafkaListener(topics = {"short-allocation"})
+    @KafkaListener(topics = {"short_allocation"})
     public void listen(ConsumerRecord<?, ?> record) {
         Optional<?> kafkaMessage = Optional.ofNullable(record.value());
         if (kafkaMessage.isPresent()) {
@@ -110,7 +110,7 @@ public class KafkaReceiver {
         logger.info("# received inventory activity data: {}", inventoryActivityJsonRepresent);
         try {
             InventoryActivity inventoryActivity = objectMapper.readValue(inventoryActivityJsonRepresent, InventoryActivity.class);
-            logger.info("InventoryActivity: {}", inventoryActivity);
+            // logger.info("InventoryActivity: {}", inventoryActivity);
 
             inventoryActivityService.processInventoryActivityMessage(inventoryActivity);
 
@@ -126,7 +126,7 @@ public class KafkaReceiver {
         try {
             InventoryAdjustmentRequest inventoryAdjustmentRequest
                     = objectMapper.readValue(processInventoryAdjustRequestJsonRepresent, InventoryAdjustmentRequest.class);
-            logger.info("InventoryActivity: {}", inventoryAdjustmentRequest);
+            // logger.info("InventoryActivity: {}", inventoryAdjustmentRequest);
 
             inventoryService.processInventoryAdjustRequest(inventoryAdjustmentRequest);
 

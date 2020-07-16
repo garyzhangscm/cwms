@@ -374,4 +374,14 @@ public class LocationGroupService implements TestDataInitiableService {
             return null;
         }
     }
+
+    public LocationGroup getShippedOrderLocationGroup(Long warehouseId) {
+        List<LocationGroup> locationGroups = locationGroupRepository.getShippedOrderLocationGroup(warehouseId);
+        if (locationGroups.size() > 0) {
+            return locationGroups.get(0);
+        }
+        else {
+            return null;
+        }
+    }
 }

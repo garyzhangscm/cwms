@@ -1,3 +1,3 @@
-warehouse,sequence,item,itemFamily,sourceLocation,sourceLocationGroup,destinationLocation,destinationLocationGroup
-WMOR,1,,HIGH_VALUE,,CASE_PICK_HV,,EACH_PICK_HV
-WMOR,2,,HIGH_VALUE,,PALLET_PICK_HV,,EACH_PICK_HV
+warehouse,sequence,item,itemFamily,sourceLocation,sourceLocationGroup,destinationLocation,destinationLocationGroup,unitOfMeasure
+WMOR,1,,HIGH_VALUE,,CASE_PICK_HV,,EACH_PICK_HV,CS
+WMOR,2,,HIGH_VALUE,,PALLET_PICK_HV,,EACH_PICK_HV,PL

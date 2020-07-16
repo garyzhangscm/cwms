@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -58,10 +60,10 @@ public class OrderLine implements Serializable {
     private Long openQuantity;
 
     @Column(name = "inprocess_quantity")
-    private Long inprocessQuantity;
+    private Long inprocessQuantity = 0L;
 
     @Column(name = "shipped_quantity")
-    private Long shippedQuantity;
+    private Long shippedQuantity = 0L;
 
 
     // Specific the inventory status that
@@ -102,24 +104,12 @@ public class OrderLine implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append("number: ").append(number).append(",")
-                .append("order number: ").append(order == null ? "" : order.getNumber()).append(",")
-                .append("itemId: ").append(itemId).append(",")
-                .append("item number: ").append(item == null ? "" : item.getName()).append(",")
-                .append("carrier ID: ").append(carrierId).append(",")
-                .append("carrier: ").append(carrier == null ? "" : carrier.getName()).append(",")
-                .append("Carrier Service Level Id: ").append(carrierServiceLevelId).append(",")
-                .append("Carrier Service Level: ").append(carrierServiceLevel == null ? "" : carrierServiceLevel.getName()).append(",")
-                .append("expectedQuantity: ").append(expectedQuantity).append(",")
-                .append("openQuantity: ").append(openQuantity).append(",")
-                .append("inprocessQuantity: ").append(inprocessQuantity).append(",")
-                .append("shippedQuantity: ").append(shippedQuantity).append(",")
-                .append("inventoryStatusId: ").append(inventoryStatusId).append(",")
-                .append("inventoryStatus: ").append(inventoryStatus == null? "" : inventoryStatus.getName()).append("}")
-                .toString();
-
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

@@ -1,5 +1,7 @@
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -17,12 +19,17 @@ public class EmergencyReplenishmentConfiguration {
     @JsonProperty(value="id")
     private Long id;
 
-    // Criteria: Item / Item Family / Source Location / Source Location Group
-    @Column(name = "sequence", unique = true)
+    @Column(name = "sequence")
     private Integer sequence;
 
-    // criteria: item / item group / inventory status
+    @Column(name = "unit_of_measure_id")
+    private Long unitOfMeasureId;
 
+    @Transient
+    private UnitOfMeasure unitOfMeasure;
+
+    // Criteria: Item / Item Family / Source Location / Source Location Group
+    // uom level
     @Column(name = "item_id")
     private Long itemId;
 
@@ -55,6 +62,8 @@ public class EmergencyReplenishmentConfiguration {
 
 
     // Destination / Destination Location Group
+    // Anything that match the above criteria
+    // will go to the destination location / location group
 
     @Column(name = "destination_location_id")
     private Long destinationLocationId;
@@ -67,6 +76,23 @@ public class EmergencyReplenishmentConfiguration {
     @Transient
     private LocationGroup destinationLocationGroup;
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getUnitOfMeasureId() {
+        return unitOfMeasureId;
+    }
+
+    public void setUnitOfMeasureId(Long unitOfMeasureId) {
+        this.unitOfMeasureId = unitOfMeasureId;
+    }
 
     public Long getId() {
         return id;
@@ -194,5 +220,13 @@ public class EmergencyReplenishmentConfiguration {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public UnitOfMeasure getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(UnitOfMeasure unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
     }
 }

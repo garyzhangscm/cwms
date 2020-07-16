@@ -149,7 +149,8 @@ public class PickListService {
         logger.debug("We find {} list picking configuration that match with current pick",
                 listPickingConfigurations.size());
         if (listPickingConfigurations.size() == 0) {
-            throw PickingException.raiseException("No list picking configuration defined for the current pick " + pick);
+            // throw PickingException.raiseException("No list picking configuration defined for the current pick " + pick);
+            return null;
         }
         try {
             PickList  pickList = findMatchedPickList(listPickingConfigurations, pick);

@@ -37,6 +37,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,9 +102,68 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
         return findById(id, true);
     }
 
+    public List<EmergencyReplenishmentConfiguration> findAll(Long warehouseId,
+                                                             Integer sequence,
+                                                             Long unitOfMeasureId,
+                                                             Long itemId,
+                                                             Long itemFamilyId,
+                                                             Long sourceLocationId,
+                                                             Long sourceLocationGroupId,
+                                                             Long destinationLocationId,
+                                                             Long destinationLocationGroupId){
+        return findAll(warehouseId, sequence, unitOfMeasureId, itemId,
+                itemFamilyId, sourceLocationId, sourceLocationGroupId, destinationLocationId, destinationLocationGroupId, true);
+    }
 
-    public List<EmergencyReplenishmentConfiguration> findAll(boolean loadDetails) {
-        List<EmergencyReplenishmentConfiguration> emergencyReplenishmentConfigurations = emergencyReplenishmentConfigurationRepository.findAll();
+    public List<EmergencyReplenishmentConfiguration> findAll(Long warehouseId,
+                                                             Integer sequence,
+                                                             Long unitOfMeasureId,
+                                                             Long itemId,
+                                                             Long itemFamilyId,
+                                                             Long sourceLocationId,
+                                                             Long sourceLocationGroupId,
+                                                             Long destinationLocationId,
+                                                             Long destinationLocationGroupId,
+                                                             boolean loadDetails) {
+
+
+        List<EmergencyReplenishmentConfiguration> emergencyReplenishmentConfigurations
+                =  emergencyReplenishmentConfigurationRepository.findAll(
+                (Root<EmergencyReplenishmentConfiguration> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(sequence)) {
+                        predicates.add(criteriaBuilder.equal(root.get("sequence"), sequence));
+                    }
+
+                    if (Objects.nonNull(unitOfMeasureId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("unitOfMeasureId"), unitOfMeasureId));
+                    }
+                    if (Objects.nonNull(itemId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
+                    }
+                    if (Objects.nonNull(itemFamilyId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("itemFamilyId"), itemFamilyId));
+                    }
+                    if (Objects.nonNull(sourceLocationId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("sourceLocationId"), sourceLocationId));
+                    }
+                    if (Objects.nonNull(sourceLocationGroupId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("sourceLocationGroupId"), sourceLocationGroupId));
+                    }
+                    if (Objects.nonNull(destinationLocationId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("destinationLocationId"), destinationLocationId));
+                    }
+                    if (Objects.nonNull(destinationLocationGroupId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("destinationLocationGroupId"), destinationLocationGroupId));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
 
         if (emergencyReplenishmentConfigurations.size() > 0 && loadDetails) {
             loadAttribute(emergencyReplenishmentConfigurations);
@@ -109,14 +171,19 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
         return emergencyReplenishmentConfigurations;
     }
 
-    public List<EmergencyReplenishmentConfiguration> findAll() {
-        return findAll(true);
+    public List<EmergencyReplenishmentConfiguration> findAll(Long warehouseId) {
+        return findAll(warehouseId, null, null, null, null,
+                null, null, null, null, true);
     }
 
 
 
     private void loadAttribute(EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration) {
 
+        if (emergencyReplenishmentConfiguration.getUnitOfMeasureId() != null && emergencyReplenishmentConfiguration.getUnitOfMeasure() == null) {
+            emergencyReplenishmentConfiguration.setUnitOfMeasure(
+                    commonServiceRestemplateClient.getUnitOfMeasureById(emergencyReplenishmentConfiguration.getUnitOfMeasureId()));
+        }
         if (emergencyReplenishmentConfiguration.getItemId() != null && emergencyReplenishmentConfiguration.getItem() == null) {
             emergencyReplenishmentConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(emergencyReplenishmentConfiguration.getItemId()));
         }
@@ -160,9 +227,11 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     }
 
     public EmergencyReplenishmentConfiguration saveOrUpdate(EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration) {
+        /***
         if (emergencyReplenishmentConfiguration.getId() == null && findBySequence(emergencyReplenishmentConfiguration.getSequence()) != null) {
             emergencyReplenishmentConfiguration.setId(findBySequence(emergencyReplenishmentConfiguration.getSequence()).getId());
         }
+         ***/
         return save(emergencyReplenishmentConfiguration);
     }
 
@@ -196,6 +265,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
                 addColumn("sourceLocationGroup").
                 addColumn("destinationLocation").
                 addColumn("destinationLocationGroup").
+                addColumn("unitOfMeasure").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, EmergencyReplenishmentConfigurationCSVWrapper.class);
@@ -227,6 +297,16 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
                 warehouseLayoutServiceRestemplateClient.getWarehouseByName(emergencyReplenishmentConfigurationCSVWrapper.getWarehouse());
 
         emergencyReplenishmentConfiguration.setWarehouseId(warehouse.getId());
+
+        if (StringUtils.isNotBlank(emergencyReplenishmentConfigurationCSVWrapper.getUnitOfMeasure())) {
+            UnitOfMeasure unitOfMeasure =
+                    commonServiceRestemplateClient.getUnitOfMeasureByName(
+                            emergencyReplenishmentConfigurationCSVWrapper.getUnitOfMeasure()
+                    );
+            if (unitOfMeasure != null) {
+                emergencyReplenishmentConfiguration.setUnitOfMeasureId(unitOfMeasure.getId());
+            }
+        }
 
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(
@@ -387,7 +467,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     }
 
     private List<EmergencyReplenishmentConfiguration> getMatchedEmergencyReplenishmentConfiguration(Pick pick) {
-        List<EmergencyReplenishmentConfiguration> emergencyReplenishmentConfigurations = findAll();
+        List<EmergencyReplenishmentConfiguration> emergencyReplenishmentConfigurations = findAll(pick.getWarehouseId());
         return emergencyReplenishmentConfigurations
                 .stream()
                 .filter(emergencyReplenishmentConfiguration -> match(pick, emergencyReplenishmentConfiguration))

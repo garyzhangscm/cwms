@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -34,8 +35,10 @@ public class TestBasicReceivingPutaway extends TestScenario{
     private final String[] recieptNumbers = {fullyReceivedReceiptNumber, shortReceivedReceiptNumber, overReceivedReceiptNumber};
     private final String supplierName = "TEST-SUPPLIER-A";
 
-    private final String[] itemNames = {"TEST-ITEM-HV-001", "TEST-ITEM-HV-002", "TEST-ITEM-HV-003"};
+    private final String[] itemNames = {"TEST-ITEM-HV-010", "TEST-ITEM-HV-011", "TEST-ITEM-HV-012"};
     private final Long[] expectedQuantities = {200L, 300L, 500L};
+    private Map<String, Long> overReceivingQuantities = new HashMap<>();
+
     private final String inventoryStatusName = "AVAL";
 
     @Autowired
@@ -53,6 +56,9 @@ public class TestBasicReceivingPutaway extends TestScenario{
     public TestBasicReceivingPutaway() {
 
         super(TestScenarioType.BASIC_RECEIVING_PUTAWAY, 50300);
+        overReceivingQuantities.put(fullyReceivedReceiptNumber, 0L);
+        overReceivingQuantities.put(shortReceivedReceiptNumber, 0L);
+        overReceivingQuantities.put(overReceivedReceiptNumber, 100L);
 
     }
     @Override
@@ -82,16 +88,63 @@ public class TestBasicReceivingPutaway extends TestScenario{
     private void testReceiving(Warehouse warehouse, InventoryStatus inventoryStatus) {
         testFullyReceiving(warehouse, inventoryStatus);
 
+        testOverReceiving(warehouse, inventoryStatus);
+
     }
 
-    /**
-     * Test fully receiving all the lines
-     * @param warehouse
-     */
-    private void testFullyReceiving(Warehouse warehouse, InventoryStatus inventoryStatus)  {
+    private void testFullyReceiving(Warehouse warehouse, InventoryStatus inventoryStatus) {
+
         Receipt receipt = inboundServiceRestemplateClient.getReceiptByNumber(
                 warehouse.getId(), fullyReceivedReceiptNumber
         );
+
+        Long overReceivingQuantity = overReceivingQuantities.getOrDefault(fullyReceivedReceiptNumber, 0L);
+
+        testReceiving(warehouse, receipt, inventoryStatus, overReceivingQuantity);
+
+        logger.debug("1. Test Fully receiving with {}, over receiving quantity: {}",
+                recieptNumbers, overReceivingQuantity);
+        try {
+
+            // Over receiving above max should not be allowed
+            logger.debug("1. Test Fully receiving with {}, over receiving quantity: {}",
+                    recieptNumbers, overReceivingQuantity+ 100);
+            testReceiving(warehouse, receipt, inventoryStatus, overReceivingQuantity + 100);
+        }
+        catch(Exception ex) {
+            logger.debug("Over receive with quantity {} is not allowed. Max over receiving allowed: {} " ,
+                    (overReceivingQuantity + 100), overReceivingQuantity);
+        }
+    }
+
+
+    private void testOverReceiving(Warehouse warehouse, InventoryStatus inventoryStatus) {
+
+        Receipt receipt = inboundServiceRestemplateClient.getReceiptByNumber(
+                warehouse.getId(), overReceivedReceiptNumber
+        );
+
+        Long overReceivingQuantity = overReceivingQuantities.getOrDefault(overReceivedReceiptNumber, 100L);
+
+        logger.debug("2. Test over receiving with {}, over receiving quantity: {}",
+                receipt.getNumber(), overReceivingQuantity);
+        testReceiving(warehouse, receipt, inventoryStatus, overReceivingQuantity);
+
+        try {
+
+            logger.debug("2. Test over receiving with {}, over receiving quantity: {}",
+                    recieptNumbers, overReceivingQuantity + 100);
+            // Over receiving above max should not be allowed
+            testReceiving(warehouse, receipt, inventoryStatus, overReceivingQuantity + 100);
+        }
+        catch(Exception ex) {
+            logger.debug("Over receive with quantity {} is not allowed. Max over receiving allowed: {} " ,
+                    (overReceivingQuantity + 100), overReceivingQuantity);
+        }
+    }
+
+    private void testReceiving(Warehouse warehouse, Receipt receipt,
+                               InventoryStatus inventoryStatus, Long overReceivingQuantity)  {
 
         // we will need to check in first
         inboundServiceRestemplateClient.checkInReceipt(receipt.getId());
@@ -106,9 +159,10 @@ public class TestBasicReceivingPutaway extends TestScenario{
                 );
             }
 
+
             Inventory inventory = createInventory(
                     warehouse, null, item,
-                    receiptLine.getExpectedQuantity() - receiptLine.getReceivedQuantity(),
+                    receiptLine.getExpectedQuantity() + overReceivingQuantity - receiptLine.getReceivedQuantity(),
                     inventoryStatus
             );
             try {
@@ -123,6 +177,31 @@ public class TestBasicReceivingPutaway extends TestScenario{
             }
         });
 
+        // Let's get all the received inventory and
+        // allocate locations for those inventory
+        List<Inventory> receivedInventories =
+                inventoryServiceRestemplateClient.findInventoryByReceipt(
+                        warehouse.getId(), receipt.getId()
+                );
+
+        // make sure the received inventory number matches with the item number
+        if (receivedInventories.size() != itemNames.length) {
+
+            throw TestFailException.raiseException("Received inventory numbers doesn't match with the item numbers\n" +
+                    "Received inventory numbers: " + receivedInventories.size() + "\n" +
+                    "item numbers: " + itemNames.length);
+        }
+
+        // Let's test the putaway for those inventories
+        try {
+            List<Inventory> putawayInventory = testPutaway(receivedInventories);
+            assertInventoryPutaway(putawayInventory);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw TestFailException.raiseException("Can't complete receipt\n " +  receipt);
+        }
+
+
         // let's complete the receipt
         try {
             inboundServiceRestemplateClient.completeReceipt(receipt.getId());
@@ -133,6 +212,40 @@ public class TestBasicReceivingPutaway extends TestScenario{
 
         // make sure the integration data has been generated
         assertReceiptConfirmationIntegration(receipt.getNumber());
+    }
+
+    private void assertInventoryPutaway(List<Inventory> putawayInventory) {
+        // make sure all the inventory are in a storage location
+        for (Inventory inventory : putawayInventory) {
+            if (inventory.getLocation().getLocationGroup().getStorable() == false) {
+                throw TestFailException.raiseException("Inventory is not in a storable location: " + inventory);
+            }
+        }
+    }
+
+    private List<Inventory> testPutaway(List<Inventory> receivedInventories) throws JsonProcessingException {
+
+        List<Inventory> putawayInventory = new ArrayList<>();
+        for (Inventory receivedInventory : receivedInventories) {
+            receivedInventory = inboundServiceRestemplateClient.allocateLocationForPutaway(receivedInventory);
+            if (receivedInventory.getInventoryMovements().size() == 0) {
+                // We allocated nothing, which should not be correct
+                throw TestFailException.raiseException("Not able to allocate location for inventory\n" + receivedInventory);
+            }
+            if(receivedInventory.getInventoryMovements().size() > 0) {
+                // We will move directly to the final destination
+                Long locationId = receivedInventory.getInventoryMovements().get(
+                        receivedInventory.getInventoryMovements().size() - 1
+                ).getLocationId();
+                Location location = warehouseLayoutServiceRestemplateClient.getLocationById(
+                        locationId
+                );
+
+                putawayInventory.add(inventoryServiceRestemplateClient.moveInventory(receivedInventory, location));
+            }
+        }
+        return putawayInventory;
+
     }
 
     private void assertReceiptConfirmationIntegration(String receiptNumber) {
@@ -197,6 +310,10 @@ public class TestBasicReceivingPutaway extends TestScenario{
 
         logger.debug("Start to create receipt {}", receiptNumber);
 
+        Long overReceivingQuantity = overReceivingQuantities.getOrDefault(receiptNumber, 0L);
+        logger.debug("## 3Start to create receipt {} WITH over receiving quantity {}",
+                receiptNumber, overReceivingQuantity);
+
         Receipt receipt = new Receipt(warehouse, receiptNumber, supplier);
         for (int i = 0; i < itemNames.length; i++) {
             String itemName = itemNames[i];
@@ -204,7 +321,7 @@ public class TestBasicReceivingPutaway extends TestScenario{
 
             Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), itemName);
             ReceiptLine receiptLine = new ReceiptLine(warehouse, receipt, String.valueOf(i),
-                    item, quantity);
+                    item, quantity, overReceivingQuantity, 0.0);
             receipt.addReceiptLine(receiptLine);
         }
 

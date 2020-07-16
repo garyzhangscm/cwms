@@ -83,21 +83,33 @@ public class IntegrationService {
 
     }
 
-    public void processInventoryAdjustment(Inventory inventory, Long originalQuantity, Long newQuantity) {
+    public void processInventoryAdjustment(InventoryQuantityChangeType inventoryQuantityChangeType,
+                                           Inventory inventory, Long originalQuantity, Long newQuantity) {
+        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING)) {
+            // when we are receiving inventory, we will not send integration data for individual
+            // inventory. instead we will send integration data for the whole receipt
+            return;
+        }
         Warehouse warehouse = inventory.getWarehouse();
         if (Objects.isNull(warehouse)) {
             warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(inventory.getWarehouseId());
         }
-        processInventoryAdjustment(warehouse, inventory, originalQuantity, newQuantity);
+        processInventoryAdjustment(inventoryQuantityChangeType, warehouse, inventory, originalQuantity, newQuantity);
 
     }
-    public void processInventoryAdjustment(Warehouse warehouse, Inventory inventory, Long originalQuantity, Long newQuantity) {
+    public void processInventoryAdjustment(InventoryQuantityChangeType inventoryQuantityChangeType, Warehouse warehouse,
+                                           Inventory inventory, Long originalQuantity, Long newQuantity) {
 
 
+        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING)) {
+            // when we are receiving inventory, we will not send integration data for individual
+            // inventory. instead we will send integration data for the whole receipt
+            return;
+        }
         InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation =
                 new InventoryAdjustmentConfirmation(warehouse, inventory, originalQuantity, newQuantity);
 
-        logger.debug("Will send inventory adjust confirmation\n {}", inventoryAdjustmentConfirmation);
+        logger.debug("Will send inventory adjust confirmation\n ");
         kafkaSender.send(inventoryAdjustmentConfirmation);
 
     }

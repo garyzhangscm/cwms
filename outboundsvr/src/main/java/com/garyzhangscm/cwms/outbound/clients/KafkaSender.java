@@ -3,9 +3,11 @@ package com.garyzhangscm.cwms.outbound.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.model.OrderActivity;
+import com.garyzhangscm.cwms.outbound.model.OrderConfirmation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,7 @@ public class KafkaSender {
     @Autowired
     private KafkaTemplate kafkaTemplate;
 
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
@@ -35,4 +38,14 @@ public class KafkaSender {
             send("SYSTEM_ERROR", ex.getMessage());
         }
     }
+
+    public void send(OrderConfirmation orderConfirmation) {
+        try {
+            send("INTEGRATION_ORDER_CONFIRMATION", objectMapper.writeValueAsString(orderConfirmation));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
 }

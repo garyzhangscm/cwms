@@ -101,6 +101,10 @@ public class DBBasedReceiptLineConfirmation implements Serializable, Integration
 
         setOverReceivingQuantity(receiptLineConfirmation.getOverReceivingQuantity());
         setOverReceivingPercent(receiptLineConfirmation.getOverReceivingPercent());
+
+
+        setInsertTime(LocalDateTime.now());
+        setStatus(IntegrationStatus.PENDING);
     }
 
     @Override

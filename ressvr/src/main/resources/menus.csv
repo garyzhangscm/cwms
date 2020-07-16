@@ -33,6 +33,7 @@ text,i18n,link,sequence,menuSubGruop,name
 "Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,8,Main-Menu-Outbound,Outbound-PickConfirm
 "Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,9,Main-Menu-Outbound,Outbound-ShortAllocation
 "Trailer",menu.main.outbound.trailer,/outbound/trailer,10,Main-Menu-Outbound,Outbound-Trailer
+"Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,2,Main-Menu-WorkOrder,Work-Order
 "Production Line",menu.main.work-order.production-line,/work-order/production-line,3,Main-Menu-WorkOrder,Production-Line

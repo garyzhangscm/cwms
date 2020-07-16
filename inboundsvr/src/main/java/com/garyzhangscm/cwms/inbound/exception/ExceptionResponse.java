@@ -2,11 +2,12 @@ package com.garyzhangscm.cwms.inbound.exception;
 
 import org.springframework.util.ObjectUtils;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExceptionResponse {
+public class ExceptionResponse implements Serializable {
     private int code;
     private int status;
     private String message;

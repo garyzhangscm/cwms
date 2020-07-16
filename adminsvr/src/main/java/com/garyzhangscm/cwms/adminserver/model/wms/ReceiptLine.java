@@ -82,6 +82,14 @@ public class ReceiptLine {
                 0L, 0L, 0.0);
 
     }
+
+    public ReceiptLine(Warehouse warehouse, Receipt receipt, String number,
+                       Item item, Long expectedQuantity,
+                       Long overReceivingQuantity, Double overReceivingPercent) {
+        this(warehouse, receipt, number, item, expectedQuantity,
+                0L, overReceivingQuantity, overReceivingPercent);
+
+    }
     @Override
     public String toString() {
         try {

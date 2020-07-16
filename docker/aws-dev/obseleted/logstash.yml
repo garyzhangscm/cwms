@@ -1,0 +1,5 @@
+version: '2'
+services:
+  logstash:
+    # image: docker.elastic.co/logstash/logstash:7.8.0
+    image: garyzhangscm/logstash

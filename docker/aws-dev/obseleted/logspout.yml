@@ -1,0 +1,14 @@
+version: '2'
+services:
+  logspout:
+#    image: gliderlabs/logspout
+    # We will use a customized version of logspout
+    # which contains the adapter of logspout - logstach
+    # Logspout will gather all logs from dockers
+    # and send to logstach for processing
+    image: garyzhangscm/logspout
+#   command: syslog://logs5.papertrailapp.com:21218
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      ROUTE_URIS: logstash://elk:5044

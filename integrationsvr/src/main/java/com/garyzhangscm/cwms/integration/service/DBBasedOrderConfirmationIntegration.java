@@ -69,9 +69,7 @@ public class DBBasedOrderConfirmationIntegration {
         DBBasedOrderConfirmation dbBasedOrderConfirmation =
                 getDBBasedOrderConfirmation(orderConfirmation);
 
-        dbBasedOrderConfirmation.setStatus(IntegrationStatus.COMPLETED);
-        dbBasedOrderConfirmation.setInsertTime(LocalDateTime.now());
-        dbBasedOrderConfirmation.setLastUpdateTime(LocalDateTime.now());
+
         return save(dbBasedOrderConfirmation);
     }
 

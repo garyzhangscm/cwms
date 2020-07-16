@@ -1,0 +1,17 @@
+version: '3'
+services:
+  filebeat:
+    image: garyzhangscm/filebeat
+    user: root
+    volumes:
+      # Will need to mount the follow 2 directory to the filebeat container
+      # so that it is able to read the logs from the other containers
+      # in the same host
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+#    networks:
+#      - elastic
+
+#networks:
+#  elastic:
+#    driver: bridge

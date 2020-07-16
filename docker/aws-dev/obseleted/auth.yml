@@ -13,7 +13,5 @@ services:
       DATABASESERVER_PORT: "3306"
       ENCRYPT_KEY:       "${ENCRYPT_KEY}"
       COMPOSE_PROJECT_NAME: "CWMS-APP"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
+    labels:
+      - "co.elastic.logs/enabled=false"

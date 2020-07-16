@@ -43,6 +43,7 @@ CREATE TABLE location_group_type (
   pickup_and_deposit_locations  boolean not null default 0,
   trailer_locations  boolean not null default 0,
   shipped_parcel_locations boolean not null default 0,
+  shipped_order_locations boolean not null default 0,
   grid  boolean not null default 0,
   production_line_locations  boolean not null default 0,
   production_line_inbound_locations  boolean not null default 0,

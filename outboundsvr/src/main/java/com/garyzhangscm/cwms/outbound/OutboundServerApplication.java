@@ -15,6 +15,8 @@ import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -22,7 +24,11 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextListener;
+
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @SpringBootApplication
 // Refresh configuration when config server is updated
@@ -32,10 +38,25 @@ import java.util.Collections;
 @RefreshScope
 @EnableResourceServer
 @EnableCaching
+@EnableScheduling
 public class OutboundServerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(OutboundServerApplication.class, args);
+	}
+
+	/**
+	 * no token Rest Template, a rest tempalte without the user auth token
+	 * We will use this rest template to log in a default user for background job
+	 * that is not running inside a web request
+	 * @return
+	 */
+	@LoadBalanced
+	@Bean
+	@Qualifier("noTokenRestTemplate")
+	public RestTemplate noTokenRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		return restTemplate;
 	}
 
 	@Bean
@@ -50,6 +71,8 @@ public class OutboundServerApplication {
 												   ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails,
 												   @Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext) {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
+
+		List<ClientHttpRequestInterceptor> interceptorList = new ArrayList<>();
 		restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
 		customizer.customize(restTemplate);
 		return restTemplate;
@@ -68,4 +91,11 @@ public class OutboundServerApplication {
 				.registerModule(new JavaTimeModule())
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
+	// To support scheduled job with OAuth2
+	/***
+	@Bean
+	public RequestContextListener requestContextListener() {
+		return new RequestContextListener();
+	}
+	***/
 }

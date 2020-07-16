@@ -80,15 +80,6 @@ public class DBBasedReceiptConfirmationIntegration {
         DBBasedReceiptConfirmation dbBasedReceiptConfirmation =
                 getDBBasedReceiptConfirmation(receiptConfirmation);
 
-        dbBasedReceiptConfirmation.setStatus(IntegrationStatus.PENDING);
-        dbBasedReceiptConfirmation.setInsertTime(LocalDateTime.now());
-        dbBasedReceiptConfirmation.setLastUpdateTime(LocalDateTime.now());
-        dbBasedReceiptConfirmation.getReceiptLines().forEach(dbBasedReceiptLineConfirmation -> {
-
-            dbBasedReceiptLineConfirmation.setStatus(IntegrationStatus.ATTACHED);
-            dbBasedReceiptLineConfirmation.setInsertTime(LocalDateTime.now());
-            dbBasedReceiptLineConfirmation.setLastUpdateTime(LocalDateTime.now());
-        });
         return save(dbBasedReceiptConfirmation);
     }
 

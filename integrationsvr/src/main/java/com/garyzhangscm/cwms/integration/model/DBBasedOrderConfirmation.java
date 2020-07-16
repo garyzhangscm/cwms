@@ -82,8 +82,15 @@ public class DBBasedOrderConfirmation implements Serializable, IntegrationOrderC
 
 
         orderConfirmation.getOrderLines().forEach(orderLineConfirmation -> {
-            addOrderLine(new DBBasedOrderLineConfirmation(orderLineConfirmation));
+            DBBasedOrderLineConfirmation dbBasedOrderLineConfirmation =
+                    new DBBasedOrderLineConfirmation(orderLineConfirmation);
+            dbBasedOrderLineConfirmation.setOrder(this);
+            dbBasedOrderLineConfirmation.setStatus(IntegrationStatus.ATTACHED);
+            addOrderLine(dbBasedOrderLineConfirmation);
         });
+
+        setInsertTime(LocalDateTime.now());
+        setStatus(IntegrationStatus.PENDING);
 
     }
 
