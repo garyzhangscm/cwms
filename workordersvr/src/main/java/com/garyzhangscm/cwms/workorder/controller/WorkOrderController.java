@@ -19,8 +19,10 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.garyzhangscm.cwms.workorder.model.Inventory;
 import com.garyzhangscm.cwms.workorder.model.WorkOrder;
 
+import com.garyzhangscm.cwms.workorder.model.WorkOrderLine;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +87,18 @@ public class WorkOrderController {
         workOrderLineService.registerShortAllocationCancelled(id, cancelledQuantity);
     }
 
+    @RequestMapping(value="/work-orders/lines/{id}", method = RequestMethod.GET)
+    public WorkOrderLine findWorkOrderLine(@PathVariable Long id) {
+        return workOrderLineService.findById(id);
+    }
+
+    @RequestMapping(value="/work-orders/lines/{id}/inventory-being-delivered", method = RequestMethod.POST)
+    public WorkOrderLine changeDeliveredQuantity(@PathVariable Long id,
+                                                 @RequestParam Long quantityBeingDelivered,
+                                                 @RequestParam Long deliveredLocationId) {
+        return workOrderLineService.changeDeliveredQuantity(id, quantityBeingDelivered, deliveredLocationId);
+    }
+
     @RequestMapping(value="/work-orders/lines/{id}/pick-cancelled", method = RequestMethod.POST)
     public void registerPickCancelled(@PathVariable Long id,
                                            @RequestParam Long cancelledQuantity) {
@@ -96,5 +110,37 @@ public class WorkOrderController {
                                   @RequestParam Long productionLineId) {
         return workOrderService.changeProductionLine(id, productionLineId);
     }
+
+
+    @RequestMapping(value="/work-orders/{id}/produced-inventory", method = RequestMethod.GET)
+    public List<Inventory> getProducedInventory(@PathVariable Long id) {
+        return workOrderService.getProducedInventory(id);
+    }
+
+    @RequestMapping(value="/work-orders/{id}/delivered-inventory", method = RequestMethod.GET)
+    public List<Inventory> getDeliveredInventory(@PathVariable Long id) {
+        return workOrderService.getDeliveredInventory(id);
+    }
+
+
+    @RequestMapping(value="/work-orders/{id}/returned-inventory", method = RequestMethod.GET)
+    public List<Inventory> getReturnedInventory(@PathVariable Long id) {
+        return workOrderService.getReturnedInventory(id);
+    }
+
+
+    @RequestMapping(value="/work-orders/{id}/unpick-inventory", method = RequestMethod.POST)
+    public Inventory unpickInventory(@PathVariable Long id,
+                                           @RequestParam Long inventoryId,
+                                           @RequestParam(name = "unpickedQuantity", required = false, defaultValue = "") Long unpickedQuantity,
+                                           @RequestParam(name = "overrideConsumedQuantity", required = false, defaultValue = "false") Boolean overrideConsumedQuantity,
+                                           @RequestParam(name = "consumedQuantity", required = false, defaultValue = "")  Long consumedQuantity,
+                                           @RequestParam(name = "destinationLocationId", required = false, defaultValue = "") Long destinationLocationId,
+                                           @RequestParam(name = "destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
+                                           @RequestParam(name = "immediateMove", required = false, defaultValue = "true") boolean immediateMove) {
+        return workOrderService.unpickInventory(id, inventoryId, unpickedQuantity,  overrideConsumedQuantity, consumedQuantity,
+                destinationLocationId, destinationLocationName, immediateMove);
+    }
+
 
 }

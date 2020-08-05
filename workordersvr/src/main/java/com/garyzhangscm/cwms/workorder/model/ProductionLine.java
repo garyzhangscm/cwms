@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "production_line")
-public class ProductionLine {
+public class ProductionLine extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

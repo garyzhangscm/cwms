@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderLineRepository;
 import org.apache.commons.lang.StringUtils;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -97,9 +99,12 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
     public void loadAttribute(WorkOrderLine workOrderLine) {
 
-        if (workOrderLine.getWorkOrder().getWarehouseId() != null && workOrderLine.getWorkOrder().getWarehouse() == null) {
-            workOrderLine.getWorkOrder().setWarehouse(
-                    warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrderLine.getWorkOrder().getWarehouseId()));
+        if (Objects.nonNull(workOrderLine.getWorkOrder())) {
+
+            if (workOrderLine.getWorkOrder().getWarehouseId() != null && workOrderLine.getWorkOrder().getWarehouse() == null) {
+                workOrderLine.getWorkOrder().setWarehouse(
+                        warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrderLine.getWorkOrder().getWarehouseId()));
+            }
         }
         if (workOrderLine.getItemId() != null && workOrderLine.getItem() == null) {
             workOrderLine.setItem(inventoryServiceRestemplateClient.getItemById(workOrderLine.getItemId()));
@@ -225,6 +230,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
         workOrderLine.setExpectedQuantity(workOrderLineCSVWrapper.getExpectedQuantity());
         workOrderLine.setOpenQuantity(workOrderLineCSVWrapper.getExpectedQuantity());
         workOrderLine.setInprocessQuantity(0L);
+        workOrderLine.setDeliveredQuantity(0L);
         workOrderLine.setConsumedQuantity(0L);
 
         workOrderLine.setInventoryStatusId(
@@ -245,6 +251,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
         workOrderLine.setExpectedQuantity(billOfMaterialLine.getExpectedQuantity() * workOrderCount);
         workOrderLine.setOpenQuantity(billOfMaterialLine.getExpectedQuantity() * workOrderCount);
         workOrderLine.setInprocessQuantity(0L);
+        workOrderLine.setDeliveredQuantity(0L);
         workOrderLine.setConsumedQuantity(0L);
 
         return save(workOrderLine);
@@ -286,5 +293,90 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
     }
 
+    @Transactional
+    public void consume(WorkOrderLine workOrderLine, Long consumedQuantity) {
 
+        // make sure the total consumed quantity won't exceed total delivered quantity
+        if (workOrderLine.getConsumedQuantity() + consumedQuantity > workOrderLine.getDeliveredQuantity()) {
+
+            throw WorkOrderException.raiseException("Can't consume more than delivered. Total Delivered: " +
+                    workOrderLine.getDeliveredQuantity() + ", already consumed: " +
+                    workOrderLine.getConsumedQuantity() + ", will be consumed this time: " + consumedQuantity);
+        }
+        workOrderLine.setConsumedQuantity(workOrderLine.getConsumedQuantity() + consumedQuantity);
+        save(workOrderLine);
+    }
+
+
+
+    @Transactional
+    public WorkOrderLine changeDeliveredQuantity(Long workOrderLineId,
+                                                 Long quantityBeingDelivered,
+                                                 Long deliveredLocationId) {
+
+        WorkOrderLine workOrderLine = findById(workOrderLineId);
+
+        logger.debug("Will check if we need to update the delivered quantity");
+        logger.debug("deliveredLocationId: {}, production's InboundStageLocationId: {}",
+                deliveredLocationId, workOrderLine.getWorkOrder()
+                        .getProductionLine().getInboundStageLocationId());
+        logger.debug("quantity delivered: {}", quantityBeingDelivered);
+        // Make sure the inventory was delivered to the right location,
+        // which should be the IN staging of the production line
+        if (workOrderLine.getWorkOrder()
+                .getProductionLine().getInboundStageLocationId()
+                .equals(deliveredLocationId)) {
+
+            workOrderLine.setDeliveredQuantity(workOrderLine.getDeliveredQuantity() + quantityBeingDelivered);
+
+            return save(workOrderLine);
+
+        }
+        else {
+            return workOrderLine;
+        }
+    }
+
+    @Transactional
+    public WorkOrderLine overrideConsumedQuantity(WorkOrderLine workOrderLine, Long newConsumedQuantity) {
+
+        if (newConsumedQuantity >= workOrderLine.getDeliveredQuantity()) {
+            throw WorkOrderException.raiseException("Can't consume more than delivered. " +
+                    "Consumed Quantity: " + newConsumedQuantity + ", Delivered Quantity: " +
+                    workOrderLine.getDeliveredQuantity());
+        }
+
+        workOrderLine.setConsumedQuantity(newConsumedQuantity);
+
+        return saveOrUpdate(workOrderLine);
+    }
+
+
+    @Transactional
+    public WorkOrderLine refreshQuantityAfterUnpickInventory(WorkOrderLine workOrderLine, Long unpickedQuantity) {
+
+        if (unpickedQuantity >= workOrderLine.getDeliveredQuantity()) {
+            throw WorkOrderException.raiseException("Can't unpick more than delivered. " +
+                    "Unpicked Quantity: " + unpickedQuantity + ", Delivered Quantity: " +
+                    workOrderLine.getDeliveredQuantity());
+        }
+
+        workOrderLine.setDeliveredQuantity(workOrderLine.getDeliveredQuantity() - unpickedQuantity);
+        // return the unpicked quantity back to open quantity
+        workOrderLine.setInprocessQuantity(workOrderLine.getInprocessQuantity() - unpickedQuantity);
+        workOrderLine.setOpenQuantity(workOrderLine.getOpenQuantity() + unpickedQuantity);
+
+        return saveOrUpdate(workOrderLine);
+    }
+
+
+    public WorkOrderLine completeWorkOrderLine(WorkOrderLine workOrderLine,
+                                      Long consumedQuantity, Long scrappedQuantity, Long returnedMaterialsQuantity) {
+        workOrderLine.setConsumedQuantity(consumedQuantity);
+        workOrderLine.setInprocessQuantity(0L);
+        workOrderLine.setScrappedQuantity(scrappedQuantity);
+        workOrderLine.setReturnedQuantity(returnedMaterialsQuantity);
+        return saveOrUpdate(workOrderLine);
+
+    }
 }

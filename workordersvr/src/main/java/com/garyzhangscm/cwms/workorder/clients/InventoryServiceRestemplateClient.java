@@ -18,19 +18,31 @@
 
 package com.garyzhangscm.cwms.workorder.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
+import com.garyzhangscm.cwms.workorder.model.Inventory;
 import com.garyzhangscm.cwms.workorder.model.InventoryStatus;
 import com.garyzhangscm.cwms.workorder.model.Item;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class InventoryServiceRestemplateClient {
@@ -40,7 +52,27 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
 
+    public Inventory getInventoryById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/{id}");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -127,5 +159,133 @@ public class InventoryServiceRestemplateClient {
             return inventoryStatuses.get(0);
         }
     }
+
+    public List<Inventory> findDeliveredInventory(Long warehouseId,
+                                                  Long productionLocationId, String pickIds) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationId", productionLocationId)
+                        .queryParam("pickIds", pickIds);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public List<Inventory>  getReturnedInventory(Long warehouseId, String workOrderLineIds) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("workOrderLineIds", workOrderLineIds);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public List<Inventory> findProducedInventory(Long warehouseId, Long workOrderId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("workOrderId", workOrderId);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public Inventory receiveInventoryFromWorkOrder(Inventory inventory) {
+
+        // Convert the inventory to JSON and send to the inventory service
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/receive");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.PUT,
+                    getHttpEntity(objectMapper.writeValueAsString(inventory)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw WorkOrderException.raiseException("Can't add inventory due to JsonProcessingException: " + e.getMessage());
+        }
+
+        return responseBodyWrapper.getData();
+    }
+
+
+    public Inventory unpickFromWorkOrder(Inventory inventory,
+                                         Long destinationLocationId,
+                                         String destinationLocationName,
+                                         boolean immediateMove) {
+
+        // Convert the inventory to JSON and send to the inventory service
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("warehouseId", String.valueOf(inventory.getWarehouseId()));
+        if (Objects.nonNull(destinationLocationId)) {
+            params.add("destinationLocationId", String.valueOf(destinationLocationId));
+        }
+        if (StringUtils.isNotBlank(destinationLocationName)) {
+            params.add("destinationLocationName", destinationLocationName);
+        }
+        params.add("immediateMove", String.valueOf(immediateMove));
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/{id}/unpick")
+                .queryParams(params);
+
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                    builder.buildAndExpand(inventory.getId()).toUriString(),
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+
+        return responseBodyWrapper.getData();
+    }
+
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
+    }
+
 
 }

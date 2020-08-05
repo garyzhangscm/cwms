@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.BillOfMaterialRepository;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,8 @@ public class BillOfMaterialService implements TestDataInitiableService {
     private BillOfMaterialRepository billOfMaterialRepository;
     @Autowired
     private BillOfMaterialLineService billOfMaterialLineService;
+    @Autowired
+    private WorkOrderService workOrderService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -218,6 +221,66 @@ public class BillOfMaterialService implements TestDataInitiableService {
         );
 
         return billOfMaterial;
+    }
+
+    public BillOfMaterial getMatchedBillOfMaterial(Long workOrderid) {
+        WorkOrder workOrder = workOrderService.findById(workOrderid);
+        if (Objects.isNull(workOrder)) {
+            return null;
+        }
+        return getMatchedBillOfMaterial(workOrder);
+    }
+    public BillOfMaterial getMatchedBillOfMaterial(WorkOrder workOrder) {
+        if (Objects.nonNull(workOrder.getBillOfMaterial())) {
+            BillOfMaterial billOfMaterial = workOrder.getBillOfMaterial();
+            loadAttribute(billOfMaterial);
+            return billOfMaterial;
+        }
+
+        // find by the item
+        List<BillOfMaterial> billOfMaterials =
+                findAll(workOrder.getWarehouseId(), "", workOrder.getItem().getName(), false);
+
+        BillOfMaterial matchedBillOfMaterial = billOfMaterials.stream()
+                .filter(billOfMaterial -> match(billOfMaterial, workOrder)).findFirst().orElseThrow(null);
+        if (matchedBillOfMaterial != null) {
+
+            loadAttribute(matchedBillOfMaterial);
+            return matchedBillOfMaterial;
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * @param billOfMaterial
+     * @param workOrder
+     * @return
+     */
+    private boolean match(BillOfMaterial billOfMaterial, WorkOrder workOrder) {
+
+        if (!billOfMaterial.getItemId().equals(workOrder.getItemId())) {
+            return false;
+        }
+
+        if (billOfMaterial.getBillOfMaterialLines().size() != workOrder.getWorkOrderLines().size()) {
+            return false;
+        }
+
+        for (BillOfMaterialLine billOfMaterialLine : billOfMaterial.getBillOfMaterialLines()) {
+            boolean findMatchedLine = false;
+            for (WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
+                if (billOfMaterialLineService.match(billOfMaterialLine, workOrderLine)) {
+                    findMatchedLine = true;
+                }
+            }
+            if (!findMatchedLine) {
+                return false;
+            }
+
+        }
+        return true;
     }
 
 

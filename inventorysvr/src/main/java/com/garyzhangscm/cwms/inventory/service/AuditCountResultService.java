@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class AuditCountResultService {
@@ -128,11 +129,23 @@ public class AuditCountResultService {
             }
         }
         else {
+            Inventory inventory = inventoryService.changeQuantityByAuditCount(
+                    auditCountResult.getInventory(), auditCountResult.getCountQuantity());
 
-            auditCountResult.setInventory(
-                    inventoryService.changeQuantityByAuditCount(
-                            auditCountResult.getInventory(), auditCountResult.getCountQuantity())
-            );
+            // in case of approval needed, we may not get a inventory record saved in the DB.
+            // in such case we won't setup the inventory record in the audit count result.
+
+            if (Objects.nonNull(inventory.getId())) {
+                logger.debug("Attach inventory {} to audit count {}",
+                        inventory.getLpn(), auditCountResult.getBatchId());
+                auditCountResult.setInventory(inventory);
+            }
+            else {
+
+                logger.debug("Clear inventory for audit count {} as we probably get a request(approval needed) instead of the actual adjustment",
+                         auditCountResult.getBatchId());
+                auditCountResult.setInventory(null);
+            }
         }
         return save(auditCountResult);
     }

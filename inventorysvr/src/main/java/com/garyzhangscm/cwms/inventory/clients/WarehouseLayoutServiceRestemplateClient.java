@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -337,7 +338,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/layout/locations/logic/default-removed-inventory-location");
+                        .path("/api/layout/locations/logic/default-removed-inventory-location")
+                .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<Location> responseBodyWrapper
                 = restTemplate.exchange(
@@ -417,7 +419,6 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-
     public Location getLogicalLocationForAdjustInventory(InventoryQuantityChangeType inventoryQuantityChangeType, Long warehouseId) {
         switch (inventoryQuantityChangeType){
             case INVENTORY_ADJUST:
@@ -427,6 +428,8 @@ public class WarehouseLayoutServiceRestemplateClient {
             case CYCLE_COUNT:
                 return getLocationForCount(warehouseId);
             case RECEIVING:
+            case PRODUCING:
+            case RETURN_MATERAIL:
                 return getLocationForReceiving(warehouseId);
             default:
                 return getDefaultRemovedInventoryLocation(warehouseId);

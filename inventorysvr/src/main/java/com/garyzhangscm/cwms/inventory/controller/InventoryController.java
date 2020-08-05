@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class InventoryController {
@@ -47,9 +48,15 @@ public class InventoryController {
                                               @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
                                               @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
                                               @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
+                                              @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
-        return inventoryService.findAll(warehouseId, itemName, clientIds, itemFamilyIds,inventoryStatusId,  locationName, locationId, locationGroupId, receiptId, pickIds, lpn);
+        return inventoryService.findAll(warehouseId, itemName, clientIds,
+                itemFamilyIds,inventoryStatusId,  locationName,
+                locationId, locationGroupId, receiptId, workOrderId,
+                workOrderLineIds,
+                pickIds, lpn);
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
@@ -72,12 +79,12 @@ public class InventoryController {
 
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-adj/{id}")
-    public void adjustDownInventory(@PathVariable Long id,
+    public Inventory adjustDownInventory(@PathVariable Long id,
                                     @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
                                     @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
-        inventoryService.removeInventory(id, documentNumber, comment);
+        return inventoryService.removeInventory(id, documentNumber, comment);
     }
-    // Adjust down the inventory to 0
+    // Adjust up the inventory from 0
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
     public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory,
                                                    @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
@@ -89,7 +96,24 @@ public class InventoryController {
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/receive")
     public Inventory addInventoryByReceiving(@RequestBody Inventory inventory) {
-        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING);
+        logger.debug("Start to receive inventory: {}", inventory);
+        // We may receive  from a receipt, or a work order
+        if (Objects.nonNull(inventory.getReceiptId())){
+
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING);
+        }
+        else if (Objects.nonNull(inventory.getWorkOrderId())){
+
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING);
+        }
+        else if (Objects.nonNull(inventory.getWorkOrderLineId())){
+
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL);
+        }
+        else {
+
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN);
+        }
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/inventory/{id}")

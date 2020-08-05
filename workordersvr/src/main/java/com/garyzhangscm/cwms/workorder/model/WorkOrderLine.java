@@ -6,10 +6,11 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "work_order_line")
-public class WorkOrderLine {
+public class WorkOrderLine extends AuditibleEntity<String>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "work_order_line_id")
@@ -41,9 +42,19 @@ public class WorkOrderLine {
     @Column(name = "inprocess_quantity")
     private Long inprocessQuantity;
 
-    @Column(name = "consumed_quantity")
-    private Long consumedQuantity;
+    @Column(name = "delivered_quantity")
+    private Long deliveredQuantity = 0L;
 
+    @Column(name = "consumed_quantity")
+    private Long consumedQuantity = 0L;
+
+
+    @Column(name = "scrapped_quantity")
+    private Long scrappedQuantity = 0L;
+
+
+    @Column(name = "returned_quantity")
+    private Long returnedQuantity = 0L;
 
     // Specific the inventory status that
     // user ordered. For example, when return
@@ -59,6 +70,25 @@ public class WorkOrderLine {
 
     @Transient
     List<ShortAllocation> shortAllocations = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WorkOrderLine that = (WorkOrderLine) o;
+        if (Objects.equals(id, that.id)) {
+            return true;
+        }
+        return Objects.equals(workOrder, that.workOrder) &&
+                Objects.equals(number, that.number);
+
+
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, workOrder, number);
+    }
 
     public Long getId() {
         return id;
@@ -163,5 +193,29 @@ public class WorkOrderLine {
 
     public void setShortAllocations(List<ShortAllocation> shortAllocations) {
         this.shortAllocations = shortAllocations;
+    }
+
+    public Long getDeliveredQuantity() {
+        return deliveredQuantity;
+    }
+
+    public void setDeliveredQuantity(Long deliveredQuantity) {
+        this.deliveredQuantity = deliveredQuantity;
+    }
+
+    public Long getScrappedQuantity() {
+        return scrappedQuantity;
+    }
+
+    public void setScrappedQuantity(Long scrappedQuantity) {
+        this.scrappedQuantity = scrappedQuantity;
+    }
+
+    public Long getReturnedQuantity() {
+        return returnedQuantity;
+    }
+
+    public void setReturnedQuantity(Long returnedQuantity) {
+        this.returnedQuantity = returnedQuantity;
     }
 }

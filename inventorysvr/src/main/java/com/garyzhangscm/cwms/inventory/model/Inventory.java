@@ -64,6 +64,15 @@ public class Inventory implements Serializable {
     @Column(name = "receipt_id")
     private Long receiptId;
 
+    // When inventory is produced by some work order
+    @Column(name = "work_order_id")
+    private Long workOrderId;
+
+    // When we return material from some work order line
+    @Column(name = "work_order_line_id")
+    private Long workOrderLineId;
+
+
     @ManyToOne
     @JoinColumn(name="item_id")
     private Item item;
@@ -125,6 +134,7 @@ public class Inventory implements Serializable {
         inventory.setLocation(getLocation());
         inventory.setQuantity(newQuantity);
         inventory.setReceiptId(getReceiptId());
+        inventory.setWorkOrderId(getWorkOrderId());
         inventory.setVirtual(getVirtual());
 
         setQuantity(getQuantity() - newQuantity);
@@ -296,5 +306,21 @@ public class Inventory implements Serializable {
 
     public void setLockedForAdjust(Boolean lockedForAdjust) {
         this.lockedForAdjust = lockedForAdjust;
+    }
+
+    public Long getWorkOrderId() {
+        return workOrderId;
+    }
+
+    public void setWorkOrderId(Long workOrderId) {
+        this.workOrderId = workOrderId;
+    }
+
+    public Long getWorkOrderLineId() {
+        return workOrderLineId;
+    }
+
+    public void setWorkOrderLineId(Long workOrderLineId) {
+        this.workOrderLineId = workOrderLineId;
     }
 }

@@ -88,6 +88,8 @@ CREATE TABLE inventory(
   inventory_status_id bigint not null,
   virtual_inventory boolean not null default 0,
   receipt_id BIGINT,
+  work_order_id BIGINT,
+  work_order_line_id BIGINT,
   locked_for_adjust  boolean not null default 0,
   foreign key(item_id) references item(item_id),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),
@@ -213,8 +215,11 @@ create table audit_count_result(
   location_id BIGINT NOT NULL,
   warehouse_id BIGINT NOT NULL,
   inventory_id BIGINT,
+  lpn   VARCHAR(100) ,
+  item_id BIGINT,
   quantity int not null,
-  count_quantity int NOT NULL
+  count_quantity int NOT NULL,
+  foreign key(item_id) references item(item_id)
 );
 
 

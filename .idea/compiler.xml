@@ -11,7 +11,6 @@
         <module name="configurationserver" />
         <module name="adminsvr" />
         <module name="inventorysvr" />
-        <module name="authenticationserver" />
         <module name="confsvr" />
         <module name="layoutserver" />
         <module name="inboundserver" />
@@ -20,11 +19,12 @@
         <module name="resourceserver" />
         <module name="zuulsvr" />
         <module name="commonserver" />
+        <module name="commonsvr" />
         <module name="ressvr" />
         <module name="integrationsvr" />
         <module name="outboundsvr" />
         <module name="inventoryserver" />
-        <module name="commonsvr" />
+        <module name="authenticationserver" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
