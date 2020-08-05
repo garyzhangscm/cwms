@@ -124,7 +124,17 @@ public class InventoryAdjustmentRequest implements Serializable {
 
     }
 
-    public InventoryAdjustmentRequest(Inventory inventory, Long newQuantity,
+    public InventoryAdjustmentRequest(Inventory inventory,  Long newQuantity,
+                                      InventoryQuantityChangeType inventoryQuantityChangeType,
+                                      String username,
+                                      String documentNumber, String comment) {
+        this(inventory, inventory.getQuantity(),newQuantity,
+                inventoryQuantityChangeType,
+                username,
+                documentNumber,
+                comment );
+    }
+    public InventoryAdjustmentRequest(Inventory inventory, Long oldQuantity, Long newQuantity,
                                       InventoryQuantityChangeType inventoryQuantityChangeType,
                                       String username,
                                       String documentNumber, String comment) {
@@ -133,7 +143,7 @@ public class InventoryAdjustmentRequest implements Serializable {
         setLocationId(inventory.getLocationId());
         setItem(inventory.getItem());
         setItemPackageType(inventory.getItemPackageType());
-        setQuantity(inventory.getQuantity());
+        setQuantity(oldQuantity);
         setNewQuantity(newQuantity);
         setVirtual(inventory.getVirtual());
         setInventoryStatus(inventory.getInventoryStatus());

@@ -50,6 +50,14 @@ public class AuditCountResult implements Serializable {
     @JoinColumn(name="inventory_id")
     private Inventory inventory;
 
+
+    @Column(name = "lpn")
+    private String lpn;
+
+    @ManyToOne
+    @JoinColumn(name="item_id")
+    private Item item;
+
     @Column(name = "quantity")
     private Long quantity;
 
@@ -70,6 +78,8 @@ public class AuditCountResult implements Serializable {
         this.batchId = batchId;
         this.locationId = locationId;
         this.inventory = inventory;
+        this.lpn = inventory.getLpn();
+        this.item = inventory.getItem();
         this.quantity = quantity;
         this.countQuantity = countQuantity;
     }
@@ -81,6 +91,8 @@ public class AuditCountResult implements Serializable {
         this.locationId = locationId;
         this.location = location;
         this.inventory = inventory;
+        this.lpn = inventory == null ? "" : inventory.getLpn();
+        this.item = inventory == null ? null : inventory.getItem();
         this.quantity = quantity;
         this.countQuantity = countQuantity;
     }
@@ -175,5 +187,21 @@ public class AuditCountResult implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getLpn() {
+        return lpn;
+    }
+
+    public void setLpn(String lpn) {
+        this.lpn = lpn;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 }

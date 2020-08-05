@@ -39,6 +39,11 @@ public class BillOfMaterialController {
         return billOfMaterialService.findAll(warehouseId, number, itemName);
     }
 
+    @RequestMapping(value="/bill-of-materials/matched-with-work-order", method = RequestMethod.GET)
+    public BillOfMaterial findMatchedBillOfMaterial(@RequestParam Long workOrderId) {
+        return billOfMaterialService.getMatchedBillOfMaterial(workOrderId);
+    }
+
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.POST)
     public BillOfMaterial addBillOfMaterials(@RequestBody BillOfMaterial billOfMaterial) {
         return billOfMaterialService.save(billOfMaterial);

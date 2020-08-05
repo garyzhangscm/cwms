@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "bill_of_material")
-public class BillOfMaterial {
+public class BillOfMaterial extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

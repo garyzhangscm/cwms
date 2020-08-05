@@ -210,4 +210,13 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
     }
 
 
+    public boolean match(BillOfMaterialLine billOfMaterialLine, WorkOrderLine workOrderLine) {
+
+        if (billOfMaterialLine.getItemId().equals(workOrderLine.getItemId())) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 }

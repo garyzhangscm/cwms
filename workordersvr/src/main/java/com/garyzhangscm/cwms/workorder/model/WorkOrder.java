@@ -5,10 +5,11 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "work_order")
-public class WorkOrder {
+public class WorkOrder extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,6 +41,11 @@ public class WorkOrder {
     @Column(name = "item_id")
     private Long itemId;
 
+
+    @ManyToOne
+    @JoinColumn(name = "bill_of_material_id")
+    private BillOfMaterial billOfMaterial;
+
     @Transient
     private Item item;
 
@@ -61,6 +67,22 @@ public class WorkOrder {
     @Column(name = "status")
     private WorkOrderStatus status;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WorkOrder workOrder = (WorkOrder) o;
+        if (Objects.equals(id, workOrder.id)) {
+            return true;
+        }
+        return Objects.equals(number, workOrder.number) &&
+                Objects.equals(warehouseId, workOrder.warehouseId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, number, warehouseId);
+    }
 
     public Long getId() {
         return id;
@@ -164,5 +186,13 @@ public class WorkOrder {
 
     public void setStatus(WorkOrderStatus status) {
         this.status = status;
+    }
+
+    public BillOfMaterial getBillOfMaterial() {
+        return billOfMaterial;
+    }
+
+    public void setBillOfMaterial(BillOfMaterial billOfMaterial) {
+        this.billOfMaterial = billOfMaterial;
     }
 }

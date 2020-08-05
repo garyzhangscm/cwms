@@ -131,7 +131,19 @@ public class ProductionLineService implements TestDataInitiableService {
         }
         if (productionLine.getWorkOrderExclusiveFlag() &&
             productionLine.getWorkOrders().size() > 0) {
-            return false;
+            // see if we have inprocess work orders
+            long inprocessWorkOrderCount = productionLine.getWorkOrders().stream()
+                    .filter(workOrder -> workOrder.getStatus() == WorkOrderStatus.INPROCESS).count();
+
+            if (inprocessWorkOrderCount == 0) {
+                // there's no in process work order
+                // the production line is ready for new work order
+                return true;
+            }
+            else {
+
+                return false;
+            }
         }
         return true;
     }
@@ -193,7 +205,8 @@ public class ProductionLineService implements TestDataInitiableService {
                     warehouseLayoutServiceRestemplateClient.getLocationById(productionLine.getProductionLineLocationId()));
         }
 
-        productionLine.getWorkOrders().forEach(workOrder -> workOrderService.loadAttribute(workOrder));
+
+        // productionLine.getWorkOrders().forEach(workOrder -> workOrderService.loadAttribute(workOrder));
 
     }
 

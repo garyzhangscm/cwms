@@ -88,7 +88,8 @@ public class OutboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/outbound/picks")
-                        .queryParam("workOrderLineIds", getWorkOrderLineIds(workOrder));
+                        .queryParam("workOrderLineIds", getWorkOrderLineIds(workOrder))
+                        .queryParam("warehouseId", workOrder.getWarehouseId());
 
         ResponseBodyWrapper<List<Pick>> responseBodyWrapper
                 = restTemplate.exchange(

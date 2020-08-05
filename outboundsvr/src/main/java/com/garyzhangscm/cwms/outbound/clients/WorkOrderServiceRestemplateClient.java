@@ -59,6 +59,23 @@ public class WorkOrderServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    public WorkOrderLine getWorkOrderLineById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/workorder/work-orders/{id}");
+
+        ResponseBodyWrapper<WorkOrderLine> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderLine>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
     public WorkOrder getWorkOrderByNumber(Long warehouseId, String number) {
 
         UriComponentsBuilder builder =
@@ -121,4 +138,24 @@ public class WorkOrderServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public WorkOrderLine inventoryPickedForWorkOrderLine(Long workOrderLineId,
+                                                         Long quantityBeingPicked,
+                                                         Long deliveredLocationId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/workorder/work-orders/lines/{id}/inventory-being-delivered")
+                        .queryParam("quantityBeingDelivered", quantityBeingPicked)
+                        .queryParam("deliveredLocationId", deliveredLocationId);
+
+        ResponseBodyWrapper<WorkOrderLine> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(workOrderLineId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderLine>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 }

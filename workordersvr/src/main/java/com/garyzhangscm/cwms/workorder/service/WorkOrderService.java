@@ -28,12 +28,14 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -42,6 +44,7 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -150,10 +153,21 @@ public class WorkOrderService implements TestDataInitiableService {
         if (workOrder.getWarehouseId() != null && workOrder.getWarehouse() == null) {
             workOrder.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId()));
         }
+        if (Objects.nonNull(workOrder.getProductionLine())) {
+            productionLineService.loadAttribute(workOrder.getProductionLine());
+        }
 
         // Load the item and inventory status information for each lines
         workOrder.getWorkOrderLines()
-                .forEach(workOrderLine -> workOrderLineService.loadAttribute(workOrderLine));
+                .forEach(workOrderLine -> {
+                    // Setup the work order on the work order line as
+                    // the work order line depends on the work order's information
+                    // to load some attributes
+                    if (Objects.isNull(workOrderLine.getWorkOrder())) {
+                        workOrderLine.setWorkOrder(workOrder);
+                    }
+                    workOrderLineService.loadAttribute(workOrderLine);
+                });
 
     }
 
@@ -343,9 +357,162 @@ public class WorkOrderService implements TestDataInitiableService {
         workOrder.setProductionLine(newProductionLine);
         return saveOrUpdate(workOrder);
 
+    }
+
+    public WorkOrder produce(WorkOrder workOrder, Long producedQuantity) {
+        workOrder.setProducedQuantity(workOrder.getProducedQuantity() + producedQuantity);
+        return saveOrUpdate(workOrder);
+    }
+
+
+    public List<Inventory> getProducedInventory(Long workOrderId) {
+
+        WorkOrder workOrder = findById(workOrderId);
+        return inventoryServiceRestemplateClient.findProducedInventory(
+                workOrder.getWarehouseId(),
+                workOrderId
+        );
+
+
+    }
+
+    public List<Inventory> getDeliveredInventory(Long workOrderId) {
+        WorkOrder workOrder = findById(workOrderId);
+
+        // Get all the picked inventory that already arrived at the
+        // right location
+        if (Objects.isNull(workOrder.getProductionLine())) {
+            // The work order doesn't have production line assigned yet, probably
+            // it is a new work order;
+            return new ArrayList<>();
+        }
+        Long productionInStagingLocationId = workOrder.getProductionLine().getInboundStageLocationId();
+
+        try {
+            List<Pick> picks = outboundServiceRestemplateClient.getWorkOrderPicks(workOrder);
+            if (picks.size() > 0) {
+                String pickIds = picks.stream()
+                        .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
+                return inventoryServiceRestemplateClient.findDeliveredInventory(
+                        workOrder.getWarehouseId(),
+                        productionInStagingLocationId,
+                        pickIds
+                );
+            }
+        } catch (IOException e) {
+            // in case we can't get any picks, just return empty result to indicate
+            // we don't have any delivered inventory
+
+        }
+        return new ArrayList<>();
+    }
+
+    public List<Inventory> getReturnedInventory(Long workOrderId) {
+
+        WorkOrder workOrder = findById(workOrderId);
+        String workOrderLineIds =
+                workOrder.getWorkOrderLines().stream()
+                        .map(WorkOrderLine::getId).map(String::valueOf).collect(Collectors.joining(","));
+        return inventoryServiceRestemplateClient.getReturnedInventory(
+                workOrder.getWarehouseId(),workOrderLineIds
+        );
+    }
+
+
+    public Inventory unpickInventory(Long id,
+                                           Long inventoryId,
+                                           Long unpickedQuantity,
+                                           Boolean overrideConsumedQuantity,
+                                           Long consumedQuantity,
+                                           Long destinationLocationId,
+                                           String destinationLocationName,
+                                           boolean immediateMove) {
+
+        WorkOrder workOrder = findById(id);
+        Inventory inventory = inventoryServiceRestemplateClient.getInventoryById(inventoryId);
+        if (Objects.isNull(unpickedQuantity)) {
+            unpickedQuantity = inventory.getQuantity();
+        }
+
+
+        // Let's make sure we have enough quantity to be unpicked.
+        // The consumed quantity + inventory's quantity should be
+        // less than the total delivered quantity
+        validateWorkOrderUnpick(workOrder, inventory, unpickedQuantity, overrideConsumedQuantity, consumedQuantity);
+
+        if (overrideConsumedQuantity == true) {
+            // Let's override the consumed quantity
+            overrideConsumedQuantity(workOrder, inventory.getItem().getId(), consumedQuantity);
+        }
+
+
+        // Now we can call the inventory service to unpick the inventory
+        inventory = inventoryServiceRestemplateClient.unpickFromWorkOrder(inventory,
+                  destinationLocationId, destinationLocationName, immediateMove);
+
+
+        // refresh the quantities after we unpicked the inventory
+        refreshQuantityAfterUnpickInventory(workOrder, inventory.getItem().getId(),unpickedQuantity);
+
+        return inventory;
+
+    }
+
+    private void refreshQuantityAfterUnpickInventory(WorkOrder workOrder, Long itemId, Long unpickedQuantity) {
+        WorkOrderLine matchedWorkOrderLine = findMatchedWorkOrderLine(workOrder, itemId);
+
+        workOrderLineService.refreshQuantityAfterUnpickInventory(matchedWorkOrderLine, unpickedQuantity);
+    }
+
+    private void overrideConsumedQuantity(WorkOrder workOrder, Long itemId, Long consumedQuantity) {
+        // Let's assume we won't have duplicated item in the same work order
+        WorkOrderLine matchedWorkOrderLine = findMatchedWorkOrderLine(workOrder, itemId);
+
+        workOrderLineService.overrideConsumedQuantity(matchedWorkOrderLine, consumedQuantity);
+    }
+
+    private WorkOrderLine findMatchedWorkOrderLine(WorkOrder workOrder, Long itemId) {
+        return  workOrder.getWorkOrderLines().stream().filter(workOrderLine -> workOrderLine.getItemId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() ->
+                        WorkOrderException.raiseException("Can't find item with id " + itemId + " from work order " + workOrder.getNumber()));
+    }
+
+    private void validateWorkOrderUnpick(WorkOrder workOrder, Inventory inventory,
+                                         Long unpickedQuantity, Boolean overrideConsumedQuantity, Long consumedQuantity) {
+
+        if (inventory.getQuantity() < unpickedQuantity) {
+            throw WorkOrderException.raiseException("Can't unpick quantity " + unpickedQuantity +
+                    " from inventory LPN " + inventory.getLpn() + " , the inventory has less quantity of " + inventory.getQuantity());
+        }
+        Long totalDeliveredQuantity = workOrder.getWorkOrderLines().stream().filter(
+                workOrderLine -> workOrderLine.getItemId().equals(inventory.getItem().getId())
+        ).map(WorkOrderLine::getDeliveredQuantity).mapToLong(Long::longValue).sum();
+
+        Long totalConsumedQuantity = workOrder.getWorkOrderLines().stream().filter(
+                workOrderLine -> workOrderLine.getItemId().equals(inventory.getItem().getId())
+        ).map(WorkOrderLine::getConsumedQuantity).mapToLong(Long::longValue).sum();
+
+        Long maxUnpickableQuantity = overrideConsumedQuantity ?
+                totalDeliveredQuantity - consumedQuantity :
+                totalDeliveredQuantity - totalConsumedQuantity;
+
+        if (maxUnpickableQuantity < unpickedQuantity) {
+
+            throw WorkOrderException.raiseException("Can't unpick quantity " + unpickedQuantity +
+                    " from inventory LPN " + inventory.getLpn() + " , the work order  has the item " + inventory.getItem().getName() +
+                    " with quantity " +  totalDeliveredQuantity + " delivered but already consumed " +
+                    (totalDeliveredQuantity - maxUnpickableQuantity) +
+                    ", hence only allow to unpick quantity " + maxUnpickableQuantity);
+        }
+    }
 
 
 
+    public WorkOrder completeWorkOrder(WorkOrder workOrder) {
+        workOrder.setStatus(WorkOrderStatus.COMPLETED);
+
+        return saveOrUpdate(workOrder);
     }
 
 }

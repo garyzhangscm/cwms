@@ -2,11 +2,12 @@ package com.garyzhangscm.cwms.integration.exception;
 
 import org.springframework.util.ObjectUtils;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExceptionResponse {
+public class ExceptionResponse implements Serializable {
     private int code;
     private int status;
     private String message;
@@ -42,5 +43,53 @@ public class ExceptionResponse {
                 ", timestamp=" + timestamp +
                 ", data=" + data +
                 '}';
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public HashMap<String, Object> getData() {
+        return data;
+    }
+
+    public void setData(HashMap<String, Object> data) {
+        this.data = data;
     }
 }

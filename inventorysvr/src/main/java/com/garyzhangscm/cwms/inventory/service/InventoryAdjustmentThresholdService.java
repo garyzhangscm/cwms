@@ -412,16 +412,14 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
 
     }
 
-    public boolean isInventoryAdjustExceedThreshold(Inventory inventory,
-                                                          InventoryQuantityChangeType type,
-                                                          Long newQuantity) {
+    public boolean isInventoryAdjustExceedThreshold(Inventory inventory, InventoryQuantityChangeType type,
+                                                    Long oldQuantity, Long newQuantity) {
 
-        return isInventoryAdjustExceedThreshold(inventory, type, newQuantity, userService.getCurrentUser());
+        return isInventoryAdjustExceedThreshold(inventory, type, oldQuantity, newQuantity, userService.getCurrentUser());
     }
 
-    public boolean isInventoryAdjustExceedThreshold(Inventory inventory,
-                                                          InventoryQuantityChangeType type,
-                                                          Long newQuantity, User user) {
+    public boolean isInventoryAdjustExceedThreshold(Inventory inventory, InventoryQuantityChangeType type,
+                                                    Long oldQuantity, Long newQuantity, User user) {
         List<InventoryAdjustmentThreshold> inventoryAdjustmentThresholds = findAll(inventory.getWarehouseId());
 
         // Loop through all the rules and find all the matched inventory adjustment threshold
@@ -432,7 +430,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
                         sorted((rule1, rule2) -> compareInventoryAdjustmentThreshold(rule1, rule2, inventory.getItem())).findFirst();
 
         if (mappedInventoryAdjustmentThreshold.isPresent()) {
-            long adjustedQuantity = Math.abs(inventory.getQuantity() - newQuantity);
+            long adjustedQuantity = Math.abs(oldQuantity - newQuantity);
             logger.debug("We find several adjust threashold defined that match with the inventory and the small one is: {}",
                     mappedInventoryAdjustmentThreshold.get().getId());
             if (Objects.nonNull(mappedInventoryAdjustmentThreshold.get().getQuantityThreshold())) {

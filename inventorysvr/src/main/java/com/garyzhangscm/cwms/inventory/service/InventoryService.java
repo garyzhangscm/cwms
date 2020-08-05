@@ -125,10 +125,13 @@ public class InventoryService implements TestDataInitiableService{
                                    Long locationId,
                                    Long locationGroupId,
                                    String receiptId,
+                                   Long workOrderId,
+                                   String workOrderLineIds,
                                    String pickIds,
                                    String lpn) {
         return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
-                locationName, locationId, locationGroupId, receiptId, pickIds, lpn, true);
+                locationName, locationId, locationGroupId, receiptId, workOrderId, workOrderLineIds,
+                pickIds, lpn, true);
     }
 
 
@@ -141,6 +144,8 @@ public class InventoryService implements TestDataInitiableService{
                                    Long locationId,
                                    Long locationGroupId,
                                    String receiptId,
+                                   Long workOrderId,
+                                   String workOrderLineIds,
                                    String pickIds,
                                    String lpn,
                                    boolean includeDetails) {
@@ -193,6 +198,20 @@ public class InventoryService implements TestDataInitiableService{
                     }
                     if (!StringUtils.isBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
+
+                    }
+
+                    if (Objects.nonNull(workOrderId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("workOrderId"), workOrderId));
+
+                    }
+
+
+                    if (!StringUtils.isBlank(workOrderLineIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderLineId"));
+                        Arrays.stream(workOrderLineIds.split(","))
+                                .map(Long::parseLong).forEach(workOrderLineId -> inClause.value(workOrderLineId));
+                        predicates.add(inClause);
 
                     }
                     if (!StringUtils.isBlank(pickIds)) {
@@ -487,7 +506,7 @@ public class InventoryService implements TestDataInitiableService{
                                             String documentNumber, String comment) {
 
         logger.debug("Start to remove inventory");
-        if (isApprovalNeededForInventoryAdjust(inventory, inventory.getQuantity(), inventoryQuantityChangeType)) {
+        if (isApprovalNeededForInventoryAdjust(inventory, 0L, inventoryQuantityChangeType)) {
 
             logger.debug("We will need to get approval, so here we just save the request");
             writeInventoryAdjustRequest(inventory, 0L,
@@ -934,11 +953,12 @@ public class InventoryService implements TestDataInitiableService{
                                   String documentNumber, String comment) {
 
         logger.debug("Start to add inventory");
-        if (isApprovalNeededForInventoryAdjust(inventory, inventory.getQuantity(), inventoryQuantityChangeType)) {
+        if (isApprovalNeededForInventoryAdjust(inventory, 0L, inventory.getQuantity(), inventoryQuantityChangeType)) {
 
             logger.debug("We will need to get approval, so here we just save the request");
-            writeInventoryAdjustRequest(inventory, inventory.getQuantity(),
+            writeInventoryAdjustRequest(inventory, 0L,  inventory.getQuantity(),
                     inventoryQuantityChangeType, documentNumber, comment);
+            inventory.setLockedForAdjust(true);
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
@@ -958,7 +978,16 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
-    private void writeInventoryAdjustRequest(Inventory inventory, Long quantity,
+    private void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity,
+                                             InventoryQuantityChangeType inventoryQuantityChangeType,
+                                             String documentNumber, String comment) {
+
+
+        writeInventoryAdjustRequest(inventory, inventory.getQuantity(),  newQuantity,
+                inventoryQuantityChangeType,
+                documentNumber, comment);
+    }
+    private void writeInventoryAdjustRequest(Inventory inventory, Long oldQuantity, Long newQuantity,
                                              InventoryQuantityChangeType inventoryQuantityChangeType,
                                              String documentNumber, String comment) {
 
@@ -966,22 +995,42 @@ public class InventoryService implements TestDataInitiableService{
         if (Objects.nonNull(inventory.getId())) {
             lockInventory(inventory.getId());
         }
-        inventoryAdjustmentRequestService.writeInventoryAdjustRequest(inventory, quantity, inventoryQuantityChangeType,
+        else {
+            logger.debug("set lockedForAdjust to true for LPN {}", inventory.getLpn());
+            inventory.setLockedForAdjust(true);
+        }
+        inventoryAdjustmentRequestService.writeInventoryAdjustRequest(inventory, oldQuantity, newQuantity, inventoryQuantityChangeType,
                   documentNumber,  comment);
 
     }
 
-    private boolean isApprovalNeededForInventoryAdjust(Inventory inventory, Long quantity, InventoryQuantityChangeType inventoryQuantityChangeType) {
+    /**
+     * Check if we will need to get approval when adjust inventory from oldQuantity to newQuantity. we may define different rules
+     * for different type of adjust action, like adjust / count / etc.
+     * @param inventory inventory being adjust
+     * @param oldQuantity old quantity
+     * @param newQuantity new quantity
+     * @param inventoryQuantityChangeType adjust type
+     * @return true if we need approval for the adjustment
+     */
+    private boolean isApprovalNeededForInventoryAdjust(Inventory inventory, Long oldQuantity,
+                                                       Long newQuantity, InventoryQuantityChangeType inventoryQuantityChangeType) {
         // Receiving is always allowed without any approval
-        logger.debug("Check if we need approval for this adjust. inventory: {}, quantity: {}, change type: {}",
-                inventory.getId(), quantity, inventoryQuantityChangeType);
-        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING)) {
-            logger.debug("Receiving doesn't needs any approve");
+        logger.debug("Check if we need approval for this adjust. inventory: {}, lpn {}, OLD quantity: {}, NEW quantity: {}, change type: {}",
+                inventory.getId(), inventory.getLpn(), oldQuantity, newQuantity, inventoryQuantityChangeType);
+        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING) ||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.PRODUCING)||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RETURN_MATERAIL)) {
+            logger.debug("Receiving / Producing / Return Material doesn't needs any approve");
             return false;
         }
 
         // we will need approval only when the inventory adjust exceed the threshold of adjustment
-        return inventoryAdjustmentThresholdService.isInventoryAdjustExceedThreshold(inventory, inventoryQuantityChangeType, quantity);
+        return inventoryAdjustmentThresholdService.isInventoryAdjustExceedThreshold(inventory, inventoryQuantityChangeType, oldQuantity, newQuantity);
+
+    }
+    private boolean isApprovalNeededForInventoryAdjust(Inventory inventory, Long newQuantity, InventoryQuantityChangeType inventoryQuantityChangeType) {
+        return isApprovalNeededForInventoryAdjust(inventory, inventory.getQuantity(), newQuantity, inventoryQuantityChangeType);
     }
 
     public Inventory processAddInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
@@ -1062,6 +1111,10 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
+    public Inventory adjustInventoryQuantity(long id, Long newQuantity, String documentNumber, String comment) {
+
+        return adjustInventoryQuantity(findById(id), newQuantity, documentNumber, comment, InventoryQuantityChangeType.INVENTORY_ADJUST);
+    }
     /**
      * Adjust the quantity of inventory.
      * 1. When we adjust up, we will actually create inventory
@@ -1069,19 +1122,19 @@ public class InventoryService implements TestDataInitiableService{
      *    and then move inventory to the final location
      * 2. When we adjust down, we will actually move the difference from the
      *     original LPN to a fake location
-     * @param id ID of the inventory
+     * @param inventory inventory to be adjust
      * @param newQuantity new quantity
      * @return inventory after adjust
      */
-    public Inventory adjustInventoryQuantity(long id, Long newQuantity, String documentNumber, String comment) {
-        Inventory inventory = findById(id);
+    public Inventory adjustInventoryQuantity(Inventory inventory, Long newQuantity, String documentNumber, String comment,
+                                             InventoryQuantityChangeType inventoryQuantityChangeType) {
         if (inventory.getQuantity().equals(newQuantity)) {
             // nothing changed, let just return
             return inventory;
         }
 
-        if (isApprovalNeededForInventoryAdjust(inventory, newQuantity, InventoryQuantityChangeType.INVENTORY_ADJUST)) {
-            writeInventoryAdjustRequest(inventory, newQuantity, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
+        if (isApprovalNeededForInventoryAdjust(inventory, newQuantity, inventoryQuantityChangeType)) {
+            writeInventoryAdjustRequest(inventory, newQuantity, inventoryQuantityChangeType, documentNumber, comment);
             return inventory;
         } else {
             return processAdjustInventoryQuantity(inventory, newQuantity, documentNumber, comment);
@@ -1198,7 +1251,7 @@ public class InventoryService implements TestDataInitiableService{
 
         inventory.setItem(inventoryAdjustmentRequest.getItem());
         inventory.setItemPackageType(inventoryAdjustmentRequest.getItemPackageType());
-        inventory.setQuantity(inventoryAdjustmentRequest.getQuantity());
+        inventory.setQuantity(inventoryAdjustmentRequest.getNewQuantity());
         inventory.setVirtual(inventoryAdjustmentRequest.getVirtual());
         inventory.setInventoryStatus(inventoryAdjustmentRequest.getInventoryStatus());
         inventory.setWarehouseId(inventoryAdjustmentRequest.getWarehouseId());
@@ -1234,13 +1287,23 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public Inventory changeQuantityByAuditCount(Inventory inventory, Long newQuantity) {
-        Long originalQuantity = Objects.isNull(inventory.getId()) ?
-                0L : inventory.getQuantity();
+        if (Objects.isNull(inventory.getId())) {
+            inventory.setQuantity(newQuantity);
+            return addInventory(inventory, InventoryQuantityChangeType.AUDIT_COUNT);
+        }
+        else {
+            // Adjust the quantity without any document and comment
+            return adjustInventoryQuantity(inventory, newQuantity, "", "", InventoryQuantityChangeType.AUDIT_COUNT);
+
+        }
+        /***
+        Long originalQuantity = inventory.getQuantity();
         inventory.setQuantity(newQuantity);
         inventory = saveOrUpdate(inventory);
         integrationService.processInventoryAdjustment(InventoryQuantityChangeType.AUDIT_COUNT,
                 inventory, originalQuantity, newQuantity);
 
         return inventory;
+         **/
     }
 }

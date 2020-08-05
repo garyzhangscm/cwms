@@ -820,6 +820,7 @@ public class PickService {
         // make sure we are not over pick. At this moment, over pick is not allowed
         // If the quantity is not passed in, we will pick the whole quantity that is still left
         Long quantityToBePicked = quantity == null ? pick.getQuantity() - pick.getPickedQuantity() : quantity;
+        Long totalQuantityPicked = 0L;
         if (quantityToBePicked <= 0 ||  quantityToBePicked > pick.getQuantity() - pick.getPickedQuantity()) {
             throw PickingException.raiseException("Over pick is not allowed. Try to pick: " + quantityToBePicked +
                     ", Quantity left: " + (pick.getQuantity() - pick.getPickedQuantity()));
@@ -837,6 +838,7 @@ public class PickService {
             Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
             logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
             quantityToBePicked -= pickedQuantity;
+            totalQuantityPicked += pickedQuantity;
             logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
         }
 
@@ -844,8 +846,21 @@ public class PickService {
         logger.debug("==> after the pick confirm, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
+
+        // If we are picking for a work order, we will send a notification to the work order
+        sendNotification(pick, nextLocation, totalQuantityPicked);
         // Get the latest pick information
         return findById(pick.getId());
+    }
+
+    private void sendNotification(Pick pick, Location nextLocation, Long totalQuantityPicked) {
+        if (Objects.nonNull(pick.getWorkOrderLineId())) {
+            workOrderServiceRestemplateClient.inventoryPickedForWorkOrderLine(
+                    pick.getWorkOrderLineId(), totalQuantityPicked, nextLocation.getId()
+            );
+
+
+        }
     }
 
     public List<Pick> getPicksByShipment(Long shipmentId){

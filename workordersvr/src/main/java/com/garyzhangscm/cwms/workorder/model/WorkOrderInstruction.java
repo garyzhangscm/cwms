@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "work_order_instruction")
-public class WorkOrderInstruction {
+public class WorkOrderInstruction extends AuditibleEntity<String>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "work_order_instruction_id")

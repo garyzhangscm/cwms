@@ -120,6 +120,41 @@ public class TestDataInitService {
         jdbcTemplate.update("delete from bill_of_material where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("bill_of_material records from warehouse ID {} removed!", warehouseId);
 
+        jdbcTemplate.update("delete from work_order_line_consume_transaction where work_order_line_id in " +
+                "  (select work_order_line_id from  work_order join work_order_line on work_order.work_order_id = work_order_line.work_order_id " +
+                "      where work_order.warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_line_consume_transaction records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from work_order_produced_inventory where work_order_produce_transaction_id in " +
+                                "  (select work_order_produce_transaction_id from  work_order join work_order_produce_transaction " +
+                        "  on work_order.work_order_id = work_order_produce_transaction.work_order_id " +
+                                "      where work_order.warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_produced_inventory records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from work_order_produce_transaction where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_produce_transaction records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from return_material_request where work_order_line_complete_transaction_id in " +
+                "  (select work_order_line_complete_transaction_id from  work_order join work_order_line " +
+                "       on work_order.work_order_id = work_order_line.work_order_id  " +
+                "      join work_order_line_complete_transaction on work_order_line.work_order_line_id = work_order_line_complete_transaction.work_order_line_id " +
+                "      where work_order.warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("return_material_request records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from work_order_line_complete_transaction where work_order_line_id in " +
+                "  (select work_order_line_id from  work_order join work_order_line on work_order.work_order_id = work_order_line.work_order_id " +
+                "      where work_order.warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_line_complete_transaction records from warehouse ID {} removed!", warehouseId);
+
+
+
+        jdbcTemplate.update("delete from work_order_complete_transaction where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_complete_transaction records from warehouse ID {} removed!", warehouseId);
+
 
 
         jdbcTemplate.update("delete from production_line_activity where work_order_id in " +
