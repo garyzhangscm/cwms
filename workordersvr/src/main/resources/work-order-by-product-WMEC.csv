@@ -1,0 +1,3 @@
+warehouse,workOrder,item,expectedQuantity,inventoryStatus
+WMEC,PRD000001,22570P-93-25,200,AVAL
+WMEC,PRD000001,22570P-93-29,300,AVAL

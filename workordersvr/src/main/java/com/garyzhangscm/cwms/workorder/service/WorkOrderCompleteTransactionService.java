@@ -32,9 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @Service
@@ -44,9 +42,13 @@ public class WorkOrderCompleteTransactionService {
     @Autowired
     private WorkOrderCompleteTransactionRepository workOrderCompleteTransactionRepository;
     @Autowired
+    private WorkOrderKPITransactionService workOrderKPITransactionService;
+    @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private WorkOrderByProductService workOrderByProductService;
     @Autowired
     private BillOfMaterialService billOfMaterialService;
     @Autowired
@@ -144,12 +146,13 @@ public class WorkOrderCompleteTransactionService {
                                     )
                     );
                 });
+
+        logger.debug("=====>   save workOrderCompleteTransaction: \n{}", workOrderCompleteTransaction);
         WorkOrderCompleteTransaction newWorkOrderCompleteTransaction
                 = workOrderCompleteTransactionRepository.save(workOrderCompleteTransaction);
         loadAttribute(newWorkOrderCompleteTransaction);
         return newWorkOrderCompleteTransaction;
     }
-
 
 
 
@@ -182,6 +185,16 @@ public class WorkOrderCompleteTransactionService {
                     workOrderLineCompleteTransaction);
 
         }
+        for (WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction : workOrderCompleteTransaction.getWorkOrderByProductProduceTransactions()) {
+            processWorkOrderByProductProduceTransaction(workOrderCompleteTransaction,
+                    workOrderByProductProduceTransaction);
+
+        }
+
+
+        WorkOrderCompleteTransaction newWorkOrderCompleteTransaction = save(workOrderCompleteTransaction);
+
+        workOrderKPITransactionService.processWorkOrderKIPTransaction(newWorkOrderCompleteTransaction);
 
         // let's change the status of the work order
         workOrderService.completeWorkOrder(workOrder);
@@ -190,6 +203,15 @@ public class WorkOrderCompleteTransactionService {
         return save(workOrderCompleteTransaction);
 
     }
+
+    private void processWorkOrderByProductProduceTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction,
+                                                             WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction) {
+
+        workOrderByProductService.processWorkOrderByProductProduceTransaction(workOrderCompleteTransaction,
+                workOrderByProductProduceTransaction);
+    }
+
+
 
     private void processWorkOrderLineCompleteTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction,
                                                          WorkOrderLineCompleteTransaction workOrderLineCompleteTransaction) {

@@ -113,6 +113,18 @@ public class TestDataInitService {
         logger.debug("integration_order_confirmation records from warehouse ID {} / {} removed!", warehouseId, warehouseName);
 
 
+        jdbcTemplate.update("delete from integration_work_order_line_confirmation where integration_work_order_confirmation_id in (" +
+                "select integration_work_order_confirmation_id from integration_work_order_confirmation where warehouse_id = ?)",
+                new Object[] { warehouseId });
+        jdbcTemplate.update("delete from integration_work_order_line_confirmation where integration_work_order_confirmation_id in (" +
+                        "select integration_work_order_confirmation_id from integration_work_order_confirmation where warehouse_name = ?)",
+                new Object[] { warehouseName });
+        logger.debug("integration_work_order_line_confirmation records from warehouse ID {} / {} removed!", warehouseId, warehouseName);
+
+        jdbcTemplate.update("delete from integration_work_order_confirmation where warehouse_id = ?", new Object[] { warehouseId });
+        jdbcTemplate.update("delete from integration_work_order_confirmation where warehouse_name = ?", new Object[] { warehouseName });
+        logger.debug("integration_work_order_confirmation records from warehouse ID {} / {} removed!", warehouseId, warehouseName);
+
         jdbcTemplate.update("delete from integration_receipt_line where warehouse_id = ?", new Object[] { warehouseId });
         jdbcTemplate.update("delete from integration_receipt_line where warehouse_name = ?", new Object[] { warehouseName });
         logger.debug("integration_receipt_line records from warehouse ID {} / {} removed!", warehouseId, warehouseName);

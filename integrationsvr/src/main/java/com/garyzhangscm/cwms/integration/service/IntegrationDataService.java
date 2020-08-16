@@ -154,6 +154,19 @@ public class IntegrationDataService {
         return integration.sendIntegrationOrderConfirmationData(orderConfirmation);
     }
 
+
+    // Work Order Confirmation Data
+    public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(Long warehouseId, String warehouseName,
+                                                                                                String number){
+        return integration.getIntegrationWorkOrderConfirmationData(warehouseId, warehouseName,
+                number);
+    }
+    public IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id){
+        return integration.getIntegrationWorkOrderConfirmationData(id);
+    }
+    public IntegrationWorkOrderConfirmationData sendIntegrationWorkOrderConfirmationData(WorkOrderConfirmation workOrderConfirmation){
+        return integration.sendIntegrationWorkOrderConfirmationData(workOrderConfirmation);
+    }
     // Receipt Confirmation Data
     public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(Long warehouseId, String warehouseName,
                                                                                                     String number, Long clientId, String clientName,

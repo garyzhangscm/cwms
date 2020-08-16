@@ -49,6 +49,8 @@ public class WorkOrderProduceTransactionService  {
     @Autowired
     private WorkOrderProduceTransactionRepository workOrderProduceTransactionRepository;
     @Autowired
+    private WorkOrderByProductService workOrderByProductService;
+    @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -60,6 +62,8 @@ public class WorkOrderProduceTransactionService  {
     private WorkOrderService workOrderService;
     @Autowired
     private WorkOrderLineService workOrderLineService;
+    @Autowired
+    private WorkOrderKPITransactionService workOrderKPITransactionService;
 
     public WorkOrderProduceTransaction findById(Long id, boolean loadDetails) {
         WorkOrderProduceTransaction workOrderProduceTransaction
@@ -146,6 +150,8 @@ public class WorkOrderProduceTransactionService  {
                 workOrderProducedInventory ->
                         workOrderProducedInventory.setWorkOrderProduceTransaction(workOrderProduceTransaction)
         );
+
+        logger.debug("=====>   save workOrderProduceTransaction: \n{}", workOrderProduceTransaction);
         WorkOrderProduceTransaction newWorkOrderProduceTransaction
                 = workOrderProduceTransactionRepository.save(workOrderProduceTransaction);
         loadAttribute(newWorkOrderProduceTransaction);
@@ -182,6 +188,13 @@ public class WorkOrderProduceTransactionService  {
         Long totalProducedQuantity = 0L;
         for(WorkOrderProducedInventory workOrderProducedInventory :
                 workOrderProduceTransaction.getWorkOrderProducedInventories()) {
+            // skip the record with incorrect value
+            if (StringUtils.isBlank(workOrderProducedInventory.getLpn()) ||
+                    Objects.isNull(workOrderProducedInventory.getInventoryStatus()) ||
+                    Objects.isNull(workOrderProducedInventory.getItemPackageType()) ||
+                    Objects.isNull(workOrderProducedInventory.getQuantity())  ) {
+                continue;
+            }
             totalProducedQuantity += workOrderProducedInventory.getQuantity();
             // Let's create the inventory
             receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, workOrderProduceTransaction);
@@ -194,13 +207,23 @@ public class WorkOrderProduceTransactionService  {
         for (WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
             consumeQuantity(workOrderLine, workOrderProduceTransaction, totalProducedQuantity);
         }
+        workOrderProduceTransaction.getWorkOrderByProductProduceTransactions().forEach(
+                workOrderByProductProduceTransaction ->
+                        workOrderByProductService.processWorkOrderByProductProduceTransaction(
+                                workOrder, workOrderByProductProduceTransaction
+                        )
+        );
 
-        return save(workOrderProduceTransaction);
+        WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
+
+        workOrderKPITransactionService.processWorkOrderKIPTransaction(newWorkOrderProduceTransaction);
+
+        return newWorkOrderProduceTransaction;
 
     }
 
     @Transactional
-    private void consumeQuantity(WorkOrderLine workOrderLine, WorkOrderProduceTransaction workOrderProduceTransaction,
+    public void consumeQuantity(WorkOrderLine workOrderLine, WorkOrderProduceTransaction workOrderProduceTransaction,
                                  Long totalProducedQuantity) {
         if (workOrderProduceTransaction.getConsumeByBomQuantity() == true) {
             consumeQuantityByBomQuantity(workOrderLine, workOrderProduceTransaction, totalProducedQuantity);
@@ -243,6 +266,8 @@ public class WorkOrderProduceTransactionService  {
 
         return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(inventory);
     }
+
+
 
 
 }

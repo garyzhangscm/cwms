@@ -35,11 +35,12 @@ public class UserController {
     @RequestMapping(value="/users", method = RequestMethod.GET)
     public List<User> findAllUsers(@RequestParam(name="username", required = false, defaultValue = "") String username,
                                    @RequestParam(name="rolename", required = false, defaultValue = "") String rolename,
+                                   @RequestParam(name="workingTeamName", required = false, defaultValue = "") String workingTeamName,
                                    @RequestParam(name="firstname", required = false, defaultValue = "") String firstname,
                                    @RequestParam(name="lastname", required = false, defaultValue = "") String lastname,
                                    @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled,
                                    @RequestParam(name="locked", required = false, defaultValue = "") Boolean locked) {
-        return userService.findAll(username, rolename, firstname, lastname, enabled, locked);
+        return userService.findAll(username, rolename, workingTeamName,  firstname, lastname, enabled, locked);
     }
 
     @RequestMapping(value="/users/validate-url", method = RequestMethod.POST)

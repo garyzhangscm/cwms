@@ -50,12 +50,13 @@ public class InventoryController {
                                               @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
                                               @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
                                               @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
+                                              @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
         return inventoryService.findAll(warehouseId, itemName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationGroupId, receiptId, workOrderId,
-                workOrderLineIds,
+                workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn);
     }
 
@@ -70,6 +71,19 @@ public class InventoryController {
         return inventoryService.findPickableInventories(itemId, inventoryStatusId);
     }
 
+
+    @RequestMapping(value="/inventories/consume", method = RequestMethod.POST)
+    public List<Inventory> consumeInventoriesForWorkOrderLines(@RequestParam Long warehouseId,
+                                            @RequestParam String workOrderLineIds) {
+        return inventoryService.consumeInventoriesForWorkOrderLines(warehouseId, workOrderLineIds);
+    }
+
+    @RequestMapping(value="/inventories/consume/workOrderLine/{id}", method = RequestMethod.POST)
+    public List<Inventory> consumeInventoriesForWorkOrderLine(@PathVariable Long id,
+                                                              @RequestParam Long warehouseId,
+                                                              @RequestParam  Long quantity) {
+        return inventoryService.consumeInventoriesForWorkOrderLine(id,warehouseId,  quantity);
+    }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}")
     public void removeInventory(@PathVariable Long id) {
@@ -109,6 +123,10 @@ public class InventoryController {
         else if (Objects.nonNull(inventory.getWorkOrderLineId())){
 
             return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL);
+        }
+        else if (Objects.nonNull(inventory.getWorkOrderByProductId())){
+
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT);
         }
         else {
 

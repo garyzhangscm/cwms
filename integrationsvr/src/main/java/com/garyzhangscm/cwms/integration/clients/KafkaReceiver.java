@@ -2,11 +2,8 @@ package com.garyzhangscm.cwms.integration.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.integration.model.InventoryAdjustmentConfirmation;
-import com.garyzhangscm.cwms.integration.model.InventoryAttributeChangeConfirmation;
+import com.garyzhangscm.cwms.integration.model.*;
 
-import com.garyzhangscm.cwms.integration.model.OrderConfirmation;
-import com.garyzhangscm.cwms.integration.model.ReceiptConfirmation;
 import com.garyzhangscm.cwms.integration.service.IntegrationDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +92,26 @@ public class KafkaReceiver {
 
     }
 
+
+    @KafkaListener(topics = {"INTEGRATION_WORK_ORDER_CONFIRMATION"})
+    public void processWorkOrderConfirmationIntegration(@Payload String workOrderConfirmationJsonRepresent)  {
+        logger.info("# received work order confirmation data: {}", workOrderConfirmationJsonRepresent);
+
+        try {
+            WorkOrderConfirmation workOrderConfirmation
+                    = objectMapper.readValue(workOrderConfirmationJsonRepresent, WorkOrderConfirmation.class);
+            logger.info("workOrderConfirmation: {}", workOrderConfirmation);
+
+
+            integrationDataService.sendIntegrationWorkOrderConfirmationData(workOrderConfirmation);
+
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
 
     @KafkaListener(topics = {"INTEGRATION_RECEIPT_CONFIRMATION"})
     public void processReceiptConfirmationIntegration(@Payload String receiptConfirmationJsonRepresent)  {

@@ -73,6 +73,11 @@ public class Inventory implements Serializable {
     private Long workOrderLineId;
 
 
+    // When we have some by product from the work order
+    @Column(name = "work_order_by_product_id")
+    private Long workOrderByProductId;
+
+
     @ManyToOne
     @JoinColumn(name="item_id")
     private Item item;
@@ -322,5 +327,13 @@ public class Inventory implements Serializable {
 
     public void setWorkOrderLineId(Long workOrderLineId) {
         this.workOrderLineId = workOrderLineId;
+    }
+
+    public Long getWorkOrderByProductId() {
+        return workOrderByProductId;
+    }
+
+    public void setWorkOrderByProductId(Long workOrderByProductId) {
+        this.workOrderByProductId = workOrderByProductId;
     }
 }

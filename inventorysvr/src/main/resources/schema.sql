@@ -90,6 +90,7 @@ CREATE TABLE inventory(
   receipt_id BIGINT,
   work_order_id BIGINT,
   work_order_line_id BIGINT,
+  work_order_by_product_id BIGINT,
   locked_for_adjust  boolean not null default 0,
   foreign key(item_id) references item(item_id),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),

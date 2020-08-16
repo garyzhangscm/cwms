@@ -54,6 +54,8 @@ public class DBBasedIntegration implements Integration{
     @Autowired
     DBBasedOrderConfirmationIntegration dbBasedOrderConfirmationIntegration;
     @Autowired
+    DBBasedWorkOrderConfirmationIntegration dbBasedWorkOrderConfirmationIntegration;
+    @Autowired
     DBBasedReceiptConfirmationIntegration dbBasedReceiptConfirmationIntegration;
 
 
@@ -264,6 +266,22 @@ public class DBBasedIntegration implements Integration{
     }
     public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
         return dbBasedOrderConfirmationIntegration.sendIntegrationOrderConfirmationData(orderConfirmation);
+    }
+
+    @Override
+    public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(Long warehouseId, String warehouseName, String number) {
+        return dbBasedWorkOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
+                number);
+    }
+
+    @Override
+    public IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id) {
+        return dbBasedWorkOrderConfirmationIntegration.findById(id);
+    }
+
+    @Override
+    public IntegrationWorkOrderConfirmationData sendIntegrationWorkOrderConfirmationData(WorkOrderConfirmation workOrderConfirmation) {
+        return dbBasedWorkOrderConfirmationIntegration.sendIntegrationWorkOrderConfirmationData(workOrderConfirmation);
     }
 
     // Receipt Confirmation Data

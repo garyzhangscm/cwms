@@ -97,6 +97,7 @@ public class UserService  implements TestDataInitiableService{
 
     public List<User> findAll(String username,
                               String rolename,
+                              String workingTeamName,
                               String firstname,
                               String lastname,
                               Boolean enabled,
@@ -112,6 +113,10 @@ public class UserService  implements TestDataInitiableService{
                     if (!StringUtils.isBlank(rolename)) {
                         Join<User,Role> joinRole = root.join("roles",JoinType.LEFT);
                         predicates.add(criteriaBuilder.equal(joinRole.get("name"), rolename));
+                    }
+                    if (!StringUtils.isBlank(workingTeamName)) {
+                        Join<User,WorkingTeam> joinWorkingTeam = root.join("workingTeams",JoinType.LEFT);
+                        predicates.add(criteriaBuilder.equal(joinWorkingTeam.get("name"), workingTeamName));
                     }
 
                     if (!StringUtils.isBlank(firstname)) {
@@ -140,7 +145,7 @@ public class UserService  implements TestDataInitiableService{
 
     }
 
-    private void loadAttribute(List<User> users) {
+    public void loadAttribute(List<User> users) {
         String usernames = users.stream().map(User::getUsername).collect(Collectors.joining(","));
         List<UserAuth> userAuths = authServiceRestemplateClient.getUserAuthByUsernames(usernames);
         Map<String, UserAuth> userAuthMap = new HashMap<>();
@@ -149,7 +154,7 @@ public class UserService  implements TestDataInitiableService{
         users.stream().forEach(user -> setUserAuthInformation(user, userAuthMap.get(user.getUsername())));
 
     }
-    private void loadAttribute(User user) {
+    public void loadAttribute(User user) {
         // load the auth information for each user
         UserAuth userAuth = authServiceRestemplateClient.getUserAuthByUsername(user.getUsername());
 

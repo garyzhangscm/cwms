@@ -85,8 +85,13 @@ public class IntegrationService {
 
     public void processInventoryAdjustment(InventoryQuantityChangeType inventoryQuantityChangeType,
                                            Inventory inventory, Long originalQuantity, Long newQuantity) {
-        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING)) {
-            // when we are receiving inventory, we will not send integration data for individual
+        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING) ||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RETURN_MATERAIL)||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.PRODUCING)||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.PRODUCING_BY_PRODUCT)) {
+            // when we are receiving inventory, produce inventory from work order, or
+            // return material from a work order, we will not send integration data for individual
             // inventory. instead we will send integration data for the whole receipt
             return;
         }

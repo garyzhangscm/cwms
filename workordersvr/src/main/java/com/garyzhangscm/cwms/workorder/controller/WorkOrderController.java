@@ -19,10 +19,8 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
-import com.garyzhangscm.cwms.workorder.model.Inventory;
-import com.garyzhangscm.cwms.workorder.model.WorkOrder;
+import com.garyzhangscm.cwms.workorder.model.*;
 
-import com.garyzhangscm.cwms.workorder.model.WorkOrderLine;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,9 +115,27 @@ public class WorkOrderController {
         return workOrderService.getProducedInventory(id);
     }
 
+    @RequestMapping(value="/work-orders/{id}/produced-by-product", method = RequestMethod.GET)
+    public List<Inventory> getProducedByProduct(@PathVariable Long id) {
+        return workOrderService.getProducedByProduct(id);
+    }
+
+
     @RequestMapping(value="/work-orders/{id}/delivered-inventory", method = RequestMethod.GET)
     public List<Inventory> getDeliveredInventory(@PathVariable Long id) {
         return workOrderService.getDeliveredInventory(id);
+    }
+
+
+    @RequestMapping(value="/work-orders/{id}/kpi", method = RequestMethod.GET)
+    public List<WorkOrderKPI> getKPIs(@PathVariable Long id) {
+        return workOrderService.getKPIs(id);
+    }
+
+
+    @RequestMapping(value="/work-orders/{id}/kpi-transaction", method = RequestMethod.GET)
+    public List<WorkOrderKPITransaction> getKPITransactions(@PathVariable Long id) {
+        return workOrderService.getKPITransactions(id);
     }
 
 

@@ -248,6 +248,25 @@ public class IntegrationDataController {
 
         return integrationDataService.getIntegrationOrderConfirmationData(id);
     }
+
+    //
+    // Work Order Confirmation Related
+    //
+    @RequestMapping(value="/work-order-confirmations", method = RequestMethod.GET)
+    public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "") Long warehouseId,
+            @RequestParam(name = "warehouseName", required = false, defaultValue = "") String warehouseName,
+            @RequestParam(name = "number", required = false, defaultValue = "") String number) {
+
+        return integrationDataService.getIntegrationWorkOrderConfirmationData(warehouseId, warehouseName,
+                number);
+    }
+
+    @RequestMapping(value="/work-order-confirmations/{id}", method = RequestMethod.GET)
+    public IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.getIntegrationWorkOrderConfirmationData(id);
+    }
     //
     // Receipt Confirmation Related
     //

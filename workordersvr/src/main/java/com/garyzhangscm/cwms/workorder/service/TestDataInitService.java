@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.workorder.service;
 
 
 
+import com.garyzhangscm.cwms.workorder.model.WorkOrderByProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ public class TestDataInitService {
 
     BillOfMaterialLineService billOfMaterialLineService;
 
+    BillOfMaterialByProductService billOfMaterialByProductService;
+
     WorkOrderInstructionTemplateService workOrderInstructionTemplateService;
 
     ProductionLineService productionLineService;
@@ -51,6 +54,8 @@ public class TestDataInitService {
 
     WorkOrderLineService workOrderLineService;
 
+    WorkOrderByProductService workOrderByProductService;
+
     WorkOrderInstructionService workOrderInstructionService;
 
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
@@ -59,19 +64,23 @@ public class TestDataInitService {
     @Autowired
     public TestDataInitService(BillOfMaterialService billOfMaterialService,
                                BillOfMaterialLineService billOfMaterialLineService,
+                               BillOfMaterialByProductService billOfMaterialByProductService,
                                WorkOrderInstructionTemplateService workOrderInstructionTemplateService,
                                ProductionLineService productionLineService,
                                WorkOrderService workOrderService,
                                WorkOrderLineService workOrderLineService,
+                               WorkOrderByProductService workOrderByProductService,
                                WorkOrderInstructionService workOrderInstructionService) {
         this.billOfMaterialService = billOfMaterialService;
         this.billOfMaterialLineService = billOfMaterialLineService;
+        this.billOfMaterialByProductService = billOfMaterialByProductService;
         this.workOrderInstructionTemplateService = workOrderInstructionTemplateService;
 
         this.productionLineService = productionLineService;
 
         this.workOrderService = workOrderService;
         this.workOrderLineService = workOrderLineService;
+        this.workOrderByProductService = workOrderByProductService;
         this.workOrderInstructionService = workOrderInstructionService;
 
 
@@ -81,6 +90,9 @@ public class TestDataInitService {
 
         initiableServices.put("Bill_Of_Material_Line", billOfMaterialLineService);
         serviceNames.add("Bill_Of_Material_Line");
+
+        initiableServices.put("Bill_Of_Material_By_Product", billOfMaterialByProductService);
+        serviceNames.add("Bill_Of_Material_By_Product");
 
         initiableServices.put("Work_Order_Instruction_Template", workOrderInstructionTemplateService);
         serviceNames.add("Work_Order_Instruction_Template");
@@ -92,6 +104,8 @@ public class TestDataInitService {
         serviceNames.add("Work_Order");
         initiableServices.put("Work_Order_Line", workOrderLineService);
         serviceNames.add("Work_Order_Line");
+        initiableServices.put("Work_Order_By_Product", workOrderByProductService);
+        serviceNames.add("Work_Order_By_Product");
         initiableServices.put("Work_Order_Instruction", workOrderInstructionService);
         serviceNames.add("Work_Order_Instruction");
     }
@@ -113,6 +127,10 @@ public class TestDataInitService {
                              "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("bill_of_material_line records from warehouse ID {} removed!", warehouseId);
 
+        jdbcTemplate.update("delete from bill_of_material_by_product where bill_of_material_id in " +
+                "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("bill_of_material_by_product records from warehouse ID {} removed!", warehouseId);
+
         jdbcTemplate.update("delete from work_order_instruction_template where bill_of_material_id in " +
                 "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("work_order_instruction_template records from warehouse ID {} removed!", warehouseId);
@@ -125,6 +143,9 @@ public class TestDataInitService {
                 "      where work_order.warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("work_order_line_consume_transaction records from warehouse ID {} removed!", warehouseId);
 
+        jdbcTemplate.update("delete from work_order_kpi_transaction where 1=1 ");
+        logger.debug("work_order_kpi_transaction records from warehouse ID {} removed!", warehouseId);
+
         jdbcTemplate.update("delete from work_order_produced_inventory where work_order_produce_transaction_id in " +
                                 "  (select work_order_produce_transaction_id from  work_order join work_order_produce_transaction " +
                         "  on work_order.work_order_id = work_order_produce_transaction.work_order_id " +
@@ -136,6 +157,9 @@ public class TestDataInitService {
                 "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("work_order_produce_transaction records from warehouse ID {} removed!", warehouseId);
 
+        jdbcTemplate.update("delete from work_order_kpi where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_produce_transaction records from warehouse ID {} removed!", warehouseId);
 
         jdbcTemplate.update("delete from return_material_request where work_order_line_complete_transaction_id in " +
                 "  (select work_order_line_complete_transaction_id from  work_order join work_order_line " +
@@ -172,6 +196,10 @@ public class TestDataInitService {
         jdbcTemplate.update("delete from work_order_line where work_order_id in " +
                 "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("work_order_line records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from work_order_by_product where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("work_order_by_product records from warehouse ID {} removed!", warehouseId);
 
         jdbcTemplate.update("delete from work_order where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("work_order records from warehouse ID {} removed!", warehouseId);

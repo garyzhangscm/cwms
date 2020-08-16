@@ -89,6 +89,12 @@ public interface Integration {
     IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id);
     IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation);
 
+    // Work Order Confirmation Data
+    List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(Long warehouseId, String warehouseName,
+                                                                                         String number);
+    IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id);
+    IntegrationWorkOrderConfirmationData sendIntegrationWorkOrderConfirmationData(WorkOrderConfirmation workOrderConfirmation);
+
     // Receipt Confirmation Data
     List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(Long warehouseId, String warehouseName,
                                                                                              String number, Long clientId, String clientName,

@@ -56,11 +56,17 @@ public class WorkOrderService implements TestDataInitiableService {
     @Autowired
     private WorkOrderLineService workOrderLineService;
     @Autowired
+    private WorkOrderByProductService workOrderByProductService;
+    @Autowired
     private BillOfMaterialService billOfMaterialService;
     @Autowired
     private ProductionLineService productionLineService;
     @Autowired
     private WorkOrderInstructionService workOrderInstructionService;
+    @Autowired
+    private WorkOrderKPIService workOrderKPIService;
+    @Autowired
+    private WorkOrderKPITransactionService workOrderKPITransactionService;
 
     @Autowired
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
@@ -70,6 +76,8 @@ public class WorkOrderService implements TestDataInitiableService {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private IntegrationService integrationService;
 
     @Value("${fileupload.test-data.work-order:work-order}")
     String testDataFile;
@@ -169,6 +177,17 @@ public class WorkOrderService implements TestDataInitiableService {
                     workOrderLineService.loadAttribute(workOrderLine);
                 });
 
+        // Load the item and inventory status information for each lines
+        workOrder.getWorkOrderByProducts()
+                .forEach(workOrderByProduct -> {
+                    // Setup the work order on the work order line as
+                    // the work order line depends on the work order's information
+                    // to load some attributes
+                    if (Objects.isNull(workOrderByProduct.getWorkOrder())) {
+                        workOrderByProduct.setWorkOrder(workOrder);
+                    }
+                    workOrderByProductService.loadAttribute(workOrderByProduct);
+                });
     }
 
 
@@ -280,6 +299,9 @@ public class WorkOrderService implements TestDataInitiableService {
                 .forEach(workOrderInstructionTemplate ->
                         workOrderInstructionService.createWorkOrderInstructionFromBOMLine(savedWorkOrder,workOrderInstructionTemplate));
 
+        billOfMaterial.getBillOfMaterialByProducts()
+                .forEach(billOfMaterialByProduct ->
+                        workOrderByProductService.createWorkOrderByProductFromBOMByProduct(savedWorkOrder, workOrderCount, billOfMaterialByProduct));
         return findById(savedWorkOrder.getId());
     }
 
@@ -373,6 +395,18 @@ public class WorkOrderService implements TestDataInitiableService {
                 workOrderId
         );
 
+    }
+
+    public List<Inventory> getProducedByProduct(Long workOrderId) {
+
+        WorkOrder workOrder = findById(workOrderId);
+        String workOrderByProductIds =
+                workOrder.getWorkOrderByProducts().stream()
+                        .map(WorkOrderByProduct::getId).map(String::valueOf).collect(Collectors.joining(","));
+        return inventoryServiceRestemplateClient.getProducedByProduct(
+                workOrder.getWarehouseId(),
+                workOrderByProductIds
+        );
 
     }
 
@@ -417,6 +451,17 @@ public class WorkOrderService implements TestDataInitiableService {
                 workOrder.getWarehouseId(),workOrderLineIds
         );
     }
+
+    public List<WorkOrderKPI> getKPIs(Long id) {
+        return workOrderKPIService.findByWorkOrder(findById(id));
+    }
+
+
+    public List<WorkOrderKPITransaction> getKPITransactions(Long id) {
+
+        return workOrderKPITransactionService.findByWorkOrder(findById(id));
+    }
+
 
 
     public Inventory unpickInventory(Long id,
@@ -511,8 +556,27 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public WorkOrder completeWorkOrder(WorkOrder workOrder) {
         workOrder.setStatus(WorkOrderStatus.COMPLETED);
+        // Let's consume all the material.
+        // If there's any leftover, it should go through the
+        // return material process
+        consumeAllMaterials(workOrder);
 
-        return saveOrUpdate(workOrder);
+        WorkOrder newWorkOrder = saveOrUpdate(workOrder);
+        sendWorkOrderConfirmationIntegration(newWorkOrder);
+        return newWorkOrder;
+    }
+
+    private void consumeAllMaterials(WorkOrder workOrder) {
+        String workOrderLineIds = workOrder.getWorkOrderLines().stream()
+                .map(WorkOrderLine::getId).map(String::valueOf).collect(Collectors.joining(","));
+        logger.debug("Start to consume the materials for work order lines: {}", workOrderLineIds);
+        inventoryServiceRestemplateClient.consumeAllMaterials(workOrder.getWarehouseId(), workOrderLineIds);
+    }
+
+
+    private void sendWorkOrderConfirmationIntegration(WorkOrder workOrder) {
+
+        integrationService.process(new WorkOrderConfirmation(workOrder));
     }
 
 }

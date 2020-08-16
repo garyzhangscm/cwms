@@ -3,6 +3,7 @@ text,i18n,link,sequence,menuSubGruop,name
 "Locations",menu.dashboard.locations,/dashboard/locations,2,User-Menu-Dashboard,Dashboard-Locations
 "User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User
 "Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role
+"WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam
 "Warehouse",menu.main.layout.warehouse,/warehouse-layout/warehouse,1,Main-Menu-Layout,Layout-warehouse
 "LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group
 "WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location
@@ -36,7 +37,7 @@ text,i18n,link,sequence,menuSubGruop,name
 "Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,2,Main-Menu-WorkOrder,Work-Order
-"Production Line",menu.main.work-order.production-line,/work-order/production-line,3,Main-Menu-WorkOrder,Production-Line
+"Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier

@@ -127,10 +127,12 @@ public class InventoryService implements TestDataInitiableService{
                                    String receiptId,
                                    Long workOrderId,
                                    String workOrderLineIds,
+                                   String workOrderByProductIds,
                                    String pickIds,
                                    String lpn) {
         return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationGroupId, receiptId, workOrderId, workOrderLineIds,
+                workOrderByProductIds,
                 pickIds, lpn, true);
     }
 
@@ -146,6 +148,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String receiptId,
                                    Long workOrderId,
                                    String workOrderLineIds,
+                                   String workOrderByProductIds,
                                    String pickIds,
                                    String lpn,
                                    boolean includeDetails) {
@@ -214,6 +217,14 @@ public class InventoryService implements TestDataInitiableService{
                         predicates.add(inClause);
 
                     }
+                    if (!StringUtils.isBlank(workOrderByProductIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderByProductId"));
+                        Arrays.stream(workOrderByProductIds.split(","))
+                                .map(Long::parseLong).forEach(workOrderByProductId -> inClause.value(workOrderByProductId));
+                        predicates.add(inClause);
+
+                    }
+
                     if (!StringUtils.isBlank(pickIds)) {
                         CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("pickId"));
                         Arrays.stream(pickIds.split(",")).map(Long::parseLong).forEach(pickId -> inClause.value(pickId));
@@ -528,13 +539,21 @@ public class InventoryService implements TestDataInitiableService{
             case AUDIT_COUNT:
                 inventoryActivityType = InventoryActivityType.AUDIT_COUNT;
                 break;
+            case CONSUME_MATERIAL:
+                inventoryActivityType = InventoryActivityType.WORK_ORDER_CONSUME;
+                break;
             default:
                 inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
         }
         inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
                 "quantity", String.valueOf(inventory.getQuantity()), "0",
                 documentNumber, comment);
-        integrationService.processInventoryAdjustment(InventoryQuantityChangeType.INVENTORY_ADJUST, inventory, inventory.getQuantity(), 0L);
+
+        // ignore the integration when it is consumption of work order material
+        if (!inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)) {
+
+            integrationService.processInventoryAdjustment(InventoryQuantityChangeType.INVENTORY_ADJUST, inventory, inventory.getQuantity(), 0L);
+        }
 
         Location destination
                 = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
@@ -1020,6 +1039,8 @@ public class InventoryService implements TestDataInitiableService{
                 inventory.getId(), inventory.getLpn(), oldQuantity, newQuantity, inventoryQuantityChangeType);
         if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING) ||
                 inventoryQuantityChangeType.equals(InventoryQuantityChangeType.PRODUCING)||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.PRODUCING_BY_PRODUCT)||
+                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)||
                 inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RETURN_MATERAIL)) {
             logger.debug("Receiving / Producing / Return Material doesn't needs any approve");
             return false;
@@ -1069,6 +1090,13 @@ public class InventoryService implements TestDataInitiableService{
         switch (inventoryQuantityChangeType) {
             case RECEIVING:
                 inventoryActivityType = InventoryActivityType.RECEIVING;
+                break;
+            case PRODUCING:
+            case PRODUCING_BY_PRODUCT:
+                inventoryActivityType = InventoryActivityType.WORK_ORDER_PRODUCING;
+                break;
+            case RETURN_MATERAIL:
+                inventoryActivityType = InventoryActivityType.WORK_ORDER_RETURN_MATERIAL;
                 break;
             case AUDIT_COUNT:
                 inventoryActivityType = InventoryActivityType.AUDIT_COUNT;
@@ -1305,5 +1333,111 @@ public class InventoryService implements TestDataInitiableService{
 
         return inventory;
          **/
+    }
+
+
+    /**
+     * Consume inventory for a list of work order lines. This is normally called when the work order
+     * is complete so we can consume all the left over inventory
+     * @param warehouseId
+     * @param workOrderLineIds
+     * @return
+     */
+    public List<Inventory> consumeInventoriesForWorkOrderLines(Long warehouseId, String workOrderLineIds) {
+
+        try {
+            List<Pick> picks = outbuondServiceRestemplateClient.getWorkOrderPicks(warehouseId, workOrderLineIds);
+            if (picks.size() > 0) {
+                String pickIds = picks.stream()
+                        .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
+                List<Inventory> pickedInventories = findAll(
+                        warehouseId,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        pickIds,
+                        null
+                );
+                // Let's remove those inventories
+                pickedInventories.forEach(inventory -> removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL));
+
+                return pickedInventories;
+            }
+        } catch (IOException e) {
+            // in case we can't get any picks, just return empty result to indicate
+            // we don't have any delivered inventory
+
+        }
+        return new ArrayList<>();
+    }
+
+
+    public List<Inventory> consumeInventoriesForWorkOrderLine(Long workOrderLineId, Long warehouseId,Long quantity) {
+
+        try {
+            List<Pick> picks = outbuondServiceRestemplateClient.getWorkOrderPicks(warehouseId, String.valueOf(workOrderLineId));
+            if (picks.size() > 0) {
+                String pickIds = picks.stream()
+                        .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
+                List<Inventory> pickedInventories = findAll(
+                        warehouseId,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        pickIds,
+                        null
+                );
+                // Let's remove those inventories until we reach the
+                // required quantity
+                Long quantityToBeRemoved = quantity;
+                Iterator<Inventory> inventoryIterator = pickedInventories.iterator();
+                while (inventoryIterator.hasNext() && quantityToBeRemoved > 0) {
+                    Inventory inventory = inventoryIterator.next();
+                    if (inventory.getQuantity() <= quantityToBeRemoved) {
+                        // The whole inventory can be removed
+                        quantityToBeRemoved -= inventory.getQuantity();
+                        removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL);
+
+
+                    }
+                    else {
+                        // we only need to remove partial quantity of the inventory
+                        // so we will need to split the inventory first
+                        String newLpn = commonServiceRestemplateClient.getNextLpn();
+                        // we will split the quantity to be consumed from the original inventory,
+                        // save the origianl inventory and then remove the splited inventory
+                        Inventory splitedInventory = inventory.split(newLpn, quantityToBeRemoved);
+                        splitedInventory = save(splitedInventory);
+                        saveOrUpdate(inventory);
+                        quantityToBeRemoved -= splitedInventory.getQuantity();
+                        removeInventory(splitedInventory, InventoryQuantityChangeType.CONSUME_MATERIAL);
+
+                    }
+                }
+
+                return pickedInventories;
+            }
+        } catch (IOException e) {
+            // in case we can't get any picks, just return empty result to indicate
+            // we don't have any delivered inventory
+
+        }
+        return new ArrayList<>();
     }
 }

@@ -3,6 +3,7 @@ Admin,Dashboard-Default
 Admin,Dashboard-Locations
 Admin,Auth-User
 Admin,Auth-Role
+Admin,Auth-WorkingTeam
 Admin,Layout-warehouse
 Admin,Layout-Location-Group
 Admin,Layout-Location

@@ -27,6 +27,10 @@ DROP TABLE if exists integration_receipt_confirmation;
 
 DROP TABLE if exists integration_shipment_line_confirmation;
 
+
+DROP TABLE if exists integration_work_order_line_confirmation;
+DROP TABLE if exists integration_work_order_confirmation;
+
 CREATE TABLE integration_customer (
   integration_customer_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
@@ -439,3 +443,41 @@ CREATE TABLE integration_shipment_line_confirmation(
   last_update_time  DATETIME,
   error_message VARCHAR(1000),
   status VARCHAR(10) NOT NULL);
+
+
+CREATE TABLE integration_work_order_confirmation(
+  integration_work_order_confirmation_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  number   VARCHAR(100) NOT NULL,
+  production_line_name VARCHAR(100),
+  bill_of_material_name VARCHAR(100),
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  warehouse_id  BIGINT,
+  warehouse_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  produced_quantity BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  error_message VARCHAR(1000),
+  status VARCHAR(10) NOT NULL);
+
+CREATE TABLE integration_work_order_line_confirmation(
+  integration_work_order_line_confirmation_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  number   VARCHAR(100) NOT NULL,
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  open_quantity  BIGINT NOT NULL,
+  inprocess_quantity  BIGINT NOT NULL,
+  delivered_quantity BIGINT NOT NULL,
+  consumed_quantity BIGINT NOT NULL,
+  scrapped_quantity BIGINT NOT NULL,
+  returned_quantity BIGINT NOT NULL,
+  inventory_status_id   BIGINT,
+  inventory_status_name   VARCHAR(100),
+  integration_work_order_confirmation_id BIGINT  NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_work_order_confirmation_id) references integration_work_order_confirmation(integration_work_order_confirmation_id));
