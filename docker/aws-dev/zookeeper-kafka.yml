@@ -36,7 +36,8 @@ services:
                      INTEGRATION_ORDER_LINE_CONFIRMATION:1:1,
                      INTEGRATION_SHIPMENT_LINE_CONFIRMATION:1:1,
                      INTEGRATION_RECEIPT_CONFIRMATION:1:1,
-                     INTEGRATION_RECEIPT_LINE_CONFIRMATION:1:1"
+                     INTEGRATION_RECEIPT_LINE_CONFIRMATION:1:1,
+                     INTEGRATION_WORK_ORDER_CONFIRMATION:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       TZ: "America/Los_Angeles"
     depends_on:

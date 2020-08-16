@@ -1,0 +1,3 @@
+warehouse,billOfMaterial,item,inventoryStatus,expectedQuantity
+WMEC,BOM-001,22570P-93-25,AVAL,2
+WMEC,BOM-001,22570P-93-29,AVAL,3

@@ -303,6 +303,13 @@ public class WorkOrderLineService implements TestDataInitiableService {
                     workOrderLine.getDeliveredQuantity() + ", already consumed: " +
                     workOrderLine.getConsumedQuantity() + ", will be consumed this time: " + consumedQuantity);
         }
+        // Let's consume the inventory and remove it from the production line
+
+        inventoryServiceRestemplateClient.consumeMaterialForWorkOrderLine(
+                workOrderLine.getId(),
+                workOrderLine.getWorkOrder().getWarehouseId(),
+                consumedQuantity
+        );
         workOrderLine.setConsumedQuantity(workOrderLine.getConsumedQuantity() + consumedQuantity);
         save(workOrderLine);
     }

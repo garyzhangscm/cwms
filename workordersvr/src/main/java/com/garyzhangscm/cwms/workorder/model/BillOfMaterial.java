@@ -31,7 +31,15 @@ public class BillOfMaterial extends AuditibleEntity<String>{
             cascade = CascadeType.REMOVE,
             orphanRemoval = true
     )
+    List<BillOfMaterialByProduct> billOfMaterialByProducts = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "billOfMaterial",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
     List<WorkOrderInstructionTemplate> workOrderInstructionTemplates = new ArrayList<>();
+
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -44,6 +52,7 @@ public class BillOfMaterial extends AuditibleEntity<String>{
 
     @Transient
     private Item item;
+
 
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
@@ -119,5 +128,13 @@ public class BillOfMaterial extends AuditibleEntity<String>{
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public List<BillOfMaterialByProduct> getBillOfMaterialByProducts() {
+        return billOfMaterialByProducts;
+    }
+
+    public void setBillOfMaterialByProducts(List<BillOfMaterialByProduct> billOfMaterialByProducts) {
+        this.billOfMaterialByProducts = billOfMaterialByProducts;
     }
 }

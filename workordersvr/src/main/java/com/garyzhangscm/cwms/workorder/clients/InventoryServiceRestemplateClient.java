@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.Inventory;
 import com.garyzhangscm.cwms.workorder.model.InventoryStatus;
 import com.garyzhangscm.cwms.workorder.model.Item;
+import com.garyzhangscm.cwms.workorder.model.WorkOrder;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -181,6 +182,25 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    public List<Inventory> getProducedByProduct(Long warehouseId, String workOrderByProductIds) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("workOrderByProductIds", workOrderByProductIds);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
     public List<Inventory>  getReturnedInventory(Long warehouseId, String workOrderLineIds) {
 
         UriComponentsBuilder builder =
@@ -278,6 +298,50 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+
+    /**
+     * Consume all the materials when complete the work order
+     * If there's still material left, we will need to go through
+     * the return process
+     *
+     * @param warehouseId
+     * @param workOrderLineIds
+     * @return
+     */
+    public List<Inventory> consumeAllMaterials(Long warehouseId, String workOrderLineIds) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories/consume")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("workOrderLineIds", workOrderLineIds);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public List<Inventory> consumeMaterialForWorkOrderLine(Long workOrderLineId, Long warehouseId, Long quantity) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventories/consume/workOrderLine/{id}")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("quantity", quantity);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(workOrderLineId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

@@ -1,5 +1,7 @@
 package com.garyzhangscm.cwms.workorder.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -33,6 +35,20 @@ public class WorkOrder extends AuditibleEntity<String>{
             orphanRemoval = true
     )
     List<WorkOrderInstruction> workOrderInstructions = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "workOrder",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    List<WorkOrderKPI> workOrderKPIs = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "workOrder",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    List<WorkOrderByProduct> workOrderByProducts = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "production_line_id")
@@ -77,6 +93,16 @@ public class WorkOrder extends AuditibleEntity<String>{
         }
         return Objects.equals(number, workOrder.number) &&
                 Objects.equals(warehouseId, workOrder.warehouseId);
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -194,5 +220,21 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setBillOfMaterial(BillOfMaterial billOfMaterial) {
         this.billOfMaterial = billOfMaterial;
+    }
+
+    public List<WorkOrderKPI> getWorkOrderKPIs() {
+        return workOrderKPIs;
+    }
+
+    public void setWorkOrderKPIs(List<WorkOrderKPI> workOrderKPIs) {
+        this.workOrderKPIs = workOrderKPIs;
+    }
+
+    public List<WorkOrderByProduct> getWorkOrderByProducts() {
+        return workOrderByProducts;
+    }
+
+    public void setWorkOrderByProducts(List<WorkOrderByProduct> workOrderByProducts) {
+        this.workOrderByProducts = workOrderByProducts;
     }
 }

@@ -26,7 +26,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "menu")
-public class Menu implements Comparable<Menu> {
+public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
 
     private static final long serialVersionUID = 1L;
 

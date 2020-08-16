@@ -29,6 +29,9 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
+import java.util.List;
+
 @Component
 
 public class OutbuondServiceRestemplateClient {
@@ -94,6 +97,26 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
 
+    }
+
+
+    public List<Pick> getWorkOrderPicks(Long warehouseId, String workOrderLineIds) throws IOException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/picks")
+                        .queryParam("workOrderLineIds", workOrderLineIds)
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Pick>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
 

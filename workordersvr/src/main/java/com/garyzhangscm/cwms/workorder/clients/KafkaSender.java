@@ -2,9 +2,11 @@ package com.garyzhangscm.cwms.workorder.clients;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.workorder.model.WorkOrderConfirmation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,7 @@ public class KafkaSender {
     @Autowired
     private KafkaTemplate kafkaTemplate;
 
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
@@ -26,4 +29,13 @@ public class KafkaSender {
         kafkaTemplate.send(topic, message);
     }
 
+
+    public void send(WorkOrderConfirmation workOrderConfirmation) {
+        try {
+            send("INTEGRATION_WORK_ORDER_CONFIRMATION", objectMapper.writeValueAsString(workOrderConfirmation));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
 }

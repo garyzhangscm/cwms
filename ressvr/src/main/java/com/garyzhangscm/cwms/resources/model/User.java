@@ -18,15 +18,18 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "user_info")
-public class User  {
+public class User extends AuditibleEntity<String>  {
 
 
     @Id
@@ -65,20 +68,33 @@ public class User  {
     private List<Role> roles = new ArrayList<>();
 
 
+    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JoinTable(name = "working_team_user",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "working_team_id"))
+    private List<WorkingTeam> workingTeams = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        if(Objects.nonNull(id) &&
+           Objects.nonNull(user.getId())) {
+            return Objects.equals(id, user.id);
+        }
+
+        return username.equals(user.getUsername());
+    }
+
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", firstname='" + firstname + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", isAdmin=" + isAdmin +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", enabled=" + enabled +
-                ", locked=" + locked +
-                ", roles=" + roles +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @JsonIgnore
@@ -175,13 +191,6 @@ public class User  {
 
     public String getName() {return username;}
 
-    public void assignRole(Role role) {
-
-        if (!getRoles().contains(role)) {
-            getRoles().add(role);
-        }
-    }
-
     public Boolean getChangePasswordAtNextLogon() {
         return changePasswordAtNextLogon;
     }
@@ -190,10 +199,42 @@ public class User  {
         this.changePasswordAtNextLogon = changePasswordAtNextLogon;
     }
 
+    public void assignRole(Role role) {
+
+        if (!getRoles().contains(role)) {
+            getRoles().add(role);
+        }
+    }
+
+
     public void deassignRole(Role role) {
 
         if (getRoles().contains(role)) {
             getRoles().remove(role);
         }
+    }
+
+    public void assignWorkingTeam(WorkingTeam workingTeam) {
+
+        if (!getWorkingTeams().contains(workingTeam)) {
+            getWorkingTeams().add(workingTeam);
+        }
+    }
+
+
+    public void deassignWorkingTeam(WorkingTeam workingTeam) {
+
+        if (getWorkingTeams().contains(workingTeam)) {
+            getWorkingTeams().remove(workingTeam);
+        }
+    }
+
+
+    public List<WorkingTeam> getWorkingTeams() {
+        return workingTeams;
+    }
+
+    public void setWorkingTeams(List<WorkingTeam> workingTeams) {
+        this.workingTeams = workingTeams;
     }
 }

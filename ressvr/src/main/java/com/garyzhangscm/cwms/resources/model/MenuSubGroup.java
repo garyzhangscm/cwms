@@ -27,7 +27,7 @@ import java.util.TreeSet;
 
 @Entity
 @Table(name = "menu_sub_group")
-public class MenuSubGroup implements Comparable<MenuSubGroup>{
+public class MenuSubGroup extends AuditibleEntity<String> implements Comparable<MenuSubGroup>{
 
     private static final long serialVersionUID = 1L;
 

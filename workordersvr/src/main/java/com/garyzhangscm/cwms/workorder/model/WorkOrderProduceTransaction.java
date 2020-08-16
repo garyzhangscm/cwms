@@ -39,10 +39,25 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     @OneToMany(
             mappedBy = "workOrderProduceTransaction",
-            cascade = CascadeType.ALL,
+            cascade = CascadeType.REMOVE,
             orphanRemoval = true
     )
     List<WorkOrderProducedInventory> workOrderProducedInventories = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "workOrderProduceTransaction",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    List<WorkOrderByProductProduceTransaction> workOrderByProductProduceTransactions = new ArrayList<>();
+
+
+    @OneToMany(
+            mappedBy = "workOrderProduceTransaction",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    List<WorkOrderKPITransaction> workOrderKPITransactions = new ArrayList<>();
 
 
     @Column(name = "consume_by_bom_quantity")
@@ -96,5 +111,23 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     public void setConsumeByBomQuantity(Boolean consumeByBomQuantity) {
         this.consumeByBomQuantity = consumeByBomQuantity;
+    }
+
+    public List<WorkOrderByProductProduceTransaction> getWorkOrderByProductProduceTransactions() {
+        return workOrderByProductProduceTransactions;
+    }
+
+    public void setWorkOrderByProductProduceTransactions(List<WorkOrderByProductProduceTransaction> workOrderByProductProduceTransactions) {
+        this.workOrderByProductProduceTransactions = workOrderByProductProduceTransactions;
+    }
+
+
+
+    public List<WorkOrderKPITransaction> getWorkOrderKPITransactions() {
+        return workOrderKPITransactions;
+    }
+
+    public void setWorkOrderKPITransactions(List<WorkOrderKPITransaction> workOrderKPITransactions) {
+        this.workOrderKPITransactions = workOrderKPITransactions;
     }
 }

@@ -36,6 +36,8 @@ public class InitTestDataService {
     RoleService roleService;
     UserRoleService userRoleService;
     RoleMenuService roleMenuService;
+    WorkingTeamService workingTeamService;
+    WorkingTeamUserService workingTeamUserService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -87,7 +89,9 @@ public class InitTestDataService {
                                // MenuSubGroupService menuSubGroupService,
                                // MenuService menuService,
                                UserRoleService userRoleService,
-                               RoleMenuService roleMenuService) {
+                               RoleMenuService roleMenuService,
+                               WorkingTeamService workingTeamService,
+                               WorkingTeamUserService workingTeamUserService) {
 
         // Add service from current server
         this.userService = userService;
@@ -97,6 +101,8 @@ public class InitTestDataService {
         // this.menuService = menuService;
         this.userRoleService = userRoleService;
         this.roleMenuService = roleMenuService;
+        this.workingTeamService = workingTeamService;
+        this.workingTeamUserService = workingTeamUserService;
 
 
         initiableServices.put("User", userService);
@@ -115,6 +121,13 @@ public class InitTestDataService {
         serviceNames.add("User_Role");
         initiableServices.put("Role_Menu_Access", roleMenuService);
         serviceNames.add("Role_Menu_Access");
+
+
+        initiableServices.put("working_team", workingTeamService);
+        serviceNames.add("working_team");
+        initiableServices.put("working_team_user", workingTeamUserService);
+        serviceNames.add("working_team_user");
+
 
 
         // Add service from other servers
@@ -187,6 +200,14 @@ public class InitTestDataService {
 
         jdbcTemplate.execute("delete from user_role");
         logger.debug("user_role records removed!");
+        jdbcTemplate.execute("delete from role_menu");
+        logger.debug("role_menu records removed!");
+
+        jdbcTemplate.execute("delete from working_team_user");
+        logger.debug("working_team_user records removed!");
+        jdbcTemplate.execute("delete from working_team");
+        logger.debug("working_team records removed!");
+
         jdbcTemplate.execute("delete from role_menu");
         logger.debug("role_menu records removed!");
 

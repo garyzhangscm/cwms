@@ -10,7 +10,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "role")
-public class Role {
+public class Role extends AuditibleEntity<String>  {
 
 
     @Id
