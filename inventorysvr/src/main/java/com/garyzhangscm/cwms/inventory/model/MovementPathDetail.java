@@ -28,7 +28,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "movement_path_detail")
-public class MovementPathDetail {
+public class MovementPathDetail extends AuditibleEntity<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

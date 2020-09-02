@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.layout.model;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "location_group")
@@ -65,6 +67,13 @@ public class LocationGroup {
     private InventoryConsolidationStrategy inventoryConsolidationStrategy = InventoryConsolidationStrategy.NONE;
 
 
+    @OneToMany(
+            mappedBy = "locationGroup",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<PickableUnitOfMeasure> pickableUnitOfMeasures = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -163,4 +172,11 @@ public class LocationGroup {
         this.allowCartonization = allowCartonization;
     }
 
+    public List<PickableUnitOfMeasure> getPickableUnitOfMeasures() {
+        return pickableUnitOfMeasures;
+    }
+
+    public void setPickableUnitOfMeasures(List<PickableUnitOfMeasure> pickableUnitOfMeasures) {
+        this.pickableUnitOfMeasures = pickableUnitOfMeasures;
+    }
 }

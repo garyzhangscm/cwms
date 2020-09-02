@@ -28,7 +28,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "grid_location_configuration")
-public class GridLocationConfiguration implements Serializable {
+public class GridLocationConfiguration  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

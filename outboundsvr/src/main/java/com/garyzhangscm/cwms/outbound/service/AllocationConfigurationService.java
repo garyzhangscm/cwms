@@ -155,11 +155,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
                         predicates.add(criteriaBuilder.equal(root.get("locationGroupTypeId"), locationGroupTypeId));
                     }
-                    if (StringUtils.isNotBlank(allocationStrategy)) {
 
-                        predicates.add(criteriaBuilder.equal(root.get("allocationStrategy"),
-                                AllocationStrategy.valueOf(allocationStrategy)));
-                    }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
@@ -304,7 +300,6 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 allocationConfigurationCSVWrapper);
         AllocationConfiguration allocationConfiguration = new AllocationConfiguration();
         allocationConfiguration.setSequence(allocationConfigurationCSVWrapper.getSequence());
-        allocationConfiguration.setAllocationStrategy(AllocationStrategy.valueOf(allocationConfigurationCSVWrapper.getAllocationStrategy()));
         allocationConfiguration.setType(AllocationConfigurationType.valueOf(allocationConfigurationCSVWrapper.getType()));
 
         Warehouse warehouse =

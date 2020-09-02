@@ -67,7 +67,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 ex.getExceptionCode().getCode(),
-                ex.getExceptionCode().getMessage(), exceptionResponse);
+                exceptionResponse.getMessage(), exceptionResponse);
     }
 
     @Override

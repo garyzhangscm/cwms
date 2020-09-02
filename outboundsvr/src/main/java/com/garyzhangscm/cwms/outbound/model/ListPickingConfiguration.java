@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "list_picking_configuration")
-public class ListPickingConfiguration {
+public class ListPickingConfiguration  extends AuditibleEntity<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -441,7 +441,7 @@ public class PickService {
 
     @Transactional
     public Pick generatePick(InventorySummary inventorySummary,
-                             ShipmentLine shipmentLine, Long quantity,
+                             ShipmentLine shipmentLine, long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure) {
         Pick pick = generatePick(inventorySummary, quantity, pickableUnitOfMeasure);
 

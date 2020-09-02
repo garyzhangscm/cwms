@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "short_allocation")
-public class ShortAllocation  implements Serializable {
+public class ShortAllocation   extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

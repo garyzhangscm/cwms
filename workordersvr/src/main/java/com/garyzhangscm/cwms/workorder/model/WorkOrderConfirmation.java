@@ -10,6 +10,8 @@ public class WorkOrderConfirmation  {
 
     List<WorkOrderLineConfirmation> workOrderLines = new ArrayList<>();
 
+    List<WorkOrderByProductConfirmation> workOrderByProducts = new ArrayList<>();
+
     private String productionLineName;
 
 
@@ -62,6 +64,11 @@ public class WorkOrderConfirmation  {
         workOrder.getWorkOrderLines().forEach(workOrderLine -> {
             WorkOrderLineConfirmation workOrderLineConfirmation = new WorkOrderLineConfirmation(workOrderLine);
             addWorkOrderLine(workOrderLineConfirmation);
+        });
+
+        workOrder.getWorkOrderByProducts().forEach(workOrderByProduct -> {
+            WorkOrderByProductConfirmation workOrderByProductConfirmation = new WorkOrderByProductConfirmation(workOrderByProduct);
+            addWorkOrderByProduct(workOrderByProductConfirmation);
         });
     }
 
@@ -146,5 +153,17 @@ public class WorkOrderConfirmation  {
 
     public void setProducedQuantity(Long producedQuantity) {
         this.producedQuantity = producedQuantity;
+    }
+
+    public List<WorkOrderByProductConfirmation> getWorkOrderByProducts() {
+        return workOrderByProducts;
+    }
+
+    public void setWorkOrderByProducts(List<WorkOrderByProductConfirmation> workOrderByProducts) {
+        this.workOrderByProducts = workOrderByProducts;
+    }
+
+    public void addWorkOrderByProduct(WorkOrderByProductConfirmation workOrderByProduct) {
+        this.workOrderByProducts.add(workOrderByProduct);
     }
 }

@@ -29,6 +29,7 @@ DROP TABLE if exists integration_shipment_line_confirmation;
 
 
 DROP TABLE if exists integration_work_order_line_confirmation;
+DROP TABLE if exists integration_work_order_by_product_confirmation;
 DROP TABLE if exists integration_work_order_confirmation;
 
 CREATE TABLE integration_customer (
@@ -473,6 +474,21 @@ CREATE TABLE integration_work_order_line_confirmation(
   consumed_quantity BIGINT NOT NULL,
   scrapped_quantity BIGINT NOT NULL,
   returned_quantity BIGINT NOT NULL,
+  inventory_status_id   BIGINT,
+  inventory_status_name   VARCHAR(100),
+  integration_work_order_confirmation_id BIGINT  NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_work_order_confirmation_id) references integration_work_order_confirmation(integration_work_order_confirmation_id));
+
+CREATE TABLE integration_work_order_by_product_confirmation(
+  integration_work_order_by_product_confirmation_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  produced_quantity  BIGINT NOT NULL,
   inventory_status_id   BIGINT,
   inventory_status_name   VARCHAR(100),
   integration_work_order_confirmation_id BIGINT  NOT NULL,

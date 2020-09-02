@@ -1,0 +1,2 @@
+warehouse,productionPlan,billOfMaterial,item,expectedQuantity,inventoryStatus
+WMEC,PRP-00001,BOM-001,22570P-93-29,10,AVAL

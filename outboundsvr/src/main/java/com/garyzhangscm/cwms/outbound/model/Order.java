@@ -27,7 +27,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "outbound_order")
-public class Order implements Serializable {
+public class Order  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

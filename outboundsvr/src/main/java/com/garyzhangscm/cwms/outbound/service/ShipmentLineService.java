@@ -54,6 +54,8 @@ public class ShipmentLineService {
     private AllocationConfigurationService allocationConfigurationService;
     @Autowired
     private ShipmentService shipmentService;
+    @Autowired
+    private AllocationService allocationService;
 
 
     @Autowired
@@ -200,8 +202,9 @@ public class ShipmentLineService {
             return new AllocationResult();
         }
 
-        AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine);
+        // AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine);
 
+        AllocationResult allocationResult = allocationService.allocate(shipmentLine);
         // Move the open quantity into the in process quantity and start allocation
         logger.debug("Allocation Step 1: Move quantity {} from open quantity to in process quantity",
                 shipmentLine.getOpenQuantity());

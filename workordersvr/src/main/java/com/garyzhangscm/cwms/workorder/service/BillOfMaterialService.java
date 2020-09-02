@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
@@ -230,6 +231,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
         }
         return getMatchedBillOfMaterial(workOrder);
     }
+
     public BillOfMaterial getMatchedBillOfMaterial(WorkOrder workOrder) {
         if (Objects.nonNull(workOrder.getBillOfMaterial())) {
             BillOfMaterial billOfMaterial = workOrder.getBillOfMaterial();
@@ -252,7 +254,11 @@ public class BillOfMaterialService implements TestDataInitiableService {
             return null;
         }
     }
+    public List<BillOfMaterial>  findMatchedBillOfMaterialByItemName(Long warehouseId,
+                                                               String itemName) {
+        return findAll(warehouseId, "", itemName, true);
 
+    }
     /**
      * @param billOfMaterial
      * @param workOrder

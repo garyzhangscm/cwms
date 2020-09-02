@@ -29,7 +29,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "movement_path")
-public class MovementPath {
+public class MovementPath extends AuditibleEntity<String>  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

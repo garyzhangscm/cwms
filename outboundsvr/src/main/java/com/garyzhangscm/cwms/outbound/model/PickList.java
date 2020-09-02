@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "pick_list")
-public class PickList {
+public class PickList  extends AuditibleEntity<String>{
 
 
     @Id

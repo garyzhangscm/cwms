@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ *
+ */
 @Entity
 @Table(name = "work_order")
 public class WorkOrder extends AuditibleEntity<String>{
@@ -58,9 +61,18 @@ public class WorkOrder extends AuditibleEntity<String>{
     private Long itemId;
 
 
+    // When the work order is created by
+    // following a specific BOM
     @ManyToOne
     @JoinColumn(name = "bill_of_material_id")
     private BillOfMaterial billOfMaterial;
+
+    // When the work order is created from a specific
+    // production plan
+    @ManyToOne
+    @JoinColumn(name = "production_plan_line_id")
+    private ProductionPlanLine productionPlanLine;
+
 
     @Transient
     private Item item;
@@ -236,5 +248,13 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setWorkOrderByProducts(List<WorkOrderByProduct> workOrderByProducts) {
         this.workOrderByProducts = workOrderByProducts;
+    }
+
+    public ProductionPlanLine getProductionPlanLine() {
+        return productionPlanLine;
+    }
+
+    public void setProductionPlanLine(ProductionPlanLine productionPlanLine) {
+        this.productionPlanLine = productionPlanLine;
     }
 }

@@ -261,7 +261,7 @@ public class WorkOrderProduceTransactionService  {
     private Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder,
                                                     WorkOrderProducedInventory workOrderProducedInventory,
                                                     WorkOrderProduceTransaction workOrderProduceTransaction) {
-        logger.debug("Start to receive inventory from work order: \n{}", workOrder);
+        logger.debug("Start to receive inventory from work order: \n{}", workOrder.getNumber());
         Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction);
 
         return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(inventory);

@@ -34,6 +34,9 @@ public class WorkOrderKPITransaction extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private KPIMeasurement kpiMeasurement;
 
+    @Column(name="type")
+    @Enumerated(EnumType.STRING)
+    private WorkOrderKPITransactionType type = WorkOrderKPITransactionType.ADD;
     /**
      * KPI amount
      */
@@ -151,5 +154,13 @@ public class WorkOrderKPITransaction extends AuditibleEntity<String>{
 
     public void setWorkOrder(WorkOrder workOrder) {
         this.workOrder = workOrder;
+    }
+
+    public WorkOrderKPITransactionType getType() {
+        return type;
+    }
+
+    public void setType(WorkOrderKPITransactionType type) {
+        this.type = type;
     }
 }

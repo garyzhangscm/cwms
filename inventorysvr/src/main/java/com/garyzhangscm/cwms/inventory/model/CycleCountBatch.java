@@ -27,7 +27,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "cycle_count_batch")
-public class CycleCountBatch implements Serializable {
+public class CycleCountBatch extends AuditibleEntity<String>  implements Serializable {
 
 
     @Id

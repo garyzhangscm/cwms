@@ -10,7 +10,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "carton")
-public class Carton implements Serializable {
+public class Carton  extends AuditibleEntity<String> implements Serializable {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

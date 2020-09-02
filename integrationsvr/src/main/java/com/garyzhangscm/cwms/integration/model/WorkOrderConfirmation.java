@@ -8,6 +8,7 @@ public class WorkOrderConfirmation  {
     private String number;
 
     List<WorkOrderLineConfirmation> workOrderLineConfirmations = new ArrayList<>();
+    List<WorkOrderByProductConfirmation> workOrderByProductConfirmations = new ArrayList<>();
 
     private String productionLineName;
 
@@ -41,6 +42,14 @@ public class WorkOrderConfirmation  {
 
     public void setWorkOrderLines(List<WorkOrderLineConfirmation> workOrderLines) {
         this.workOrderLineConfirmations = workOrderLines;
+    }
+
+    public List<WorkOrderByProductConfirmation> getWorkOrderByProducts() {
+        return workOrderByProductConfirmations;
+    }
+
+    public void setWorkOrderByProducts(List<WorkOrderByProductConfirmation> workOrderByProductConfirmations) {
+        this.workOrderByProductConfirmations = workOrderByProductConfirmations;
     }
 
     public String getProductionLineName() {

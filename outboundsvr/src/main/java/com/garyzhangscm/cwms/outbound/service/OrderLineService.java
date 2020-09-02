@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
@@ -45,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderLineService implements TestDataInitiableService{
@@ -93,13 +95,15 @@ public class OrderLineService implements TestDataInitiableService{
         return orderLines;
     }
 
-    public List<OrderLine> findAll(Long warehouseId, Long shipmentId) {
-        return findAll(warehouseId, shipmentId, true);
+    public List<OrderLine> findAll(Long warehouseId, Long shipmentId,
+                                   String orderNumber, String itemName) {
+        return findAll(warehouseId, shipmentId, orderNumber, itemName,true);
     }
 
     public List<OrderLine> findAll(Long warehouseId, Long shipmentId,
+                                   String orderNumber, String itemName,
                                    boolean includeDetails) {
-        logger.debug("## Will find order line with shipment ID: {} / {} ", shipmentId,  Objects.nonNull(shipmentId));
+
 
         List<OrderLine> orderLines =  orderLineRepository.findAll(
                 (Root<OrderLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -114,6 +118,25 @@ public class OrderLineService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
                         // only return the order line with shipment line that is not cancelled
                         predicates.add(criteriaBuilder.notEqual(joinShipmentLine.get("status"), ShipmentLineStatus.CANCELLED));
+
+                    }
+
+                    if (StringUtils.isNotBlank(orderNumber)) {
+
+                        Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
+
+
+                    }
+
+                    if (StringUtils.isNotBlank(itemName)) {
+
+                        Item item = inventoryServiceRestemplateClient.getItemByName(
+                                warehouseId, itemName
+                        );
+                        predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
+
 
                     }
 
@@ -237,6 +260,7 @@ public class OrderLineService implements TestDataInitiableService{
                 addColumn("item").
                 addColumn("expectedQuantity").
                 addColumn("inventoryStatus").
+                addColumn("allocationStrategyType").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, OrderLineCSVWrapper.class);
@@ -264,6 +288,7 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
 
+
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(orderLineCSVWrapper.getWarehouse());
 
         orderLine.setWarehouseId(warehouse.getId());
@@ -282,6 +307,22 @@ public class OrderLineService implements TestDataInitiableService{
                     inventoryServiceRestemplateClient.getInventoryStatusByName(
                             warehouse.getId(), orderLineCSVWrapper.getInventoryStatus());
             orderLine.setInventoryStatusId(inventoryStatus.getId());
+        }
+        logger.debug("orderLineCSVWrapper.getAllocationStrategyType(): {} / {} : {}",
+                orderLineCSVWrapper.getOrder(),
+                orderLineCSVWrapper.getNumber(),
+                orderLineCSVWrapper.getAllocationStrategyType());
+        if (StringUtils.isNotBlank(orderLineCSVWrapper.getAllocationStrategyType())) {
+            orderLine.setAllocationStrategyType(AllocationStrategyType.valueOf(
+                    orderLineCSVWrapper.getAllocationStrategyType()
+            ));
+            logger.debug("Order line's allocation strategy type: {}",
+                    orderLine.getAllocationStrategyType());
+        }
+        else {
+            orderLine.setAllocationStrategyType(AllocationStrategyType.FIRST_IN_FIRST_OUT);
+            logger.debug("Order line's allocation strategy type default to: {}",
+                    orderLine.getAllocationStrategyType());
         }
         return orderLine;
     }
@@ -314,5 +355,56 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() - inventory.getQuantity());
         saveOrUpdate(orderLine);
 
+    }
+
+
+    @Transactional
+    public OrderLine registerProductionPlanLine(Long orderLineId,
+                                            Long productionPlanQuantity) {
+        OrderLine orderLine = findById(orderLineId);
+        orderLine.setProductionPlanInprocessQuantity(
+                orderLine.getProductionPlanInprocessQuantity() +
+                        productionPlanQuantity
+        );
+        return saveOrUpdate(orderLine);
+    }
+
+    @Transactional
+    public OrderLine registerProductionPlanProduced(Long orderLineId,
+                                            Long productionPlanProducedQuantity) {
+        OrderLine orderLine = findById(orderLineId);
+        // move the quantity from production plan in process quantity
+        // into produced quantity
+        if (orderLine.getProductionPlanInprocessQuantity() < productionPlanProducedQuantity) {
+            // it is possible that we produced more than the plan
+            orderLine.setProductionPlanInprocessQuantity(0L);
+        }
+        else {
+            orderLine.setProductionPlanInprocessQuantity(
+                    orderLine.getProductionPlanInprocessQuantity() - productionPlanProducedQuantity
+            );
+        }
+        orderLine.setProductionPlanProducedQuantity(
+                orderLine.getProductionPlanProducedQuantity() +
+                        productionPlanProducedQuantity
+        );
+        return saveOrUpdate(orderLine);
+    }
+
+    public List<OrderLine> findProductionPlanCandidate( Long warehouseId,
+                                                        String orderNumber,
+                                                        String itemName) {
+        List<OrderLine> orderLines = findAll(warehouseId, null, orderNumber, itemName);
+        logger.debug("Find {} candidate by parameters {}, {}, {}",
+                orderLines.size(), warehouseId, orderNumber, itemName);
+        return orderLines.stream().filter(orderLine -> isProductionPlanCandidate(orderLine))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isProductionPlanCandidate(OrderLine orderLine) {
+        logger.debug("check if order line {} / {} can be a production plan candidate: {}",
+                orderLine.getOrderNumber(), orderLine.getNumber(),
+                (orderLine.getOpenQuantity().equals(orderLine.getExpectedQuantity())));
+        return orderLine.getOpenQuantity().equals(orderLine.getExpectedQuantity());
     }
 }

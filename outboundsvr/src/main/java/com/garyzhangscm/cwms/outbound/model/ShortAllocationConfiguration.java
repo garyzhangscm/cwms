@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "short_allocation_configuration")
-public class ShortAllocationConfiguration {
+public class ShortAllocationConfiguration  extends AuditibleEntity<String>{
 
 
     @Id

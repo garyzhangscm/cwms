@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.workorder.model.*;
 
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
+import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,8 +41,9 @@ public class WorkOrderController {
     @RequestMapping(value="/work-orders", method = RequestMethod.GET)
     public List<WorkOrder> findAllWorkOrders(@RequestParam Long warehouseId,
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
-                                             @RequestParam(name="itemName", required = false, defaultValue = "") String itemName) {
-        return workOrderService.findAll(warehouseId, number, itemName);
+                                             @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                             @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId) {
+        return workOrderService.findAll(warehouseId, number, itemName, productionPlanId);
     }
 
     @RequestMapping(value="/work-orders", method = RequestMethod.POST)
@@ -142,6 +144,12 @@ public class WorkOrderController {
     @RequestMapping(value="/work-orders/{id}/returned-inventory", method = RequestMethod.GET)
     public List<Inventory> getReturnedInventory(@PathVariable Long id) {
         return workOrderService.getReturnedInventory(id);
+    }
+
+    @RequestMapping(value="/work-orders/{id}/modify-lines", method = RequestMethod.POST)
+    public WorkOrder modifyWorkOrderLines(@PathVariable Long id,
+                                          @RequestBody WorkOrder workOrder) {
+        return workOrderService.modifyWorkOrderLines(id, workOrder);
     }
 
 

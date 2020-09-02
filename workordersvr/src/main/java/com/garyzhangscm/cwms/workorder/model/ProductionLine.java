@@ -20,6 +20,7 @@ public class ProductionLine extends AuditibleEntity<String>{
     @Column(name = "name")
     private String name;
 
+
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
@@ -160,4 +161,5 @@ public class ProductionLine extends AuditibleEntity<String>{
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
+
 }

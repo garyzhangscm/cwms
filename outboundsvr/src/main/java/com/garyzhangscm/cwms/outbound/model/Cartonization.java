@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "cartonization")
-public class Cartonization implements Serializable {
+public class Cartonization  extends AuditibleEntity<String> implements Serializable {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

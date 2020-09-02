@@ -1,5 +1,6 @@
 
 drop table if exists location;
+drop table if exists pickable_unit_of_measure;
 drop table if exists location_group;
 drop Table if exists location_group_type;
 DROP TABLE IF EXISTS warehouse;
@@ -83,6 +84,13 @@ CREATE TABLE location_group(
 -- INSERT INTO location_group(name, description, location_group_type_id, pickable, storable, countable)
 --     values ("EACH_PICK_2", "Each Picking Area - #2", 1, 1, 1, 1);
 
+
+CREATE TABLE pickable_unit_of_measure(
+
+  pickable_unit_of_measure_id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  unit_of_measure_id  BIGINT  NOT NULL,
+  location_group_id BIGINT  NOT NULL,
+  foreign key(location_group_id) references location_group(location_group_id));
 
 
 CREATE TABLE location(

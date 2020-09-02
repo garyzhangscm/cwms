@@ -26,6 +26,9 @@ public class ExceptionResponse implements Serializable {
         this.code = code;
         this.status = status;
         this.message = message;
+        if (data.containsKey("error_message")) {
+            this.message += "-" + data.get("error_message");
+        }
         this.path = path;
         this.timestamp = Instant.now();
         if (!ObjectUtils.isEmpty(data)) {

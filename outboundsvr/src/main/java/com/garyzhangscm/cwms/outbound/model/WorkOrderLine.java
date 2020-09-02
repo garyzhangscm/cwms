@@ -1,5 +1,8 @@
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.persistence.*;
 
 public class WorkOrderLine {
@@ -23,20 +26,19 @@ public class WorkOrderLine {
 
     private InventoryStatus inventoryStatus;
 
+    private AllocationStrategyType allocationStrategyType;
+    private Long warehouseId;
+
+    private Warehouse warehouse;
+
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("id: ").append(id).append("\n")
-                .append("number: ").append(number).append("\n")
-                .append("itemId: ").append(itemId).append("\n")
-                .append("item: ").append(item).append("\n")
-                .append("expectedQuantity: ").append(expectedQuantity).append("\n")
-                .append("openQuantity: ").append(openQuantity).append("\n")
-                .append("inprocessQuantity: ").append(inprocessQuantity).append("\n")
-                .append("consumedQuantity: ").append(consumedQuantity).append("\n")
-                .append("inventoryStatusId: ").append(inventoryStatusId).append("\n")
-                .append("inventoryStatus: ").append(inventoryStatus).append("\n")
-                .toString();
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {
@@ -118,5 +120,29 @@ public class WorkOrderLine {
 
     public void setInventoryStatus(InventoryStatus inventoryStatus) {
         this.inventoryStatus = inventoryStatus;
+    }
+
+    public AllocationStrategyType getAllocationStrategyType() {
+        return allocationStrategyType;
+    }
+
+    public void setAllocationStrategyType(AllocationStrategyType allocationStrategyType) {
+        this.allocationStrategyType = allocationStrategyType;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

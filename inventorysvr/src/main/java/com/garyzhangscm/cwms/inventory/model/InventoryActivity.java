@@ -53,7 +53,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "inventory_activity")
-public class InventoryActivity implements Serializable {
+public class InventoryActivity extends AuditibleEntity<String> implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryActivity.class);
 

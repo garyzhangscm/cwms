@@ -10,7 +10,7 @@ import javax.persistence.*;
 // of a emregency replenishment
 @Entity
 @Table(name = "emergency_replenishment_configuration")
-public class EmergencyReplenishmentConfiguration {
+public class EmergencyReplenishmentConfiguration  extends AuditibleEntity<String> {
 
 
     @Id

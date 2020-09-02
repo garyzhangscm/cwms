@@ -113,7 +113,7 @@ public class TestDataInitService {
         logger.debug("integration_order_confirmation records from warehouse ID {} / {} removed!", warehouseId, warehouseName);
 
 
-        jdbcTemplate.update("delete from integration_work_order_line_confirmation where integration_work_order_confirmation_id in (" +
+        jdbcTemplate.update("delete from integration_work_order_by_product_confirmation where integration_work_order_confirmation_id in (" +
                 "select integration_work_order_confirmation_id from integration_work_order_confirmation where warehouse_id = ?)",
                 new Object[] { warehouseId });
         jdbcTemplate.update("delete from integration_work_order_line_confirmation where integration_work_order_confirmation_id in (" +

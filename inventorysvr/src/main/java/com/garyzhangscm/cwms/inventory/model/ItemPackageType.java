@@ -32,7 +32,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "item_package_type")
-public class ItemPackageType implements Serializable {
+public class ItemPackageType extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

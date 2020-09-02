@@ -30,7 +30,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "outbound_order_line")
-public class OrderLine implements Serializable {
+public class OrderLine  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +62,11 @@ public class OrderLine implements Serializable {
     @Column(name = "inprocess_quantity")
     private Long inprocessQuantity = 0L;
 
+    @Column(name = "production_plan_inprocess_quantity")
+    private Long productionPlanInprocessQuantity = 0L;
+    @Column(name = "production_plan_produced_quantity")
+    private Long productionPlanProducedQuantity = 0L;
+
     @Column(name = "shipped_quantity")
     private Long shippedQuantity = 0L;
 
@@ -89,6 +94,10 @@ public class OrderLine implements Serializable {
             fetch = FetchType.LAZY
     )
     private List<ShipmentLine> shipmentLines = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="allocation_strategy_type")
+    private AllocationStrategyType AllocationStrategyType;
 
     @Column(name = "carrier_id")
     private Long carrierId;
@@ -258,5 +267,29 @@ public class OrderLine implements Serializable {
 
     public void setShipmentLines(List<ShipmentLine> shipmentLines) {
         this.shipmentLines = shipmentLines;
+    }
+
+    public Long getProductionPlanInprocessQuantity() {
+        return productionPlanInprocessQuantity;
+    }
+
+    public void setProductionPlanInprocessQuantity(Long productionPlanInprocessQuantity) {
+        this.productionPlanInprocessQuantity = productionPlanInprocessQuantity;
+    }
+
+    public Long getProductionPlanProducedQuantity() {
+        return productionPlanProducedQuantity;
+    }
+
+    public void setProductionPlanProducedQuantity(Long productionPlanProducedQuantity) {
+        this.productionPlanProducedQuantity = productionPlanProducedQuantity;
+    }
+
+    public com.garyzhangscm.cwms.outbound.model.AllocationStrategyType getAllocationStrategyType() {
+        return AllocationStrategyType;
+    }
+
+    public void setAllocationStrategyType(com.garyzhangscm.cwms.outbound.model.AllocationStrategyType allocationStrategyType) {
+        AllocationStrategyType = allocationStrategyType;
     }
 }

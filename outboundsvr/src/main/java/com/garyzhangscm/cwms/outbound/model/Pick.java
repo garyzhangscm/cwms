@@ -31,7 +31,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "pick")
-public class Pick implements Serializable {
+public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,6 +60,10 @@ public class Pick implements Serializable {
     @Transient
     private Item item;
 
+    // will be setup when the pick allocates
+    // the whole LPN
+    @Column(name = "lpn")
+    private String lpn;
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -369,5 +373,13 @@ public class Pick implements Serializable {
 
     public void setUnitOfMeasureId(Long unitOfMeasureId) {
         this.unitOfMeasureId = unitOfMeasureId;
+    }
+
+    public String getLpn() {
+        return lpn;
+    }
+
+    public void setLpn(String lpn) {
+        this.lpn = lpn;
     }
 }
