@@ -29,7 +29,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "inventory_status")
-public class InventoryStatus implements Serializable {
+public class InventoryStatus extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

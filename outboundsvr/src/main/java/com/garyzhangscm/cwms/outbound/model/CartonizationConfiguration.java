@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "cartonization_configuration")
-public class CartonizationConfiguration {
+public class CartonizationConfiguration  extends AuditibleEntity<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -36,7 +36,8 @@ text,i18n,link,sequence,menuSubGruop,name
 "Trailer",menu.main.outbound.trailer,/outbound/trailer,10,Main-Menu-Outbound,Outbound-Trailer
 "Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material
-"Work Order",menu.main.work-order.work-order,/work-order/work-order,2,Main-Menu-WorkOrder,Work-Order
+"Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan
+"Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order
 "Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client

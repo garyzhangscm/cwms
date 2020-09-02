@@ -36,10 +36,41 @@ public class OrderLineController {
 
     @RequestMapping(value="/orders/lines", method = RequestMethod.GET)
     public List<OrderLine> findAllOrderLines(@RequestParam Long warehouseId,
-                                             @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId) {
-        return orderLineService.findAll(warehouseId, shipmentId);
+                                             @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
+                                             @RequestParam(name = "orderNumber", required = false, defaultValue = "") String orderNumber,
+                                             @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName) {
+        return orderLineService.findAll(warehouseId, shipmentId, orderNumber, itemName);
     }
 
+    @RequestMapping(value="/orders/lines/{id}", method = RequestMethod.GET)
+    public OrderLine findOrderLine(@PathVariable Long id) {
+        return orderLineService.findById(id);
+    }
+
+    /**
+     * Register a production line when there's one created for this order line
+     * @param id order line id
+     * @param productionPlanLineQuantity production plan line quantity
+     * @return
+     */
+    @RequestMapping(value="/orders/lines/{id}/production-plan-line/register", method = RequestMethod.POST)
+    public OrderLine registerProductionPlanLine(@PathVariable Long id,
+                                          @RequestParam Long productionPlanLineQuantity) {
+        return orderLineService.registerProductionPlanLine(id, productionPlanLineQuantity);
+    }
+
+    @RequestMapping(value="/orders/lines/{id}/production-plan/produced", method = RequestMethod.POST)
+    public OrderLine registerProductionPlanProduced(@PathVariable Long id,
+                                            @RequestParam Long producedQuantity) {
+        return orderLineService.registerProductionPlanProduced(id, producedQuantity);
+    }
+
+    @RequestMapping(value="/orders/lines/production-plan-candidate", method = RequestMethod.GET)
+    public List<OrderLine> findProductionPlanCandidate(@RequestParam Long warehouseId,
+                                                    @RequestParam(name = "orderNumber", required = false, defaultValue = "") String orderNumber,
+                                                       @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName) {
+        return orderLineService.findProductionPlanCandidate(warehouseId, orderNumber, itemName);
+    }
 
 
 }

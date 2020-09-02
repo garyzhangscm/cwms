@@ -18,12 +18,15 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
-import javax.persistence.Transient;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Inventory implements Serializable {
+/**
+ *
+ */
+public class Inventory extends AuditibleEntity<String> implements Serializable {
 
 
     private Long id;
@@ -46,14 +49,22 @@ public class Inventory implements Serializable {
 
     private InventoryStatus inventoryStatus;
 
+    // will be setup only when the inventory
+    // is picked
     private Long pickId;
+    private Pick pick;
+
+    // Only when allocate by LPN happens
+    private Long allocatedByPickId;
+
+    // Only when allocate by LPN happens
+    private Pick allocatedByPick;
 
     private Long warehouseId;
 
 
     private Warehouse warehouse;
 
-    private Pick pick;
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
@@ -209,5 +220,21 @@ public class Inventory implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getAllocatedByPickId() {
+        return allocatedByPickId;
+    }
+
+    public void setAllocatedByPickId(Long allocatedByPickId) {
+        this.allocatedByPickId = allocatedByPickId;
+    }
+
+    public Pick getAllocatedByPick() {
+        return allocatedByPick;
+    }
+
+    public void setAllocatedByPick(Pick allocatedByPick) {
+        this.allocatedByPick = allocatedByPick;
     }
 }

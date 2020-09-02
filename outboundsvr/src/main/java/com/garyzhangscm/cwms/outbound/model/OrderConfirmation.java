@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class OrderConfirmation implements Serializable {
+public class OrderConfirmation  extends AuditibleEntity<String> implements Serializable {
 
     private String number;
 

@@ -37,10 +37,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -61,6 +58,9 @@ public class WorkOrderService implements TestDataInitiableService {
     private BillOfMaterialService billOfMaterialService;
     @Autowired
     private ProductionLineService productionLineService;
+    @Autowired
+    private ProductionPlanLineService productionPlanLineService;
+
     @Autowired
     private WorkOrderInstructionService workOrderInstructionService;
     @Autowired
@@ -96,7 +96,9 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
 
-    public List<WorkOrder> findAll(Long warehouseId, String number, String itemName, boolean loadDetails) {
+    public List<WorkOrder> findAll(Long warehouseId, String number,
+                                   String itemName, Long productionPlanId,
+                                   boolean loadDetails) {
 
         List<WorkOrder> workOrders =  workOrderRepository.findAll(
                 (Root<WorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -118,6 +120,13 @@ public class WorkOrderService implements TestDataInitiableService {
                             predicates.add(criteriaBuilder.equal(root.get("itemId"), -1L));
                         }
                     }
+
+                    if (Objects.nonNull(productionPlanId)) {
+                        Join<WorkOrder, ProductionPlanLine> joinProductionPlanLine = root.join("productionPlanLine", JoinType.INNER);
+                        Join<ProductionPlanLine, ProductionPlan> joinProductionPlan = joinProductionPlanLine.join("productionPlan", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinProductionPlan.get("id"), productionPlanId));
+
+                    }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
@@ -129,8 +138,9 @@ public class WorkOrderService implements TestDataInitiableService {
         return workOrders;
     }
 
-    public List<WorkOrder> findAll(Long warehouseId, String number, String itemName) {
-        return findAll(warehouseId, number, itemName, true);
+    public List<WorkOrder> findAll(Long warehouseId, String number,
+                                   String itemName, Long productionPlanId) {
+        return findAll(warehouseId, number, itemName, productionPlanId, true);
     }
 
 
@@ -268,6 +278,17 @@ public class WorkOrderService implements TestDataInitiableService {
         workOrder.setWarehouseId(warehouse.getId());
 
         return workOrder;
+    }
+    public WorkOrder createWorkOrderFromProductionPlanLine(ProductionPlanLine productionPlanLine,
+                                            String workOrderNumber, Long expectedQuantity,
+                                            Long productionLineId) {
+        WorkOrder workOrder = createWorkOrderFromBOM(
+                productionPlanLine.getBillOfMaterial().getId(),
+                workOrderNumber, expectedQuantity,
+                productionLineId
+        );
+        workOrder.setProductionPlanLine(productionPlanLine);
+        return saveOrUpdate(workOrder);
     }
     public WorkOrder createWorkOrderFromBOM(Long billOfMaterialId,
                             String workOrderNumber, Long expectedQuantity,
@@ -463,6 +484,59 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
 
+    public WorkOrder modifyWorkOrderLines(Long id,
+                                          WorkOrder workOrder) {
+        WorkOrder existingWorkOrder = findById(id);
+
+        // we allow the user to
+        // 1. remove work order lines
+        // 2. add new work order lines
+        // 3. change the quantity of the work order line
+
+        // Let's save the existing work order line and the new work order line
+        // into map so we can easily get the removed line and new lines
+        Map<String, WorkOrderLine> existingWorkOrderLineMap = new HashMap<>();
+        Map<String, WorkOrderLine> newWorkOrderLineMap = new HashMap<>();
+        existingWorkOrder.getWorkOrderLines()
+                .forEach(workOrderLine -> existingWorkOrderLineMap.put(workOrderLine.getNumber(), workOrderLine));
+        workOrder.getWorkOrderLines()
+                .forEach(workOrderLine -> newWorkOrderLineMap.put(workOrderLine.getNumber(), workOrderLine));
+
+        existingWorkOrderLineMap.entrySet().forEach(entry -> {
+            String workOrderLineNumber = entry.getKey();
+            if (newWorkOrderLineMap.containsKey(workOrderLineNumber)) {
+                // the new work order line map still contains the work order line
+                // number, let's see if the quantity changed
+                WorkOrderLine existingWorkOrderLine = entry.getValue();
+                WorkOrderLine newWorkOrderLine = newWorkOrderLineMap.get(workOrderLineNumber);
+                if (!existingWorkOrderLine.getExpectedQuantity()
+                        .equals(newWorkOrderLine.getExpectedQuantity())) {
+                    // we will need to update teh quantity
+                    workOrderLineService.modifyWorkOrderLineExpectedQuantity(existingWorkOrderLine, newWorkOrderLine.getExpectedQuantity());
+                }
+                // Let's remove the work order line from the new map so anything left
+                // after the loop are new line that we will need to add
+                newWorkOrderLineMap.remove(workOrderLineNumber);
+            }
+            else {
+                // the new work order doesn't contains this line,
+                // we already remove it
+                workOrderLineService.removeWorkOrderLine(workOrder, workOrderLineNumber);
+            }
+
+        });
+        newWorkOrderLineMap.entrySet().forEach(entry -> {
+
+            // Ok, this is a new work order line. we will make sure
+            // the open quantity is setup as the expected quantity
+            WorkOrderLine workOrderLine = entry.getValue();
+            workOrderLine.setOpenQuantity(workOrderLine.getExpectedQuantity());
+            workOrderLineService.addWorkOrderLine(workOrder, workOrderLine);
+        });
+
+        return findById(id);
+
+    }
 
     public Inventory unpickInventory(Long id,
                                            Long inventoryId,
@@ -563,6 +637,11 @@ public class WorkOrderService implements TestDataInitiableService {
 
         WorkOrder newWorkOrder = saveOrUpdate(workOrder);
         sendWorkOrderConfirmationIntegration(newWorkOrder);
+
+        if(Objects.nonNull(workOrder.getProductionPlanLine())) {
+
+            productionPlanLineService.registerWorkOrderComplete(workOrder);
+        }
         return newWorkOrder;
     }
 

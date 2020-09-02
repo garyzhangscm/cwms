@@ -15,6 +15,7 @@ import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -39,6 +40,7 @@ import java.util.List;
 @EnableResourceServer
 @EnableCaching
 @EnableScheduling
+@EnableJpaAuditing
 public class OutboundServerApplication {
 
 	public static void main(String[] args) {

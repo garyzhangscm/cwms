@@ -31,7 +31,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "shipment")
-public class Shipment implements Serializable {
+public class Shipment  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

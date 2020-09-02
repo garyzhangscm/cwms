@@ -146,6 +146,13 @@ public class WorkOrderLineService implements TestDataInitiableService {
         return newWorkOrderLine;
     }
 
+    public WorkOrderLine saveAndFlush(WorkOrderLine workOrderLine) {
+        WorkOrderLine newWorkOrderLine = workOrderLineRepository.save(workOrderLine);
+        workOrderLineRepository.flush();
+        loadAttribute(newWorkOrderLine);
+        return newWorkOrderLine;
+    }
+
     public WorkOrderLine saveOrUpdate(WorkOrderLine workOrderLine) {
         Long warehouseId = workOrderLine.getWorkOrder().getWarehouseId();
         String workOrderNumber = workOrderLine.getWorkOrder().getNumber();
@@ -315,9 +322,20 @@ public class WorkOrderLineService implements TestDataInitiableService {
     }
 
 
-
+    /**
+     * Change the delivered quantity of the work order line when inventory
+     * is delivered.
+     * Lock the method so that when the picking routine in the ourbound service
+     * delivered several inventory for the same work order line in one transaction
+     * we won't end up with incorrect quantity
+     * TO-DO: Will need swtich to message queue to get rid of the lock
+     * @param workOrderLineId
+     * @param quantityBeingDelivered
+     * @param deliveredLocationId
+     * @return
+     */
     @Transactional
-    public WorkOrderLine changeDeliveredQuantity(Long workOrderLineId,
+    synchronized public WorkOrderLine changeDeliveredQuantity(Long workOrderLineId,
                                                  Long quantityBeingDelivered,
                                                  Long deliveredLocationId) {
 
@@ -336,8 +354,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
             workOrderLine.setDeliveredQuantity(workOrderLine.getDeliveredQuantity() + quantityBeingDelivered);
 
-            return save(workOrderLine);
-
+            return saveAndFlush(workOrderLine);
         }
         else {
             return workOrderLine;
@@ -385,5 +402,43 @@ public class WorkOrderLineService implements TestDataInitiableService {
         workOrderLine.setReturnedQuantity(returnedMaterialsQuantity);
         return saveOrUpdate(workOrderLine);
 
+    }
+
+    public void modifyWorkOrderLineExpectedQuantity(WorkOrderLine existingWorkOrderLine, Long newExpectedQuantity) {
+        // If the user is changing the quantity down, then we will need to make sure
+        // we still have enough open quantity to adjust down
+        if (newExpectedQuantity.equals(existingWorkOrderLine.getExpectedQuantity())) {
+            return;
+        }
+        // we are adjust down the quantity. let's make sure we still
+        // have enough open quantity after adjust down
+        else if (existingWorkOrderLine.getOpenQuantity() < existingWorkOrderLine.getExpectedQuantity() - newExpectedQuantity){
+            throw WorkOrderException.raiseException("There's only " + existingWorkOrderLine.getOpenQuantity() + " left on " +
+                    "the line. We can't adjust the expected quantity from " + existingWorkOrderLine.getExpectedQuantity() +
+                    " to " + newExpectedQuantity);
+        }
+        else {
+            // we are adjust up the quantity. no validation is needed
+            existingWorkOrderLine.setOpenQuantity(
+                    existingWorkOrderLine.getOpenQuantity() + (
+                            newExpectedQuantity - existingWorkOrderLine.getExpectedQuantity()
+                            )
+            );
+            existingWorkOrderLine.setExpectedQuantity(newExpectedQuantity);
+            saveOrUpdate(existingWorkOrderLine);
+        }
+    }
+
+    public void removeWorkOrderLine(WorkOrder workOrder, String workOrderLineNumber) {
+        WorkOrderLine workOrderLine = findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), workOrderLineNumber);
+        delete(workOrderLine);
+    }
+
+    public void addWorkOrderLine(WorkOrder workOrder, WorkOrderLine workOrderLine) {
+        if (Objects.isNull(workOrderLine.getWorkOrder())) {
+            workOrderLine.setWorkOrder(workOrder);
+        }
+
+        saveOrUpdate(workOrderLine);
     }
 }

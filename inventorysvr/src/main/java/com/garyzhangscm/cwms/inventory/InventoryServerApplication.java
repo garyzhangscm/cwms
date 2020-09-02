@@ -17,6 +17,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -36,6 +37,7 @@ import java.util.Collections;
 @RefreshScope
 @EnableResourceServer
 @EnableCaching
+@EnableJpaAuditing
 // @EnableCircuitBreaker
 public class InventoryServerApplication {
 

@@ -28,7 +28,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "item_unit_of_measure")
-public class ItemUnitOfMeasure implements Serializable {
+public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

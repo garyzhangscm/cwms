@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "trailer")
-public class Trailer {
+public class Trailer  extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

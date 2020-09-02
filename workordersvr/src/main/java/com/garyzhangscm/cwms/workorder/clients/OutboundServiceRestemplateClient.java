@@ -82,6 +82,22 @@ public class OutboundServiceRestemplateClient {
 
     }
 
+    public OrderLine getOrderLineById(Long orderLineId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/orders/lines/{id}");
+
+        ResponseBodyWrapper<OrderLine> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(orderLineId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<OrderLine>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
     public List<Pick> getWorkOrderPicks(WorkOrder workOrder) throws IOException {
 
         UriComponentsBuilder builder =
@@ -163,6 +179,42 @@ public class OutboundServiceRestemplateClient {
                         HttpMethod.GET,
                         null,
                         new ParameterizedTypeReference<ResponseBodyWrapper< List<ShortAllocation>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public OrderLine registerProductionPlanLine(Long orderLineId, ProductionPlanLine productionPlanLine) {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/orders/lines/{id}/production-plan-line/register")
+                        .queryParam("productionPlanLineQuantity", productionPlanLine.getExpectedQuantity());
+
+        ResponseBodyWrapper<OrderLine> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(orderLineId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<OrderLine>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public OrderLine registerProductionPlanLineProduced(Long orderLineId, Long producedQuantity) {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/outbound/orders/lines/{id}/production-plan/produced")
+                        .queryParam("producedQuantity", producedQuantity);
+
+        ResponseBodyWrapper<OrderLine> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(orderLineId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<OrderLine>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }

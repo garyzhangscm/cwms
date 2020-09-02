@@ -29,7 +29,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "shipment_line")
-public class ShipmentLine implements Serializable {
+public class ShipmentLine  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

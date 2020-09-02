@@ -13,3 +13,4 @@ inventory-activity-transaction-group-id,INVACTGRP,,10,0,true
 list-pick,LPICK,,10,0,true
 cartonization-number,CTN,,10,0,true
 shipping-cartonization-number,SCTN,,10,0,true
+production-plan,PRP,,10,0,true

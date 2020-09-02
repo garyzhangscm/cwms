@@ -81,6 +81,14 @@ public class DBBasedWorkOrderConfirmation implements Serializable, IntegrationWo
     private List<DBBasedWorkOrderLineConfirmation> workOrderLineConfirmations = new ArrayList<>();
 
 
+    @OneToMany(
+            mappedBy = "workOrderConfirmation",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<DBBasedWorkOrderByProductConfirmation> workOrderByProductConfirmations = new ArrayList<>();
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -115,6 +123,14 @@ public class DBBasedWorkOrderConfirmation implements Serializable, IntegrationWo
             dbBasedWorkOrderLineConfirmation.setWorkOrderConfirmation(this);
             dbBasedWorkOrderLineConfirmation.setStatus(IntegrationStatus.ATTACHED);
             addWorkOrderLineConfirmation(dbBasedWorkOrderLineConfirmation);
+        });
+
+        workOrderConfirmation.getWorkOrderByProducts().forEach(workOrderByProductConfirmation -> {
+            DBBasedWorkOrderByProductConfirmation dbBasedWorkOrderLineConfirmation =
+                    new DBBasedWorkOrderByProductConfirmation(workOrderByProductConfirmation);
+            dbBasedWorkOrderLineConfirmation.setWorkOrderConfirmation(this);
+            dbBasedWorkOrderLineConfirmation.setStatus(IntegrationStatus.ATTACHED);
+            addWorkOrderByProductConfirmation(dbBasedWorkOrderLineConfirmation);
         });
 
         setInsertTime(LocalDateTime.now());
@@ -229,6 +245,18 @@ public class DBBasedWorkOrderConfirmation implements Serializable, IntegrationWo
         this.workOrderLineConfirmations.add(dbBasedWorkOrderLineConfirmation);
     }
 
+    @Override
+    public List<DBBasedWorkOrderByProductConfirmation> getWorkOrderByProductConfirmations() {
+        return workOrderByProductConfirmations;
+    }
+
+    public void setWorkOrderByProductConfirmations(List<DBBasedWorkOrderByProductConfirmation> workOrderByProductConfirmations) {
+        this.workOrderByProductConfirmations = workOrderByProductConfirmations;
+    }
+
+    public void addWorkOrderByProductConfirmation(DBBasedWorkOrderByProductConfirmation dBBasedWorkOrderByProductConfirmation) {
+        this.workOrderByProductConfirmations.add(dBBasedWorkOrderByProductConfirmation);
+    }
     @Override
     public IntegrationStatus getStatus() {
         return status;

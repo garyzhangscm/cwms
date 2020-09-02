@@ -28,7 +28,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "cycle_count_result")
-public class CycleCountResult implements Serializable {
+public class CycleCountResult extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

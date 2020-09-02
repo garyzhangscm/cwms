@@ -39,6 +39,10 @@ public class TestDataInitService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    ProductionPlanService productionPlanService;
+    ProductionPlanLineService productionPlanLineService;
+
+
     BillOfMaterialService billOfMaterialService;
 
     BillOfMaterialLineService billOfMaterialLineService;
@@ -70,7 +74,9 @@ public class TestDataInitService {
                                WorkOrderService workOrderService,
                                WorkOrderLineService workOrderLineService,
                                WorkOrderByProductService workOrderByProductService,
-                               WorkOrderInstructionService workOrderInstructionService) {
+                               WorkOrderInstructionService workOrderInstructionService,
+                               ProductionPlanService productionPlanService,
+                               ProductionPlanLineService productionPlanLineService) {
         this.billOfMaterialService = billOfMaterialService;
         this.billOfMaterialLineService = billOfMaterialLineService;
         this.billOfMaterialByProductService = billOfMaterialByProductService;
@@ -83,6 +89,8 @@ public class TestDataInitService {
         this.workOrderByProductService = workOrderByProductService;
         this.workOrderInstructionService = workOrderInstructionService;
 
+        this.productionPlanService = productionPlanService;
+        this.productionPlanLineService = productionPlanLineService;
 
 
         initiableServices.put("Bill_Of_Material", billOfMaterialService);
@@ -108,6 +116,11 @@ public class TestDataInitService {
         serviceNames.add("Work_Order_By_Product");
         initiableServices.put("Work_Order_Instruction", workOrderInstructionService);
         serviceNames.add("Work_Order_Instruction");
+        initiableServices.put("Production_Plan", productionPlanService);
+        serviceNames.add("Production_Plan");
+        initiableServices.put("Production_Plan_Line", productionPlanLineService);
+        serviceNames.add("Production_Plan_Line");
+
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
@@ -123,6 +136,8 @@ public class TestDataInitService {
     }
 
     public void clear(Long warehouseId) {
+
+
         jdbcTemplate.update("delete from bill_of_material_line where bill_of_material_id in " +
                              "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("bill_of_material_line records from warehouse ID {} removed!", warehouseId);
@@ -135,8 +150,7 @@ public class TestDataInitService {
                 "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("work_order_instruction_template records from warehouse ID {} removed!", warehouseId);
 
-        jdbcTemplate.update("delete from bill_of_material where warehouse_id = ?", new Object[] { warehouseId });
-        logger.debug("bill_of_material records from warehouse ID {} removed!", warehouseId);
+
 
         jdbcTemplate.update("delete from work_order_line_consume_transaction where work_order_line_id in " +
                 "  (select work_order_line_id from  work_order join work_order_line on work_order.work_order_id = work_order_line.work_order_id " +
@@ -206,6 +220,17 @@ public class TestDataInitService {
 
         jdbcTemplate.update("delete from production_line where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("production_line records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from production_plan_line where production_plan_id in " +
+                "(select production_plan_id from production_plan where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("production_plan_line records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from production_plan where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("production_plan records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from bill_of_material where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("bill_of_material records from warehouse ID {} removed!", warehouseId);
 
     }
 }

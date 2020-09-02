@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "wave")
-public class Wave implements Serializable {
+public class Wave  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

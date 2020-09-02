@@ -20,18 +20,17 @@ package com.garyzhangscm.cwms.adminserver.exception;
 
 import org.springframework.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GenericException extends RuntimeException implements Serializable {
+public class GenericException extends RuntimeException {
 
 
     private final ExceptionCode exceptionCode;
     private final HashMap<String, Object> data = new HashMap<>();
 
     public GenericException(ExceptionCode exceptionCode, Map<String, Object> data) {
-        super(exceptionCode.getMessage() + " / " + data);
+        super(exceptionCode.getMessage());
         this.exceptionCode = exceptionCode;
         if (!ObjectUtils.isEmpty(data)) {
             this.data.putAll(data);
@@ -39,7 +38,7 @@ public class GenericException extends RuntimeException implements Serializable {
     }
 
     protected GenericException(ExceptionCode exceptionCode, Map<String, Object> data, Throwable cause) {
-        super(exceptionCode.getMessage() + " / " + data, cause);
+        super(exceptionCode.getMessage(), cause);
         this.exceptionCode = exceptionCode;
         if (!ObjectUtils.isEmpty(data)) {
             this.data.putAll(data);
@@ -61,7 +60,8 @@ public class GenericException extends RuntimeException implements Serializable {
         // that raise the exception
         String path = new Throwable().getStackTrace()[1].toString();
         Map<String, Object> data = new HashMap<>();
-        data.put(path, message);
+        data.put("error_message", message);
+        data.put("path", path);
         return data;
     }
 }

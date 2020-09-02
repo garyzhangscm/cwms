@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "trailer_template")
-public class TrailerTemplate {
+public class TrailerTemplate  extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

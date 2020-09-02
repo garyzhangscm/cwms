@@ -27,7 +27,11 @@ CREATE TABLE item_family (
   item_family_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
   warehouse_id BIGINT NOT NULL,
-  description   VARCHAR(100) NOT NULL);
+  description   VARCHAR(100) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 -- INSERT INTO item_family (name, description) VALUES ("危险品", "危险品");
@@ -45,6 +49,10 @@ CREATE TABLE item(
   item_family_id BIGINT,
   unit_cost double,
   allow_cartonization boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_family_id) references item_family(item_family_id));
 
 CREATE TABLE item_package_type(
@@ -55,6 +63,10 @@ CREATE TABLE item_package_type(
   warehouse_id BIGINT NOT NULL,
   client_id BIGINT,
   supplier_id BIGINT,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_id) references item(item_id));
 
 CREATE TABLE item_unit_of_measure (
@@ -67,13 +79,21 @@ CREATE TABLE item_unit_of_measure (
   length double not null,
   width double not null,
   height double not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id));
 
 create table inventory_status(
   inventory_status_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
   warehouse_id BIGINT NOT NULL,
-  description   VARCHAR(100) NOT NULL
+  description   VARCHAR(100) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
 );
 
 CREATE TABLE inventory(
@@ -92,6 +112,10 @@ CREATE TABLE inventory(
   work_order_line_id BIGINT,
   work_order_by_product_id BIGINT,
   locked_for_adjust  boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_id) references item(item_id),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),
   foreign key(inventory_status_id) references inventory_status(inventory_status_id)
@@ -117,6 +141,10 @@ CREATE TABLE inventory_adjustment_request(
   processed_by_datetime datetime ,
   document_number VARCHAR(200),
   comment VARCHAR(2000),
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_id) references item(item_id),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),
   foreign key(inventory_status_id) references inventory_status(inventory_status_id)
@@ -136,6 +164,10 @@ CREATE TABLE inventory_adjustment_threshold(
   quantity_threshold BIGINT,
   cost_threshold    double,
   enabled    boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_id) references item(item_id),
   foreign key(item_family_id) references item_family(item_family_id)
 );
@@ -163,6 +195,10 @@ CREATE TABLE inventory_activity(
   to_value VARCHAR(50),
   document_number VARCHAR(50),
   comment VARCHAR(2000),
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_id) references item(item_id),
   foreign key(item_package_type_id) references item_package_type(item_package_type_id),
   foreign key(inventory_status_id) references inventory_status(inventory_status_id)
@@ -174,6 +210,10 @@ CREATE TABLE inventory_movement(
   location_id    BIGINT not null,
   warehouse_id BIGINT NOT NULL,
   sequence INT not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(inventory_id) references inventory(inventory_id)
 );
 
@@ -181,21 +221,33 @@ CREATE TABLE inventory_movement(
 create table cycle_count_batch(
   cycle_count_batch_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT NOT NULL,
-  batch_id VARCHAR(100) NOT NULL
+  batch_id VARCHAR(100) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
 );
 create table cycle_count_request(
   cycle_count_request_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   batch_id VARCHAR(100) NOT NULL,
   warehouse_id BIGINT NOT NULL,
   location_id BIGINT NOT NULL,
-  status VARCHAR(20) NOT NULL
+  status VARCHAR(20) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
 );
 
 create table audit_count_request(
   audit_count_request_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   batch_id VARCHAR(100) NOT NULL,
   warehouse_id BIGINT NOT NULL,
-  location_id BIGINT NOT NULL
+  location_id BIGINT NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
 );
 
 create table cycle_count_result(
@@ -207,6 +259,10 @@ create table cycle_count_result(
   quantity int NOT NULL,
   count_quantity int NOT NULL,
   audit_count_request_id BIGINT,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_id) references item(item_id)
 );
 
@@ -220,6 +276,10 @@ create table audit_count_result(
   item_id BIGINT,
   quantity int not null,
   count_quantity int NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(item_id) references item(item_id)
 );
 
@@ -231,7 +291,11 @@ CREATE TABLE movement_path(
   warehouse_id BIGINT NOT NULL,
   to_location_id BIGINT,
   to_location_group_id BIGINT,
-  sequence INT not null
+  sequence INT not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
 );
 
 
@@ -243,5 +307,9 @@ CREATE TABLE movement_path_detail(
   warehouse_id BIGINT NOT NULL,
   sequence INT not null,
   strategy VARCHAR(20)  not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(movement_path_id) references movement_path(movement_path_id)
 );

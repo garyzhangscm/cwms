@@ -29,7 +29,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "item_family")
-public class ItemFamily implements Serializable {
+public class ItemFamily extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

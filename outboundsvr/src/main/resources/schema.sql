@@ -63,7 +63,11 @@ CREATE TABLE outbound_order (
   carrier_id BIGINT,
   carrier_service_level_id BIGINT,
   client_id  BIGINT,
-  warehouse_id BIGINT not null
+  warehouse_id BIGINT not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
   );
 
 CREATE TABLE outbound_order_line(
@@ -74,11 +78,18 @@ CREATE TABLE outbound_order_line(
   expected_quantity   BIGINT NOT NULL,
   open_quantity   BIGINT NOT NULL,
   inprocess_quantity   BIGINT NOT NULL,
+  production_plan_inprocess_quantity BIGINT NOT NULL,
+  production_plan_produced_quantity BIGINT NOT NULL,
   shipped_quantity   BIGINT NOT NULL,
   inventory_status_id   BIGINT NOT NULL,
   outbound_order_id BIGINT  NOT NULL,
+  allocation_strategy_type VARCHAR(25),
   carrier_id BIGINT,
   carrier_service_level_id BIGINT,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(outbound_order_id) references outbound_order(outbound_order_id));
 
 
@@ -96,13 +107,21 @@ CREATE TABLE trailer(
   carrier_service_level_id BIGINT,
   location_id BIGINT,
   status VARCHAR(20) NOT NULL,
-  enabled boolean not null default 0);
+  enabled boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE stop(
   stop_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
   trailer_id BIGINT,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(trailer_id) references trailer(trailer_id));
 
 CREATE TABLE shipment(
@@ -125,6 +144,10 @@ CREATE TABLE shipment(
   ship_to_address_line1   VARCHAR(100),
   ship_to_address_line2   VARCHAR(100),
   ship_to_address_postcode   VARCHAR(100),
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(stop_id) references stop(stop_id));
 
 
@@ -132,7 +155,11 @@ CREATE TABLE wave(
   wave_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
   status VARCHAR(20) NOT NULL,
-  number   VARCHAR(100) NOT NULL);
+  number   VARCHAR(100) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 CREATE TABLE shipment_line(
   shipment_line_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -147,6 +174,10 @@ CREATE TABLE shipment_line(
   loaded_quantity BIGINT  NOT NULL,
   shipped_quantity BIGINT  NOT NULL,
   status VARCHAR(20) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(shipment_id) references shipment(shipment_id),
   foreign key(outbound_order_line_id) references outbound_order_line(outbound_order_line_id),
   foreign key(wave_id) references wave(wave_id));
@@ -165,6 +196,10 @@ CREATE TABLE short_allocation(
   allocation_count BIGINT not null,
   last_allocation_datetime datetime,
   status VARCHAR(20) not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(shipment_line_id) references shipment_line(shipment_line_id));
 
 
@@ -174,7 +209,11 @@ CREATE TABLE short_allocation_configuration(
   last_modify_datetime datetime,
   last_modify_username VARCHAR(50),
   enabled boolean not null,
-  retry_interval BIGINT
+  retry_interval BIGINT,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
 );
 
 CREATE TABLE cancelled_short_allocation(
@@ -192,6 +231,10 @@ CREATE TABLE cancelled_short_allocation(
   cancelled_quantity BIGINT  NOT NULL,
   cancelled_username VARCHAR(100) not null,
   cancelled_date datetime not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(shipment_line_id) references shipment_line(shipment_line_id));
 
 CREATE TABLE pick_list(
@@ -199,7 +242,11 @@ CREATE TABLE pick_list(
   warehouse_id BIGINT not null,
   number  VARCHAR(20) NOT NULL,
   group_key  VARCHAR(100) NOT NULL,
-  status   VARCHAR(20) NOT NULL);
+  status   VARCHAR(20) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE carton(
@@ -212,7 +259,11 @@ CREATE TABLE carton(
   fill_rate  double not null ,
   enabled boolean not null,
   shipping_carton_flag boolean not null,
-  picking_carton_flag boolean not null);
+  picking_carton_flag boolean not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 CREATE TABLE cartonization(
   cartonization_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -222,6 +273,10 @@ CREATE TABLE cartonization(
   carton_id  BIGINT not null,
   pick_list_id  BIGINT ,
   carton_status VARCHAR(20) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(carton_id) references carton(carton_id));
 
 CREATE TABLE shipping_cartonization(
@@ -229,6 +284,10 @@ CREATE TABLE shipping_cartonization(
   warehouse_id BIGINT not null,
   number  VARCHAR(20) NOT NULL,
   carton_id  BIGINT not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(carton_id) references carton(carton_id));
 
 CREATE TABLE grid_configuration(
@@ -237,7 +296,11 @@ CREATE TABLE grid_configuration(
   location_group_id  BIGINT not null,
   pre_assigned_location boolean not null,
   allow_confirm_by_group boolean not null,
-  deposit_on_confirm  boolean not null);
+  deposit_on_confirm  boolean not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE grid_location_configuration(
@@ -252,7 +315,11 @@ CREATE TABLE grid_location_configuration(
   permanent_lpn VARCHAR(25),
   current_lpn VARCHAR(25),
   pending_quantity BIGINT not null,
-  arrived_quantity BIGINT not null);
+  arrived_quantity BIGINT not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 
@@ -264,6 +331,7 @@ CREATE TABLE pick(
   destination_location_id BIGINT,
   item_id BIGINT  NOT NULL,
   status VARCHAR(20) not null,
+  lpn VARCHAR(100),
   type VARCHAR(30) not null,
   shipment_line_id BIGINT,
   work_order_line_id BIGINT,
@@ -274,6 +342,10 @@ CREATE TABLE pick(
   inventory_status_id BIGINT NOT NULL,
   cartonization_id   BIGINT,
   unit_of_measure_id BIGINT NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(shipment_line_id) references shipment_line(shipment_line_id),
   foreign key(pick_list_id) references pick_list(pick_list_id),
   foreign key(short_allocation_id) references short_allocation(short_allocation_id),
@@ -301,6 +373,10 @@ CREATE TABLE cancelled_pick(
   cartonization_id   BIGINT,
   cancelled_username VARCHAR(100) not null,
   cancelled_date datetime not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(shipment_line_id) references shipment_line(shipment_line_id),
   foreign key(pick_list_id) references pick_list(pick_list_id),
   foreign key(short_allocation_id) references short_allocation(short_allocation_id),
@@ -313,6 +389,10 @@ CREATE TABLE pick_movement(
   location_id BIGINT  NOT NULL,
   sequence int  NOT NULL,
   arrived_quantity BIGINT  NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(pick_id) references pick(pick_id));
 
 
@@ -327,7 +407,10 @@ CREATE TABLE allocation_configuration(
   location_id BIGINT,
   location_group_id BIGINT,
   location_group_type_id BIGINT,
-  allocation_strategy VARCHAR(20) NOT NULL);
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE emergency_replenishment_configuration(
@@ -340,13 +423,21 @@ CREATE TABLE emergency_replenishment_configuration(
   source_location_id BIGINT,
   source_location_group_id BIGINT,
   destination_location_id BIGINT,
-  destination_location_group_id BIGINT);
+  destination_location_group_id BIGINT,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 create table pickable_unit_of_measure(
   pickable_unit_of_measure_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
   unit_of_measure_id BIGINT NOT NULL,
   allocation_configuration_id BIGINT NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(allocation_configuration_id) references allocation_configuration(allocation_configuration_id));
 
 CREATE TABLE shipping_stage_area_configuration(
@@ -354,7 +445,11 @@ CREATE TABLE shipping_stage_area_configuration(
   warehouse_id BIGINT not null,
   sequence int  NOT NULL,
   location_group_id BIGINT NOT NULL,
-  location_reserve_strategy VARCHAR(20) NOT NULL);
+  location_reserve_strategy VARCHAR(20) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE trailer_template(
@@ -367,7 +462,11 @@ CREATE TABLE trailer_template(
   number VARCHAR(50) NOT NULL,
   size VARCHAR(50) NOT NULL,
   type VARCHAR(50) NOT NULL,
-  enabled boolean not null default 0);
+  enabled boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE list_picking_configuration(
@@ -377,7 +476,11 @@ CREATE TABLE list_picking_configuration(
   client_id BIGINT,
   pick_type  VARCHAR(20) NOT NULL,
   group_rule  VARCHAR(20) NOT NULL,
-  enabled boolean not null default 0);
+  enabled boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE cartonization_configuration(
@@ -386,11 +489,19 @@ CREATE TABLE cartonization_configuration(
   sequence int  NOT NULL,
   client_id BIGINT,
   pick_type  VARCHAR(20) NOT NULL,
-  enabled boolean not null default 0);
+  enabled boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 create table cartonization_configuration_group_rule (
     cartonization_configuration_id bigint not null,
     group_rule VARCHAR(20) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
     primary key (cartonization_configuration_id, group_rule)
 );
 

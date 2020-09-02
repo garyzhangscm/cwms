@@ -19,6 +19,11 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class InventorySummary implements Serializable {
 
@@ -37,6 +42,14 @@ public class InventorySummary implements Serializable {
 
     private InventoryStatus inventoryStatus;
 
+
+    private LocalDateTime fifoDate;
+
+    // map of inventory.
+    // key: LPN
+    // value: inventory
+    private Map<String, List<Inventory>> inventories = new HashMap<>();
+
     public InventorySummary(){}
 
     public InventorySummary(Inventory inventory) {
@@ -47,6 +60,27 @@ public class InventorySummary implements Serializable {
         setQuantity(inventory.getQuantity());
         setVirtual(inventory.getVirtual());
         setInventoryStatus(inventory.getInventoryStatus());
+        setFifoDate(inventory.getCreatedTime());
+        addInventory(inventory);
+    }
+
+    public void resetFIFODate(LocalDateTime newFifoDate) {
+        // reset the FIFO date is the new fifo date is older
+        // than the inventory summary.
+        // we will make sure there's only one FIFO date for the
+        // whole inventory summary(no matter how many inventory record
+        // this summary includes) and the FIFO date is always
+        // the oldest inventory inside the summary
+        if (getFifoDate().isAfter(newFifoDate)) {
+            setFifoDate(newFifoDate);
+        }
+    }
+
+    public void addInventory(Inventory inventory) {
+
+        List<Inventory> inventoryList = inventories.getOrDefault(inventory.getLpn(), new ArrayList<>());
+        inventoryList.add(inventory);
+        inventories.put(inventory.getLpn(), inventoryList);
     }
 
     public Long getLocationId() {
@@ -118,5 +152,19 @@ public class InventorySummary implements Serializable {
         this.virtual = virtual;
     }
 
+    public LocalDateTime getFifoDate() {
+        return fifoDate;
+    }
 
+    public void setFifoDate(LocalDateTime fifoDate) {
+        this.fifoDate = fifoDate;
+    }
+
+    public Map<String, List<Inventory>> getInventories() {
+        return inventories;
+    }
+
+    public void setInventories(Map<String, List<Inventory>> inventories) {
+        this.inventories = inventories;
+    }
 }

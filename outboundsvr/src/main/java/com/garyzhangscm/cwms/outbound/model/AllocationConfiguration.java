@@ -27,7 +27,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "allocation_configuration")
-public class AllocationConfiguration implements Serializable {
+public class AllocationConfiguration  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -81,9 +81,6 @@ public class AllocationConfiguration implements Serializable {
     @Transient
     private LocationGroupType locationGroupType;
 
-    @Column(name ="allocation_strategy")
-    @Enumerated(EnumType.STRING)
-    private AllocationStrategy allocationStrategy;
 
     @OneToMany(
             mappedBy = "allocationConfiguration",
@@ -188,13 +185,6 @@ public class AllocationConfiguration implements Serializable {
         this.locationGroupType = locationGroupType;
     }
 
-    public AllocationStrategy getAllocationStrategy() {
-        return allocationStrategy;
-    }
-
-    public void setAllocationStrategy(AllocationStrategy allocationStrategy) {
-        this.allocationStrategy = allocationStrategy;
-    }
 
     public List<PickableUnitOfMeasure> getPickableUnitOfMeasures() {
         return pickableUnitOfMeasures;

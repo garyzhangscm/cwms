@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "shipping_cartonization")
-public class ShippingCartonization implements Serializable {
+public class ShippingCartonization  extends AuditibleEntity<String> implements Serializable {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

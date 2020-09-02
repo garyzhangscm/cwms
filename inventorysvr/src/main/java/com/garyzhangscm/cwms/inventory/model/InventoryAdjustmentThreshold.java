@@ -30,7 +30,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "inventory_adjustment_threshold")
-public class InventoryAdjustmentThreshold implements Serializable {
+public class InventoryAdjustmentThreshold extends AuditibleEntity<String> implements Serializable {
 
 
     @Id

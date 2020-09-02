@@ -31,7 +31,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "pick_movement")
-public class PickMovement implements Serializable {
+public class PickMovement  extends AuditibleEntity<String> implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(PickMovement.class);
 

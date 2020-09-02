@@ -37,3 +37,19 @@ docker pull garyzhangscm/cwms-eurekasvr:latest
 
 Remove untaged
 docker rmi $(docker images -f "dangling=true" -q)
+
+
+Tag
+
+docker tag garyzhangscm/cwms-workorderserver:latest  garyzhangscm/cwms-workorderserver:v0.1
+docker tag garyzhangscm/cwms-outboundserver:latest garyzhangscm/cwms-outboundserver:v0.1
+docker tag garyzhangscm/cwms-ressvr:latest   garyzhangscm/cwms-ressvr:v0.1
+docker tag garyzhangscm/cwms-inventoryserver:latest   garyzhangscm/cwms-inventoryserver:v0.1
+docker tag garyzhangscm/cwms-integrationserver:latest   garyzhangscm/cwms-integrationserver:v0.1
+docker tag garyzhangscm/cwms-commonserver:latest   garyzhangscm/cwms-commonserver:v0.1
+docker tag garyzhangscm/cwms-inboundserver:latest garyzhangscm/cwms-inboundserver:v0.1
+docker tag garyzhangscm/cwms-layoutserver:latest  garyzhangscm/cwms-layoutserver:v0.1
+
+docker tag garyzhangscm/cwms-adminserver:latest   garyzhangscm/cwms-adminserver:v0.1
+docker tag garyzhangscm/cwms-auth:latest   garyzhangscm/cwms-auth:v0.1
+docker tag garyzhangscm/cwms-confsvr:latest  garyzhangscm/cwms-confsvr:v0.1

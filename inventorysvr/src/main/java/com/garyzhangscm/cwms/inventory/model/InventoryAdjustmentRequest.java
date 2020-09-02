@@ -37,7 +37,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "inventory_adjustment_request")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InventoryAdjustmentRequest implements Serializable {
+public class InventoryAdjustmentRequest extends AuditibleEntity<String> implements Serializable {
 
 
     @Id

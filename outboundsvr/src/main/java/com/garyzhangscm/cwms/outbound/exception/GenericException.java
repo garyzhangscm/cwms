@@ -60,7 +60,8 @@ public class GenericException extends RuntimeException {
         // that raise the exception
         String path = new Throwable().getStackTrace()[1].toString();
         Map<String, Object> data = new HashMap<>();
-        data.put(path, message);
+        data.put("error_message", message);
+        data.put("path", path);
         return data;
     }
 }

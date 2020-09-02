@@ -29,7 +29,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "audit_count_request")
-public class AuditCountRequest implements Serializable {
+public class AuditCountRequest extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -30,7 +30,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "cancelled_pick")
-public class CancelledPick implements Serializable {
+public class CancelledPick  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -26,6 +26,7 @@ public class OrderLineCSVWrapper {
     private Long expectedQuantity;
     private String inventoryStatus;
     private String warehouse;
+    private String allocationStrategyType;
 
     public String getOrder() {
         return order;
@@ -73,5 +74,13 @@ public class OrderLineCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getAllocationStrategyType() {
+        return allocationStrategyType;
+    }
+
+    public void setAllocationStrategyType(String allocationStrategyType) {
+        this.allocationStrategyType = allocationStrategyType;
     }
 }
