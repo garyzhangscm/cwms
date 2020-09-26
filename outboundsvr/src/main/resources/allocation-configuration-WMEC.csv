@@ -1,5 +1,5 @@
-warehouse,sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,allocationStrategy,pickableUnitOfMeasures, type
-WMEC,1,,FG,,,EACH_PICK,,FIRST_IN_FIRST_OUT,PCS,PICKING
-WMEC,2,,FG,,,EACH_PICK,,FIRST_IN_FIRST_OUT,LBS,PICKING
-WMEC,3,,RAW,,,EACH_PICK,,FIRST_IN_FIRST_OUT,PCS,PICKING
-WMEC,4,,RAW,,,EACH_PICK,,FIRST_IN_FIRST_OUT,LBS,PICKING
+company,warehouse,sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,allocationStrategy,allocationConfigurationPickableUnitOfMeasures, type
+20901,WMEC,1,,FG,,,EACH_PICK,,FIRST_IN_FIRST_OUT,PCS,PICKING
+20901,WMEC,2,,FG,,,EACH_PICK,,FIRST_IN_FIRST_OUT,LBS,PICKING
+20901,WMEC,3,,RAW,,,EACH_PICK,,FIRST_IN_FIRST_OUT,PCS,PICKING
+20901,WMEC,4,,RAW,,,EACH_PICK,,FIRST_IN_FIRST_OUT,LBS,PICKING

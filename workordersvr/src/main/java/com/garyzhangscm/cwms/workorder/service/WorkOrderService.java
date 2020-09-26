@@ -237,6 +237,7 @@ public class WorkOrderService implements TestDataInitiableService {
     public List<WorkOrderCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("number").
                 addColumn("item").
@@ -268,6 +269,7 @@ public class WorkOrderService implements TestDataInitiableService {
         workOrder.setStatus(WorkOrderStatus.PENDING);
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                workOrderCSVWrapper.getCompany(),
                 workOrderCSVWrapper.getWarehouse()
         );
 
@@ -307,6 +309,7 @@ public class WorkOrderService implements TestDataInitiableService {
         workOrder.setProducedQuantity(0L);
         workOrder.setStatus(WorkOrderStatus.PENDING);
 
+
         WorkOrder savedWorkOrder = save(workOrder);
 
         Long workOrderCount = expectedQuantity / billOfMaterial.getExpectedQuantity();
@@ -328,6 +331,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public WorkOrder allocateWorkOrder(Long workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
+        logger.debug("Start to allocate work order: \n {}", workOrder);
             AllocationResult allocationResult
                     = outboundServiceRestemplateClient.allocateWorkOrder(workOrder);
 
@@ -361,7 +365,14 @@ public class WorkOrderService implements TestDataInitiableService {
                 Long inprocessQuantity = entry.getValue();
                 logger.debug("work order line {}'s inprocess quantity will be updated by {}",
                         workOrderLine.getNumber(), inprocessQuantity);
-                workOrderLine.setOpenQuantity(workOrderLine.getOpenQuantity() - inprocessQuantity);
+                // we may allocate more than necessary(when round up for the item is allowed)
+                if (workOrderLine.getOpenQuantity() < inprocessQuantity) {
+                    workOrderLine.setOpenQuantity(0L);
+                }
+                else {
+                    workOrderLine.setOpenQuantity(workOrderLine.getOpenQuantity() - inprocessQuantity);
+
+                }
                 workOrderLine.setInprocessQuantity(workOrderLine.getInprocessQuantity() + inprocessQuantity);
                 workOrderLineService.save(workOrderLine);
             });
@@ -658,4 +669,11 @@ public class WorkOrderService implements TestDataInitiableService {
         integrationService.process(new WorkOrderConfirmation(workOrder));
     }
 
+    public String validateNewNumber(Long warehouseId, String number) {
+
+        WorkOrder workOrder =
+                findByNumber(warehouseId, number, false);
+
+        return Objects.isNull(workOrder) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+    }
 }

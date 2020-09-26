@@ -95,7 +95,16 @@ public class InventoryMovementService{
         delete(id);
     }
     public void clearInventoryMovement(Inventory inventory) {
-        inventory.getInventoryMovements().stream().forEach(this::delete);
+        inventory.getInventoryMovements()
+                .stream()
+                .forEach(inventoryMovement -> {
+                    // remove from the DB and clear the location's pending volume
+
+                    warehouseLayoutServiceRestemplateClient.deallocateLocation(
+                            inventoryMovement.getLocation(), inventory
+                    );
+                    delete(inventoryMovement);
+                });
     }
 
     public InventoryMovement createInventoryMovementFromPickMovement(Inventory inventory, PickMovement pickMovement) {

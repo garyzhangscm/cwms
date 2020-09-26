@@ -199,6 +199,7 @@ public class CartonizationConfigurationService implements TestDataInitiableServi
     public List<CartonizationConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("sequence").
                 addColumn("warehouse").
                 addColumn("client").
@@ -233,17 +234,15 @@ public class CartonizationConfigurationService implements TestDataInitiableServi
         cartonizationConfiguration.setSequence(cartonizationConfigurationCSVWrapper.getSequence());
         cartonizationConfiguration.setPickType(PickType.valueOf(cartonizationConfigurationCSVWrapper.getPickType()));
 
-        if (!StringUtils.isBlank(cartonizationConfigurationCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    cartonizationConfigurationCSVWrapper.getCompany(),
                     cartonizationConfigurationCSVWrapper.getWarehouse()
-            );
-            if (warehouse != null) {
-                cartonizationConfiguration.setWarehouseId(warehouse.getId());
-            }
-        }
+        );
 
         if (!StringUtils.isBlank(cartonizationConfigurationCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(),
                     cartonizationConfigurationCSVWrapper.getClient()
             );
             if (client != null) {

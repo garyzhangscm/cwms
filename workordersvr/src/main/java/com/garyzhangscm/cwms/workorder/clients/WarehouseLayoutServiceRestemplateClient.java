@@ -66,8 +66,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Location getLocationByName(String warehouseName, String name) {
-        Warehouse warehouse = getWarehouseByName(warehouseName);
+    public Location getLocationByName(String companyCode, String warehouseName, String name) {
+        Warehouse warehouse = getWarehouseByName(companyCode, warehouseName);
         if (warehouse == null) {
             throw ResourceNotFoundException.raiseException("warehouse name (" + warehouseName +  ")is not valid");
         }
@@ -117,12 +117,13 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Warehouse getWarehouseByName(String name) {
+    public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/warehouses")
-                        .queryParam("name", name);
+                        .queryParam("name", name)
+                        .queryParam("companyCode", companyCode);
 
         logger.debug("Start to get warehouse by name: {}, /n >> {}",
                 name, builder.toUriString());

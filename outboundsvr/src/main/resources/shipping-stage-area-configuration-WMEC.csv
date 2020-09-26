@@ -1,2 +1,2 @@
-warehouse,sequence,locationGroup,locationReserveStrategy
-WMEC,1,SHIP_STG,BY_SHIPMENT
+company,warehouse,sequence,locationGroup,locationReserveStrategy
+20901,WMEC,1,SHIP_STG,BY_SHIPMENT

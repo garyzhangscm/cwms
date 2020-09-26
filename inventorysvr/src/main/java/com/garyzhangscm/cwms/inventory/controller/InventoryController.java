@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
@@ -46,6 +47,7 @@ public class InventoryController {
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
                                               @RequestParam(name="location", required = false, defaultValue = "") String locationName,
                                               @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
+                                              @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
                                               @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
                                               @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
                                               @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
@@ -55,9 +57,31 @@ public class InventoryController {
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
         return inventoryService.findAll(warehouseId, itemName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
-                locationId, locationGroupId, receiptId, workOrderId,
+                locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn);
+    }
+    @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
+    public int getInventoryCount(@RequestParam Long warehouseId,
+                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                              @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
+                                              @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
+                                              @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
+                                              @RequestParam(name="location", required = false, defaultValue = "") String locationName,
+                                              @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
+                                              @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
+                                              @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                              @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
+                                              @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
+                                              @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
+                                              @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
+                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
+        return inventoryService.findAll(warehouseId, itemName, clientIds,
+                itemFamilyIds,inventoryStatusId,  locationName,
+                locationId, locationIds, locationGroupId, receiptId, workOrderId,
+                workOrderLineIds, workOrderByProductIds,
+                pickIds, lpn).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
@@ -165,6 +189,11 @@ public class InventoryController {
 
         return inventoryService.setupMovementPath(id, inventoryMovements);
     }
+    @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}/movements")
+    public Inventory clearMovementPath(@PathVariable long id) {
+
+        return inventoryService.clearMovementPath(id);
+    }
 
 
 
@@ -198,6 +227,23 @@ public class InventoryController {
         return inventoryService.splitInventory(id, newLpn, newQuantity);
     }
 
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/mark-lpn-allocated")
+    public List<Inventory> markLPNAllocated(@RequestParam Long warehouseId,
+                                            @RequestParam String lpn,
+                                            @RequestParam Long allocatedByPickId) {
+
+
+        return inventoryService.markLPNAllocated(warehouseId, lpn, allocatedByPickId);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/release-lpn-allocated")
+    public List<Inventory> releaseLPNAllocated(@RequestParam Long warehouseId,
+                                               @RequestParam String lpn,
+                                            @RequestParam Long allocatedByPickId) {
+
+
+        return inventoryService.releaseLPNAllocated(warehouseId, lpn, allocatedByPickId);
+    }
 
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/unpick")
     public Inventory unpick(@PathVariable long id,
@@ -209,5 +255,19 @@ public class InventoryController {
         return inventoryService.unpick(id, warehouseId,  destinationLocationId, destinationLocationName, immediateMove);
     }
 
+
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}/reverse-receiving")
+    public Inventory reverseReceivedInventory(@PathVariable long id) {
+
+        return inventoryService.reverseReceivedInventory(id);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/inventories/validate-new-lpn")
+    public ResponseBodyWrapper<String> validateNewLPN(@RequestParam Long warehouseId,
+                                                      @RequestParam String lpn)  {
+
+        return ResponseBodyWrapper.success(inventoryService.validateNewLPN(warehouseId, lpn));
+    }
 
 }

@@ -140,6 +140,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
 
     public List<ItemPackageTypeCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("item").
                 addColumn("client").
@@ -154,6 +155,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
     public List<ItemPackageTypeCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("item").
                 addColumn("client").
@@ -185,15 +187,18 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         itemPackageType.setDescription(itemPackageTypeCSVWrapper.getDescription());
 
         // warehouse is mandate
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemPackageTypeCSVWrapper.getWarehouse());
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        itemPackageTypeCSVWrapper.getCompany(),
+                        itemPackageTypeCSVWrapper.getWarehouse());
         itemPackageType.setWarehouseId(warehouse.getId());
 
         if (!itemPackageTypeCSVWrapper.getClient().isEmpty()) {
-            Client client = commonServiceRestemplateClient.getClientByName(itemPackageTypeCSVWrapper.getClient());
+            Client client = commonServiceRestemplateClient.getClientByName(warehouse.getId(), itemPackageTypeCSVWrapper.getClient());
             itemPackageType.setClientId(client.getId());
         }
         if (!itemPackageTypeCSVWrapper.getSupplier().isEmpty()) {
-            Supplier supplier = commonServiceRestemplateClient.getSupplierByName(itemPackageTypeCSVWrapper.getSupplier());
+            Supplier supplier = commonServiceRestemplateClient.getSupplierByName(warehouse.getId(),itemPackageTypeCSVWrapper.getSupplier());
             itemPackageType.setSupplierId(supplier.getId());
         }
         if (!itemPackageTypeCSVWrapper.getItem().isEmpty()) {

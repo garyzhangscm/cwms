@@ -1,8 +1,8 @@
-warehouse,number,client,supplier,allowUnexpectedItem
-WMEC,RECPT000001,,,false
-WMEC,RECPT000002,,,true
-WMEC,RECPT000003,,,true
-WMEC,RECPT000004,,,true
-WMEC,RECPT000005,,,false
-WMEC,RECPT000006,,,false
-WMEC,RECPT000007,,,false
+company,warehouse,number,client,supplier,allowUnexpectedItem
+20901,WMEC,RECPT000001,,,false
+20901,WMEC,RECPT000002,,,true
+20901,WMEC,RECPT000003,,,true
+20901,WMEC,RECPT000004,,,true
+20901,WMEC,RECPT000005,,,false
+20901,WMEC,RECPT000006,,,false
+20901,WMEC,RECPT000007,,,false

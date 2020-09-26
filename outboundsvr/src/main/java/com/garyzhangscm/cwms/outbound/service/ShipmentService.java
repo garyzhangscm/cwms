@@ -230,7 +230,7 @@ public class ShipmentService {
         // for each order, generate a shipment number and plan the order lines
         // into the shipment
         orderListMap.entrySet().forEach(entrySet -> {
-            String shipmentNumber = getNextShipmentNumber();
+            String shipmentNumber = getNextShipmentNumber(entrySet.getKey().getWarehouseId());
             Shipment shipment = planShipments(wave, shipmentNumber, entrySet.getValue());
             if (Objects.nonNull(shipment)) {
                 shipments.add(shipment);
@@ -287,7 +287,7 @@ public class ShipmentService {
 
         orderListMap.entrySet().forEach(entrySet -> {
 
-            String shipmentNumber = getNextShipmentNumber();
+            String shipmentNumber = getNextShipmentNumber(warehouseId);
             Wave wave = waveService.createWave(warehouseId, shipmentNumber);
             Shipment shipment = planShipments(wave, shipmentNumber, entrySet.getValue());
             shipments.add(shipment);
@@ -340,8 +340,8 @@ public class ShipmentService {
         return newShipment;
     }
 
-    public String getNextShipmentNumber(){
-        return commonServiceRestemplateClient.getNextNumber("shipment-number");
+    public String getNextShipmentNumber(Long warehouseId){
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "shipment-number");
     }
 
     // Get a list of inventory that is picked for the shipment

@@ -26,7 +26,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "location_group_type")
-public class LocationGroupType {
+public class LocationGroupType extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

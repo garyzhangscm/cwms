@@ -24,9 +24,7 @@ import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateC
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 
-import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickableUnitOfMeasureRepository;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,23 +49,23 @@ public class PickableUnitOfMeasureService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
-    public PickableUnitOfMeasure findById(Long id) {
+    public AllocationConfigurationPickableUnitOfMeasure findById(Long id) {
         return pickableUnitOfMeasureRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("pickable unit of measure not found by id: " + id));
     }
 
-    public List<PickableUnitOfMeasure> findAll(Long warehouseId,
-                                               Long allocationConfigurationId) {
+    public List<AllocationConfigurationPickableUnitOfMeasure> findAll(Long warehouseId,
+                                                                      Long allocationConfigurationId) {
 
         return pickableUnitOfMeasureRepository.findAll(
-                (Root<PickableUnitOfMeasure> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                (Root<AllocationConfigurationPickableUnitOfMeasure> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (Objects.nonNull(allocationConfigurationId)) {
 
-                        Join<PickableUnitOfMeasure, AllocationConfiguration> joinAllocationConfiguration
+                        Join<AllocationConfigurationPickableUnitOfMeasure, AllocationConfiguration> joinAllocationConfiguration
                                 = root.join("allocationConfiguration", JoinType.INNER);
 
                         predicates.add(criteriaBuilder.equal(joinAllocationConfiguration.get("id"), allocationConfigurationId));
@@ -83,25 +81,25 @@ public class PickableUnitOfMeasureService {
 
     }
 
-    public void loadAttribute(List<PickableUnitOfMeasure> pickableUnitOfMeasures) {
-        pickableUnitOfMeasures.forEach(pickableUnitOfMeasure -> loadAttribute(pickableUnitOfMeasure));
+    public void loadAttribute(List<AllocationConfigurationPickableUnitOfMeasure> allocationConfigurationPickableUnitOfMeasures) {
+        allocationConfigurationPickableUnitOfMeasures.forEach(pickableUnitOfMeasure -> loadAttribute(pickableUnitOfMeasure));
     }
-    public void loadAttribute(PickableUnitOfMeasure pickableUnitOfMeasure) {
+    public void loadAttribute(AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
 
-        if (Objects.nonNull(pickableUnitOfMeasure.getUnitOfMeasureId()) &&
-            Objects.isNull(pickableUnitOfMeasure.getUnitOfMeasure())) {
-            pickableUnitOfMeasure.setUnitOfMeasure(
+        if (Objects.nonNull(allocationConfigurationPickableUnitOfMeasure.getUnitOfMeasureId()) &&
+            Objects.isNull(allocationConfigurationPickableUnitOfMeasure.getUnitOfMeasure())) {
+            allocationConfigurationPickableUnitOfMeasure.setUnitOfMeasure(
                     commonServiceRestemplateClient.getUnitOfMeasureById(
-                            pickableUnitOfMeasure.getUnitOfMeasureId()
+                            allocationConfigurationPickableUnitOfMeasure.getUnitOfMeasureId()
                     )
             );
         }
 
-        if (Objects.nonNull(pickableUnitOfMeasure.getWarehouseId()) &&
-                Objects.isNull(pickableUnitOfMeasure.getWarehouse())) {
-            pickableUnitOfMeasure.setWarehouse(
+        if (Objects.nonNull(allocationConfigurationPickableUnitOfMeasure.getWarehouseId()) &&
+                Objects.isNull(allocationConfigurationPickableUnitOfMeasure.getWarehouse())) {
+            allocationConfigurationPickableUnitOfMeasure.setWarehouse(
                     warehouseLayoutServiceRestemplateClient.getWarehouseById(
-                            pickableUnitOfMeasure.getWarehouseId()
+                            allocationConfigurationPickableUnitOfMeasure.getWarehouseId()
                     )
             );
         }
@@ -111,15 +109,15 @@ public class PickableUnitOfMeasureService {
     }
 
 
-    public PickableUnitOfMeasure save(PickableUnitOfMeasure pickableUnitOfMeasure) {
-        logger.debug("Save pickableUnitOfMeasure\n{}", pickableUnitOfMeasure);
-        return pickableUnitOfMeasureRepository.save(pickableUnitOfMeasure);
+    public AllocationConfigurationPickableUnitOfMeasure save(AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
+        logger.debug("Save pickableUnitOfMeasure\n{}", allocationConfigurationPickableUnitOfMeasure);
+        return pickableUnitOfMeasureRepository.save(allocationConfigurationPickableUnitOfMeasure);
     }
 
 
 
-    public void delete(PickableUnitOfMeasure pickableUnitOfMeasure) {
-        pickableUnitOfMeasureRepository.delete(pickableUnitOfMeasure);
+    public void delete(AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
+        pickableUnitOfMeasureRepository.delete(allocationConfigurationPickableUnitOfMeasure);
     }
 
     public void delete(Long id) {

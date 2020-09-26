@@ -36,6 +36,12 @@ public class ExceptionResponse implements Serializable {
         }
     }
 
+    public ExceptionResponse(RuntimeException ex, String path) {
+        this(-1, -1, ex.getMessage(), path, new HashMap<>());
+    }
+    public ExceptionResponse(Exception ex, String path) {
+        this(-1, -1, ex.getMessage(), path, new HashMap<>());
+    }
     @Override
     public String toString() {
         return"ExceptionResponse{" +

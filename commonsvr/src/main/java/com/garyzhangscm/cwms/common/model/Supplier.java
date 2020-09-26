@@ -27,13 +27,20 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "supplier")
-public class Supplier implements Serializable {
+public class Supplier extends AuditibleEntity<String>  implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "supplier_id")
     @JsonProperty(value="id")
     private Long id;
+
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @Column(name = "name", unique = true)
     private String name;
@@ -70,6 +77,23 @@ public class Supplier implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 
     public String getName() {

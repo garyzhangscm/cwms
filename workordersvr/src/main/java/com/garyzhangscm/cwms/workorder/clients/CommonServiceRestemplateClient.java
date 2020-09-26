@@ -41,12 +41,13 @@ public class CommonServiceRestemplateClient {
 
 
 
-    public String getNextNumber(String variable) {
+    public String getNextNumber(Long warehouseId, String variable) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/common/system-controlled-number/{variable}/next");
+                        .path("/api/common/system-controlled-number/{variable}/next")
+                .queryParam("warehouseId", warehouseId);
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(variable).toUriString(),
@@ -56,8 +57,8 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData().getNextNumber();
     }
-    public String getNextWorkOrderNumber() {
-        return getNextNumber("work-order-number");
+    public String getNextWorkOrderNumber(Long warehouseId) {
+        return getNextNumber(warehouseId, "work-order-number");
     }
 
 

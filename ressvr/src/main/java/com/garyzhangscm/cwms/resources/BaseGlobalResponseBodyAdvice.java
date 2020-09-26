@@ -21,6 +21,9 @@ package com.garyzhangscm.cwms.resources;
 
 import com.garyzhangscm.cwms.resources.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.resources.exception.GenericException;
+import com.garyzhangscm.cwms.resources.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -53,6 +56,7 @@ import java.util.List;
 @RestControllerAdvice
 public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseGlobalResponseBodyAdvice.class);
     /**
      * Only process when the client want to have a JSON return
      */
@@ -68,7 +72,37 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 ex.getExceptionCode().getCode(),
-                ex.getExceptionCode().getMessage(), exceptionResponse);
+                exceptionResponse.getMessage(), exceptionResponse);
+    }
+
+
+    /**
+     * Handler for any other runtime exceptions. We already handle our customized exception
+     * in the above handler
+     * @param ex
+     * @param request
+     * @return
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseBodyWrapper RuntimeExceptionErrorHandler(RuntimeException ex, HttpServletRequest request) {
+
+        logger.debug("Start to handle runtime exception: {}", ex.getMessage());
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+        return new ResponseBodyWrapper(
+                500,
+                ex.getMessage(), exceptionResponse);
+    }
+
+
+
+    @ExceptionHandler(Exception.class)
+    public ResponseBodyWrapper ExceptionErrorHandler(Exception ex, HttpServletRequest request) {
+
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+        return new ResponseBodyWrapper(
+                500,
+                ex.getMessage(), exceptionResponse);
     }
 
 

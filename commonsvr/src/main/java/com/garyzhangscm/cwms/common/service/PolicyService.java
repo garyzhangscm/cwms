@@ -19,26 +19,28 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.Client;
-import com.garyzhangscm.cwms.common.model.Policy;
-import com.garyzhangscm.cwms.common.repository.ClientRepository;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.PolicyRepository;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class PolicyService implements  TestDataInitiableService{
@@ -49,6 +51,8 @@ public class PolicyService implements  TestDataInitiableService{
     private PolicyRepository policyRepository;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.policies:policies}")
     String testDataFile;
@@ -58,17 +62,29 @@ public class PolicyService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("policy not found by id: " + id));
     }
 
-    public List<Policy> findAll(String key) {
+    public List<Policy> findAll( Long warehouseId,
+                                String key) {
+        return policyRepository.findAll(
+                (Root<Policy> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if (StringUtils.isBlank(key)) {
 
-            return policyRepository.findAll();
-        }
-        return Arrays.asList(new Policy[]{findByKey(key)});
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+
+                    if (StringUtils.isNotBlank(key)) {
+                        predicates.add(criteriaBuilder.equal(root.get("key"), key));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
-    public Policy findByKey(String key){
-        return policyRepository.findByKeyIgnoreCase(key);
+    public Policy findByKey(Long warehouseId, String key){
+        return policyRepository.findByKeyIgnoreCase(warehouseId, key);
     }
 
     @Transactional
@@ -79,8 +95,8 @@ public class PolicyService implements  TestDataInitiableService{
     // update when the client already exists
     @Transactional
     public Policy saveOrUpdate(Policy policy) {
-        if (policy.getId() == null && findByKey(policy.getKey()) != null) {
-            policy.setId(findByKey(policy.getKey()).getId());
+        if (policy.getId() == null && findByKey(policy.getWarehouseId(), policy.getKey()) != null) {
+            policy.setId(findByKey(policy.getWarehouseId(), policy.getKey()).getId());
         }
         return save(policy);
     }
@@ -107,26 +123,30 @@ public class PolicyService implements  TestDataInitiableService{
 
 
     @Transactional
-    public List<Policy> loadData(File file) throws IOException {
+    public List<PolicyCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("key").
                 addColumn("value").
                 addColumn("description").
                 build().withHeader();
 
-        return fileService.loadData(file, schema, Policy.class);
+        return fileService.loadData(file, schema, PolicyCSVWrapper.class);
     }
 
-    public List<Policy> loadData(InputStream inputStream) throws IOException {
+    public List<PolicyCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("key").
                 addColumn("value").
                 addColumn("description").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, Policy.class);
+        return fileService.loadData(inputStream, schema, PolicyCSVWrapper.class);
     }
 
     @Transactional
@@ -136,13 +156,22 @@ public class PolicyService implements  TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<Policy> policies = loadData(inputStream);
-            policies.stream().forEach(policy -> saveOrUpdate(policy));
+            List<PolicyCSVWrapper> policyCSVWrappers = loadData(inputStream);
+            policyCSVWrappers.stream().forEach(policyCSVWrapper -> saveOrUpdate(convertFromWrapper(policyCSVWrapper)));
         }
         catch(IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+    private Policy convertFromWrapper(PolicyCSVWrapper policyCSVWrapper) {
+        Policy policy = new Policy();
 
+        BeanUtils.copyProperties(policyCSVWrapper, policy);
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                policyCSVWrapper.getCompany(), policyCSVWrapper.getWarehouse()
+        );
+        policy.setWarehouseId(warehouse.getId());
+        return policy;
 
+    }
 }

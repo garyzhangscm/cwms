@@ -117,8 +117,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    public Location getLocationByName(String warehouseName, String name) {
-        Warehouse warehouse = getWarehouseByName(warehouseName);
+    public Location getLocationByName(String companyCode, String warehouseName, String name) {
+        Warehouse warehouse = getWarehouseByName(companyCode, warehouseName);
         if (warehouse == null) {
             throw ResourceNotFoundException.raiseException("warehouse name (" + warehouseName +  ")is not valid");
         }
@@ -192,11 +192,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    public Warehouse getWarehouseByName(String name) {
+    public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/warehouses")
+                        .queryParam("companyCode", companyCode)
                         .queryParam("name", name);
 
         logger.debug("Start to get warehouse by name: {}, /n >> {}",
@@ -236,8 +237,9 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public LocationGroup getLocationGroupByName(String warehouseName, String name) {
-        Warehouse warehouse = getWarehouseByName(warehouseName);
+    public LocationGroup getLocationGroupByName(String companyCode,
+                                                String warehouseName, String name) {
+        Warehouse warehouse = getWarehouseByName(companyCode, warehouseName);
         if (warehouse == null) {
             throw ResourceNotFoundException.raiseException("warehouse name (" + warehouseName +  ")is not valid");
         }

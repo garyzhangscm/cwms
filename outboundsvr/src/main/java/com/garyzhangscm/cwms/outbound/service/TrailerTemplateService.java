@@ -121,6 +121,7 @@ public class TrailerTemplateService implements TestDataInitiableService {
     public List<TrailerTemplate> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("number").
                 addColumn("licensePlateNumber").
@@ -162,7 +163,9 @@ public class TrailerTemplateService implements TestDataInitiableService {
         trailerTemplate.setType(TrailerType.valueOf(trailerTemplateCSVWrapper.getType()));
 
         if (!StringUtils.isBlank(trailerTemplateCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(trailerTemplateCSVWrapper.getWarehouse());
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    trailerTemplateCSVWrapper.getCompany(),
+                    trailerTemplateCSVWrapper.getWarehouse());
             if (warehouse != null) {
                 trailerTemplate.setWarehouseId(warehouse.getId());
             }

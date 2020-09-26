@@ -188,12 +188,14 @@ public class WorkOrderLineService implements TestDataInitiableService {
     public List<WorkOrderLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("workOrder").
                 addColumn("number").
                 addColumn("item").
                 addColumn("expectedQuantity").
                 addColumn("inventoryStatus").
+                addColumn("allocationStrategyType").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, WorkOrderLineCSVWrapper.class);
@@ -218,6 +220,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
         Warehouse warehouse =
                 warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        workOrderLineCSVWrapper.getCompany(),
                       workOrderLineCSVWrapper.getWarehouse()
                 );
 
@@ -244,6 +247,19 @@ public class WorkOrderLineService implements TestDataInitiableService {
                 inventoryServiceRestemplateClient.getInventoryStatusByName(
                         warehouse.getId(), workOrderLineCSVWrapper.getInventoryStatus()).getId()
         );
+
+        if (StringUtils.isNotBlank(workOrderLineCSVWrapper.getAllocationStrategyType())) {
+            workOrderLine.setAllocationStrategyType(AllocationStrategyType.valueOf(
+                    workOrderLineCSVWrapper.getAllocationStrategyType()
+            ));
+            logger.debug("Work Order line's allocation strategy type: {}",
+                    workOrderLine.getAllocationStrategyType());
+        }
+        else {
+            workOrderLine.setAllocationStrategyType(AllocationStrategyType.FIRST_IN_FIRST_OUT);
+            logger.debug("Work Order line's allocation strategy type default to: {}",
+                    workOrderLine.getAllocationStrategyType());
+        }
         return workOrderLine;
     }
 
@@ -260,6 +276,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
         workOrderLine.setInprocessQuantity(0L);
         workOrderLine.setDeliveredQuantity(0L);
         workOrderLine.setConsumedQuantity(0L);
+        //TO-DO: Default to FIFO for now
+        workOrderLine.setAllocationStrategyType(AllocationStrategyType.FIRST_IN_FIRST_OUT);
 
         return save(workOrderLine);
 

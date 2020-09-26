@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "carrier_service_level")
-public class CarrierServiceLevel {
+public class CarrierServiceLevel extends AuditibleEntity<String>  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -250,6 +250,7 @@ public class ProductionLineService implements TestDataInitiableService {
     public List<ProductionLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("inboundStageLocation").
@@ -283,6 +284,7 @@ public class ProductionLineService implements TestDataInitiableService {
         productionLine.setEnabled(productionLineCSVWrapper.getEnabled());
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                productionLineCSVWrapper.getCompany(),
                 productionLineCSVWrapper.getWarehouse()
         );
         productionLine.setWarehouseId(warehouse.getId());

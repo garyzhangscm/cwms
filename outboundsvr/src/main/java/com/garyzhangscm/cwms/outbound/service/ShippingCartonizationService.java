@@ -124,7 +124,7 @@ public class ShippingCartonizationService {
         //
         // For packing, we will always move inventory from the source to a
         // new LPN standards for the shipping carton
-        String shippingCartonNumber = getNextShippingCartonizationNumber();
+        String shippingCartonNumber = getNextShippingCartonizationNumber(warehouseId);
         List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(warehouseId, inventoryId);
         logger.debug("Get inventory by id: {} \n {}", inventoryId, inventories);
 
@@ -296,8 +296,8 @@ public class ShippingCartonizationService {
     }
 
 
-    private String getNextShippingCartonizationNumber() {
-        return commonServiceRestemplateClient.getNextNumber("shipping-cartonization-number");
+    private String getNextShippingCartonizationNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "shipping-cartonization-number");
     }
 
 

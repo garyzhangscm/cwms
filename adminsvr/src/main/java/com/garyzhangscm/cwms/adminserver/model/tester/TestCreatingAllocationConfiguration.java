@@ -101,7 +101,7 @@ public class TestCreatingAllocationConfiguration extends TestScenario{
 
 
             UnitOfMeasure unitOfMeasure
-                    = commonServiceRestemplateClient.getUnitOfMeasureByName(pickableUnitOfMeasureName);
+                    = commonServiceRestemplateClient.getUnitOfMeasureByName(warehouse.getId(), pickableUnitOfMeasureName);
 
 
             AllocationConfiguration allocationConfiguration

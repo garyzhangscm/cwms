@@ -19,12 +19,12 @@
 package com.garyzhangscm.cwms.outbound.repository;
 
 
-import com.garyzhangscm.cwms.outbound.model.PickableUnitOfMeasure;
+import com.garyzhangscm.cwms.outbound.model.AllocationConfigurationPickableUnitOfMeasure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PickableUnitOfMeasureRepository extends JpaRepository<PickableUnitOfMeasure, Long>, JpaSpecificationExecutor<PickableUnitOfMeasure> {
+public interface PickableUnitOfMeasureRepository extends JpaRepository<AllocationConfigurationPickableUnitOfMeasure, Long>, JpaSpecificationExecutor<AllocationConfigurationPickableUnitOfMeasure> {
 
 }

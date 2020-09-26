@@ -7,12 +7,14 @@
             "name": "locations",
             "description": "warehouse locations",
             "destinationUrl" : "layout/locations/upload"
+            "templateFileUrl" : "resource/assets/file-templates/locations.csv"
         },
         {
             "id": 2,
             "name": "items",
             "description": "Items",
             "destinationUrl" : "inventory/items/upload"
+            "templateFileUrl" : "resource/assets/file-templates/items.csv"
         }
     ]
 }

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.service.ProductionPlanService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
@@ -57,5 +58,11 @@ public class ProductionPlanController {
         return productionPlanService.save(productionPlan);
     }
 
+
+    @RequestMapping(value="/production-plans/validate-new-number", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> validateNewNumber(@RequestParam Long warehouseId,
+                                                         @RequestParam String number) {
+        return ResponseBodyWrapper.success(productionPlanService.validateNewNumber(warehouseId, number));
+    }
 
 }

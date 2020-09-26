@@ -187,7 +187,8 @@ public class OrderLineService implements TestDataInitiableService{
     }
 
 
-    public List<OrderLine> findWavableOrderLines(String orderNumber,
+    public List<OrderLine> findWavableOrderLines(Long warehouseId,
+                                                 String orderNumber,
                                          String customerName) {
 
         List<OrderLine> wavableOrderLine =  orderLineRepository.findAll(
@@ -203,7 +204,8 @@ public class OrderLineService implements TestDataInitiableService{
                     }
                     if (!StringUtils.isBlank(customerName)) {
                         Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
-                        Customer customer = commonServiceRestemplateClient.getCustomerByName(customerName);
+                        Customer customer = commonServiceRestemplateClient.getCustomerByName(warehouseId,
+                                customerName);
                         if (customer != null) {
                             predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), customer.getId()));
                         }
@@ -254,6 +256,7 @@ public class OrderLineService implements TestDataInitiableService{
     public List<OrderLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("order").
                 addColumn("number").
@@ -289,7 +292,10 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setShippedQuantity(0L);
 
 
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(orderLineCSVWrapper.getWarehouse());
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        orderLineCSVWrapper.getCompany(),
+                        orderLineCSVWrapper.getWarehouse());
 
         orderLine.setWarehouseId(warehouse.getId());
 

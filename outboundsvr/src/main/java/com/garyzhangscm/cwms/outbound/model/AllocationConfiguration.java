@@ -87,7 +87,7 @@ public class AllocationConfiguration  extends AuditibleEntity<String> implements
             orphanRemoval = true,
             cascade = CascadeType.ALL
     )
-    private List<PickableUnitOfMeasure> pickableUnitOfMeasures = new ArrayList<>();
+    private List<AllocationConfigurationPickableUnitOfMeasure> allocationConfigurationPickableUnitOfMeasures = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -186,15 +186,15 @@ public class AllocationConfiguration  extends AuditibleEntity<String> implements
     }
 
 
-    public List<PickableUnitOfMeasure> getPickableUnitOfMeasures() {
-        return pickableUnitOfMeasures;
+    public List<AllocationConfigurationPickableUnitOfMeasure> getAllocationConfigurationPickableUnitOfMeasures() {
+        return allocationConfigurationPickableUnitOfMeasures;
     }
 
-    public void setPickableUnitOfMeasures(List<PickableUnitOfMeasure> pickableUnitOfMeasures) {
-        this.pickableUnitOfMeasures = pickableUnitOfMeasures;
+    public void setAllocationConfigurationPickableUnitOfMeasures(List<AllocationConfigurationPickableUnitOfMeasure> allocationConfigurationPickableUnitOfMeasures) {
+        this.allocationConfigurationPickableUnitOfMeasures = allocationConfigurationPickableUnitOfMeasures;
     }
-    public void addPickableUnitOfMeasure(PickableUnitOfMeasure pickableUnitOfMeasure) {
-        this.pickableUnitOfMeasures.add(pickableUnitOfMeasure);
+    public void addPickableUnitOfMeasure(AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
+        this.allocationConfigurationPickableUnitOfMeasures.add(allocationConfigurationPickableUnitOfMeasure);
     }
 
     public AllocationConfigurationType getType() {

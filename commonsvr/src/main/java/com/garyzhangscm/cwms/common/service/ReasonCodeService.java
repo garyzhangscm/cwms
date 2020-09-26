@@ -19,26 +19,28 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.Client;
-import com.garyzhangscm.cwms.common.model.ReasonCode;
-import com.garyzhangscm.cwms.common.model.ReasonCodeType;
-import com.garyzhangscm.cwms.common.repository.ClientRepository;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.ReasonCodeRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ReasonCodeService implements  TestDataInitiableService{
@@ -49,6 +51,8 @@ public class ReasonCodeService implements  TestDataInitiableService{
     private ReasonCodeRepository reasonCodeRepository;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.clients:reason_codes}")
     String testDataFile;
@@ -58,13 +62,25 @@ public class ReasonCodeService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("reason code not found by id: " + id));
     }
 
-    public List<ReasonCode> findAll() {
+    public List<ReasonCode> findAll( Long warehouseId) {
+        return reasonCodeRepository.findAll(
+                (Root<ReasonCode> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        return reasonCodeRepository.findAll();
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
-    public ReasonCode findByName(String name){
-        return reasonCodeRepository.findByName(name);
+    public ReasonCode findByName(Long warehouseId, String name){
+        return reasonCodeRepository.findByName(warehouseId, name);
     }
     public List<ReasonCode> findByType(ReasonCodeType type){
         return reasonCodeRepository.findByType(type);
@@ -81,8 +97,8 @@ public class ReasonCodeService implements  TestDataInitiableService{
     // update when the reasonCode already exists
     @Transactional
     public ReasonCode saveOrUpdate(ReasonCode reasonCode) {
-        if (reasonCode.getId() == null && findByName(reasonCode.getName()) != null) {
-            reasonCode.setId(findByName(reasonCode.getName()).getId());
+        if (reasonCode.getId() == null && findByName(reasonCode.getWarehouseId(), reasonCode.getName()) != null) {
+            reasonCode.setId(findByName(reasonCode.getWarehouseId(), reasonCode.getName()).getId());
         }
         return save(reasonCode);
     }
@@ -107,30 +123,34 @@ public class ReasonCodeService implements  TestDataInitiableService{
         }
     }
 
-    public List<ReasonCode> loadData(String fileName) throws IOException {
+    public List<ReasonCodeCSVWrapper> loadData(String fileName) throws IOException {
         return loadData(new File(fileName));
     }
 
-    public List<ReasonCode> loadData(File file) throws IOException {
+    public List<ReasonCodeCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("type").
                 build().withHeader();
 
-        return fileService.loadData(file, schema, ReasonCode.class);
+        return fileService.loadData(file, schema, ReasonCodeCSVWrapper.class);
     }
 
-    public List<ReasonCode> loadData(InputStream inputStream) throws IOException {
+    public List<ReasonCodeCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("type").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, ReasonCode.class);
+        return fileService.loadData(inputStream, schema, ReasonCodeCSVWrapper.class);
     }
 
     @Transactional
@@ -140,13 +160,22 @@ public class ReasonCodeService implements  TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<ReasonCode> reasonCodes = loadData(inputStream);
-            reasonCodes.stream().forEach(reasonCode -> saveOrUpdate(reasonCode));
+            List<ReasonCodeCSVWrapper> reasonCodeCSVWrappers = loadData(inputStream);
+            reasonCodeCSVWrappers.stream().forEach(reasonCodeCSVWrapper -> saveOrUpdate(convertFromWrapper(reasonCodeCSVWrapper)));
         }
         catch(IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+    private ReasonCode convertFromWrapper(ReasonCodeCSVWrapper reasonCodeCSVWrapper) {
+        ReasonCode reasonCode = new ReasonCode();
 
+        BeanUtils.copyProperties(reasonCodeCSVWrapper, reasonCode);
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                reasonCodeCSVWrapper.getCompany(), reasonCodeCSVWrapper.getWarehouse()
+        );
+        reasonCode.setWarehouseId(warehouse.getId());
+        return reasonCode;
 
+    }
 }

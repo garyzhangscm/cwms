@@ -61,8 +61,19 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Pick pick;
 
+    // Only when allocate by LPN happens
+    @Column(name = "allocated_by_pick_id")
+    private Long allocatedByPickId;
+
+    // Only when allocate by LPN happens
+    @Transient
+    private Pick allocatedByPick;
+
     @Column(name = "receipt_id")
     private Long receiptId;
+
+    @Column(name = "receipt_line_id")
+    private Long receiptLineId;
 
     // When inventory is produced by some work order
     @Column(name = "work_order_id")
@@ -141,6 +152,8 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setReceiptId(getReceiptId());
         inventory.setWorkOrderId(getWorkOrderId());
         inventory.setVirtual(getVirtual());
+        inventory.setReceiptId(getReceiptId());
+        inventory.setReceiptLineId(getReceiptLineId());
 
         setQuantity(getQuantity() - newQuantity);
 
@@ -249,6 +262,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
                 * stockItemUnitOfMeasure.getHeight();
     }
 
+    public Long getReceiptLineId() {
+        return receiptLineId;
+    }
+
+    public void setReceiptLineId(Long receiptLineId) {
+        this.receiptLineId = receiptLineId;
+    }
+
     public Boolean getVirtual() {
         return virtual;
     }
@@ -335,5 +356,25 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setWorkOrderByProductId(Long workOrderByProductId) {
         this.workOrderByProductId = workOrderByProductId;
+    }
+
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    public Long getAllocatedByPickId() {
+        return allocatedByPickId;
+    }
+
+    public void setAllocatedByPickId(Long allocatedByPickId) {
+        this.allocatedByPickId = allocatedByPickId;
+    }
+
+    public Pick getAllocatedByPick() {
+        return allocatedByPick;
+    }
+
+    public void setAllocatedByPick(Pick allocatedByPick) {
+        this.allocatedByPick = allocatedByPick;
     }
 }

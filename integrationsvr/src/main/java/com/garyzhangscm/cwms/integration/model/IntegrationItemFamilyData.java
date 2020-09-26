@@ -8,8 +8,10 @@ public interface IntegrationItemFamilyData {
     public String getName();
     public String getDescription();
 
+    public Long getCompanyId();
+    public String getCompanyCode() ;
     public Long getWarehouseId();
-    public String getWarehouseName();
+    public String getWarehouseName() ;
 
     public IntegrationStatus getStatus();
 

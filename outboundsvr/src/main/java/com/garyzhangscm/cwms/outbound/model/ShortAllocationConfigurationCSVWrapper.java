@@ -4,11 +4,20 @@ package com.garyzhangscm.cwms.outbound.model;
 public class ShortAllocationConfigurationCSVWrapper {
 
     private String warehouse;
+    private String company;
+
 
     private Boolean enabled;
 
     private Long retryInterval;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getWarehouse() {
         return warehouse;

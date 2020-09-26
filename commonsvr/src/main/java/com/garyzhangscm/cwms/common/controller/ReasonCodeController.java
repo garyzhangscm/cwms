@@ -35,9 +35,10 @@ public class ReasonCodeController {
     ReasonCodeService reasonCodeService;
 
     @RequestMapping(value="/reason-codes", method = RequestMethod.GET)
-    public List<ReasonCode> findAllReasonCodes(@RequestParam(value = "type", required = false, defaultValue = "") String type) {
+    public List<ReasonCode> findAllReasonCodes(@RequestParam Long warehouseId,
+                                               @RequestParam(value = "type", required = false, defaultValue = "") String type) {
         if (type.isEmpty()) {
-            return reasonCodeService.findAll();
+            return reasonCodeService.findAll(warehouseId);
         }
         else {
             return reasonCodeService.findByType(type);

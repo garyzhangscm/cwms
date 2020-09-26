@@ -31,6 +31,7 @@ public class LocationGroupCSVWrapper {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean adjustable;
     private Boolean allowCartonization;
     private Boolean trackingVolume;
 
@@ -93,6 +94,14 @@ public class LocationGroupCSVWrapper {
 
     public void setTrackingVolume(Boolean trackingVolume) {
         this.trackingVolume = trackingVolume;
+    }
+
+    public Boolean getAdjustable() {
+        return adjustable;
+    }
+
+    public void setAdjustable(Boolean adjustable) {
+        this.adjustable = adjustable;
     }
 
     public String getVolumeTrackingPolicy() {

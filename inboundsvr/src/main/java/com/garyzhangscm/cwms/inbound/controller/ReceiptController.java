@@ -57,8 +57,9 @@ public class ReceiptController {
     }
 
     @RequestMapping(value="/receipts/{id}", method = RequestMethod.PUT)
-    public Receipt changeReceipt(@RequestBody Receipt receipt){
-        return receiptService.save(receipt);
+    public Receipt changeReceipt(@PathVariable Long id,
+                                 @RequestBody Receipt receipt){
+        return receiptService.changeReceipt(id, receipt);
     }
 
     @RequestMapping(value="/receipts/{id}/complete", method = RequestMethod.POST)
@@ -90,6 +91,12 @@ public class ReceiptController {
             return receiptLineService.receive(receiptId, receiptLineId, inventory);
     }
 
+    @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/reverse", method = RequestMethod.POST)
+    public ReceiptLine reverseReceivedInventory(@PathVariable Long receiptId,
+                                     @PathVariable Long receiptLineId,
+                                     @RequestParam Long quantity) {
+        return receiptLineService.reverseReceivedInventory(receiptId, receiptLineId, quantity);
+    }
 
     @RequestMapping(value="/receipts/{id}/check-in", method = RequestMethod.PUT)
     public Receipt checkInReceipt(@PathVariable Long id){

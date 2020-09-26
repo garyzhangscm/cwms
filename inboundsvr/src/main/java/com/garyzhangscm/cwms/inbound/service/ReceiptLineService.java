@@ -149,6 +149,7 @@ public class ReceiptLineService implements TestDataInitiableService{
     public List<ReceiptLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("receipt").
                 addColumn("number").
@@ -188,7 +189,10 @@ public class ReceiptLineService implements TestDataInitiableService{
         receiptLine.setOverReceivingPercent(receiptLineCSVWrapper.getOverReceivingPercent());
 
         // Warehouse is mandate
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptLineCSVWrapper.getWarehouse());
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        receiptLineCSVWrapper.getCompany(),
+                        receiptLineCSVWrapper.getWarehouse());
         receiptLine.setWarehouseId(warehouse.getId());
 
         logger.debug("Start to create receipt line {} with item {}, in receipt {} / warehouse id: {}",
@@ -250,6 +254,7 @@ public class ReceiptLineService implements TestDataInitiableService{
         // Everytime when we check in a receipt, we will create a location with the same name so that
         // we can receive inventory on this receipt
         inventory.setReceiptId(receiptId);
+        inventory.setReceiptLineId(receiptLineId);
         inventory.setWarehouseId(receipt.getWarehouseId());
 
         Inventory newInventory = inventoryServiceRestemplateClient.receiveInventory(inventory);
@@ -259,6 +264,8 @@ public class ReceiptLineService implements TestDataInitiableService{
         // inventory structure
         receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() + inventory.getQuantity());
         save(receiptLine);
+        receipt.setReceiptStatus(ReceiptStatus.RECEIVING);
+        receiptService.saveOrUpdate(receipt);
         return newInventory;
     }
 
@@ -304,14 +311,11 @@ public class ReceiptLineService implements TestDataInitiableService{
 
     }
 
-    public Long getWarehouseId(String warehouseName){
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
-        if (warehouse == null) {
-            return null;
-        }
-        else {
-            return warehouse.getId();
-        }
-    }
+    public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity) {
+        ReceiptLine receiptLine = findById(receiptLineId);
 
+        receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() - quantity);
+
+        return saveOrUpdate(receiptLine);
+    }
 }

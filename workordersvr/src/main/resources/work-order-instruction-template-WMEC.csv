@@ -1,9 +1,9 @@
-warehouse,billOfMaterial,sequence,instruction
-WMEC,BOM-001,1,Step 1.1 - put the 1.A
-WMEC,BOM-001,2,Step 1.2 - put the 1.B
-WMEC,BOM-001,3,Step 1.3 - put the 1.C
-WMEC,BOM-001,4,Step 1.4 - stir
-WMEC,BOM-002,1,Step 2.1 - put the 2.A
-WMEC,BOM-002,2,Step 2.2 - put the 2.B
-WMEC,BOM-002,3,Step 2.3 - stir
-WMEC,BOM-003,1,Step 3.1 - stir
+company,warehouse,billOfMaterial,sequence,instruction
+20901,WMEC,BOM-001,1,Step 1.1 - put the 1.A
+20901,WMEC,BOM-001,2,Step 1.2 - put the 1.B
+20901,WMEC,BOM-001,3,Step 1.3 - put the 1.C
+20901,WMEC,BOM-001,4,Step 1.4 - stir
+20901,WMEC,BOM-002,1,Step 2.1 - put the 2.A
+20901,WMEC,BOM-002,2,Step 2.2 - put the 2.B
+20901,WMEC,BOM-002,3,Step 2.3 - stir
+20901,WMEC,BOM-003,1,Step 3.1 - stir

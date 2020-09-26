@@ -171,7 +171,7 @@ public class CartonizationService {
         CartonizationConfiguration cartonizationConfiguration = cartonizationConfigurations.get(0);
 
         Cartonization cartonization = new Cartonization();
-        cartonization.setNumber(getNextCartonizationNumber());
+        cartonization.setNumber(getNextCartonizationNumber(pick.getWarehouseId()));
 
         cartonization.setCarton(carton);
         cartonization.setGroupKeyValue(getGroupKeyValue(cartonizationConfiguration, pick));
@@ -182,8 +182,8 @@ public class CartonizationService {
 
     }
 
-    private String getNextCartonizationNumber() {
-        return commonServiceRestemplateClient.getNextNumber("cartonization-number");
+    private String getNextCartonizationNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "cartonization-number");
     }
 
     public void processPickList(Cartonization cartonization, PickList pickList) {

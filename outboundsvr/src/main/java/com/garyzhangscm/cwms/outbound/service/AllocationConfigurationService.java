@@ -33,13 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Transient;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -47,10 +41,8 @@ import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -223,7 +215,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         if (allocationConfiguration.getLocationGroupTypeId() != null && allocationConfiguration.getLocationGroupType() == null) {
             allocationConfiguration.setLocationGroupType(warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(allocationConfiguration.getLocationGroupTypeId()));
         }
-        pickableUnitOfMeasureService.loadAttribute(allocationConfiguration.getPickableUnitOfMeasures());
+        pickableUnitOfMeasureService.loadAttribute(allocationConfiguration.getAllocationConfigurationPickableUnitOfMeasures());
 
     }
 
@@ -265,6 +257,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     public List<AllocationConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("sequence").
                 addColumn("item").
@@ -303,7 +296,9 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         allocationConfiguration.setType(AllocationConfigurationType.valueOf(allocationConfigurationCSVWrapper.getType()));
 
         Warehouse warehouse =
-                warehouseLayoutServiceRestemplateClient.getWarehouseByName(allocationConfigurationCSVWrapper.getWarehouse());
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        allocationConfigurationCSVWrapper.getCompany(),
+                        allocationConfigurationCSVWrapper.getWarehouse());
 
         allocationConfiguration.setWarehouseId(warehouse.getId());
 
@@ -326,6 +321,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocation())) {
             Location location =
                     warehouseLayoutServiceRestemplateClient.getLocationByName(
+                            allocationConfigurationCSVWrapper.getCompany(),
                             allocationConfigurationCSVWrapper.getWarehouse(),allocationConfigurationCSVWrapper.getLocation());
             if (location != null) {
                 allocationConfiguration.setLocationId(location.getId());
@@ -335,6 +331,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup =
                     warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
+                            allocationConfigurationCSVWrapper.getCompany(),
                             allocationConfigurationCSVWrapper.getWarehouse(),allocationConfigurationCSVWrapper.getLocationGroup());
             if (locationGroup != null) {
                 allocationConfiguration.setLocationGroupId(locationGroup.getId());
@@ -360,9 +357,10 @@ public class AllocationConfigurationService implements TestDataInitiableService 
             long warehouseId = warehouse.getId();
             List<String> pickableUnitOfMeasureNames = Arrays.asList(allocationConfigurationCSVWrapper.getPickableUnitOfMeasures().split(";"));
                     pickableUnitOfMeasureNames.stream()
-                            .map(pickableUnitOfMeasureName ->  commonServiceRestemplateClient.getUnitOfMeasureByName(pickableUnitOfMeasureName))
+                            .map(pickableUnitOfMeasureName ->  commonServiceRestemplateClient.getUnitOfMeasureByName(
+                                    warehouse.getId(), pickableUnitOfMeasureName))
                             .filter(Objects::nonNull)
-                            .map(unitOfMeasure -> new PickableUnitOfMeasure(warehouseId, unitOfMeasure.getId(), savedAllocationConfiguration))
+                            .map(unitOfMeasure -> new AllocationConfigurationPickableUnitOfMeasure(warehouseId, unitOfMeasure.getId(), savedAllocationConfiguration))
                             .forEach(pickableUnitOfMeasure -> pickableUnitOfMeasureService.save(pickableUnitOfMeasure));
         }
     }
@@ -875,8 +873,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 .stream().filter(itemUnitOfMeasure -> {
                     logger.debug(">> getSmallestPickableUnitOfMeasureQuantity / compare: {}",
                             itemUnitOfMeasure.getUnitOfMeasure().getName());
-                    boolean match = allocationConfiguration.getPickableUnitOfMeasures().stream()
-                            .map(PickableUnitOfMeasure::getUnitOfMeasureId)
+                    boolean match = allocationConfiguration.getAllocationConfigurationPickableUnitOfMeasures().stream()
+                            .map(AllocationConfigurationPickableUnitOfMeasure::getUnitOfMeasureId)
                             .filter(id -> {
                                 logger.debug("Will compare current inventory's unit of measure {} / {}, with allocation configured UOM's id {}",
                                         itemUnitOfMeasure.getUnitOfMeasureId(),
@@ -1063,10 +1061,10 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     }
 
     public AllocationConfiguration addPickableUnitOfMeasure(Long id,
-                                                            PickableUnitOfMeasure pickableUnitOfMeasure) {
+                                                            AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
         AllocationConfiguration allocationConfiguration = findById(id);
-        pickableUnitOfMeasure.setAllocationConfiguration(allocationConfiguration);
-        allocationConfiguration.addPickableUnitOfMeasure(pickableUnitOfMeasure);
+        allocationConfigurationPickableUnitOfMeasure.setAllocationConfiguration(allocationConfiguration);
+        allocationConfiguration.addPickableUnitOfMeasure(allocationConfigurationPickableUnitOfMeasure);
         return saveOrUpdate(allocationConfiguration);
     }
 

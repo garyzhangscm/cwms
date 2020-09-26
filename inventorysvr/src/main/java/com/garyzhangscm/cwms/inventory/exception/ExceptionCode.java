@@ -24,7 +24,9 @@ public enum ExceptionCode {
     CAN_NOT_ADD_INVENTORY_MISSING_INFORMATION(35002, HttpStatus.BAD_REQUEST, "Can't add inventory due to missing information"),
     MISSING_INFORMATION(35002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"),
     ID_IN_PATH_DOES_NOT_MATCH(35003, HttpStatus.BAD_REQUEST, "ID in the URL doesn't match with the data passed in the request"),
-    INVENTORY_CONSOLIDATION_EXCEPTION(35004, HttpStatus.BAD_REQUEST, "Inventory Consolidation Exception");
+    INVENTORY_ERROR(35004, HttpStatus.BAD_REQUEST, "Inventory Exception"),
+    INVENTORY_CONSOLIDATION_EXCEPTION(35005, HttpStatus.BAD_REQUEST, "Inventory Consolidation Exception"),
+    ITEM_ERROR(35006, HttpStatus.BAD_REQUEST, "Item Exception");
 
     private final int code;
 

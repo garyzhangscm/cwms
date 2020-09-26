@@ -39,9 +39,10 @@ public class WaveController {
         return waveService.findAll(number);
     }
     @RequestMapping(value="/waves/candidate", method = RequestMethod.GET)
-    public List<Order> findWaveCandidate(@RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
+    public List<Order> findWaveCandidate(@RequestParam Long warehouseId,
+                                         @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                          @RequestParam(name="customerName", required = false, defaultValue = "") String customerName) {
-        return waveService.findWaveCandidate(orderNumber, customerName);
+        return waveService.findWaveCandidate(warehouseId, orderNumber, customerName);
     }
 
     @RequestMapping(value="/waves", method = RequestMethod.POST)

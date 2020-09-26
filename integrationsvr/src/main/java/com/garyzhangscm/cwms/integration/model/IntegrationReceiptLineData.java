@@ -10,9 +10,10 @@ public interface IntegrationReceiptLineData {
     String getNumber();
     IntegrationReceiptData getReceipt();
 
-    Long getWarehouseId();
-
-    String getWarehouseName();
+    public Long getCompanyId();
+    public String getCompanyCode() ;
+    public Long getWarehouseId();
+    public String getWarehouseName() ;
 
     Long getItemId() ;
 

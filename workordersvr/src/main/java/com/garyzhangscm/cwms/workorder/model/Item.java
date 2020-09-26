@@ -39,6 +39,9 @@ public class Item implements Serializable {
 
     private double unitCost;
 
+    private Boolean allowAllocationByLPN;
+    private AllocationRoundUpStrategyType allocationRoundUpStrategyType;
+    private Double allocationRoundUpStrategyValue;
     @Override
     public boolean equals(Object anotherItem) {
         if (this == anotherItem) {
@@ -122,5 +125,29 @@ public class Item implements Serializable {
 
     public void setUnitCost(double unitCost) {
         this.unitCost = unitCost;
+    }
+
+    public Boolean getAllowAllocationByLPN() {
+        return allowAllocationByLPN;
+    }
+
+    public void setAllowAllocationByLPN(Boolean allowAllocationByLPN) {
+        this.allowAllocationByLPN = allowAllocationByLPN;
+    }
+
+    public AllocationRoundUpStrategyType getAllocationRoundUpStrategyType() {
+        return allocationRoundUpStrategyType;
+    }
+
+    public void setAllocationRoundUpStrategyType(AllocationRoundUpStrategyType allocationRoundUpStrategyType) {
+        this.allocationRoundUpStrategyType = allocationRoundUpStrategyType;
+    }
+
+    public Double getAllocationRoundUpStrategyValue() {
+        return allocationRoundUpStrategyValue;
+    }
+
+    public void setAllocationRoundUpStrategyValue(Double allocationRoundUpStrategyValue) {
+        this.allocationRoundUpStrategyValue = allocationRoundUpStrategyValue;
     }
 }

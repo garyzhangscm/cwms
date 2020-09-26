@@ -1,8 +1,8 @@
-warehouse,number,client,supplier,allowUnexpectedItem
-WMOR,RECPT000001,,,false
-WMOR,RECPT000002,,,true
-WMOR,RECPT000003,,,true
-WMOR,RECPT000004,,,true
-WMOR,RECPT000005,,,false
-WMOR,RECPT000006,,,false
-WMOR,RECPT000007,,,false
+company,warehouse,number,client,supplier,allowUnexpectedItem
+20901,WMOR,RECPT000001,,,false
+20901,WMOR,RECPT000002,,,true
+20901,WMOR,RECPT000003,,,true
+20901,WMOR,RECPT000004,,,true
+20901,WMOR,RECPT000005,,,false
+20901,WMOR,RECPT000006,,,false
+20901,WMOR,RECPT000007,,,false

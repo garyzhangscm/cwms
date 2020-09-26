@@ -136,6 +136,7 @@ public class CartonService implements TestDataInitiableService {
     public List<CartonCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("length").
@@ -168,7 +169,10 @@ public class CartonService implements TestDataInitiableService {
         Carton carton = new Carton();
         carton.setName(cartonCSVWrapper.getName());
 
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(cartonCSVWrapper.getWarehouse());
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        cartonCSVWrapper.getCompany(),
+                        cartonCSVWrapper.getWarehouse());
         carton.setWarehouseId(warehouse.getId());
 
         carton.setHeight(cartonCSVWrapper.getHeight());

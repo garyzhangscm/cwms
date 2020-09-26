@@ -18,12 +18,16 @@
 
 package com.garyzhangscm.cwms.common.repository;
 
+import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSpecificationExecutor<Customer> {
-    Customer findByName(String name);
+
+    @Query("select c from Customer c where  c.warehouseId = :warehouseId and c.name = :name")
+    Customer findByName(Long warehouseId, String name);
 }

@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.GenericException;
 import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.LocationOperationException;
@@ -35,6 +37,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
@@ -63,6 +67,8 @@ public class LocationService implements TestDataInitiableService {
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     public Location findById(Long id) {
         return locationRepository.findById(id)
@@ -212,7 +218,7 @@ public class LocationService implements TestDataInitiableService {
         // Get the logic location's name by policy
         String policyKey = "LOCATION-" + locationType;
         logger.debug("Start to find policy by key: {}", policyKey);
-        Policy policy = commonServiceRestemplateClient.getPolicyByKey(policyKey);
+        Policy policy = commonServiceRestemplateClient.getPolicyByKey(warehouseId, policyKey);
         return findByName(policy.getValue(), warehouseId);
     }
 
@@ -272,33 +278,22 @@ public class LocationService implements TestDataInitiableService {
 
     public List<Location> loadLocationData(File file) throws IOException {
         List<LocationCSVWrapper> locationCSVWrappers = loadData(file);
-        return locationCSVWrappers.stream().map(locationCSVWrapper -> convertFromWrapper(locationCSVWrapper)).collect(Collectors.toList());
+        return locationCSVWrappers.stream()
+                .map(locationCSVWrapper -> saveOrUpdate(convertFromWrapper(locationCSVWrapper)))
+                .collect(Collectors.toList());
     }
 
     public List<LocationCSVWrapper> loadData(File file) throws IOException {
-        CsvSchema schema = CsvSchema.builder().
-                addColumn("warehouse").
-                addColumn("name").
-                addColumn("aisle").
-                addColumn("x").
-                addColumn("y").
-                addColumn("z").
-                addColumn("length").
-                addColumn("width").
-                addColumn("height").
-                addColumn("pickSequence").
-                addColumn("putawaySequence").
-                addColumn("countSequence").
-                addColumn("capacity").
-                addColumn("fillPercentage").
-                addColumn("locationGroup").
-                addColumn("enabled").
-                build().withHeader();
-        return fileService.loadData(file, schema, LocationCSVWrapper.class);
+        return fileService.loadData(file, getLocationCsvSchema(), LocationCSVWrapper.class);
     }
     public List<LocationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
-        CsvSchema schema = CsvSchema.builder().
+
+        return fileService.loadData(inputStream, getLocationCsvSchema(), LocationCSVWrapper.class);
+    }
+
+    private CsvSchema getLocationCsvSchema() {
+        return  CsvSchema.builder().
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("aisle").
@@ -316,8 +311,6 @@ public class LocationService implements TestDataInitiableService {
                 addColumn("locationGroup").
                 addColumn("enabled").
                 build().withHeader();
-
-        return fileService.loadData(inputStream, schema, LocationCSVWrapper.class);
     }
 
     public void initTestData(String warehouseName) {
@@ -528,6 +521,38 @@ public class LocationService implements TestDataInitiableService {
         location.setEnabled(true);
         location.setWarehouse(warehouseService.findById(warehouseId));
         return saveOrUpdate(location);
+    }
+
+    @Transactional
+    public void removeLocationByGroup(LocationGroup locationGroup) {
+        // make sure the location is empty
+
+        int inventoryCount = inventoryServiceRestemplateClient.getInventoryCountByLocationGroup(
+                locationGroup.getWarehouse().getId(), locationGroup
+        );
+        logger.debug("There's {} inventory record in the location group {}",
+                inventoryCount, locationGroup.getName());
+        if(inventoryCount > 0) {
+            throw LocationOperationException.raiseException("There's inventory in the location group, can't remove it");
+        }
+        locationRepository.deleteByLocationGroupId(locationGroup.getId());
+    }
+    @Transactional
+    public void removeLocations(Long warehouseId,  String locationIds) {
+
+        int inventoryCount = inventoryServiceRestemplateClient.getInventoryCountByLocations(
+                warehouseId, locationIds
+        );
+        logger.debug("There's {} inventory record in the locations {}",
+                inventoryCount, locationIds);
+        if(inventoryCount > 0) {
+            throw LocationOperationException.raiseException("There's inventory in those locations, can't remove it");
+        }
+        List<Long> locationIdList =
+                Arrays.stream(StringUtils.split(locationIds, ","))
+                        .map(Long::parseLong).collect(Collectors.toList());
+        locationRepository.deleteByLocationIds(locationIdList);
+
     }
 
 

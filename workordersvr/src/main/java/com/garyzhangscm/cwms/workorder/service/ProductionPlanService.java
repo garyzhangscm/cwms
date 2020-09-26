@@ -188,6 +188,7 @@ public class ProductionPlanService implements TestDataInitiableService {
     public List<ProductionPlanCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("number").
                 addColumn("description").
@@ -219,6 +220,7 @@ public class ProductionPlanService implements TestDataInitiableService {
 
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                productionPlanCSVWrappers.getCompany(),
                 productionPlanCSVWrappers.getWarehouse()
         );
         productionPlan.setWarehouseId(warehouse.getId());
@@ -237,5 +239,12 @@ public class ProductionPlanService implements TestDataInitiableService {
         newProductionPlan.getProductionPlanLines().forEach(productionPlanLine -> productionPlanLineService.registerNewProductionLine(productionPlanLine));
 
         return newProductionPlan;
+    }
+
+    public String validateNewNumber(Long warehouseId, String number) {
+        ProductionPlan productionPlan =
+                findByNumber(warehouseId, number, false);
+
+        return Objects.isNull(productionPlan) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
 }

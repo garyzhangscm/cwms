@@ -6,12 +6,12 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "pickable_unit_of_measure")
-public class PickableUnitOfMeasure  extends AuditibleEntity<String>{
+@Table(name = "allocation_configuration_pickable_unit_of_measure")
+public class AllocationConfigurationPickableUnitOfMeasure extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pickable_unit_of_measure_id")
+    @Column(name = "allocation_configuration_pickable_unit_of_measure_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -32,18 +32,18 @@ public class PickableUnitOfMeasure  extends AuditibleEntity<String>{
     @JsonIgnore
     private AllocationConfiguration allocationConfiguration;
 
-    public PickableUnitOfMeasure() {}
+    public AllocationConfigurationPickableUnitOfMeasure() {}
 
-    public PickableUnitOfMeasure(Warehouse warehouse,
-                                 Long unitOfMeasureId, AllocationConfiguration allocationConfiguration) {
+    public AllocationConfigurationPickableUnitOfMeasure(Warehouse warehouse,
+                                                        Long unitOfMeasureId, AllocationConfiguration allocationConfiguration) {
         this.unitOfMeasureId = unitOfMeasureId;
         this.allocationConfiguration = allocationConfiguration;
         this.warehouse = warehouse;
         this.warehouseId = warehouse.getId();
     }
 
-    public PickableUnitOfMeasure(Long warehouseId,
-                                 Long unitOfMeasureId, AllocationConfiguration allocationConfiguration) {
+    public AllocationConfigurationPickableUnitOfMeasure(Long warehouseId,
+                                                        Long unitOfMeasureId, AllocationConfiguration allocationConfiguration) {
         this.unitOfMeasureId = unitOfMeasureId;
         this.allocationConfiguration = allocationConfiguration;
         this.warehouseId = warehouseId;

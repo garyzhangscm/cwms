@@ -35,6 +35,7 @@ public class PutawayConfigurationCSVWrapper {
     private String strategies;
 
     private String warehouse;
+    private String company;
 
     public Integer getSequence() {
         return sequence;
@@ -42,6 +43,14 @@ public class PutawayConfigurationCSVWrapper {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public String getItem() {

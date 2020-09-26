@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.AuthServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.GenericException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.exception.UserOperationException;
@@ -59,8 +60,13 @@ public class UserService  implements TestDataInitiableService{
     @Autowired
     private FileService fileService;
 
+
     @Value("${fileupload.test-data.users:users}")
     String testDataFile;
+    @Value("${site.company.singleCompany}")
+    private Boolean singleCompanySite;
+    @Value("${site.company.defaultCompanyCode}")
+    private String defaultCompanyCode;
 
 
 
@@ -188,6 +194,19 @@ public class UserService  implements TestDataInitiableService{
 
         List<MenuGroup> menuGroups = menuGroupService.getAccessibleMenus(user);
         siteInformation.setMenuGroups(menuGroups);
+
+        logger.debug("Objects.isNull(singleCompanySite) ? : {}", Objects.isNull(singleCompanySite)  );
+        logger.debug("singleCompanySite ? : {}", singleCompanySite );
+
+        siteInformation.setSingleCompanySite(
+                Objects.isNull(singleCompanySite) ? false : singleCompanySite
+        );
+        if (siteInformation.getSingleCompanySite() == true) {
+            // If this is a single company site, then get the only one
+            // company and return it as the default company
+            siteInformation.setDefaultCompanyCode(defaultCompanyCode);
+
+        }
         return siteInformation;
     }
 

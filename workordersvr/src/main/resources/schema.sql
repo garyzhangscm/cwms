@@ -32,6 +32,7 @@ drop table if exists bill_of_material;
 CREATE TABLE bill_of_material (
   bill_of_material_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   number   VARCHAR(20) NOT NULL,
+  description   VARCHAR(200) ,
   warehouse_id  BIGINT NOT NULL,
   item_id   BIGINT NOT NULL,
   expected_quantity BIGINT NOT NULL,
@@ -154,6 +155,7 @@ CREATE TABLE work_order_line (
   scrapped_quantity BIGINT NOT NULL,
   returned_quantity BIGINT NOT NULL,
   inventory_status_id BIGINT NOT NULL,
+  allocation_strategy_type VARCHAR(25),
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,

@@ -28,7 +28,7 @@ import javax.persistence.*;
         uniqueConstraints={
             @UniqueConstraint(columnNames = {"warehouse_id", "name"})
         })
-public class Location {
+public class Location extends AuditibleEntity<String>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "location_id")

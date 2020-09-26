@@ -14,13 +14,19 @@ import java.util.*;
 public class FIFOAllocationStrategy extends DefaultAllocationStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(AllocationService.class);
-    @Autowired
-    private PickService pickService;
-    @Autowired
-    private InventorySummaryService inventorySummaryService;
 
     @Autowired
-    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    protected PickService pickService;
+
+    @Autowired
+    protected InventorySummaryService inventorySummaryService;
+
+    @Autowired
+    protected ShortAllocationService shortAllocationService;
+
+    @Autowired
+    protected InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+
 
     @Override
     public AllocationStrategyType getType() {
@@ -34,6 +40,10 @@ public class FIFOAllocationStrategy extends DefaultAllocationStrategy {
         Collections.sort(inventorySummaries, Comparator.comparing(InventorySummary::getFifoDate));
         return inventorySummaries;
 
+    }
+    @Override
+    public boolean isDefault() {
+        return true;
     }
 
 }

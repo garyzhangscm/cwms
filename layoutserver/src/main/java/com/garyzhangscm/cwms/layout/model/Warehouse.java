@@ -25,13 +25,18 @@ import javax.persistence.*;
 import java.io.Serializable;
 @Entity
 @Table(name = "warehouse")
-public class Warehouse implements Serializable {
+public class Warehouse extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "warehouse_id")
     @JsonProperty(value="id")
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
 
     @Column(name = "name")
     private String name;
@@ -142,5 +147,13 @@ public class Warehouse implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 }

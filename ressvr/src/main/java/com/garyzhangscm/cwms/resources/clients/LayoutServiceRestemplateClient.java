@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.Company;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -30,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class LayoutServiceRestemplateClient implements  InitiableServiceRestemplateClient{
@@ -37,6 +39,23 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     @Autowired
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
+
+
+    public List<Company> getCompanies() {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/companies");
+
+        ResponseBodyWrapper<List<Company>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {}).getBody();
+        return responseBodyWrapper.getData();
+    }
 
     public String initTestData(String warehouseName) {
 

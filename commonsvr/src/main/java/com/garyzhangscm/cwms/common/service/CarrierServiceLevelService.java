@@ -19,11 +19,9 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.Carrier;
-import com.garyzhangscm.cwms.common.model.CarrierServiceLevel;
-import com.garyzhangscm.cwms.common.model.CarrierServiceLevelCSVWrapper;
-import com.garyzhangscm.cwms.common.model.CarrierServiceLevelType;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.CarrierServiceLevelRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -51,6 +49,8 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
     private CarrierService carrierService;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.carrier-service-levels:carrier-service-levels}")
     String testDataFile;
@@ -111,6 +111,8 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
     public List<CarrierServiceLevelCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("carrier").
                 addColumn("name").
                 addColumn("description").
@@ -124,6 +126,8 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
     public List<CarrierServiceLevelCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("carrier").
                 addColumn("name").
                 addColumn("description").
@@ -155,7 +159,13 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
         carrierServiceLevel.setDescription(carrierServiceLevelCSVWrapper.getDescription());
         carrierServiceLevel.setType(CarrierServiceLevelType.valueOf(carrierServiceLevelCSVWrapper.getType()));
 
-        Carrier carrier = carrierService.findByName(carrierServiceLevelCSVWrapper.getCarrier());
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                carrierServiceLevelCSVWrapper.getCompany(), carrierServiceLevelCSVWrapper.getWarehouse()
+        );
+
+        Carrier carrier = carrierService.findByName(
+                  warehouse.getId(),
+                carrierServiceLevelCSVWrapper.getCarrier());
         if (carrier != null) {
             carrierServiceLevel.setCarrier(carrier);
         }

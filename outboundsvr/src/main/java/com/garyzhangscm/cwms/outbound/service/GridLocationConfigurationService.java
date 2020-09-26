@@ -156,6 +156,7 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
     public List<GridLocationConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("location").
                 addColumn("rowNumber").
@@ -188,6 +189,7 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
         GridLocationConfiguration gridLocationConfiguration = new GridLocationConfiguration();
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                gridLocationConfigurationCSVWrapper.getCompany(),
                 gridLocationConfigurationCSVWrapper.getWarehouse()
         );
         gridLocationConfiguration.setWarehouseId(warehouse.getId());

@@ -35,8 +35,9 @@ public class CustomerController {
     CustomerService customerService;
 
     @RequestMapping(value="/customers", method = RequestMethod.GET)
-    public List<Customer> findAllCustomers(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
-        return customerService.findAll(name);
+    public List<Customer> findAllCustomers(@RequestParam Long warehouseId,
+                                           @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        return customerService.findAll(warehouseId, name);
     }
 
     @RequestMapping(value="/customers/{id}", method = RequestMethod.GET)

@@ -76,6 +76,12 @@ public class PutawayConfigurationController {
             return allocatedInventory;
     }
 
+    @RequestMapping(value="/putaway-configuration/reallocate-location", method = RequestMethod.POST)
+    public Inventory reallocateLocation(@RequestBody Inventory inventory) {
+        Inventory allocatedInventory = putawayConfigurationService.reallocateLocation(inventory);
+        return allocatedInventory;
+    }
+
 
 
 

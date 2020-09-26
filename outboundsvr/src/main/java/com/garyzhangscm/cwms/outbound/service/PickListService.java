@@ -261,7 +261,7 @@ public class PickListService {
         pickList.setGroupKey(groupKey);
         pickList.setStatus(PickListStatus.PENDING);
         pickList.setWarehouseId(pick.getWarehouseId());
-        pickList.setNumber(getNextPickListNumber());
+        pickList.setNumber(getNextPickListNumber(pick.getWarehouseId()));
         return save(pickList);
     }
 
@@ -308,8 +308,8 @@ public class PickListService {
         }
     }
 
-    private String getNextPickListNumber() {
-        return commonServiceRestemplateClient.getNextNumber("list-pick");
+    private String getNextPickListNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "list-pick");
     }
 
 

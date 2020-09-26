@@ -19,23 +19,28 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.Customer;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.CustomerRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CustomerService implements  TestDataInitiableService{
@@ -45,6 +50,8 @@ public class CustomerService implements  TestDataInitiableService{
     private CustomerRepository customerRepository;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.customers:customers}")
     String testDataFile;
@@ -54,18 +61,30 @@ public class CustomerService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("customer not found by id: " + id));
     }
 
-    public List<Customer> findAll(String name) {
+    public List<Customer> findAll( Long warehouseId,
+                                  String name) {
+        return customerRepository.findAll(
+                (Root<Customer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if (StringUtils.isBlank(name)) {
-            return customerRepository.findAll();
-        }
-        else {
-            return Arrays.asList(new Customer[]{findByName(name)});
-        }
+
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
-    public Customer findByName(String name){
-        return customerRepository.findByName(name);
+    public Customer findByName(Long warehouseId, String name){
+        return customerRepository.findByName(warehouseId, name);
     }
 
     @Transactional
@@ -77,8 +96,8 @@ public class CustomerService implements  TestDataInitiableService{
     // update when the supplier already exists
     @Transactional
     public Customer saveOrUpdate(Customer customer) {
-        if (customer.getId() == null && findByName(customer.getName()) != null) {
-            customer.setId(findByName(customer.getName()).getId());
+        if (customer.getId() == null && findByName(customer.getWarehouseId(), customer.getName()) != null) {
+            customer.setId(findByName(customer.getWarehouseId(), customer.getName()).getId());
         }
         return save(customer);
     }
@@ -103,8 +122,10 @@ public class CustomerService implements  TestDataInitiableService{
         }
 
     }
-    public List<Customer> loadData(File file) throws IOException {
+    public List<CustomerCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -118,12 +139,14 @@ public class CustomerService implements  TestDataInitiableService{
                 addColumn("addressLine2").
                 addColumn("addressPostcode").
                 build().withHeader();
-        return fileService.loadData(file, schema, Customer.class);
+        return fileService.loadData(file, schema, CustomerCSVWrapper.class);
     }
 
-    public List<Customer> loadData(InputStream inputStream) throws IOException {
+    public List<CustomerCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -138,7 +161,7 @@ public class CustomerService implements  TestDataInitiableService{
                 addColumn("addressPostcode").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, Customer.class);
+        return fileService.loadData(inputStream, schema, CustomerCSVWrapper.class);
     }
 
     @Transactional
@@ -148,12 +171,21 @@ public class CustomerService implements  TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<Customer> customers = loadData(inputStream);
-            customers.stream().forEach(customer -> saveOrUpdate(customer));
+            List<CustomerCSVWrapper> customerCSVWrappers = loadData(inputStream);
+            customerCSVWrappers.stream().forEach(customerCSVWrapper -> saveOrUpdate(convertFromWrapper(customerCSVWrapper)));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+    private Customer convertFromWrapper(CustomerCSVWrapper customerCSVWrapper) {
+        Customer customer = new Customer();
 
+        BeanUtils.copyProperties(customerCSVWrapper, customer);
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                customerCSVWrapper.getCompany(), customerCSVWrapper.getWarehouse()
+        );
+        customer.setWarehouseId(warehouse.getId());
+        return customer;
 
+    }
 }

@@ -38,6 +38,7 @@ public class InventoryCSVWrapper implements Serializable {
     private String inventoryStatus;
 
     private String warehouse;
+    private String company;
 
     @Override
     public String toString() {
@@ -47,6 +48,14 @@ public class InventoryCSVWrapper implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public String getLpn() {

@@ -81,9 +81,12 @@ public class DBBasedItemUnitOfMeasureIntegration {
 
         try {
             Long warehouseId
-                    = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    dbBasedItemUnitOfMeasure.getCompanyId(),
+                    dbBasedItemUnitOfMeasure.getCompanyCode(),
+                    dbBasedItemUnitOfMeasure.getWarehouseId(),
                     dbBasedItemUnitOfMeasure.getWarehouseName()
-            ).getId();
+            );
             Item item = new Item();
             item.setName(dbBasedItemUnitOfMeasure.getItemName());
             item.setWarehouseId(warehouseId);
@@ -104,7 +107,7 @@ public class DBBasedItemUnitOfMeasureIntegration {
             if (itemUnitOfMeasure.getUnitOfMeasureId() == null) {
                 UnitOfMeasure unitOfMeasure
                         = commonServiceRestemplateClient.getUnitOfMeasureByName(
-                                dbBasedItemUnitOfMeasure.getUnitOfMeasureName());
+                        warehouseId, dbBasedItemUnitOfMeasure.getUnitOfMeasureName());
                 logger.debug("Get id {} from unit of measure name: {}",
                         unitOfMeasure.getId(), dbBasedItemUnitOfMeasure.getUnitOfMeasureName());
                 itemUnitOfMeasure.setUnitOfMeasureId(unitOfMeasure.getId());

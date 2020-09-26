@@ -7,11 +7,19 @@ public class WorkOrderInstructionTemplateCSVWrapper {
     private Integer sequence;
 
     private String warehouse;
+    private String company;
 
     private String billOfMaterial;
 
     private String instruction;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public Integer getSequence() {
         return sequence;

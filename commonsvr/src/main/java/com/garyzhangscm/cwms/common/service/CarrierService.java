@@ -19,23 +19,28 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.Carrier;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.CarrierRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CarrierService implements  TestDataInitiableService{
@@ -46,6 +51,8 @@ public class CarrierService implements  TestDataInitiableService{
     private CarrierRepository carrierRepository;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.carriers:carriers}")
     String testDataFile;
@@ -55,18 +62,30 @@ public class CarrierService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("carrier not found by id: " + id));
     }
 
-    public List<Carrier> findAll(String name) {
+    public List<Carrier> findAll(Long warehouseId,
+                                 String name) {
 
-        if (StringUtils.isBlank(name)) {
-            return carrierRepository.findAll();
-        }
-        else {
-            return Arrays.asList(new Carrier[]{findByName(name)});
-        }
+        return carrierRepository.findAll(
+                (Root<Carrier> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
-    public Carrier findByName(String name){
-        return carrierRepository.findByName(name);
+    public Carrier findByName(Long warehouseId, String name){
+        return carrierRepository.findByName( warehouseId, name);
     }
 
     @Transactional
@@ -77,8 +96,11 @@ public class CarrierService implements  TestDataInitiableService{
     // update when the client already exists
     @Transactional
     public Carrier saveOrUpdate(Carrier carrier) {
-        if (carrier.getId() == null && findByName(carrier.getName()) != null) {
-            carrier.setId(findByName(carrier.getName()).getId());
+        if (carrier.getId() == null &&
+                findByName( carrier.getWarehouseId(),
+                        carrier.getName()) != null) {
+            carrier.setId(findByName( carrier.getWarehouseId(),
+                    carrier.getName()).getId());
         }
         return save(carrier);
     }
@@ -104,14 +126,16 @@ public class CarrierService implements  TestDataInitiableService{
     }
 
     @Transactional
-    public List<Carrier> loadData(String fileName) throws IOException {
+    public List<CarrierCSVWrapper> loadData(String fileName) throws IOException {
         return loadData(new File(fileName));
     }
 
     @Transactional
-    public List<Carrier> loadData(File file) throws IOException {
+    public List<CarrierCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -126,13 +150,15 @@ public class CarrierService implements  TestDataInitiableService{
                 addColumn("addressPostcode").
                 build().withHeader();
 
-        return fileService.loadData(file, schema, Carrier.class);
+        return fileService.loadData(file, schema, CarrierCSVWrapper.class);
     }
 
     @Transactional
-    public List<Carrier> loadData(InputStream inputStream) throws IOException {
+    public List<CarrierCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -147,7 +173,7 @@ public class CarrierService implements  TestDataInitiableService{
                 addColumn("addressPostcode").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, Carrier.class);
+        return fileService.loadData(inputStream, schema, CarrierCSVWrapper.class);
     }
 
     @Transactional
@@ -157,12 +183,26 @@ public class CarrierService implements  TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<Carrier> carriers = loadData(inputStream);
-            carriers.stream().forEach(carrier -> saveOrUpdate(carrier));
+            List<CarrierCSVWrapper> carrierCSVWrappers = loadData(inputStream);
+            carrierCSVWrappers.stream().forEach(carrierCSVWrapper -> saveOrUpdate(convertFromWrapper(carrierCSVWrapper)));
         }
         catch(IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+
+    private Carrier convertFromWrapper(CarrierCSVWrapper carrierCSVWrapper) {
+        Carrier carrier = new Carrier();
+
+        BeanUtils.copyProperties(carrierCSVWrapper, carrier);
+
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                carrierCSVWrapper.getCompany(), carrierCSVWrapper.getWarehouse()
+        );
+        carrier.setWarehouseId(warehouse.getId());
+        return carrier;
+
+    }
+
 
 }

@@ -4,10 +4,41 @@ drop table if exists pickable_unit_of_measure;
 drop table if exists location_group;
 drop Table if exists location_group_type;
 DROP TABLE IF EXISTS warehouse;
+DROP TABLE IF EXISTS company;
+
+CREATE TABLE company (
+  company_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  code   VARCHAR(100) NOT NULL unique,
+  name   VARCHAR(100) NOT NULL,
+  description   VARCHAR(100) NOT NULL,
+  contactor_firstname   VARCHAR(100) NOT NULL,
+  contactor_lastname   VARCHAR(100) NOT NULL,
+  address_country   VARCHAR(100) NOT NULL,
+  address_state   VARCHAR(100) NOT NULL,
+  address_county   VARCHAR(100) NOT NULL,
+  address_city   VARCHAR(100) NOT NULL,
+  address_district   VARCHAR(100),
+  address_line1   VARCHAR(300) NOT NULL,
+  address_line2   VARCHAR(300),
+  address_postcode  VARCHAR(10) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
+
+
+INSERT INTO company (company_id, code, name, description,
+    contactor_firstname, contactor_lastname,
+    address_country, address_state, address_county ,
+    address_city , address_district, address_line1, address_line2, address_postcode)
+VALUES (1, "20901", "ECO-TECH", "Eco Tech Co.",
+    "Gary","Zhang",
+    "U.S", "CA", "San Bernardino", "Ontario", "", "C st Mira Loma", "", "91752");
 
 CREATE TABLE warehouse (
   warehouse_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name   VARCHAR(100) NOT NULL unique,
+  company_id   BIGINT NOT NULL,
+  name   VARCHAR(100) NOT NULL,
   size   double NOT NULL,
   address_country   VARCHAR(100) NOT NULL,
   address_state   VARCHAR(100) NOT NULL,
@@ -16,13 +47,20 @@ CREATE TABLE warehouse (
   address_district   VARCHAR(100),
   address_line1   VARCHAR(300) NOT NULL,
   address_line2   VARCHAR(300),
-  address_postcode  VARCHAR(10) NOT NULL);
+  address_postcode  VARCHAR(10) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
+  foreign key(company_id) references company(company_id));
 
 
-INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
-     VALUES ("WMEC", 50000, "U.S", "CA", "San Bernardino", "Ontario", "", "C st Mira Loma", "", "91752");
-INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
-     VALUES ("WMOR", 50000, "U.S", "CA", "Orange", "Orange", "", "2164 N Batavia ST", "", "92865");
+INSERT INTO warehouse (company_id, name, size, address_country, address_state, address_county ,
+    address_city , address_district, address_line1, address_line2, address_postcode)
+     VALUES (1, "WMEC", 50000, "U.S", "CA", "San Bernardino", "Ontario", "", "C st Mira Loma", "", "91752");
+INSERT INTO warehouse ( company_id,name, size, address_country, address_state,
+address_county , address_city , address_district, address_line1, address_line2, address_postcode)
+     VALUES (1, "WMOR", 50000, "U.S", "CA", "Orange", "Orange", "", "2164 N Batavia ST", "", "92865");
 
 -- INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
 --     VALUES ("SH", "75000 sqft", "China", "Shanghai", "Shanghai", "Shanghai", "Pudong", "68 Yuheng Road", "", "201203");
@@ -50,7 +88,11 @@ CREATE TABLE location_group_type (
   production_line_inbound_locations  boolean not null default 0,
   production_line_outbound_locations  boolean not null default 0,
   container_locations  boolean not null default 0,
-  packing_stations boolean not null default 0
+  packing_stations boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
   );
 
 -- INSERT INTO location_group_type(name, description, four_wall_inventory, virtual_locations) VALUES("Storage", "Storage Locations", 1, 0);
@@ -72,10 +114,15 @@ CREATE TABLE location_group(
   pickable  boolean not null default 0,
   storable  boolean not null default 0,
   countable  boolean not null default 0,
+  adjustable  boolean not null default 0,
   allow_cartonization boolean not null default 0,
   tracking_volume  boolean not null default 0,
   volume_tracking_policy VARCHAR(20),
   inventory_consolidation_strategy VARCHAR(20),
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(location_group_type_id) references location_group_type(location_group_type_id),
   foreign key(warehouse_id) references warehouse(warehouse_id));
 
@@ -90,6 +137,10 @@ CREATE TABLE pickable_unit_of_measure(
   pickable_unit_of_measure_id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
   unit_of_measure_id  BIGINT  NOT NULL,
   location_group_id BIGINT  NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(location_group_id) references location_group(location_group_id));
 
 
@@ -115,6 +166,10 @@ CREATE TABLE location(
   enabled boolean not null default 0,
   locked boolean not null default 0,
   reserved_code VARCHAR(100),
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(location_group_id) references location_group(location_group_id),
   foreign key(warehouse_id) references warehouse(warehouse_id));
 

@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -37,9 +38,7 @@ import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -196,22 +195,21 @@ public class ItemService implements TestDataInitiableService{
 
     public List<ItemCSVWrapper> loadData(File file) throws IOException {
 
-        CsvSchema schema = CsvSchema.builder().
-                addColumn("warehouse").
-                addColumn("name").
-                addColumn("description").
-                addColumn("client").
-                addColumn("itemFamily").
-                addColumn("unitCost").
-                addColumn("allowCartonization").
-                build().withHeader();
-        return fileService.loadData(file, schema, ItemCSVWrapper.class);
+
+        return fileService.loadData(file, getCsvSchema(), ItemCSVWrapper.class);
     }
 
 
     public List<ItemCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
-        CsvSchema schema = CsvSchema.builder().
+
+
+        return fileService.loadData(inputStream, getCsvSchema(), ItemCSVWrapper.class);
+    }
+
+    private CsvSchema getCsvSchema() {
+        return CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
@@ -219,9 +217,15 @@ public class ItemService implements TestDataInitiableService{
                 addColumn("itemFamily").
                 addColumn("unitCost").
                 addColumn("allowCartonization").
+                addColumn("allowAllocationByLPN").
+                addColumn("allocationRoundUpStrategyType").
+                addColumn("allocationRoundUpStrategyValue").
+                addColumn("trackingVolumeFlag").
+                addColumn("trackingLotNumberFlag").
+                addColumn("trackingManufactureDateFlag").
+                addColumn("shelfLifeDays").
+                addColumn("trackingExpirationDateFlag").
                 build().withHeader();
-
-        return fileService.loadData(inputStream, schema, ItemCSVWrapper.class);
     }
 
     public void initTestData(String warehouseName) {
@@ -245,26 +249,122 @@ public class ItemService implements TestDataInitiableService{
         item.setUnitCost(itemCSVWrapper.getUnitCost());
         item.setAllowCartonization(itemCSVWrapper.getAllowCartonization());
 
+
+        item.setTrackingVolumeFlag(itemCSVWrapper.isTrackingVolumeFlag());
+        item.setTrackingLotNumberFlag(itemCSVWrapper.isTrackingLotNumberFlag());
+        item.setTrackingManufactureDateFlag(itemCSVWrapper.isTrackingManufactureDateFlag());
+        item.setTrackingExpirationDateFlag(itemCSVWrapper.isTrackingExpirationDateFlag());
+        item.setShelfLifeDays(itemCSVWrapper.getShelfLifeDays());
+
         // warehouse
-        if (!StringUtils.isBlank(itemCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                item.setWarehouseId(warehouse.getId());
-            }
-        }
+        Warehouse warehouse =
+                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                            itemCSVWrapper.getCompany(),
+                            itemCSVWrapper.getWarehouse());
+
+        item.setWarehouseId(warehouse.getId());
 
         if (!itemCSVWrapper.getClient().isEmpty()) {
-            Client client = commonServiceRestemplateClient.getClientByName(itemCSVWrapper.getClient());
+            Client client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(),itemCSVWrapper.getClient());
             item.setClientId(client.getId());
         }
         if (!itemCSVWrapper.getItemFamily().isEmpty()) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemCSVWrapper.getWarehouse());
+
             ItemFamily itemFamily = itemFamilyService.findByName(warehouse.getId(), itemCSVWrapper.getItemFamily());
             item.setItemFamily(itemFamily);
+        }
+
+        if (Objects.nonNull(itemCSVWrapper.getAllowAllocationByLPN())) {
+            item.setAllowAllocationByLPN(
+                    itemCSVWrapper.getAllowAllocationByLPN()
+            );
+        }
+
+        if (StringUtils.isNotBlank(itemCSVWrapper.getAllocationRoundUpStrategyType())) {
+            item.setAllocationRoundUpStrategyType(
+                    AllocationRoundUpStrategyType.valueOf(
+                            itemCSVWrapper.getAllocationRoundUpStrategyType()
+                    )
+            );
+        }
+        if (Objects.nonNull(itemCSVWrapper.getAllocationRoundUpStrategyValue())) {
+            item.setAllocationRoundUpStrategyValue(
+                    itemCSVWrapper.getAllocationRoundUpStrategyValue()
+            );
         }
         return item;
 
     }
 
 
+    public Item addItem(Item item) {
+        item.getItemPackageTypes().forEach(itemPackageType -> {
+            itemPackageType.setItem(item);
+            itemPackageType.getItemUnitOfMeasures().forEach(
+                    itemUnitOfMeasure -> itemUnitOfMeasure.setItemPackageType(
+                            itemPackageType
+                    )
+            );
+
+        });
+
+        return  saveOrUpdate(item);
+    }
+
+    public Item changeItem(Long id, Item item) {
+        Item existingItem = findById(id);
+
+        BeanUtils.copyProperties(item, existingItem, "id", "itemPackageTypes");
+
+        copyItemPackageTypes(existingItem, item);
+
+        return  saveOrUpdate(item);
+
+
+
+
+    }
+
+    private void copyItemPackageTypes(Item existingItem, Item item) {
+
+        item.getItemPackageTypes().forEach(itemPackageType -> {
+            // If this is an existing item package type, then update
+            // the attribute
+            if (Objects.nonNull(itemPackageType.getId())) {
+                existingItem.getItemPackageTypes().stream().filter(existingItemPackageType ->
+                        existingItemPackageType.getId().equals(itemPackageType.getId()))
+                        .forEach(existingItemPackageType -> {
+                            BeanUtils.copyProperties(itemPackageType, existingItemPackageType,
+                                    "itemUnitOfMeasures");
+                            copyItemUnitOfMeasure(existingItemPackageType, itemPackageType);
+                        });
+            }
+            else {
+                // OK, this is a new item package type, let's just add it to the
+                // item
+                existingItem.addItemPackageType(itemPackageType);
+            }
+        });
+
+        // Remove the item package type that is no long exists
+        Iterator<ItemPackageType> itemPackageTypeIterator = existingItem.getItemPackageTypes().iterator();
+        while(itemPackageTypeIterator.hasNext()) {
+            ItemPackageType existingItemPackageType = itemPackageTypeIterator.next();
+            boolean itemPackageTypeStillExists =
+                    item.getItemPackageTypes().stream().filter(
+                            itemPackageType -> existingItemPackageType.getId().equals(
+                                    itemPackageType.getId()
+                            )
+                    ).count() > 0;
+            if (!itemPackageTypeStillExists) {
+                itemPackageTypeIterator.remove();
+            }
+        }
+
+    }
+
+    private void copyItemUnitOfMeasure(ItemPackageType existingItemPackageType, ItemPackageType itemPackageType) {
+
+    }
 }

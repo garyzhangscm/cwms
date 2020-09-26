@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.common.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -26,7 +28,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "customer")
-public class Customer implements Serializable {
+public class Customer extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +36,11 @@ public class Customer implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
     @Column(name = "name", unique = true)
     private String name;
 
@@ -65,21 +72,29 @@ public class Customer implements Serializable {
 
     @Override
     public String toString() {
-        return "Customer{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", contactorFirstname='" + contactorFirstname + '\'' +
-                ", contactorLastname='" + contactorLastname + '\'' +
-                ", addressCountry='" + addressCountry + '\'' +
-                ", addressState='" + addressState + '\'' +
-                ", addressCounty='" + addressCounty + '\'' +
-                ", addressCity='" + addressCity + '\'' +
-                ", addressDistrict='" + addressDistrict + '\'' +
-                ", addressLine1='" + addressLine1 + '\'' +
-                ", addressLine2='" + addressLine2 + '\'' +
-                ", addressPostcode='" + addressPostcode + '\'' +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 
     public Long getId() {

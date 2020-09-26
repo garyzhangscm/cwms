@@ -208,6 +208,7 @@ public class ProductionPlanLineService implements TestDataInitiableService {
     public List<ProductionPlanLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("productionPlan").
                 addColumn("billOfMaterial").
@@ -242,6 +243,7 @@ public class ProductionPlanLineService implements TestDataInitiableService {
 
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                productionPlanLineCSVWrapper.getCompany(),
                 productionPlanLineCSVWrapper.getWarehouse()
         );
         productionPlanLine.setWarehouseId(warehouse.getId());
@@ -285,7 +287,7 @@ public class ProductionPlanLineService implements TestDataInitiableService {
                                      Long quantity, Long productionLineId) {
 
         if (StringUtils.isBlank(workOrderNumber)) {
-            workOrderNumber =  commonServiceRestemplateClient.getNextWorkOrderNumber();
+            workOrderNumber =  commonServiceRestemplateClient.getNextWorkOrderNumber(productionPlanLine.getWarehouseId());
         }
         WorkOrder workOrder = workOrderService.createWorkOrderFromProductionPlanLine(
                 productionPlanLine,

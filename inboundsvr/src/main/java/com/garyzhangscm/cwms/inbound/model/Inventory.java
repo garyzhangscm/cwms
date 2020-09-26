@@ -50,6 +50,7 @@ public class Inventory implements Serializable {
     private Location location;
 
     private Long receiptId;
+    private Long receiptLineId;
 
     private List<InventoryMovement> inventoryMovements;
 
@@ -168,5 +169,13 @@ public class Inventory implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getReceiptLineId() {
+        return receiptLineId;
+    }
+
+    public void setReceiptLineId(Long receiptLineId) {
+        this.receiptLineId = receiptLineId;
     }
 }

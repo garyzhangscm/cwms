@@ -111,6 +111,7 @@ public class WorkOrderInstructionTemplateService implements TestDataInitiableSer
     public List<WorkOrderInstructionTemplateCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("billOfMaterial").
                 addColumn("sequence").
@@ -139,6 +140,7 @@ public class WorkOrderInstructionTemplateService implements TestDataInitiableSer
         WorkOrderInstructionTemplate workOrderInstructionTemplate = new WorkOrderInstructionTemplate();
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                workOrderInstructionTemplateCSVWrapper.getCompany(),
                 workOrderInstructionTemplateCSVWrapper.getWarehouse());
         workOrderInstructionTemplate.setBillOfMaterial(
                 billOfMaterialService.findByNumber(warehouse.getId(), workOrderInstructionTemplateCSVWrapper.getBillOfMaterial()));

@@ -118,37 +118,7 @@ public class DBBasedReceiptIntegration {
 
     private void setupMissingField(Receipt receipt, DBBasedReceipt dbBasedReceipt){
 
-        // 1. warehouse
-        if(Objects.isNull(receipt.getWarehouseId())) {
-                receipt.setWarehouseId(
-                        warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                                dbBasedReceipt.getWarehouseName()
-                        ).getId()
-                );
-        }
 
-        // 2. client
-        // Client is optional
-        if(Objects.isNull(receipt.getClientId()) &&
-                Objects.nonNull(dbBasedReceipt.getClientName())) {
-
-            receipt.setClientId(
-                    commonServiceRestemplateClient.getClientByName(
-                            dbBasedReceipt.getClientName()
-                    ).getId()
-            );
-        }
-        // 3. Supplier
-        // Supplier is optional
-        if(Objects.isNull(receipt.getSupplierId()) &&
-                Objects.nonNull(dbBasedReceipt.getSupplierName())) {
-
-            receipt.setSupplierId(
-                    commonServiceRestemplateClient.getSupplierByName(
-                            dbBasedReceipt.getSupplierName()
-                    ).getId()
-            );
-        }
 
         receipt.getReceiptLines().forEach(receiptLine -> {
             // Get the matched receipt line and setup the missing field

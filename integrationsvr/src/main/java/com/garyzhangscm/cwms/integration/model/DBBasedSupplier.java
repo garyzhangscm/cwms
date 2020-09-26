@@ -19,7 +19,10 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -37,6 +40,18 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
+
+    @Column(name = "warehouse_name")
+    private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "description")
     private String description;
@@ -77,20 +92,7 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
     public Supplier convertToSupplier() {
 
         Supplier supplier = new Supplier();
-        supplier.setName(getName());
-        supplier.setDescription(getDescription());
-
-        supplier.setContactorFirstname(getContactorFirstname());
-        supplier.setContactorLastname(getContactorLastname());
-
-        supplier.setAddressCountry(getAddressCountry());
-        supplier.setAddressState(getAddressState());
-        supplier.setAddressCounty(getAddressCounty());
-        supplier.setAddressCity(getAddressCity());
-        supplier.setAddressDistrict(getAddressDistrict());
-        supplier.setAddressLine1(getAddressLine1());
-        supplier.setAddressLine2(getAddressLine2());
-        supplier.setAddressPostcode(getAddressPostcode());
+        BeanUtils.copyProperties(this, supplier);
         return supplier;
     }
 
@@ -98,22 +100,7 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
     public DBBasedSupplier() {}
     public DBBasedSupplier(Supplier supplier) {
 
-
-        setName(supplier.getName());
-        setDescription(supplier.getDescription());
-
-        setContactorFirstname(supplier.getContactorFirstname());
-        setContactorLastname(supplier.getContactorLastname());
-
-        setAddressCountry(supplier.getAddressCountry());
-        setAddressState(supplier.getAddressState());
-        setAddressCounty(supplier.getAddressCounty());
-        setAddressCity(supplier.getAddressCity());
-        setAddressDistrict(supplier.getAddressDistrict());
-        setAddressLine1(supplier.getAddressLine1());
-        setAddressLine2(supplier.getAddressLine2());
-        setAddressPostcode(supplier.getAddressPostcode());
-
+        BeanUtils.copyProperties(supplier, this);
 
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
@@ -121,24 +108,41 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
 
     @Override
     public String toString() {
-        return "DBBasedSupplier{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", contactorFirstname='" + contactorFirstname + '\'' +
-                ", contactorLastname='" + contactorLastname + '\'' +
-                ", addressCountry='" + addressCountry + '\'' +
-                ", addressState='" + addressState + '\'' +
-                ", addressCounty='" + addressCounty + '\'' +
-                ", addressCity='" + addressCity + '\'' +
-                ", addressDistrict='" + addressDistrict + '\'' +
-                ", addressLine1='" + addressLine1 + '\'' +
-                ", addressLine2='" + addressLine2 + '\'' +
-                ", addressPostcode='" + addressPostcode + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    @Override
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    @Override
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    @Override
+    public Long getWarehouseId() {
+        return null;
+    }
+
+    @Override
+    public String getWarehouseName() {
+        return null;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public Long getId() {
@@ -147,6 +151,14 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public String getName() {

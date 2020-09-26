@@ -74,7 +74,7 @@ public class TestCreatingEmergencyReplenishmentConfiguration extends TestScenari
 
 
             UnitOfMeasure unitOfMeasure
-                    = commonServiceRestemplateClient.getUnitOfMeasureByName(pickableUnitOfMeasureName);
+                    = commonServiceRestemplateClient.getUnitOfMeasureByName(warehouse.getId(), pickableUnitOfMeasureName);
 
 
             EmergencyReplenishmentConfiguration configuration
@@ -133,7 +133,7 @@ public class TestCreatingEmergencyReplenishmentConfiguration extends TestScenari
                         String unitOfMeasureName = configurationTuple[1];
 
                         UnitOfMeasure unitOfMeasure
-                                        = commonServiceRestemplateClient.getUnitOfMeasureByName(unitOfMeasureName);
+                                        = commonServiceRestemplateClient.getUnitOfMeasureByName(warehouse.getId(), unitOfMeasureName);
 
 
                         return destinationLocationGroupName.equals(emergencyReplenishmentConfiguration.getDestinationLocationGroup().getName())

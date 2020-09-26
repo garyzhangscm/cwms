@@ -49,11 +49,17 @@ public class DBBasedOrderLine implements Serializable, IntegrationOrderLineData 
     private String itemName;
 
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
@@ -133,6 +139,24 @@ public class DBBasedOrderLine implements Serializable, IntegrationOrderLineData 
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    @Override
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     @Override

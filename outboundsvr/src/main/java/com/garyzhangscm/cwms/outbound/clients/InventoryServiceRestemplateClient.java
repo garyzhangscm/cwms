@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ public class InventoryServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(InventoryServiceRestemplateClient.class);
 
 
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
@@ -63,7 +65,7 @@ public class InventoryServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/inventory/item/{id}");
+                        .path("/api/inventory/items/{id}");
 
         ResponseBodyWrapper<Item> responseBodyWrapper
                 = restTemplate.exchange(
@@ -409,6 +411,11 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("location", pick.getSourceLocation().getName())
                         .queryParam("warehouseId", pick.getWarehouseId());
 
+        // If this is a allocated by LPN, then only pick the specific LPN
+        if (StringUtils.isNotBlank(pick.getLpn())) {
+            builder = builder.queryParam("lpn", pick.getLpn());
+        }
+
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -441,6 +448,45 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public List<Inventory> markLPNAllocated(Long warehouseId, String lpn, Long allocatedByPickId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/mark-lpn-allocated")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn)
+                        .queryParam("allocatedByPickId", allocatedByPickId);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public List<Inventory>  releaseLPNAllocated(Long warehouseId,
+                                                String lpn, Long allocatedByPickId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/release-lpn-allocated")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn)
+                        .queryParam("allocatedByPickId", allocatedByPickId);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
@@ -449,8 +495,6 @@ public class InventoryServiceRestemplateClient {
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }
-
-
 
 
 }

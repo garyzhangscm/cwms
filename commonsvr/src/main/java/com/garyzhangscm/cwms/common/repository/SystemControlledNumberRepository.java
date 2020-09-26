@@ -19,12 +19,16 @@
 package com.garyzhangscm.cwms.common.repository;
 
 
+import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.model.SystemControlledNumber;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SystemControlledNumberRepository extends JpaRepository<SystemControlledNumber, Long>, JpaSpecificationExecutor<SystemControlledNumber> {
-    SystemControlledNumber findByVariableIgnoreCase(String variable);
+
+    @Query("select s from SystemControlledNumber s where  s.warehouseId = :warehouseId and s.variable = :variable")
+    SystemControlledNumber findByVariableIgnoreCase(Long warehouseId, String variable);
 }

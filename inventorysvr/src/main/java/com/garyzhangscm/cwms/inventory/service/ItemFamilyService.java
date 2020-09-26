@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemFamilyRepository;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +48,8 @@ public class ItemFamilyService implements TestDataInitiableService{
     @Autowired
     private ItemFamilyRepository itemFamilyRepository;
     @Autowired
+    private ItemService itemService;
+    @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private FileService fileService;
@@ -59,20 +63,45 @@ public class ItemFamilyService implements TestDataInitiableService{
     }
 
     public List<ItemFamily> findAll(Long warehouseId, String name) {
+        return findAll(warehouseId, name, true);
+    }
+    public List<ItemFamily> findAll(Long warehouseId, String name, boolean loadAttributes) {
 
-        if (StringUtils.isBlank(name)) {
-            return itemFamilyRepository.findAll();
-        }
-        else {
 
-            ItemFamily itemFamily = findByName(warehouseId, name);
-            if (itemFamily == null) {
-                return new ArrayList<>();
-            }
-            else {
-                return Arrays.asList(new ItemFamily[]{itemFamily});
-            }
+        List<ItemFamily> itemFamilies = itemFamilyRepository.findAll(
+                (Root<ItemFamily> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+
+
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+        if (itemFamilies.size() > 0 && loadAttributes) {
+            loadAttributes(itemFamilies);
         }
+        return itemFamilies;
+
+    }
+
+    private void loadAttributes(List<ItemFamily> itemFamilies) {
+        itemFamilies.forEach(itemFamily -> loadAttributes(itemFamily));
+    }
+
+    private void loadAttributes(ItemFamily itemFamily) {
+        itemFamily.setTotalItemCount(
+                itemFamilyRepository.getItemCount(itemFamily.getId())
+        );
     }
 
     public ItemFamily findByName(Long warehouseId, String name){
@@ -110,6 +139,7 @@ public class ItemFamilyService implements TestDataInitiableService{
     public List<ItemFamilyCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
@@ -119,6 +149,7 @@ public class ItemFamilyService implements TestDataInitiableService{
     public List<ItemFamilyCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
@@ -149,11 +180,28 @@ public class ItemFamilyService implements TestDataInitiableService{
 
         // warehouse
         if (!StringUtils.isBlank(itemFamilyCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemFamilyCSVWrapper.getWarehouse());
+            Warehouse warehouse =
+                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                            itemFamilyCSVWrapper.getCompany(),
+                            itemFamilyCSVWrapper.getWarehouse());
             if (warehouse != null) {
                 itemFamily.setWarehouseId(warehouse.getId());
             }
         }
         return itemFamily;
+    }
+
+    public void removeItemFamilies(String itemFamilyIds) {
+        // make sure there's no item related to this family
+        long totalItemCount = Arrays.stream(itemFamilyIds.split(","))
+                .map(Long::parseLong)
+                .filter(itemFamilyId -> itemFamilyRepository.getItemCount(itemFamilyId) > 0)
+                .count();
+
+        if (totalItemCount > 0) {
+            // we have some item family that still have existing item
+            throw ItemException.raiseException("Can't remove the item family. There's still item belong to this family");
+        }
+        delete(itemFamilyIds);
     }
 }

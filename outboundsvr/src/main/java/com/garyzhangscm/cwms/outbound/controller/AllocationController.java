@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 import com.garyzhangscm.cwms.outbound.model.AllocationResult;
 import com.garyzhangscm.cwms.outbound.model.WorkOrder;
 import com.garyzhangscm.cwms.outbound.service.AllocationConfigurationService;
+import com.garyzhangscm.cwms.outbound.service.AllocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,10 +32,13 @@ public class AllocationController {
 
     @Autowired
     private AllocationConfigurationService allocationConfigurationService;
+    @Autowired
+    private AllocationService allocationService;
 
     @RequestMapping(value="/allocation/work-order", method = RequestMethod.POST)
     public AllocationResult allocateWorkOrder(@RequestBody WorkOrder workOrder) {
-        return allocationConfigurationService.allocateWorkOrder(workOrder);
+        // return allocationConfigurationService.allocateWorkOrder(workOrder);
+        return allocationService.allocate(workOrder);
     }
 
 

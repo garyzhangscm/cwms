@@ -18,12 +18,15 @@
 
 package com.garyzhangscm.cwms.common.repository;
 
+import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UnitOfMeasureRepository extends JpaRepository<UnitOfMeasure, Long>, JpaSpecificationExecutor<UnitOfMeasure> {
-    UnitOfMeasure findByName(String name);
+    @Query("select u from UnitOfMeasure u where  u.warehouseId = :warehouseId and u.name = :name")
+    UnitOfMeasure findByName(Long warehouseId, String name);
 }

@@ -16,6 +16,8 @@ public class AllocationRequest {
     Long quantity = 0L;
 
     private List<ShipmentLine> shipmentLines = new ArrayList<>();
+
+    private WorkOrder workOrder;
     private List<WorkOrderLine> workOrderLines = new ArrayList<>();
 
 
@@ -51,7 +53,8 @@ public class AllocationRequest {
     }
 
 
-    public AllocationRequest(WorkOrderLine workOrderLine) {
+    public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine) {
+        this.workOrder = workOrder;
         this.item = workOrderLine.getItem();
         this.warehouse = workOrderLine.getWarehouse();
         this.shipmentLines =  new ArrayList<>();
@@ -99,6 +102,14 @@ public class AllocationRequest {
 
     public void setAllocationStrategyTypes(List<AllocationStrategyType> allocationStrategyTypes) {
         this.allocationStrategyTypes = allocationStrategyTypes;
+    }
+
+    public WorkOrder getWorkOrder() {
+        return workOrder;
+    }
+
+    public void setWorkOrder(WorkOrder workOrder) {
+        this.workOrder = workOrder;
     }
 
     public Long getQuantity() {

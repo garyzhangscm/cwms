@@ -193,8 +193,8 @@ public class CancelledPickService {
         return save(cancelledPick);
     }
 
-    public String getNextCancelledPickNumber() {
-        return commonServiceRestemplateClient.getNextNumber("cancelled-pick-number");
+    public String getNextCancelledPickNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "cancelled-pick-number");
 
     }
     private CancelledPick createCancelledPickFromOriginalPick(Pick pick, Long cancelledQuantity) {
@@ -202,7 +202,7 @@ public class CancelledPickService {
 
         cancelledPick.setPickId(pick.getId());
         cancelledPick.setPickNumber(pick.getNumber());
-        cancelledPick.setNumber(getNextCancelledPickNumber());
+        cancelledPick.setNumber(getNextCancelledPickNumber(pick.getWarehouseId()));
 
         cancelledPick.setSourceLocationId(pick.getSourceLocationId());
         cancelledPick.setDestinationLocationId(pick.getDestinationLocationId());

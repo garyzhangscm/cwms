@@ -1,4 +1,4 @@
-name,description,type
-Damaged,Inventory is damaged,Inventory_Adjust
-Office-Use,Used by Office,Inventory_Adjust
-Customer-Gift,Used as a gift to customer,Inventory_Adjust
+company,warehouse,name,description,type
+20901,WMOR,Damaged,Inventory is damaged,Inventory_Adjust
+20901,WMOR,Office-Use,Used by Office,Inventory_Adjust
+20901,WMOR,Customer-Gift,Used as a gift to customer,Inventory_Adjust

@@ -20,23 +20,28 @@ package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.layout.model.Company;
+import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.model.LocationCSVWrapper;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class WarehouseService implements TestDataInitiableService {
@@ -45,6 +50,8 @@ public class WarehouseService implements TestDataInitiableService {
 
     @Autowired
     private WarehouseRepository warehouseRepository;
+    @Autowired
+    private CompanyService companyService;
     @Autowired
     private FileService fileService;
 
@@ -57,16 +64,37 @@ public class WarehouseService implements TestDataInitiableService {
     }
 
     public List<Warehouse> findAll() {
-        return findAll("");
+        return findAll(null, null, null);
     }
-    public List<Warehouse> findAll(String name) {
+    public List<Warehouse> findAll(Long companyId,
+                                   String companyCode, String name) {
 
-        if (StringUtils.isBlank(name)) {
-            return warehouseRepository.findAll();
-        }
-        else {
-            return Arrays.asList(new Warehouse[]{findByName(name)});
-        }
+        return warehouseRepository.findAll(
+                (Root<Warehouse> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+
+
+                    if (Objects.nonNull(companyId)) {
+                        Join<Warehouse, Company> joinCompany = root.join("company", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinCompany.get("id"), companyId));
+                    }
+
+                    if (StringUtils.isNotBlank(companyCode)) {
+                        Join<Warehouse, Company> joinCompany = root.join("company", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinCompany.get("code"), companyCode));
+                    }
+
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
     public Warehouse findByName(String name){
@@ -140,6 +168,15 @@ public class WarehouseService implements TestDataInitiableService {
     }
 
 
+    public Warehouse changeWarehouse(long id, Warehouse warehouse) {
+        Warehouse existingWarehouse = findById(id);
+        BeanUtils.copyProperties(warehouse, existingWarehouse, "id", "name", "company");
+        return saveOrUpdate(existingWarehouse);
+    }
 
-
+    public Warehouse addWarehouses(Long companyId, Warehouse warehouse) {
+        Company company = companyService.findById(companyId);
+        warehouse.setCompany(company);
+        return saveOrUpdate(warehouse);
+    }
 }

@@ -8,6 +8,8 @@ public class TrailerTemplateCSVWrapper {
 
 
     private String warehouse;
+    private String company;
+
 
     private String driverFirstName;
 
@@ -24,6 +26,14 @@ public class TrailerTemplateCSVWrapper {
     private String type;
 
     private Boolean enabled;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getDriverFirstName() {
         return driverFirstName;

@@ -127,11 +127,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
     @Cacheable
-    public Warehouse getWarehouseByName(String name) {
+    public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/warehouses")
+                        .queryParam("companyCode", companyCode)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
@@ -304,7 +305,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         Location location = new Location();
         location.setName(receipt.getNumber());
         location.setEnabled(true);
-        String receiptLocationGroup = commonServiceRestemplateClient.getPolicyByKey("LOCATION-GROUP-RECEIPT").getValue();
+        String receiptLocationGroup =
+                commonServiceRestemplateClient.getPolicyByKey(receipt.getWarehouseId(), "LOCATION-GROUP-RECEIPT").getValue();
         Warehouse warehouse = getWarehouseById(receipt.getWarehouseId());
         location.setWarehouse(warehouse);
 
@@ -332,7 +334,17 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    public Location allocateLocation(Location location, Double inventorySize) {
+    public Location allocateLocation(Location location, Inventory inventory) {
+        Double inventorySize = 0.0;
+        if (location.getLocationGroup().getVolumeTrackingPolicy().equals(
+                LocationVolumeTrackingPolicy.BY_EACH
+        )) {
+            inventorySize = inventory.getQuantity() * 1.0;
+        }
+        else {
+
+            inventorySize = inventory.getSize();
+        }
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")

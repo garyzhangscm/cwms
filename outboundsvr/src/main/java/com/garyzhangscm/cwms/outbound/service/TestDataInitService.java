@@ -185,8 +185,8 @@ public class TestDataInitService {
         logger.debug("outbound_order records from warehouse ID {} removed!", warehouseId);
 
 
-        jdbcTemplate.update("delete from pickable_unit_of_measure where warehouse_id = ?", new Object[] { warehouseId });
-        logger.debug("pickable_unit_of_measure records from warehouse ID {} removed!", warehouseId);
+        jdbcTemplate.update("delete from allocation_configuration_pickable_unit_of_measure where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("allocation_configuration_pickable_unit_of_measure records from warehouse ID {} removed!", warehouseId);
 
         jdbcTemplate.update("delete from allocation_configuration where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("allocation_configuration records from warehouse ID {} removed!", warehouseId);

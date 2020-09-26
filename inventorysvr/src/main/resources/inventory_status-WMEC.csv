@@ -1,3 +1,3 @@
-warehouse,name,description
-WMEC,AVAL,Available
-WMEC,DMG,Damaged
+company,warehouse,name,description
+20901,WMEC,AVAL,Available
+20901,WMEC,DMG,Damaged

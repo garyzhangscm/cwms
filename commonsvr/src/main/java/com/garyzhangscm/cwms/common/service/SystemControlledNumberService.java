@@ -19,30 +19,26 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.exception.SystemControlledNumberException;
-import com.garyzhangscm.cwms.common.model.Client;
-import com.garyzhangscm.cwms.common.model.SystemControlledNumber;
-import com.garyzhangscm.cwms.common.repository.ClientRepository;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.SystemControlledNumberRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 @Service
 public class SystemControlledNumberService implements  TestDataInitiableService{
@@ -51,6 +47,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
 
     private SystemControlledNumberRepository systemControlledNumberRepository;
     private FileService fileService;
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.system-controlled-numbers:system-controlled-numbers}")
     String testDataFile;
@@ -58,9 +55,13 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     Map<String, String> systemControlledNumberLocks = new HashMap<>();
     @Autowired
     public SystemControlledNumberService(SystemControlledNumberRepository systemControlledNumberRepository,
-                                         FileService fileService) {
+                                         FileService fileService,
+                                         WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient
+    ) {
         this.systemControlledNumberRepository = systemControlledNumberRepository;
         this.fileService = fileService;
+
+        this.warehouseLayoutServiceRestemplateClient = warehouseLayoutServiceRestemplateClient;
 
         // Initial the map of locks, which we will use later when we request the next number
         // for the variable. We will use the lock to make sure only one thread is requesting
@@ -70,7 +71,15 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
 
     private void initSystemControlledNumberLocks() {
         logger.debug("Start to init system controller locks");
-        findAll().stream().forEach(systemControlledNumber -> systemControlledNumberLocks.put(systemControlledNumber.getVariable(), systemControlledNumber.getVariable()));
+        findAll( null)
+                .stream()
+                .forEach(systemControlledNumber
+                        -> {
+                    String key =
+                            systemControlledNumber.getWarehouseId() + "-" +
+                            systemControlledNumber.getVariable();
+                    systemControlledNumberLocks.put(key, systemControlledNumber.getVariable());
+                });
         logger.debug("After initiated, we have\n{}", systemControlledNumberLocks);
     }
 
@@ -79,13 +88,23 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("system controlled number not found by id: " + id));
     }
 
-    public List<SystemControlledNumber> findAll() {
+    public List<SystemControlledNumber> findAll( Long warehouseId) {
+        return systemControlledNumberRepository.findAll(
+                (Root<SystemControlledNumber> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        return systemControlledNumberRepository.findAll();
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
-    public SystemControlledNumber findByVariable(String variable){
-        return systemControlledNumberRepository.findByVariableIgnoreCase(variable.toLowerCase());
+    public SystemControlledNumber findByVariable(Long warehouseId, String variable){
+        return systemControlledNumberRepository.findByVariableIgnoreCase(warehouseId, variable.toLowerCase());
     }
 
     @Transactional
@@ -107,18 +126,21 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     @Transactional
     public SystemControlledNumber saveOrUpdate(SystemControlledNumber systemControlledNumber) {
         systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
-        if (systemControlledNumber.getId() == null && findByVariable(systemControlledNumber.getVariable()) != null) {
-            systemControlledNumber.setId(findByVariable(systemControlledNumber.getVariable()).getId());
+        if (systemControlledNumber.getId() == null &&
+                findByVariable(systemControlledNumber.getWarehouseId(), systemControlledNumber.getVariable()) != null) {
+            systemControlledNumber.setId(
+                    findByVariable(systemControlledNumber.getWarehouseId(), systemControlledNumber.getVariable()).getId());
         }
         return save(systemControlledNumber);
     }
 
-    public SystemControlledNumber getNextNumber(String variable) {
+    public SystemControlledNumber getNextNumber(Long warehouseId, String variable) {
         logger.debug("Will lock by ");
-        logger.debug(">> variable: {} ", variable);
-        logger.debug(">> value: {}", systemControlledNumberLocks.get(variable));
-        synchronized (systemControlledNumberLocks.get(variable)) {
-            SystemControlledNumber systemControlledNumber = findByVariable(variable);
+        String key = warehouseId + "-" + variable;
+        logger.debug(">> key: {} ", key);
+        logger.debug(">> value: {}", systemControlledNumberLocks.get(key));
+        synchronized (systemControlledNumberLocks.get(key)) {
+            SystemControlledNumber systemControlledNumber = findByVariable(warehouseId, variable);
             // Check if we already reaches the maximum number allowed
             int maxNumber = (int)Math.pow(10, systemControlledNumber.getLength());
             int nextNumber = systemControlledNumber.getCurrentNumber() + 1;
@@ -145,13 +167,15 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     }
 
 
-    public List<SystemControlledNumber> loadData(String fileName) throws IOException {
+    public List<SystemControlledNumberCSVWrapper> loadData(String fileName) throws IOException {
         return loadData(new File(fileName));
     }
 
-    public List<SystemControlledNumber> loadData(File file) throws IOException {
+    public List<SystemControlledNumberCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("variable").
                 addColumn("prefix").
                 addColumn("postfix").
@@ -160,12 +184,14 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                 addColumn("rollover").
                 build().withHeader();
 
-        return fileService.loadData(file, schema, SystemControlledNumber.class);
+        return fileService.loadData(file, schema, SystemControlledNumberCSVWrapper.class);
     }
 
-    public List<SystemControlledNumber> loadData(InputStream inputStream) throws IOException {
+    public List<SystemControlledNumberCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("variable").
                 addColumn("prefix").
                 addColumn("postfix").
@@ -174,7 +200,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                 addColumn("rollover").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, SystemControlledNumber.class);
+        return fileService.loadData(inputStream, schema, SystemControlledNumberCSVWrapper.class);
     }
 
     public void initTestData(String warehouseName) {
@@ -184,14 +210,24 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<SystemControlledNumber> systemControlledNumbers = loadData(inputStream);
-            systemControlledNumbers.stream().forEach(systemControlledNumber -> saveOrUpdate(systemControlledNumber));
+            List<SystemControlledNumberCSVWrapper> systemControlledNumberCSVWrappers = loadData(inputStream);
+            systemControlledNumberCSVWrappers.stream().forEach(systemControlledNumberCSVWrapper -> saveOrUpdate(convertFromWrapper(systemControlledNumberCSVWrapper)));
         }
         catch(IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
 
+    private SystemControlledNumber convertFromWrapper(SystemControlledNumberCSVWrapper systemControlledNumberCSVWrapper) {
+        SystemControlledNumber systemControlledNumber = new SystemControlledNumber();
 
+        BeanUtils.copyProperties(systemControlledNumberCSVWrapper, systemControlledNumber);
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                systemControlledNumberCSVWrapper.getCompany(), systemControlledNumberCSVWrapper.getWarehouse()
+        );
+        systemControlledNumber.setWarehouseId(warehouse.getId());
+        return systemControlledNumber;
+
+    }
 
 }

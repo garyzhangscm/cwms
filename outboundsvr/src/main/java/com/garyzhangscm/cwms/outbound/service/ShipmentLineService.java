@@ -228,17 +228,53 @@ public class ShipmentLineService {
                 shipmentLine.getShipment().getStatus().equals(ShipmentStatus.INPROCESS);
     }
 
+    /**
+     * Recalculate the quantity of the shipment. Note when this function is called, the4 pick
+     * has not been cancelled yet
+     * @param shipmentLine
+     * @param cancelledQuantity
+     */
     @Transactional
     public void registerPickCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
         logger.debug("registerPickCancelled: shipment line: {}, cancelledQuantity: {}",
                 shipmentLine.getNumber(), cancelledQuantity);
-        shipmentLine.setOpenQuantity(shipmentLine.getOpenQuantity() + cancelledQuantity);
-        shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - cancelledQuantity);
+        shipmentLine.setInprocessQuantity(recalculateInprocessQuantity(shipmentLine, cancelledQuantity));
+        // due to the over allocation, we may need to re-calculate the shipment line's open quantity
+        logger.debug("Will reset the open quantity according to \n" +
+                "> shipmentLine.getQuantity(): {} \n" +
+                "> shipmentLine.getInprocessQuantity(): {} \n" +
+                "> shipmentLine.getLoadedQuantity(): {} \n" +
+                "> shipmentLine.getShippedQuantity(): {} \n" +
+                "> result: {}",
+                shipmentLine.getQuantity(),
+                shipmentLine.getInprocessQuantity(),
+                shipmentLine.getLoadedQuantity(),
+                shipmentLine.getShippedQuantity(),
+                shipmentLine.getQuantity() - shipmentLine.getInprocessQuantity() - shipmentLine.getLoadedQuantity() - shipmentLine.getShippedQuantity());
+        shipmentLine.setOpenQuantity(
+                shipmentLine.getQuantity() - shipmentLine.getInprocessQuantity() - shipmentLine.getLoadedQuantity() - shipmentLine.getShippedQuantity());
         shipmentLine = save(shipmentLine);
         logger.debug("after pick cancelled, shipment line {} has open quantity {}, in process quantity: {}",
                 shipmentLine.getNumber(), shipmentLine.getOpenQuantity(), shipmentLine.getInprocessQuantity());
 
     }
+
+    /**
+     * Recalculate teh shipment's quantity based on the pick been canceled.
+     * Please note when this function is called, the pick has not been cancelled yet so the getPicksByShipmentLine
+     * function will return the pick being cancelled as well. We will need to exclude this pick when
+     * recalculating the quantity
+     * @param shipmentLine
+     * @param cancelledQuantity
+     * @return
+     */
+    private Long recalculateInprocessQuantity(ShipmentLine shipmentLine, long cancelledQuantity) {
+        // Get all the open pick quantities
+        List<Pick> picks = pickService.getPicksByShipmentLine(shipmentLine.getId());
+        return picks.stream().mapToLong(pick -> pick.getQuantity()).sum() - cancelledQuantity
+                - shipmentLine.getLoadedQuantity() - shipmentLine.getShippedQuantity();
+    }
+
     @Transactional
     public void registerShortAllocationCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
         logger.debug("registerShortAllocationCancelled: shipment line: {}, cancelledQuantity: {}",

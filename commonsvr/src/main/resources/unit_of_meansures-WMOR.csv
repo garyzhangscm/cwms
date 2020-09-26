@@ -1,4 +1,4 @@
-name,description
-EA,Each
-CS,Case
-PL,Pallet
+company,warehouse,name,description
+20901,WMOR,EA,Each
+20901,WMOR,CS,Case
+20901,WMOR,PL,Pallet

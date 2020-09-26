@@ -42,10 +42,11 @@ public class LocationGroupController {
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups")
     public List<LocationGroup> listLocationGroups(@RequestParam Long warehouseId,
                                                   @RequestParam(name = "locationGroupTypes", required = false, defaultValue = "") String locationGroupTypes,
+                                                  @RequestParam(name = "locationGroups", required = false, defaultValue = "") String locationGroups,
                                                   @RequestParam(name = "name", required = false, defaultValue = "") String name) {
         logger.debug("Will list all groups by \n warehouseId {}\n locationGroupTypes{}\n name{}\n",
                 warehouseId, locationGroupTypes, name);
-        return locationGroupService.findAll(warehouseId, locationGroupTypes, name);
+        return locationGroupService.findAll(warehouseId, locationGroupTypes, locationGroups, name);
     }
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups/{id}")
     public LocationGroup getLocationGroup(@PathVariable long id) {
@@ -59,9 +60,7 @@ public class LocationGroupController {
 
     @RequestMapping(method=RequestMethod.POST, value="/locationgroups")
     public LocationGroup addLocationGroups(@RequestBody LocationGroup locationGroup) {
-        LocationGroup newLocationGroup = locationGroupService.save(locationGroup);
-        logger.debug("created newLocationGroup: {}", newLocationGroup);
-        return newLocationGroup;
+        return locationGroupService.addLocationGroups(locationGroup);
     }
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}")
     public LocationGroup changeLocationGroups(@PathVariable long id,
@@ -73,6 +72,11 @@ public class LocationGroupController {
         return locationGroupService.save(locationGroup);
     }
 
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups/{id}")
+    public void removeLocationGroup(@PathVariable long id) {
+        locationGroupService.removeLocationGroup(id);
+    }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups")
     public void removeLocationGroups(@RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds) {

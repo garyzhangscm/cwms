@@ -113,6 +113,7 @@ public class InventoryStatusService implements TestDataInitiableService{
     public List<InventoryStatusCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
@@ -143,7 +144,10 @@ public class InventoryStatusService implements TestDataInitiableService{
 
         // warehouse
         if (StringUtils.isNotBlank(inventoryStatusCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(inventoryStatusCSVWrapper.getWarehouse());
+            Warehouse warehouse =
+                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                            inventoryStatusCSVWrapper.getCompany(),
+                            inventoryStatusCSVWrapper.getWarehouse());
             if (warehouse != null) {
                 inventoryStatus.setWarehouseId(warehouse.getId());
             }

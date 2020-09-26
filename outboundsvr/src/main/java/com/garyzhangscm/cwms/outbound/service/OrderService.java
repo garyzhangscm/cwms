@@ -125,13 +125,15 @@ public class OrderService implements TestDataInitiableService {
     }
 
 
-    public List<Order> findWavableOrders(String orderNumber,
+    public List<Order> findWavableOrders(Long warehouseId,
+                                         String orderNumber,
                                          String customerName) {
         // We will get all the wavable order lines and constuct the order structure with those order line
         // As long as there's one line in the order is wavable, we will return the order but only with
         // those wavable lines
         logger.debug("start to find order lines with order: {}, customer：{}", orderNumber, customerName);
-        List<OrderLine> wavableOrderLine = orderLineService.findWavableOrderLines(orderNumber, customerName);
+        List<OrderLine> wavableOrderLine = orderLineService.findWavableOrderLines(warehouseId,
+                orderNumber, customerName);
         logger.debug("get order lines: {}", wavableOrderLine.size());
         Map<String, Order> wavableOrderMap = new HashMap<>();
 
@@ -295,6 +297,7 @@ public class OrderService implements TestDataInitiableService {
     public List<OrderCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("number").
                 addColumn("shipToCustomer").
@@ -343,15 +346,18 @@ public class OrderService implements TestDataInitiableService {
         Order order = new Order();
         order.setNumber(orderCSVWrapper.getNumber());
 
-        if (!StringUtils.isBlank(orderCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(orderCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                order.setWarehouseId(warehouse.getId());
-            }
-        }
+
+        Warehouse warehouse =
+                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                            orderCSVWrapper.getCompany(),
+                            orderCSVWrapper.getWarehouse());
+        order.setWarehouseId(warehouse.getId());
+
+
         // if we specify the ship to customer, we load information with the customer
         if (!StringUtils.isBlank(orderCSVWrapper.getShipToCustomer())) {
-            Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(orderCSVWrapper.getShipToCustomer());
+            Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(
+                    warehouse.getId(), orderCSVWrapper.getShipToCustomer());
 
             order.setShipToCustomer(shipToCustomer);
             order.setShipToCustomerId(shipToCustomer.getId());
@@ -380,7 +386,8 @@ public class OrderService implements TestDataInitiableService {
         }
 
         if (!StringUtils.isBlank(orderCSVWrapper.getBillToCustomer())) {
-            Customer billToCustomer = commonServiceRestemplateClient.getCustomerByName(orderCSVWrapper.getBillToCustomer());
+            Customer billToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getId(),
+                    orderCSVWrapper.getBillToCustomer());
 
             order.setBillToCustomer(billToCustomer);
             order.setBillToCustomerId(billToCustomer.getId());
@@ -410,7 +417,8 @@ public class OrderService implements TestDataInitiableService {
 
 
         if (!StringUtils.isBlank(orderCSVWrapper.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientByName(orderCSVWrapper.getClient());
+            Client client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(), orderCSVWrapper.getClient());
             order.setClientId(client.getId());
             order.setClient(client);
         }
@@ -458,7 +466,8 @@ public class OrderService implements TestDataInitiableService {
                         .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
                         .collect(Collectors.toList());
 
-        logger.debug("After allocation, we get the following result: \n {}", allocationResults);
+        // logger.debug("After allocation, we get the following result: \n {}", allocationResults);
+
         // return findById(orderId);
         return order;
 

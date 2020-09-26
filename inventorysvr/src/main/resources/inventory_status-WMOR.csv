@@ -1,5 +1,5 @@
-warehouse,name,description
-WMOR,AVAL,Available
-WMOR,DMG,Damaged
-WMOR,QC,QC inspection
-WMOR,HOLD,Held for processing
+company,warehouse,name,description
+20901,WMOR,AVAL,Available
+20901,WMOR,DMG,Damaged
+20901,WMOR,QC,QC inspection
+20901,WMOR,HOLD,Held for processing

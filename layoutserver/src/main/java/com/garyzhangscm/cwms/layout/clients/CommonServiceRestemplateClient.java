@@ -49,11 +49,12 @@ public class CommonServiceRestemplateClient {
 
 
     @Cacheable
-    public Policy getPolicyByKey(String key) {
+    public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/policies")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("key", key);
 
         ResponseBodyWrapper<List<Policy>> responseBodyWrapper

@@ -35,6 +35,7 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
     private Double height;
 
     private String warehouse;
+    private String company;
 
     @Override
     public String toString() {
@@ -44,6 +45,14 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public String getItem() {

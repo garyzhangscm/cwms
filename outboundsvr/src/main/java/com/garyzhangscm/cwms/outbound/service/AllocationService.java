@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class AllocationService {
 
@@ -13,6 +15,8 @@ public class AllocationService {
 
     @Autowired
     private AllocationStrategyFactory allocationStrategyService;
+    @Autowired
+    private PickService pickService;
 
     /**
      * Allocate the shipment line
@@ -40,6 +44,37 @@ public class AllocationService {
         return allocationResult;
     }
 
+    public AllocationResult allocate(WorkOrder workOrder){
+        logger.debug("Start to allocate Work Order {} ", workOrder.getNumber());
+
+        AllocationResult allocationResult = new AllocationResult();
+
+        workOrder.getWorkOrderLines().forEach(workOrderLine -> {
+            AllocationResult workOrderAllocationResult
+                    = allocate(workOrder, workOrderLine);
+            allocationResult.addPicks(workOrderAllocationResult.getPicks());
+            allocationResult.addShortAllocations(workOrderAllocationResult.getShortAllocations());
+        });
+        return allocationResult;
+
+    }
+
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine){
+
+        AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine);
+        // If we specify the allocation strategy type, then override the one
+        // from the shipment line(order line)
+
+        AllocationResult allocationResult = tryAllocate(allocationRequest);
+        logger.debug("We got {} picks, {} short allocations for work order line {} / {}, ",
+                allocationResult.getPicks().size(),
+                allocationResult.getShortAllocations().size(),
+                workOrder.getNumber(),
+                workOrderLine.getNumber());
+        persistAllocationResult(allocationResult);
+        return allocationResult;
+    }
+
     /**
      * Try allocate the allocation request. We will only generate the result but
      * won't persist the result.
@@ -62,9 +97,13 @@ public class AllocationService {
         // For now we only allow one strategy per request. We will ignore
         // all allocation strategy other than the first one
 
-        AllocationStrategy allocationStrategy = allocationStrategyService.getAllocationStrategyByType(
-                allocationRequest.getAllocationStrategyTypes().get(0)
-        ).orElse(allocationStrategyService.getDefaultAllocationStrategy());
+        AllocationStrategy allocationStrategy =
+                allocationRequest.getAllocationStrategyTypes().size() > 0 ?
+                        allocationStrategyService.getAllocationStrategyByType(
+                                allocationRequest.getAllocationStrategyTypes().get(0)
+                        ).orElse(allocationStrategyService.getDefaultAllocationStrategy())
+                        :
+                        allocationStrategyService.getDefaultAllocationStrategy();
         logger.debug("Will allocate with strategy: {}", allocationStrategy.getClass());
         return allocationStrategy.allocate(allocationRequest);
 

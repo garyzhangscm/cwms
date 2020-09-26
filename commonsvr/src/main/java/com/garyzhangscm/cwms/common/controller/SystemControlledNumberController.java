@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 
+import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.common.model.SystemControlledNumber;
 import com.garyzhangscm.cwms.common.service.SystemControlledNumberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,10 @@ public class SystemControlledNumberController {
     SystemControlledNumberService systemControlledNumberService;
 
     @RequestMapping(value="/system-controlled-number/{variable}/next", method = RequestMethod.GET)
-    public SystemControlledNumber getNextNumber(@PathVariable String variable) {
-        return systemControlledNumberService.getNextNumber(variable);
+    public SystemControlledNumber getNextNumber(@RequestParam Long warehouseId,
+                                                @PathVariable String variable) {
+        return systemControlledNumberService.getNextNumber(warehouseId, variable);
 
     }
+
 }

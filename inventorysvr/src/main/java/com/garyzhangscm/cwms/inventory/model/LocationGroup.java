@@ -39,6 +39,8 @@ public class LocationGroup {
     private Boolean trackingVolume;
     private Boolean consolidateLpn;
 
+    private LocationVolumeTrackingPolicy volumeTrackingPolicy;
+
     @Override
     public String toString() {
         try {
@@ -127,5 +129,13 @@ public class LocationGroup {
 
     public void setAllowCartonization(Boolean allowCartonization) {
         this.allowCartonization = allowCartonization;
+    }
+
+    public LocationVolumeTrackingPolicy getVolumeTrackingPolicy() {
+        return volumeTrackingPolicy;
+    }
+
+    public void setVolumeTrackingPolicy(LocationVolumeTrackingPolicy volumeTrackingPolicy) {
+        this.volumeTrackingPolicy = volumeTrackingPolicy;
     }
 }
