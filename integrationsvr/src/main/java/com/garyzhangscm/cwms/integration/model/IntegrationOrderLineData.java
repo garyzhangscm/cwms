@@ -11,9 +11,12 @@ public interface IntegrationOrderLineData {
 
     String getItemName() ;
 
-    Long getWarehouseId() ;
 
-    String getWarehouseName() ;
+    public Long getCompanyId();
+    public String getCompanyCode() ;
+    public Long getWarehouseId();
+    public String getWarehouseName() ;
+
     Long getExpectedQuantity() ;
 
     Long getInventoryStatusId() ;

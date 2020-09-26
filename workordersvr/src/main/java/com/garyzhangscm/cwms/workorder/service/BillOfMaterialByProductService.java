@@ -124,6 +124,7 @@ public class BillOfMaterialByProductService implements TestDataInitiableService 
     public List<BillOfMaterialByProductCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("billOfMaterial").
                 addColumn("item").
@@ -151,7 +152,9 @@ public class BillOfMaterialByProductService implements TestDataInitiableService 
 
         BillOfMaterialByProduct billOfMaterialByProduct = new BillOfMaterialByProduct();
         billOfMaterialByProduct.setExpectedQuantity(billOfMaterialByProductCSVWrapper.getExpectedQuantity());
+
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                billOfMaterialByProductCSVWrapper.getCompany(),
                 billOfMaterialByProductCSVWrapper.getWarehouse()
         );
 

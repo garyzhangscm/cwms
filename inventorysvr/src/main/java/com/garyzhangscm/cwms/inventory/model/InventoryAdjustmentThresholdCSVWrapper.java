@@ -35,6 +35,7 @@ public class InventoryAdjustmentThresholdCSVWrapper implements Serializable {
     private String itemFamily;
 
     private String warehouse;
+    private String company;
 
 
     private String type;
@@ -59,6 +60,14 @@ public class InventoryAdjustmentThresholdCSVWrapper implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public String getItem() {

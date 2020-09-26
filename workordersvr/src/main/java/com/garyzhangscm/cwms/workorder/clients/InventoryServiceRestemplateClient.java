@@ -79,7 +79,7 @@ public class InventoryServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/inventory/item/{id}");
+                        .path("/api/inventory/items/{id}");
 
         ResponseBodyWrapper<Item> responseBodyWrapper
                 = restTemplate.exchange(

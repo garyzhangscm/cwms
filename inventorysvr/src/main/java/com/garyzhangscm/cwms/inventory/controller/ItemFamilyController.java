@@ -60,7 +60,7 @@ public class ItemFamilyController {
 
     @RequestMapping(method=RequestMethod.DELETE, value="/item-family")
     public void removeItemFamilies(@RequestParam(name = "item_family_ids", required = false, defaultValue = "") String itemFamilyIds) {
-        itemFamilyService.delete(itemFamilyIds);
+        itemFamilyService.removeItemFamilies(itemFamilyIds);
     }
 
 }

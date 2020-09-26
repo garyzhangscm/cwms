@@ -19,16 +19,21 @@
 package com.garyzhangscm.cwms.common.repository;
 
 
+import com.garyzhangscm.cwms.common.model.Customer;
 import com.garyzhangscm.cwms.common.model.ReasonCode;
 import com.garyzhangscm.cwms.common.model.ReasonCodeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public interface ReasonCodeRepository extends JpaRepository<ReasonCode, Long>, JpaSpecificationExecutor<ReasonCode> {
-    ReasonCode findByName(String name);
+
+    @Query("select r from ReasonCode r where  r.warehouseId = :warehouseId and r.name = :name")
+    ReasonCode findByName(Long warehouseId, String name);
+
     List<ReasonCode> findByType(ReasonCodeType type);
 }

@@ -1,16 +1,20 @@
 package com.garyzhangscm.cwms.outbound.model;
 
+import java.util.Objects;
+
 public class AllocationRoundUpStrategy {
 
     private AllocationRoundUpStrategyType type;
 
     private Double value;
 
-    public AllocationRoundUpStrategy() {}
+    public AllocationRoundUpStrategy() {
+        this(AllocationRoundUpStrategyType.NONE, 0.0);
+    }
     public AllocationRoundUpStrategy(AllocationRoundUpStrategyType type,
                                      Double value) {
-        this.type = type;
-        this.value = value;
+        this.type = Objects.isNull(type) ? AllocationRoundUpStrategyType.NONE : type;
+        this.value = Objects.isNull(value) ? 0.0 : value;
     }
     public static AllocationRoundUpStrategy unlimit() {
         // for unlimit round up, there's no need to setup the value;

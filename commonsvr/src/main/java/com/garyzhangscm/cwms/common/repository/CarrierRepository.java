@@ -19,12 +19,16 @@
 package com.garyzhangscm.cwms.common.repository;
 
 import com.garyzhangscm.cwms.common.model.Carrier;
+import com.garyzhangscm.cwms.common.model.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CarrierRepository extends JpaRepository<Carrier, Long>, JpaSpecificationExecutor<Carrier> {
-    Carrier findByName(String name);
+
+    @Query("select c from Carrier c where  c.warehouseId = :warehouseId and c.name = :name")
+    Carrier findByName(Long warehouseId, String name);
 
 }

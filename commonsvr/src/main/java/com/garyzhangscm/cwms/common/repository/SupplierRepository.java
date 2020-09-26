@@ -19,12 +19,15 @@
 package com.garyzhangscm.cwms.common.repository;
 
 import com.garyzhangscm.cwms.common.model.Client;
+import com.garyzhangscm.cwms.common.model.ReasonCode;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, Long>, JpaSpecificationExecutor<Supplier> {
-    Supplier findByName(String name);
+    @Query("select s from Supplier s where  s.warehouseId = :warehouseId and s.name = :name")
+    Supplier findByName(Long warehouseId, String name);
 }

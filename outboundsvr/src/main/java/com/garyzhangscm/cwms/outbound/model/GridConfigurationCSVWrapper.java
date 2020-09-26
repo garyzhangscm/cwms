@@ -25,6 +25,8 @@ import java.io.Serializable;
 public class GridConfigurationCSVWrapper implements Serializable {
 
     private String warehouse;
+    private String company;
+
 
     private String locationGroup;
 
@@ -43,6 +45,14 @@ public class GridConfigurationCSVWrapper implements Serializable {
                 ", allowConfirmByGroup=" + allowConfirmByGroup +
                 ", depositOnConfirm=" + depositOnConfirm +
                 '}';
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public String getWarehouse() {

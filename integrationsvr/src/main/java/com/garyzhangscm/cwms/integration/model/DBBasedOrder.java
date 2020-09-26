@@ -52,11 +52,17 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
     private String shipToCustomerName;
 
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
 
     @Column(name = "bill_to_customer_id")
@@ -228,6 +234,22 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public Long getId() {

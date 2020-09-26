@@ -206,12 +206,13 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public UnitOfMeasure getUnitOfMeasureByName(String name) {
+    public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/unit-of-measures")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper

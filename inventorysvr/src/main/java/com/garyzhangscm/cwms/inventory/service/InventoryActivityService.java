@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -299,14 +298,17 @@ public class InventoryActivityService{
                                       LocalDateTime activityDateTime, String username,
                                       String valueType, String fromValue, String toValue,
                                       String documentNumber, String comment) {
+        logger.debug("Start to construct the inventory activities");
         InventoryActivity inventoryActivity = new InventoryActivity(
                 inventory, inventoryActivityType,
-                getNextTransactionId(),getTransactionGroupId(),
+                getNextTransactionId(inventory.getWarehouseId()),
+                getTransactionGroupId(inventory.getWarehouseId()),
                 activityDateTime, username,
                 valueType, fromValue, toValue,
                 documentNumber, comment
         );
 
+        logger.debug("Will send the activity record to kafka");
         // we will raise an kafka message to make the persistence an asyncronized call
         kafkaSender.send(inventoryActivity);
     }
@@ -343,11 +345,11 @@ public class InventoryActivityService{
         save(inventoryActivity);
     }
 
-    private String getTransactionGroupId() {
+    private String getTransactionGroupId(Long warehouseId) {
         String transactionGroupId;
         if (Objects.isNull(httpSession.getAttribute("Inventory-Activity-Transaction-Id"))) {
             logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
-            transactionGroupId = commonServiceRestemplateClient.getNextInventoryActivityTransactionGroupId();
+            transactionGroupId = commonServiceRestemplateClient.getNextInventoryActivityTransactionGroupId(warehouseId);
             httpSession.setAttribute("Inventory-Activity-Transaction-Id", transactionGroupId);
             logger.debug(">> {}", transactionGroupId);
         }
@@ -358,8 +360,8 @@ public class InventoryActivityService{
         return transactionGroupId;
     }
 
-    private String getNextTransactionId() {
-        return commonServiceRestemplateClient.getNextInventoryActivityTransactionId();
+    private String getNextTransactionId(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextInventoryActivityTransactionId(warehouseId);
     }
 
 

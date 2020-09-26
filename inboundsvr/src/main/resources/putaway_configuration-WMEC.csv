@@ -1,2 +1,2 @@
-warehouse,sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,strategies
-WMEC,1,,,AVAL,,EACH_PICK,,EMPTY_LOCATIONS
+company,warehouse,sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,strategies
+20901,WMEC,1,,,AVAL,,EACH_PICK,,EMPTY_LOCATIONS

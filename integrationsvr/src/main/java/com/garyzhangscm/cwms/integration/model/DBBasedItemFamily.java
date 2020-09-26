@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -45,12 +47,17 @@ public class DBBasedItemFamily implements Serializable, IntegrationItemFamilyDat
     private String description;
 
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -75,11 +82,11 @@ public class DBBasedItemFamily implements Serializable, IntegrationItemFamilyDat
 
         Long warehouseId = getWarehouseId();
         if (Objects.isNull(warehouseId)) {
-            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                    getWarehouseName()
-            ).getId();
-            itemFamily.setWarehouseId(warehouseId);
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    getCompanyId(), getCompanyCode(), getWarehouseId(), getWarehouseName()
+            );
         }
+        itemFamily.setWarehouseId(warehouseId);
 
 
         return itemFamily;
@@ -107,18 +114,30 @@ public class DBBasedItemFamily implements Serializable, IntegrationItemFamilyDat
         setLastUpdateTime(LocalDateTime.now());
     }
 
-        @Override
+    @Override
     public String toString() {
-        return "DBBasedItemFamily{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public Long getId() {

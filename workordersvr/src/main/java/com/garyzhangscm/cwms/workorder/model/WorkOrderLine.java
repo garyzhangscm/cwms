@@ -62,6 +62,11 @@ public class WorkOrderLine extends AuditibleEntity<String>{
     @Column(name = "inventory_status_id")
     private Long inventoryStatusId;
 
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="allocation_strategy_type")
+    private AllocationStrategyType allocationStrategyType;
+
     @Transient
     private InventoryStatus inventoryStatus;
 
@@ -217,5 +222,13 @@ public class WorkOrderLine extends AuditibleEntity<String>{
 
     public void setReturnedQuantity(Long returnedQuantity) {
         this.returnedQuantity = returnedQuantity;
+    }
+
+    public AllocationStrategyType getAllocationStrategyType() {
+        return allocationStrategyType;
+    }
+
+    public void setAllocationStrategyType(AllocationStrategyType allocationStrategyType) {
+        this.allocationStrategyType = allocationStrategyType;
     }
 }

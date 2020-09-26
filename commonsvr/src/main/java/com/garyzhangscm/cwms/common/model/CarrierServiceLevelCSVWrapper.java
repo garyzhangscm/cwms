@@ -4,6 +4,9 @@ package com.garyzhangscm.cwms.common.model;
 
 public class CarrierServiceLevelCSVWrapper {
 
+    private String company;
+
+    private String warehouse;
     private String name;
 
     private String description;
@@ -12,6 +15,13 @@ public class CarrierServiceLevelCSVWrapper {
 
     private String carrier;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
     public String getName() {
         return name;
     }
@@ -42,5 +52,14 @@ public class CarrierServiceLevelCSVWrapper {
 
     public void setCarrier(String carrier) {
         this.carrier = carrier;
+    }
+
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

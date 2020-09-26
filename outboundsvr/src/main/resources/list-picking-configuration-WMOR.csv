@@ -1,2 +1,2 @@
-sequence,warehouse,client,pickType,groupRule,enabled
-1,WMOR,,OUTBOUND,BY_SHIPMENT,true
+company,sequence,warehouse,client,pickType,groupRule,enabled
+20901,1,WMOR,,OUTBOUND,BY_SHIPMENT,true

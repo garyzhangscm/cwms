@@ -19,25 +19,28 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.Client;
-import com.garyzhangscm.cwms.common.model.Supplier;
-import com.garyzhangscm.cwms.common.repository.ClientRepository;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.SupplierRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class SupplierService implements  TestDataInitiableService{
@@ -45,8 +48,11 @@ public class SupplierService implements  TestDataInitiableService{
 
     @Autowired
     private SupplierRepository supplierRepository;
+
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.clients:suppliers}")
     String testDataFile;
@@ -56,18 +62,29 @@ public class SupplierService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("supplier not found by id: " + id));
     }
 
-    public List<Supplier> findAll(String name) {
+    public List<Supplier> findAll( Long warehouseId,
+                                  String name) {
+        return supplierRepository.findAll(
+                (Root<Supplier> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if (StringUtils.isBlank(name)) {
-            return supplierRepository.findAll();
-        }
-        else {
-            return Arrays.asList(new Supplier[]{findByName(name)});
-        }
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
-    public Supplier findByName(String name){
-        return supplierRepository.findByName(name);
+    public Supplier findByName(Long warehouseId, String name){
+        return supplierRepository.findByName(warehouseId, name);
     }
 
     @Transactional
@@ -79,8 +96,8 @@ public class SupplierService implements  TestDataInitiableService{
     // update when the supplier already exists
     @Transactional
     public Supplier saveOrUpdate(Supplier supplier) {
-        if (supplier.getId() == null && findByName(supplier.getName()) != null) {
-            supplier.setId(findByName(supplier.getName()).getId());
+        if (supplier.getId() == null && findByName(supplier.getWarehouseId(), supplier.getName()) != null) {
+            supplier.setId(findByName(supplier.getWarehouseId(), supplier.getName()).getId());
         }
         return save(supplier);
     }
@@ -105,8 +122,10 @@ public class SupplierService implements  TestDataInitiableService{
         }
 
     }
-    public List<Supplier> loadData(File file) throws IOException {
+    public List<SupplierCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -120,12 +139,14 @@ public class SupplierService implements  TestDataInitiableService{
                 addColumn("addressLine2").
                 addColumn("addressPostcode").
                 build().withHeader();
-        return fileService.loadData(file, schema, Supplier.class);
+        return fileService.loadData(file, schema, SupplierCSVWrapper.class);
     }
 
-    public List<Supplier> loadData(InputStream inputStream) throws IOException {
+    public List<SupplierCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -140,7 +161,7 @@ public class SupplierService implements  TestDataInitiableService{
                 addColumn("addressPostcode").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, Supplier.class);
+        return fileService.loadData(inputStream, schema, SupplierCSVWrapper.class);
     }
 
     @Transactional
@@ -150,14 +171,22 @@ public class SupplierService implements  TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<Supplier> suppliers = loadData(inputStream);
-            suppliers.stream().forEach(supplier -> saveOrUpdate(supplier));
+            List<SupplierCSVWrapper> supplierCSVWrappers = loadData(inputStream);
+            supplierCSVWrappers.stream().forEach(supplierCSVWrapper -> saveOrUpdate(convertFromWrapper(supplierCSVWrapper)));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+    private Supplier convertFromWrapper(SupplierCSVWrapper supplierCSVWrapper) {
+        Supplier supplier = new Supplier();
 
+        BeanUtils.copyProperties(supplierCSVWrapper, supplier);
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                supplierCSVWrapper.getCompany(), supplierCSVWrapper.getWarehouse()
+        );
+        supplier.setWarehouseId(warehouse.getId());
+        return supplier;
 
-
+    }
 
 }

@@ -190,7 +190,7 @@ public class WaveService {
     public Wave planWave(Long warehouseId, String waveNumber, List<Long> orderLineIds) {
 
         if (StringUtils.isBlank(waveNumber)) {
-            waveNumber = getNextWaveNumber();
+            waveNumber = getNextWaveNumber(warehouseId);
             logger.debug(">> wave number is not passed in during plan wave, auto generated number: {}", waveNumber);
         }
 
@@ -203,7 +203,7 @@ public class WaveService {
             wave.setWarehouseId(warehouseId);
             wave = save(wave);
         }
-        List<Shipment> shipments = planShipments(wave, orderLineIds);
+        List<Shipment> shipments = planShipments(warehouseId, wave, orderLineIds);
         Collections.sort(shipments, Comparator.comparing(Shipment::getId));
         for(Shipment shipment : shipments) {
             for(ShipmentLine shipmentLine : shipment.getShipmentLines()) {
@@ -225,7 +225,7 @@ public class WaveService {
      * @param wave Wave
      * @param orderLineIds order line IDs
      */
-    private List<Shipment> planShipments(Wave wave, List<Long> orderLineIds) {
+    private List<Shipment> planShipments(Long warehouseId, Wave wave, List<Long> orderLineIds) {
         List<Shipment> shipments = new ArrayList<>();
         logger.debug(">> start to plan {} lines into wave {}",
                 orderLineIds.size(), wave.getNumber());
@@ -245,7 +245,7 @@ public class WaveService {
 
         // Let's plan a shipment for each order
         orders.entrySet().forEach(entry -> {
-            String shipmentNumber = shipmentService.getNextShipmentNumber();
+            String shipmentNumber = shipmentService.getNextShipmentNumber(warehouseId);
             logger.debug("Start to plan shipment for order: {}, line # {}, into shipment {}",
                     entry.getKey(), entry.getValue().size(), shipmentNumber);
 
@@ -271,10 +271,10 @@ public class WaveService {
         }
     }
 
-    public List<Order> findWaveCandidate(String orderNumber,
+    public List<Order> findWaveCandidate(Long warehouseId, String orderNumber,
                                          String customerName) {
 
-        return orderService.findWavableOrders(orderNumber, customerName);
+        return orderService.findWavableOrders(warehouseId, orderNumber, customerName);
     }
 
     public Wave allocateWave(Long id) {
@@ -293,7 +293,7 @@ public class WaveService {
 
     }
 
-    private String getNextWaveNumber(){
-        return commonServiceRestemplateClient.getNextNumber("wave-number");
+    private String getNextWaveNumber(Long warehouseId){
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "wave-number");
     }
 }

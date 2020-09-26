@@ -298,6 +298,7 @@ public class MovementPathService implements TestDataInitiableService{
     public List<MovementPathCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("fromLocation").
                 addColumn("toLocation").
@@ -315,6 +316,7 @@ public class MovementPathService implements TestDataInitiableService{
     public List<MovementPathCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("fromLocation").
                 addColumn("toLocation").
@@ -361,32 +363,33 @@ public class MovementPathService implements TestDataInitiableService{
                 movementPath = new MovementPath();
 
                 // warehouse
-                if (!StringUtils.isBlank(movementPathCSVWrapper.getWarehouse())) {
-                    Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(movementPathCSVWrapper.getWarehouse());
-                    if (warehouse != null) {
-                        movementPath.setWarehouseId(warehouse.getId());
-                    }
-                }
+                Warehouse warehouse =
+                            warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                                    movementPathCSVWrapper.getCompany(),
+                                    movementPathCSVWrapper.getWarehouse());
+
+
+                movementPath.setWarehouseId(warehouse.getId());
 
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getFromLocation())) {
                     movementPath.setFromLocationId(
                             warehouseLayoutServiceRestemplateClient.getLocationByName(
-                                    getWarehouseId(movementPathCSVWrapper.getWarehouse()), movementPathCSVWrapper.getFromLocation()).getId());
+                                    warehouse.getId(), movementPathCSVWrapper.getFromLocation()).getId());
                 }
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getFromLocationGroup())) {
                     movementPath.setFromLocationGroupId(
                             warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                                    getWarehouseId(movementPathCSVWrapper.getWarehouse()), movementPathCSVWrapper.getFromLocationGroup()).getId());
+                                    warehouse.getId(), movementPathCSVWrapper.getFromLocationGroup()).getId());
                 }
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getToLocation())) {
                     movementPath.setToLocationId(
                             warehouseLayoutServiceRestemplateClient.getLocationByName(
-                                    getWarehouseId(movementPathCSVWrapper.getWarehouse()), movementPathCSVWrapper.getToLocation()).getId());
+                                    warehouse.getId(), movementPathCSVWrapper.getToLocation()).getId());
                 }
                 if (!StringUtils.isBlank(movementPathCSVWrapper.getToLocationGroup())) {
                     movementPath.setToLocationGroupId(
                             warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                                    getWarehouseId(movementPathCSVWrapper.getWarehouse()), movementPathCSVWrapper.getToLocationGroup()).getId());
+                                    warehouse.getId(), movementPathCSVWrapper.getToLocationGroup()).getId());
                 }
                 movementPath.setSequence(Integer.parseInt(movementPathCSVWrapper.getSequence()));
                 movementPathMap.put(key, movementPath);
@@ -400,7 +403,9 @@ public class MovementPathService implements TestDataInitiableService{
 
             // warehouse
             if (!StringUtils.isBlank(movementPathCSVWrapper.getWarehouse())) {
-                Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(movementPathCSVWrapper.getWarehouse());
+                Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        movementPathCSVWrapper.getCompany(),
+                        movementPathCSVWrapper.getWarehouse());
                 if (warehouse != null) {
                     movementPathDetail.setWarehouseId(warehouse.getId());
                 }
@@ -409,12 +414,12 @@ public class MovementPathService implements TestDataInitiableService{
             if (!StringUtils.isBlank(movementPathCSVWrapper.getHopLocation())) {
                 movementPathDetail.setHopLocationId(
                         warehouseLayoutServiceRestemplateClient.getLocationByName(
-                                getWarehouseId(movementPathCSVWrapper.getWarehouse()), movementPathCSVWrapper.getHopLocation()).getId());
+                                movementPath.getWarehouseId(), movementPathCSVWrapper.getHopLocation()).getId());
             }
             if (!StringUtils.isBlank(movementPathCSVWrapper.getHopLocationGroup())) {
                 movementPathDetail.setHopLocationGroupId(
                         warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                                getWarehouseId(movementPathCSVWrapper.getWarehouse()), movementPathCSVWrapper.getHopLocationGroup()).getId());
+                                movementPath.getWarehouseId(), movementPathCSVWrapper.getHopLocationGroup()).getId());
             }
             movementPath.getMovementPathDetails().add(movementPathDetail);
         }
@@ -603,8 +608,8 @@ public class MovementPathService implements TestDataInitiableService{
         }
     }
 
-    private Long getWarehouseId(String warehouseName) {
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
+    private Long getWarehouseId(String companyCode, String warehouseName) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(companyCode, warehouseName);
         if (warehouse == null) {
             return null;
         }

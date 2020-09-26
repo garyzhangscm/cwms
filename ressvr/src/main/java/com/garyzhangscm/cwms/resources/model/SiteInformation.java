@@ -13,6 +13,9 @@ public class SiteInformation {
     @JsonProperty("app")
     private ApplicationInformation applicationInformation = new ApplicationInformation();
 
+    private Boolean singleCompanySite;
+    private String defaultCompanyCode;
+
     private User user;
 
     @JsonProperty("menu")
@@ -58,5 +61,22 @@ public class SiteInformation {
 
     public void setMenuGroups(List<MenuGroup> menuGroups) {
         this.menuGroups = menuGroups;
+    }
+
+
+    public Boolean getSingleCompanySite() {
+        return singleCompanySite;
+    }
+
+    public void setSingleCompanySite(Boolean singleCompanySite) {
+        this.singleCompanySite = singleCompanySite;
+    }
+
+    public String getDefaultCompanyCode() {
+        return defaultCompanyCode;
+    }
+
+    public void setDefaultCompanyCode(String defaultCompanyCode) {
+        this.defaultCompanyCode = defaultCompanyCode;
     }
 }

@@ -33,6 +33,7 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
     private String supplier;
 
     private String warehouse;
+    private String company;
 
     @Override
     public String toString() {
@@ -42,6 +43,14 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public String getName() {

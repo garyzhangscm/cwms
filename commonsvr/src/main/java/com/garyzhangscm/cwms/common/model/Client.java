@@ -27,13 +27,19 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "client")
-public class Client implements Serializable {
+public class Client extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "client_id")
     @JsonProperty(value="id")
     private Long id;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @Column(name = "name", unique = true)
     private String name;
@@ -77,6 +83,23 @@ public class Client implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 
     public String getDescription() {

@@ -34,6 +34,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
@@ -74,21 +75,39 @@ public class LocationGroupService implements TestDataInitiableService {
         return locationGroupRepository.findAll(warehouseId);
     }
 
-    public List<LocationGroup> findAll(Long warehouseId, String locationGroupTypes, String name) {
+    public List<LocationGroup> findAll(Long warehouseId, String locationGroupTypeIds, String locationGroupIds, String name) {
+        return locationGroupRepository.findAll(
+                (Root<LocationGroup> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if (!StringUtils.isBlank(name)) {
-            LocationGroup locationGroup = findByName(warehouseId, name);
-            if (locationGroup != null) {
-                return Arrays.asList(new LocationGroup[]{locationGroup});
-            }
-            else {
-                return new ArrayList<>();
-            }
-        }
-        else {
-            return listLocationGroupsByTypes(warehouseId, locationGroupTypes);
+                    Join<LocationGroup, Warehouse> joinWarehouse = root.join("warehouse", JoinType.INNER);
+                    predicates.add(criteriaBuilder.equal(joinWarehouse.get("id"), warehouseId));
 
-        }
+                    if (StringUtils.isNotBlank(locationGroupTypeIds)) {
+                        Join<LocationGroup, LocationGroupType> joinLocationGroupType = root.join("locationGroupType", JoinType.INNER);
+                        CriteriaBuilder.In<Long> inLocationGroupTypeIds = criteriaBuilder.in(joinLocationGroupType.get("id"));
+                        for(String id : locationGroupTypeIds.split(",")) {
+                            inLocationGroupTypeIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inLocationGroupTypeIds));
+                    }
+
+                    if (StringUtils.isNotBlank(locationGroupIds)) {
+                        CriteriaBuilder.In<Long> inLocationGroupIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : locationGroupIds.split(",")) {
+                            inLocationGroupIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inLocationGroupIds));
+                    }
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
 
     }
 
@@ -98,15 +117,6 @@ public class LocationGroupService implements TestDataInitiableService {
         return locationGroupRepository.findByLocationGroupTypes(warehouseId, locationGroupTypeList);
     }
 
-    public List<LocationGroup> listLocationGroupsByTypes(Long warehouseId, String locationGroupTypes) {
-        if (locationGroupTypes.isEmpty()) {
-            return findAll(warehouseId);
-        }
-        else {
-            long[] locationGroupTypeArray = Arrays.asList(locationGroupTypes.split(",")).stream().mapToLong(Long::parseLong).toArray();
-            return findAll(warehouseId, locationGroupTypeArray);
-        }
-    }
 
     public LocationGroup findByName(Long warehouseId, String name){
         return locationGroupRepository.findByName(warehouseId, name);
@@ -160,6 +170,7 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("volumeTrackingPolicy").
                 addColumn("inventoryConsolidationStrategy").
                 addColumn("allowCartonization").
+                addColumn("adjustable").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupCSVWrapper.class);
     }
@@ -177,6 +188,7 @@ public class LocationGroupService implements TestDataInitiableService {
                 addColumn("volumeTrackingPolicy").
                 addColumn("inventoryConsolidationStrategy").
                 addColumn("allowCartonization").
+                addColumn("adjustable").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupCSVWrapper.class);
@@ -212,6 +224,7 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.setPickable(locationGroupCSVWrapper.getPickable());
         locationGroup.setCountable(locationGroupCSVWrapper.getCountable());
         locationGroup.setStorable(locationGroupCSVWrapper.getStorable());
+        locationGroup.setAdjustable(locationGroupCSVWrapper.getAdjustable());
 
 
         locationGroup.setAllowCartonization(locationGroupCSVWrapper.getAllowCartonization());
@@ -383,5 +396,21 @@ public class LocationGroupService implements TestDataInitiableService {
         else {
             return null;
         }
+    }
+
+    public void removeLocationGroup(long id) {
+        LocationGroup locationGroup = findById(id);
+        // Remove all the locations in this group
+        locationService.removeLocationByGroup(locationGroup);
+
+        // remove the location group
+        delete(id);
+    }
+
+    public LocationGroup addLocationGroups(LocationGroup locationGroup) {
+        if(locationGroup.getTrackingVolume() == false) {
+            locationGroup.setVolumeTrackingPolicy(null);
+        }
+        return save(locationGroup);
     }
 }

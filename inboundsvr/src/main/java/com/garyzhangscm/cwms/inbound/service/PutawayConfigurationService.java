@@ -197,6 +197,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     public List<PutawayConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("sequence").
                 addColumn("item").
@@ -234,7 +235,10 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         putawayConfiguration.setStrategies(putawayConfigurationCSVWrapper.getStrategies());
 
         // Warehouse is mandate
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(putawayConfigurationCSVWrapper.getWarehouse());
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        putawayConfigurationCSVWrapper.getCompany(),
+                        putawayConfigurationCSVWrapper.getWarehouse());
 
         putawayConfiguration.setWarehouseId(warehouse.getId());
 
@@ -262,7 +266,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
 
         if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getLocation())) {
             Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
-                    getWarehouseId(putawayConfigurationCSVWrapper.getWarehouse()), putawayConfigurationCSVWrapper.getLocation());
+                    warehouse.getId(), putawayConfigurationCSVWrapper.getLocation());
             if (location != null) {
                 putawayConfiguration.setLocationId(location.getId());
             }
@@ -270,7 +274,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
 
         if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                    getWarehouseId(putawayConfigurationCSVWrapper.getWarehouse()), putawayConfigurationCSVWrapper.getLocationGroup());
+                    warehouse.getId(), putawayConfigurationCSVWrapper.getLocationGroup());
             if (locationGroup != null) {
                 putawayConfiguration.setLocationGroupId(locationGroup.getId());
             }
@@ -286,14 +290,18 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     }
 
     @Transactional
-    public Inventory allocateLocation(Inventory inventory){
+    public Inventory allocateLocation(Inventory inventory) {
+        return allocateLocation(inventory, Collections.emptyList());
+    }
+
+    private Inventory allocateLocation(Inventory inventory, List<Location> skipLocationList){
         logger.debug("start to allocate location for inventory: {}", inventory.getLpn());
-        Location location = allocateSuitableLocation(inventory);
+        Location location = allocateSuitableLocation(inventory, skipLocationList);
         if (location == null) {
             throw PutawayException.raiseException("fail to allocate location for the inventory");
         }
         else {
-            warehouseLayoutServiceRestemplateClient.allocateLocation(location, inventory.getSize());
+            warehouseLayoutServiceRestemplateClient.allocateLocation(location, inventory);
 
         }
         InventoryMovement inventoryMovement = new InventoryMovement();
@@ -304,7 +312,15 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     }
 
 
-    private Location allocateSuitableLocation(Inventory inventory) {
+
+    /**
+     * Find a suitable destination location for this inventory. Skip the locations in the
+     * skipLocationList
+     * @param inventory inventory to find a destination location
+     * @param skipLocationList skip the locations in the list
+     * @return
+     */
+    private Location allocateSuitableLocation(Inventory inventory, List<Location> skipLocationList) {
         // First of all, let's find all suitable putaway configuration and
         // sort by sequence
         logger.debug("Step 1: get the putaway configuration for the inventory");
@@ -314,7 +330,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         logger.debug("Step 1 - Result: get total {} putaway configuration for the inventory", suitablePutawayConfiguration.size());
         for(PutawayConfiguration putawayConfiguration : suitablePutawayConfiguration) {
             logger.debug("Step 2 - try to find a location based on the putaway configuration {}", putawayConfiguration.getId());
-            Location location  = findSuitableLocation(putawayConfiguration, inventory);
+            Location location  = findSuitableLocation(putawayConfiguration, inventory, skipLocationList);
             if (location != null) {
 
                 logger.debug("Step 2 RESULT!!! - WE FOUND A LOCATION: {} " + location.getName());
@@ -324,13 +340,25 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         return null;
     }
 
-    public Location findSuitableLocation(PutawayConfiguration putawayConfiguration, Inventory inventory){
+    public Location findSuitableLocation(PutawayConfiguration putawayConfiguration, Inventory inventory, List<Location> skipLocationList){
 
         // Loop through each strategy to get the right location
         for(PutawayConfigurationStrategy putawayConfigurationStrategy : putawayConfiguration.getPutawayConfigurationStrategies()) {
             logger.debug("Step 2.1 - Will find location with configuraiton {}, strategy {}",
                     putawayConfiguration.getId(), putawayConfigurationStrategy.name());
             List<Location> locations = findLocation(putawayConfiguration);
+
+            // skip the locations that are in the list
+            if (skipLocationList.size() > 0) {
+                // Convert the list to map for easy handling
+                Map<Long, String> skippedLocationIds = new HashMap<>();
+                skipLocationList.forEach(location -> skippedLocationIds.put(location.getId(), location.getName()));
+                logger.debug("Will need to skip the locations {} for inventory lpn {}",
+                        skippedLocationIds.values(), inventory.getLpn());
+                locations = locations.stream()
+                        .filter(location -> !skippedLocationIds.containsKey(location.getId()))
+                        .collect(Collectors.toList());
+            }
             logger.debug("Step 2.1.1 - Get totally {} locations according to the putaway configuratioln", locations.size());
             if (locations.size() == 0) {
                 continue;
@@ -440,16 +468,33 @@ public class PutawayConfigurationService implements TestDataInitiableService{
 
     }
 
-    private Long getWarehouseId(String warehouseName) {
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
-        if (warehouse == null) {
-            return null;
+
+    @Transactional
+    public Inventory reallocateLocation(Inventory inventory) {
+        // if the inventory has not destination location and movement path yet,
+        // let's just call 'allocate location' for this inventory
+
+        if (inventory.getInventoryMovements().size() == 0) {
+            return allocateLocation(inventory);
         }
-        else {
-            return warehouse.getId();
-        }
+
+        // OK, we already have inventory movement for this inventory,
+        // let's try to get a new destination location for this inventory
+        Location destinationLocation = inventory.getInventoryMovements().get(
+                inventory.getInventoryMovements().size() - 1
+        ).getLocation();
+
+        // Let's remove the movement path first
+        clearMovements(inventory);
+
+        return allocateLocation(inventory, Collections.singletonList(destinationLocation));
+
+
+
     }
 
+    private void clearMovements(Inventory inventory) {
 
-
+        inventoryServiceRestemplateClient.clearMovementPath(inventory.getId());
+    }
 }

@@ -1,5 +1,5 @@
-name,description
-PCS,Piece
-LBS,Pound
-CS,Case
-PL,Pallet
+company,warehouse,name,description
+20901,WMEC,PCS,Piece
+20901,WMEC,LBS,Pound
+20901,WMEC,CS,Case
+20901,WMEC,PL,Pallet

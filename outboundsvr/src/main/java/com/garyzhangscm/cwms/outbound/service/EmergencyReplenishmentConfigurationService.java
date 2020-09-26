@@ -257,6 +257,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     public List<EmergencyReplenishmentConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("sequence").
                 addColumn("item").
@@ -294,13 +295,16 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
         emergencyReplenishmentConfiguration.setSequence(emergencyReplenishmentConfigurationCSVWrapper.getSequence());
 
         Warehouse warehouse =
-                warehouseLayoutServiceRestemplateClient.getWarehouseByName(emergencyReplenishmentConfigurationCSVWrapper.getWarehouse());
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        emergencyReplenishmentConfigurationCSVWrapper.getCompany(),
+                        emergencyReplenishmentConfigurationCSVWrapper.getWarehouse());
 
         emergencyReplenishmentConfiguration.setWarehouseId(warehouse.getId());
 
         if (StringUtils.isNotBlank(emergencyReplenishmentConfigurationCSVWrapper.getUnitOfMeasure())) {
             UnitOfMeasure unitOfMeasure =
                     commonServiceRestemplateClient.getUnitOfMeasureByName(
+                            warehouse.getId(),
                             emergencyReplenishmentConfigurationCSVWrapper.getUnitOfMeasure()
                     );
             if (unitOfMeasure != null) {
@@ -325,6 +329,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getSourceLocation())) {
             Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                    emergencyReplenishmentConfigurationCSVWrapper.getCompany(),
                     emergencyReplenishmentConfigurationCSVWrapper.getWarehouse(), emergencyReplenishmentConfigurationCSVWrapper.getSourceLocation());
             if (location != null) {
                 emergencyReplenishmentConfiguration.setSourceLocationId(location.getId());
@@ -333,7 +338,9 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getSourceLocationGroup())) {
             LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                    emergencyReplenishmentConfigurationCSVWrapper.getWarehouse(), emergencyReplenishmentConfigurationCSVWrapper.getSourceLocationGroup());
+                    emergencyReplenishmentConfigurationCSVWrapper.getCompany(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getWarehouse(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getSourceLocationGroup());
             if (locationGroup != null) {
                 emergencyReplenishmentConfiguration.setSourceLocationGroupId(locationGroup.getId());
             }
@@ -342,7 +349,9 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getDestinationLocation())) {
             Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
-                    emergencyReplenishmentConfigurationCSVWrapper.getWarehouse(), emergencyReplenishmentConfigurationCSVWrapper.getDestinationLocation());
+                    emergencyReplenishmentConfigurationCSVWrapper.getCompany(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getWarehouse(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getDestinationLocation());
             if (location != null) {
                 emergencyReplenishmentConfiguration.setDestinationLocationId(location.getId());
             }
@@ -350,7 +359,9 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getDestinationLocationGroup())) {
             LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                    emergencyReplenishmentConfigurationCSVWrapper.getWarehouse(), emergencyReplenishmentConfigurationCSVWrapper.getDestinationLocationGroup());
+                    emergencyReplenishmentConfigurationCSVWrapper.getCompany(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getWarehouse(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getDestinationLocationGroup());
             if (locationGroup != null) {
                 emergencyReplenishmentConfiguration.setDestinationLocationGroupId(locationGroup.getId());
             }

@@ -22,12 +22,15 @@ import com.garyzhangscm.cwms.layout.exception.GenericException;
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.WarehouseService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class WarehouseController {
@@ -38,13 +41,21 @@ public class WarehouseController {
 
 
     @RequestMapping(value="/warehouses", method=RequestMethod.GET)
-    public List<Warehouse> listWarehouses(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
-        return warehouseService.findAll(name);
+    public List<Warehouse> listWarehouses(
+            @RequestParam(name = "companyId", required = false, defaultValue = "") Long companyId,
+            @RequestParam(name = "companyCode", required = false, defaultValue = "") String companyCode,
+            @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        // Make sure we either passed in the company ID or company code, both of which are unique
+        if (Objects.isNull(companyId) && StringUtils.isBlank(companyCode)) {
+            return new ArrayList<>();
+        }
+        return warehouseService.findAll(companyId, companyCode, name);
     }
 
     @RequestMapping(value="/warehouses", method=RequestMethod.POST)
-    public Warehouse addWarehouses(@RequestBody Warehouse warehouse) {
-        return warehouseService.save(warehouse);
+    public Warehouse addWarehouses(@RequestParam Long companyId,
+                                   @RequestBody Warehouse warehouse) {
+        return warehouseService.addWarehouses(companyId, warehouse);
     }
 
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.PUT)
@@ -53,7 +64,7 @@ public class WarehouseController {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; warehouse.getId(): " + warehouse.getId());
         }
-        return warehouseService.save(warehouse);
+        return warehouseService.changeWarehouse(id, warehouse);
     }
 
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.DELETE)
@@ -68,10 +79,11 @@ public class WarehouseController {
         return warehouseService.findById(id);
     }
 
-    @RequestMapping(value="/warehouses/accessible/{username}", method=RequestMethod.GET)
-    public List<Warehouse> getAccessibleWarehouse(@PathVariable String username) {
+    @RequestMapping(value="/warehouses/accessible/{companyCode}/{username}", method=RequestMethod.GET)
+    public List<Warehouse> getAccessibleWarehouse(@PathVariable String companyCode,
+                                                  @PathVariable String username) {
         // TO-DO: return warehouse that the user has access
-        List<Warehouse> warehouses =  warehouseService.findAll();
+        List<Warehouse> warehouses =  warehouseService.findAll(null, companyCode, null);
         logger.debug("get {} warehouse for the user: {}",
                 warehouses.size(), username);
         return warehouses;

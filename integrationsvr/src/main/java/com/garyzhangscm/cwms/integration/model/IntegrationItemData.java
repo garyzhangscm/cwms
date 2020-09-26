@@ -18,6 +18,9 @@ public interface IntegrationItemData extends IntegrationData{
     public double getUnitCost() ;
 
 
+    public Long getCompanyId();
+    public String getCompanyCode() ;
+
 
 
     public IntegrationStatus getStatus() ;

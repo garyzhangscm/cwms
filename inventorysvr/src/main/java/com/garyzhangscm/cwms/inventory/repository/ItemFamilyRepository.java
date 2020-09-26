@@ -19,11 +19,16 @@
 package com.garyzhangscm.cwms.inventory.repository;
 
 import com.garyzhangscm.cwms.inventory.model.ItemFamily;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ItemFamilyRepository extends JpaRepository<ItemFamily, Long>, JpaSpecificationExecutor<ItemFamily> {
     ItemFamily findByWarehouseIdAndName(Long warehouseId, String name);
+
+    @Query("select count(distinct i.name) from Item i where i.itemFamily.id = :id ")
+    Integer getItemCount(Long id);
 }

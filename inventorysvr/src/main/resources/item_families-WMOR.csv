@@ -1,8 +1,8 @@
-warehouse,name,description
-WMOR,HIGH_VALUE,高价值物品
-WMOR,LOW_TEMP,低温冷藏
-WMOR,FROZEN,冷冻
-WMOR,OVER_SIZE,不规则物品
-WMOR,HAZARD,危险品
-WMOR,LOW_HUMID,湿度控制
-WMOR,BOOK,书籍
+company,warehouse,name,description
+20901,WMOR,HIGH_VALUE,高价值物品
+20901,WMOR,LOW_TEMP,低温冷藏
+20901,WMOR,FROZEN,冷冻
+20901,WMOR,OVER_SIZE,不规则物品
+20901,WMOR,HAZARD,危险品
+20901,WMOR,LOW_HUMID,湿度控制
+20901,WMOR,BOOK,书籍

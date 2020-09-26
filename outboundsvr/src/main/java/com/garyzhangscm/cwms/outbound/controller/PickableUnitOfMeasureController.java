@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
-import com.garyzhangscm.cwms.outbound.model.AllocationConfiguration;
-import com.garyzhangscm.cwms.outbound.model.PickableUnitOfMeasure;
-import com.garyzhangscm.cwms.outbound.service.AllocationConfigurationService;
+import com.garyzhangscm.cwms.outbound.model.AllocationConfigurationPickableUnitOfMeasure;
 import com.garyzhangscm.cwms.outbound.service.PickableUnitOfMeasureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +34,7 @@ public class PickableUnitOfMeasureController {
     private PickableUnitOfMeasureService pickableUnitOfMeasureService;
 
     @RequestMapping(value="/pickable-unit-of-measures", method = RequestMethod.GET)
-    public List<PickableUnitOfMeasure> getPickableUnitOfMeasureService(
+    public List<AllocationConfigurationPickableUnitOfMeasure> getPickableUnitOfMeasureService(
             @RequestParam Long warehouseId,
             @RequestParam(name = "allocationConfigurationId", required =  false, defaultValue = "") Long allocationConfigurationId
             ) {
@@ -45,8 +43,8 @@ public class PickableUnitOfMeasureController {
 
 
     @RequestMapping(value="/pickable-unit-of-measures", method = RequestMethod.POST)
-    public PickableUnitOfMeasure addPickableUnitOfMeasure(@RequestBody PickableUnitOfMeasure pickableUnitOfMeasure) {
-        return pickableUnitOfMeasureService.save(pickableUnitOfMeasure);
+    public AllocationConfigurationPickableUnitOfMeasure addPickableUnitOfMeasure(@RequestBody AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
+        return pickableUnitOfMeasureService.save(allocationConfigurationPickableUnitOfMeasure);
     }
 
 

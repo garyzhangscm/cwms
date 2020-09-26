@@ -37,11 +37,12 @@ public class UnitOfMeasureController {
     UnitOfMeasureService unitOfMeasureService;
 
     @RequestMapping(value="/unit-of-measures", method = RequestMethod.GET)
-    public List<UnitOfMeasure> findAllUnitOfMeasures(@RequestParam(required = false, name = "name", defaultValue = "") String name) {
+    public List<UnitOfMeasure> findAllUnitOfMeasures(@RequestParam Long warehouseId,
+                                                     @RequestParam(required = false, name = "name", defaultValue = "") String name) {
         if (StringUtils.isNotBlank(name)) {
-            return Collections.singletonList(unitOfMeasureService.findByName(name));
+            return Collections.singletonList(unitOfMeasureService.findByName(warehouseId, name));
         }
-        return unitOfMeasureService.findAll();
+        return unitOfMeasureService.findAll(warehouseId);
     }
 
 

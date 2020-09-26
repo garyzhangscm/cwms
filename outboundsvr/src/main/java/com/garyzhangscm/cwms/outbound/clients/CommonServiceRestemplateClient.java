@@ -55,11 +55,12 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Client getClientByName(String name) {
+    public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/clients")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
@@ -127,11 +128,12 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public Customer getCustomerByName(String name) {
+    public Customer getCustomerByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/customers")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Customer>> responseBodyWrapper
@@ -151,12 +153,13 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    public UnitOfMeasure getUnitOfMeasureByName(String name) {
+    public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/unit-of-measures")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
@@ -192,12 +195,13 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public String getNextNumber(String variable) {
+    public String getNextNumber(Long warehouseId, String variable) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/common/system-controlled-number/{variable}/next");
+                        .path("/api/common/system-controlled-number/{variable}/next")
+                .queryParam("warehouseId", warehouseId);
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(variable).toUriString(),

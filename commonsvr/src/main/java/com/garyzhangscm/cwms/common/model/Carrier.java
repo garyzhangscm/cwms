@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "carrier")
-public class Carrier {
+public class Carrier extends AuditibleEntity<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +16,13 @@ public class Carrier {
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "name", unique = true)
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
+
+    @Column(name = "name")
     private String name;
 
     @Column(name = "description")
@@ -59,6 +65,23 @@ public class Carrier {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 
     public String getName() {

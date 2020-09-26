@@ -28,7 +28,16 @@ public class ReceiptCSVWrapper {
     private String supplier;
 
     private String warehouse;
+    private String company;
     private Boolean allowUnexpectedItem;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getNumber() {
         return number;

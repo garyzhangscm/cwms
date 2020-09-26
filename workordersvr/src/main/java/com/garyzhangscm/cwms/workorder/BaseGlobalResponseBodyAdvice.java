@@ -70,6 +70,32 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
                 exceptionResponse.getMessage(), exceptionResponse);
     }
 
+    /**
+     * Handler for any other runtime exceptions. We already handle our customized exception
+     * in the above handler
+     * @param ex
+     * @param request
+     * @return
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseBodyWrapper RuntimeExceptionErrorHandler(RuntimeException ex, HttpServletRequest request) {
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+        return new ResponseBodyWrapper(
+                500,
+                ex.getMessage(), exceptionResponse);
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseBodyWrapper ExceptionErrorHandler(Exception ex, HttpServletRequest request) {
+
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+        return new ResponseBodyWrapper(
+                500,
+                ex.getMessage(), exceptionResponse);
+    }
+
+
     @Override
     public Object beforeBodyWrite(
             Object obj, MethodParameter methodParameter, MediaType mediaType,

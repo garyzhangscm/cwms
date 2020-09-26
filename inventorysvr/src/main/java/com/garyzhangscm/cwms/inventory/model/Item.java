@@ -62,6 +62,29 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     )
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
 
+    // by default, we will tracking the size of the inventory
+    // of this item.
+    // If this flag is set to false, then we don't have to maintain
+    // the size of the inventory.
+    // If this flag is setup to false for all items in the warehouse, then
+    // we don't have to configure the size for the inventory and locations.
+    @Column(name="tracking_volume_flag")
+    private boolean trackingVolumeFlag = true;
+
+    @Column(name="tracking_lot_number_flag")
+    private boolean trackingLotNumberFlag = true;
+
+    @Column(name="tracking_manufacture_date_flag")
+    private boolean trackingManufactureDateFlag = true;
+
+    @Column(name="shelf_life_days")
+    private Integer shelfLifeDays = 0;
+
+    @Column(name="tracking_expiration_date_flag")
+    private boolean trackingExpirationDateFlag = true;
+
+
+
     @Column(name="unit_cost")
     private double unitCost;
 
@@ -71,6 +94,19 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     @Column(name = "allow_cartonization")
     private Boolean allowCartonization = false;
+
+    // those 2 attributes normally work together
+    // to let the user allocate the whole LPN
+    // in case it is not easy to pick individual
+    // uom
+    @Column(name = "allow_allocation_by_lpn")
+    private Boolean allowAllocationByLPN = false;
+    @Column(name = "allocation_round_up_strategy_type")
+    @Enumerated(EnumType.STRING)
+    private AllocationRoundUpStrategyType allocationRoundUpStrategyType = AllocationRoundUpStrategyType.NONE;
+
+    @Column(name = "allocation_round_up_strategy_value")
+    private Double allocationRoundUpStrategyValue = 0.0;
 
     @Transient
     private Warehouse warehouse;
@@ -134,6 +170,22 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         return clientId;
     }
 
+    public AllocationRoundUpStrategyType getAllocationRoundUpStrategyType() {
+        return allocationRoundUpStrategyType;
+    }
+
+    public void setAllocationRoundUpStrategyType(AllocationRoundUpStrategyType allocationRoundUpStrategyType) {
+        this.allocationRoundUpStrategyType = allocationRoundUpStrategyType;
+    }
+
+    public Double getAllocationRoundUpStrategyValue() {
+        return allocationRoundUpStrategyValue;
+    }
+
+    public void setAllocationRoundUpStrategyValue(Double allocationRoundUpStrategyValue) {
+        this.allocationRoundUpStrategyValue = allocationRoundUpStrategyValue;
+    }
+
     public void setClientId(Long clientId) {
         this.clientId = clientId;
     }
@@ -160,6 +212,43 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setItemPackageTypes(List<ItemPackageType> itemPackageTypes) {
         this.itemPackageTypes = itemPackageTypes;
+    }
+    public void addItemPackageType(ItemPackageType itemPackageType) {
+        this.itemPackageTypes.add(itemPackageType);
+    }
+
+    public boolean isTrackingLotNumberFlag() {
+        return trackingLotNumberFlag;
+    }
+
+    public void setTrackingLotNumberFlag(boolean trackingLotNumberFlag) {
+        this.trackingLotNumberFlag = trackingLotNumberFlag;
+    }
+
+    public boolean isTrackingManufactureDateFlag() {
+        return trackingManufactureDateFlag;
+    }
+
+    public void setTrackingManufactureDateFlag(boolean trackingManufactureDateFlag) {
+        this.trackingManufactureDateFlag = trackingManufactureDateFlag;
+    }
+
+    public void setShelfLifeDays(Integer shelfLifeDays) {
+        this.shelfLifeDays = shelfLifeDays;
+    }
+
+    public int getShelfLifeDays() {
+        return shelfLifeDays;
+    }
+
+
+
+    public boolean isTrackingExpirationDateFlag() {
+        return trackingExpirationDateFlag;
+    }
+
+    public void setTrackingExpirationDateFlag(boolean trackingExpirationDateFlag) {
+        this.trackingExpirationDateFlag = trackingExpirationDateFlag;
     }
 
     public double getUnitCost() {
@@ -192,5 +281,21 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setAllowCartonization(Boolean allowCartonization) {
         this.allowCartonization = allowCartonization;
+    }
+
+    public Boolean getAllowAllocationByLPN() {
+        return allowAllocationByLPN;
+    }
+
+    public void setAllowAllocationByLPN(Boolean allowAllocationByLPN) {
+        this.allowAllocationByLPN = allowAllocationByLPN;
+    }
+
+    public boolean isTrackingVolumeFlag() {
+        return trackingVolumeFlag;
+    }
+
+    public void setTrackingVolumeFlag(boolean trackingVolumeFlag) {
+        this.trackingVolumeFlag = trackingVolumeFlag;
     }
 }

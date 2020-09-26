@@ -99,6 +99,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
 
     public List<ItemUnitOfMeasureCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("item").
                 addColumn("itemPackageType").
@@ -114,6 +115,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
     public List<ItemUnitOfMeasureCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("item").
                 addColumn("itemPackageType").
@@ -157,11 +159,16 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         itemUnitOfMeasure.setHeight(itemUnitOfMeasureCSVWrapper.getHeight());
 
         // warehouse  is mandate
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(itemUnitOfMeasureCSVWrapper.getWarehouse());
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        itemUnitOfMeasureCSVWrapper.getCompany(),
+                        itemUnitOfMeasureCSVWrapper.getWarehouse());
         itemUnitOfMeasure.setWarehouseId(warehouse.getId());
 
         if (!itemUnitOfMeasureCSVWrapper.getUnitOfMeasure().isEmpty()) {
-            UnitOfMeasure unitOfMeasure = commonServiceRestemplateClient.getUnitOfMeasureByName(itemUnitOfMeasureCSVWrapper.getUnitOfMeasure());
+            UnitOfMeasure unitOfMeasure =
+                    commonServiceRestemplateClient.getUnitOfMeasureByName(
+                            warehouse.getId(), itemUnitOfMeasureCSVWrapper.getUnitOfMeasure());
             itemUnitOfMeasure.setUnitOfMeasureId(unitOfMeasure.getId());
         }
         if (!(itemUnitOfMeasureCSVWrapper.getItem().isEmpty() || itemUnitOfMeasureCSVWrapper.getItemPackageType().isEmpty())) {

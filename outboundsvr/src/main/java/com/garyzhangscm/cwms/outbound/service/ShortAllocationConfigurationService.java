@@ -100,6 +100,7 @@ public class ShortAllocationConfigurationService implements TestDataInitiableSer
     public List<ShortAllocationConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("enabled").
                 addColumn("retryInterval").
@@ -130,6 +131,7 @@ public class ShortAllocationConfigurationService implements TestDataInitiableSer
 
         Warehouse warehouse =
                 warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                        shortAllocationConfigurationCSVWrapper.getCompany(),
                         shortAllocationConfigurationCSVWrapper.getWarehouse());
 
         shortAllocationConfiguration.setWarehouseId(warehouse.getId());

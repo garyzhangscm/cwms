@@ -51,7 +51,17 @@ public class OrderCSVWrapper {
     private String billToAddressPostcode;
     private String warehouse;
 
+    private String company;
+
     private String client;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getNumber() {
         return number;

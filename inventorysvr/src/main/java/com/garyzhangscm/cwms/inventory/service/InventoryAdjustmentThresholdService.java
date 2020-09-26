@@ -289,6 +289,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
     public List<InventoryAdjustmentThresholdCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("item").
                 addColumn("client").
                 addColumn("itemFamily").
@@ -307,6 +308,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
     public List<InventoryAdjustmentThresholdCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("item").
                 addColumn("client").
                 addColumn("itemFamily").
@@ -345,31 +347,27 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
         logger.debug("Start to convert from CSV: {}", inventoryAdjustmentThresholdCSVWrapper);
         InventoryAdjustmentThreshold inventoryAdjustmentThreshold = new InventoryAdjustmentThreshold();
 
-        Long warehouseId;
-        if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getWarehouse())) {
-
-            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    inventoryAdjustmentThresholdCSVWrapper.getCompany(),
                     inventoryAdjustmentThresholdCSVWrapper.getWarehouse()
-            ).getId();
-            inventoryAdjustmentThreshold.setWarehouseId(warehouseId);
-        }
-        else {
-            throw MissingInformationException.raiseException("warehouse not passed in");
-        }
+            );
+        inventoryAdjustmentThreshold.setWarehouseId(warehouse.getId());
 
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getItem())) {
             inventoryAdjustmentThreshold.setItem(
-                    itemService.findByName(warehouseId, inventoryAdjustmentThresholdCSVWrapper.getItem())
+                    itemService.findByName(warehouse.getId(), inventoryAdjustmentThresholdCSVWrapper.getItem())
             );
         }
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getClient())) {
             inventoryAdjustmentThreshold.setClientId(
-                    commonServiceRestemplateClient.getClientByName(inventoryAdjustmentThresholdCSVWrapper.getClient()).getId()
+                    commonServiceRestemplateClient.getClientByName(
+                            warehouse.getId(), inventoryAdjustmentThresholdCSVWrapper.getClient()).getId()
             );
         }
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getItemFamily())) {
             inventoryAdjustmentThreshold.setItemFamily(
-                    itemFamilyService.findByName(warehouseId, inventoryAdjustmentThresholdCSVWrapper.getItemFamily())
+                    itemFamilyService.findByName(warehouse.getId(), inventoryAdjustmentThresholdCSVWrapper.getItemFamily())
             );
         }
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getType())) {

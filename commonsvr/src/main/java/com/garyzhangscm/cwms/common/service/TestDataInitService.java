@@ -34,6 +34,8 @@ public class TestDataInitService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+
+
     ClientService clientService;
 
     SupplierService supplierService;
@@ -57,6 +59,7 @@ public class TestDataInitService {
 
     @Autowired
     public TestDataInitService(
+
             ClientService clientService,
             SupplierService supplierService,
             CustomerService customerService,
@@ -66,6 +69,7 @@ public class TestDataInitService {
             ReasonCodeService reasonCodeService,
             SystemControlledNumberService systemControlledNumberService,
             PolicyService policyService) {
+
         this.clientService = clientService;
         this.supplierService = supplierService;
         this.customerService = customerService;
@@ -75,6 +79,7 @@ public class TestDataInitService {
         this.reasonCodeService = reasonCodeService;
         this.systemControlledNumberService = systemControlledNumberService;
         this.policyService = policyService;
+
 
         initiableServices.put("Client", clientService);
         serviceNames.add("Client");

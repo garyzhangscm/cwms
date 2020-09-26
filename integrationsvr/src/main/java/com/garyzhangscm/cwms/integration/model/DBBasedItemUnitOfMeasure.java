@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
@@ -80,11 +82,17 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
     private Double height;
 
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -116,11 +124,11 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
 
         Long warehouseId = getWarehouseId();
         if (Objects.isNull(warehouseId)) {
-            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                    getWarehouseName()
-            ).getId();
-            itemUnitOfMeasure.setWarehouseId(warehouseId);
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    getCompanyId(), getCompanyCode(), getWarehouseId(), getWarehouseName()
+            );
         }
+        itemUnitOfMeasure.setWarehouseId(warehouseId);
 
         if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
             itemUnitOfMeasure.setItemId(
@@ -140,7 +148,7 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
         if (Objects.isNull(getUnitOfMeasureId()) && Objects.nonNull(getUnitOfMeasureName())) {
             itemUnitOfMeasure.setUnitOfMeasureId(
                     commonServiceRestemplateClient.getUnitOfMeasureByName(
-                            getUnitOfMeasureName()
+                            warehouseId, getUnitOfMeasureName()
                     ).getId()
             );
         }
@@ -172,26 +180,28 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
 
     @Override
     public String toString() {
-        return "DBBasedItemUnitOfMeasure{" +
-                "id=" + id +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", itemPackageTypeId=" + itemPackageTypeId +
-                ", itemPackageTypeName='" + itemPackageTypeName + '\'' +
-                ", unitOfMeasureId=" + unitOfMeasureId +
-                ", unitOfMeasureName='" + unitOfMeasureName + '\'' +
-                ", itemPackageType=" + (Objects.nonNull(itemPackageType) ? itemPackageType.getName() : "") +
-                ", quantity=" + quantity +
-                ", weight=" + weight +
-                ", length=" + length +
-                ", width=" + width +
-                ", height=" + height +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public void completeIntegration(IntegrationStatus integrationStatus) {

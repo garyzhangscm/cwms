@@ -152,6 +152,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     public List<ShippingStageAreaConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("sequence").
                 addColumn("locationGroup").
@@ -184,7 +185,9 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
                 ShippingStageLocationReserveStrategy.valueOf(shippingStageAreaConfigurationCSVWrapper.getLocationReserveStrategy()));
 
         if (!StringUtils.isBlank(shippingStageAreaConfigurationCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(shippingStageAreaConfigurationCSVWrapper.getWarehouse());
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    shippingStageAreaConfigurationCSVWrapper.getCompany(),
+                    shippingStageAreaConfigurationCSVWrapper.getWarehouse());
             if (warehouse != null) {
                 shippingStageAreaConfiguration.setWarehouseId(warehouse.getId());
             }
@@ -192,7 +195,9 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         if (!StringUtils.isBlank(shippingStageAreaConfigurationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup =
                     warehouseLayoutServiceRestemplateClient.getLocationGroupByName(
-                            shippingStageAreaConfigurationCSVWrapper.getWarehouse(), shippingStageAreaConfigurationCSVWrapper.getLocationGroup());
+                            shippingStageAreaConfigurationCSVWrapper.getCompany(),
+                            shippingStageAreaConfigurationCSVWrapper.getWarehouse(),
+                            shippingStageAreaConfigurationCSVWrapper.getLocationGroup());
             if (locationGroup != null) {
                 shippingStageAreaConfiguration.setLocationGroupId(locationGroup.getId());
             }

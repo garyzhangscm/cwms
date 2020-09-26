@@ -25,6 +25,8 @@ import java.io.Serializable;
 public class GridLocationConfigurationCSVWrapper implements Serializable {
 
     private String warehouse;
+    private String company;
+
 
     private String location;
 
@@ -37,6 +39,14 @@ public class GridLocationConfigurationCSVWrapper implements Serializable {
 
     private boolean permanentLPNFlag;
     private String permanentLPN;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getWarehouse() {
         return warehouse;

@@ -18,6 +18,7 @@ public class InventoryServerConfiguration extends ResourceServerConfigurerAdapte
     public void configure(HttpSecurity http) throws Exception{
         http
         .authorizeRequests()
+                .antMatchers("/app").permitAll()
           .antMatchers("/actuator").permitAll()
           .anyRequest()
           .authenticated();

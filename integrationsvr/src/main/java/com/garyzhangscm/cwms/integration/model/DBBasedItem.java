@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
@@ -27,6 +29,7 @@ import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -75,11 +78,17 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     @Column(name="unit_cost")
     private double unitCost;
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -98,24 +107,20 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         Item item = new Item();
 
 
-        String[] fieldNames = {
-                "name","description","clientId","clientName","unitCost","warehouseId","warehouseName"
-        };
-
-        ObjectCopyUtil.copyValue(this, item, fieldNames);
+        BeanUtils.copyProperties(this, item);
 
         Long warehouseId = getWarehouseId();
         if (Objects.isNull(warehouseId)) {
-            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                    getWarehouseName()
-            ).getId();
-            item.setWarehouseId(warehouseId);
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    getCompanyId(), getCompanyCode(), getWarehouseId(), getWarehouseName()
+            );
         }
+        item.setWarehouseId(warehouseId);
 
         if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
             item.setClientId(
                     commonServiceRestemplateClient.getClientByName(
-                            getClientName()
+                            warehouseId, getClientName()
                     ).getId()
             );
         }
@@ -167,21 +172,28 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
 
     @Override
     public String toString() {
-        return "DBBasedItem{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", itemFamily=" + itemFamily +
-                ", itemPackageTypes=" + itemPackageTypes +
-                ", unitCost=" + unitCost +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public void completeIntegration(IntegrationStatus integrationStatus) {

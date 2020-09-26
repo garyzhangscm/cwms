@@ -1,8 +1,8 @@
-key,value,description
-LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION,AUDIT,Location to Save Removed Inventory
-LOCATION-AUDIT-COUNT,REMOVE_INV,Location to Save Removed Inventory by Audit Count
-LOCATION-COUNT,COUNT,Location to Save Removed Inventory by Count
-LOCATION-INVENTORY-ADJUST,INVADJ,Location to Save Removed Inventory by Inventory Adjustment
-LOCATION-RECEIVING,INVRCV,Location to Save Removed Inventory by Inventory Receiving
-LOCATION-GROUP-RECEIPT,RECEIPT,Location Group for Receipt
-JOB-EMERGENCY-REPLENISHMENT-MAX-COUNT,50,Max emergency replenishment can be processed in one round
+company,warehouse,key,value,description
+20901,WMOR,LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION,AUDIT,Location to Save Removed Inventory
+20901,WMOR,LOCATION-AUDIT-COUNT,REMOVE_INV,Location to Save Removed Inventory by Audit Count
+20901,WMOR,LOCATION-COUNT,COUNT,Location to Save Removed Inventory by Count
+20901,WMOR,LOCATION-INVENTORY-ADJUST,INVADJ,Location to Save Removed Inventory by Inventory Adjustment
+20901,WMOR,LOCATION-RECEIVING,INVRCV,Location to Save Removed Inventory by Inventory Receiving
+20901,WMOR,LOCATION-GROUP-RECEIPT,RECEIPT,Location Group for Receipt
+20901,WMOR,JOB-EMERGENCY-REPLENISHMENT-MAX-COUNT,50,Max emergency replenishment can be processed in one round

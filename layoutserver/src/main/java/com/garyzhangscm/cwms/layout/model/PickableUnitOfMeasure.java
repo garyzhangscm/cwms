@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "pickable_unit_of_measure")
-public class PickableUnitOfMeasure {
+public class PickableUnitOfMeasure extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

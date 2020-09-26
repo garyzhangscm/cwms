@@ -27,12 +27,19 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "system_controlled_number")
-public class SystemControlledNumber implements Serializable {
+public class SystemControlledNumber extends AuditibleEntity<String> implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "system_controlled_number_id")
     @JsonProperty(value="id")
     private Long id;
+
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @Column(name = "variable", unique = true)
     private String variable;
@@ -64,6 +71,23 @@ public class SystemControlledNumber implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 
     public String getVariable() {

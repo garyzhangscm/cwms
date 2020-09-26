@@ -65,6 +65,23 @@ public class InboundServiceRestemplateClient {
 
     }
 
+    public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inbound/receipts/{receiptId}/lines/{receiptLineId}/reverse")
+                .queryParam("quantity", quantity);
+
+        ResponseBodyWrapper<ReceiptLine> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(receiptId, receiptLineId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<ReceiptLine>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
 
 

@@ -97,7 +97,7 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     @Enumerated(EnumType.STRING)
     @Column(name="allocation_strategy_type")
-    private AllocationStrategyType AllocationStrategyType;
+    private AllocationStrategyType allocationStrategyType;
 
     @Column(name = "carrier_id")
     private Long carrierId;
@@ -110,6 +110,7 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     @Transient
     private CarrierServiceLevel carrierServiceLevel;
+
 
     @Override
     public String toString() {
@@ -285,11 +286,11 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
         this.productionPlanProducedQuantity = productionPlanProducedQuantity;
     }
 
-    public com.garyzhangscm.cwms.outbound.model.AllocationStrategyType getAllocationStrategyType() {
-        return AllocationStrategyType;
+    public AllocationStrategyType getAllocationStrategyType() {
+        return allocationStrategyType;
     }
 
-    public void setAllocationStrategyType(com.garyzhangscm.cwms.outbound.model.AllocationStrategyType allocationStrategyType) {
-        AllocationStrategyType = allocationStrategyType;
+    public void setAllocationStrategyType(AllocationStrategyType allocationStrategyType) {
+        this.allocationStrategyType = allocationStrategyType;
     }
 }

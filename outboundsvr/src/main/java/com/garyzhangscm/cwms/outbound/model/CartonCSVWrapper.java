@@ -12,6 +12,8 @@ public class CartonCSVWrapper implements Serializable {
         private String name;
 
     private String warehouse;
+    private String company;
+
 
     private Double length;
 
@@ -28,6 +30,13 @@ public class CartonCSVWrapper implements Serializable {
 
     private Boolean pickingCartonFlag;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getName() {
         return name;

@@ -98,13 +98,14 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    public Warehouse getWarehouseByName(String name)   {
+    public Warehouse getWarehouseByName(String companyCode, String name)   {
 
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/warehouses")
+                        .queryParam("companyCode", companyCode)
                         .queryParam("name", name);
 
         logger.debug("Start to get warehouse by name: {}, /n >> {}",
@@ -596,6 +597,33 @@ public class WarehouseLayoutServiceRestemplateClient {
         return location.getLocationGroup().getLocationGroupType().getVirtual();
     }
 
+    public Location deallocateLocation(Location location, Inventory inventory) {
+        Double inventorySize = 0.0;
+        if (location.getLocationGroup().getVolumeTrackingPolicy().equals(
+                LocationVolumeTrackingPolicy.BY_EACH
+        )) {
+            inventorySize = inventory.getQuantity() * 1.0;
+        }
+        else {
+
+            inventorySize = inventory.getSize();
+        }
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout//locations/{id}/pending-volume")
+                        .queryParam("reduce", inventorySize);
+
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(location.getId()).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 
 

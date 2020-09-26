@@ -46,7 +46,7 @@ public class ItemController {
         return itemService.findAll(warehouseId, name, clientIds, itemFamilyIds);
     }
 
-    @RequestMapping(value="/item/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/items/{id}", method = RequestMethod.GET)
     public Item findItem(@PathVariable Long id) {
         return itemService.findById(id);
     }
@@ -61,8 +61,19 @@ public class ItemController {
         return  ResponseBodyWrapper.success(locations.size() + "");
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/item")
+    @RequestMapping(method=RequestMethod.DELETE, value="/items")
     public void removeItems(@RequestParam(name = "item_ids", required = false, defaultValue = "") String itemIds) {
         itemService.delete(itemIds);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/items")
+    public Item addItem(@RequestBody Item item) {
+        return itemService.addItem(item);
+    }
+
+    @RequestMapping(value="/items/{id}", method = RequestMethod.PUT)
+    public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
+
+        return itemService.changeItem(id, item);
     }
 }

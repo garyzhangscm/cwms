@@ -18,7 +18,7 @@ DROP TABLE if exists wave;
 drop table if exists outbound_order_line;
 DROP TABLE if exists outbound_order;
 
-drop table if exists pickable_unit_of_measure;
+drop table if exists allocation_configuration_pickable_unit_of_measure;
 DROP TABLE if exists allocation_configuration;
 drop table if exists  shipping_stage_area_configuration;
 drop table if exists emergency_replenishment_configuration;
@@ -341,7 +341,7 @@ CREATE TABLE pick(
   pick_list_id BIGINT,
   inventory_status_id BIGINT NOT NULL,
   cartonization_id   BIGINT,
-  unit_of_measure_id BIGINT NOT NULL,
+  unit_of_measure_id BIGINT,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
@@ -429,8 +429,8 @@ CREATE TABLE emergency_replenishment_configuration(
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50));
 
-create table pickable_unit_of_measure(
-  pickable_unit_of_measure_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+create table allocation_configuration_pickable_unit_of_measure(
+  allocation_configuration_pickable_unit_of_measure_id   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
   unit_of_measure_id BIGINT NOT NULL,
   allocation_configuration_id BIGINT NOT NULL,

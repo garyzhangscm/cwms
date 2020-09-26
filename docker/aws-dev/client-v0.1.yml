@@ -1,0 +1,6 @@
+version: '2'
+services:
+  webclient:
+      image: garyzhangscm/cwms-client:v0.1
+      ports:
+          - "80:80"

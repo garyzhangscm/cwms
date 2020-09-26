@@ -14,10 +14,14 @@ public interface IntegrationItemUnitOfMeasureData {
     public Double getWidth() ;
     public Double getHeight() ;
     public DBBasedItemPackageType getItemPackageType();
-    public Long getWarehouseId();
 
     public String getUnitOfMeasureName();
+
+    public Long getCompanyId();
+    public String getCompanyCode() ;
+    public Long getWarehouseId();
     public String getWarehouseName() ;
+
     public IntegrationStatus getStatus() ;
     public LocalDateTime getInsertTime() ;
 

@@ -24,13 +24,19 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "policy")
-public class Policy {
+public class Policy extends AuditibleEntity<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "policy_id")
     @JsonProperty(value="id")
     private Long id;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @Column(name = "policy_key", unique = true)
     private String key;
@@ -45,6 +51,23 @@ public class Policy {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 
     public String getKey() {

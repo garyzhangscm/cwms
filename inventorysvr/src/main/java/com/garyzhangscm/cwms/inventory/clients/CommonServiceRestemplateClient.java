@@ -60,11 +60,12 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Client getClientByName(String name) {
+    public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/clients")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
@@ -83,12 +84,13 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    public Supplier getSupplierByName(String name) {
+    public Supplier getSupplierByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
                     .scheme("http").host("zuulservice")
                     .path("/api/common/suppliers")
+                    .queryParam("warehouseId", warehouseId)
                     .queryParam("name", name);
 
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper
@@ -124,12 +126,13 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public UnitOfMeasure getUnitOfMeasureByName(String name) {
+    public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/unit-of-measures")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
@@ -149,12 +152,15 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    public String getNextNumber(String variable) {
+    public String getNextNumber(Long warehouseId, String variable) {
 
+        logger.debug("Start to get next number for {} / {}",
+                warehouseId, variable);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/common/system-controlled-number/{variable}/next");
+                        .path("/api/common/system-controlled-number/{variable}/next")
+                .queryParam("warehouseId", warehouseId);
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(variable).toUriString(),
@@ -162,19 +168,20 @@ public class CommonServiceRestemplateClient {
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
 
+        logger.debug(">> Next number is: {}", responseBodyWrapper.getData().getNextNumber());
         return responseBodyWrapper.getData().getNextNumber();
     }
-    public String getNextLpn() {
-        return getNextNumber("lpn");
+    public String getNextLpn(Long warehouseId) {
+        return getNextNumber(warehouseId, "lpn");
     }
-    public String getNextInventoryActivityTransactionId() {
-        return getNextNumber("inventory-activity-transaction-id");
+    public String getNextInventoryActivityTransactionId(Long warehouseId) {
+        return getNextNumber(warehouseId, "inventory-activity-transaction-id");
     }
-    public String getNextInventoryActivityTransactionGroupId() {
-        return getNextNumber("inventory-activity-transaction-group-id");
+    public String getNextInventoryActivityTransactionGroupId(Long warehouseId) {
+        return getNextNumber(warehouseId, "inventory-activity-transaction-group-id");
     }
-    public String getNextCycleCountBatchId() {
-        return getNextNumber("cycle-count-batch-id");
+    public String getNextCycleCountBatchId(Long warehouseId) {
+        return getNextNumber(warehouseId, "cycle-count-batch-id");
     }
 
 }

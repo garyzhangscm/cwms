@@ -18,7 +18,10 @@ public interface IntegrationItemPackageTypeData {
     public List<DBBasedItemUnitOfMeasure> getItemUnitOfMeasures() ;
 
 
+    public Long getCompanyId();
+    public String getCompanyCode() ;
     public Long getWarehouseId();
+    public String getWarehouseName() ;
 
 
     public IntegrationStatus getStatus() ;

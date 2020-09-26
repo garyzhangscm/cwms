@@ -30,6 +30,7 @@ import com.garyzhangscm.cwms.inbound.repository.ReceiptRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -245,6 +246,7 @@ public class ReceiptService implements TestDataInitiableService{
     public List<ReceiptCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("number").
                 addColumn("client").
@@ -276,19 +278,19 @@ public class ReceiptService implements TestDataInitiableService{
         receipt.setReceiptStatus(ReceiptStatus.OPEN);
         receipt.setAllowUnexpectedItem(receiptCSVWrapper.getAllowUnexpectedItem());
 
-        if (!StringUtils.isBlank(receiptCSVWrapper.getWarehouse())) {
-            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(receiptCSVWrapper.getWarehouse());
-            if (warehouse != null) {
-                receipt.setWarehouseId(warehouse.getId());
-            }
-        }
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                    receiptCSVWrapper.getCompany(),
+                    receiptCSVWrapper.getWarehouse());
+        receipt.setWarehouseId(warehouse.getId());
 
         if (!StringUtils.isBlank(receiptCSVWrapper.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientByName(receiptCSVWrapper.getClient());
+            Client client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(), receiptCSVWrapper.getClient());
             receipt.setClientId(client.getId());
         }
         if (!StringUtils.isBlank(receiptCSVWrapper.getSupplier())) {
-            Supplier supplier = commonServiceRestemplateClient.getSupplierByName(receiptCSVWrapper.getSupplier());
+            Supplier supplier = commonServiceRestemplateClient.getSupplierByName(
+                    warehouse.getId(), receiptCSVWrapper.getSupplier());
             receipt.setSupplierId(supplier.getId());
         }
         return receipt;
@@ -347,4 +349,20 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
 
+    /**
+     * Wo will only change the receipt's attribute here. We will not process
+     * receipt line
+     * @param receipt
+     * @return
+     */
+    public Receipt changeReceipt(Long id, Receipt receipt) {
+
+        Receipt existingReceipt = findById(id);
+
+        existingReceipt.setClientId(receipt.getClientId());
+        existingReceipt.setSupplierId(receipt.getSupplierId());
+        existingReceipt.setAllowUnexpectedItem(receipt.getAllowUnexpectedItem());
+
+        return saveOrUpdate(existingReceipt);
+    }
 }

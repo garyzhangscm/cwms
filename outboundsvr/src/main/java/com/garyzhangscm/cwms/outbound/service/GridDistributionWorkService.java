@@ -221,7 +221,7 @@ public class GridDistributionWorkService {
             // If we can't get the destination LPN yet, it is probably that we don't have
             // a permanent LPN setup for the grid location and there's no inventory
             // in the location yet
-            destinationLpn = commonServiceRestemplateClient.getNextNumber("lpn");
+            destinationLpn = commonServiceRestemplateClient.getNextNumber(warehouseId, "lpn");
         }
 
         logger.debug("Confirm by moving all inventory from id {} into location {} ",
@@ -308,7 +308,7 @@ public class GridDistributionWorkService {
                     // Current inventory is enough for the quantity to be moved
                     // let's split the inventory
 
-                    String newLpn = commonServiceRestemplateClient.getNextNumber("lpn");
+                    String newLpn = commonServiceRestemplateClient.getNextNumber(warehouseId, "lpn");
                     List<Inventory> splitInventory = inventoryServiceRestemplateClient.split(inventory, newLpn, quantityToBeMoved);
                     if (splitInventory.size() != 2) {
                         throw GridException.raiseException("Inventory split for pick error! Inventory is not split into 2");

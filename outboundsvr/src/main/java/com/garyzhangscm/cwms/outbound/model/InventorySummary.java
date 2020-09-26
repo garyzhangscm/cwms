@@ -50,6 +50,7 @@ public class InventorySummary implements Serializable {
     // value: inventory
     private Map<String, List<Inventory>> inventories = new HashMap<>();
 
+
     public InventorySummary(){}
 
     public InventorySummary(Inventory inventory) {
@@ -81,6 +82,12 @@ public class InventorySummary implements Serializable {
         List<Inventory> inventoryList = inventories.getOrDefault(inventory.getLpn(), new ArrayList<>());
         inventoryList.add(inventory);
         inventories.put(inventory.getLpn(), inventoryList);
+    }
+
+    public void markLPNAsAllocated(String lpn, Long pickId) {
+        List<Inventory> inventoryList = inventories.getOrDefault(lpn, new ArrayList<>());
+        inventoryList.forEach(inventory -> inventory.setAllocatedByPickId(pickId));
+
     }
 
     public Long getLocationId() {

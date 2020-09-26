@@ -19,10 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
-import com.garyzhangscm.cwms.outbound.model.AllocationConfiguration;
 import com.garyzhangscm.cwms.outbound.model.EmergencyReplenishmentConfiguration;
-import com.garyzhangscm.cwms.outbound.model.PickableUnitOfMeasure;
-import com.garyzhangscm.cwms.outbound.service.AllocationConfigurationService;
 import com.garyzhangscm.cwms.outbound.service.EmergencyReplenishmentConfigurationService;
 import com.garyzhangscm.cwms.outbound.service.IntegrationService;
 import org.slf4j.Logger;

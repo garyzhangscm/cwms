@@ -36,8 +36,9 @@ public class PolicyController {
     PolicyService policyService;
 
     @RequestMapping(value="/policies", method = RequestMethod.GET)
-    public List<Policy> findAllPolicies(@RequestParam(name="key", required = false, value = "") String key) {
-            return policyService.findAll(key);
+    public List<Policy> findAllPolicies(@RequestParam Long warehouseId,
+                                        @RequestParam(name="key", required = false, value = "") String key) {
+            return policyService.findAll(warehouseId, key);
     }
 
     @RequestMapping(value="/policies", method = RequestMethod.POST)

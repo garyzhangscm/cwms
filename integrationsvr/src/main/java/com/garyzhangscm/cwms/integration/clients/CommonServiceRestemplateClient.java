@@ -47,9 +47,13 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Client getClientByName(String name) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/common/clients")
+    public Client getClientByName(Long warehouseId, String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder
+                        .fromHttpUrl("http://zuulservice/api/common/clients")
+                        .queryParam("warehouseId", warehouseId)
                 .queryParam("name", name);
+
         ResponseBodyWrapper<List<Client>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
         List<Client> clients = responseBodyWrapper.getData();
@@ -67,8 +71,10 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public Supplier getSupplierByName(String name) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/common/suppliers")
+    public Supplier getSupplierByName(Long warehouseId, String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/common/suppliers")
+                        .queryParam("warehouseId", warehouseId)
                 .queryParam("name", name);
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
@@ -90,7 +96,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public UnitOfMeasure getUnitOfMeasureByName(String name) {
+    public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

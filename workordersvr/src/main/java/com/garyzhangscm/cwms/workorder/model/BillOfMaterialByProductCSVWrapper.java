@@ -6,6 +6,7 @@ public class BillOfMaterialByProductCSVWrapper {
     private String billOfMaterial;
 
     private String warehouse;
+    private String company;
 
     private Long expectedQuantity;
 
@@ -13,6 +14,13 @@ public class BillOfMaterialByProductCSVWrapper {
 
     private String inventoryStatus;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getBillOfMaterial() {
         return billOfMaterial;

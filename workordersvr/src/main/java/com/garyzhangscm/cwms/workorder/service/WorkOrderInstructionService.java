@@ -114,6 +114,7 @@ public class WorkOrderInstructionService implements TestDataInitiableService {
     public List<WorkOrderInstructionCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("workOrder").
                 addColumn("sequence").
                 addColumn("instruction").
@@ -142,6 +143,7 @@ public class WorkOrderInstructionService implements TestDataInitiableService {
         WorkOrderInstruction workOrderInstruction = new WorkOrderInstruction();
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                workOrderInstructionCSVWrapper.getCompany(),
                 workOrderInstructionCSVWrapper.getWarehouse()
         );
 

@@ -7,10 +7,19 @@ public class BillOfMaterialCSVWrapper {
     private String number;
 
     private String warehouse;
+    private String company;
 
     private String item;
 
     private Long expectedQuantity;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getNumber() {
         return number;

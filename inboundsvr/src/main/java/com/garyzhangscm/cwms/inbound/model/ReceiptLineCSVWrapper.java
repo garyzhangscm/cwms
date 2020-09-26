@@ -26,9 +26,18 @@ public class ReceiptLineCSVWrapper {
     private Long receivedQuantity;
     private String warehouse;
 
+    private String company;
 
     private Long overReceivingQuantity;
     private Double overReceivingPercent;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getReceipt() {
         return receipt;

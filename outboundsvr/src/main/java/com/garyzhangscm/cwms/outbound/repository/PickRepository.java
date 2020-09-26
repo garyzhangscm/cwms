@@ -31,10 +31,14 @@ import java.util.List;
 public interface PickRepository extends JpaRepository<Pick, Long>, JpaSpecificationExecutor<Pick> {
     Pick findByNumber(String number);
 
-    @Query("select p from Pick p where itemId = :itemId and pickedQuantity < quantity and quantity > 0")
+    @Query("select p from Pick p where p.itemId = :itemId and p.pickedQuantity < p.quantity and p.quantity > 0")
     List<Pick> getOpenPicksByItemId(Long itemId);
 
 
     @Query("select p from Pick p inner join p.shipmentLine.shipment s where s.id = :shipmentId")
     List<Pick> getPicksByShipmentId(Long shipmentId);
+
+    @Query("select p from Pick p inner join p.shipmentLine s where s.id = :shipmentLineId")
+    List<Pick> getPicksByShipmentLineId(Long shipmentLineId);
+
 }

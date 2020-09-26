@@ -26,7 +26,17 @@ public class OrderLineCSVWrapper {
     private Long expectedQuantity;
     private String inventoryStatus;
     private String warehouse;
+    private String company;
+
     private String allocationStrategyType;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getOrder() {
         return order;

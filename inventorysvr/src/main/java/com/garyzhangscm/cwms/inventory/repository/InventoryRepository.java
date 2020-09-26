@@ -28,7 +28,7 @@ import java.util.List;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long>, JpaSpecificationExecutor<Inventory> {
-    List<Inventory> findByLpn(String lpn);
+    List<Inventory> findByWarehouseIdAndLpn(Long warehouseId, String lpn);
 
     List<Inventory> findByLocationId(Long locationId);
 

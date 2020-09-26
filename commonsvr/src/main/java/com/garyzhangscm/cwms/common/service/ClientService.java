@@ -19,23 +19,28 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.Client;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.ClientRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ClientService implements  TestDataInitiableService{
@@ -46,6 +51,8 @@ public class ClientService implements  TestDataInitiableService{
     private ClientRepository clientRepository;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.clients:clients}")
     String testDataFile;
@@ -55,18 +62,28 @@ public class ClientService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("client not found by id: " + id));
     }
 
-    public List<Client> findAll(String name) {
+    public List<Client> findAll(Long warehouseId,
+                                String name) {
+        return clientRepository.findAll(
+                (Root<Client> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if (StringUtils.isBlank(name)) {
-            return clientRepository.findAll();
-        }
-        else {
-            return Arrays.asList(new Client[]{findByName(name)});
-        }
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
 
-    public Client findByName(String name){
-        return clientRepository.findByName(name);
+    public Client findByName(Long warehouseId, String name){
+        return clientRepository.findByName(warehouseId, name);
     }
 
     @Transactional
@@ -77,8 +94,8 @@ public class ClientService implements  TestDataInitiableService{
     // update when the client already exists
     @Transactional
     public Client saveOrUpdate(Client client) {
-        if (client.getId() == null && findByName(client.getName()) != null) {
-            client.setId(findByName(client.getName()).getId());
+        if (client.getId() == null && findByName(client.getWarehouseId(), client.getName()) != null) {
+            client.setId(findByName(client.getWarehouseId(), client.getName()).getId());
         }
         return save(client);
     }
@@ -103,13 +120,15 @@ public class ClientService implements  TestDataInitiableService{
         }
     }
 
-    public List<Client> loadData(String fileName) throws IOException {
+    public List<ClientCSVWrapper> loadData(String fileName) throws IOException {
         return loadData(new File(fileName));
     }
 
-    public List<Client> loadData(File file) throws IOException {
+    public List<ClientCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -124,12 +143,14 @@ public class ClientService implements  TestDataInitiableService{
                 addColumn("addressPostcode").
                 build().withHeader();
 
-        return fileService.loadData(file, schema, Client.class);
+        return fileService.loadData(file, schema, ClientCSVWrapper.class);
     }
 
-    public List<Client> loadData(InputStream inputStream) throws IOException {
+    public List<ClientCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
                 addColumn("contactorFirstname").
@@ -144,7 +165,7 @@ public class ClientService implements  TestDataInitiableService{
                 addColumn("addressPostcode").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, Client.class);
+        return fileService.loadData(inputStream, schema, ClientCSVWrapper.class);
     }
 
     @Transactional
@@ -154,12 +175,25 @@ public class ClientService implements  TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<Client> clients = loadData(inputStream);
-            clients.stream().forEach(client -> saveOrUpdate(client));
+            List<ClientCSVWrapper> clientCSVWrappers = loadData(inputStream);
+            clientCSVWrappers.stream().forEach(clientCSVWrapper -> saveOrUpdate(convertFromWrapper(clientCSVWrapper)));
         }
         catch(IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
+    }
+
+    private Client convertFromWrapper(ClientCSVWrapper clientCSVWrapper) {
+        Client client = new Client();
+
+        BeanUtils.copyProperties(clientCSVWrapper, client);
+
+        Warehouse warehouse =warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                clientCSVWrapper.getCompany(), clientCSVWrapper.getWarehouse()
+        );
+        client.setWarehouseId(warehouse.getId());
+        return client;
+
     }
 
 }

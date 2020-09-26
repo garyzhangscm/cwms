@@ -19,8 +19,10 @@
 package com.garyzhangscm.cwms.integration.clients;
 
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.integration.model.Company;
 import com.garyzhangscm.cwms.integration.model.Warehouse;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class WarehouseLayoutServiceRestemplateClient {
@@ -48,10 +51,31 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     RestTemplate restTemplate;
 
-    public Warehouse getWarehouseByName(String name) {
+    public Company getCompanyByCode(String companyCode) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/layout/companies")
+                        .queryParam("code", companyCode);
+
+        ResponseBodyWrapper<List<Company>> responseBodyWrapper = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {
+                }).getBody();
+
+        List<Company> companies = responseBodyWrapper.getData();
+        if (companies.size() != 1) {
+            return null;
+        }
+        else {
+            return companies.get(0);
+        }
+    }
+
+    public Warehouse getWarehouseByName(String companyCode, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/layout/warehouses")
+                        .queryParam("companyCode", companyCode)
                 .queryParam("name", name);
 
         ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper = restTemplate.exchange(
@@ -68,6 +92,60 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+    public Warehouse getWarehouseByName(Long companyId, String name) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/layout/warehouses")
+                        .queryParam("companyId", companyId)
+                        .queryParam("name", name);
+
+        ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {
+                }).getBody();
+
+        List<Warehouse> warehouses = responseBodyWrapper.getData();
+        if (warehouses.size() != 1) {
+            return null;
+        }
+        else {
+            return warehouses.get(0);
+        }
+    }
+
+    /**
+     * Get the warehouse id by
+     * 1. warehouse id
+     * 2. Company ID + Warehouse Name
+     * 3. Company Code + Warehouse Name
+     * @param companyId
+     * @param companyCode
+     * @param warehouseId
+     * @param warehouseName
+     * @return
+     */
+    public Long getWarehouseId(Long companyId, String companyCode,
+                                    Long warehouseId, String warehouseName) {
+
+        // If warehouse Id is passed in, then return it
+        // otherwise, get warehouse by
+        // 1. Company ID + Warehouse Name
+        // 2. Company Code + Warehouse Name
+        if (Objects.nonNull(warehouseId)) {
+            return warehouseId;
+        }
+        Warehouse warehouse = null;
+        if (Objects.nonNull(companyId) && StringUtils.isNotBlank(warehouseName)) {
+            warehouse = getWarehouseByName(companyId, warehouseName);
+
+        }
+        else if (StringUtils.isNotBlank(companyCode) && StringUtils.isNotBlank(warehouseName)) {
+            warehouse = getWarehouseByName(companyCode, warehouseName);
+        }
+
+        return Objects.isNull(warehouse) ? null : warehouse.getId();
+
+    }
     public Warehouse getWarehouseById(Long id) {
 
         UriComponentsBuilder builder =

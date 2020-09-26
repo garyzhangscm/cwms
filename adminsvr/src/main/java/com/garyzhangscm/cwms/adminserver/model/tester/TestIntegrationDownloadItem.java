@@ -213,9 +213,9 @@ public class TestIntegrationDownloadItem extends TestScenario{
         List<ItemUnitOfMeasure> itemUnitOfMeasures = new ArrayList<>();
 
         // Will create Item Unit Of Measure with EA / CS / PL
-        UnitOfMeasure unitOfMeasureEA = commonServiceRestemplateClient.getUnitOfMeasureByName("EA");
-        UnitOfMeasure unitOfMeasureCS = commonServiceRestemplateClient.getUnitOfMeasureByName("CS");
-        UnitOfMeasure unitOfMeasurePL = commonServiceRestemplateClient.getUnitOfMeasureByName("PL");
+        UnitOfMeasure unitOfMeasureEA = commonServiceRestemplateClient.getUnitOfMeasureByName(itemPackageType.getWarehouseId(), "EA");
+        UnitOfMeasure unitOfMeasureCS = commonServiceRestemplateClient.getUnitOfMeasureByName(itemPackageType.getWarehouseId(), "CS");
+        UnitOfMeasure unitOfMeasurePL = commonServiceRestemplateClient.getUnitOfMeasureByName(itemPackageType.getWarehouseId(), "PL");
 
         itemUnitOfMeasures.add(createItemUnitOfMeasure(
 

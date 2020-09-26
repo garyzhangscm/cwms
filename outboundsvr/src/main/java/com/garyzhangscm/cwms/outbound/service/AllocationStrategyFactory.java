@@ -26,6 +26,8 @@ public class AllocationStrategyFactory {
 
 
     public AllocationStrategy getDefaultAllocationStrategy() {
-        return new FIFOAllocationStrategy();
+        return allocationStrategies.stream()
+                .filter(allocationStrategy -> allocationStrategy.isDefault())
+                .findFirst().orElse(null);
     }
 }

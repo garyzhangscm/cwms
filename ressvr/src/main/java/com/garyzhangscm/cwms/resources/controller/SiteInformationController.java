@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.model.SiteInformation;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
+import com.garyzhangscm.cwms.resources.service.SiteInformationService;
 import com.garyzhangscm.cwms.resources.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -36,13 +37,15 @@ public class SiteInformationController {
     private static final Logger logger = LoggerFactory.getLogger(SiteInformationController.class);
     @Autowired
     private UserService userService;
+    @Autowired
+    private SiteInformationService siteInformationService;
 
     @RequestMapping(value = "/site-information")
     public SiteInformation getSiteInformation() {
         logger.debug("Start to get site information for user {}",
                 userService.getCurrentUserName());
         if (StringUtils.isBlank(userService.getCurrentUserName())) {
-            return SiteInformation.getDefaultSiteInformation();
+            return siteInformationService.getDefaultSiteInformation();
         }
         else {
             return userService.getSiteInformaiton(userService.getCurrentUserName());
@@ -51,7 +54,7 @@ public class SiteInformationController {
 
     @RequestMapping(value = "/site-information/default")
     public SiteInformation getDefaultSiteInformation() {
-        return SiteInformation.getDefaultSiteInformation();
+        return siteInformationService.getDefaultSiteInformation();
     }
 
 

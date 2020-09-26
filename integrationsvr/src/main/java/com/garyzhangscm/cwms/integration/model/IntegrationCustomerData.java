@@ -8,6 +8,10 @@ public interface IntegrationCustomerData {
 
 
 
+    public Long getCompanyId();
+    public String getCompanyCode() ;
+    public Long getWarehouseId();
+    public String getWarehouseName() ;
     public String getName() ;
 
 

@@ -179,6 +179,7 @@ public class ListPickingConfigurationService implements TestDataInitiableService
     public List<ListPickingConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("sequence").
                 addColumn("warehouse").
                 addColumn("client").
@@ -213,17 +214,14 @@ public class ListPickingConfigurationService implements TestDataInitiableService
         listPickingConfiguration.setSequence(listPickingConfigurationCSVWrapper.getSequence());
         listPickingConfiguration.setPickType(PickType.valueOf(listPickingConfigurationCSVWrapper.getPickType()));
 
-        if (!StringUtils.isBlank(listPickingConfigurationCSVWrapper.getWarehouse())) {
             Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                   listPickingConfigurationCSVWrapper.getWarehouse()
+                    listPickingConfigurationCSVWrapper.getCompany(),
+                    listPickingConfigurationCSVWrapper.getWarehouse()
             );
-            if (warehouse != null) {
-                listPickingConfiguration.setWarehouseId(warehouse.getId());
-            }
-        }
 
         if (!StringUtils.isBlank(listPickingConfigurationCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(),
                     listPickingConfigurationCSVWrapper.getClient()
             );
             if (client != null) {

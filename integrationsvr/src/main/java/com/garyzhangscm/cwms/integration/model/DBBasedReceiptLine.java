@@ -42,11 +42,17 @@ public class DBBasedReceiptLine implements Serializable, IntegrationReceiptLineD
     @Column(name = "number")
     private String number;
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "item_id")
     private Long itemId;
@@ -112,6 +118,23 @@ public class DBBasedReceiptLine implements Serializable, IntegrationReceiptLineD
         return null;
     }
 
+    @Override
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    @Override
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
     @Override
     public Long getId() {
         return id;

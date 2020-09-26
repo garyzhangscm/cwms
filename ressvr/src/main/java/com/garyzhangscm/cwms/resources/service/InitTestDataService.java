@@ -131,16 +131,16 @@ public class InitTestDataService {
 
 
         // Add service from other servers
-        this.commonServiceRestemplateClient = commonServiceRestemplateClient;
         this.layoutServiceRestemplateClient  = layoutServiceRestemplateClient;
+        this.commonServiceRestemplateClient = commonServiceRestemplateClient;
         this.inventoryServiceRestemplateClient = inventoryServiceRestemplateClient;
         this.inboundServiceRestemplateClient = inboundServiceRestemplateClient;
         this.outboundServiceRestemplateClient = outboundServiceRestemplateClient;
         this.workOrderServiceRestemplateClient = workOrderServiceRestemplateClient;
         this.integrationServiceRestemplateClient = integrationServiceRestemplateClient;
 
-        initiableServiceRestemplateClients.add(commonServiceRestemplateClient);
         initiableServiceRestemplateClients.add(layoutServiceRestemplateClient);
+        initiableServiceRestemplateClients.add(commonServiceRestemplateClient);
         initiableServiceRestemplateClients.add(inventoryServiceRestemplateClient);
         initiableServiceRestemplateClients.add(inboundServiceRestemplateClient);
         initiableServiceRestemplateClients.add(outboundServiceRestemplateClient);
@@ -234,7 +234,9 @@ public class InitTestDataService {
 
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
 
+            logger.debug("=== Start to remove data by {} ===", initiableServiceRestemplateClient.getClass());
             initiableServiceRestemplateClient.clearData(warehouseId);
+            logger.debug("=== End of remove data by {} ===", initiableServiceRestemplateClient.getClass());
         }
 
     }

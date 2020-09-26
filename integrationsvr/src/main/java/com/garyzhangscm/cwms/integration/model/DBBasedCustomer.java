@@ -19,7 +19,10 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -42,6 +45,17 @@ public class DBBasedCustomer implements Serializable , IntegrationCustomerData{
     private String description;
 
 
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
+
+    @Column(name = "warehouse_name")
+    private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
     @Column(name = "contactor_firstname")
     private String contactorFirstname;
     @Column(name = "contactor_lastname")
@@ -77,65 +91,58 @@ public class DBBasedCustomer implements Serializable , IntegrationCustomerData{
     public Customer convertToCustomer() {
 
         Customer customer = new Customer();
-        customer.setName(getName());
-        customer.setDescription(getDescription());
-
-        customer.setContactorFirstname(getContactorFirstname());
-        customer.setContactorLastname(getContactorLastname());
-
-        customer.setAddressCountry(getAddressCountry());
-        customer.setAddressState(getAddressState());
-        customer.setAddressCounty(getAddressCounty());
-        customer.setAddressCity(getAddressCity());
-        customer.setAddressDistrict(getAddressDistrict());
-        customer.setAddressLine1(getAddressLine1());
-        customer.setAddressLine2(getAddressLine2());
-        customer.setAddressPostcode(getAddressPostcode());
+        BeanUtils.copyProperties(this, customer);
         return customer;
     }
 
     public DBBasedCustomer() {}
     public DBBasedCustomer(Customer customer) {
 
-
-        setName(customer.getName());
-        setDescription(customer.getDescription());
-
-        setContactorFirstname(customer.getContactorFirstname());
-        setContactorLastname(customer.getContactorLastname());
-
-        setAddressCountry(customer.getAddressCountry());
-        setAddressState(customer.getAddressState());
-        setAddressCounty(customer.getAddressCounty());
-        setAddressCity(customer.getAddressCity());
-        setAddressDistrict(customer.getAddressDistrict());
-        setAddressLine1(customer.getAddressLine1());
-        setAddressLine2(customer.getAddressLine2());
-        setAddressPostcode(customer.getAddressPostcode());
+        BeanUtils.copyProperties(customer, this);
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
     }
 
     @Override
     public String toString() {
-        return "DBBasedCustomer{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", contactorFirstname='" + contactorFirstname + '\'' +
-                ", contactorLastname='" + contactorLastname + '\'' +
-                ", addressCountry='" + addressCountry + '\'' +
-                ", addressState='" + addressState + '\'' +
-                ", addressCounty='" + addressCounty + '\'' +
-                ", addressCity='" + addressCity + '\'' +
-                ", addressDistrict='" + addressDistrict + '\'' +
-                ", addressLine1='" + addressLine1 + '\'' +
-                ", addressLine2='" + addressLine2 + '\'' +
-                ", addressPostcode='" + addressPostcode + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public Long getId() {

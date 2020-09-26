@@ -35,8 +35,9 @@ public class CarrierController {
     CarrierService carrierService;
 
     @RequestMapping(value="/carriers", method = RequestMethod.GET)
-    public List<Carrier> findAllCarriers(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
-        return carrierService.findAll(name);
+    public List<Carrier> findAllCarriers(@RequestParam Long warehouseId,
+                                         @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        return carrierService.findAll(warehouseId, name);
     }
 
     @RequestMapping(value="/carriers/{id}", method = RequestMethod.GET)

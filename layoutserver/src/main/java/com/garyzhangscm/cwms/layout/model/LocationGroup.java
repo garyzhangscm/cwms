@@ -26,7 +26,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "location_group")
-public class LocationGroup {
+public class LocationGroup extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,6 +54,8 @@ public class LocationGroup {
     private Boolean storable;
     @Column(name = "countable")
     private Boolean countable;
+    @Column(name = "adjustable")
+    private Boolean adjustable;
     @Column(name = "allow_cartonization")
     private Boolean allowCartonization = false;
     @Column(name = "tracking_volume")
@@ -131,6 +133,13 @@ public class LocationGroup {
         this.countable = countable;
     }
 
+    public Boolean getAdjustable() {
+        return adjustable;
+    }
+
+    public void setAdjustable(Boolean adjustable) {
+        this.adjustable = adjustable;
+    }
 
     public Boolean getTrackingVolume() {
         return trackingVolume;

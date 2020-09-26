@@ -20,9 +20,11 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
@@ -84,6 +86,8 @@ public class InventoryService implements TestDataInitiableService{
     @Autowired
     private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
     @Autowired
+    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
+    @Autowired
     private IntegrationService integrationService;
     @Autowired
     private FileService fileService;
@@ -123,6 +127,7 @@ public class InventoryService implements TestDataInitiableService{
                                    Long inventoryStatusId,
                                    String locationName,
                                    Long locationId,
+                                   String locationIds,
                                    Long locationGroupId,
                                    String receiptId,
                                    Long workOrderId,
@@ -131,7 +136,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String pickIds,
                                    String lpn) {
         return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
-                locationName, locationId, locationGroupId, receiptId, workOrderId, workOrderLineIds,
+                locationName, locationId, locationIds, locationGroupId, receiptId, workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, true);
     }
@@ -144,6 +149,7 @@ public class InventoryService implements TestDataInitiableService{
                                    Long inventoryStatusId,
                                    String locationName,
                                    Long locationId,
+                                   String locationIds,
                                    Long locationGroupId,
                                    String receiptId,
                                    Long workOrderId,
@@ -199,6 +205,20 @@ public class InventoryService implements TestDataInitiableService{
                             predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
                         }
                     }
+
+                    if (!StringUtils.isBlank(locationIds)) {
+
+
+                        CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                        for(String id : locationIds.split(",")) {
+                            inLocationIds.value(Long.parseLong(id));
+                        }
+
+
+
+                        predicates.add(criteriaBuilder.and(inLocationIds));
+                    }
+
                     if (!StringUtils.isBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
 
@@ -295,11 +315,11 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
-    public List<Inventory> findByLpn(String lpn){
-        return findByLpn(lpn,true);
+    public List<Inventory> findByLpn(Long warehouseId, String lpn){
+        return findByLpn(warehouseId, lpn,true);
     }
-    public List<Inventory> findByLpn(String lpn, boolean includeDetails){
-        List<Inventory> inventories = inventoryRepository.findByLpn(lpn);
+    public List<Inventory> findByLpn(Long warehouseId, String lpn, boolean includeDetails){
+        List<Inventory> inventories = inventoryRepository.findByWarehouseIdAndLpn(warehouseId, lpn);
         if (inventories != null && includeDetails) {
             loadInventoryAttribute(inventories);
         }
@@ -332,9 +352,12 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public Inventory saveOrUpdate(Inventory inventory) {
-        if (inventory.getId() == null && findByLpn(inventory.getLpn()).size() == 1) {
+        /***
+        if (inventory.getId() == null &&
+                findByLpn(inventory.getWarehouseId(), inventory.getLpn(), false).size() == 1) {
             inventory.setId(findByLpn(inventory.getLpn()).get(0).getId());
         }
+         ***/
         return save(inventory);
     }
     public void delete(Inventory inventory) {
@@ -388,6 +411,9 @@ public class InventoryService implements TestDataInitiableService{
             inventory.setPick(outbuondServiceRestemplateClient.getPickById(inventory.getPickId()));
         }
 
+        if (inventory.getAllocatedByPickId() != null) {
+            inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
+        }
 
 
 
@@ -401,6 +427,7 @@ public class InventoryService implements TestDataInitiableService{
     public List<InventoryCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("lpn").
                 addColumn("location").
@@ -416,6 +443,7 @@ public class InventoryService implements TestDataInitiableService{
     public List<InventoryCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("lpn").
                 addColumn("location").
@@ -441,7 +469,9 @@ public class InventoryService implements TestDataInitiableService{
 
                 Location destination =
                         warehouseLayoutServiceRestemplateClient.getLocationByName(
-                                getWarehouseId(inventoryCSVWrapper.getWarehouse()), inventoryCSVWrapper.getLocation()
+                                getWarehouseId(inventoryCSVWrapper.getCompany(),
+                                        inventoryCSVWrapper.getWarehouse()),
+                                inventoryCSVWrapper.getLocation()
                         );
                 recalculateLocationSizeForInventoryMovement(null, destination, savedInvenotry.getSize());
             });
@@ -459,7 +489,9 @@ public class InventoryService implements TestDataInitiableService{
 
         // warehouse is a mandate field
         Warehouse warehouse =
-                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(inventoryCSVWrapper.getWarehouse());
+                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                            inventoryCSVWrapper.getCompany(),
+                            inventoryCSVWrapper.getWarehouse());
         inventory.setWarehouseId(warehouse.getId());
 
         // item
@@ -491,7 +523,7 @@ public class InventoryService implements TestDataInitiableService{
             logger.debug("start to get location by name: {}", inventoryCSVWrapper.getLocation());
             Location location =
                     warehouseLayoutServiceRestemplateClient.getLocationByName(
-                            getWarehouseId(inventoryCSVWrapper.getWarehouse()), inventoryCSVWrapper.getLocation());
+                            warehouse.getId(), inventoryCSVWrapper.getLocation());
             inventory.setLocationId(location.getId());
         }
 
@@ -554,6 +586,10 @@ public class InventoryService implements TestDataInitiableService{
 
             integrationService.processInventoryAdjustment(InventoryQuantityChangeType.INVENTORY_ADJUST, inventory, inventory.getQuantity(), 0L);
         }
+
+        // clear the movement path
+        inventory = clearMovementPath(inventory);
+        logger.debug("Movement path for {} is removed!", inventory.getLpn());
 
         Location destination
                 = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
@@ -766,6 +802,7 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("The inventory has {} movement defined", inventoryMovements.size());
         logger.debug(" >> {}", inventoryMovements);
 
+
         if (inventoryMovements.size() == 1) {
             // we only have the final destination. let's see if we need
             // any hop
@@ -826,6 +863,19 @@ public class InventoryService implements TestDataInitiableService{
         return markAsPicked(findById(inventoryId), pickId);
     }
     public Inventory markAsPicked(Inventory inventory, Long pickId) {
+        if (Objects.nonNull(inventory.getAllocatedByPickId())) {
+            // The inventory is allocated by certain pick. make sure it is
+            // not picked by a different pick
+            if (!pickId.equals(inventory.getAllocatedByPickId())) {
+                throw InventoryException.raiseException("Inventory is allocated by other picks. Can't pick from it");
+            }
+
+            // after the inventory is picked, reset the allocated by pick id to null
+            // so in case it is cancelled / unpicked, the inventory is still available
+            // for other picks
+            inventory.setAllocatedByPickId(null);
+
+        }
         inventory.setPickId(pickId);
         Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
         if (inventory.getInventoryMovements().size() == 0) {
@@ -862,7 +912,7 @@ public class InventoryService implements TestDataInitiableService{
     // the second one in the list is the new inventory
     public List<Inventory> splitInventory(Inventory inventory, String newLpn, Long newQuantity) {
         if (StringUtils.isBlank(newLpn)) {
-            newLpn = commonServiceRestemplateClient.getNextLpn();
+            newLpn = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
         }
         Inventory newInventory = inventory.split(newLpn, newQuantity);
         List<Inventory> inventories = new ArrayList<>();
@@ -944,8 +994,8 @@ public class InventoryService implements TestDataInitiableService{
         throw new UnsupportedOperationException();
     }
 
-    private Long getWarehouseId(String warehouseName) {
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName);
+    private Long getWarehouseId(String companyCode, String warehouseName) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(companyCode, warehouseName);
         if (warehouse == null) {
             return null;
         }
@@ -1037,12 +1087,9 @@ public class InventoryService implements TestDataInitiableService{
         // Receiving is always allowed without any approval
         logger.debug("Check if we need approval for this adjust. inventory: {}, lpn {}, OLD quantity: {}, NEW quantity: {}, change type: {}",
                 inventory.getId(), inventory.getLpn(), oldQuantity, newQuantity, inventoryQuantityChangeType);
-        if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING) ||
-                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.PRODUCING)||
-                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.PRODUCING_BY_PRODUCT)||
-                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)||
-                inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RETURN_MATERAIL)) {
-            logger.debug("Receiving / Producing / Return Material doesn't needs any approve");
+        if (inventoryQuantityChangeType.isNoApprovalNeeded()) {
+            logger.debug("By default, {} doesn't need approval for quantity change",
+                    inventoryQuantityChangeType);
             return false;
         }
 
@@ -1173,6 +1220,8 @@ public class InventoryService implements TestDataInitiableService{
         Inventory resultInventory = null;
         // Save the original quantity so we can send integration
         Long originalQuantity = inventory.getQuantity();
+        logger.debug("inventory's current quantity: {}, new Quantity: {}",
+                inventory.getQuantity(), newQuantity);
         if (newQuantity == 0) {
             // a specific case where we are actually removing an inventory
             resultInventory = processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment);
@@ -1184,8 +1233,10 @@ public class InventoryService implements TestDataInitiableService{
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
                     "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
                     documentNumber, comment);
+            logger.debug("Will reduce the quantity from {} to {}",
+                    inventory.getQuantity(), newQuantity);
 
-            String newLpn = commonServiceRestemplateClient.getNextLpn();
+            String newLpn = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
 
             // log the activity for split inventory for inventory adjust
             // LPN-quantity:
@@ -1202,9 +1253,11 @@ public class InventoryService implements TestDataInitiableService{
             // Save both inventory before move
             inventory = saveOrUpdate(inventory);
             newInventory = save(newInventory);
+            logger.debug("Inventory is split");
 
             // Remove the new inventory
             processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "");
+            logger.debug("The inventory with reduced quantity has been removed");
             resultInventory =  inventory;
         }
         else {
@@ -1215,8 +1268,10 @@ public class InventoryService implements TestDataInitiableService{
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
                     "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
                     documentNumber, comment);
+            logger.debug("Will increase the quantity from {} to {}",
+                    inventory.getQuantity(), newQuantity);
 
-            String newLpn = commonServiceRestemplateClient.getNextLpn();
+            String newLpn = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
             // Trick: Split 0 quantity from original inventory, which is
             // actually a copy
             Inventory newInventory = inventory.split(newLpn, 0L);
@@ -1252,15 +1307,19 @@ public class InventoryService implements TestDataInitiableService{
         if (Objects.isNull(inventory.getId())) {
             // if the inventory doesn't have ID yet, we assume we are adding
 
+            logger.debug("Will start to add inventory after the change is approved");
             processAddInventory(inventory, inventoryAdjustmentRequest.getInventoryQuantityChangeType(),
                     inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment());
         }
         else {
+
+            logger.debug("Will start to change inventory after the change is approved");
             processAdjustInventoryQuantity(inventory, inventoryAdjustmentRequest.getNewQuantity(),
                     inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment());
         }
 
         // check if we can release the location after the request is approved
+        logger.debug("Start to release the lock on the inventory");
         inventoryAdjustmentRequestService.releaseLocationLock(inventoryAdjustmentRequest);
     }
 
@@ -1363,6 +1422,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
+                        null,
                         pickIds,
                         null
                 );
@@ -1400,6 +1460,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
+                        null,
                         pickIds,
                         null
                 );
@@ -1419,7 +1480,7 @@ public class InventoryService implements TestDataInitiableService{
                     else {
                         // we only need to remove partial quantity of the inventory
                         // so we will need to split the inventory first
-                        String newLpn = commonServiceRestemplateClient.getNextLpn();
+                        String newLpn = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
                         // we will split the quantity to be consumed from the original inventory,
                         // save the origianl inventory and then remove the splited inventory
                         Inventory splitedInventory = inventory.split(newLpn, quantityToBeRemoved);
@@ -1439,5 +1500,84 @@ public class InventoryService implements TestDataInitiableService{
 
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Mark the whole LPN as allocated by certain pick
+     * @param lpn lpn number
+     * @param allocatedByPickId allocated by certain pick
+     * @return inventory records under the LPN
+     */
+    public List<Inventory> markLPNAllocated(Long warehouseId, String lpn, Long allocatedByPickId) {
+        List<Inventory> inventories = findByLpn(warehouseId, lpn, false);
+        inventories.forEach(inventory -> {
+            inventory.setAllocatedByPickId(allocatedByPickId);
+            save(inventory);
+        });
+        return inventories;
+    }
+
+    /**
+     * Release the LPN from its allocated pick. Normally this is invoked when
+     * the whole LPN is allocated by a pick
+     *
+     * @param lpn
+     * @param allocatedByPickId
+     * @return
+     */
+    public List<Inventory> releaseLPNAllocated(Long warehouseId, String lpn, Long allocatedByPickId) {
+        List<Inventory> inventories = findByLpn(warehouseId, lpn, false);
+        inventories.stream()
+                .filter(inventory -> allocatedByPickId.equals(inventory.getAllocatedByPickId()))
+                .forEach(inventory -> {
+                    inventory.setAllocatedByPickId(null);
+                    save(inventory);
+        });
+        return inventories;
+    }
+
+    /**
+     * Reverse the received inventory. We will remove this inventory from the system
+     * and return the quantity back to the receipt
+     * @param id
+     * @return
+     */
+    @Transactional
+    public Inventory reverseReceivedInventory(long id) {
+        Inventory inventory = findById(id);
+        if (Objects.isNull(inventory.getReceiptLineId())) {
+            throw InventoryException.raiseException("Can't reverse the inventory. We can't find the receipt attached to this inventory");
+        }
+        Long quantity = inventory.getQuantity();
+        Inventory removedInventory = removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING);
+
+        logger.debug("Inventory Reserved!");
+        inboundServiceRestemplateClient.reverseReceivedInventory(
+                inventory.getReceiptId(), inventory.getReceiptLineId(), quantity
+        );
+
+        return removedInventory;
+
+    }
+
+    public Inventory clearMovementPath(long id) {
+
+        return clearMovementPath(findById(id));
+    }
+
+    public Inventory clearMovementPath(Inventory inventory) {
+
+        logger.debug("Start to clear the movement path LPN {}", inventory.getLpn());
+        inventoryMovementService.clearInventoryMovement(inventory);
+        inventory.setInventoryMovements(new ArrayList<>());
+
+        return inventory;
+    }
+
+    public String validateNewLPN(Long warehouseId, String lpn) {
+        List<Inventory> inventories =
+                findByLpn(warehouseId, lpn, false);
+
+        return Objects.isNull(inventories) || inventories.size() == 0 ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
 }

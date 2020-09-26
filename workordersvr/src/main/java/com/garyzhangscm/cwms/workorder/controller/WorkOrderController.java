@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.*;
 
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
@@ -166,5 +167,11 @@ public class WorkOrderController {
                 destinationLocationId, destinationLocationName, immediateMove);
     }
 
+
+    @RequestMapping(value="/work-orders/validate-new-number", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> validateNewNumber(@RequestParam Long warehouseId,
+                                                         @RequestParam String number) {
+        return ResponseBodyWrapper.success(workOrderService.validateNewNumber(warehouseId, number));
+    }
 
 }

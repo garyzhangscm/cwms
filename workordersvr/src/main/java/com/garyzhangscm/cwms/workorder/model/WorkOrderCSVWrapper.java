@@ -4,6 +4,7 @@ package com.garyzhangscm.cwms.workorder.model;
 public class WorkOrderCSVWrapper {
 
     private String warehouse;
+    private String company;
 
     private String number;
 
@@ -12,6 +13,13 @@ public class WorkOrderCSVWrapper {
 
     private Long expectedQuantity;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getNumber() {
         return number;

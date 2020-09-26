@@ -58,7 +58,7 @@ public class InventoryServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
-                        .path("/api/inventory/item/{id}");
+                        .path("/api/inventory/items/{id}");
 
 
         ResponseBodyWrapper<Item> responseBodyWrapper
@@ -278,6 +278,25 @@ public class InventoryServiceRestemplateClient {
 
         Inventory inventory = responseBodyWrapper.getData();
         logger.debug("setupMovementPath returns {}", inventory.getInventoryMovements());
+        return responseBodyWrapper.getData();
+
+    }
+
+    public Inventory clearMovementPath(long inventoryId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inventory/inventory/{id}/movements");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                    builder.buildAndExpand(inventoryId).toUriString(),
+                    HttpMethod.DELETE,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+
         return responseBodyWrapper.getData();
 
     }

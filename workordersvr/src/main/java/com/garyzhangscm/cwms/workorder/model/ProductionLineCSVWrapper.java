@@ -4,6 +4,7 @@ public class ProductionLineCSVWrapper {
 
 
     private String warehouse;
+    private String company;
 
     private String name;
 
@@ -18,6 +19,14 @@ public class ProductionLineCSVWrapper {
     private Boolean workOrderExclusiveFlag;
 
     private Boolean enabled;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getWarehouse() {
         return warehouse;

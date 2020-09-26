@@ -49,7 +49,7 @@ public class CycleCountRequestController {
             @RequestParam Boolean includeEmptyLocation) {
 
         if (StringUtils.isBlank(batchId)) {
-            batchId = commonServiceRestemplateClient.getNextCycleCountBatchId();
+            batchId = commonServiceRestemplateClient.getNextCycleCountBatchId(warehouseId);
         }
         return cycleCountRequestService.generateCycleCountRequest(batchId, CycleCountRequestType.valueOf(cycleCountRequestType),
                 warehouseId, beginValue, endValue, includeEmptyLocation);

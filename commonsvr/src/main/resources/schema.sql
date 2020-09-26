@@ -9,8 +9,10 @@ drop table if exists policy;
 drop table if exists carrier_service_level;
 drop table if exists carrier;
 
+
 CREATE TABLE client (
   client_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   name   VARCHAR(100) NOT NULL unique,
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,
@@ -22,7 +24,11 @@ CREATE TABLE client (
   address_district   VARCHAR(100),
   address_line1   VARCHAR(300) NOT NULL,
   address_line2   VARCHAR(300),
-  address_postcode  VARCHAR(10) NOT NULL);
+  address_postcode  VARCHAR(10) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 -- INSERT INTO client (name, description, contactor_firstname, contactor_lastname, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
@@ -35,12 +41,18 @@ CREATE TABLE client (
 
 CREATE TABLE unit_of_measure (
   unit_of_measure_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   name   VARCHAR(100) NOT NULL unique,
-  description   VARCHAR(100) NOT NULL);
+  description   VARCHAR(100) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE supplier (
   supplier_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   name   VARCHAR(100) NOT NULL unique,
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,
@@ -52,11 +64,16 @@ CREATE TABLE supplier (
   address_district   VARCHAR(100),
   address_line1   VARCHAR(300) NOT NULL,
   address_line2   VARCHAR(300),
-  address_postcode  VARCHAR(10) NOT NULL);
+  address_postcode  VARCHAR(10) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE customer (
   customer_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   name   VARCHAR(100) NOT NULL unique,
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,
@@ -68,7 +85,11 @@ CREATE TABLE customer (
   address_district   VARCHAR(100),
   address_line1   VARCHAR(300) NOT NULL,
   address_line2   VARCHAR(300),
-  address_postcode  VARCHAR(10) NOT NULL);
+  address_postcode  VARCHAR(10) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 -- INSERT INTO unit_of_measure (name, description) VALUES ("EA", "Each");
 -- INSERT INTO unit_of_measure (name, description) VALUES ("PK", "Pack");
@@ -78,29 +99,45 @@ CREATE TABLE customer (
 
 CREATE TABLE reason_code (
   reason_code_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   name   VARCHAR(100) NOT NULL unique,
   description   VARCHAR(100) NOT NULL,
-  type   int NOT NULL);
+  type   int NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE system_controlled_number (
   system_controlled_number_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   variable   VARCHAR(100) NOT NULL unique,
   prefix   VARCHAR(10) NOT NULL,
   postfix   VARCHAR(10) NOT NULL,
   length   int NOT NULL,
   current_number   VARCHAR(100) NOT NULL,
-  rollover boolean not null default 0);
+  rollover boolean not null default 0,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 CREATE TABLE policy (
   policy_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   policy_key   VARCHAR(100) NOT NULL unique,
   policy_value   VARCHAR(100) NOT NULL,
-  description   VARCHAR(100) NOT NULL);
+  description   VARCHAR(100) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE carrier (
   carrier_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
   name   VARCHAR(100) NOT NULL unique,
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,
@@ -112,7 +149,11 @@ CREATE TABLE carrier (
   address_district   VARCHAR(100),
   address_line1   VARCHAR(300) NOT NULL,
   address_line2   VARCHAR(300),
-  address_postcode  VARCHAR(10) NOT NULL);
+  address_postcode  VARCHAR(10) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
 
 
 CREATE TABLE carrier_service_level (
@@ -121,4 +162,8 @@ CREATE TABLE carrier_service_level (
   description   VARCHAR(100) NOT NULL,
   type   VARCHAR(20) NOT NULL,
   carrier_id   BIGINT NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
   foreign key(carrier_id) references carrier(carrier_id));

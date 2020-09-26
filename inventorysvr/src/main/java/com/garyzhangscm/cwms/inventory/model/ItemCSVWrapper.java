@@ -39,6 +39,19 @@ public class ItemCSVWrapper implements Serializable {
     private Boolean allowCartonization;
 
     private String warehouse;
+    private String company;
+
+    private Boolean allowAllocationByLPN;
+    private String allocationRoundUpStrategyType;
+    private Double allocationRoundUpStrategyValue;
+
+
+
+    private boolean trackingVolumeFlag;
+    private boolean trackingLotNumberFlag;
+    private boolean trackingManufactureDateFlag;
+    private Integer shelfLifeDays;
+    private boolean trackingExpirationDateFlag;
 
     @Override
     public String toString() {
@@ -48,6 +61,14 @@ public class ItemCSVWrapper implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public String getName() {
@@ -104,5 +125,69 @@ public class ItemCSVWrapper implements Serializable {
 
     public void setAllowCartonization(Boolean allowCartonization) {
         this.allowCartonization = allowCartonization;
+    }
+
+    public Boolean getAllowAllocationByLPN() {
+        return allowAllocationByLPN;
+    }
+
+    public void setAllowAllocationByLPN(Boolean allowAllocationByLPN) {
+        this.allowAllocationByLPN = allowAllocationByLPN;
+    }
+
+    public String getAllocationRoundUpStrategyType() {
+        return allocationRoundUpStrategyType;
+    }
+
+    public void setAllocationRoundUpStrategyType(String allocationRoundUpStrategyType) {
+        this.allocationRoundUpStrategyType = allocationRoundUpStrategyType;
+    }
+
+    public Double getAllocationRoundUpStrategyValue() {
+        return allocationRoundUpStrategyValue;
+    }
+
+    public void setAllocationRoundUpStrategyValue(Double allocationRoundUpStrategyValue) {
+        this.allocationRoundUpStrategyValue = allocationRoundUpStrategyValue;
+    }
+
+    public boolean isTrackingVolumeFlag() {
+        return trackingVolumeFlag;
+    }
+
+    public void setTrackingVolumeFlag(boolean trackingVolumeFlag) {
+        this.trackingVolumeFlag = trackingVolumeFlag;
+    }
+
+    public boolean isTrackingLotNumberFlag() {
+        return trackingLotNumberFlag;
+    }
+
+    public void setTrackingLotNumberFlag(boolean trackingLotNumberFlag) {
+        this.trackingLotNumberFlag = trackingLotNumberFlag;
+    }
+
+    public boolean isTrackingManufactureDateFlag() {
+        return trackingManufactureDateFlag;
+    }
+
+    public void setTrackingManufactureDateFlag(boolean trackingManufactureDateFlag) {
+        this.trackingManufactureDateFlag = trackingManufactureDateFlag;
+    }
+
+    public Integer getShelfLifeDays() {
+        return shelfLifeDays;
+    }
+
+    public void setShelfLifeDays(Integer shelfLifeDays) {
+        this.shelfLifeDays = shelfLifeDays;
+    }
+
+    public boolean isTrackingExpirationDateFlag() {
+        return trackingExpirationDateFlag;
+    }
+
+    public void setTrackingExpirationDateFlag(boolean trackingExpirationDateFlag) {
+        this.trackingExpirationDateFlag = trackingExpirationDateFlag;
     }
 }

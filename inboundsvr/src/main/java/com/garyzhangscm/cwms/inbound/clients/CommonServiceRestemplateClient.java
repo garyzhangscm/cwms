@@ -66,12 +66,13 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Client getClientByName(String name) {
+    public Client getClientByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/clients")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
@@ -105,12 +106,13 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public Supplier getSupplierByName(String name) {
+    public Supplier getSupplierByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/suppliers")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper
@@ -131,11 +133,12 @@ public class CommonServiceRestemplateClient {
     }
 
     @Cacheable
-    public Policy getPolicyByKey(String key) {
+    public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/policies")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("key", key);
 
         ResponseBodyWrapper<List<Policy>> responseBodyWrapper

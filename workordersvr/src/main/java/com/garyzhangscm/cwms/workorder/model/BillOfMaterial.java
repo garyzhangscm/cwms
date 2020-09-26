@@ -19,23 +19,27 @@ public class BillOfMaterial extends AuditibleEntity<String>{
     @Column(name = "number")
     private String number;
 
+
+    @Column(name = "description")
+    private String description;
+
     @OneToMany(
             mappedBy = "billOfMaterial",
-            cascade = CascadeType.REMOVE,
+            cascade = {CascadeType.PERSIST,CascadeType.REMOVE},
             orphanRemoval = true
     )
     List<BillOfMaterialLine> billOfMaterialLines = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "billOfMaterial",
-            cascade = CascadeType.REMOVE,
+            cascade = {CascadeType.PERSIST,CascadeType.REMOVE},
             orphanRemoval = true
     )
     List<BillOfMaterialByProduct> billOfMaterialByProducts = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "billOfMaterial",
-            cascade = CascadeType.REMOVE,
+            cascade = {CascadeType.PERSIST,CascadeType.REMOVE},
             orphanRemoval = true
     )
     List<WorkOrderInstructionTemplate> workOrderInstructionTemplates = new ArrayList<>();
@@ -73,6 +77,13 @@ public class BillOfMaterial extends AuditibleEntity<String>{
         this.number = number;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public Long getItemId() {
         return itemId;

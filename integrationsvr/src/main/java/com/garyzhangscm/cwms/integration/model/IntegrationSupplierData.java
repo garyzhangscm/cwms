@@ -6,6 +6,11 @@ public interface IntegrationSupplierData {
 
     public Long getId();
 
+    public Long getCompanyId();
+    public String getCompanyCode() ;
+    public Long getWarehouseId();
+    public String getWarehouseName() ;
+
     public String getName();
     public String getDescription();
     public String getContactorFirstname() ;

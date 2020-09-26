@@ -4,6 +4,7 @@ public class WorkOrderLineCSVWrapper {
 
     private String warehouse;
 
+    private String company;
     private String workOrder;
 
     private String number;
@@ -14,7 +15,15 @@ public class WorkOrderLineCSVWrapper {
     private Long expectedQuantity;
 
     private String inventoryStatus;
+    private String allocationStrategyType;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getNumber() {
         return number;
@@ -62,5 +71,13 @@ public class WorkOrderLineCSVWrapper {
 
     public void setInventoryStatus(String inventoryStatus) {
         this.inventoryStatus = inventoryStatus;
+    }
+
+    public String getAllocationStrategyType() {
+        return allocationStrategyType;
+    }
+
+    public void setAllocationStrategyType(String allocationStrategyType) {
+        this.allocationStrategyType = allocationStrategyType;
     }
 }

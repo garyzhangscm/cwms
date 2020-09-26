@@ -7,6 +7,8 @@ public class CartonizationConfigurationCSVWrapper {
     private Integer sequence;
 
     private String warehouse;
+    private String company;
+
 
     private String client;
 
@@ -16,6 +18,13 @@ public class CartonizationConfigurationCSVWrapper {
 
     private boolean enabled;
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public Integer getSequence() {
         return sequence;

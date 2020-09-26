@@ -22,6 +22,12 @@ public class ExceptionResponse implements Serializable {
         this(ex.getExceptionCode().getCode(), ex.getExceptionCode().getStatus().value(), ex.getExceptionCode().getMessage(), path, ex.getData());
     }
 
+    public ExceptionResponse(RuntimeException ex, String path) {
+        this(-1, -1, ex.getMessage(), path, new HashMap<>());
+    }
+    public ExceptionResponse(Exception ex, String path) {
+        this(-1, -1, ex.getMessage(), path, new HashMap<>());
+    }
     public ExceptionResponse(int code, int status, String message, String path, Map<String, Object> data) {
         this.code = code;
         this.status = status;

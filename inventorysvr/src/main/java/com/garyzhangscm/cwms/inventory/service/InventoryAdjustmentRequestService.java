@@ -235,7 +235,10 @@ public class InventoryAdjustmentRequestService{
     private InventoryAdjustmentRequest processInventoryAdjustRequest(Long id,
                                                                      InventoryAdjustmentRequestStatus inventoryAdjustmentRequestStatus,
                                                                      String comment) {
+        logger.debug("Start to process inventory adjust request id: {}, status {}",
+                id, inventoryAdjustmentRequestStatus);
         InventoryAdjustmentRequest inventoryAdjustmentRequest = findById(id);
+        logger.debug("We got the request by id {}", id);
         inventoryAdjustmentRequest.setStatus(inventoryAdjustmentRequestStatus);
         inventoryAdjustmentRequest.setProcessedByDateTime(LocalDateTime.now());
         inventoryAdjustmentRequest.setProcessedByUsername(userService.getCurrentUserName());
@@ -246,9 +249,11 @@ public class InventoryAdjustmentRequestService{
             inventoryAdjustmentRequest.setComment(comment);
         }
         inventoryAdjustmentRequest = save(inventoryAdjustmentRequest);
+        logger.debug("The quest has been updated to {}", inventoryAdjustmentRequestStatus);
 
         // release the inventory
         if (Objects.nonNull(inventoryAdjustmentRequest.getInventoryId())) {
+            logger.debug("Will release the inventory's lock");
             inventoryService.releaseInventory(inventoryAdjustmentRequest.getInventoryId());
         }
 
@@ -261,6 +266,7 @@ public class InventoryAdjustmentRequestService{
             // Lots of process like inventory activities records are depends on
             // the current user. Let's directly call the processInventoryAdjustRequest
             // to actually change the inventory
+            logger.debug("will process the inventory adjust as the reuqest is approved");
             inventoryService.processInventoryAdjustRequest(inventoryAdjustmentRequest);
         }
         else {

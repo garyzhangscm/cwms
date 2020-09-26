@@ -39,6 +39,7 @@ public class AllocationConfigurationCSVWrapper {
 
     private String type;
     private String warehouse;
+    private String company;
 
     @Override
     public String toString() {
@@ -55,6 +56,14 @@ public class AllocationConfigurationCSVWrapper {
                 .append("\ntype: ").append(type)
                 .toString();
 
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public Integer getSequence() {

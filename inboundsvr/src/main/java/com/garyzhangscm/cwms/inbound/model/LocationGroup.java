@@ -35,6 +35,7 @@ public class LocationGroup {
 
 
     private LocationGroupType locationGroupType;
+    private LocationVolumeTrackingPolicy volumeTrackingPolicy;
 
     private Warehouse warehouse;
 
@@ -116,5 +117,13 @@ public class LocationGroup {
 
     public void setConsolidateLpn(Boolean consolidateLpn) {
         this.consolidateLpn = consolidateLpn;
+    }
+
+    public LocationVolumeTrackingPolicy getVolumeTrackingPolicy() {
+        return volumeTrackingPolicy;
+    }
+
+    public void setVolumeTrackingPolicy(LocationVolumeTrackingPolicy volumeTrackingPolicy) {
+        this.volumeTrackingPolicy = volumeTrackingPolicy;
     }
 }

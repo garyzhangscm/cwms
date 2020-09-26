@@ -49,6 +49,8 @@ public class OrderLine implements Serializable {
 
     private Long shippedQuantity = 0L;
 
+    private String orderNumber;
+
 
     // Specific the inventory status that
     // user ordered. For example, when return
@@ -166,9 +168,6 @@ public class OrderLine implements Serializable {
         this.inprocessQuantity = inprocessQuantity;
     }
 
-    public String getOrderNumber() {
-        return Objects.isNull(order) ? "" : order.getNumber();
-    }
 
     public Long getWarehouseId() {
         return warehouseId;
@@ -218,4 +217,11 @@ public class OrderLine implements Serializable {
         this.carrierServiceLevel = carrierServiceLevel;
     }
 
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
 }

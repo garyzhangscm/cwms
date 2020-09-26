@@ -9,6 +9,15 @@ public class WorkOrderInstructionCSVWrapper {
     private String instruction;
 
     private String warehouse;
+    private String company;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getWorkOrder() {
         return workOrder;

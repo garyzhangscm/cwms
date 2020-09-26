@@ -32,12 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -50,6 +52,10 @@ public class BillOfMaterialService implements TestDataInitiableService {
     private BillOfMaterialLineService billOfMaterialLineService;
     @Autowired
     private WorkOrderService workOrderService;
+    @Autowired
+    private WorkOrderInstructionTemplateService workOrderInstructionTemplateService;
+    @Autowired
+    private BillOfMaterialByProductService billOfMaterialByProductService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -142,6 +148,9 @@ public class BillOfMaterialService implements TestDataInitiableService {
         billOfMaterial.getBillOfMaterialLines()
                 .forEach(billOfMaterialLine -> billOfMaterialLineService.loadAttribute(billOfMaterialLine));
 
+        billOfMaterial.getBillOfMaterialByProducts()
+                .forEach(billOfMaterialByProduct -> billOfMaterialByProductService.loadAttribute(billOfMaterialByProduct));
+
     }
 
 
@@ -181,6 +190,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
     public List<BillOfMaterialCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("number").
                 addColumn("warehouse").
                 addColumn("item").
@@ -211,6 +221,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
 
         logger.debug("Start to get warehouse: {}", billOfMaterialCSVWrapper.getWarehouse());
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                billOfMaterialCSVWrapper.getCompany(),
                 billOfMaterialCSVWrapper.getWarehouse()
         );
         logger.debug("warehouse is null? {}", (warehouse == null));
@@ -244,7 +255,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
                 findAll(workOrder.getWarehouseId(), "", workOrder.getItem().getName(), false);
 
         BillOfMaterial matchedBillOfMaterial = billOfMaterials.stream()
-                .filter(billOfMaterial -> match(billOfMaterial, workOrder)).findFirst().orElseThrow(null);
+                .filter(billOfMaterial -> match(billOfMaterial, workOrder)).findFirst().orElse(null);
         if (matchedBillOfMaterial != null) {
 
             loadAttribute(matchedBillOfMaterial);
@@ -290,4 +301,176 @@ public class BillOfMaterialService implements TestDataInitiableService {
     }
 
 
+    public BillOfMaterial addBillOfMaterials(BillOfMaterial billOfMaterial) {
+        billOfMaterial.getBillOfMaterialLines().forEach(
+                billOfMaterialLine -> billOfMaterialLine.setBillOfMaterial(billOfMaterial)
+        );
+
+        billOfMaterial.getWorkOrderInstructionTemplates().forEach(
+                workOrderInstructionTemplate -> workOrderInstructionTemplate.setBillOfMaterial(billOfMaterial)
+        );
+
+        billOfMaterial.getBillOfMaterialByProducts().forEach(
+                billOfMaterialByProduct -> billOfMaterialByProduct.setBillOfMaterial(billOfMaterial)
+        );
+        return save(billOfMaterial);
+    }
+
+    public BillOfMaterial changeBillOfMaterial( Long id,
+                                                BillOfMaterial billOfMaterial){
+        BillOfMaterial existingBillOfMaterial = findById(id);
+
+        existingBillOfMaterial.setNumber(billOfMaterial.getNumber());
+        existingBillOfMaterial.setDescription(billOfMaterial.getDescription());
+
+        existingBillOfMaterial.setItemId(billOfMaterial.getItemId());
+        existingBillOfMaterial.setExpectedQuantity(billOfMaterial.getExpectedQuantity());
+
+        existingBillOfMaterial = saveOrUpdate(existingBillOfMaterial);
+
+        // process lines
+        changeBillOfMaterialLines(existingBillOfMaterial, billOfMaterial);
+
+        // process work instruction
+        changeWorkingInstruction(existingBillOfMaterial, billOfMaterial);
+        // process by product
+        changeByProduct(existingBillOfMaterial, billOfMaterial);
+
+        return existingBillOfMaterial;
+    }
+
+    private void changeByProduct(BillOfMaterial existingBillOfMaterial, BillOfMaterial billOfMaterial) {
+        // Remove the by product if it doesn't exists any more
+        existingBillOfMaterial.getBillOfMaterialByProducts().stream()
+                .filter(byProduct ->
+                        // check if this instruction still exists in the new BOM structure
+                        // If not, then return true as we will remove this line
+                        billOfMaterial.getBillOfMaterialByProducts().stream()
+                                .filter(newByPorduct -> Objects.equals(byProduct.getId(), newByPorduct.getId()))
+                                .count() == 0
+                ).forEach(byProduct -> billOfMaterialByProductService.delete(byProduct));
+
+        // For each new by product in the new BOM structure(instruction id is null)
+        // add it
+        billOfMaterial.getBillOfMaterialByProducts().stream()
+                .filter(byProduct -> Objects.isNull(byProduct.getId()))
+                .forEach(byProduct -> {
+                    byProduct.setBillOfMaterial(existingBillOfMaterial);
+                    billOfMaterialByProductService.save(byProduct);
+                });
+
+        // For each by product that exists in both old BOM and new BOM structure,
+        // let's change the by product
+        // The only thing we allow the user to change is the quantity.
+        // If the user want to change the item, they can only do so by
+        // removing the existing by product information and add a new by product
+
+        existingBillOfMaterial.getBillOfMaterialByProducts().stream()
+                .forEach(byProduct -> {
+                    billOfMaterial.getBillOfMaterialByProducts().stream()
+                            .filter(newByPorduct ->
+                                    // only return when the lines have the same ID
+                                    // but have different quantities
+                                    Objects.equals(byProduct.getId(), newByPorduct.getId()) &&
+                                            !byProduct.getExpectedQuantity().equals(newByPorduct.getExpectedQuantity()))
+                            .forEach(newByPorduct -> {
+                                byProduct.setExpectedQuantity(newByPorduct.getExpectedQuantity());
+                                billOfMaterialByProductService.save(byProduct);
+
+                            });
+                });
+    }
+
+    private void changeWorkingInstruction(BillOfMaterial existingBillOfMaterial, BillOfMaterial billOfMaterial) {
+        // Remove the instruction if it doesn't exists any more
+        existingBillOfMaterial.getWorkOrderInstructionTemplates().stream()
+                .filter(workOrderInstructionTemplate ->
+                        // check if this instruction still exists in the new BOM structure
+                        // If not, then return true as we will remove this line
+                        billOfMaterial.getWorkOrderInstructionTemplates().stream()
+                                .filter(newWorkOrderInstructionTemplate -> Objects.equals(workOrderInstructionTemplate.getId(), newWorkOrderInstructionTemplate.getId()))
+                                .count() == 0
+                ).forEach(workOrderInstructionTemplate -> workOrderInstructionTemplateService.delete(workOrderInstructionTemplate));
+
+        // For each new instruction in the new BOM structure(instruction id is null)
+        // add it
+        billOfMaterial.getWorkOrderInstructionTemplates().stream()
+                .filter(workOrderInstructionTemplate -> Objects.isNull(workOrderInstructionTemplate.getId()))
+                .forEach(workOrderInstructionTemplate -> {
+                    workOrderInstructionTemplate.setBillOfMaterial(existingBillOfMaterial);
+                    workOrderInstructionTemplateService.save(workOrderInstructionTemplate);
+                });
+
+        // For each instruction that exists in both old BOM and new BOM structure,
+        // let's change the instruction
+        existingBillOfMaterial.getWorkOrderInstructionTemplates().stream()
+                .forEach(workOrderInstructionTemplate -> {
+                    billOfMaterial.getWorkOrderInstructionTemplates().stream()
+                            .filter(newWorkOrderInstructionTemplate ->
+                                    // only return when the lines have the same ID
+                                    // but have different quantities
+                                    Objects.equals(workOrderInstructionTemplate.getId(), newWorkOrderInstructionTemplate.getId()) &&
+                                            !workOrderInstructionTemplate.getInstruction().equals(newWorkOrderInstructionTemplate.getInstruction()))
+                            .forEach(newWorkOrderInstructionTemplate -> {
+                                workOrderInstructionTemplate.setInstruction(newWorkOrderInstructionTemplate.getInstruction());
+                                workOrderInstructionTemplateService.save(workOrderInstructionTemplate);
+
+                            });
+                });
+    }
+
+    private void changeBillOfMaterialLines(BillOfMaterial existingBillOfMaterial, BillOfMaterial billOfMaterial) {
+        // Remove the lines if it doesn't exists any more
+        existingBillOfMaterial.getBillOfMaterialLines().stream()
+                .filter(billOfMaterialLine ->
+                    // check if this line still exists in the new BOM structure
+                    // If not, then return true as we will remove this line
+                    billOfMaterial.getBillOfMaterialLines().stream()
+                            .filter(newBillOfMaterialLine -> Objects.equals(billOfMaterialLine.getId(), newBillOfMaterialLine.getId()))
+                            .count() == 0
+                 ).forEach(billOfMaterialLine -> billOfMaterialLineService.delete(billOfMaterialLine));
+
+        // For each new line in the new BOM structure(line id is null)
+        // add it
+        billOfMaterial.getBillOfMaterialLines().stream()
+                .filter(billOfMaterialLine -> Objects.isNull(billOfMaterial.getId()))
+                .forEach(billOfMaterialLine -> {
+                    billOfMaterialLine.setBillOfMaterial(existingBillOfMaterial);
+                    billOfMaterialLineService.save(billOfMaterialLine);
+                });
+
+        // For each line that exists in both old BOM and new BOM structure,
+        // let's change the quantity
+        // The only thing we allow the user to change is the quantity.
+        // If the user want to change the item, they can only do so by
+        // removing the existing line and add a new line
+        existingBillOfMaterial.getBillOfMaterialLines().stream()
+                .forEach(billOfMaterialLine -> {
+                    billOfMaterial.getBillOfMaterialLines().stream()
+                            .filter(newBillOfMaterialLine ->
+                                    // only return when the lines have the same ID
+                                    // but have different quantities
+                                    Objects.equals(billOfMaterialLine.getId(), newBillOfMaterialLine.getId()) &&
+                                    !billOfMaterialLine.getExpectedQuantity().equals(newBillOfMaterialLine.getExpectedQuantity()))
+                            .forEach(newBillOfMaterialLine -> {
+                                billOfMaterialLine.setExpectedQuantity(newBillOfMaterialLine.getExpectedQuantity());
+                                billOfMaterialLineService.save(billOfMaterialLine);
+
+                            });
+                });
+    }
+
+    /**
+     * Make sure the number is new and not exists in the warehouse yet
+     * @param warehouseId
+     * @param number
+     * @return
+     */
+    public String validateNewBOMNumber(Long warehouseId, String number) {
+        BillOfMaterial billOfMaterial =
+                findByNumber(warehouseId, number, false);
+
+        return Objects.isNull(billOfMaterial) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+
+    }
 }

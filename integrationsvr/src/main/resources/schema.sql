@@ -35,6 +35,10 @@ DROP TABLE if exists integration_work_order_confirmation;
 CREATE TABLE integration_customer (
   integration_customer_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,
   contactor_lastname   VARCHAR(100) NOT NULL,
@@ -52,13 +56,17 @@ CREATE TABLE integration_customer (
   status VARCHAR(10) NOT NULL);
 
  insert into integration_customer
-   (name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
+   (company_id, company_code, warehouse_id, warehouse_name, name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
    address_line2, address_postcode, status, insert_time)
-  values ("CST-A", "Customer A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
+  values (null, "20901", null, "WMEC", "CST-A", "Customer A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
 
 
 CREATE TABLE integration_client (
   integration_client_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   name   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,
@@ -77,13 +85,18 @@ CREATE TABLE integration_client (
   status VARCHAR(10) NOT NULL);
 
  insert into integration_client
-   (name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
+   (company_id, company_code, warehouse_id, warehouse_name,
+   name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
    address_line2, address_postcode, status, insert_time)
-  values ("CLIENT-A", "Client A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
+  values (null, "20901", null, "WMEC","CLIENT-A", "Client A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
 
 
 CREATE TABLE integration_supplier (
   integration_supplier_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   name   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL,
   contactor_firstname   VARCHAR(100) NOT NULL,
@@ -102,24 +115,27 @@ CREATE TABLE integration_supplier (
   status VARCHAR(10) NOT NULL);
 
  insert into integration_supplier
-   (name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
+   (company_id, company_code, warehouse_id, warehouse_name,
+   name, description, contactor_firstname, contactor_lastname, address_country,  address_state, address_county, address_city, address_district, address_line1 ,
    address_line2, address_postcode, status, insert_time)
-  values ("SUPPLIER-A", "Supplier A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
+  values (null, "20901", null, "WMEC","SUPPLIER-A", "Supplier A", "Alex", "Andrew", "USA", "CA", "Orange", "Orange", "", "2164 N Batavia Street", "", "92865", "PENDING", now());
 
 CREATE TABLE integration_item_family (
   integration_item_family_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
   description   VARCHAR(100) NOT NULL,
-  warehouse_id   VARCHAR(100),
-  warehouse_name   VARCHAR(100),
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   insert_time  DATETIME  NOT NULL,
   last_update_time  DATETIME,
   error_message VARCHAR(1000),
   status VARCHAR(10) NOT NULL);
 
  insert into integration_item_family
-   (name, description,  warehouse_name, status, insert_time)
-  values ("ITEM-FAMILY-A", "Item Family A", "WMOR", "PENDING", now());
+   (company_id, company_code, warehouse_id, warehouse_name,name, description,   status, insert_time)
+  values (null, "20901", null, "WMEC","ITEM-FAMILY-A", "Item Family A", "PENDING", now());
 
 CREATE TABLE integration_item (
   integration_item_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -129,8 +145,10 @@ CREATE TABLE integration_item (
   client_name   VARCHAR(100),
   integration_item_family_id   BIGINT,
   unit_cost   DOUBLE,
-  warehouse_id   BIGINT,
-  warehouse_name   VARCHAR(100) ,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   insert_time  DATETIME  NOT NULL,
   last_update_time  DATETIME,
   status VARCHAR(10) NOT NULL,
@@ -138,8 +156,8 @@ CREATE TABLE integration_item (
   foreign key(integration_item_family_id) references integration_item_family(integration_item_family_id));
 
  insert into integration_item
-   (name, description,  client_name, unit_cost, warehouse_name, status, insert_time)
-  values ("ITEM-A", "Item A", "CLIENT-A", 5.0,  "WMOR", "PENDING", now());
+   (company_id, company_code, warehouse_id, warehouse_name, name, description,  client_name, unit_cost,  status, insert_time)
+  values (null, "20901", null, "WMEC","ITEM-A", "Item A", "CLIENT-A", 5.0,   "PENDING", now());
 
 CREATE TABLE integration_item_package_type (
   integration_item_package_type_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -151,8 +169,10 @@ CREATE TABLE integration_item_package_type (
   client_name   VARCHAR(100),
   supplier_id   BIGINT,
   supplier_name   VARCHAR(100),
-  warehouse_id   BIGINT,
-  warehouse_name   VARCHAR(100),
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   integration_item_id BIGINT,
   insert_time  DATETIME  NOT NULL,
   last_update_time  DATETIME,
@@ -174,8 +194,10 @@ CREATE TABLE integration_item_unit_of_measure (
   length   DOUBLE,
   width   DOUBLE,
   height   DOUBLE,
-  warehouse_id  BIGINT,
-  warehouse_name   VARCHAR(100),
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   integration_item_package_type_id BIGINT,
   insert_time  DATETIME  NOT NULL,
   last_update_time  DATETIME,
@@ -256,8 +278,10 @@ CREATE TABLE integration_order (
   number   VARCHAR(100) NOT NULL,
   ship_to_customer_id   BIGINT,
   ship_to_customer_name  VARCHAR(100),
-  warehouse_id  BIGINT,
-  warehouse_name   VARCHAR(100),
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   bill_to_customer_id   BIGINT,
   bill_to_customer_name  VARCHAR(100),
   ship_to_contactor_firstname   VARCHAR(100),
@@ -298,8 +322,10 @@ CREATE TABLE integration_order_line(
   number   VARCHAR(100) NOT NULL,
   item_id   BIGINT,
   item_name   VARCHAR(100),
-  warehouse_id  BIGINT,
-  warehouse_name   VARCHAR(100),
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   expected_quantity   BIGINT NOT NULL,
   inventory_status_id   BIGINT,
   inventory_status_name   VARCHAR(100),
@@ -355,8 +381,10 @@ CREATE TABLE integration_order_line_confirmation(
 CREATE TABLE integration_receipt (
   integration_receipt_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   number   VARCHAR(100) NOT NULL,
-  warehouse_id  BIGINT,
-  warehouse_name   VARCHAR(100),
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   client_id   BIGINT,
   client_name   VARCHAR(100),
   supplier_id  BIGINT,
@@ -370,8 +398,10 @@ CREATE TABLE integration_receipt (
 CREATE TABLE integration_receipt_line(
   integration_receipt_line_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   number   VARCHAR(100) NOT NULL,
-  warehouse_id  BIGINT,
-  warehouse_name   VARCHAR(100),
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
   item_id   BIGINT,
   item_name   VARCHAR(100),
   expected_quantity   BIGINT NOT NULL,

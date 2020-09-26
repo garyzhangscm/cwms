@@ -156,21 +156,12 @@ public class LocationController {
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/locations")
-    public ResponseBodyWrapper removeLocations(@RequestParam(value = "locationIds", defaultValue = "", required = false) String locationIds,
-                                               @RequestParam(value = "locationId", defaultValue = "", required = false) Long locationId) {
+    public ResponseBodyWrapper removeLocations(@RequestParam Long warehouseId,
+                                               @RequestParam String locationIds) {
 
-        if (StringUtils.isNotBlank(locationIds)) {
-            locationService.delete(locationIds);
+
+            locationService.removeLocations(warehouseId, locationIds);
             return  ResponseBodyWrapper.success(locationIds);
-        }
-        else if (Objects.nonNull(locationId)) {
-            locationService.delete(locationId);
-            return  ResponseBodyWrapper.success(String.valueOf(locationId));
-        }
-        else {
-
-            throw RequestValidationFailException.raiseException("You can delete by either id list or single id");
-        }
     }
 
 

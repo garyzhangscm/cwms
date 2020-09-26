@@ -355,12 +355,19 @@ public class PickService {
     }
 
     public List<Pick> getOpenPicksByItemId(Long itemId){
+        return getOpenPicksByItemId(itemId, true);
+    }
+    public List<Pick> getOpenPicksByItemId(Long itemId, boolean loadDetails){
 
-        return pickRepository.getOpenPicksByItemId(itemId);
+        List<Pick> picks = pickRepository.getOpenPicksByItemId(itemId);
+        if (picks.size() > 0 && loadDetails) {
+            loadAttribute(picks);
+        }
+        return picks;
     }
 
-    public String getNextPickNumber() {
-        return commonServiceRestemplateClient.getNextNumber("pick-number");
+    public String getNextPickNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "pick-number");
 
     }
 
@@ -380,7 +387,7 @@ public class PickService {
     }
     public Pick cancelPick(Pick pick, Long cancelledQuantity) {
         if (pick.getStatus().equals(PickStatus.COMPLETED)) {
-            throw PickingException.raiseException("Can't cancel pick that is already cancelled");
+            throw PickingException.raiseException("Can't cancel pick that is already completed!");
         }
 
         // we have nothing left to cancel
@@ -403,6 +410,12 @@ public class PickService {
             workOrderServiceRestemplateClient.registerPickCancelled(pick.getWorkOrderLineId(), cancelledQuantity);
         }
 
+        // If this is a pick that allocates a whole LPN, release the LPN
+        if (Objects.nonNull(pick.getLpn())) {
+
+            inventoryServiceRestemplateClient.releaseLPNAllocated(pick.getWarehouseId(), pick.getLpn(), pick.getId());
+        }
+
         // Save the data to cancelled pick table
         cancelledPickService.registerPickCancelled(pick, cancelledQuantity);
 
@@ -420,8 +433,7 @@ public class PickService {
     }
 
 
-    public Pick generatePick(InventorySummary inventorySummary, Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
-        logger.debug("Start to generate pick");
+    public Pick generateBasicPickInformation(InventorySummary inventorySummary, Long quantity) {
         Pick pick = new Pick();
         pick.setItem(inventorySummary.getItem());
         pick.setItemId(inventorySummary.getItem().getId());
@@ -429,22 +441,29 @@ public class PickService {
         pick.setSourceLocationId(inventorySummary.getLocationId());
         pick.setQuantity(quantity);
         pick.setPickedQuantity(0L);
-        pick.setNumber(getNextPickNumber());
+        pick.setNumber(getNextPickNumber(inventorySummary.getLocation().getWarehouse().getId()));
         pick.setStatus(PickStatus.PENDING);
         pick.setInventoryStatusId(inventorySummary.getInventoryStatus().getId());
-        pick.setUnitOfMeasureId(pickableUnitOfMeasure.getUnitOfMeasureId());
 
         return pick;
     }
 
 
+    public Pick generateBasicPickInformation(InventorySummary inventorySummary, Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
+        Pick pick = generateBasicPickInformation(inventorySummary, quantity);
+        pick.setUnitOfMeasureId(pickableUnitOfMeasure.getUnitOfMeasureId());
 
-    @Transactional
-    public Pick generatePick(InventorySummary inventorySummary,
-                             ShipmentLine shipmentLine, long quantity,
-                             ItemUnitOfMeasure pickableUnitOfMeasure) {
-        Pick pick = generatePick(inventorySummary, quantity, pickableUnitOfMeasure);
+        return pick;
+    }
 
+    public Pick generateBasicPickInformation(InventorySummary inventorySummary, Long quantity, String lpn) {
+        Pick pick = generateBasicPickInformation(inventorySummary, quantity);
+        pick.setLpn(lpn);
+        return pick;
+    }
+
+
+    private Pick setupShipmentInformation(Pick pick, ShipmentLine shipmentLine) {
         pick.setShipmentLine(shipmentLine);
         pick.setWarehouseId(shipmentLine.getWarehouseId());
         pick.setPickType(PickType.OUTBOUND);
@@ -456,22 +475,57 @@ public class PickService {
         pick.setDestinationLocation(stagingLocation);
         pick.setDestinationLocationId(stagingLocation.getId());
 
-        Pick savedPick = save(pick);
+        return save(pick);
 
-        logger.debug("pick saved!!!! id : {}", savedPick.getId());
+
+    }
+
+    private Pick processPick(Pick pick) {
         // Setup the pick movement
-        setupMovementPath(savedPick);
-        logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
+        setupMovementPath(pick);
+        logger.debug("{} pick movement path setup for the pick", pick.getPickMovements().size());
 
 
-        processCartonization(savedPick);
+        processCartonization(pick);
 
         // Let's see if we can group the pick either
         // 1. into an existing pick list
         // 2. or create a new picking list so other picks can be grouped
-        processPickList(savedPick);
+        processPickList(pick);
 
-        return findById(savedPick.getId());
+        return findById(pick.getId());
+    }
+
+    @Transactional
+    public Pick generatePick(InventorySummary inventorySummary,
+                             ShipmentLine shipmentLine, long quantity,
+                             String lpn) {
+        Pick pick = generateBasicPickInformation(inventorySummary, quantity, lpn);
+        pick = setupShipmentInformation(pick, shipmentLine);
+        return processPick(pick);
+    }
+    @Transactional
+    public Pick generatePick(InventorySummary inventorySummary,
+                             ShipmentLine shipmentLine, long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+        Pick pick = generateBasicPickInformation(inventorySummary, quantity, pickableUnitOfMeasure);
+        pick = setupShipmentInformation(pick, shipmentLine);
+        return processPick(pick);
+    }
+
+
+
+    private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder, WorkOrderLine workOrderLine) {
+
+        pick.setWorkOrderLineId(workOrderLine.getId());
+        pick.setWarehouseId(workOrder.getWarehouseId());
+        pick.setPickType(PickType.WORK_ORDER);
+
+        // Setup the destination, get from ship staging area
+        Long stagingLocationId = getDestinationLocationIdForPick(workOrder);
+        pick.setDestinationLocationId(stagingLocationId);
+
+        return save(pick);
     }
 
 
@@ -479,33 +533,19 @@ public class PickService {
     public Pick generatePick(WorkOrder workOrder, InventorySummary inventorySummary,
                              WorkOrderLine workOrderLine, Long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure) {
-        Pick pick = generatePick(inventorySummary, quantity, pickableUnitOfMeasure);
+        Pick pick = generateBasicPickInformation(inventorySummary, quantity, pickableUnitOfMeasure);
+        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine);
+        return processPick(pick);
+    }
 
-        pick.setWorkOrderLineId(workOrderLine.getId());
-        pick.setWarehouseId(workOrder.getWarehouseId());
-        pick.setPickType(PickType.WORK_ORDER);
-
-        // Setup the destination, get from ship staging area
-
-        logger.debug("get pick's destination for work order:\n{}", workOrder);
-        Long stagingLocationId = getDestinationLocationIdForPick(workOrder);
-        pick.setDestinationLocationId(stagingLocationId);
-
-        Pick savedPick = save(pick);
-
-        logger.debug("pick saved!!!! id : {}", savedPick.getId());
-        // Setup the pick movement
-        setupMovementPath(savedPick);
-        logger.debug("{} pick movement path setup for the pick", savedPick.getPickMovements().size());
-
-
-        processCartonization(savedPick);
-        // Let's see if we can group the pick either
-        // 1. into an existing pick list
-        // 2. or create a new picking list so other picks can be grouped
-        processPickList(savedPick);
-
-        return findById(savedPick.getId());
+    @Transactional
+    public Pick generatePick(WorkOrder workOrder,
+                             InventorySummary inventorySummary,
+                             WorkOrderLine workOrderLine,  long quantity,
+                             String lpn) {
+        Pick pick = generateBasicPickInformation(inventorySummary, quantity, lpn);
+        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine);
+        return processPick(pick);
     }
 
     private void processCartonization(Pick pick) {
@@ -554,7 +594,7 @@ public class PickService {
      */
     public Pick generatePick(InventorySummary inventorySummary, ShortAllocation shortAllocation,
                              Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
-        Pick pick = generatePick(inventorySummary, quantity, pickableUnitOfMeasure);
+        Pick pick = generateBasicPickInformation(inventorySummary, quantity, pickableUnitOfMeasure);
 
         pick.setShortAllocation(shortAllocation);
         pick.setWarehouseId(shortAllocation.getWarehouseId());
@@ -834,7 +874,7 @@ public class PickService {
         while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
             Inventory inventory = inventoryIterator.next();
             logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
-                    quantityToBePicked, inventory.getLpn(), nextLocation.getName());
+                    inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
             Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
             logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
             quantityToBePicked -= pickedQuantity;
@@ -867,6 +907,10 @@ public class PickService {
         return pickRepository.getPicksByShipmentId(shipmentId);
     }
 
+    public List<Pick> getPicksByShipmentLine(Long shipmentLineId){
+        return pickRepository.getPicksByShipmentLineId(shipmentLineId);
+    }
+
     public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation)   {
         return confirmPick(inventory, pick, quantityToBePicked, nextLocation, "");
     }
@@ -892,7 +936,7 @@ public class PickService {
             // We pick partial quantity from the inventory, Let's split it
             // and give it a new LPN
             if (StringUtils.isBlank(newLpn)) {
-                newLpn = commonServiceRestemplateClient.getNextNumber("lpn");
+                newLpn = commonServiceRestemplateClient.getNextNumber(pick.getWarehouseId(), "lpn");
             }
             List<Inventory> inventories = inventoryServiceRestemplateClient.split(inventory, newLpn, quantityToBePicked);
             if (inventories.size() != 2) {

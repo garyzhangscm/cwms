@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
@@ -85,11 +87,17 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     )
     private List<DBBasedItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
 
     @Column(name = "warehouse_name")
     private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -122,11 +130,11 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
 
         Long warehouseId = getWarehouseId();
         if (Objects.isNull(warehouseId)) {
-            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                    getWarehouseName()
-            ).getId();
-            itemPackageType.setWarehouseId(warehouseId);
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    getCompanyId(), getCompanyCode(), getWarehouseId(), getWarehouseName()
+            );
         }
+        itemPackageType.setWarehouseId(warehouseId);
 
         if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
             itemPackageType.setItemId(
@@ -138,7 +146,7 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
         if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
             itemPackageType.setClientId(
                     commonServiceRestemplateClient.getClientByName(
-                            getClientName()
+                            warehouseId, getClientName()
                     ).getId()
             );
         }
@@ -146,7 +154,7 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
         if (Objects.isNull(getSupplierId()) && Objects.nonNull(getSupplierName())) {
             itemPackageType.setSupplierId(
                     commonServiceRestemplateClient.getSupplierByName(
-                            getSupplierName()
+                            warehouseId, getSupplierName()
                     ).getId()
             );
         }
@@ -210,24 +218,28 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
 
     @Override
     public String toString() {
-        return "DBBasedItemPackageType{" +
-                "id=" + id +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", supplierId=" + supplierId +
-                ", supplierName='" + supplierName + '\'' +
-                ", item=" + (Objects.nonNull(item) ?  item.getName() : "")+
-                ", itemUnitOfMeasures=" + itemUnitOfMeasures +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public Long getId() {
