@@ -1,2 +1,2 @@
-name,description,enabled
-Producing,Product Line Work,true
+companyId,name,description,enabled
+1,Producing,Product Line Work,true

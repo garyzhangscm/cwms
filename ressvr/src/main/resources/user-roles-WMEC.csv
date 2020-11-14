@@ -1,5 +1,5 @@
-username,rolename
-GZHANG,Admin
-OZHANG,WarehouseManager
-RWU,InboundManager
-JZHANG,OutboundManager
+companyId,username,rolename
+1,GZHANG,Admin
+1,OZHANG,WarehouseManager
+1,RWU,InboundManager
+1,JZHANG,OutboundManager

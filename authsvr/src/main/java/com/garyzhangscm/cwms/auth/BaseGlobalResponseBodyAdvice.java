@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.auth.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.auth.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.auth.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.auth.exception.GenericException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -54,6 +56,7 @@ import java.util.List;
 @RestControllerAdvice
 public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseGlobalResponseBodyAdvice.class);
     /**
      * Only process when the client want to have a JSON return
      */
@@ -82,8 +85,9 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     public ResponseBodyWrapper RuntimeExceptionErrorHandler(RuntimeException ex, HttpServletRequest request) {
 
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+        logger.debug("Runtime Exception: {}", ex.getMessage());
         return new ResponseBodyWrapper(
-                500,
+                200,
                 ex.getMessage(), exceptionResponse);
     }
     @ExceptionHandler(Exception.class)
@@ -91,8 +95,9 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
 
 
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+        logger.debug("Exception: {}", ex.getMessage());
         return new ResponseBodyWrapper(
-                500,
+                200,
                 ex.getMessage(), exceptionResponse);
     }
 

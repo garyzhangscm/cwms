@@ -15,7 +15,8 @@ DROP TABLE IF EXISTS menu_group;
 
 CREATE TABLE user_info (
   user_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  username   VARCHAR(100) NOT NULL  UNIQUE,
+  username   VARCHAR(100) NOT NULL ,
+  company_id BIGINT NOT NULL,
   first_name  VARCHAR(100) NOT NULL,
   last_name  VARCHAR(100) NOT NULL,
   is_admin boolean not null,
@@ -29,8 +30,8 @@ CREATE TABLE user_info (
 
 
 
-INSERT INTO user_info (username,  first_name, last_name, is_admin, change_password_at_next_logon)
-VALUES ("GZHANG",  "Gary", "Zhang", true, false );
+INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
+VALUES (1, "GZHANG",  "Gary", "Zhang", true, false );
 
 -- INSERT INTO user_info (username,  first_name, last_name, is_admin) VALUES ("RWU",  "Rainbow", "Wu", false);
 
@@ -42,7 +43,8 @@ VALUES ("GZHANG",  "Gary", "Zhang", true, false );
 
 CREATE TABLE role (
   role_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name   VARCHAR(100) NOT NULL  UNIQUE,
+  company_id BIGINT NOT NULL,
+  name   VARCHAR(100) NOT NULL ,
   description  VARCHAR(100) NOT NULL,
   enabled boolean not null default 0,
   created_time date,
@@ -75,6 +77,7 @@ CREATE TABLE user_role (
 CREATE TABLE menu_group (
   menu_group_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL  UNIQUE,
+  type   VARCHAR(100) NOT NULL,
   text   VARCHAR(100) NOT NULL,
   i18n  VARCHAR(100) NOT NULL,
   group_flag boolean not null default 1,
@@ -110,6 +113,7 @@ CREATE TABLE menu (
   name   VARCHAR(100) NOT NULL  UNIQUE,
   i18n  VARCHAR(100) NOT NULL,
   link VARCHAR(100) NOT NULL,
+  icon  VARCHAR(100),
   menu_sub_group_id BIGINT not null,
   sequence int not null default 0,
   created_time date,
@@ -133,7 +137,8 @@ CREATE TABLE role_menu (
 
 CREATE TABLE working_team (
   working_team_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name   VARCHAR(100) NOT NULL  UNIQUE,
+  company_id BIGINT NOT NULL,
+  name   VARCHAR(100) NOT NULL ,
   description  VARCHAR(100) NOT NULL,
   enabled boolean not null default 0,
   created_time date,

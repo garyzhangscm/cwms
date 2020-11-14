@@ -13,8 +13,8 @@ public class ValidateService {
     @Autowired
     ValidatorFactory validatorFactory;
 
-    public String validate(Long warehouseId, String variable, String validatorType, String value) {
-        return validate(warehouseId, variable, ValidatorType.valueOf(validatorType), value);
+    public String validate(Long companyId, Long warehouseId, String variable, String validatorType, String value) {
+        return validate(companyId, warehouseId, variable, ValidatorType.valueOf(validatorType), value);
     }
 
     /**
@@ -26,13 +26,13 @@ public class ValidateService {
      * @param value value
      * @return
      */
-    public String validate(Long warehouseId, String variable, ValidatorType type, String value) {
+    public String validate(Long companyId, Long warehouseId, String variable, ValidatorType type, String value) {
         Validator validator = validatorFactory.getValidator(variable, type).orElse(null);
         if (Objects.isNull(validator)) {
             // If there's no validator against this variable / type,
             // pass the validation
             return "";
         }
-        return validator.validate(warehouseId, value);
+        return validator.validate(companyId, warehouseId, value);
     }
 }

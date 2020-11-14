@@ -34,6 +34,8 @@ public class MenuCSVWrapper {
 
     private String menuSubGroup;
 
+    private String icon;
+
 
     public String getName() {
         return name;
@@ -81,5 +83,13 @@ public class MenuCSVWrapper {
 
     public void setMenuSubGroup(String menuSubGroup) {
         this.menuSubGroup = menuSubGroup;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 }

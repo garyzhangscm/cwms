@@ -37,6 +37,8 @@ public class User extends AuditibleEntity<String>  {
     @Column(name = "user_id")
     private Long id;
 
+    @Column(name = "company_id")
+    private Long companyId;
 
     @Column(name = "username")
     private String username;
@@ -100,6 +102,7 @@ public class User extends AuditibleEntity<String>  {
     @JsonIgnore
     public UserAuth getUserAuth() {
         UserAuth userAuth = new UserAuth();
+        userAuth.setCompanyId(companyId);
         userAuth.setUsername(username);
         userAuth.setPassword(password);
         userAuth.setEmail(email);
@@ -132,6 +135,13 @@ public class User extends AuditibleEntity<String>  {
         this.username = username;
     }
 
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
     public String getFirstname() {
         return firstname;
     }

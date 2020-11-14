@@ -52,6 +52,7 @@ public class UserRoleService implements TestDataInitiableService{
     public List<UserRole> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("companyId").
                 addColumn("username").
                 addColumn("roleName").
                 build().withHeader();
@@ -67,18 +68,27 @@ public class UserRoleService implements TestDataInitiableService{
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<UserRole> userRoles = loadData(inputStream);
             // Save the user role result as a map
-            // key: username
+            // key: companyId - username
             // value: a list of role name
             Map<String, Set<String>> userRoleMap = new HashMap<>();
 
             userRoles.stream().forEach(userRole -> {
-                Set<String> roles = userRoleMap.getOrDefault(userRole.getUsername(), new HashSet<>());
+                String key = userRole.getCompanyId() + "-" + userRole.getUsername();
+                Set<String> roles =
+                        userRoleMap.getOrDefault(key, new HashSet<>());
                 roles.add(userRole.getRoleName());
-                userRoleMap.put(userRole.getUsername(), roles);
+                userRoleMap.put(key, roles);
             });
 
             userRoleMap.entrySet().stream().forEach(userRoleEntry -> {
-                User user = userService.findByUsername(userRoleEntry.getKey());
+                // key: companyId - username
+                String key = userRoleEntry.getKey();
+                String[] tuple = key.split("-");
+                Long companyId = Long.parseLong(tuple[0]);
+                String username = tuple[1];
+
+                User user = userService.findByUsername(companyId, username);
+
                 List<Role> roles = new ArrayList<>();
                 Set<String> roleNames = userRoleEntry.getValue();
                 roleNames.stream().forEach(roleName -> {

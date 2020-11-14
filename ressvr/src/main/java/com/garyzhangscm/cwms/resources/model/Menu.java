@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.resources.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -50,6 +52,9 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
     @Column(name = "sequence")
     private Integer sequence;
 
+    @Column(name = "icon")
+    private String icon;
+
     @ManyToOne
     @JoinColumn(name = "menu_sub_group_id")
     @JsonIgnore
@@ -75,15 +80,20 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
 
     @Override
     public String toString() {
-        return "Menu{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", text='" + text + '\'' +
-                ", i18n='" + i18n + '\'' +
-                ", link='" + link + '\'' +
-                ", sequence=" + sequence +
-                ", menuSubGroup=" + menuSubGroup +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     public String getName() {

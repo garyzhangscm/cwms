@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.common.model.Location;
 import com.garyzhangscm.cwms.common.model.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,5 +80,65 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
+    @Cacheable
+    public Warehouse getWarehouseById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/warehouses/{id}");
 
+        ResponseBodyWrapper<Warehouse> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public Location getLocationById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/{id}");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public Location getLocationByName(Long warehouseId, String name) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
+
+
+        ResponseBodyWrapper<Location[]> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {}).getBody();
+
+        Location[] locations = responseBodyWrapper.getData();
+        logger.debug(">> Get {} locations by name: {}", locations.length, name);
+        if (locations.length != 1) {
+            logger.debug("getLocationByName / {} return {} locations. Error!!!", name, locations.length);
+            return null;
+        }
+        else {
+            return locations[0];
+        }
+    }
 }

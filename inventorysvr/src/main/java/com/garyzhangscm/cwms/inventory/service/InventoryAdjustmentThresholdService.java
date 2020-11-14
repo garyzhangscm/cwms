@@ -124,12 +124,13 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
                                                       String roleName,
                                                       Boolean enabled) {
         Long userId = null;
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId).getCompanyId();
         if (StringUtils.isNotBlank(username)) {
-            userId = resourceServiceRestemplateClient.getUserByUsername(username).getId();
+            userId = resourceServiceRestemplateClient.getUserByUsername(companyId, username).getId();
         }
         Long roleId = null;
         if (StringUtils.isNotBlank(roleName)) {
-            roleId = resourceServiceRestemplateClient.getUserByUsername(roleName).getId();
+            roleId = resourceServiceRestemplateClient.getUserByUsername(companyId, roleName).getId();
         }
         return findAll(warehouseId, itemName, null, clientIds, itemFamilyName,itemFamilyIds,
                 null, inventoryQuantityChangeTypes, userId, roleId, enabled, true);
@@ -379,14 +380,14 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getUser())) {
             inventoryAdjustmentThreshold.setUserId(
                     resourceServiceRestemplateClient.getUserByUsername(
-                            inventoryAdjustmentThresholdCSVWrapper.getUser()
+                            warehouse.getCompanyId(), inventoryAdjustmentThresholdCSVWrapper.getUser()
                     ).getId()
             );
         }
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getRole())) {
             inventoryAdjustmentThreshold.setRoleId(
                     resourceServiceRestemplateClient.getRoleByName(
-                            inventoryAdjustmentThresholdCSVWrapper.getRole()
+                            warehouse.getCompanyId(), inventoryAdjustmentThresholdCSVWrapper.getRole()
                     ).getId()
             );
         }
@@ -413,7 +414,10 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
     public boolean isInventoryAdjustExceedThreshold(Inventory inventory, InventoryQuantityChangeType type,
                                                     Long oldQuantity, Long newQuantity) {
 
-        return isInventoryAdjustExceedThreshold(inventory, type, oldQuantity, newQuantity, userService.getCurrentUser());
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                inventory.getWarehouseId()
+        ).getCompanyId();
+        return isInventoryAdjustExceedThreshold(inventory, type, oldQuantity, newQuantity, userService.getCurrentUser(companyId));
     }
 
     public boolean isInventoryAdjustExceedThreshold(Inventory inventory, InventoryQuantityChangeType type,

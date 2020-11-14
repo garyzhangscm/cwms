@@ -51,6 +51,7 @@ public class WorkingTeamUserService implements TestDataInitiableService{
     public List<WorkingTeamUser> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("companyId").
                 addColumn("workingTeamName").
                 addColumn("username").
                 build().withHeader();
@@ -66,18 +67,27 @@ public class WorkingTeamUserService implements TestDataInitiableService{
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<WorkingTeamUser> workingTeamUsers = loadData(inputStream);
             // Save the user role result as a map
-            // key: username
+            // key: companyId - username
             // value: a list of role name
             Map<String, Set<String>> userWorkingTeamMap = new HashMap<>();
 
             workingTeamUsers.stream().forEach(workingTeamUser -> {
-                Set<String> workingTeamNames = userWorkingTeamMap.getOrDefault(workingTeamUser.getUsername(), new HashSet<>());
+                String key = workingTeamUser.getCompanyId() + "-" + workingTeamUser.getUsername();
+                Set<String> workingTeamNames =
+                        userWorkingTeamMap.getOrDefault(key, new HashSet<>());
                 workingTeamNames.add(workingTeamUser.getWorkingTeamName());
-                userWorkingTeamMap.put(workingTeamUser.getUsername(), workingTeamNames);
+                userWorkingTeamMap.put(key, workingTeamNames);
             });
 
             userWorkingTeamMap.entrySet().stream().forEach(userWorkingTeamEntry -> {
-                User user = userService.findByUsername(userWorkingTeamEntry.getKey());
+
+                // key: companyId - username
+                String key = userWorkingTeamEntry.getKey();
+                String[] tuple = key.split("-");
+                Long companyId = Long.parseLong(tuple[0]);
+                String username = tuple[1];
+
+                User user = userService.findByUsername(companyId, username);
                 List<WorkingTeam> workingTeams = new ArrayList<>();
                 Set<String> workingTeamNames = userWorkingTeamEntry.getValue();
                 workingTeamNames.stream().forEach(workingTeamName -> {

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,11 +24,15 @@ public class SiteInformationService {
     @Value("${site.company.defaultCompanyCode}")
     private String defaultCompanyCode;
 
+    @Autowired
+    private MenuGroupService menuGroupService;
 
 
 
     public SiteInformation getDefaultSiteInformation() {
-        SiteInformation siteInformation = SiteInformation.getDefaultSiteInformation();
+        SiteInformation siteInformation = SiteInformation.getDefaultSiteInformation(
+                Collections.emptyList()
+        );
 
         logger.debug("Objects.isNull(singleCompanySite) ? : {}", Objects.isNull(singleCompanySite)  );
         logger.debug("singleCompanySite ? : {}", singleCompanySite );

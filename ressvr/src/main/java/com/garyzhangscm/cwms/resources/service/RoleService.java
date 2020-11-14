@@ -62,11 +62,13 @@ public class RoleService implements TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("role  not found by id: " + id));
     }
 
-    public List<Role> findAll(String name, Boolean enabled) {
+    public List<Role> findAll(Long companyId, String name, Boolean enabled) {
 
         return roleRepository.findAll(
                 (Root<Role> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
                     if (!StringUtils.isBlank(name)) {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
@@ -104,6 +106,7 @@ public class RoleService implements TestDataInitiableService{
     public List<Role> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("companyId").
                 addColumn("name").
                 addColumn("description").
                 addColumn("enabled").

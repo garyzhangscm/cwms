@@ -27,7 +27,7 @@ import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
-    List<User> findAll();
+    List<User> findByCompanyId(Long companyId);
 
-    User findByUsername(String username);
+    User findByCompanyIdAndUsername(Long companyId, String username);
 }

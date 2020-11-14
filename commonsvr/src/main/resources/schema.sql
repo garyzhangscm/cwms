@@ -9,6 +9,8 @@ drop table if exists policy;
 drop table if exists carrier_service_level;
 drop table if exists carrier;
 
+drop table if exists work_task;
+
 
 CREATE TABLE client (
   client_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -167,3 +169,26 @@ CREATE TABLE carrier_service_level (
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50),
   foreign key(carrier_id) references carrier(carrier_id));
+
+
+
+CREATE TABLE work_task (
+   work_task_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   warehouse_id BIGINT NOT NULL,
+   number VARCHAR(20) NOT NULL,
+   type VARCHAR(50) NOT NULL,
+   status VARCHAR(20) NOT NULL,
+   source_location_id BIGINT NOT NULL,
+   destination_location_id BIGINT,
+   inventory_id BIGINT,
+   assigned_user_id BIGINT,
+   assigned_role_id BIGINT,
+   assigned_working_team_id BIGINT,
+   current_user_id BIGINT,
+   complete_user_id BIGINT,
+   start_time BIGINT,
+   complete_time BIGINT,
+   created_time DATETIME,
+   created_by VARCHAR(50),
+   last_modified_time DATETIME,
+   last_modified_by VARCHAR(50));

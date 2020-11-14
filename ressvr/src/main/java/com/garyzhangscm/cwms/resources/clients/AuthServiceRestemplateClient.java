@@ -50,11 +50,12 @@ public class AuthServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
-    public List<UserAuth> getUserAuthByUsernames(String usernames) {
+    public List<UserAuth> getUserAuthByUsernames(Long companyId, String usernames) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/auth/users")
+                        .queryParam("companyId", companyId)
                         .queryParam("usernames", usernames);
 
 
@@ -69,11 +70,12 @@ public class AuthServiceRestemplateClient {
 
     }
 
-    public UserAuth getUserAuthByUsername(String username) {
+    public UserAuth getUserAuthByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/auth/users")
+                        .queryParam("companyId", companyId)
                         .queryParam("usernames", username);
         List<UserAuth> userAuths
                 = restTemplate.exchange(

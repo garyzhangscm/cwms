@@ -117,32 +117,35 @@ public class TestDataInitService {
 
         // Since all those records are not warehouse related, we will
         // remove them here
-        /***
-        jdbcTemplate.execute("delete from client");
+        jdbcTemplate.update("delete from client where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("client records removed!");
 
-        jdbcTemplate.execute("delete from supplier");
+        jdbcTemplate.update("delete from supplier where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("supplier records removed!");
 
-        jdbcTemplate.execute("delete from customer");
+        jdbcTemplate.update("delete from customer where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("customer records removed!");
 
-        jdbcTemplate.execute("delete from unit_of_measure");
+        jdbcTemplate.update("delete from unit_of_measure where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("unit_of_measure records removed!");
 
-        jdbcTemplate.execute("delete from reason_code");
+        jdbcTemplate.update("delete from reason_code where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("reason_code records removed!");
 
-        jdbcTemplate.execute("delete from system_controlled_number");
+        jdbcTemplate.update("delete from system_controlled_number where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("system_controlled_number records removed!");
 
-        jdbcTemplate.execute("delete from policy");
+        jdbcTemplate.update("delete from policy where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("policy records removed!");
-        jdbcTemplate.execute("delete from carrier_service_level");
+
+        jdbcTemplate.update("delete from carrier_service_level where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("carrier_service_level records removed!");
-        jdbcTemplate.execute("delete from carrier");
+        jdbcTemplate.update("delete from carrier where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("carrier records removed!");
-         ***/
+
+
+        jdbcTemplate.update("delete from work_task where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("work_task records removed!");
 
     }
 }

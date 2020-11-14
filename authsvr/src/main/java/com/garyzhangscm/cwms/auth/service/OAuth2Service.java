@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.auth.service;
 
+import com.garyzhangscm.cwms.auth.exception.ExceptionCode;
+import com.garyzhangscm.cwms.auth.model.LoginResponseWrapper;
 import com.garyzhangscm.cwms.auth.model.OAuth2Token;
 import com.garyzhangscm.cwms.auth.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,11 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +51,7 @@ public class OAuth2Service {
         String auth = clientID + ":" + secret;
         headers.add("Authorization", "Basic " + Base64.getEncoder().encodeToString(auth.getBytes()));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
 
         MultiValueMap<String, String> formData= new LinkedMultiValueMap<String, String>();
@@ -58,9 +63,7 @@ public class OAuth2Service {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(formData, headers);
 
-
-        ResponseEntity<OAuth2Token> responseObj = restTemplate.postForEntity(oauth2URL, request , OAuth2Token.class);
-
-        return responseObj.getBody();
+            ResponseEntity<OAuth2Token> responseObj = restTemplate.postForEntity(oauth2URL, request, OAuth2Token.class);
+            return responseObj.getBody();
     }
 }

@@ -37,9 +37,10 @@ public class WorkingTeamController {
     WorkingTeamService workingTeamService;
 
     @RequestMapping(value="/working-teams", method = RequestMethod.GET)
-    public List<WorkingTeam> findAllWorkingTeams(@RequestParam(name="name", required = false, defaultValue = "") String name,
+    public List<WorkingTeam> findAllWorkingTeams(@RequestParam Long companyId,
+                                                 @RequestParam(name="name", required = false, defaultValue = "") String name,
                                                  @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled) {
-        return workingTeamService.findAll(name, enabled);
+        return workingTeamService.findAll(companyId, name, enabled);
     }
 
     @RequestMapping(value="/working-teams", method = RequestMethod.PUT)

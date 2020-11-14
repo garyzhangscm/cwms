@@ -36,11 +36,24 @@ public class ValidatorController {
     @RequestMapping(value="/validator/validate-new-number/{variable}/{value}", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateNewNumber(@PathVariable String variable,
                                                          @PathVariable String value,
-                                                         @RequestParam Long warehouseId) {
+                                                         @RequestParam Long warehouseId,
+                                                         @RequestParam Long companyId) {
         return ResponseBodyWrapper.success(
                 validateService.validate(
-                        warehouseId, variable,
+                        companyId, warehouseId, variable,
                         ValidatorType.VALIDATE_VALUE_NON_EXISTS, value));
+
+    }
+    @RequestMapping(value="/validator/validate-existing-number/{variable}/{value}", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> validateExistingNumber(@PathVariable String variable,
+                                                         @PathVariable String value,
+                                                         @RequestParam Long warehouseId,
+                                                         @RequestParam Long companyId) {
+
+        return ResponseBodyWrapper.success(
+                validateService.validate(
+                        companyId, warehouseId, variable,
+                        ValidatorType.VALIDATE_VALUE_EXISTS, value));
 
     }
 }

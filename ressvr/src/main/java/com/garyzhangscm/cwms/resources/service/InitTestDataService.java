@@ -182,7 +182,7 @@ public class InitTestDataService {
     }
     private void initAll(String warehouseName) {
 
-        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
+        serviceNames.forEach(serviceName -> init(serviceName,  warehouseName));
 
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
 
@@ -198,8 +198,12 @@ public class InitTestDataService {
         // We should remove from the last table , by taking the dependence into
         // consideration
 
+
+
         jdbcTemplate.execute("delete from user_role");
         logger.debug("user_role records removed!");
+
+
         jdbcTemplate.execute("delete from role_menu");
         logger.debug("role_menu records removed!");
 
@@ -214,6 +218,7 @@ public class InitTestDataService {
         // we will keep user!
         // jdbcTemplate.execute("delete from user_info");
         // logger.debug("user_info records removed!");
+
         jdbcTemplate.execute("delete from role");
         logger.debug("role records removed!");
 

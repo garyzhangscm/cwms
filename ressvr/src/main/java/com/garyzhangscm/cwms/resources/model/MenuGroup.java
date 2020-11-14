@@ -36,6 +36,10 @@ public class MenuGroup extends AuditibleEntity<String>  implements Comparable<Me
     @Column(name = "menu_group_id")
     private Long id;
 
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    private MenuType type;
+
     @Column(name = "name")
     private String  name;
 
@@ -150,5 +154,13 @@ public class MenuGroup extends AuditibleEntity<String>  implements Comparable<Me
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public MenuType getType() {
+        return type;
+    }
+
+    public void setType(MenuType type) {
+        this.type = type;
     }
 }

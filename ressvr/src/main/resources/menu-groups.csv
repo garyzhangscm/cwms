@@ -1,3 +1,4 @@
-text,name,i18n,group,hideInBreadcrumb,sequence
-"User Menu",User-Menu,menu.user,true,true,1
-"Main Menu",Main-Menu,menu.main,true,false,2
+type,text,name,i18n,group,hideInBreadcrumb,sequence
+"WEB","User Menu",User-Menu,menu.user,true,true,1
+"WEB","Main Menu",Main-Menu,menu.main,true,false,2
+"MOBILE","Mobile Menu",Mobile-Menu,menu.mobile,true,false,3

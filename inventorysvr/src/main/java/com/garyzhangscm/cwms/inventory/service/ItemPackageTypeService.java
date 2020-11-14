@@ -50,6 +50,8 @@ public class ItemPackageTypeService implements TestDataInitiableService{
     private ItemPackageTypeRepository itemPackageTypeRepository;
     @Autowired
     private ItemService itemService;
+    @Autowired
+    private InventoryService inventoryService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -207,6 +209,35 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         }
         return itemPackageType;
 
+    }
+
+    public boolean isItemPackageTypeRemovable(Long itemPackageTypeId) {
+        logger.debug("Start to get item package type by id {}",
+                itemPackageTypeId);
+        ItemPackageType itemPackageType = findById(itemPackageTypeId);
+        logger.debug("check if item package type  {} / {} / {} is removable",
+                itemPackageType.getItem().getWarehouseId(),
+                itemPackageType.getItem().getName(), itemPackageType.getName());
+        return isItemPackageTypeRemovable(itemPackageType.getItem(), itemPackageType);
+    }
+    public boolean isItemPackageTypeRemovable(Item item, ItemPackageType itemPackageType) {
+        // Check if we have inventory that is using this item package type
+
+        if (inventoryService.
+                findAll(item.getWarehouseId(), item.getName(), itemPackageType.getName(),
+                null,null,null,null,null,
+                null,null,null,null,
+                null,null,null,null, false)
+                  .size() > 0) {
+            logger.debug("There's inventory attached to this item package type {} / {}, can't remove it",
+                    item.getName(), itemPackageType.getName());
+
+            return false;
+        };
+
+        logger.debug("There's NO inventory attached to this item package type {} / {}, WE CAN remove it",
+                item.getName(), itemPackageType.getName());
+        return true;
     }
 
 

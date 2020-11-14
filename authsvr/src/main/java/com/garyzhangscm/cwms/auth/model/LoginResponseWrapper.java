@@ -19,24 +19,26 @@
 package com.garyzhangscm.cwms.auth.model;
 
 public class LoginResponseWrapper {
-    private String msg;
+    private int result;
+    private String message;
     private OAuth2TokenWrapper user;
 
-    private LoginResponseWrapper(String msg, OAuth2TokenWrapper userInfo) {
-        this.msg = msg;
+    private LoginResponseWrapper(int result, String message, OAuth2TokenWrapper userInfo) {
+        this.result = result;
+        this.message = message;
         this.user = userInfo;
     }
 
-    public static LoginResponseWrapper of(String msg, OAuth2TokenWrapper userInfo) {
-        return new LoginResponseWrapper(msg, userInfo);
+    public static LoginResponseWrapper of(int result, String message, OAuth2TokenWrapper userInfo) {
+        return new LoginResponseWrapper(result, message, userInfo);
     }
 
-    public String getMsg() {
-        return msg;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public OAuth2TokenWrapper getUser() {
@@ -45,5 +47,13 @@ public class LoginResponseWrapper {
 
     public void setUser(OAuth2TokenWrapper user) {
         this.user = user;
+    }
+
+    public int getResult() {
+        return result;
+    }
+
+    public void setResult(int result) {
+        this.result = result;
     }
 }

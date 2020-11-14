@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.resources.controller;
 
+import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.ApplicationInformation;
 import com.garyzhangscm.cwms.resources.model.SiteInformation;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
 import com.garyzhangscm.cwms.resources.service.SiteInformationService;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,14 +44,14 @@ public class SiteInformationController {
     private SiteInformationService siteInformationService;
 
     @RequestMapping(value = "/site-information")
-    public SiteInformation getSiteInformation() {
+    public SiteInformation getSiteInformation(@RequestParam Long companyId) {
         logger.debug("Start to get site information for user {}",
                 userService.getCurrentUserName());
         if (StringUtils.isBlank(userService.getCurrentUserName())) {
             return siteInformationService.getDefaultSiteInformation();
         }
         else {
-            return userService.getSiteInformaiton(userService.getCurrentUserName());
+            return userService.getSiteInformaiton(companyId, userService.getCurrentUserName());
         }
     }
 
@@ -57,5 +60,20 @@ public class SiteInformationController {
         return siteInformationService.getDefaultSiteInformation();
     }
 
+
+    @RequestMapping(value = "/mobile", method = RequestMethod.GET)
+    public ApplicationInformation getMobileInformation() {
+        return ApplicationInformation.getApplicationInformation();
+    }
+
+
+    @RequestMapping(value = "/site-information/mobile", method = RequestMethod.GET)
+    public SiteInformation getMobileSiteInformation(@RequestParam Long companyId) {
+        logger.debug("Start to get mobile site information for user {}",
+                userService.getCurrentUserName());
+
+            return userService.getMobileSiteInformation(companyId, userService.getCurrentUserName());
+
+    }
 
 }

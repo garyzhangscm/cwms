@@ -37,6 +37,8 @@ public class Warehouse extends AuditibleEntity<String> implements Serializable {
     @JoinColumn(name = "company_id")
     private Company company;
 
+    @Transient
+    private Long companyId;
 
     @Column(name = "name")
     private String name;
@@ -155,5 +157,13 @@ public class Warehouse extends AuditibleEntity<String> implements Serializable {
 
     public void setCompany(Company company) {
         this.company = company;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

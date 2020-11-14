@@ -40,9 +40,10 @@ public class RoleController {
     MenuGroupService menuGroupService;
 
     @RequestMapping(value="/roles", method = RequestMethod.GET)
-    public List<Role> findAllRoles(@RequestParam(name="name", required = false, defaultValue = "") String name,
+    public List<Role> findAllRoles(@RequestParam Long companyId,
+                                   @RequestParam(name="name", required = false, defaultValue = "") String name,
                                    @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled) {
-        return roleService.findAll(name, enabled);
+        return roleService.findAll(companyId, name, enabled);
     }
 
     @RequestMapping(value="/roles", method = RequestMethod.PUT)

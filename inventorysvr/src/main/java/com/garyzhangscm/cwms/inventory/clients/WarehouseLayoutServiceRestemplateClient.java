@@ -625,6 +625,33 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Location allocateLocation(Location location, Inventory inventory) {
+        Double inventorySize = 0.0;
+        if (location.getLocationGroup().getVolumeTrackingPolicy().equals(
+                LocationVolumeTrackingPolicy.BY_EACH
+        )) {
+            inventorySize = inventory.getQuantity() * 1.0;
+        }
+        else {
+
+            inventorySize = inventory.getSize();
+        }
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/locations/{id}/allocate")
+                        .queryParam("inventorySize", inventorySize);
+
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(location.getId()).toUriString(),
+                HttpMethod.PUT,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 
 
