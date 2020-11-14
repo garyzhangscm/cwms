@@ -78,6 +78,7 @@ public class MenuService  implements TestDataInitiableService{
                 addColumn("sequence").
                 addColumn("menuSubGroup").
                 addColumn("name").
+                addColumn("icon").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, MenuCSVWrapper.class);
@@ -103,6 +104,7 @@ public class MenuService  implements TestDataInitiableService{
         menu.setLink(menuCSVWrapper.getLink());
         menu.setSequence(menuCSVWrapper.getSequence());
         menu.setName(menuCSVWrapper.getName());
+        menu.setIcon(menuCSVWrapper.getIcon());
 
         // Setup the parent menu group for this subgroup
         menu.setMenuSubGroup(menuSubGroupService.findByName(menuCSVWrapper.getMenuSubGroup()));

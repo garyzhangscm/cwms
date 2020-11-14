@@ -86,7 +86,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     @ExceptionHandler(RuntimeException.class)
     public ResponseBodyWrapper RuntimeExceptionErrorHandler(RuntimeException ex, HttpServletRequest request) {
 
-        logger.debug("Start to handle runtime exception: {}", ex.getMessage());
+        logger.debug("Start to handle runtime exception: {} / {}", ex.getClass(),  ex.getMessage());
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 500,
@@ -98,6 +98,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     @ExceptionHandler(Exception.class)
     public ResponseBodyWrapper ExceptionErrorHandler(Exception ex, HttpServletRequest request) {
 
+        logger.debug("Start to handle exception: {} / {}", ex.getClass(),  ex.getMessage());
 
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(

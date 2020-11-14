@@ -82,26 +82,27 @@ public class UserService  implements TestDataInitiableService{
         return user;
     }
 
-    public User findByUsername(String username) {
-        return findByUsername(username, true);
+    public User findByUsername(Long companyId, String username) {
+        return findByUsername(companyId, username, true);
     }
-    public User findByUsername(String username, boolean loadAttribute) {
-        User user =  userRepository.findByUsername(username);
+    public User findByUsername(Long companyId, String username, boolean loadAttribute) {
+        User user =  userRepository.findByCompanyIdAndUsername(companyId, username);
         if (user != null && loadAttribute) {
             loadAttribute(user);
         }
         return user;
     }
 
-    public List<User> findAll() {
+    public List<User> findAll(Long companyId) {
 
-        List<User> users =   userRepository.findAll();
+        List<User> users =   userRepository.findByCompanyId(companyId);
 
-        loadAttribute(users);
+        loadAttribute(companyId, users);
         return users;
     }
 
-    public List<User> findAll(String username,
+    public List<User> findAll(Long companyId,
+                              String username,
                               String rolename,
                               String workingTeamName,
                               String firstname,
@@ -112,6 +113,8 @@ public class UserService  implements TestDataInitiableService{
         List<User> users =  userRepository.findAll(
                 (Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
                     if (!StringUtils.isBlank(username)) {
                         predicates.add(criteriaBuilder.equal(root.get("username"), username));
@@ -145,15 +148,15 @@ public class UserService  implements TestDataInitiableService{
                 }
         );
 
-        loadAttribute(users);
+        loadAttribute(companyId, users);
         return users;
 
 
     }
 
-    public void loadAttribute(List<User> users) {
+    public void loadAttribute(Long companyId, List<User> users) {
         String usernames = users.stream().map(User::getUsername).collect(Collectors.joining(","));
-        List<UserAuth> userAuths = authServiceRestemplateClient.getUserAuthByUsernames(usernames);
+        List<UserAuth> userAuths = authServiceRestemplateClient.getUserAuthByUsernames(companyId, usernames);
         Map<String, UserAuth> userAuthMap = new HashMap<>();
         userAuths.stream().forEach(userAuth -> userAuthMap.put(userAuth.getUsername(), userAuth));
 
@@ -162,7 +165,10 @@ public class UserService  implements TestDataInitiableService{
     }
     public void loadAttribute(User user) {
         // load the auth information for each user
-        UserAuth userAuth = authServiceRestemplateClient.getUserAuthByUsername(user.getUsername());
+        logger.debug("Will start to get auth information for user {} / {}",
+                user.getCompanyId(), user.getUsername());
+        UserAuth userAuth = authServiceRestemplateClient.getUserAuthByUsername(
+                user.getCompanyId(), user.getUsername());
 
         setUserAuthInformation(user, userAuth);
     }
@@ -179,20 +185,33 @@ public class UserService  implements TestDataInitiableService{
 
     public User saveOrUpdate(User user) {
         if (Objects.isNull(user.getId()) &&
-                !Objects.isNull(findByUsername(user.getUsername()))) {
-            user.setId(findByUsername(user.getUsername()).getId());
+                !Objects.isNull(findByUsername(user.getCompanyId(), user.getUsername()))) {
+            user.setId(findByUsername(user.getCompanyId(), user.getUsername()).getId());
         }
         return save(user);
     }
-    public SiteInformation getSiteInformaiton(String username) {
-        return getSiteInformaiton(findByUsername(username));
+    public SiteInformation getSiteInformaiton(Long companyId, String username) {
+        return getSiteInformaiton(findByUsername(companyId, username));
+
+    }
+
+    public SiteInformation getMobileSiteInformation(Long companyId, String username) {
+
+        return getMobileSiteInformation(findByUsername(companyId, username));
+    }
+    public SiteInformation getMobileSiteInformation(User user) {
+        return getSiteInformaiton(user, true);
 
     }
     public SiteInformation getSiteInformaiton(User user) {
+        return getSiteInformaiton(user, false);
+    }
+    public SiteInformation getSiteInformaiton(User user, boolean mobile) {
         SiteInformation siteInformation = new SiteInformation();
         siteInformation.setUser(user);
 
-        List<MenuGroup> menuGroups = menuGroupService.getAccessibleMenus(user);
+        MenuType menuType = mobile ?  MenuType.MOBILE : MenuType.WEB;
+        List<MenuGroup> menuGroups = menuGroupService.getAccessibleMenus(user, menuType);
         siteInformation.setMenuGroups(menuGroups);
 
         logger.debug("Objects.isNull(singleCompanySite) ? : {}", Objects.isNull(singleCompanySite)  );
@@ -213,6 +232,7 @@ public class UserService  implements TestDataInitiableService{
     public List<User> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("companyId").
                 addColumn("username").
                 addColumn("password").
                 addColumn("email").
@@ -259,35 +279,19 @@ public class UserService  implements TestDataInitiableService{
         }
     }
 
-    public User getCurrentUser() {
-        return findByUsername(getCurrentUserName());
+    public User getCurrentUser(Long companyId) {
+        return findByUsername(companyId, getCurrentUserName());
     }
 
     @Transactional
     public User addUser(User user) {
-        // Save the user without role first
-        // since we are adding new user, the user doesn't have an ID yet.
-        // user / role are many to many relationship so we need both
-        // user and role having the ID so that the relationship can be
-        // persist in the user_role table
-        // So we will save the user without role,
-        // then attach all the roles to the saved user and persist the
-        // relationship again
-        List<Role> roles = user.getRoles();
-        user.setRoles(new ArrayList<>());
-        User newUser = save(user);
+        // make sure the user doesn't exists yet
+        if (Objects.nonNull(findByUsername(user.getCompanyId(), user.getUsername()))) {
+            throw UserOperationException.raiseException("User name " + user.getUsername() + " already exists!");
+        }
 
-        // save the password , email, enabled, locked in the auth server
-        UserAuth userAuth = user.getUserAuth();
+        return changeUser(user);
 
-        authServiceRestemplateClient.changeUserAuth(userAuth);
-
-        // refresh role information from database
-        roles.forEach(role -> {
-            Role newRole = roleService.findById(role.getId());
-            newUser.assignRole(newRole);
-        });
-        return saveOrUpdate(newUser);
     }
 
     @Transactional
@@ -320,9 +324,9 @@ public class UserService  implements TestDataInitiableService{
      * @param url
      * @return true if the current login user can access the url
      */
-    public boolean validateURLAccess(String url) {
+    public boolean validateURLAccess(Long companyId, String url) {
 
-        User user = getCurrentUser();
+        User user = getCurrentUser(companyId);
         logger.debug("Check if user {} has access to url: {}", user.getUsername(), url);
         return validateURLAccess(user, url);
 
@@ -408,6 +412,41 @@ public class UserService  implements TestDataInitiableService{
         authServiceRestemplateClient.changeUserAuth(userAuth);
         logger.debug("Lock User: {}  / {}", user.getId(), user.getUsername());
         return saveOrUpdate(user);
+    }
+
+    public String validateNewUsername(Long companyId, Long warehouseId, String username) {
+
+        User user =
+                findByUsername(companyId, username, false);
+
+        return Objects.isNull(user) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+    }
+
+    public User changeUser(User user) {
+
+        // Save the user without role first
+        // since we are adding new user, the user doesn't have an ID yet.
+        // user / role are many to many relationship so we need both
+        // user and role having the ID so that the relationship can be
+        // persist in the user_role table
+        // So we will save the user without role,
+        // then attach all the roles to the saved user and persist the
+        // relationship again
+        List<Role> roles = user.getRoles();
+        user.setRoles(new ArrayList<>());
+        User newUser = saveOrUpdate(user);
+
+        // save the password , email, enabled, locked in the auth server
+        UserAuth userAuth = user.getUserAuth();
+
+        authServiceRestemplateClient.changeUserAuth(userAuth);
+
+        // refresh role information from database
+        roles.forEach(role -> {
+            Role newRole = roleService.findById(role.getId());
+            newUser.assignRole(newRole);
+        });
+        return saveOrUpdate(newUser);
     }
 
 }

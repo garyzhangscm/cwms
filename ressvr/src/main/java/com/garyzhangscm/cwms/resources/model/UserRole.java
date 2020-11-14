@@ -2,6 +2,8 @@ package com.garyzhangscm.cwms.resources.model;
 
 public class UserRole {
 
+    private Long companyId;
+
     private String username;
 
     private String roleName;
@@ -20,5 +22,13 @@ public class UserRole {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

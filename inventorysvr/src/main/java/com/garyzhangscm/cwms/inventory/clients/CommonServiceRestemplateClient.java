@@ -18,16 +18,20 @@
 
 package com.garyzhangscm.cwms.inventory.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.inventory.model.Client;
-import com.garyzhangscm.cwms.inventory.model.Supplier;
-import com.garyzhangscm.cwms.inventory.model.SystemControlledNumber;
-import com.garyzhangscm.cwms.inventory.model.UnitOfMeasure;
+import com.garyzhangscm.cwms.inventory.exception.InventoryException;
+import com.garyzhangscm.cwms.inventory.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -42,6 +46,10 @@ public class CommonServiceRestemplateClient {
     @Autowired
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
+
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public Client getClientById(Long id) {
 
@@ -152,6 +160,27 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+    public WorkTask addWorkTask(WorkTask workTask) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/common/work-tasks");
+
+        ResponseBodyWrapper<WorkTask> responseBodyWrapper
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(objectMapper.writeValueAsString(workTask)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw InventoryException.raiseException("Can't add the work task due to JsonProcessingException: " + e.getMessage());
+        }
+
+        return responseBodyWrapper.getData();
+    }
+
     public String getNextNumber(Long warehouseId, String variable) {
 
         logger.debug("Start to get next number for {} / {}",
@@ -184,4 +213,27 @@ public class CommonServiceRestemplateClient {
         return getNextNumber(warehouseId, "cycle-count-batch-id");
     }
 
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
+    }
+
+    public void removeWorkTask(Inventory inventory, WorkType workType) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/common/work-tasks")
+                        .queryParam("warehouseId", inventory.getWarehouseId())
+                        .queryParam("lpn", inventory.getWarehouseId())
+                        .queryParam("workType", workType);
+
+        restTemplate.delete(
+                    builder.toUriString());
+
+    }
 }

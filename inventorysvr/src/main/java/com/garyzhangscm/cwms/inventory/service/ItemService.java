@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
@@ -49,6 +50,10 @@ public class ItemService implements TestDataInitiableService{
     private ItemRepository itemRepository;
     @Autowired
     ItemFamilyService itemFamilyService;
+    @Autowired
+    ItemPackageTypeService itemPackageTypeService;
+    @Autowired
+    InventoryService inventoryService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -105,7 +110,12 @@ public class ItemService implements TestDataInitiableService{
                 }
 
                 if (StringUtils.isNotBlank(name)) {
-                    predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    if (name.contains("%")) {
+                        predicates.add(criteriaBuilder.like(root.get("name"), name));
+                    }
+                    else {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
                 }
 
                 if (StringUtils.isNotBlank(clientIds)) {
@@ -319,7 +329,7 @@ public class ItemService implements TestDataInitiableService{
 
         copyItemPackageTypes(existingItem, item);
 
-        return  saveOrUpdate(item);
+        return  saveOrUpdate(existingItem);
 
 
 
@@ -336,28 +346,45 @@ public class ItemService implements TestDataInitiableService{
                         existingItemPackageType.getId().equals(itemPackageType.getId()))
                         .forEach(existingItemPackageType -> {
                             BeanUtils.copyProperties(itemPackageType, existingItemPackageType,
-                                    "itemUnitOfMeasures");
+                                    "itemUnitOfMeasures", "item");
                             copyItemUnitOfMeasure(existingItemPackageType, itemPackageType);
                         });
             }
             else {
                 // OK, this is a new item package type, let's just add it to the
                 // item
+                itemPackageType.setItem(existingItem);
+                itemPackageType.getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
+                    itemUnitOfMeasure.setItemPackageType(itemPackageType);
+                });
                 existingItem.addItemPackageType(itemPackageType);
             }
+            logger.debug("itemPackageType: {} processed", itemPackageType.getName());
         });
 
         // Remove the item package type that is no long exists
         Iterator<ItemPackageType> itemPackageTypeIterator = existingItem.getItemPackageTypes().iterator();
         while(itemPackageTypeIterator.hasNext()) {
             ItemPackageType existingItemPackageType = itemPackageTypeIterator.next();
+            logger.debug("Check ItemPackageType {} still exists ", existingItemPackageType.getName());
+
+            if (Objects.isNull(existingItemPackageType.getId())) {
+                logger.debug("Check ItemPackageType {} is just added, ignore ", existingItemPackageType.getName());
+                continue;
+
+            }
+
             boolean itemPackageTypeStillExists =
                     item.getItemPackageTypes().stream().filter(
                             itemPackageType -> existingItemPackageType.getId().equals(
                                     itemPackageType.getId()
                             )
                     ).count() > 0;
-            if (!itemPackageTypeStillExists) {
+
+            if (!itemPackageTypeStillExists &&
+                    itemPackageTypeService.isItemPackageTypeRemovable(existingItem, existingItemPackageType)) {
+                // make sure no inventory has this item package type
+
                 itemPackageTypeIterator.remove();
             }
         }
@@ -366,5 +393,93 @@ public class ItemService implements TestDataInitiableService{
 
     private void copyItemUnitOfMeasure(ItemPackageType existingItemPackageType, ItemPackageType itemPackageType) {
 
+        itemPackageType.getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
+            // If this is an existing item package type, then update
+            // the attribute
+            logger.debug("{}: Objects.nonNull(unitOfMeasure.getId())? : {}",
+                    itemUnitOfMeasure.getUnitOfMeasure().getName(),
+                    Objects.nonNull(itemUnitOfMeasure.getId()));
+            if (Objects.nonNull(itemUnitOfMeasure.getId())) {
+                existingItemPackageType.getItemUnitOfMeasures().stream().filter(existingUnitOfMeasure ->
+                        existingUnitOfMeasure.getId().equals(itemUnitOfMeasure.getId()))
+                        .forEach(existingUnitOfMeasure -> {
+                            BeanUtils.copyProperties(itemUnitOfMeasure, existingUnitOfMeasure, "itemPackageType");
+                        });
+            }
+            else {
+                // OK, this is a new item unit of measure, let's just add it to the
+                // item
+
+                itemUnitOfMeasure.setItemPackageType(existingItemPackageType);
+                if (Objects.isNull(itemUnitOfMeasure.getUnitOfMeasureId())) {
+                    itemUnitOfMeasure.setUnitOfMeasureId(
+                            itemUnitOfMeasure.getUnitOfMeasure().getId()
+                    );
+                }
+                existingItemPackageType.addItemUnitOfMeasure(itemUnitOfMeasure);
+            }
+        });
+
+        // Remove the item package type that is no long exists
+        Iterator<ItemUnitOfMeasure> itemUnitOfMeasureIterator = existingItemPackageType.getItemUnitOfMeasures().iterator();
+        while(itemUnitOfMeasureIterator.hasNext()) {
+            ItemUnitOfMeasure existingItemUnitOfMeasure = itemUnitOfMeasureIterator.next();
+
+            if(Objects.isNull(existingItemUnitOfMeasure.getId())) {
+                continue;
+            }
+
+
+            boolean itemUnitOfMeasureStillExists =
+                    itemPackageType.getItemUnitOfMeasures().stream().anyMatch(
+                            itemUnitOfMeasure -> existingItemUnitOfMeasure.getId().equals(
+                                    itemUnitOfMeasure.getId()
+                            )
+                    );
+            if (!itemUnitOfMeasureStillExists) {
+
+                itemUnitOfMeasureIterator.remove();
+            }
+        }
+
+    }
+
+    public String validateNewItemName(Long warehouseId, String itemName) {
+
+        Item item =
+                findByName(warehouseId, itemName, false);
+
+        return Objects.isNull(item) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+    }
+
+    public Item deleteItem(Long id) {
+        Item item = findById(id);
+        if (!isItemRemovable(item)) {
+            throw ItemException.raiseException("Can't remove this item. there's inventory attached to this item");
+        }
+        delete(id);
+        return item;
+
+    }
+
+
+    public boolean isItemRemovable(Item item) {
+        // Check if we have inventory that is using this item package type
+
+        if (inventoryService.
+                findAll(item.getWarehouseId(), item.getName(), null,
+                        null,null,null,null,null,
+                        null,null,null,null,
+                        null,null,null,null, false)
+                .size() > 0) {
+            logger.debug("There's inventory attached to this item  {}  , can't remove it",
+                    item.getName());
+
+            return false;
+        };
+
+        logger.debug("There's NO inventory attached to this item  {}, WE CAN remove it",
+                item.getName());
+        return true;
     }
 }

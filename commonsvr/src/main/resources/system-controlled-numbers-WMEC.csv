@@ -15,3 +15,4 @@ company,warehouse,variable,prefix,postfix,length,currentNumber,rollover
 20901,WMEC,shipping-cartonization-number,SCTN,,10,0,true
 20901,WMEC,production-plan,PRP,,10,0,true
 20901,WMEC,bill-of-material,BOM,,10,0,true
+20901,WMEC,work-task,WORK,,10,0,true

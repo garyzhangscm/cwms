@@ -11,7 +11,7 @@ import java.util.List;
 public class SiteInformation {
 
     @JsonProperty("app")
-    private ApplicationInformation applicationInformation = new ApplicationInformation();
+    private ApplicationInformation applicationInformation = ApplicationInformation.getApplicationInformation();
 
     private Boolean singleCompanySite;
     private String defaultCompanyCode;
@@ -22,7 +22,7 @@ public class SiteInformation {
     private List<MenuGroup> menuGroups = new ArrayList<>();
 
 
-    public static SiteInformation getDefaultSiteInformation() {
+    public static SiteInformation getDefaultSiteInformation(List<MenuGroup> menuGroups) {
         SiteInformation siteInformation = new SiteInformation();
 
         // Default user
@@ -32,8 +32,7 @@ public class SiteInformation {
         siteInformation.setUser(user);
 
         // default menu
-        MenuGroup menuGroup = new MenuGroup();
-        siteInformation.setMenuGroups(Arrays.asList(new MenuGroup[]{menuGroup}));
+        siteInformation.setMenuGroups(menuGroups);
 
         return siteInformation;
 

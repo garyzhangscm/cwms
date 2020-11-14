@@ -72,16 +72,18 @@ public class WorkingTeamService implements TestDataInitiableService{
         return findById(id, true);
     }
 
-    public List<WorkingTeam> findAll(String name, Boolean enabled) {
-        return findAll(name, enabled, true);
+    public List<WorkingTeam> findAll(Long companyId,String name, Boolean enabled) {
+        return findAll(companyId, name, enabled, true);
 
     }
-    public List<WorkingTeam> findAll(String name, Boolean enabled, boolean loadDetails) {
+    public List<WorkingTeam> findAll(Long companyId, String name, Boolean enabled, boolean loadDetails) {
 
         List<WorkingTeam> workingTeams =
                 workingTeamRepository.findAll(
                 (Root<WorkingTeam> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
                     if (!StringUtils.isBlank(name)) {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
@@ -125,7 +127,7 @@ public class WorkingTeamService implements TestDataInitiableService{
 
         if (workingTeam.getUsers().size() > 0) {
 
-            userService.loadAttribute(workingTeam.getUsers());
+            userService.loadAttribute(workingTeam.getCompanyId(), workingTeam.getUsers());
         }
 
     }
@@ -147,6 +149,7 @@ public class WorkingTeamService implements TestDataInitiableService{
     public List<WorkingTeam> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("companyId").
                 addColumn("name").
                 addColumn("description").
                 addColumn("enabled").

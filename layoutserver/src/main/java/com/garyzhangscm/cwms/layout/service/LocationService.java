@@ -131,8 +131,13 @@ public class LocationService implements TestDataInitiableService {
                 }
 
                 if (StringUtils.isNotBlank(name)) {
-                    logger.debug("Will filter the location by name {}", name);
-                    predicates.add(criteriaBuilder.equal(root.get("name"), name));
+
+                    if (name.contains("%")) {
+                        predicates.add(criteriaBuilder.like(root.get("name"), name));
+                    }
+                    else {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
                 }
                 if (Objects.nonNull(beginSequence)  && Objects.nonNull(endSequence)) {
                     logger.debug("Will filter the location by {} sequence [{}, {}]",

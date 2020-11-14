@@ -37,4 +37,11 @@ public class ItemPackageTypeController {
         return itemPackageTypeService.findAll(warehouseId, name, itemId);
     }
 
+
+    @RequestMapping(value="/itemPackageTypes/{id}/removable", method = RequestMethod.GET)
+    public Boolean isItemPackageTypeRemovable(@PathVariable Long id) {
+
+        return itemPackageTypeService.isItemPackageTypeRemovable(id);
+    }
+
 }

@@ -18,6 +18,9 @@ public class Role extends AuditibleEntity<String>  {
     @Column(name = "role_id")
     private Long id;
 
+    @Column(name = "company_id")
+    private Long companyId;
+
     @Column(name = "name")
     private String name;
 
@@ -68,6 +71,14 @@ public class Role extends AuditibleEntity<String>  {
                 ", menuGroups=" + menuGroups +
                 ", users=" + users +
                 '}';
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Long getId() {

@@ -51,6 +51,10 @@ public class ItemController {
         return itemService.findById(id);
     }
 
+    @RequestMapping(value="/items/{id}", method = RequestMethod.DELETE)
+    public Item deleteItem(@PathVariable Long id) {
+        return itemService.deleteItem(id);
+    }
 
     @RequestMapping(method=RequestMethod.POST, value="/items/upload")
     public ResponseBodyWrapper uploadItems(@RequestParam("file") MultipartFile file) throws IOException {
@@ -75,5 +79,12 @@ public class ItemController {
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
 
         return itemService.changeItem(id, item);
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/items/validate-new-item-name")
+    public ResponseBodyWrapper<String> validateNewItemName(@RequestParam Long warehouseId,
+                                                      @RequestParam String itemName)  {
+
+        return ResponseBodyWrapper.success(itemService.validateNewItemName(warehouseId, itemName));
     }
 }

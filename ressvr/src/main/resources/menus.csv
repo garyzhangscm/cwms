@@ -1,50 +1,55 @@
-text,i18n,link,sequence,menuSubGruop,name
-"Default",menu.dashboard.default,/dashboard/default,1,User-Menu-Dashboard,Dashboard-Default
-"Locations",menu.dashboard.locations,/dashboard/locations,2,User-Menu-Dashboard,Dashboard-Locations
-"User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User
-"Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role
-"WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam
-"Warehouse",menu.main.layout.warehouse,/warehouse-layout/warehouse,1,Main-Menu-Layout,Layout-warehouse
-"LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group
-"WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location
-"Item Family",menu.main.inventory.item-family,/inventory/item-family,1,Main-Menu-Inventory,Inventory-ItemFamily
-"Item",menu.main.inventory.item,/inventory/item,2,Main-Menu-Inventory,Inventory-Item
-"inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory
-"inventory activity",menu.main.inventory.inventory-activity,/inventory/inventory-activity,4,Main-Menu-Inventory,Inventory-InventoryActivity
-"inventory adjust",menu.main.inventory.inventory-adjust,/inventory/inventory-adjust,5,Main-Menu-Inventory,Inventory-InventoryAdjust
-"inventory adjust request",menu.main.inventory.inventory-adjustment-request,/inventory/inventory-adjustment-request,6,Main-Menu-Inventory,Inventory-InventoryAdjustmentRequest
-"inventory adjustment Threshold",menu.main.inventory.inventory-adjustment-threshold,/inventory/inventory-adjustment-threshold,7,Main-Menu-Inventory,Inventory-InventoryAdjustmentThreshold
-"Movement Path",menu.main.inventory.movement-path,/inventory/movement-path,8,Main-Menu-Inventory,Inventory-MovementPath
-"Cycle Count",menu.main.inventory.count.cycle-count,/inventory/count/cycle-count,9,Main-Menu-Inventory,Inventory-CycleCount
-"Emergency Replenishment Configuration",menu.main.inventory.replenishment.emergency.config,/inventory/replenishment/emergency/config,10,Main-Menu-Inventory,Inventory-EmerReplConfig
-"Trigger Replenishment Configuration",menu.main.inventory.replenishment.trigger.config,/inventory/replenishment/trigger/config,11,Main-Menu-Inventory,Inventory-TriggerReplConfig
-"Replenishment Display",menu.main.inventory.replenishment.display,/inventory/replenishment,12,Main-Menu-Inventory,Inventory-ReplDisplay
-"Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt
-"Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,2,Main-Menu-Inbound,Inbound-PutawayConfig
-"Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order
-"Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment
-"Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave
-"Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick
-"Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList
-"Carton",menu.main.outbound.carton,/outbound/carton,5,Main-Menu-Outbound,Outbound-Carton
-"Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,5,Main-Menu-Outbound,Outbound-CartonizationConfiguration
-"Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,5,Main-Menu-Outbound,Outbound-Cartonization
-"Shipping Cartonization",menu.main.outbound.shipping-cartonization,/outbound/shipping-cartonization,6,Main-Menu-Outbound,Outbound-ShippingCartonization
-"Grid",menu.main.outbound.grid,/outbound/grid,7,Main-Menu-Outbound,Outbound-Grid
-"Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,8,Main-Menu-Outbound,Outbound-PickConfirm
-"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,9,Main-Menu-Outbound,Outbound-ShortAllocation
-"Trailer",menu.main.outbound.trailer,/outbound/trailer,10,Main-Menu-Outbound,Outbound-Trailer
-"Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration
-"Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material
-"Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan
-"Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order
-"Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line
-"Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data
-"Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client
-"Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier
-"Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer
-"Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure
-"File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client
-"Test Data Initial",menu.main.util.test-data-init,/util/test-data-init,2,Main-Menu-Util,Util-TestDataInit
-"Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester
-"Valid Icon",menu.main.util.icon-list,/util/icon-list,4,Main-Menu-Util,Util-ValidIcon
+text,i18n,link,sequence,menuSubGruop,name,icon
+"Default",menu.dashboard.default,/dashboard/default,1,User-Menu-Dashboard,Dashboard-Default,
+"Locations",menu.dashboard.locations,/dashboard/locations,2,User-Menu-Dashboard,Dashboard-Locations,
+"User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User,
+"Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role,
+"WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam,
+"Warehouse",menu.main.layout.warehouse,/warehouse-layout/warehouse,1,Main-Menu-Layout,Layout-warehouse,
+"LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group,
+"WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location,
+"Item Family",menu.main.inventory.item-family,/inventory/item-family,1,Main-Menu-Inventory,Inventory-ItemFamily,
+"Item",menu.main.inventory.item,/inventory/item,2,Main-Menu-Inventory,Inventory-Item,
+"inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory,
+"inventory activity",menu.main.inventory.inventory-activity,/inventory/inventory-activity,4,Main-Menu-Inventory,Inventory-InventoryActivity,
+"inventory adjust",menu.main.inventory.inventory-adjust,/inventory/inventory-adjust,5,Main-Menu-Inventory,Inventory-InventoryAdjust,
+"inventory adjust request",menu.main.inventory.inventory-adjustment-request,/inventory/inventory-adjustment-request,6,Main-Menu-Inventory,Inventory-InventoryAdjustmentRequest,
+"inventory adjustment Threshold",menu.main.inventory.inventory-adjustment-threshold,/inventory/inventory-adjustment-threshold,7,Main-Menu-Inventory,Inventory-InventoryAdjustmentThreshold,
+"Movement Path",menu.main.inventory.movement-path,/inventory/movement-path,8,Main-Menu-Inventory,Inventory-MovementPath,
+"Cycle Count",menu.main.inventory.count.cycle-count,/inventory/count/cycle-count,9,Main-Menu-Inventory,Inventory-CycleCount,
+"Emergency Replenishment Configuration",menu.main.inventory.replenishment.emergency.config,/inventory/replenishment/emergency/config,10,Main-Menu-Inventory,Inventory-EmerReplConfig,
+"Trigger Replenishment Configuration",menu.main.inventory.replenishment.trigger.config,/inventory/replenishment/trigger/config,11,Main-Menu-Inventory,Inventory-TriggerReplConfig,
+"Replenishment Display",menu.main.inventory.replenishment.display,/inventory/replenishment,12,Main-Menu-Inventory,Inventory-ReplDisplay,
+"Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt,
+"Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,2,Main-Menu-Inbound,Inbound-PutawayConfig,
+"Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order,
+"Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment,
+"Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,
+"Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick,
+"Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList,
+"Carton",menu.main.outbound.carton,/outbound/carton,5,Main-Menu-Outbound,Outbound-Carton,
+"Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,5,Main-Menu-Outbound,Outbound-CartonizationConfiguration,
+"Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,5,Main-Menu-Outbound,Outbound-Cartonization,
+"Shipping Cartonization",menu.main.outbound.shipping-cartonization,/outbound/shipping-cartonization,6,Main-Menu-Outbound,Outbound-ShippingCartonization,
+"Grid",menu.main.outbound.grid,/outbound/grid,7,Main-Menu-Outbound,Outbound-Grid,
+"Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,8,Main-Menu-Outbound,Outbound-PickConfirm,
+"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,9,Main-Menu-Outbound,Outbound-ShortAllocation,
+"Trailer",menu.main.outbound.trailer,/outbound/trailer,10,Main-Menu-Outbound,Outbound-Trailer,
+"Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration,
+"Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,
+"Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,
+"Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,
+"Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line,
+"Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,
+"Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,
+"Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,
+"Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer,
+"Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure,
+"File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client,
+"Test Data Initial",menu.main.util.test-data-init,/util/test-data-init,2,Main-Menu-Util,Util-TestDataInit,
+"Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester,
+"Valid Icon",menu.main.util.icon-list,/util/icon-list,4,Main-Menu-Util,Util-ValidIcon,
+"Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,
+"Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,0xe63a
+"Pick",menu.mobile.outbound.pick,pick,1,Mobile-Menu-Outbound,Mobile-Outbound-Pick,0xe63a
+"Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,0xe63a
+"Count",menu.mobile.inventory.count,cycle_cycle_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,0xe622

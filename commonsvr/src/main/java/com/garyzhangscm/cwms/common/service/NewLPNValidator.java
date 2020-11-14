@@ -13,7 +13,7 @@ public class NewLPNValidator implements Validator {
     InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     @Override
-    public String validate(Long warehouseId, String value) {
+    public String validate(Long companyId, Long warehouseId, String value) {
 
         // make sure the bom number doesn't exists yet
         return inventoryServiceRestemplateClient.validateNewLPN(

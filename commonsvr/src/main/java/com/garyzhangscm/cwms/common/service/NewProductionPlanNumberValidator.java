@@ -11,7 +11,7 @@ public class NewProductionPlanNumberValidator implements Validator {
     @Autowired
     WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
     @Override
-    public String validate(Long warehouseId, String value) {
+    public String validate(Long companyId, Long warehouseId, String value) {
 
         // make sure the bom number doesn't exists yet
         return workOrderServiceRestemplateClient.validatNewProductionPlanNumber(

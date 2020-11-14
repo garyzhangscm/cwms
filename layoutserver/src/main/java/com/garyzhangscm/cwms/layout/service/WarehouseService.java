@@ -59,17 +59,33 @@ public class WarehouseService implements TestDataInitiableService {
     String testDataFile;
 
     public Warehouse findById(Long id) {
-        return warehouseRepository.findById(id)
+        return findById(id, true);
+    }
+    public Warehouse findById(Long id, boolean loadAttribute) {
+        Warehouse warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("warehouse not found by id: " + id));
+        if(loadAttribute) {
+            loadAttribute(warehouse);
+        }
+        return warehouse;
     }
 
     public List<Warehouse> findAll() {
         return findAll(null, null, null);
     }
-    public List<Warehouse> findAll(Long companyId,
-                                   String companyCode, String name) {
 
-        return warehouseRepository.findAll(
+    public List<Warehouse> findAll(Long companyId,
+                                   String companyCode,
+                                   String name) {
+        return findAll(companyId, companyCode, name, true);
+    }
+
+    public List<Warehouse> findAll(Long companyId,
+                                   String companyCode,
+                                   String name,
+                                   boolean loadAttribute) {
+
+        List<Warehouse> warehouses =  warehouseRepository.findAll(
                 (Root<Warehouse> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -95,8 +111,21 @@ public class WarehouseService implements TestDataInitiableService {
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
+
+        if (warehouses.size() > 0 && loadAttribute) {
+            loadAttribute(warehouses);
+        }
+        return warehouses;
     }
 
+    private void loadAttribute(List<Warehouse> warehouses) {
+        warehouses.forEach(this::loadAttribute);
+    }
+
+    private void loadAttribute(Warehouse warehouse) {
+
+        warehouse.setCompanyId(warehouse.getCompany().getId());
+    }
     public Warehouse findByName(String name){
         return warehouseRepository.findByName(name);
     }

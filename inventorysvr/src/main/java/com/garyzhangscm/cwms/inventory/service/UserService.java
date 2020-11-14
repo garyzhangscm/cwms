@@ -18,7 +18,7 @@ public class UserService {
     public String getCurrentUserName() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
-    public User getCurrentUser() {
-        return resourceServiceRestemplateClient.getUserByUsername(getCurrentUserName());
+    public User getCurrentUser(Long companyId) {
+        return resourceServiceRestemplateClient.getUserByUsername(companyId, getCurrentUserName());
     }
 }

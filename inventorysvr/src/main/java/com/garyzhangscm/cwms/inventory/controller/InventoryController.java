@@ -42,6 +42,7 @@ public class InventoryController {
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
     public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                              @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
@@ -55,7 +56,7 @@ public class InventoryController {
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
-        return inventoryService.findAll(warehouseId, itemName, clientIds,
+        return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
@@ -64,6 +65,7 @@ public class InventoryController {
     @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
     public int getInventoryCount(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                 @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
@@ -77,7 +79,7 @@ public class InventoryController {
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
-        return inventoryService.findAll(warehouseId, itemName, clientIds,
+        return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,

@@ -46,13 +46,20 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
+
     public List<User> findAll() {
-        return findAll(null);
+        return findAll(null, null);
     }
-    public List<User> findAll(String usernames) {
+    public List<User> findAll(Long companyId, String usernames) {
         return userRepository.findAll(
             (Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
+
+                if (Objects.nonNull(companyId)) {
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
+
+                }
+
                 if (!StringUtils.isBlank(usernames)) {
                     CriteriaBuilder.In<String> inUsernames = criteriaBuilder.in(root.get("username"));
                     for(String username : usernames.split(",")) {

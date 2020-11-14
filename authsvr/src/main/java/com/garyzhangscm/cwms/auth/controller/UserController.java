@@ -33,8 +33,9 @@ public class UserController {
     UserService userService;
 
     @RequestMapping(method =  RequestMethod.GET)
-    public List<User> findUsers(@RequestParam(name="usernames", defaultValue = "", required = false) String usernames) {
-        return userService.findAll(usernames);
+    public List<User> findUsers(@RequestParam Long companyId,
+                                @RequestParam(name="usernames", defaultValue = "", required = false) String usernames) {
+        return userService.findAll(companyId, usernames);
     }
 
 

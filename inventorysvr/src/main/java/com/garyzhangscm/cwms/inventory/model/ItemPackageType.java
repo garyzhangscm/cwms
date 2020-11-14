@@ -178,6 +178,9 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     public void setItemUnitOfMeasures(List<ItemUnitOfMeasure> itemUnitOfMeasures) {
         this.itemUnitOfMeasures = itemUnitOfMeasures;
     }
+    public void addItemUnitOfMeasure(ItemUnitOfMeasure itemUnitOfMeasure) {
+        this.itemUnitOfMeasures.add(itemUnitOfMeasure);
+    }
 
     public ItemUnitOfMeasure getStockItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {

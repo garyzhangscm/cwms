@@ -39,13 +39,15 @@ public class InitTestDataController {
         return initTestDataService.getTestDataNames();
     }
     @RequestMapping(value = "/init", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init(@RequestParam String warehouseName) {
+    public ResponseBodyWrapper<String> init(
+            @RequestParam Long companyId, @RequestParam String warehouseName) {
 
         initTestDataService.init(warehouseName);
         return ResponseBodyWrapper.success("Init all");
     }
     @RequestMapping(value = "/init/{name}", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> init(@PathVariable String name,
+                                            @RequestParam Long companyId,
                                             @RequestParam String warehouseName) {
 
         initTestDataService.init(name, warehouseName);
@@ -53,9 +55,10 @@ public class InitTestDataController {
     }
 
     @RequestMapping(value = "/clear", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> clear(@RequestParam Long warehouseId) {
+    public ResponseBodyWrapper<String> clear(@RequestParam Long companyId,
+                                             @RequestParam Long warehouseId) {
 
-        initTestDataService.clear( warehouseId);
+        initTestDataService.clear(warehouseId);
         return ResponseBodyWrapper.success("data from warehouse " + warehouseId + " clear succeed!");
     }
 

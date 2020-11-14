@@ -122,6 +122,7 @@ public class InventoryService implements TestDataInitiableService{
     }
     public List<Inventory> findAll(Long warehouseId,
                                    String itemName,
+                                   String itemPackageTypeName,
                                    String clientIds,
                                    String itemFamilyIds,
                                    Long inventoryStatusId,
@@ -135,7 +136,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String workOrderByProductIds,
                                    String pickIds,
                                    String lpn) {
-        return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
+        return findAll(warehouseId, itemName, itemPackageTypeName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId, receiptId, workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, true);
@@ -144,6 +145,7 @@ public class InventoryService implements TestDataInitiableService{
 
     public List<Inventory> findAll(Long warehouseId,
                                    String itemName,
+                                   String itemPackageTypeName,
                                    String clientIds,
                                    String itemFamilyIds,
                                    Long inventoryStatusId,
@@ -161,13 +163,13 @@ public class InventoryService implements TestDataInitiableService{
         List<Inventory> inventories =  inventoryRepository.findAll(
                 (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
-                    if (!StringUtils.isBlank(itemName) || !StringUtils.isBlank(clientIds)) {
+                    if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
-                        if (!itemName.isEmpty()) {
+                        if (StringUtils.isNotBlank(itemName)) {
                             predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
                         }
 
-                        if (!clientIds.isEmpty()) {
+                        if (StringUtils.isNotBlank(clientIds)) {
                             CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(joinItem.get("clientId"));
                             for(String id : clientIds.split(",")) {
                                 inClientIds.value(Long.parseLong(id));
@@ -176,7 +178,13 @@ public class InventoryService implements TestDataInitiableService{
 
                         }
                     }
-                    if (!StringUtils.isBlank(itemFamilyIds)) {
+                    if (StringUtils.isNotBlank(itemPackageTypeName)) {
+
+                        Join<Inventory, ItemPackageType> joinItemPackageType = root.join("itemPackageType", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinItemPackageType.get("name"), itemPackageTypeName));
+
+                    }
+                    if (StringUtils.isNotBlank(itemFamilyIds)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         Join<Item, ItemFamily> joinItemFamily = joinItem.join("itemFamily", JoinType.INNER);
 
@@ -186,7 +194,7 @@ public class InventoryService implements TestDataInitiableService{
                         }
                         predicates.add(criteriaBuilder.and(inItemFamilyIds));
                     }
-                    if (inventoryStatusId != null) {
+                    if (Objects.nonNull(inventoryStatusId)) {
                         Join<Inventory, InventoryStatus> joinInventoryStatus = root.join("inventoryStatus", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinInventoryStatus.get("id"), inventoryStatusId));
 
@@ -195,18 +203,18 @@ public class InventoryService implements TestDataInitiableService{
                     // if location ID is passed in, we will only filter by location id, no matter whether
                     // the location name is passed in or not
                     // otherwise, we will try to filter by location name
-                    if (locationId != null) {
+                    if (Objects.nonNull(locationId)) {
                         predicates.add(criteriaBuilder.equal(root.get("locationId"), locationId));
                     }
-                    else if (!StringUtils.isBlank(locationName) &&
-                            warehouseId != null) {
+                    else if (StringUtils.isNotBlank(locationName) &&
+                            Objects.nonNull(warehouseId != null)) {
                         Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
                         if (location != null) {
                             predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
                         }
                     }
 
-                    if (!StringUtils.isBlank(locationIds)) {
+                    if (StringUtils.isNotBlank(locationIds)) {
 
 
                         CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
@@ -219,7 +227,7 @@ public class InventoryService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.and(inLocationIds));
                     }
 
-                    if (!StringUtils.isBlank(receiptId)) {
+                    if (StringUtils.isNotBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
 
                     }
@@ -230,14 +238,14 @@ public class InventoryService implements TestDataInitiableService{
                     }
 
 
-                    if (!StringUtils.isBlank(workOrderLineIds)) {
+                    if (StringUtils.isNotBlank(workOrderLineIds)) {
                         CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderLineId"));
                         Arrays.stream(workOrderLineIds.split(","))
                                 .map(Long::parseLong).forEach(workOrderLineId -> inClause.value(workOrderLineId));
                         predicates.add(inClause);
 
                     }
-                    if (!StringUtils.isBlank(workOrderByProductIds)) {
+                    if (StringUtils.isNotBlank(workOrderByProductIds)) {
                         CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderByProductId"));
                         Arrays.stream(workOrderByProductIds.split(","))
                                 .map(Long::parseLong).forEach(workOrderByProductId -> inClause.value(workOrderByProductId));
@@ -245,19 +253,20 @@ public class InventoryService implements TestDataInitiableService{
 
                     }
 
-                    if (!StringUtils.isBlank(pickIds)) {
+                    if (StringUtils.isNotBlank(pickIds)) {
                         CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("pickId"));
                         Arrays.stream(pickIds.split(",")).map(Long::parseLong).forEach(pickId -> inClause.value(pickId));
                         predicates.add(inClause);
 
                     }
-                    if (!StringUtils.isBlank(lpn)) {
+                    if (StringUtils.isNotBlank(lpn)) {
                         predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
 
                     }
 
 
                     // Only return actual inventory
+
                     predicates.add(criteriaBuilder.equal(root.get("virtual"), false));
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -265,12 +274,14 @@ public class InventoryService implements TestDataInitiableService{
                 }
         );
 
+
         if (includeDetails && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
         }
 
         // When location group id is passed in, we will only return inventory from this location group
         if (locationGroupId != null) {
+
             List<Location> locations =
                     warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(
                             warehouseId, String.valueOf(locationGroupId));
@@ -617,6 +628,28 @@ public class InventoryService implements TestDataInitiableService{
      */
     @Transactional
     public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove, String destinationLpn) {
+        if (immediateMove) {
+            return processImmediateMoveInventory(inventory, destination, pickId, destinationLpn);
+        }
+        else {
+            // For pick, we are not allow a movement work since pick itself is already
+            // a work
+            // we will ignore the destination LPN as well since when we genreate the movement work
+            // we are not sure whether the LPN is still in the destination when the work is
+            // actually done
+            return generateMovementWork(inventory, destination);
+        }
+    }
+
+    /**
+     * Move the inventory into the new location,
+     * @param inventory Inventory to be moved
+     * @param destination destination fo the inventory
+     * @param pickId pick work related to the inventory movement
+     * @return inventory after the movement(can be consolidated with the existing invenotry in the destination)
+     */
+    @Transactional
+    public Inventory processImmediateMoveInventory(Inventory inventory, Location destination, Long pickId, String destinationLpn) {
         logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}, new LPN? {}",
                 inventory.getLpn(),
                 destination.getName(),
@@ -791,13 +824,22 @@ public class InventoryService implements TestDataInitiableService{
             inventory.setInventoryMovements(new ArrayList<>());
         }
 
+        // If we are here, we know we have a movement path defined for the inventory before
+        // and if we have nothing left, let's remove the possible work task that attached to
+        // this inventory and movement path
+        if (inventory.getInventoryMovements().size() == 0) {
+            commonServiceRestemplateClient.removeWorkTask(inventory, WorkType.INVENTORY_MOVEMENT);
+        }
+
     }
 
     // Note here the movement path only contains final destination location. We will need to get the
     // hop location as well and save it
     public Inventory setupMovementPath(Long inventoryId, List<InventoryMovement> inventoryMovements) {
+        return setupMovementPath(findById(inventoryId), inventoryMovements);
+    }
+    public Inventory setupMovementPath(Inventory inventory, List<InventoryMovement> inventoryMovements) {
 
-        Inventory inventory = findById(inventoryId);
         logger.debug("start to setup movement path for inventory lpn: {}", inventory.getLpn());
         logger.debug("The inventory has {} movement defined", inventoryMovements.size());
         logger.debug(" >> {}", inventoryMovements);
@@ -855,7 +897,7 @@ public class InventoryService implements TestDataInitiableService{
         // to setup the inventory's movements
         inventory.getInventoryMovements().clear();
         inventory.getInventoryMovements().addAll(newInventoryMovements);
-        logger.debug("Will return following movement path to the end user: {}", inventory.getInventoryMovements());
+        // logger.debug("Will return following movement path to the end user: {}", inventory.getInventoryMovements());
         return inventory;
     }
 
@@ -990,8 +1032,29 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
-    private void generateMovementWork(Inventory inventory, Location destinationLocation) {
-        throw new UnsupportedOperationException();
+    private Inventory generateMovementWork(Inventory inventory, Location destinationLocation) {
+        // TO-DO setup the inventory movement path
+
+        allocateLocation(inventory, destinationLocation);
+
+
+        // Save the work task
+        WorkTask workTask = WorkTask.createInventoryMovementWorkTask(
+                inventory, destinationLocation
+        );
+        commonServiceRestemplateClient.addWorkTask(workTask);
+        return inventory;
+    }
+    private Inventory allocateLocation(Inventory inventory, Location destinationLocation){
+        logger.debug("start to allocate location for inventory: {}", inventory.getLpn());
+
+        warehouseLayoutServiceRestemplateClient.allocateLocation(destinationLocation, inventory);
+
+        InventoryMovement inventoryMovement = new InventoryMovement();
+        inventoryMovement.setInventory(inventory);
+        inventoryMovement.setLocation(destinationLocation);
+
+        return setupMovementPath(inventory, Collections.singletonList(inventoryMovement));
     }
 
     private Long getWarehouseId(String companyCode, String warehouseName) {
@@ -1423,6 +1486,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
+                        null,
                         pickIds,
                         null
                 );
@@ -1449,6 +1513,7 @@ public class InventoryService implements TestDataInitiableService{
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
                 List<Inventory> pickedInventories = findAll(
                         warehouseId,
+                        null,
                         null,
                         null,
                         null,
@@ -1570,6 +1635,10 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("Start to clear the movement path LPN {}", inventory.getLpn());
         inventoryMovementService.clearInventoryMovement(inventory);
         inventory.setInventoryMovements(new ArrayList<>());
+
+        // Remove the work task that related to the inventory movement
+
+        commonServiceRestemplateClient.removeWorkTask(inventory, WorkType.INVENTORY_MOVEMENT);
 
         return inventory;
     }

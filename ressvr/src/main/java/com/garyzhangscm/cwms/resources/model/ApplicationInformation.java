@@ -3,20 +3,29 @@ package com.garyzhangscm.cwms.resources.model;
 public class ApplicationInformation {
     String name = "CWMS";
     String description = "CWMS - Cloud based WMS";
+    String version = "v0.1";
 
+    private static ApplicationInformation applicationInformation = new ApplicationInformation();
+
+    private ApplicationInformation(){}
+
+    public static ApplicationInformation getApplicationInformation() {
+
+
+        return applicationInformation;
+    }
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+
+    public String getVersion() {
+        return version;
     }
+
 }

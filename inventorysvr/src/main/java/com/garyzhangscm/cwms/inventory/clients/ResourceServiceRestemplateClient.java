@@ -60,12 +60,13 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public User getUserByUsername(String username) {
+    public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/resource/users")
-                        .queryParam("username", username);;
+                        .queryParam("username", username)
+                        .queryParam("companyId", companyId);
 
         ResponseBodyWrapper<List<User>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -104,12 +105,13 @@ public class ResourceServiceRestemplateClient {
 
 
 
-    public Role getRoleByName(String name) {
+    public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/resource/roles")
-                        .queryParam("name", name);;
+                        .queryParam("name", name)
+                        .queryParam("companyId", companyId);
 
         ResponseBodyWrapper<List<Role>> responseBodyWrapper
                 = restTemplate.exchange(

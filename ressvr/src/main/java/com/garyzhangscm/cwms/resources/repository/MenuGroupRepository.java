@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.repository;
 
 import com.garyzhangscm.cwms.resources.model.MenuGroup;
+import com.garyzhangscm.cwms.resources.model.MenuType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -28,6 +29,7 @@ import java.util.List;
 @Repository
 public interface MenuGroupRepository extends JpaRepository<MenuGroup, Long>, JpaSpecificationExecutor<MenuGroup> {
     List<MenuGroup> findAll();
+    List<MenuGroup> findByType(MenuType menuType);
 
     MenuGroup findByName(String name);
 
