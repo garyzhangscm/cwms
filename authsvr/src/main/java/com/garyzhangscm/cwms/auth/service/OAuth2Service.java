@@ -41,7 +41,7 @@ public class OAuth2Service {
     @Autowired
     RestTemplate restTemplate;
 
-    public OAuth2Token getOAuth2Token(String username, String password) {
+    public OAuth2Token getOAuth2Token(Long  companyId, String username, String password) {
         String oauth2URL
                 = "http://AUTHSERVICE/oauth/token";
 
@@ -57,7 +57,7 @@ public class OAuth2Service {
         MultiValueMap<String, String> formData= new LinkedMultiValueMap<String, String>();
         formData.add("grant_type", "password");
         formData.add("scope", "webclient");
-        formData.add("username", username);
+        formData.add("username", companyId + "#" + username);
         System.out.println("Start to verify by password: " + password);
         formData.add("password", password);
 

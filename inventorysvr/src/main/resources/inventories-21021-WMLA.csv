@@ -1,0 +1,3 @@
+company,warehouse,lpn,location,item,itemPackageType,quantity,inventoryStatus
+21021,WMLA,L00000001,Z-2E,C613B,1X6X12,10,AVAL
+21021,WMLA,L00000002,B78,E786,1X6X12,25,AVAL

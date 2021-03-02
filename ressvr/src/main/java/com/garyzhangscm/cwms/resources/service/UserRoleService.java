@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.model.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -42,6 +43,8 @@ public class UserRoleService implements TestDataInitiableService{
     private UserService userService;
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
     private FileService fileService;
@@ -60,11 +63,15 @@ public class UserRoleService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, UserRole.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+
+            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<UserRole> userRoles = loadData(inputStream);
             // Save the user role result as a map
@@ -84,15 +91,15 @@ public class UserRoleService implements TestDataInitiableService{
                 // key: companyId - username
                 String key = userRoleEntry.getKey();
                 String[] tuple = key.split("-");
-                Long companyId = Long.parseLong(tuple[0]);
+                Long currentCompanyId = Long.parseLong(tuple[0]);
                 String username = tuple[1];
 
-                User user = userService.findByUsername(companyId, username);
+                User user = userService.findByUsername(currentCompanyId, username);
 
                 List<Role> roles = new ArrayList<>();
                 Set<String> roleNames = userRoleEntry.getValue();
                 roleNames.stream().forEach(roleName -> {
-                    roles.add(roleService.findByName(roleName));
+                    roles.add(roleService.findByName(currentCompanyId, roleName));
                 });
                 user.setRoles(roles);
                 userService.saveOrUpdate(user);

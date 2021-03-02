@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.RoleRepository;
@@ -49,6 +50,8 @@ public class RoleService implements TestDataInitiableService{
     private MenuService menuService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
     private FileService fileService;
@@ -87,8 +90,8 @@ public class RoleService implements TestDataInitiableService{
 
     }
 
-    public Role findByName(String name) {
-        return roleRepository.findByName(name);
+    public Role findByName(Long companyId, String name) {
+        return roleRepository.findByCompanyIdAndName(companyId, name);
     }
 
     public Role save(Role role) {
@@ -96,8 +99,8 @@ public class RoleService implements TestDataInitiableService{
     }
 
     public Role saveOrUpdate(Role role) {
-        if (Objects.isNull(role.getId()) && findByName(role.getName()) != null) {
-            role.setId(findByName(role.getName()).getId());
+        if (Objects.isNull(role.getId()) && findByName(role.getCompanyId(), role.getName()) != null) {
+            role.setId(findByName(role.getCompanyId(), role.getName()).getId());
         }
         return save(role);
     }
@@ -115,11 +118,13 @@ public class RoleService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Role.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<Role> roles = loadData(inputStream);
             roles.stream().forEach(role -> saveOrUpdate(role));

@@ -154,7 +154,7 @@ public class CompanyService implements TestDataInitiableService{
     }
 
     @Transactional
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :

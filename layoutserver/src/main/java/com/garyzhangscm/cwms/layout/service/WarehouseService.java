@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.layout.model.Company;
-import com.garyzhangscm.cwms.layout.model.Location;
-import com.garyzhangscm.cwms.layout.model.LocationCSVWrapper;
-import com.garyzhangscm.cwms.layout.model.Warehouse;
+import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -126,8 +124,11 @@ public class WarehouseService implements TestDataInitiableService {
 
         warehouse.setCompanyId(warehouse.getCompany().getId());
     }
-    public Warehouse findByName(String name){
-        return warehouseRepository.findByName(name);
+    public Warehouse findByName(String companyCode, String name){
+        return findByName(companyService.findByCode(companyCode).getId(), name);
+    }
+    public Warehouse findByName(Long companyId, String name){
+        return warehouseRepository.findByName(companyId, name);
     }
 
     public Warehouse save(Warehouse warehouse) {
@@ -135,8 +136,8 @@ public class WarehouseService implements TestDataInitiableService {
     }
 
     public Warehouse saveOrUpdate(Warehouse warehouse) {
-        if (warehouse.getId() == null && findByName(warehouse.getName()) != null) {
-            warehouse.setId(findByName(warehouse.getName()).getId());
+        if (warehouse.getId() == null && findByName(warehouse.getCompany().getId(), warehouse.getName()) != null) {
+            warehouse.setId(findByName(warehouse.getCompany().getId(), warehouse.getName()).getId());
         }
         return save(warehouse);
     }
@@ -147,9 +148,10 @@ public class WarehouseService implements TestDataInitiableService {
     public void delete(Long id) {
         warehouseRepository.deleteById(id);
     }
-    public List<Warehouse> loadData(File file) throws IOException {
+    public List<WarehouseCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("name").
                 addColumn("size").
                 addColumn("addressCountry").
@@ -161,12 +163,13 @@ public class WarehouseService implements TestDataInitiableService {
                 addColumn("addressLine2").
                 addColumn("addressPostcode").
                 build().withHeader();
-        return fileService.loadData(file, schema, Warehouse.class);
+        return fileService.loadData(file, schema, WarehouseCSVWrapper.class);
     }
 
-    public List<Warehouse> loadData(InputStream inputStream) throws IOException {
+    public List<WarehouseCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("name").
                 addColumn("size").
                 addColumn("addressCountry").
@@ -179,23 +182,34 @@ public class WarehouseService implements TestDataInitiableService {
                 addColumn("addressPostcode").
                 build().withHeader();
 
-        return fileService.loadData(inputStream, schema, Warehouse.class);
+        return fileService.loadData(inputStream, schema, WarehouseCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = companyService.findById(companyId).getCode();
 
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<Warehouse> warehouses = loadData(inputStream);
-            warehouses.stream().forEach(warehouse -> saveOrUpdate(warehouse));
+            List<WarehouseCSVWrapper> warehouseCSVWrappers = loadData(inputStream);
+            warehouseCSVWrappers.stream().forEach(warehouseCSVWrapper -> saveOrUpdate(convertFromWrapper(warehouseCSVWrapper)));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
 
+
+    private Warehouse convertFromWrapper(WarehouseCSVWrapper warehouseCSVWrapper) {
+        Warehouse warehouse = new Warehouse();
+        BeanUtils.copyProperties(warehouseCSVWrapper, warehouse);
+
+        warehouse.setCompany(companyService.findByCode(warehouseCSVWrapper.getCompany()));
+
+        return warehouse;
+
+    }
 
     public Warehouse changeWarehouse(long id, Warehouse warehouse) {
         Warehouse existingWarehouse = findById(id);

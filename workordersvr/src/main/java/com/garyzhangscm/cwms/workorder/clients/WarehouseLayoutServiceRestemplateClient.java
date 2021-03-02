@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.workorder.clients;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.model.Company;
 import com.garyzhangscm.cwms.workorder.model.Location;
 
 import com.garyzhangscm.cwms.workorder.model.Warehouse;
@@ -49,6 +50,22 @@ public class WarehouseLayoutServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/companies/{id}");
+
+        ResponseBodyWrapper<Company> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =

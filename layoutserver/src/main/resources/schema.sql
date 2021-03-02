@@ -35,6 +35,14 @@ VALUES (1, "20901", "ECO-TECH", "Eco Tech Co.",
     "Gary","Zhang",
     "U.S", "CA", "San Bernardino", "Ontario", "", "C st Mira Loma", "", "91752");
 
+INSERT INTO company (company_id, code, name, description,
+    contactor_firstname, contactor_lastname,
+    address_country, address_state, address_county ,
+    address_city , address_district, address_line1, address_line2, address_postcode)
+VALUES (2, "21021", "BRAIN-CHILD", "Brain Child Co.",
+    "Jay","Zhang",
+    "U.S", "CA", "LA County", "South El Monte", "", "12354 Barringer St", "", "91733");
+
 CREATE TABLE warehouse (
   warehouse_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   company_id   BIGINT NOT NULL,
@@ -61,6 +69,11 @@ INSERT INTO warehouse (company_id, name, size, address_country, address_state, a
 INSERT INTO warehouse ( company_id,name, size, address_country, address_state,
 address_county , address_city , address_district, address_line1, address_line2, address_postcode)
      VALUES (1, "WMOR", 50000, "U.S", "CA", "Orange", "Orange", "", "2164 N Batavia ST", "", "92865");
+
+
+INSERT INTO warehouse ( company_id,name, size, address_country, address_state,
+address_county , address_city , address_district, address_line1, address_line2, address_postcode)
+     VALUES (2, "WMLA", 10000, "U.S", "CA", "LA", "South El Monte", "", "12354 Barringer St", "", "91733");
 
 -- INSERT INTO warehouse (name, size, address_country, address_state, address_county , address_city , address_district, address_line1, address_line2, address_postcode)
 --     VALUES ("SH", "75000 sqft", "China", "Shanghai", "Shanghai", "Shanghai", "Pudong", "68 Yuheng Road", "", "201203");

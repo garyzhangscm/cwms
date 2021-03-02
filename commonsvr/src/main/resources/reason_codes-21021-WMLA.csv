@@ -1,0 +1,4 @@
+company,warehouse,name,description,type
+21021,WMLA,Damaged,Inventory is damaged,Inventory_Adjust
+21021,WMLA,Office-Use,Used by Office,Inventory_Adjust
+21021,WMLA,Customer-Gift,Used as a gift to customer,Inventory_Adjust

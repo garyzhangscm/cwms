@@ -1,0 +1,3 @@
+company,number,warehouse,item,expectedQuantity
+21021,BOM-001,WMLA,C613B,1
+21021,BOM-002,WMLA,E786,1

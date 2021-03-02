@@ -467,11 +467,14 @@ public class InventoryService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, InventoryCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(inputStream);
             inventoryCSVWrappers.stream().forEach(inventoryCSVWrapper -> {

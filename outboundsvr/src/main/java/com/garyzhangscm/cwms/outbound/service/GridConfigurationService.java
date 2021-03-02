@@ -170,11 +170,15 @@ public class GridConfigurationService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, GridConfigurationCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<GridConfigurationCSVWrapper> gridConfigurationCSVWrappers = loadData(inputStream);
             gridConfigurationCSVWrappers.stream().forEach(gridConfigurationCSVWrapper -> saveOrUpdate(convertFromWrapper(gridConfigurationCSVWrapper)));

@@ -74,8 +74,9 @@ public class UserService {
         );
 
     }
-    public User findByUsername(String username){
-        return userRepository.findByUsername(username);
+
+    public User findByUsername(Long companyId, String username){
+        return userRepository.findByCompanyIdAndUsername(companyId, username);
     }
 
     @Transactional
@@ -92,10 +93,10 @@ public class UserService {
             encryptPassword(user);
         }
         if (Objects.isNull(user.getId()) &&
-                !Objects.isNull(findByUsername(user.getUsername()))) {
-            user.setId(findByUsername(user.getUsername()).getId());
+                !Objects.isNull(findByUsername(user.getCompanyId(), user.getUsername()))) {
+            user.setId(findByUsername(user.getCompanyId(), user.getUsername()).getId());
             if (StringUtils.isBlank(user.getPassword())) {
-                user.setPassword(findByUsername(user.getUsername()).getPassword());
+                user.setPassword(findByUsername(user.getCompanyId(), user.getUsername()).getPassword());
             }
         }
 

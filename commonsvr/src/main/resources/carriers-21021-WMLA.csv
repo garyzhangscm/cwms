@@ -1,0 +1,3 @@
+company,warehouse,name,description,contactor_firstname,contactor_lastname,address_country,address_state,address_county,address_city,address_district,address_line1,address_line2,address_postcode
+21021,WMLA,UPS,UPS,Gary,Zhang,US,LA,El Monte,El Monte,,191 xxxx Road,,91733
+21021,WMLA,LTL,LTL,Gary2,Zhang3,US,LA,El Monte,El Monte,,333 YYYY Road,,91733

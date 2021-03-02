@@ -1,0 +1,21 @@
+company,warehouse,name, description, locationGroupType, pickable, storable, countable,trackingVolume, volumeTrackingPolicy,inventoryConsolidationStrategy,allowCartonization,adjustable
+20901,WMEC,EACH_PICK,Each Picking Area - #1,Storage, true, true, true,true,BY_EACH,CONSOLIDATE_BY_INVENTORY,false,true
+20901,WMEC,DAMAGED,Damaged Inventory Area,Damaged, true, true, true,false,,NONE,false,false
+20901,WMEC,RECV_STG,Receiving Stage,Receive_Stage, false, false, false,false,,NONE,false,false
+20901,WMEC,RECV_DCK,Receiving Dock,Receive_Dock, false, false, false,false,,NONE,false,false
+20901,WMEC,RECEIPT,Receipt,RECEIPT, false, false, false,false,,NONE,false,false
+20901,WMEC,SHIP_STG,Shipping Stage,Shipping_Stage, false, false, false,false,,NONE,false,false
+20901,WMEC,SHIP_DCK,Shipping Dock,Shipping_Dock, false, false, false,false,,NONE,false,false
+20901,WMEC,DISPATCHED,Dispatched Trailer,Dispatched, false, false, false,false,,NONE,false,false
+20901,WMEC,TRAILER,Trailer,Trailer, false, false, false,false,,NONE,false,false
+20901,WMEC,RF,RF locations,RF, false, false, false,false,,NONE,false,false
+20901,WMEC,YARD,Yard for parking,Yard, false, false, false,false,,NONE,false,false
+20901,WMEC,P&D,Pickup and Deposit,PickupDeposit, false, false, false,false,,NONE,false,true
+20901,WMEC,Default_Removed_Inventory_Location,Default Location For Removed Inventory,Removed_Inventory, false, false, false,false,,NONE,false,false
+20901,WMEC,Audit_Count_Inventory_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
+20901,WMEC,Inventory_Adjustment_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
+20901,WMEC,Inventory_Receiving_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
+20901,WMEC,ProductionLine,Production Line,ProductionLine, false, false, false,false,,NONE,false,false
+20901,WMEC,ProductionLineInbound,Production Line Inbound Stage,ProductionLineInbound, false, false, false,false,,NONE,false,false
+20901,WMEC,ProductionLineOutbound,Production Line Outbound Stage,ProductionLineOutbound, false, false, false,false,,NONE,false,false
+20901,WMEC,Order,Order,Shipped_Order, false, false, false,false,,NONE,false,false

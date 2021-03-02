@@ -269,11 +269,14 @@ public class OrderLineService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, OrderLineCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
-            String testDataFileName  = StringUtils.isBlank(warehouseName) ?
+
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<OrderLineCSVWrapper> orderLineCSVWrappers = loadData(inputStream);
             orderLineCSVWrappers.stream().forEach(orderLineCSVWrapper -> saveOrUpdate(convertFromWrapper(orderLineCSVWrapper)));

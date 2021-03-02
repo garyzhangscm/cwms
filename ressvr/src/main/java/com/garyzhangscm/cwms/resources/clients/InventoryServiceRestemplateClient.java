@@ -38,11 +38,12 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    public String initTestData(String warehouseName) {
+    public String initTestData(Long companyId, String warehouseName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inventory/test-data/init")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
         ResponseEntity<String> restExchange
@@ -55,12 +56,13 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
 
     }
 
-    public String initTestData(String name, String warehouseName) {
+    public String initTestData(Long companyId, String name, String warehouseName) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inventory/test-data/init/{name}")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
         ResponseEntity<String> restExchange

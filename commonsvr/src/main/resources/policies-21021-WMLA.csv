@@ -1,0 +1,8 @@
+company,warehouse,key,value,description
+21021,WMLA,LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION,REMOVE_INV,Location to Save Removed Inventory
+21021,WMLA,LOCATION-AUDIT-COUNT,AUDIT,Location to Save Removed Inventory by Audit Count
+21021,WMLA,LOCATION-COUNT,COUNT,Location to Save Removed Inventory by Count
+21021,WMLA,LOCATION-INVENTORY-ADJUST,INVADJ,Location to Save Removed Inventory by Inventory Adjustment
+21021,WMLA,LOCATION-RECEIVING,INVRCV,Location to Save Removed Inventory by Inventory Receiving
+21021,WMLA,LOCATION-GROUP-RECEIPT,RECEIPT,Location Group for Receipt
+21021,WMLA,JOB-EMERGENCY-REPLENISHMENT-MAX-COUNT,50,Max emergency replenishment can be processed in one round

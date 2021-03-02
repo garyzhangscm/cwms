@@ -1,0 +1,3 @@
+company,warehouse,number,shipToCustomer,billToCustomer,shipToContactorFirstname,shipToContactorLastname,shipToAddressCountry,shipToAddressState,shipToAddressCounty,shipToAddressCity,shipToAddressDistrict,shipToAddressLine1,shipToAddressLine2,shipToAddressPostcode,billToContactorFirstname,billToContactorLastname,billToAddressCountry,billToAddressState,billToAddressCounty,billToAddressCity,billToAddressDistrict,billToAddressLine1,billToAddressLine2,billToAddressPostcode,client
+21021,WMLA,ORD000001,GZ,GZ,,,,,,,,,,,,,,,,,,,,,
+21021,WMLA,ORD000002,YZ,YZ,,,,,,,,,,,,,,,,,,,,,

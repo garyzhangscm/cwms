@@ -56,6 +56,12 @@ public class CompanyController {
     }
 
 
+    @RequestMapping(value="/companies/validate", method = RequestMethod.GET)
+    public Long validateCompanyCode(@RequestParam String code) {
+
+        return companyService.findByCode(code) == null ? null : companyService.findByCode(code).getId();
+    }
+
 
 
 

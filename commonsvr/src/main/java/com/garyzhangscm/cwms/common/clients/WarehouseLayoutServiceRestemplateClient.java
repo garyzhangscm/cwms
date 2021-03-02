@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.common.model.Company;
 import com.garyzhangscm.cwms.common.model.Location;
 import com.garyzhangscm.cwms.common.model.Warehouse;
 import org.slf4j.Logger;
@@ -52,6 +53,22 @@ public class WarehouseLayoutServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/companies/{id}");
+
+        ResponseBodyWrapper<Company> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     @Cacheable
     public Warehouse getWarehouseByName(String companyCode, String name) {

@@ -258,11 +258,14 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
     @Transactional
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ReceiptCSVWrapper> receiptCSVWrappers = loadData(inputStream);
             receiptCSVWrappers.stream().forEach(receiptCSVWrapper -> saveOrUpdate(convertFromWrapper(receiptCSVWrapper)));

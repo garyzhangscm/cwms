@@ -1,0 +1,3 @@
+company,warehouse,order,number,item,expectedQuantity,inventoryStatus,allocationStrategyType
+21021,WMLA,ORD000001,1,C613B,2,AVAL,FIRST_IN_FIRST_OUT
+21021,WMLA,ORD000002,1,E786,4,AVAL,FIRST_IN_FIRST_OUT

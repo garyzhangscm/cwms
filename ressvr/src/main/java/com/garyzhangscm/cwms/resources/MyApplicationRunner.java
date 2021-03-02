@@ -42,8 +42,8 @@ public class MyApplicationRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         System.out.println("Start to init the menus");
-        menuGroupService.initTestData("");
-        menuSubGroupService.initTestData("");
-        menuService.initTestData("");
+        menuGroupService.initTestData( null, "");
+        menuSubGroupService.initTestData(null, "");
+        menuService.initTestData(null, "");
     }
 }

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.MenuGroupRepository;
@@ -46,6 +47,8 @@ public class MenuSubGroupService implements TestDataInitiableService{
     private MenuSubGroupRepository menuSubGroupRepository;
     @Autowired
     private MenuGroupService menuGroupService;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
     private FileService fileService;
@@ -90,11 +93,14 @@ public class MenuSubGroupService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, MenuSubGroupCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = companyId == null ?
+                    "" : layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<MenuSubGroupCSVWrapper> menuSubGroupCSVWrappers = loadData(inputStream);
             menuSubGroupCSVWrappers.stream().forEach(menuSubGroupCSVWrapper -> save(convertFromCSVWrapper(menuSubGroupCSVWrapper)));

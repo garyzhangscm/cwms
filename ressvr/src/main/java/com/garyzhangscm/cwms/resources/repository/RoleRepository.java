@@ -31,6 +31,6 @@ import java.util.List;
 public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificationExecutor<Role> {
     List<Role> findAll();
 
-    Role findByName(String name);
+    Role findByCompanyIdAndName(Long companyId, String name);
 
 }

@@ -263,11 +263,14 @@ public class ProductionLineService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, ProductionLineCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
-            String testDataFileName  = StringUtils.isBlank(warehouseName) ?
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ProductionLineCSVWrapper> productionLineCSVWrappers = loadData(inputStream);
             productionLineCSVWrappers.stream().forEach(productionLineCSVWrapper -> saveOrUpdate(convertFromWrapper(productionLineCSVWrapper)));

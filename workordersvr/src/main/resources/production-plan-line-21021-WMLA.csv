@@ -1,0 +1,2 @@
+company,warehouse,productionPlan,billOfMaterial,item,expectedQuantity,inventoryStatus
+21021,WMLA,PRP-00001,BOM-001,C613B,10,AVAL

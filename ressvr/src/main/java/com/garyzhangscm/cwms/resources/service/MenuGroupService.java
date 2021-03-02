@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.MenuGroupRepository;
@@ -48,6 +49,9 @@ public class MenuGroupService implements TestDataInitiableService{
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
+
 
     @Value("${fileupload.test-data.menu-groups:menu-groups}")
     String testDataFile;
@@ -192,11 +196,15 @@ public class MenuGroupService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, MenuGroup.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = companyId == null ?
+                    "" : layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<MenuGroup> menuGroups = loadData(inputStream);
             menuGroups.stream().forEach(menuGroup -> save(menuGroup));
