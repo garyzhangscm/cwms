@@ -40,6 +40,22 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/companies/{id}");
+
+        ResponseBodyWrapper<Company> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     public List<Company> getCompanies() {
 
@@ -57,12 +73,13 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         return responseBodyWrapper.getData();
     }
 
-    public String initTestData(String warehouseName) {
+    public String initTestData(Long companyId, String warehouseName) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/test-data/init")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
         ResponseEntity<String> restExchange
@@ -74,12 +91,13 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         return restExchange.getBody();
     }
 
-    public String initTestData(String name, String warehouseName) {
+    public String initTestData(Long companyId, String name, String warehouseName) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/layout/test-data/init/{name}")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
         ResponseEntity<String> restExchange

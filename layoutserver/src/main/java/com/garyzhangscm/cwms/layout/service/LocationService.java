@@ -60,6 +60,8 @@ public class LocationService implements TestDataInitiableService {
     @Autowired
     private WarehouseService warehouseService;
     @Autowired
+    private CompanyService companyService;
+    @Autowired
     private FileService fileService;
 
     @Value("${fileupload.test-data.locations:locations}")
@@ -299,6 +301,7 @@ public class LocationService implements TestDataInitiableService {
 
     private CsvSchema getLocationCsvSchema() {
         return  CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("aisle").
@@ -318,11 +321,14 @@ public class LocationService implements TestDataInitiableService {
                 build().withHeader();
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
-            String testDataFileName  = StringUtils.isBlank(warehouseName) ?
+            String companyCode = companyService.findById(companyId).getCode();
+
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             logger.debug("Start to load location from file: {}", testDataFileName);
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<LocationCSVWrapper> locationCSVWrappers = loadData(inputStream);
@@ -352,16 +358,21 @@ public class LocationService implements TestDataInitiableService {
         location.setCurrentVolume(0.0);
         location.setPendingVolume(0.0);
 
-        location.setWarehouse(warehouseService.findByName(locationCSVWrapper.getWarehouse()));
+        location.setWarehouse(warehouseService.findByName(
+                locationCSVWrapper.getCompany(), locationCSVWrapper.getWarehouse()));
 
         logger.debug("process location {} with group {}",
                 locationCSVWrapper.getName(),
                 locationCSVWrapper.getLocationGroup());
         if (StringUtils.isNotBlank(locationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup = locationGroupService.findByName(
-                    warehouseService.findByName(locationCSVWrapper.getWarehouse()).getId(),locationCSVWrapper.getLocationGroup());
+                    warehouseService.findByName(
+                            locationCSVWrapper.getCompany(), locationCSVWrapper.getWarehouse()).getId(),
+                    locationCSVWrapper.getLocationGroup());
             logger.debug("Get location group id {} by warehouse {} / name {}",
-                    locationGroup.getId(), warehouseService.findByName(locationCSVWrapper.getWarehouse()).getId(),
+                    locationGroup.getId(),
+                    warehouseService.findByName(
+                            locationCSVWrapper.getCompany(), locationCSVWrapper.getWarehouse()).getId(),
                     locationCSVWrapper.getLocationGroup());
             location.setLocationGroup(locationGroup);
         }

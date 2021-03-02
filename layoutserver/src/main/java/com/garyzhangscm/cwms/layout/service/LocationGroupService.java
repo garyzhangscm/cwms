@@ -55,6 +55,8 @@ public class LocationGroupService implements TestDataInitiableService {
     @Autowired
     private LocationGroupTypeService locationGroupTypeService;
     @Autowired
+    private CompanyService companyService;
+    @Autowired
     private WarehouseService warehouseService;
     @Autowired
     private LocationService locationService;
@@ -159,6 +161,7 @@ public class LocationGroupService implements TestDataInitiableService {
     public List<LocationGroupCSVWrapper> loadData(File file) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
@@ -177,6 +180,7 @@ public class LocationGroupService implements TestDataInitiableService {
     public List<LocationGroupCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
                 addColumn("warehouse").
                 addColumn("name").
                 addColumn("description").
@@ -194,11 +198,13 @@ public class LocationGroupService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, LocationGroupCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = companyService.findById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             logger.debug("Start to load location group from file: {}", testDataFile);
             List<LocationGroupCSVWrapper> locationGroupCSVWrappers = loadData(inputStream);
@@ -228,7 +234,8 @@ public class LocationGroupService implements TestDataInitiableService {
 
 
         locationGroup.setAllowCartonization(locationGroupCSVWrapper.getAllowCartonization());
-        locationGroup.setWarehouse(warehouseService.findByName(locationGroupCSVWrapper.getWarehouse()));
+        locationGroup.setWarehouse(warehouseService.findByName(
+                locationGroupCSVWrapper.getCompany(), locationGroupCSVWrapper.getWarehouse()));
 
 
         locationGroup.setTrackingVolume(locationGroupCSVWrapper.getTrackingVolume());

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.Role;
 import com.garyzhangscm.cwms.resources.repository.RoleRepository;
@@ -39,6 +40,8 @@ public class RoleUserService implements TestDataInitiableService{
     private static final Logger logger = LoggerFactory.getLogger(RoleUserService.class);
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
     private FileService fileService;
@@ -73,11 +76,13 @@ public class RoleUserService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, Role.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<Role> roles = loadData(inputStream);
             roles.stream().forEach(role -> save(role));

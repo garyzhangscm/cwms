@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.model.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -45,6 +46,8 @@ public class RoleMenuService implements TestDataInitiableService{
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Value("${fileupload.test-data.role-menus:role-menus}")
     String testDataFile;
@@ -59,11 +62,13 @@ public class RoleMenuService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, RoleMenu.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<RoleMenu> roleMenus = loadData(inputStream);
             // Save the user role result as a map
@@ -78,7 +83,7 @@ public class RoleMenuService implements TestDataInitiableService{
             });
 
             roleMenuMap.entrySet().stream().forEach(roleMenuEntry -> {
-                Role role = roleService.findByName(roleMenuEntry.getKey());
+                Role role = roleService.findByName(companyId, roleMenuEntry.getKey());
                 List<Menu> menus = new ArrayList<>();
                 Set<String> menuNames = roleMenuEntry.getValue();
                 menuNames.stream().forEach(menuName -> {

@@ -200,11 +200,14 @@ public class BillOfMaterialService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, BillOfMaterialCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
-            String testDataFileName  = StringUtils.isBlank(warehouseName) ?
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
+            String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<BillOfMaterialCSVWrapper> billOfMaterialCSVWrappers = loadData(inputStream);
             billOfMaterialCSVWrappers.stream().forEach(billOfMaterialCSVWrapper -> saveOrUpdate(convertFromWrapper(billOfMaterialCSVWrapper)));

@@ -1,0 +1,3 @@
+company,number,warehouse,billOfMaterial,item,inventoryStatus,expectedQuantity
+21021,1,WMLA,BOM-001,C613B,AVAL,1
+21021,1,WMLA,BOM-002,E786,AVAL,1

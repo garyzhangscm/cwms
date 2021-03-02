@@ -20,3 +20,6 @@ INSERT INTO user_auth (company_id, username, password, enabled, locked, email) V
 
 INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (1, "JZHANG", "JZHANG", 1, 0 , "jzhang@gmail.com");
 
+INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (2, "GZHANG", "GZHANG",1, 0, "gzhang@gmail.com");
+INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (2, "JYEH", "JYEH", 1, 0 , "jyeh@gmail.com");
+

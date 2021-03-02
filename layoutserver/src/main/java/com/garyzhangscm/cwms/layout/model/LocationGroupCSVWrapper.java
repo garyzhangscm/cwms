@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.layout.model;
 public class LocationGroupCSVWrapper {
 
 
+    private String company;
     private String name;
 
     private String description;
@@ -39,6 +40,14 @@ public class LocationGroupCSVWrapper {
     private String inventoryConsolidationStrategy;
 
     private String warehouse;
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
     public String getName() {
         return name;

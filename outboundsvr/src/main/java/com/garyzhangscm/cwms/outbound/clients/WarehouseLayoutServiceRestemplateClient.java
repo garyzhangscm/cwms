@@ -46,7 +46,22 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/layout/companies/{id}");
 
+        ResponseBodyWrapper<Company> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =

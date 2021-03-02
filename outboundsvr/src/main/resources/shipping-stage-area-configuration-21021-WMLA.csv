@@ -1,0 +1,2 @@
+company,warehouse,sequence,locationGroup,locationReserveStrategy
+21021,WMLA,1,SHIP_STG,BY_SHIPMENT

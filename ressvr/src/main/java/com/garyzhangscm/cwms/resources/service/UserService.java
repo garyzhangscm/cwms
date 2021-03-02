@@ -59,6 +59,8 @@ public class UserService  implements TestDataInitiableService{
     private AuthServiceRestemplateClient authServiceRestemplateClient;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
 
     @Value("${fileupload.test-data.users:users}")
@@ -87,6 +89,8 @@ public class UserService  implements TestDataInitiableService{
     }
     public User findByUsername(Long companyId, String username, boolean loadAttribute) {
         User user =  userRepository.findByCompanyIdAndUsername(companyId, username);
+        logger.debug("we find user by company id {}, username {}? {}",
+                companyId, username, user != null );
         if (user != null && loadAttribute) {
             loadAttribute(user);
         }
@@ -191,7 +195,10 @@ public class UserService  implements TestDataInitiableService{
         return save(user);
     }
     public SiteInformation getSiteInformaiton(Long companyId, String username) {
-        return getSiteInformaiton(findByUsername(companyId, username));
+        User user = findByUsername(companyId, username);
+        logger.debug("we find user? {} by username {}, companeId: {}",
+                user != null, username, companyId);
+        return getSiteInformaiton(user);
 
     }
 
@@ -212,6 +219,8 @@ public class UserService  implements TestDataInitiableService{
 
         MenuType menuType = mobile ?  MenuType.MOBILE : MenuType.WEB;
         List<MenuGroup> menuGroups = menuGroupService.getAccessibleMenus(user, menuType);
+        logger.debug("We find {} menus for the user {}",
+                menuGroups == null ? 0 : menuGroups.size(), user.getUsername());
         siteInformation.setMenuGroups(menuGroups);
 
         logger.debug("Objects.isNull(singleCompanySite) ? : {}", Objects.isNull(singleCompanySite)  );
@@ -246,11 +255,15 @@ public class UserService  implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, User.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+
+            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<User> users = loadData(inputStream);
             users.stream().forEach(user -> saveWithCredential(user));

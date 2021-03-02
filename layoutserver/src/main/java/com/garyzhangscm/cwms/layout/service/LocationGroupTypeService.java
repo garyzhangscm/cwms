@@ -46,6 +46,8 @@ public class LocationGroupTypeService implements TestDataInitiableService {
     @Autowired
     private LocationGroupTypeRepository locationGroupTypeRepository;
     @Autowired
+    private CompanyService companyService;
+    @Autowired
     private FileService fileService;
 
     @Value("${fileupload.test-data.location-group-types:location_group_types}")
@@ -149,13 +151,15 @@ public class LocationGroupTypeService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, LocationGroupType.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         logger.debug(">>Start to init location group type for warehouse {}", warehouseName);
         try {
 
+            String companyCode = companyService.findById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             logger.debug("Start to init location group type from {}", testDataFileName);
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<LocationGroupType> locationGroupTypes = loadData(inputStream);

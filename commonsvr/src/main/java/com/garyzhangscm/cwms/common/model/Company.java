@@ -1,7 +1,7 @@
 package com.garyzhangscm.cwms.common.model;
 
 
-public class Company extends AuditibleEntity<String> {
+public class Company {
 
     private Long id;
 

@@ -19,6 +19,6 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 public interface TestDataInitiableService {
-    public void initTestData(String warehouseName);
+    public void initTestData(Long companyId, String warehouseName);
 
 }

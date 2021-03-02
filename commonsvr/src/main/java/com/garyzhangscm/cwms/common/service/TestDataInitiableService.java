@@ -19,7 +19,7 @@
 package com.garyzhangscm.cwms.common.service;
 
 public interface TestDataInitiableService {
-    public void initTestData(String warehouseName);
+    public void initTestData(Long companyId, String warehouseName);
 
 
 }

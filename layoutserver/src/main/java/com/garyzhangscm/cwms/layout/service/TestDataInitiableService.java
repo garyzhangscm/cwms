@@ -19,6 +19,6 @@
 package com.garyzhangscm.cwms.layout.service;
 
 public interface TestDataInitiableService {
-    public void initTestData(String warehouseName);
+    public void initTestData(Long companyId, String warehouseName);
 
 }

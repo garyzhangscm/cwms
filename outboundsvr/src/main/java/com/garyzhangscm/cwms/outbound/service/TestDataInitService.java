@@ -123,11 +123,11 @@ public class TestDataInitService {
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
     }
-    public void init(String warehouseName) {
-        serviceNames.forEach(serviceName -> init(serviceName, warehouseName));
+    public void init(Long companyId, String warehouseName) {
+        serviceNames.forEach(serviceName -> init(companyId, serviceName, warehouseName));
     }
-    public void init(String name, String warehouseName) {
-        initiableServices.get(name).initTestData(warehouseName);
+    public void init(Long companyId, String name, String warehouseName) {
+        initiableServices.get(name).initTestData(companyId, warehouseName);
     }
     public TestDataInitiableService getInitiableService(String name) {
         return initiableServices.get(name);

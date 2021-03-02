@@ -1,0 +1,3 @@
+companyId,username,password,email,firstname,lastname,admin,enabled,locked
+1,GZHANG,GZHANG,gzhang@gmail.com,Gary,Zhang,true,true,false
+2,JYEH,JYEH,JYEH@gmail.com,Jay,Yeh,true,true,false

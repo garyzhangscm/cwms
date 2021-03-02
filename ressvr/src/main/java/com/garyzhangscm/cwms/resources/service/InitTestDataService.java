@@ -159,34 +159,34 @@ public class InitTestDataService {
         return testDataNames.toArray(new String[0]);
     }
 
-    public void init(String warehouseName) {
-        initAll(warehouseName);
+    public void init(Long companyId, String warehouseName) {
+        initAll(companyId, warehouseName);
     }
-    public void init(String name, String warehouseName) {
+    public void init(Long companyId, String name, String warehouseName) {
         if (name.isEmpty() || name.equals("ALL")) {
-            initAll(warehouseName);
+            initAll(companyId, warehouseName);
         }
         else {
             if (initiableServices.containsKey(name)) {
-                initiableServices.get(name).initTestData(warehouseName);
+                initiableServices.get(name).initTestData(companyId, warehouseName);
             }
             else {
                 for (InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
                     if (initiableServiceRestemplateClient.contains(name)) {
-                        initiableServiceRestemplateClient.initTestData(name, warehouseName);
+                        initiableServiceRestemplateClient.initTestData(companyId, name, warehouseName);
                     }
                 }
             }
         }
 
     }
-    private void initAll(String warehouseName) {
+    private void initAll(Long companyId, String warehouseName) {
 
-        serviceNames.forEach(serviceName -> init(serviceName,  warehouseName));
+        serviceNames.forEach(serviceName -> init(companyId, serviceName,  warehouseName));
 
         for(InitiableServiceRestemplateClient initiableServiceRestemplateClient : initiableServiceRestemplateClients) {
 
-            initiableServiceRestemplateClient.initTestData(warehouseName);
+            initiableServiceRestemplateClient.initTestData(companyId, warehouseName);
         }
     }
 

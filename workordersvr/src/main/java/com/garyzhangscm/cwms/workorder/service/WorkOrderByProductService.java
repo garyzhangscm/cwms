@@ -161,11 +161,13 @@ public class WorkOrderByProductService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, WorkOrderByProductCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<WorkOrderByProductCSVWrapper> workOrderByProductCSVWrappers = loadData(inputStream);
             workOrderByProductCSVWrappers.stream().forEach(workOrderByProductCSVWrapper -> save(convertFromWrapper(workOrderByProductCSVWrapper)));

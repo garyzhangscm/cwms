@@ -325,7 +325,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
         return fileService.loadData(inputStream, schema, InventoryAdjustmentThresholdCSVWrapper.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
 
             String testDataFileName = StringUtils.isBlank(warehouseName) ?

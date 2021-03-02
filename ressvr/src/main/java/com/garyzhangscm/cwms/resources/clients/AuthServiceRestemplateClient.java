@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.resources.model.UserAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +47,7 @@ public class AuthServiceRestemplateClient {
     private OAuth2RestOperations restTemplate;
 
 
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();

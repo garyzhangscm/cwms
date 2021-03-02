@@ -1,0 +1,2 @@
+company,warehouse,sequence,item,itemFamily,inventoryStatus,location,locationGroup,locationGroupType,strategies
+21021,WMLA,1,,,AVAL,,PICK,,EMPTY_LOCATIONS

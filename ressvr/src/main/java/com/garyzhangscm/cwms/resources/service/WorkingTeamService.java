@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.RoleRepository;
@@ -51,6 +52,8 @@ public class WorkingTeamService implements TestDataInitiableService{
     private WorkingTeamRepository workingTeamRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
     private FileService fileService;
@@ -158,11 +161,15 @@ public class WorkingTeamService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, WorkingTeam.class);
     }
 
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+
+            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<WorkingTeam> workingTeams = loadData(inputStream);
             workingTeams.stream().forEach(workingTeam -> saveOrUpdate(workingTeam));

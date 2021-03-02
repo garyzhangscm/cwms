@@ -1,6 +1,9 @@
 package com.garyzhangscm.cwms.auth.security;
 
+import com.garyzhangscm.cwms.auth.controller.LoginController;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfigurer.class);
 
     @Autowired
     UserRepository userRepository;
@@ -49,8 +54,19 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 new UserDetailsService() {
                     @Override
                     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                        UserDetails userDetails = userRepository.findByUsername( username);
-                        System.out.println("user details: \n" +
+                        logger.debug(">>> Start to loadUserByUsername {}", username);
+                        Long companyId = -1L;
+                        String actualUsername = username;
+                        if (username.contains("#")) {
+                            String[] usernameTokens = username.split("#");
+                            if (usernameTokens.length == 2) {
+                                companyId = Long.parseLong(usernameTokens[0]);
+                                actualUsername = usernameTokens[1];
+                            }
+                        }
+                        logger.debug(">>> Will find user by company ID {}, username {}", companyId, actualUsername);
+                        UserDetails userDetails = userRepository.findByCompanyIdAndUsername(companyId,  actualUsername);
+                        System.out.println("uscder details: \n" +
                                 " >> username: " + userDetails.getUsername() +
                                 " >> password: " + userDetails.getPassword());
                         return userDetails;

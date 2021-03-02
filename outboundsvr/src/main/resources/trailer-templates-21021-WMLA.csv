@@ -1,0 +1,6 @@
+company,warehouse,number,licensePlateNumber,size,type,driverFirstName,driverLastName,driverPhone,enabled
+21021,WMLA,1001,A00001,24 ft,FT_24,一,张,7148881111,true
+21021,WMLA,1002,A00002,50 ft,FT_50,二,张,7148882222,true
+21021,WMLA,1003,A00002,20 GP,GP_20,三,张,7148883333,true
+21021,WMLA,1004,A00003,40 GP,GP_40,四,张,7148884444,true
+21021,WMLA,1005,A00004,40 HQ,HQ_40,五,张,7148885555,true

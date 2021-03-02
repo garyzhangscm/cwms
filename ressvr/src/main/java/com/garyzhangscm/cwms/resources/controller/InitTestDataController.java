@@ -42,7 +42,7 @@ public class InitTestDataController {
     public ResponseBodyWrapper<String> init(
             @RequestParam Long companyId, @RequestParam String warehouseName) {
 
-        initTestDataService.init(warehouseName);
+        initTestDataService.init(companyId, warehouseName);
         return ResponseBodyWrapper.success("Init all");
     }
     @RequestMapping(value = "/init/{name}", method = RequestMethod.POST)
@@ -50,7 +50,7 @@ public class InitTestDataController {
                                             @RequestParam Long companyId,
                                             @RequestParam String warehouseName) {
 
-        initTestDataService.init(name, warehouseName);
+        initTestDataService.init(companyId, name, warehouseName);
         return ResponseBodyWrapper.success("Init " + name);
     }
 

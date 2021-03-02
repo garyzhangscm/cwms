@@ -40,16 +40,18 @@ public class TestDataInitController {
     }
 
     @RequestMapping(value = "/init", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init(@RequestParam String warehouseName) {
-        testDataInitService.init(warehouseName);
+    public ResponseBodyWrapper<String> init(@RequestParam Long companyId,
+                                            @RequestParam String warehouseName) {
+        testDataInitService.init(companyId, warehouseName);
         return ResponseBodyWrapper.success("data init succeed!");
     }
     @RequestMapping(value = "/init/{name}", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> init(@PathVariable String name,
+    public ResponseBodyWrapper<String> init(@RequestParam Long companyId,
+                                            @PathVariable String name,
                                             @RequestParam String warehouseName) {
 
         logger.debug("Start initiate {} / {}", name, warehouseName);
-        testDataInitService.init(name, warehouseName);
+        testDataInitService.init(companyId, name, warehouseName);
         logger.debug("End initiate {} / {}", name, warehouseName);
         return ResponseBodyWrapper.success("data " + name + " init succeed!");
     }

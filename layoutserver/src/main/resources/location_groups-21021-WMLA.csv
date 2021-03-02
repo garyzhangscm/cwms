@@ -1,0 +1,21 @@
+company,warehouse,name, description, locationGroupType, pickable, storable, countable,trackingVolume, volumeTrackingPolicy,inventoryConsolidationStrategy,allowCartonization,adjustable
+21021,WMLA,PICK,Picking Area,Storage, true, true, true,true,BY_EACH,CONSOLIDATE_BY_INVENTORY,false,true
+21021,WMLA,DAMAGED,Damaged Inventory Area,Damaged, true, true, true,false,,NONE,false,false
+21021,WMLA,RECV_STG,Receiving Stage,Receive_Stage, false, false, false,false,,NONE,false,false
+21021,WMLA,RECV_DCK,Receiving Dock,Receive_Dock, false, false, false,false,,NONE,false,false
+21021,WMLA,RECEIPT,Receipt,RECEIPT, false, false, false,false,,NONE,false,false
+21021,WMLA,SHIP_STG,Shipping Stage,Shipping_Stage, false, false, false,false,,NONE,false,false
+21021,WMLA,SHIP_DCK,Shipping Dock,Shipping_Dock, false, false, false,false,,NONE,false,false
+21021,WMLA,DISPATCHED,Dispatched Trailer,Dispatched, false, false, false,false,,NONE,false,false
+21021,WMLA,TRAILER,Trailer,Trailer, false, false, false,false,,NONE,false,false
+21021,WMLA,RF,RF locations,RF, false, false, false,false,,NONE,false,false
+21021,WMLA,YARD,Yard for parking,Yard, false, false, false,false,,NONE,false,false
+21021,WMLA,P&D,Pickup and Deposit,PickupDeposit, false, false, false,false,,NONE,false,true
+21021,WMLA,Default_Removed_Inventory_Location,Default Location For Removed Inventory,Removed_Inventory, false, false, false,false,,NONE,false,false
+21021,WMLA,Audit_Count_Inventory_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
+21021,WMLA,Inventory_Adjustment_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
+21021,WMLA,Inventory_Receiving_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
+21021,WMLA,ProductionLine,Production Line,ProductionLine, false, false, false,false,,NONE,false,false
+21021,WMLA,ProductionLineInbound,Production Line Inbound Stage,ProductionLineInbound, false, false, false,false,,NONE,false,false
+21021,WMLA,ProductionLineOutbound,Production Line Outbound Stage,ProductionLineOutbound, false, false, false,false,,NONE,false,false
+21021,WMLA,Order,Order,Shipped_Order, false, false, false,false,,NONE,false,false

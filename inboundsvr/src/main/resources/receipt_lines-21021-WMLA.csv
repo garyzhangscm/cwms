@@ -1,0 +1,3 @@
+company,warehouse,receipt,number,item,expectedQuantity,receivedQuantity,overReceivingQuantity,overReceivingPercent
+21021,WMLA,RECPT000001,1,C613B,500,0,0,0
+21021,WMLA,RECPT000001,2,E786,1000,0,0,0

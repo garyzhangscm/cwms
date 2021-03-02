@@ -177,11 +177,15 @@ public class CarrierService implements  TestDataInitiableService{
     }
 
     @Transactional
-    public void initTestData(String warehouseName) {
+    public void initTestData(Long companyId, String warehouseName) {
         try {
+            String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
+
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
-                    testDataFile + "-" + warehouseName + ".csv";
+                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+
+
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<CarrierCSVWrapper> carrierCSVWrappers = loadData(inputStream);
             carrierCSVWrappers.stream().forEach(carrierCSVWrapper -> saveOrUpdate(convertFromWrapper(carrierCSVWrapper)));

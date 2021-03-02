@@ -32,6 +32,10 @@ CREATE TABLE user_info (
 
 INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
 VALUES (1, "GZHANG",  "Gary", "Zhang", true, false );
+INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
+VALUES (2, "GZHANG",  "Gary", "Zhang", true, false );
+INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
+VALUES (2, "JYEH",  "Jay", "Yeh", true, false );
 
 -- INSERT INTO user_info (username,  first_name, last_name, is_admin) VALUES ("RWU",  "Rainbow", "Wu", false);
 

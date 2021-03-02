@@ -21,11 +21,14 @@ package com.garyzhangscm.cwms.layout.repository;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, JpaSpecificationExecutor<Warehouse> {
-    Warehouse findByName(String name);
+
+    @Query("select warehouse from Warehouse warehouse where warehouse.company.id = :companyId and warehouse.name = :name")
+    Warehouse findByName(Long companyId, String name);
 }

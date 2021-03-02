@@ -37,11 +37,12 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    public String initTestData(String warehouseName) {
+    public String initTestData(Long companyId, String warehouseName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/test-data/init")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
         ResponseEntity<String> restExchange
@@ -53,12 +54,13 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
         return restExchange.getBody();
     }
 
-    public String initTestData(String name, String warehouseName) {
+    public String initTestData(Long companyId, String name, String warehouseName) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/common/test-data/init/{name}")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
         ResponseEntity<String> restExchange
