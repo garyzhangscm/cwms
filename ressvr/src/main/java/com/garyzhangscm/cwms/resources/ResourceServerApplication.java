@@ -61,6 +61,7 @@ public class ResourceServerApplication {
 												   @Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext) {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
 		restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+
 		customizer.customize(restTemplate);
 		return restTemplate;
 	}
