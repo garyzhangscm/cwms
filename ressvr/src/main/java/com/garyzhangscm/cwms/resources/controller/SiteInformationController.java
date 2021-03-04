@@ -62,8 +62,9 @@ public class SiteInformationController {
 
 
     @RequestMapping(value = "/mobile", method = RequestMethod.GET)
-    public ApplicationInformation getMobileInformation() {
-        return ApplicationInformation.getApplicationInformation();
+    public SiteInformation getMobileInformation() {
+        // return ApplicationInformation.getApplicationInformation();
+        return siteInformationService.getDefaultSiteInformation();
     }
 
 

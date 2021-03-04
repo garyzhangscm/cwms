@@ -50,6 +50,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Valid Icon",menu.main.util.icon-list,/util/icon-list,4,Main-Menu-Util,Util-ValidIcon,
 "Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,
 "Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,0xe63a
-"Pick",menu.mobile.outbound.pick,pick,1,Mobile-Menu-Outbound,Mobile-Outbound-Pick,0xe63a
+"Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,0xe63a
+"Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,0xe63a
+"Pick By Work Order",menu.mobile.outbound.pick-by-work-order,pick_by_work_order,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByWorkOrder,0xe63a
+"Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,4,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,0xe63a
 "Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,0xe63a
 "Count",menu.mobile.inventory.count,cycle_cycle_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,0xe622
