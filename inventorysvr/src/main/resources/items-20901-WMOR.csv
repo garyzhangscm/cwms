@@ -1,24 +1,24 @@
-company,warehouse,name,description,client,itemFamily,unitCost,allowCartonization,allowAllocationByLPN,allocationRoundUpStrategyType,allocationRoundUpStrategyValue,trackingVolumeFlag,trackingLotNumberFlag,trackingManufactureDateFlag,shelfLifeDays,trackingExpirationDateFlag
-20901,WMOR,10001,IPHONE 11,,HIGH_VALUE,790,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,10002,IPHONE 11 Xs,,HIGH_VALUE,990,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,10003,IPHONE 11 Pro,,HIGH_VALUE,1190,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,10004,IPHONE 10,,HIGH_VALUE,575,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,10005,IPHONE 10 Xs,,HIGH_VALUE,675,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,10006,Apple Watch 5 - GPS,,HIGH_VALUE,375,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,10007,Apple Watch 5 - Cell,,HIGH_VALUE,450,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,20001,Whole Milk,,LOW_TEMP,5,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,20002,2% Milk,,LOW_TEMP,7,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,20003,0% Milk,,LOW_TEMP,8,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,20004,Children Milk,,LOW_TEMP,7.5,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,20005,Starbucks Coffer,,LOW_TEMP,12,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,20006,Butter,,LOW_TEMP,3,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,20007,Coca Cola,,LOW_TEMP,3.79,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,30001,Shrimp,,FROZEN,15,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,30002,Craw Fish,,FROZEN,12.29,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,30003,Dumpling,,FROZEN,5.79,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,40001,Think In Java,,BOOK,13.99,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,40002,Core Jav - 1,,BOOK,11.99,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,40003,Core Java - 2,,BOOK,11.99,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,40004,Effective Java,,BOOK,21.99,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,40005,Spring Boot in Action,,BOOK,5.99,true,false,NONE,0.0,true,false,false,0,false
-20901,WMOR,40006,Micro Service in Action,,BOOK,8.75,true,false,NONE,0.0,true,false,false,0,false
+company,warehouse,name,description,client,itemFamily,unitCost,allowCartonization,allowAllocationByLPN,allocationRoundUpStrategyType,allocationRoundUpStrategyValue,trackingVolumeFlag,trackingLotNumberFlag,trackingManufactureDateFlag,shelfLifeDays,trackingExpirationDateFlag,imageUrl,thumbnailUrl
+20901,WMOR,10001,IPHONE 11,,HIGH_VALUE,790,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,10002,IPHONE 11 Xs,,HIGH_VALUE,990,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,10003,IPHONE 11 Pro,,HIGH_VALUE,1190,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,10004,IPHONE 10,,HIGH_VALUE,575,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,10005,IPHONE 10 Xs,,HIGH_VALUE,675,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,10006,Apple Watch 5 - GPS,,HIGH_VALUE,375,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,10007,Apple Watch 5 - Cell,,HIGH_VALUE,450,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,20001,Whole Milk,,LOW_TEMP,5,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,20002,2% Milk,,LOW_TEMP,7,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,20003,0% Milk,,LOW_TEMP,8,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,20004,Children Milk,,LOW_TEMP,7.5,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,20005,Starbucks Coffer,,LOW_TEMP,12,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,20006,Butter,,LOW_TEMP,3,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,20007,Coca Cola,,LOW_TEMP,3.79,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,30001,Shrimp,,FROZEN,15,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,30002,Craw Fish,,FROZEN,12.29,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,30003,Dumpling,,FROZEN,5.79,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,40001,Think In Java,,BOOK,13.99,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,40002,Core Jav - 1,,BOOK,11.99,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,40003,Core Java - 2,,BOOK,11.99,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,40004,Effective Java,,BOOK,21.99,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,40005,Spring Boot in Action,,BOOK,5.99,true,false,NONE,0.0,true,false,false,0,false,,
+20901,WMOR,40006,Micro Service in Action,,BOOK,8.75,true,false,NONE,0.0,true,false,false,0,false,,

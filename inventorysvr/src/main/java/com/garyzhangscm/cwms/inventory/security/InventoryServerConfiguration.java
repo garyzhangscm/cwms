@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 @Configuration
 public class InventoryServerConfiguration extends ResourceServerConfigurerAdapter {
@@ -20,8 +21,9 @@ public class InventoryServerConfiguration extends ResourceServerConfigurerAdapte
         .authorizeRequests()
                 .antMatchers("/app").permitAll()
           .antMatchers("/actuator").permitAll()
+                .antMatchers("/upload/**").permitAll()
+                .antMatchers("/images/**").permitAll()
           .anyRequest()
           .authenticated();
     }
-
 }

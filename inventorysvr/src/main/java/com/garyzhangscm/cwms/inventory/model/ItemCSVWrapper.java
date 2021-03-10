@@ -53,6 +53,10 @@ public class ItemCSVWrapper implements Serializable {
     private Integer shelfLifeDays;
     private boolean trackingExpirationDateFlag;
 
+    private String imageUrl;
+
+    private String thumbnailUrl;
+
     @Override
     public String toString() {
         try {
@@ -189,5 +193,21 @@ public class ItemCSVWrapper implements Serializable {
 
     public void setTrackingExpirationDateFlag(boolean trackingExpirationDateFlag) {
         this.trackingExpirationDateFlag = trackingExpirationDateFlag;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 }

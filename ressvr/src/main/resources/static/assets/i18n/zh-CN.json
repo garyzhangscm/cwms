@@ -1117,12 +1117,17 @@
   "movement-path":"移动路径",
   "page.modal.query.popup": "查询",
   "VALUE_NON_EXISTS": "该值不存在",
-  "------------------": "2020.10.29",
   "verify_quantity": "确认数量",
   "report.summary": "统计",
   "count_user": "盘点人员",
   "count_date": "日期",
   "total_locations": "总库位数量",
   "counted_locations": "已盘点库位数量",
-  "discrepancy_locations": "差异库位数量"
+  "discrepancy_locations": "差异库位数量",
+  "------------------": "2021.03.08",
+  "item.image": "商品图片",
+  "item.image.upload": "上传商品图片",
+  "item.image.upload.url": "图片地址",
+  "thumbnail": "缩略图",
+  "image-upload": "上传图片"
 }

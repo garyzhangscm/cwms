@@ -32,13 +32,19 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,6 +60,8 @@ public class ItemService implements TestDataInitiableService{
     ItemPackageTypeService itemPackageTypeService;
     @Autowired
     InventoryService inventoryService;
+    @Autowired
+    ImageService imageService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -64,6 +72,14 @@ public class ItemService implements TestDataInitiableService{
 
     @Value("${fileupload.test-data.items:items}")
     String testDataFile;
+
+    @Value("${fileupload.directory.upload:/upload/}")
+    String uploadFolder;
+
+    @Value("${fileupload.directory.upload.item.image:images/item/}")
+    String itemImageFolder;
+    @Value("${fileupload.directory.upload.item.thumbnail:images/item/thumbnail/}")
+    String itemThumbnailFolder;
 
     public Item findById(Long id, boolean includeDetails) {
          Item item = itemRepository.findById(id)
@@ -235,6 +251,8 @@ public class ItemService implements TestDataInitiableService{
                 addColumn("trackingManufactureDateFlag").
                 addColumn("shelfLifeDays").
                 addColumn("trackingExpirationDateFlag").
+                addColumn("imageUrl").
+                addColumn("thumbnailUrl").
                 build().withHeader();
     }
 
@@ -256,6 +274,8 @@ public class ItemService implements TestDataInitiableService{
 
     private Item convertFromWrapper(ItemCSVWrapper itemCSVWrapper) {
         Item item = new Item();
+        BeanUtils.copyProperties(itemCSVWrapper, item);
+        /***
         item.setName(itemCSVWrapper.getName());
         item.setDescription(itemCSVWrapper.getDescription());
         item.setUnitCost(itemCSVWrapper.getUnitCost());
@@ -267,7 +287,7 @@ public class ItemService implements TestDataInitiableService{
         item.setTrackingManufactureDateFlag(itemCSVWrapper.isTrackingManufactureDateFlag());
         item.setTrackingExpirationDateFlag(itemCSVWrapper.isTrackingExpirationDateFlag());
         item.setShelfLifeDays(itemCSVWrapper.getShelfLifeDays());
-
+**/
         // warehouse
         Warehouse warehouse =
                     warehouseLayoutServiceRestemplateClient.getWarehouseByName(
@@ -484,4 +504,37 @@ public class ItemService implements TestDataInitiableService{
                 item.getName());
         return true;
     }
+
+    public Item uploadItemImages(Long id, MultipartFile file) throws IOException {
+        Item item = findById(id);
+        logger.debug("Start to save item image: name: {} original fle name:  {} , content type: {}",
+                file.getName(), file.getOriginalFilename(), file.getContentType());
+
+
+        String newFileName  = item.getName() + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String imageDestination =   uploadFolder + itemImageFolder  + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName;
+        String thumbnailDestination =  uploadFolder +  itemThumbnailFolder + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName;
+
+        logger.debug("start to save item {}'s image to destination: {}",
+                item.getName(), imageDestination);
+        fileService.saveFile(file, imageDestination);
+
+        logger.debug("item {}'s image is saved to destination: {}",
+                item.getName(), imageDestination);
+        item.setImageUrl(itemImageFolder  + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName);
+
+        // we will save the thumbnail automatically
+
+        logger.debug("start to save item {}'s thumbnail to destination: {}",
+                item.getName(), thumbnailDestination);
+        imageService.generateThumbnail(imageDestination, thumbnailDestination);
+        logger.debug("item {}'s thumbnail is saved to destination: {}",
+                item.getName(), thumbnailDestination);
+        item.setThumbnailUrl(itemThumbnailFolder + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName);
+
+        return saveOrUpdate(item);
+
+    }
+
+
 }

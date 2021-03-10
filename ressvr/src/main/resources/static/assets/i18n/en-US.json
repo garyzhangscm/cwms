@@ -1114,5 +1114,17 @@
   "movement-path":"Movement Path",
   "page.modal.query.popup": "Query",
   "VALUE_NON_EXISTS": "The value doesn't exist",
-  "------------------": "2020.10.29"
+  "verify_quantity": "Verify Quantity",
+  "report.summary": "Summary",
+  "count_user": "Count User",
+  "count_date": "Count Date",
+  "total_locations": "Total Locations",
+  "counted_locations": "Counted Locations",
+  "discrepancy_locations": "Discrepancy Locations",
+  "------------------": "2021.03.08",
+  "item.image": "Item Image",
+  "item.image.upload": "Item Image Upload",
+  "item.image.upload.url": "Item Image URL",
+  "thumbnail": "Thumbnail",
+  "image-upload": "upload image"
 }
