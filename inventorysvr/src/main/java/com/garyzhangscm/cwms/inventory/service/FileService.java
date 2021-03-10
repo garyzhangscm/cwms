@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,22 +34,40 @@ import java.util.List;
 @Service
 public class FileService {
 
+    private static final Logger logger = LoggerFactory.getLogger(FileService.class);
     @Value("${fileupload.temp-file.directory:/upload/tmp/}")
     String destinationFolder;
 
     public File saveFile(MultipartFile file) throws IOException {
         String destination = destinationFolder  + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        File localFile = new File(destination);
 
-        if (!localFile.getParentFile().exists()) {
-            localFile.getParentFile().mkdirs();
-        }
-        if (!localFile.exists()) {
-            localFile.createNewFile();
-        }
-        file.transferTo(localFile);
+        return saveFile(file, destination);
 
-        return localFile;
+    }
+
+    public File saveFile(MultipartFile file, String destination) throws IOException {
+
+        return saveFile(file, new File(destination));
+
+    }
+
+    public File saveFile(MultipartFile file, File destinationFile) throws IOException {
+
+
+        if (!destinationFile.getParentFile().exists()) {
+            logger.debug("save files: parent file {} doesn't exists",
+                    destinationFile.getParentFile().getAbsolutePath());
+            destinationFile.getParentFile().mkdirs();
+        }
+        if (!destinationFile.exists()) {
+            logger.debug("save files: local file {} doesn't exists",
+                    destinationFile.getAbsolutePath());
+            destinationFile.createNewFile();
+        }
+        file.transferTo(destinationFile);
+        logger.debug("save files: file copied!");
+
+        return destinationFile;
 
     }
 

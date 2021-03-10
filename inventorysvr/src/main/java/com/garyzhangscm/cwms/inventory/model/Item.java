@@ -108,6 +108,13 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "allocation_round_up_strategy_value")
     private Double allocationRoundUpStrategyValue = 0.0;
 
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
     @Transient
     private Warehouse warehouse;
 
@@ -297,5 +304,21 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setTrackingVolumeFlag(boolean trackingVolumeFlag) {
         this.trackingVolumeFlag = trackingVolumeFlag;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 }

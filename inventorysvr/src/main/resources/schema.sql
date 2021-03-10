@@ -57,6 +57,8 @@ CREATE TABLE item(
   tracking_manufacture_date_flag boolean not null default 0,
   shelf_life_days INT default 0,
   tracking_expiration_date_flag boolean not null default 0,
+  image_url   VARCHAR(2000),
+  thumbnail_url   VARCHAR(2000),
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,

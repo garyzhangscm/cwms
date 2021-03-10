@@ -35,8 +35,7 @@ public class FileService {
     @Value("${fileupload.temp-file.directory:/upload/tmp/}")
     String destinationFolder;
 
-    public File saveFile(MultipartFile file) throws IOException {
-        String destination = destinationFolder  + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+    public File saveFile(MultipartFile file, String destination) throws IOException {
         File localFile = new File(destination);
 
         if (!localFile.getParentFile().exists()) {
@@ -48,6 +47,13 @@ public class FileService {
         file.transferTo(localFile);
 
         return localFile;
+    }
+
+
+    public File saveFile(MultipartFile file) throws IOException {
+        String destination = destinationFolder  + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        return saveFile(file, destination);
     }
 
     public <T> List<T> loadData(File file, CsvSchema schema, Class<T> tClass)throws IOException {

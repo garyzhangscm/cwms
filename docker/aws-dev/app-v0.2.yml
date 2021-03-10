@@ -1,0 +1,194 @@
+###
+# v0.1
+# released by 08/31/2020
+# first runable version
+#
+##
+version: '3'
+services:
+  ######################################
+  # 4. auth(OAuth2 server)
+  #####################################
+  authserver:
+      image: garyzhangscm/cwms-auth:v0.2
+      ports:
+          - "8901:8901"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+
+  layoutservice:
+      image: garyzhangscm/cwms-layoutserver:v0.2
+      ports:
+          - "8180:8180"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+         co.elastic.logs/enabled: true
+
+  resourceservice:
+      image: garyzhangscm/cwms-ressvr:v0.2
+      ports:
+          - "8280:8280"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+           co.elastic.logs/enabled: true
+
+  commonservice:
+      image: garyzhangscm/cwms-commonserver:v0.2
+      ports:
+          - "8380:8380"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+
+  inventoryservice:
+      image: garyzhangscm/cwms-inventoryserver:v0.2
+      ports:
+          - "8480:8480"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+
+  inboundservice:
+      image: garyzhangscm/cwms-inboundserver:v0.2
+      ports:
+          - "8580:8580"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+
+  outboundservice:
+      image: garyzhangscm/cwms-outboundserver:v0.2
+      ports:
+          - "8680:8680"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+
+  workorderservice:
+      image: garyzhangscm/cwms-workorderserver:v0.2
+      ports:
+          - "8780:8780"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+
+  integrationservice:
+      image: garyzhangscm/cwms-integrationserver:v0.2
+      ports:
+          - "8880:8880"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+
+  adminservice:
+      image: garyzhangscm/cwms-adminserver:v0.2
+      ports:
+          - "8078:8078"
+      environment:
+          SPRING_PROFILE: "aws-dev"
+          CONFIGSERVER_URI: "http://configserver:8888"
+          # DATABASE_URL: "cwms.cwboexrsigq2.us-west-1.rds.amazonaws.com"
+          DATABASE_URL: "database"
+          CONFIGSERVER_PORT:   "8888"
+          DATABASESERVER_PORT: "3306"
+          ENCRYPT_KEY:       "CWMS2018"
+          COMPOSE_PROJECT_NAME: "CWMS-APP"
+          TZ: "America/Los_Angeles"
+          SYSTEM_VERSION: "V0.1"
+      labels:
+          co.elastic.logs/enabled: true
+#      volumes:
+#          - "/etc/localtime:/etc/localtime:ro"
+#          - "/etc/timezone:/etc/timezone:ro"
+

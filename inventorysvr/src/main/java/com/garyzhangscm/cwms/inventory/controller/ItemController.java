@@ -56,14 +56,17 @@ public class ItemController {
         return itemService.deleteItem(id);
     }
 
-    @RequestMapping(method=RequestMethod.POST, value="/items/upload")
-    public ResponseBodyWrapper uploadItems(@RequestParam("file") MultipartFile file) throws IOException {
+    @RequestMapping(method=RequestMethod.POST, value="/items/{id}/images/upload")
+    public Item uploadItemImages(@PathVariable Long id,
+                                           @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
-        List<Item> locations = itemService.loadItemData(localFile);
-        return  ResponseBodyWrapper.success(locations.size() + "");
+        return  itemService.uploadItemImages(id, file);
     }
+
+
+
+
 
     @RequestMapping(method=RequestMethod.DELETE, value="/items")
     public void removeItems(@RequestParam(name = "item_ids", required = false, defaultValue = "") String itemIds) {
