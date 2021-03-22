@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-@Profile("aws-dev")
 public class MyApplicationRunner implements ApplicationRunner {
     // WE will init the menu when start the application
 
