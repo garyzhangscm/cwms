@@ -41,7 +41,7 @@ public class CommonServiceRestemplateClient {
 
     public Client getClientById(Long id) {
 
-        ResponseBodyWrapper<Client> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/clients/{id}",
+        ResponseBodyWrapper<Client> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/clients/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}, id).getBody();
 
         return responseBodyWrapper.getData();
@@ -50,7 +50,7 @@ public class CommonServiceRestemplateClient {
     public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder
-                        .fromHttpUrl("http://zuulservice/api/common/clients")
+                        .fromHttpUrl("http://zuulserver:5555/api/common/clients")
                         .queryParam("warehouseId", warehouseId)
                 .queryParam("name", name);
 
@@ -66,14 +66,14 @@ public class CommonServiceRestemplateClient {
     }
     public Supplier getSupplierById(Long id) {
 
-        ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/suppliers/{id}",
+        ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/suppliers/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Supplier>>() {}, id).getBody();
 
         return responseBodyWrapper.getData();
     }
     public Supplier getSupplierByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/common/suppliers")
+                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
                         .queryParam("warehouseId", warehouseId)
                 .queryParam("name", name);
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
@@ -90,7 +90,7 @@ public class CommonServiceRestemplateClient {
 
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
-        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/unit-of-measures/{id}",
+        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/unit-of-measures/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}, id).getBody();
 
         return responseBodyWrapper.getData();
@@ -100,7 +100,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures")
                         .queryParam("name", name);
 
@@ -124,7 +124,7 @@ public class CommonServiceRestemplateClient {
     public Customer getCustomerByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/customers")
                         .queryParam("name", name);
 
@@ -147,7 +147,7 @@ public class CommonServiceRestemplateClient {
     public Carrier getCarrierByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carriers")
                         .queryParam("name", name);
 
@@ -168,7 +168,7 @@ public class CommonServiceRestemplateClient {
     }
     public Carrier getCarrierById(Long id) {
 
-        ResponseBodyWrapper<Carrier> responseBodyWrapper = restTemplate.exchange("http://zuulservice/api/common/carriers/{id}",
+        ResponseBodyWrapper<Carrier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/carriers/{id}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Carrier>>() {}, id).getBody();
 
         return responseBodyWrapper.getData();

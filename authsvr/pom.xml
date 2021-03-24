@@ -21,6 +21,7 @@
 		<start-class>com.garyzhangscm.cwms.auth.AuthenticationServerApplication</start-class>
 		<docker.image.name>garyzhangscm/cwms-auth</docker.image.name>
 		<docker.image.tag>latest</docker.image.tag>
+		<maven.test.skip>true</maven.test.skip>
 	</properties>
 
 	<dependencies>
@@ -57,14 +58,15 @@
 			<artifactId>spring-cloud-starter-config</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-			<!--
-			    Eureka has been moved to a new package since spring boot 2
-            <artifactId>spring-cloud-starter-eureka</artifactId>
-			-->
+		<!-- Remove eureka support. We will use kubernetes instead
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+            Eureka has been moved to a new package since spring boot 2
+        <artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
+
+        -->
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -102,6 +104,12 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+			<scope>compile</scope>
 		</dependency>
 
 

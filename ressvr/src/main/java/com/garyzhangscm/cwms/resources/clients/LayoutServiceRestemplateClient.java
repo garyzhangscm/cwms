@@ -43,7 +43,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/companies/{id}");
 
         ResponseBodyWrapper<Company> responseBodyWrapper
@@ -61,7 +61,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/companies");
 
         ResponseBodyWrapper<List<Company>> responseBodyWrapper
@@ -77,7 +77,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -95,7 +95,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -114,7 +114,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/test-data");
 
         ResponseBodyWrapper<String[]> responseBodyWrapper
@@ -135,7 +135,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 

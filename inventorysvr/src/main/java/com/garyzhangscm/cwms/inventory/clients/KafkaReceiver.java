@@ -23,10 +23,11 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-@Profile("aws-dev")
+
 public class KafkaReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaReceiver.class);
 
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
 

@@ -12,11 +12,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
 import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
+import org.springframework.cloud.client.loadbalancer.RetryLoadBalancerInterceptor;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -26,7 +29,9 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.web.client.RestTemplate;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 
 @SpringBootApplication
@@ -35,7 +40,7 @@ import java.util.Collections;
 // Database configuration won't be updated in the client even the
 // configuration server is updated with new DB information
 @RefreshScope
-@EnableEurekaClient
+// @EnableEurekaClient
 @EnableResourceServer
 @EnableOAuth2Client
 public class ResourceServerApplication {
@@ -55,11 +60,17 @@ public class ResourceServerApplication {
 	}
 
 	@Bean
+	public CustomRestTemplateCustomizer customRestTemplateCustomizer() {
+		return new CustomRestTemplateCustomizer();
+	}
+	@Bean
 	@LoadBalanced
-	public OAuth2RestOperations oauth2RestTemplate(RestTemplateCustomizer customizer,
+	public OAuth2RestOperations oauth2RestTemplate(CustomRestTemplateCustomizer customizer,
 												   ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails,
 												   @Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext) {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
+
+
 		restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
 
 		customizer.customize(restTemplate);

@@ -54,7 +54,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Company getCompanyByCode(String companyCode) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/layout/companies")
+                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/companies")
                         .queryParam("code", companyCode);
 
         ResponseBodyWrapper<List<Company>> responseBodyWrapper = restTemplate.exchange(
@@ -74,7 +74,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Warehouse getWarehouseByName(String companyCode, String name) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/layout/warehouses")
+                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/warehouses")
                         .queryParam("companyCode", companyCode)
                 .queryParam("name", name);
 
@@ -95,7 +95,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Warehouse getWarehouseByName(Long companyId, String name) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulservice/api/layout/warehouses")
+                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/warehouses")
                         .queryParam("companyId", companyId)
                         .queryParam("name", name);
 
@@ -150,7 +150,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/warehouses/{id}");
 
 

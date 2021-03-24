@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-@Profile("aws-dev")
+
 public class KafkaReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaReceiver.class);
 

@@ -56,7 +56,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories/count")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("locationGroupId", locationGroup.getId());
@@ -76,7 +76,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories/count")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("locationIds", locationIds);

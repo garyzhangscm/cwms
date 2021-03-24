@@ -44,7 +44,7 @@ public class CommonServiceRestemplateClient {
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/clients/{id}");
 
         ResponseBodyWrapper<Client> responseBodyWrapper
@@ -60,7 +60,7 @@ public class CommonServiceRestemplateClient {
     public Client getClientByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/clients")
                         .queryParam("name", name);
 
@@ -82,7 +82,7 @@ public class CommonServiceRestemplateClient {
     public Supplier getSupplierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/suppliers/{id}");
 
         ResponseBodyWrapper<Supplier> responseBodyWrapper
@@ -98,7 +98,7 @@ public class CommonServiceRestemplateClient {
     public Supplier getSupplierByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/suppliers")
                         .queryParam("name", name);
 
@@ -121,7 +121,7 @@ public class CommonServiceRestemplateClient {
     public Carrier getCarrierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carriers/{id}");
 
         ResponseBodyWrapper<Carrier> responseBodyWrapper
@@ -138,7 +138,7 @@ public class CommonServiceRestemplateClient {
     public CarrierServiceLevel getCarrierServiceLevelById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carrier-service-levels/{id}");
 
         ResponseBodyWrapper<CarrierServiceLevel> responseBodyWrapper
@@ -155,7 +155,7 @@ public class CommonServiceRestemplateClient {
     public Customer getCustomerById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/customers/{id}");
 
         ResponseBodyWrapper<Customer> responseBodyWrapper
@@ -170,7 +170,7 @@ public class CommonServiceRestemplateClient {
     public Customer getCustomerByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/customers")
                         .queryParam("name", name);
 
@@ -194,7 +194,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures/{id}");
 
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
@@ -210,7 +210,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
@@ -236,7 +236,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/system-controlled-number/{variable}/next");
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                 = restTemplate.exchange(

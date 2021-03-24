@@ -40,7 +40,7 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
     public String initTestData(Long companyId, String warehouseName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -58,7 +58,7 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -76,7 +76,7 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/test-data");
 
         ResponseBodyWrapper<String[]> responseBodyWrapper
@@ -95,7 +95,7 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
     public String clearData(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 

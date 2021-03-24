@@ -48,8 +48,14 @@ public class CommonEntityServerApplication {
 	}
 
 	@Bean
+	public CustomRestTemplateCustomizer customRestTemplateCustomizer() {
+		return new CustomRestTemplateCustomizer();
+	}
+
+
+	@Bean
 	@LoadBalanced
-	public OAuth2RestOperations oauth2RestTemplate(RestTemplateCustomizer customizer,
+	public OAuth2RestOperations oauth2RestTemplate(CustomRestTemplateCustomizer customizer,
 												   ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails,
 												   @Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext) {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);

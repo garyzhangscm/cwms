@@ -40,7 +40,7 @@ public class IntegrationServiceRestemplateClient implements  InitiableServiceRes
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -57,7 +57,7 @@ public class IntegrationServiceRestemplateClient implements  InitiableServiceRes
     public String initTestData(Long companyId, String name, String warehouseName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -75,7 +75,7 @@ public class IntegrationServiceRestemplateClient implements  InitiableServiceRes
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/test-data");
 
         ResponseBodyWrapper<String[]> responseBodyWrapper
@@ -96,7 +96,7 @@ public class IntegrationServiceRestemplateClient implements  InitiableServiceRes
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 

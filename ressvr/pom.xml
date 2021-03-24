@@ -21,6 +21,7 @@
 		<docker.image.name>garyzhangscm/cwms-ressvr</docker.image.name>
 		<start-class>com.garyzhangscm.cwms.resources.ResourceServerApplication</start-class>
 		<docker.image.tag>latest</docker.image.tag>
+		<maven.test.skip>true</maven.test.skip>
 	</properties>
 
 	<dependencies>
@@ -65,14 +66,15 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-			<!--
-			    Eureka has been moved to a new package since spring boot 2
-            <artifactId>spring-cloud-starter-eureka</artifactId>
-			-->
+		<!-- since we are using K8S now, we will not use eureka
+		  for service discovery any more
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+            Eureka has been moved to a new package since spring boot 2
+        <artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
+        -->
 
 		<!-- MySQL DB -->
 		<dependency>
@@ -117,6 +119,12 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

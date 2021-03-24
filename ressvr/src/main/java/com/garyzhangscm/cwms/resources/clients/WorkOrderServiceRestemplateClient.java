@@ -41,7 +41,7 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -59,7 +59,7 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -78,7 +78,7 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/test-data");
 
         ResponseBodyWrapper<String[]> responseBodyWrapper
@@ -97,7 +97,7 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 
