@@ -56,7 +56,7 @@ public class InventoryServiceRestemplateClient {
     public Item getItemByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/items")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -82,7 +82,7 @@ public class InventoryServiceRestemplateClient {
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory-statuses")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -106,7 +106,7 @@ public class InventoryServiceRestemplateClient {
     public ItemPackageType getItemPackageTypeByName(Long warehouseId, Long itemId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/itemPackageTypes")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId)

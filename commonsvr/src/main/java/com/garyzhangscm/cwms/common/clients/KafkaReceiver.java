@@ -9,6 +9,7 @@ import com.garyzhangscm.cwms.common.service.IntegrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.MessageHeaders;
@@ -18,13 +19,14 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-@Profile("aws-dev")
+
 public class KafkaReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaReceiver.class);
 
     @Autowired
     IntegrationService integrationService;
 
+    @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
 

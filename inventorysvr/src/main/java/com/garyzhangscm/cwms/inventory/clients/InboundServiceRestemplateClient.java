@@ -51,7 +51,7 @@ public class InboundServiceRestemplateClient {
     public Receipt getReceiptById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inbound/receipts/{id}");
 
         ResponseBodyWrapper<Receipt> responseBodyWrapper
@@ -68,7 +68,7 @@ public class InboundServiceRestemplateClient {
     public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inbound/receipts/{receiptId}/lines/{receiptLineId}/reverse")
                 .queryParam("quantity", quantity);
 

@@ -55,7 +55,7 @@ public class AuthServiceRestemplateClient {
     public List<UserAuth> getUserAuthByUsernames(Long companyId, String usernames) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/auth/users")
                         .queryParam("companyId", companyId)
                         .queryParam("usernames", usernames);
@@ -75,7 +75,7 @@ public class AuthServiceRestemplateClient {
     public UserAuth getUserAuthByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/auth/users")
                         .queryParam("companyId", companyId)
                         .queryParam("usernames", username);
@@ -96,7 +96,7 @@ public class AuthServiceRestemplateClient {
         logger.debug("Start to change user auth: {}", userAuth);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/auth/users");
 
         try {

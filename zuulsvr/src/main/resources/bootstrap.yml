@@ -7,9 +7,9 @@
 spring:
   application:
     name: zuulservice
-  profiles:
-    active:
-      dev
+#  profiles:
+#    active:
+#      dev
   cloud:
     config:
       # uri: http://configserver:8888
@@ -28,14 +28,14 @@ logging:
       com.garyzhangscm: DEBUG
 
 
-eureka:
-  instance:
-    preferIpAddress: true
-  client:
-    registerWithEureka: true
-    fetchRegistry: true
-    serviceUrl:
+# eureka:
+#  instance:
+#    preferIpAddress: true
+#  client:
+#    registerWithEureka: true
+#    fetchRegistry: true
+#    serviceUrl:
       # defaultZone: http://192.168.99.100:8761/eureka
       # connect to eureka server by host name(service id)
-      defaultZone: http://eurekaserver:8761/eureka
+#      defaultZone: http://eurekaserver:8761/eureka
 

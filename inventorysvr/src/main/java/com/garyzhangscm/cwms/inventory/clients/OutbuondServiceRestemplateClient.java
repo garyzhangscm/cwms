@@ -47,7 +47,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks/{id}");
 
         ResponseBodyWrapper<Pick> responseBodyWrapper
@@ -65,7 +65,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks/{id}/unpick")
                         .queryParam("unpickQuantity", unpickQuantity);
 
@@ -84,7 +84,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/pick-movement/refresh")
                         .queryParam("pickId", pickId)
                         .queryParam("destinationLocationId", destinationLocationId)
@@ -104,7 +104,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("workOrderLineIds", workOrderLineIds)
                         .queryParam("warehouseId", warehouseId);

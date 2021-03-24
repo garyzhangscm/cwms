@@ -55,7 +55,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulservice")
+                    .scheme("http").host("zuulserver").port(5555)
                     .path("/api/common/clients/{id}");
 
         ResponseBodyWrapper<Client> responseBodyWrapper
@@ -71,7 +71,7 @@ public class CommonServiceRestemplateClient {
     public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/clients")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
@@ -96,7 +96,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulservice")
+                    .scheme("http").host("zuulserver").port(5555)
                     .path("/api/common/suppliers")
                     .queryParam("warehouseId", warehouseId)
                     .queryParam("name", name);
@@ -122,7 +122,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures/{id}");
 
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
@@ -138,7 +138,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
@@ -163,7 +163,7 @@ public class CommonServiceRestemplateClient {
     public WorkTask addWorkTask(WorkTask workTask) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/work-tasks");
 
         ResponseBodyWrapper<WorkTask> responseBodyWrapper
@@ -187,7 +187,7 @@ public class CommonServiceRestemplateClient {
                 warehouseId, variable);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/system-controlled-number/{variable}/next")
                 .queryParam("warehouseId", warehouseId);
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
@@ -226,7 +226,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/work-tasks")
                         .queryParam("warehouseId", inventory.getWarehouseId())
                         .queryParam("lpn", inventory.getWarehouseId())

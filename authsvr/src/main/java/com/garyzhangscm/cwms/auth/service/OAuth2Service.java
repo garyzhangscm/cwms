@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.auth.exception.ExceptionCode;
 import com.garyzhangscm.cwms.auth.model.LoginResponseWrapper;
 import com.garyzhangscm.cwms.auth.model.OAuth2Token;
 import com.garyzhangscm.cwms.auth.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -38,12 +40,15 @@ import java.util.Map;
 @Service
 public class OAuth2Service {
 
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2Service.class);
     @Autowired
     RestTemplate restTemplate;
 
     public OAuth2Token getOAuth2Token(Long  companyId, String username, String password) {
         String oauth2URL
-                = "http://AUTHSERVICE/oauth/token";
+       //         = "http://AUTHSERVICE/oauth/token";
+                  = "http://authserver:8901/oauth/token";
+        logger.debug("Start to get auth information from {}", oauth2URL);
 
         HttpHeaders headers = new HttpHeaders();
         String clientID = "cwms";

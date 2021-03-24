@@ -15,7 +15,7 @@ import java.util.List;
  * All data will be fetched from / saved into database
  */
 @Service
-@Profile({"aws-dev","default", "dev"})
+@Profile({"aws-dev","default", "dev" , "aws-staging"})
 public class DBBasedIntegration implements Integration{
 
     private static final Logger logger = LoggerFactory.getLogger(DBBasedIntegration.class);

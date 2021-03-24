@@ -65,7 +65,7 @@ public class AuthServiceRestemplateClient {
         LoginCredential loginCredential = new LoginCredential("GZHANG", "GZHANG");
 
         StringBuilder url = new StringBuilder()
-                .append("http://zuulservice/api/auth/login?")
+                .append("http://zuulserver:5555/api/auth/login?")
                 .append("_allow_anonymous=true");
 
         String requestBody = objectMapper.writeValueAsString(loginCredential);

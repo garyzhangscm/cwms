@@ -54,7 +54,7 @@ public class IntegrationServerApplication {
 
 
     @Bean
-    public OAuth2RestTemplate oauth2RestTemplate(OAuth2ClientContext oauth2ClientContext,
+    public OAuth2RestTemplate oauth2RestTemplate(@Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext,
                                                  OAuth2ProtectedResourceDetails details) {
         OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(details, oauth2ClientContext);
         // Interceptor to add accept = JSON to the http header

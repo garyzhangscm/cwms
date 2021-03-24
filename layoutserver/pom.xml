@@ -21,6 +21,7 @@
 		<start-class>com.garyzhangscm.cwms.layout.LayoutServerApplication</start-class>
 		<docker.image.name>garyzhangscm/cwms-layoutserver</docker.image.name>
 		<docker.image.tag>latest</docker.image.tag>
+		<maven.test.skip>true</maven.test.skip>
 	</properties>
 
 	<dependencies>
@@ -56,14 +57,15 @@
 			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-			<!--
-				Eureka has been moved to a new package since spring boot 2
-			<artifactId>spring-cloud-starter-eureka</artifactId>
-			-->
+		<!-- since we are using K8S now, we will not use eureka
+		  for service discovery any more
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+            Eureka has been moved to a new package since spring boot 2
+        <artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
+        -->
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -116,7 +118,13 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 	<dependencyManagement>
 		<dependencies>

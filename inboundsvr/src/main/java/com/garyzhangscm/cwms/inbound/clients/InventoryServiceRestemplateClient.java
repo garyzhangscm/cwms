@@ -57,7 +57,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/items/{id}");
 
 
@@ -77,7 +77,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/items")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -103,7 +103,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/item-family/{id}");
 
         ResponseBodyWrapper<ItemFamily> responseBodyWrapper
@@ -121,7 +121,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/item-families")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -146,7 +146,7 @@ public class InventoryServiceRestemplateClient {
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory-status/{id}");
 
 
@@ -165,7 +165,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory-statuses")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -193,7 +193,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/receive");
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
@@ -223,7 +223,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("receiptId", receiptId)
                         .queryParam("warehouseId", warehouseId);
@@ -242,7 +242,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> findInventoryByItem(Item item) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("itemName", item.getName());
 
@@ -261,7 +261,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory/{id}/movements");
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
@@ -286,7 +286,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory/{id}/movements");
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper

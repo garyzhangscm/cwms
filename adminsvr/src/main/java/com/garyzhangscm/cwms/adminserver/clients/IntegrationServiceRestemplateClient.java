@@ -61,7 +61,7 @@ public class IntegrationServiceRestemplateClient {
     public <T> IntegrationData sendData(String subUrl, T data) throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/integration-data/" + subUrl);
 
         ResponseBodyWrapper<IntegrationData> responseBodyWrapper
@@ -78,7 +78,7 @@ public class IntegrationServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/integration-data/" + subUrl);
 
         params.forEach((key, value) -> {
@@ -100,7 +100,7 @@ public class IntegrationServiceRestemplateClient {
     public IntegrationData getData(String subUrl, Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/integration-data/" + subUrl + "/" + id);
 
 
@@ -184,7 +184,7 @@ public class IntegrationServiceRestemplateClient {
         Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName).getId();
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 

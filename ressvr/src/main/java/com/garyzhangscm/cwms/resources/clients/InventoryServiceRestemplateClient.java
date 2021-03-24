@@ -41,7 +41,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     public String initTestData(Long companyId, String warehouseName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -60,7 +60,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -78,7 +78,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     public String[] getTestDataNames() {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/test-data");
 
         ResponseBodyWrapper<String[]> responseBodyWrapper
@@ -97,7 +97,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     public String clearData(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 

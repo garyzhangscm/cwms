@@ -27,7 +27,6 @@ import com.garyzhangscm.cwms.inventory.service.MovementPathService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.Path;
 import java.util.List;
 
 @RestController
