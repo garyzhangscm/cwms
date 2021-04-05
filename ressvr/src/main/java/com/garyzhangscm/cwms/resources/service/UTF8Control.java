@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
@@ -45,10 +46,14 @@ public class UTF8Control extends ResourceBundle.Control {
         } else {
             stream = loader.getResourceAsStream(resourceName);
         }
+        logger.debug("## UTF8Control / resourceName : {} / stream null? {}",
+                resourceName, Objects.isNull(stream));
         if (stream != null) {
             try {
                 // Only this line is changed to make it to read properties files as UTF-8.
+                logger.debug("Start to load the stream by UTF-8");
                 bundle = new PropertyResourceBundle(new InputStreamReader(stream, "UTF-8"));
+                logger.debug("## Stream Loaded successfully!");
             } finally {
                 stream.close();
             }
