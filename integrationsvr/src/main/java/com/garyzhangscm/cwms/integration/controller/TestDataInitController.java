@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.controller;
 
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.service.TestDataInitService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/test-data")
 public class TestDataInitController {
 
+    private static final Logger logger = LoggerFactory.getLogger(TestDataInitController.class);
     @Autowired
     TestDataInitService testDataInitService;
 
@@ -50,6 +53,8 @@ public class TestDataInitController {
     @RequestMapping(value = "/clear", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> clear(@RequestParam Long warehouseId) {
 
+
+        logger.debug("Will try to clear data for warehouse {}", warehouseId);
         testDataInitService.clear( warehouseId);
         return ResponseBodyWrapper.success("data from warehouse " + warehouseId + " clear succeed!");
     }

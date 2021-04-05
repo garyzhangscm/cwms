@@ -54,6 +54,7 @@ public class TestDataInitService {
 
 
     public void clear(Long warehouseId) {
+        logger.debug("Start to get clear integration data");
 
         String warehouseName = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId).getName();
 

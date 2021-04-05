@@ -126,6 +126,18 @@
 			<version>2.6</version>
 			<scope>compile</scope>
 		</dependency>
+
+
+		<!--
+          Jasper Report
+          https://mvnrepository.com/artifact/net.sf.jasperreports/jasperreports
+          -->
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.16.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>

@@ -61,7 +61,7 @@ public class AuthServiceRestemplateClient {
 
 
     public User login() throws IOException {
-        LoginCredential loginCredential = new LoginCredential("GZHANG", "GZHANG");
+        LoginCredential loginCredential = new LoginCredential(1L, "GZHANG", "GZHANG");
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/auth/login?")

@@ -33,7 +33,7 @@ public class IntegrationServerApplication {
     @Autowired
     RequestInterceptor requestInterceptor;
 
-    @LoadBalanced
+    // @LoadBalanced
     @Bean
     @Primary
     public RestTemplate restTemplate() {
@@ -44,7 +44,7 @@ public class IntegrationServerApplication {
     }
 
     // no token Rest Template, a rest tempalte without the user auth token
-    @LoadBalanced
+    // @LoadBalanced
     @Bean
     @Qualifier("noTokenRestTemplate")
     public RestTemplate noTokenRestTemplate() {

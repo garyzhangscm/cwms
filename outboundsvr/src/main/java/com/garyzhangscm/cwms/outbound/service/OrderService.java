@@ -18,9 +18,11 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
@@ -68,6 +70,8 @@ public class OrderService implements TestDataInitiableService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
     @Autowired
     private FileService fileService;
     @Autowired
@@ -675,4 +679,57 @@ public class OrderService implements TestDataInitiableService {
         integrationService.process(new OrderConfirmation(order));
     }
 
+    public String generatePickReportByOrder(Long orderId, String locale)
+            throws JsonProcessingException {
+
+        return generatePickReportByOrder(findById(orderId), locale);
+    }
+    public String generatePickReportByOrder(Order order, String locale)
+            throws JsonProcessingException {
+
+        Long warehouseId = order.getWarehouseId();
+        String reportName = "order_pick_sheet";
+
+        Report reportData = new Report();
+        setupOrderPickReportParameters(
+                reportData, order
+        );
+        setupOrderPickReportData(
+                reportData, order
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        String reportFileName =
+                resourceServiceRestemplateClient.generateReport(
+                    warehouseId, reportName, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportFileName);
+        return reportFileName;
+
+    }
+
+    private void setupOrderPickReportParameters(
+            Report report, Order order) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("order_number", order.getNumber());
+
+        report.addParameter("customer_name",
+                order.getShipToContactorFirstname() + " " +
+                        order.getShipToContactorLastname());
+    }
+
+    private void setupOrderPickReportData(Report report, Order order) {
+
+        // set data to be all picks
+        List<Pick> picks = pickService.findByOrder(order);
+        report.setData(picks);
+    }
 }

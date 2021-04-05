@@ -13,6 +13,42 @@ DROP TABLE IF EXISTS menu;
 DROP TABLE IF EXISTS menu_sub_group;
 DROP TABLE IF EXISTS menu_group;
 
+DROP TABLE IF EXISTS report;
+
+DROP TABLE IF EXISTS report_history;
+
+CREATE TABLE report (
+  report_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT,
+  warehouse_id BIGINT,
+  name  VARCHAR(100) NOT NULL,
+  description  VARCHAR(100),
+  type  VARCHAR(20) NOT NULL,
+  file_name  VARCHAR(100) NOT NULL,
+
+  created_time date,
+  created_by VARCHAR(50),
+  last_modified_time date,
+  last_modified_by VARCHAR(50)
+);
+
+CREATE TABLE report_history (
+  report_history_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT NOT NULL,
+  name  VARCHAR(100) NOT NULL,
+  description  VARCHAR(100),
+  type  VARCHAR(20) NOT NULL,
+  file_name  VARCHAR(100) NOT NULL,
+  printed_date date NOT NULL,
+  printed_username VARCHAR(100) NOT NULL,
+  created_time date,
+  created_by VARCHAR(50),
+  last_modified_time date,
+  last_modified_by VARCHAR(50)
+);
+
+
+
 CREATE TABLE user_info (
   user_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   username   VARCHAR(100) NOT NULL ,
@@ -33,9 +69,17 @@ CREATE TABLE user_info (
 INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
 VALUES (1, "GZHANG",  "Gary", "Zhang", true, false );
 INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
+VALUES (1, "XWANG",  "Brian", "Wang", true, false );
+INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
+VALUES (1, "YZHANG",  "Yang", "Wang", true, false );
+INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
 VALUES (2, "GZHANG",  "Gary", "Zhang", true, false );
 INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
 VALUES (2, "JYEH",  "Jay", "Yeh", true, false );
+INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
+VALUES (2, "XWANG",  "Brian", "Wang", true, false );
+INSERT INTO user_info (company_id, username,  first_name, last_name, is_admin, change_password_at_next_logon)
+VALUES (2, "YZHANG",  "Yang", "Wang", true, false );
 
 -- INSERT INTO user_info (username,  first_name, last_name, is_admin) VALUES ("RWU",  "Rainbow", "Wu", false);
 

@@ -265,11 +265,13 @@ public class ProductionLineService implements TestDataInitiableService {
 
     public void initTestData(Long companyId, String warehouseName) {
         try {
+            logger.debug("####### Start loading production line data");
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
 
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
                     testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
+            logger.debug("testDataFileName: {}", testDataFileName);
 
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<ProductionLineCSVWrapper> productionLineCSVWrappers = loadData(inputStream);
@@ -307,6 +309,8 @@ public class ProductionLineService implements TestDataInitiableService {
                         warehouse.getId(), productionLineCSVWrapper.getProductionLineLocation()
                 ).getId()
         );
+
+        logger.debug(">> will load production line: {}", productionLine);
         return productionLine;
     }
 

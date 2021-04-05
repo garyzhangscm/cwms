@@ -22,7 +22,8 @@ public enum ExceptionCode {
     RESOURCE_NOT_FOUND(50000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
     REQUEST_VALIDATION_FAILED(50001, HttpStatus.BAD_REQUEST, "Validation Fail"),
     MISSING_INFORMATION(50002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"),
-    USER_OPERATION_EXCEPTION(50002, HttpStatus.BAD_REQUEST, "User Operation Ex");
+    USER_OPERATION_EXCEPTION(50003, HttpStatus.BAD_REQUEST, "User Operation Ex"),
+    REPORT_ACCESS_PERMISSION_EXCEPTION(50004, HttpStatus.BAD_REQUEST, "User Doesn't Have Permission to Access current Report");
 
     private final int code;
 

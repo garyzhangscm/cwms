@@ -101,7 +101,7 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId);
 
 
-        logger.debug("Start to get item: {} / {}", name, warehouseId);
+        // logger.debug("Start to get item: {} / {}", name, warehouseId);
         ResponseBodyWrapper<List<Item>> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
@@ -110,7 +110,7 @@ public class InventoryServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
 
         List<Item> items = responseBodyWrapper.getData();
-        logger.debug(">> get {} item", items.size());
+        // logger.debug(">> get {} item", items.size());
         if (items.size() == 0) {
             return null;
         }

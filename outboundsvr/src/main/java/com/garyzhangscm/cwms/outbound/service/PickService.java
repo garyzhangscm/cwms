@@ -69,6 +69,9 @@ public class PickService {
     private ShipmentService shipmentService;
     @Autowired
     private WaveService waveService;
+    @Autowired
+    private PickConfirmStrategyService pickConfirmStrategyService;
+
 
     @Autowired
     private PickListService pickListService;
@@ -433,7 +436,18 @@ public class PickService {
     }
 
 
-    public Pick generateBasicPickInformation(InventorySummary inventorySummary, Long quantity) {
+    public Pick generateBasicPickInformation(InventorySummary inventorySummary,
+                                             Long quantity) {
+        return generateBasicPickInformation(
+                inventorySummary, quantity, null, null);
+    }
+
+
+    public Pick generateBasicPickInformation(InventorySummary inventorySummary,
+                                             Long quantity,
+                                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                                             String lpn) {
+
         Pick pick = new Pick();
         pick.setItem(inventorySummary.getItem());
         pick.setItemId(inventorySummary.getItem().getId());
@@ -445,21 +459,42 @@ public class PickService {
         pick.setStatus(PickStatus.PENDING);
         pick.setInventoryStatusId(inventorySummary.getInventoryStatus().getId());
 
+
+        pick.setUnitOfMeasureId(pickableUnitOfMeasure.getUnitOfMeasureId());
+        pick.setLpn(lpn);
+
+        // get the pick confirm flags
+        PickConfirmStrategy pickConfirmStrategy
+                = pickConfirmStrategyService.getMatchedPickConfirmStrategy(pick);
+        if (Objects.isNull(pickConfirmStrategy)) {
+            // if no matched strategy, by default, we will force
+            // the user to confirm everything(most strict)
+            pick.setConfirmItemFlag(true);
+            pick.setConfirmLocationFlag(true);
+            pick.setConfirmLocationCodeFlag(true);
+        }
+        else {
+            pick.setConfirmItemFlag(pickConfirmStrategy.isConfirmItemFlag());
+            pick.setConfirmLocationFlag(pickConfirmStrategy.isConfirmLocationFlag());
+            pick.setConfirmLocationCodeFlag(pickConfirmStrategy.isConfirmLocationCodeFlag());
+        }
+
+
         return pick;
     }
 
+    public Pick generateBasicPickInformation(InventorySummary inventorySummary,
+                                             Long quantity,
+                                             ItemUnitOfMeasure pickableUnitOfMeasure) {
 
-    public Pick generateBasicPickInformation(InventorySummary inventorySummary, Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
-        Pick pick = generateBasicPickInformation(inventorySummary, quantity);
-        pick.setUnitOfMeasureId(pickableUnitOfMeasure.getUnitOfMeasureId());
-
-        return pick;
+        return generateBasicPickInformation(
+                inventorySummary, quantity, pickableUnitOfMeasure, null);
     }
 
     public Pick generateBasicPickInformation(InventorySummary inventorySummary, Long quantity, String lpn) {
-        Pick pick = generateBasicPickInformation(inventorySummary, quantity);
-        pick.setLpn(lpn);
-        return pick;
+
+        return generateBasicPickInformation(
+                inventorySummary, quantity, null, lpn);
     }
 
 

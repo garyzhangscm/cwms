@@ -160,6 +160,7 @@ CREATE TABLE pickable_unit_of_measure(
 CREATE TABLE location(
   location_id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
+  code   VARCHAR(20) ,
   warehouse_id BIGINT NOT NULL,
   aisle   VARCHAR(100),
   x double,

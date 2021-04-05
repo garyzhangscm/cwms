@@ -53,7 +53,7 @@ public class OutboundServerApplication {
 	 * that is not running inside a web request
 	 * @return
 	 */
-	@LoadBalanced
+
 	@Bean
 	@Qualifier("noTokenRestTemplate")
 	public RestTemplate noTokenRestTemplate() {

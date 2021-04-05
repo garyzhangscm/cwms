@@ -1,0 +1,2 @@
+company,warehouse,name,description,type,fileName
+, ,order_pick_sheet,Order Pick Sheet,PDF,order_pick_sheet.jrxml

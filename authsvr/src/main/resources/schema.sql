@@ -13,13 +13,12 @@ CREATE TABLE user_auth (
 );
 
 INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (1, "GZHANG", "GZHANG",1, 0, "gzhang@gmail.com");
+INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (1, "XWANG", "XWANG",1, 0, "xwang@gmail.com");
+INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (1, "YZHANG", "YZHANG",1, 0, "yzhang@gmail.com");
 
-INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (1, "RWU", "RWU", 1, 0, "rwu@gmail.com");
-
-INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (1, "OZHANG", "OZHANG", 1, 0, "ozhang@gmail.com");
-
-INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (1, "JZHANG", "JZHANG", 1, 0 , "jzhang@gmail.com");
 
 INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (2, "GZHANG", "GZHANG",1, 0, "gzhang@gmail.com");
 INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (2, "JYEH", "JYEH", 1, 0 , "jyeh@gmail.com");
+INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (2, "XWANG", "XWANG",1, 0, "xwang@gmail.com");
+INSERT INTO user_auth (company_id, username, password, enabled, locked, email) VALUES (2, "YZHANG", "YZHANG",1, 0, "yzhang@gmail.com");
 

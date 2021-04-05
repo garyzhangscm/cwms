@@ -36,7 +36,6 @@ import java.util.List;
 
 
 @Component
-@CacheConfig(cacheNames = "common")
 public class CommonServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
@@ -47,8 +46,6 @@ public class CommonServiceRestemplateClient {
     private OAuth2RestOperations restTemplate;
 
 
-
-    @Cacheable
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -72,6 +69,7 @@ public class CommonServiceRestemplateClient {
             return policies.get(0);
         }
         else {
+            logger.debug("Find None for policy {}", key);
             return null;
         }
 

@@ -132,6 +132,14 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
 
+
+    @Column(name = "confirm_item_flag")
+    private boolean confirmItemFlag;
+    @Column(name = "confirm_location_flag")
+    private boolean confirmLocationFlag;
+    @Column(name = "confirm_location_code_flag")
+    private boolean confirmLocationCodeFlag;
+
     @JsonIgnore
     public Double getSize() {
 
@@ -381,5 +389,29 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setLpn(String lpn) {
         this.lpn = lpn;
+    }
+
+    public boolean isConfirmItemFlag() {
+        return confirmItemFlag;
+    }
+
+    public void setConfirmItemFlag(boolean confirmItemFlag) {
+        this.confirmItemFlag = confirmItemFlag;
+    }
+
+    public boolean isConfirmLocationFlag() {
+        return confirmLocationFlag;
+    }
+
+    public void setConfirmLocationFlag(boolean confirmLocationFlag) {
+        this.confirmLocationFlag = confirmLocationFlag;
+    }
+
+    public boolean isConfirmLocationCodeFlag() {
+        return confirmLocationCodeFlag;
+    }
+
+    public void setConfirmLocationCodeFlag(boolean confirmLocationCodeFlag) {
+        this.confirmLocationCodeFlag = confirmLocationCodeFlag;
     }
 }

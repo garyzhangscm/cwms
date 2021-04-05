@@ -106,6 +106,7 @@ public class IntegrationServiceRestemplateClient implements  InitiableServiceRes
                 HttpMethod.POST,
                 null,
                 String.class);
+
         return restExchange.getBody();
     }
 }

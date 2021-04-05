@@ -18,11 +18,14 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 import com.garyzhangscm.cwms.outbound.service.OrderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,9 @@ import java.util.List;
 
 @RestController
 public class OrderController {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
     @Autowired
     OrderService orderService;
     @Autowired
@@ -98,4 +104,15 @@ public class OrderController {
         return ResponseBodyWrapper.success(orderService.getNextOrderLineNumber(id));
     }
 
+
+
+    @RequestMapping(value="/orders/{id}/pick-report", method = RequestMethod.POST)
+    public ResponseBodyWrapper generateOrderPickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print pick sheet for order with id: {}", id);
+        return ResponseBodyWrapper.success(
+                orderService.generatePickReportByOrder(id, locale));
+    }
 }

@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@CacheConfig(cacheNames = "inbound")
 public class InboundServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(InboundServiceRestemplateClient.class);

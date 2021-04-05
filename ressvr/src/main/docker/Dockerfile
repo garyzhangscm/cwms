@@ -1,6 +1,7 @@
-FROM openjdk:8-jdk-alpine
-RUN apk update && apk upgrade && apk add netcat-openbsd
+FROM openjdk:12-jdk-alpine
+RUN apk update && apk upgrade && apk add netcat-openbsd && apk add ttf-dejavu
 RUN mkdir -p /usr/local/ressvr
+RUN mkdir -p /usr/local/reports
 ADD @project.build.finalName@.jar /usr/local/ressvr/
 ADD run.sh run.sh
 # below is the command to change the line feed. It is only needed when
