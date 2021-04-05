@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.clients.*;
+import com.garyzhangscm.cwms.resources.model.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,12 @@ public class InitTestDataService {
     RoleMenuService roleMenuService;
     WorkingTeamService workingTeamService;
     WorkingTeamUserService workingTeamUserService;
+    ReportService reportService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+
 
     /***
      * Menus will be init when the server is started
@@ -91,7 +95,8 @@ public class InitTestDataService {
                                UserRoleService userRoleService,
                                RoleMenuService roleMenuService,
                                WorkingTeamService workingTeamService,
-                               WorkingTeamUserService workingTeamUserService) {
+                               WorkingTeamUserService workingTeamUserService,
+                               ReportService reportService) {
 
         // Add service from current server
         this.userService = userService;
@@ -103,6 +108,7 @@ public class InitTestDataService {
         this.roleMenuService = roleMenuService;
         this.workingTeamService = workingTeamService;
         this.workingTeamUserService = workingTeamUserService;
+        this.reportService = reportService;
 
 
         initiableServices.put("User", userService);
@@ -127,6 +133,8 @@ public class InitTestDataService {
         serviceNames.add("working_team");
         initiableServices.put("working_team_user", workingTeamUserService);
         serviceNames.add("working_team_user");
+        initiableServices.put("report", reportService);
+        serviceNames.add("report");
 
 
 
@@ -168,6 +176,8 @@ public class InitTestDataService {
         }
         else {
             if (initiableServices.containsKey(name)) {
+                logger.debug("### Start to initial {}, with company ID: {}, warehouse Name: {}",
+                        name, companyId, warehouseName);
                 initiableServices.get(name).initTestData(companyId, warehouseName);
             }
             else {
@@ -221,6 +231,20 @@ public class InitTestDataService {
 
         jdbcTemplate.execute("delete from role");
         logger.debug("role records removed!");
+
+
+        Warehouse warehouse = layoutServiceRestemplateClient.getWarehouseById(
+                warehouseId
+        );
+        if (Objects.nonNull(warehouse)) {
+
+            jdbcTemplate.update("delete from report where warehouse_id = ?", new Object[] { warehouseId });
+            logger.debug("report records for warehouse {}!", warehouse.getName());
+            jdbcTemplate.update("delete from report where company_id = ?", new Object[] { warehouse.getCompany().getId() });
+            logger.debug("report records for company {}!", warehouse.getCompany().getCode());
+
+        }
+
 
         // we will keep menu info
         // jdbcTemplate.execute("delete from menu");

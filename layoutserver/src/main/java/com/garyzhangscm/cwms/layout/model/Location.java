@@ -38,6 +38,14 @@ public class Location extends AuditibleEntity<String>{
     @Column(name = "name")
     private String name;
 
+    // In some scenario, we will print the name
+    // along with a barcode on the location label
+    // THe operator will need to scan in code instead
+    // of name to assure that they are actually
+    // at the right location
+    @Column(name = "code")
+    private String code;
+
     @Column(name = "aisle")
     private String aisle;
 

@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.resources;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
 import com.garyzhangscm.cwms.resources.service.MenuService;
 import com.garyzhangscm.cwms.resources.service.MenuSubGroupService;
+import com.garyzhangscm.cwms.resources.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -38,11 +39,15 @@ public class MyApplicationRunner implements ApplicationRunner {
     MenuSubGroupService menuSubGroupService;
     @Autowired
     MenuService menuService;
+    @Autowired
+    ReportService reportService;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         System.out.println("Start to init the menus");
         menuGroupService.initTestData( null, "");
         menuSubGroupService.initTestData(null, "");
         menuService.initTestData(null, "");
+        System.out.println("Start to init the standard reports");
+        reportService.initTestData(null, "");
     }
 }

@@ -1,0 +1,2 @@
+company,warehouse,sequence,item,itemFamily,location,locationGroup,locationGroupType,unitOfMeasure,confirmItemFlag,confirmLocationFlag,confirmLocationCodeFlag
+21021,WMLA,1,,,,,,,true,true,false

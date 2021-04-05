@@ -75,7 +75,8 @@ public class PolicyService implements  TestDataInitiableService{
 
 
                     if (StringUtils.isNotBlank(key)) {
-                        predicates.add(criteriaBuilder.equal(root.get("key"), key));
+                        logger.debug("Start to find policy by key: {}", key);
+                        predicates.add(criteriaBuilder.equal(root.get("key"), key.toUpperCase()));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

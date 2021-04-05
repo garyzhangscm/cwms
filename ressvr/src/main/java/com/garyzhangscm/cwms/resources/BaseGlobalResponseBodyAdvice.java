@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -36,6 +37,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * We will use this controller advice to process
@@ -69,6 +71,8 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
 
     @ExceptionHandler(GenericException.class)
     public ResponseBodyWrapper defaultErrorHandler(GenericException ex, HttpServletRequest request) {
+        ex.printStackTrace();
+
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 ex.getExceptionCode().getCode(),
@@ -87,6 +91,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     public ResponseBodyWrapper RuntimeExceptionErrorHandler(RuntimeException ex, HttpServletRequest request) {
 
         logger.debug("Start to handle runtime exception: {} / {}", ex.getClass(),  ex.getMessage());
+        ex.printStackTrace();
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 500,
@@ -99,6 +104,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     public ResponseBodyWrapper ExceptionErrorHandler(Exception ex, HttpServletRequest request) {
 
         logger.debug("Start to handle exception: {} / {}", ex.getClass(),  ex.getMessage());
+        ex.printStackTrace();
 
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
@@ -116,6 +122,13 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         if (!jsonMediaTypes.contains(mediaType)) {
             return obj;
         }
+        // when the obj is an instance of Responsentity
+        // we won't process it any more. This normally means
+        // we are downloading files to the client
+        if (Objects.nonNull(obj) && (obj instanceof ResponseEntity)) {
+            logger.debug("The result is already a instance of response entity");
+            return obj;
+        }
         // Only process when the result is not in the right format yet
         // Note when there's exception from the method, we will still get here and
         // the obj will be an instance of LinkedHashMap with error information and
@@ -129,6 +142,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         // }
         // After this method(beforeBodyWrite) returns, spring will still call
         // the @ExceptionHandler marked method to process the exceptions.
+
         if (obj == null || !(obj instanceof ResponseBodyWrapper)) {
             obj = new ResponseBodyWrapper(0, "", obj);
         }

@@ -109,7 +109,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {}).getBody();
 
         Location[] locations = responseBodyWrapper.getData();
-        logger.debug(">> Get {} locations by name: {}", locations.length, name);
+        // logger.debug(">> Get {} locations by name: {}", locations.length, name);
         if (locations.length != 1) {
             logger.debug("getLocationByName / {} return {} locations. Error!!!", name, locations.length);
             return null;
@@ -142,8 +142,8 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("name", name)
                         .queryParam("companyCode", companyCode);
 
-        logger.debug("Start to get warehouse by name: {}, /n >> {}",
-                name, builder.toUriString());
+        // logger.debug("Start to get warehouse by name: {}, /n >> {}",
+        //         name, builder.toUriString());
 
         ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
                 = restTemplate.exchange(

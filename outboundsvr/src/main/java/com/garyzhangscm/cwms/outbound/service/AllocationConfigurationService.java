@@ -83,13 +83,17 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return allocationConfiguration;
     }
 
-    public AllocationConfiguration findBySequence(int sequence) {
-        return findBySequence(sequence, true);
+    public AllocationConfiguration findBySequence(
+            Long warehouseId, int sequence) {
+        return findBySequence(warehouseId, sequence, true);
     }
 
 
-    public AllocationConfiguration findBySequence(int sequence, boolean loadDetails) {
-        AllocationConfiguration allocationConfiguration = allocationConfigurationRepository.findBySequence(sequence);
+    public AllocationConfiguration findBySequence(
+            Long warehouseId,int sequence, boolean loadDetails) {
+        AllocationConfiguration allocationConfiguration
+                = allocationConfigurationRepository.findByWarehouseIdAndSequence(
+                        warehouseId, sequence);
         if (allocationConfiguration != null && loadDetails) {
             loadAttribute(allocationConfiguration);
         }
@@ -229,9 +233,16 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return newAllocationConfiguration;
     }
 
-    public AllocationConfiguration saveOrUpdate(AllocationConfiguration allocationConfiguration) {
-        if (allocationConfiguration.getId() == null && findBySequence(allocationConfiguration.getSequence()) != null) {
-            allocationConfiguration.setId(findBySequence(allocationConfiguration.getSequence()).getId());
+    public AllocationConfiguration saveOrUpdate(
+            AllocationConfiguration allocationConfiguration) {
+        if (allocationConfiguration.getId() == null
+                && findBySequence(
+                allocationConfiguration.getWarehouseId(),
+                allocationConfiguration.getSequence()) != null) {
+            allocationConfiguration.setId(
+                    findBySequence(
+                            allocationConfiguration.getWarehouseId(),
+                            allocationConfiguration.getSequence()).getId());
         }
         return save(allocationConfiguration);
     }

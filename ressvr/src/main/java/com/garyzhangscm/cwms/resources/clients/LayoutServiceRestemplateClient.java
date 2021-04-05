@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.Company;
+import com.garyzhangscm.cwms.resources.model.Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -57,6 +58,31 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
     }
 
+    public Company getCompanyByCode(String companyCode) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies")
+                        .queryParam("code", companyCode);
+
+
+        ResponseBodyWrapper<List<Company>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {
+                }).getBody();
+
+        List<Company> companies = responseBodyWrapper.getData();
+        if (companies.size() != 1) {
+            return null;
+        }
+        else {
+            return companies.get(0);
+        }
+    }
     public List<Company> getCompanies() {
 
         UriComponentsBuilder builder =
@@ -71,6 +97,50 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {}).getBody();
         return responseBodyWrapper.getData();
+    }
+
+    public Warehouse getWarehouseByName(String companyCode, String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyCode", companyCode)
+                        .queryParam("name", name);
+
+
+        ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {}).getBody();
+
+
+        List<Warehouse> warehouses = responseBodyWrapper.getData();
+
+        if (warehouses.size() != 1) {
+            return null;
+        }
+        else {
+            return warehouses.get(0);
+        }
+    }
+
+    public Warehouse getWarehouseById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses/{id}");
+
+        ResponseBodyWrapper<Warehouse> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
     }
 
     public String initTestData(Long companyId, String warehouseName) {

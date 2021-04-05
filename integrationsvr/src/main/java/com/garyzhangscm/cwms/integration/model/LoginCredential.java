@@ -3,7 +3,12 @@ package com.garyzhangscm.cwms.integration.model;
 public class LoginCredential {
     String username;
     String password;
-    public LoginCredential(String username, String password) {
+
+
+    Long companyId;
+
+    public LoginCredential(Long companyId, String username, String password) {
+        this.companyId = companyId;
         this.username = username;
         this.password = password;
     }
@@ -14,5 +19,9 @@ public class LoginCredential {
 
     public String getPassword() {
         return password;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
     }
 }

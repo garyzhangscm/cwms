@@ -32,7 +32,7 @@ import java.util.List;
 @Repository
 public interface AllocationConfigurationRepository extends JpaRepository<AllocationConfiguration, Long>, JpaSpecificationExecutor<AllocationConfiguration> {
 
-    AllocationConfiguration findBySequence(int sequence);
+    AllocationConfiguration findByWarehouseIdAndSequence(Long warehouseId, int sequence);
 
     List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType);
 }
