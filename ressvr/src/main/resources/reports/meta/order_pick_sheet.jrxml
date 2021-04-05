@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.12.2.final using JasperReports Library version 6.12.2-75c5e90a222ab406e416cbf590a5397028a52de3  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order_pick_sheet" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="report_i18n" uuid="8baec34c-04ec-43d7-a345-5e1fed03731b">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order_pick_sheet" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20"  resourceBundle="report_i18n"  uuid="8baec34c-04ec-43d7-a345-5e1fed03731b">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Mock Pick List"/>
+	<property name="net.sf.jasperreports.export.character.encoding" value="UTF-8"/>
 	<parameter name="order_number" class="java.lang.String"/>
 	<parameter name="customer_name" class="java.lang.String"/>
 	<queryString>
@@ -13,8 +14,12 @@
 	</background>
 	<title>
 		<band height="79" splitType="Stretch">
+
 			<textField>
-				<reportElement x="351" y="20" width="100" height="30" uuid="3faf1c87-4438-4a38-aab1-f4f32282df88"/>
+				<reportElement x="350" y="30" width="100" height="30" uuid="69906431-9fdc-4ad2-bd2f-c371e0a84b70"/>
+				<textElement>
+					<font fontName="SimSun"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{order.pick-sheet}]]></textFieldExpression>
 			</textField>
 		</band>
@@ -25,6 +30,11 @@
 				<reportElement x="149" y="17" width="100" height="30" uuid="7a07d70d-0772-4b49-8a3a-e5b68f8009aa"/>
 				<textFieldExpression><![CDATA[$P{order_number}]]></textFieldExpression>
 			</textField>
+
+			<textField>
+				<reportElement x="249" y="17" width="100" height="30" uuid="7a07d70d-0772-4b49-8a3a-e5b68f8009aa"/>
+				<textFieldExpression><![CDATA[$P{customer_name}]]></textFieldExpression>
+			</textField>
 			<staticText>
 				<reportElement x="40" y="14" width="100" height="30" uuid="ccd5a718-66d9-4b2a-baa3-c3d3048bb59e"/>
 				<text><![CDATA[order number:]]></text>
@@ -32,16 +42,32 @@
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="61" splitType="Stretch"/>
+		<band height="21" splitType="Stretch">
+			<textField>
+				<reportElement x="30" y="0" width="100" height="20" uuid="ffc77b0a-bb96-4309-9213-bd8fb90ef81c"/>
+				<textElement>
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{filename}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="130" y="0" width="100" height="20" />
+				<textElement>
+					<font fontName="SimSun"/>
+				</textElement>
+				<text><![CDATA[2拣货单2]]></text>
+			</staticText>
+		</band>
 	</columnHeader>
 	<detail>
-		<band height="125" splitType="Stretch">
+		<band height="22" splitType="Stretch">
 			<textField>
-				<reportElement x="162" y="26" width="100" height="30" uuid="84d29a1e-241a-4e48-84d7-c2c4fe1ff3fe"/>
+				<reportElement x="149" y="0" width="100" height="20" uuid="84d29a1e-241a-4e48-84d7-c2c4fe1ff3fe"/>
 				<textFieldExpression><![CDATA[$F{number}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="40" y="14" width="100" height="30" uuid="33e2cec8-3c99-4552-8447-36ed5519e0d5"/>
+				<reportElement x="30" y="-1" width="100" height="21" uuid="33e2cec8-3c99-4552-8447-36ed5519e0d5"/>
 				<text><![CDATA[pick number:]]></text>
 			</staticText>
 		</band>

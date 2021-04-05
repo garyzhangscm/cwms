@@ -8,6 +8,7 @@ import com.garyzhangscm.cwms.resources.repository.ReportRepository;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +21,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -332,9 +334,6 @@ public class ReportService implements TestDataInitiableService{
                 locale, reportLocale.getDisplayName());
         reportData.addParameter(JRParameter.REPORT_LOCALE, reportLocale);
 
-        logger.debug("Will print report:");
-        logger.debug(reportData.toString());
-
 
         logger.debug("Find report meta data by company: {}, warehouse: {}, name: {}",
                 companyId, warehouseId, name);
@@ -376,6 +375,14 @@ public class ReportService implements TestDataInitiableService{
                         reportLocale,
                         new UTF8Control());
 
+
+        ResourceBundle i18nResourceBundleNoUTF8 =
+                ResourceBundle.getBundle(
+                        "report_i18n",
+                        reportLocale);
+
+/***
+        logger.debug("bundle utf-8！");
         Enumeration<String> enumeration = i18nResourceBundle.getKeys();
         while(enumeration.hasMoreElements()) {
             String key = enumeration.nextElement();
@@ -385,6 +392,17 @@ public class ReportService implements TestDataInitiableService{
 
         }
 
+        logger.debug("bundle NON utf-8！");
+        enumeration = i18nResourceBundleNoUTF8.getKeys();
+        while(enumeration.hasMoreElements()) {
+            String key = enumeration.nextElement();
+            logger.debug("> key: {}", key);
+            String value = i18nResourceBundleNoUTF8.getObject(key).toString();
+            logger.debug(">> value: {}", value);
+
+        }
+**/
+        logger.debug("bundle 加载完毕！");
 /***
  * TODO: Not sure why we can't get the i18n resource bundle from
  * resources/reports/meta/report_i18n.properties. But we can get
@@ -396,9 +414,16 @@ public class ReportService implements TestDataInitiableService{
                         i18nResourceBundleFileName, Locale.US);
 ***/
 
-        logger.debug("save bundle to the reprot's parameters");
+        logger.debug("save bundle to the reprot's parameters: {}",
+                JRParameter.REPORT_RESOURCE_BUNDLE);
+        // reportData.getParameters().put(
+        //         JRParameter.REPORT_RESOURCE_BUNDLE, i18nResourceBundle);
+
+        reportData.addParameter("order_number", "Order Number xxxx");
+        reportData.addParameter("customer_name","Customer Name YYYY");
+
         reportData.getParameters().put(
-                "REPORT_RESOURCE_BUNDLE", i18nResourceBundle);
+                JRParameter.REPORT_LOCALE, reportLocale);
 
         JasperPrint jasperPrint = JasperFillManager.fillReport(
                 jasperReport, reportData.getParameters(), dataSource
@@ -434,6 +459,7 @@ public class ReportService implements TestDataInitiableService{
 
         // save the history information
         saveReportHistory(reportMetaData, reportFileName, warehouseId);
+
 
         return reportResultAbsoluteFileName;
 

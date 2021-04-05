@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.resources.service.MenuGroupService;
 import com.garyzhangscm.cwms.resources.service.MenuService;
 import com.garyzhangscm.cwms.resources.service.MenuSubGroupService;
 import com.garyzhangscm.cwms.resources.service.ReportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -33,6 +35,7 @@ import org.springframework.stereotype.Component;
 public class MyApplicationRunner implements ApplicationRunner {
     // WE will init the menu when start the application
 
+    private static final Logger logger = LoggerFactory.getLogger(MyApplicationRunner.class);
     @Autowired
     MenuGroupService menuGroupService;
     @Autowired
@@ -49,5 +52,9 @@ public class MyApplicationRunner implements ApplicationRunner {
         menuService.initTestData(null, "");
         System.out.println("Start to init the standard reports");
         reportService.initTestData(null, "");
+        logger.debug("Test English");
+        System.out.println("1. 中文测试");
+        logger.debug("2. 中文测试");
+
     }
 }
