@@ -234,6 +234,7 @@ public class ReportService implements TestDataInitiableService{
                 addColumn("description").
                 addColumn("type").
                 addColumn("fileName").
+                addColumn("orientation").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, ReportCSVWrapper.class);
@@ -259,9 +260,15 @@ public class ReportService implements TestDataInitiableService{
     }
 
     private Report convertFromCSVWrapper(ReportCSVWrapper reportCSVWrapper) {
+        logger.debug("Start to init report");
+        logger.debug("====   reportCSVWrapper  ====");
+        logger.debug(reportCSVWrapper.toString());
         Report report = new Report();
         BeanUtils.copyProperties(reportCSVWrapper, report);
         report.setType(ReportType.valueOf(reportCSVWrapper.getType()));
+        report.setReportOrientation(ReportOrientation.valueOf(
+                reportCSVWrapper.getOrientation()
+        ));
 
         // if company code is passed in, create customized report
         // for the company only
@@ -287,13 +294,14 @@ public class ReportService implements TestDataInitiableService{
             }
         }
 
+        logger.debug("====   report  ====");
         return report;
 
 
     }
 
 
-    public String generateReport(Long warehouseId,
+    public ReportHistory generateReport(Long warehouseId,
                                  String name,
                                  Report reportData,
                                  String locale)
@@ -310,11 +318,11 @@ public class ReportService implements TestDataInitiableService{
             );
         }
         else {
-            return "";
+            return null;
         }
 
     }
-    public String generateReport(Long companyId,
+    public ReportHistory generateReport(Long companyId,
                                  Long warehouseId,
                                  String name,
                                  Report reportData,
@@ -362,66 +370,6 @@ public class ReportService implements TestDataInitiableService{
 
         logger.debug("Report datasource loaded!");
 
-        logger.debug("Start to get i18n resource bundle!");
-        // we may need to manually load the i18n resource bundle
-        // in a sprint boot project
-        logger.debug("will get i18n file from report_i18n");
-        // ResourceBundle will need the file to be ISO-8859-1.
-        // Since we will need to support UTF-8 format, we will need
-        // a customezied controller (UTF8Control) to do the translation
-        ResourceBundle i18nResourceBundle =
-                ResourceBundle.getBundle(
-                        "report_i18n",
-                        reportLocale,
-                        new UTF8Control());
-
-
-        ResourceBundle i18nResourceBundleNoUTF8 =
-                ResourceBundle.getBundle(
-                        "report_i18n",
-                        reportLocale);
-
-/***
-        logger.debug("bundle utf-8！");
-        Enumeration<String> enumeration = i18nResourceBundle.getKeys();
-        while(enumeration.hasMoreElements()) {
-            String key = enumeration.nextElement();
-            logger.debug("> key: {}", key);
-            String value = i18nResourceBundle.getObject(key).toString();
-            logger.debug(">> value: {}", value);
-
-        }
-
-        logger.debug("bundle NON utf-8！");
-        enumeration = i18nResourceBundleNoUTF8.getKeys();
-        while(enumeration.hasMoreElements()) {
-            String key = enumeration.nextElement();
-            logger.debug("> key: {}", key);
-            String value = i18nResourceBundleNoUTF8.getObject(key).toString();
-            logger.debug(">> value: {}", value);
-
-        }
-**/
-        logger.debug("bundle 加载完毕！");
-/***
- * TODO: Not sure why we can't get the i18n resource bundle from
- * resources/reports/meta/report_i18n.properties. But we can get
- * from resources/report_i18n.properties
- *
-        logger.debug("will get i18n file from {}", i18nResourceBundleFileName);
-        i18nResourceBundle =
-                ResourceBundle.getBundle(
-                        i18nResourceBundleFileName, Locale.US);
-***/
-
-        logger.debug("save bundle to the reprot's parameters: {}",
-                JRParameter.REPORT_RESOURCE_BUNDLE);
-        // reportData.getParameters().put(
-        //         JRParameter.REPORT_RESOURCE_BUNDLE, i18nResourceBundle);
-
-        reportData.addParameter("order_number", "Order Number xxxx");
-        reportData.addParameter("customer_name","Customer Name YYYY");
-
         reportData.getParameters().put(
                 JRParameter.REPORT_LOCALE, reportLocale);
 
@@ -458,21 +406,17 @@ public class ReportService implements TestDataInitiableService{
 
 
         // save the history information
-        saveReportHistory(reportMetaData, reportFileName, warehouseId);
-
-
-        return reportResultAbsoluteFileName;
+        return saveReportHistory(reportMetaData, reportFileName, warehouseId);
 
     }
 
-    private void saveReportHistory(
+    private ReportHistory saveReportHistory(
             Report reportMetaData, String reportFileName, Long warehouseId) {
 
-        ReportHistory reportHistory =
-                reportHistoryService.saveReportHistory(
+        return reportHistoryService.saveReportHistory(
                     reportMetaData, reportFileName, warehouseId
                     );
-        logger.debug("Report History saved: {}", reportHistory);
+        // logger.debug("Report History saved: {}", reportHistory);
     }
 
     private String getReportResultFileName(Long companyId, Report report)

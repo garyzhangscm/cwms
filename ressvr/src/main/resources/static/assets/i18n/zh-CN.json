@@ -1154,5 +1154,15 @@
   "steps.report.confirm": "确认",
   "page.report.maintenance.modify": "修改报表",
   "report": "报表",
-  "message.report.changed": "报表修改成功"
+  "message.report.changed": "报表修改成功",
+  "report.preview": "预览",
+  "page.modal.printer.title": "打印机",
+  "printer": "打印机",
+  "print.physical-copy-count": "份数",
+  "report.print.default": "默认打印",
+  "report.print.printed": "打印成功",
+  "report.orientation": "打印方向",
+  "REPORT-ORIENTATION_LANDSCAPE": "Landscape",
+  "REPORT-ORIENTATION_PORTRAIT": "Portrait",
+  "report.download": "下载"
 }

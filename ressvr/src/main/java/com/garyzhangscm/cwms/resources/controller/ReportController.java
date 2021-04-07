@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.resources.controller;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.Report;
 
+import com.garyzhangscm.cwms.resources.model.ReportHistory;
 import com.garyzhangscm.cwms.resources.model.Role;
 import com.garyzhangscm.cwms.resources.model.User;
 import com.garyzhangscm.cwms.resources.service.ReportService;
@@ -73,19 +74,16 @@ public class ReportController {
     }
 
     @RequestMapping(value="/reports/{warehouseId}/{name}", method = RequestMethod.POST)
-    public ResponseBodyWrapper generateReport(@PathVariable Long warehouseId,
-                                 @PathVariable String name,
-                                 @RequestBody Report reportData,
-                                 @RequestParam(name = "locale", defaultValue = "en", required = false) String locale) throws IOException, JRException {
+    public ReportHistory generateReport(@PathVariable Long warehouseId,
+                                        @PathVariable String name,
+                                        @RequestBody Report reportData,
+                                        @RequestParam(name = "locale", defaultValue = "en", required = false) String locale) throws IOException, JRException {
 
-        String reportResultFile =  reportService.generateReport(
+        return reportService.generateReport(
                 warehouseId,
                 name,
                 reportData,
                 locale);
-        logger.debug("Successfully write the report into file {}",
-                reportResultFile);
-        return ResponseBodyWrapper.success(reportResultFile);
     }
 
 

@@ -1149,5 +1149,15 @@
   "steps.report.confirm": "Confirm",
   "page.report.maintenance.modify": "Modify Report",
   "report": "Report",
-  "message.report.changed": "Report Changed"
+  "message.report.changed": "Report Changed",
+  "report.preview": "Preview",
+  "page.modal.printer.title": "Printer",
+  "printer": "Printer",
+  "print.physical-copy-count": "Copies",
+  "report.print.default": "By Default Configuration" ,
+  "report.print.printed": "Report Printed",
+  "report.orientation": "Report Orientation",
+  "REPORT-ORIENTATION_LANDSCAPE": "Landscape",
+  "REPORT-ORIENTATION_PORTRAIT": "Portrait",
+  "report.download": "Download"
 }

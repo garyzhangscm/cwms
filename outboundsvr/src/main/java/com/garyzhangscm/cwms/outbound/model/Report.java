@@ -14,7 +14,7 @@ public class Report   {
     Collection<?> data;
 
 
-    Map<String, String> parameters = new HashMap<>();
+    Map<String, Object> parameters = new HashMap<>();
 
 
     @Override
@@ -36,14 +36,14 @@ public class Report   {
         this.data = data;
     }
 
-    public Map<String, String> getParameters() {
+    public Map<String, Object> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, String> parameters) {
+    public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
     }
-    public void addParameter(String name, String value) {
+    public void addParameter(String name, Object value) {
 
         this.parameters.put(name, value);
     }

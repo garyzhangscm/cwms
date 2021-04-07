@@ -25,6 +25,7 @@ CREATE TABLE report (
   description  VARCHAR(100),
   type  VARCHAR(20) NOT NULL,
   file_name  VARCHAR(100) NOT NULL,
+  orientation VARCHAR(20) NOT NULL,
 
   created_time date,
   created_by VARCHAR(50),
@@ -39,6 +40,7 @@ CREATE TABLE report_history (
   description  VARCHAR(100),
   type  VARCHAR(20) NOT NULL,
   file_name  VARCHAR(100) NOT NULL,
+  orientation VARCHAR(20) NOT NULL,
   printed_date date NOT NULL,
   printed_username VARCHAR(100) NOT NULL,
   created_time date,

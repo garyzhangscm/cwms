@@ -679,12 +679,12 @@ public class OrderService implements TestDataInitiableService {
         integrationService.process(new OrderConfirmation(order));
     }
 
-    public String generatePickReportByOrder(Long orderId, String locale)
+    public ReportHistory generatePickReportByOrder(Long orderId, String locale)
             throws JsonProcessingException {
 
         return generatePickReportByOrder(findById(orderId), locale);
     }
-    public String generatePickReportByOrder(Order order, String locale)
+    public ReportHistory generatePickReportByOrder(Order order, String locale)
             throws JsonProcessingException {
 
         Long warehouseId = order.getWarehouseId();
@@ -702,14 +702,14 @@ public class OrderService implements TestDataInitiableService {
                 locale);
         logger.debug("####   Report   Data  ######");
         logger.debug(reportData.toString());
-        String reportFileName =
+        ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
                     warehouseId, reportName, reportData, locale
                 );
 
 
-        logger.debug("####   Report   printed: {}", reportFileName);
-        return reportFileName;
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
 
     }
 
@@ -724,6 +724,16 @@ public class OrderService implements TestDataInitiableService {
         report.addParameter("customer_name",
                 order.getShipToContactorFirstname() + " " +
                         order.getShipToContactorLastname());
+
+        Integer totalLineCount = order.getTotalLineCount();
+        Integer totalItemCount = order.getTotalItemCount();
+        Long totalQuantity =
+                pickService.findByOrder(order).stream()
+                .mapToLong(Pick::getQuantity).sum();
+
+        report.addParameter("totalLineCount", totalLineCount);
+        report.addParameter("totalItemCount", totalItemCount);
+        report.addParameter("totalQuantity", totalQuantity);
     }
 
     private void setupOrderPickReportData(Report report, Order order) {

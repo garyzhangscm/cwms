@@ -1,75 +1,29 @@
-package com.garyzhangscm.cwms.resources.model;
+package com.garyzhangscm.cwms.outbound.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
-@Entity
-@Table(name = "report_history")
 public class ReportHistory extends AuditibleEntity<String> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "report_history_id")
     private Long id;
 
 
-    @Column(name = "warehouse_id")
     private Long warehouseId;
-    @Transient
     private Warehouse warehouse;
 
-    @Column(name = "printed_date")
     private LocalDateTime printedDate;
-    @Column(name = "printed_username")
     private String printedUsername;
 
-    @Column(name = "name")
     private String name;
-    @Column(name = "description")
     private String description;
 
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type")
     private ReportType type;
-
-    // absolute file path and name
-    @Column(name = "file_name")
     private String fileName;
 
-    @Column(name = "orientation")
-    @Enumerated(EnumType.STRING)
-    private ReportOrientation reportOrientation;
-
-    public ReportHistory() {}
-
-    // create the history from report
-    public ReportHistory(Report report,
-                         String fileName,
-                         String printedUsername,
-                         Long warehouseId) {
-        this.warehouseId = warehouseId;
-
-        this.printedDate = LocalDateTime.now();
-        this.printedUsername = printedUsername;
-        this.type = report.getType();
-        this.reportOrientation  = report.getReportOrientation();
-
-        this.name = report.getName();
-        this.description = report.getDescription();
-        this.fileName  = fileName;
-
-    }
 
 
     @Override
@@ -91,13 +45,8 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.id = id;
     }
 
-    public ReportOrientation getReportOrientation() {
-        return reportOrientation;
-    }
 
-    public void setReportOrientation(ReportOrientation reportOrientation) {
-        this.reportOrientation = reportOrientation;
-    }
+
 
     public Long getWarehouseId() {
         return warehouseId;

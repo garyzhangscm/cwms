@@ -20,6 +20,8 @@ public class ReportCSVWrapper {
 
     private String fileName;
 
+    private String orientation;
+
     @Override
     public String toString() {
         try {
@@ -28,6 +30,14 @@ public class ReportCSVWrapper {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(String orientation) {
+        this.orientation = orientation;
     }
 
     public String getCompany() {
