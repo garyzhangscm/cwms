@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
+import com.garyzhangscm.cwms.outbound.model.ReportHistory;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 import com.garyzhangscm.cwms.outbound.service.OrderService;
 import org.slf4j.Logger;
@@ -107,12 +108,11 @@ public class OrderController {
 
 
     @RequestMapping(value="/orders/{id}/pick-report", method = RequestMethod.POST)
-    public ResponseBodyWrapper generateOrderPickReport(
+    public ReportHistory generateOrderPickReport(
             @PathVariable Long id,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
 
         logger.debug("start print pick sheet for order with id: {}", id);
-        return ResponseBodyWrapper.success(
-                orderService.generatePickReportByOrder(id, locale));
+        return orderService.generatePickReportByOrder(id, locale);
     }
 }

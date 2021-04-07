@@ -43,6 +43,11 @@ public class Report extends AuditibleEntity<String> {
     @Column(name = "file_name")
     private String fileName;
 
+
+    @Column(name = "orientation")
+    @Enumerated(EnumType.STRING)
+    private ReportOrientation reportOrientation ;
+
     @Transient
     Collection<?> data;
 
@@ -141,6 +146,14 @@ public class Report extends AuditibleEntity<String> {
 
     public Map<String, Object> getParameters() {
         return parameters;
+    }
+
+    public ReportOrientation getReportOrientation() {
+        return reportOrientation;
+    }
+
+    public void setReportOrientation(ReportOrientation reportOrientation) {
+        this.reportOrientation = reportOrientation;
     }
 
     public void addParameter(String key, Object value) {

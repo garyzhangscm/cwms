@@ -47,6 +47,9 @@ public class ReportHistory extends AuditibleEntity<String> {
     @Column(name = "file_name")
     private String fileName;
 
+    @Column(name = "orientation")
+    @Enumerated(EnumType.STRING)
+    private ReportOrientation reportOrientation;
 
     public ReportHistory() {}
 
@@ -60,6 +63,7 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.printedDate = LocalDateTime.now();
         this.printedUsername = printedUsername;
         this.type = report.getType();
+        this.reportOrientation  = report.getReportOrientation();
 
         this.name = report.getName();
         this.description = report.getDescription();
@@ -87,8 +91,13 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.id = id;
     }
 
+    public ReportOrientation getReportOrientation() {
+        return reportOrientation;
+    }
 
-
+    public void setReportOrientation(ReportOrientation reportOrientation) {
+        this.reportOrientation = reportOrientation;
+    }
 
     public Long getWarehouseId() {
         return warehouseId;
