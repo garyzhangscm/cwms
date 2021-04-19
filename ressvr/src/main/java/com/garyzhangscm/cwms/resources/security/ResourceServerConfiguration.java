@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.resources.security;
 
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
@@ -26,6 +27,8 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
           .antMatchers("/site-information/default").permitAll()
           .antMatchers("/mobile").permitAll()
           .antMatchers("/report-histories/download/**").permitAll()
+          .antMatchers(HttpMethod.GET, "/reports/templates/upload/**").permitAll()
+          .antMatchers(HttpMethod.GET, "/reports/templates").permitAll()
           .anyRequest()
           .authenticated();
     }

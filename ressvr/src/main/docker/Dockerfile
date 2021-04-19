@@ -43,6 +43,8 @@ ENV LANG=zh_CN.UTF-8 \
 # Deploy the code
 RUN mkdir -p /usr/local/ressvr
 RUN mkdir -p /usr/local/reports
+RUN mkdir -p /usr/local/reports/templates
+RUN mkdir -p /usr/local/reports/templates_temp
 ADD @project.build.finalName@.jar /usr/local/ressvr/
 ADD run.sh run.sh
 # below is the command to change the line feed. It is only needed when

@@ -1159,5 +1159,12 @@
   "report.orientation": "Report Orientation",
   "REPORT-ORIENTATION_LANDSCAPE": "Landscape",
   "REPORT-ORIENTATION_PORTRAIT": "Portrait",
-  "report.download": "Download"
+  "report.download": "Download",
+  "page.report.maintenance.new": "New Report",
+  "steps.report.template": "Template",
+  "file.uploaded": "file uploaded",
+  "file.upload.success": "file uploaded",
+  "file.upload.fail": "file upload fail",
+  "report.template.upload": "Upload Report Template",
+  "message.report.added": "Report Added"
 }
