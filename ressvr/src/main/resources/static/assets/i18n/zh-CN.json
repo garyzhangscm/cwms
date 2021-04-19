@@ -784,7 +784,7 @@
   "allocate":"分配",
   "unpick":"取消拣货",
   "fresh":"刷新",
-  "file-upload":"上传数据",
+  "file-upload":"上传文件",
   "collapse":"收起",
   "expand":"展开",
   "print":"打印",
@@ -1164,5 +1164,12 @@
   "report.orientation": "打印方向",
   "REPORT-ORIENTATION_LANDSCAPE": "Landscape",
   "REPORT-ORIENTATION_PORTRAIT": "Portrait",
-  "report.download": "下载"
+  "report.download": "下载",
+  "page.report.maintenance.new": "新增报表",
+  "steps.report.template": "模板上传",
+  "file.uploaded": "上传成功",
+  "file.upload.success": "上传成功",
+  "file.upload.fail": "上传失败",
+  "report.template.upload": "上传报表模板",
+  "message.report.added": "报表新增成功"
 }

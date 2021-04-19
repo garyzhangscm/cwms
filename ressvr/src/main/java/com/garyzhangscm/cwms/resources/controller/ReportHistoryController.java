@@ -75,6 +75,7 @@ public class ReportHistoryController {
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(reportResultFile));
         return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + reportResultFile.getName())
                 .contentLength(reportResultFile.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
@@ -89,6 +90,7 @@ public class ReportHistoryController {
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(reportResultFile));
         return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + filename)
                 .contentLength(reportResultFile.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);

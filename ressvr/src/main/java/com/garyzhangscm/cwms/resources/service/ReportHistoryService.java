@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.*;
 
 @Service
@@ -26,7 +25,8 @@ public class ReportHistoryService {
     private static final Logger logger
             = LoggerFactory.getLogger(ReportHistoryService.class);
 
-    private static final String REPORT_RESULT_FOLDER = "/usr/local/reports";
+    @Value("${report.result.folder}")
+    private String reportResultFolder;
 
     @Autowired
     private ReportHistoryRepository reportHistoryRepository;
@@ -152,7 +152,7 @@ public class ReportHistoryService {
                     "Current user doesn't have access to the report file"
             );
         }
-        String fileUrl = REPORT_RESULT_FOLDER + "/" + fileName;
+        String fileUrl = reportResultFolder + "/" + fileName;
 
         logger.debug("Will return {} to the client",
                 fileUrl);

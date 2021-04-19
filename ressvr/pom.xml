@@ -137,8 +137,16 @@
 			<artifactId>jasperreports</artifactId>
 			<version>6.16.0</version>
 		</dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+            <scope>compile</scope>
+        </dependency>
 
-	</dependencies>
+
+
+    </dependencies>
 
 	<dependencyManagement>
 		<dependencies>
@@ -157,6 +165,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<layout>ZIP</layout>
+				</configuration>
 			</plugin>
 			<!-- We use the Resources plugin to filer Dockerfile and run.sh, it inserts actual JAR filename -->
 			<!-- The final Dockerfile will be created in target/dockerfile/Dockerfile -->

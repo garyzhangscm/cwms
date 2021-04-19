@@ -28,7 +28,7 @@
 				<textElement>
 					<font fontName="SimSun" size="20"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{order.pick-sheet}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{receiving.document}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -36,32 +36,32 @@
 		<band height="59" splitType="Stretch">
 			<textField>
 				<reportElement x="100" y="0" width="100" height="20" uuid="7a07d70d-0772-4b49-8a3a-e5b68f8009aa"/>
-				<textFieldExpression><![CDATA[$P{order_number}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{receipt_number}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="340" y="0" width="100" height="20" uuid="7a07d70d-0772-4b49-8a3a-e5b68f8009aa"/>
-				<textFieldExpression><![CDATA[$P{customer_name}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{supplier_name}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="0" width="100" height="20" uuid="84e4cfd6-f38d-4ce0-a94a-5d826337b490"/>
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{order.number}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{receipt.number}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="240" y="0" width="100" height="20" uuid="18639a13-1ac4-4136-ac39-36ec80f81f9f"/>
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{shipToCustomer}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{supplier.name}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="20" width="100" height="20" uuid="11f85213-0338-4f35-a3e5-fd653273e352"/>
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{shipment.totalLineCount}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{receipt.totalLineCount}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="100" y="20" width="100" height="20" uuid="23af4ea0-657a-43b4-9228-d49673be97fb"/>
@@ -72,7 +72,7 @@
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{shipment.totalItemCount}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{receipt.totalItemCount}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="340" y="20" width="100" height="20" uuid="ecb6f4dd-cb57-4c3c-94f9-c5fa091e7bd7"/>
@@ -87,7 +87,18 @@
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{shipment.totalQuantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{receipt.totalQuantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="500" y="0" width="100" height="20" uuid="271abb26-54b0-4cb4-bde3-0785b8de0129"/>
+				<textElement>
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{supplier.contactor.name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="600" y="0" width="100" height="20" uuid="7e50b6e4-2e2e-40c7-993e-1735e5b861ea"/>
+				<textFieldExpression><![CDATA[$P{supplier_contact_name}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

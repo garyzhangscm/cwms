@@ -21,22 +21,44 @@ package com.garyzhangscm.cwms.resources.service;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class FileService {
+    private static final Logger logger
+            = LoggerFactory.getLogger(FileService.class);
 
     @Value("${fileupload.temp-file.directory:/upload/tmp/}")
     String destinationFolder;
 
     public File saveFile(MultipartFile file) throws IOException {
-        String destination = destinationFolder  + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        return saveFile(file, destinationFolder);
+
+    }
+
+    public File saveFile(MultipartFile file, String folder ) throws IOException {
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        return saveFile(file, destinationFolder, fileName);
+
+    }
+
+    public File saveFile(MultipartFile file, String folder, String fileName) throws IOException {
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
+        String destination = folder  + fileName;
         File localFile = new File(destination);
 
         if (!localFile.getParentFile().exists()) {
@@ -82,5 +104,58 @@ public class FileService {
         // read from input stream
         MappingIterator<T> mappingIterator = mapper.readerFor(tClass).with(schema).readValues(csvInputStream);
         return mappingIterator.readAll();
+    }
+
+    public void copyFile(String sourceFilePath, String destinationFilePath)
+            throws IOException {
+
+        File sourceFile = new File(sourceFilePath);
+        File destinationFile = new File(destinationFilePath);
+
+        copyFile(sourceFile, destinationFile);
+    }
+    public void copyFile(File sourceFile, File destinationFile)
+            throws IOException {
+
+        InputStream in = new BufferedInputStream(
+                new FileInputStream(sourceFile));
+
+
+        copyFile(in, destinationFile);
+
+    }
+    public void copyFile(InputStream sourceFile, File destinationFile)
+            throws IOException {
+
+        // create the destination file is it doesn't exists yet
+        // Remove if it is already exists
+        if (!destinationFile.getParentFile().exists()) {
+            destinationFile.getParentFile().mkdirs();
+        }
+        destinationFile.deleteOnExit();
+        // create an empty file
+        destinationFile.createNewFile();
+
+
+        BufferedReader in = new BufferedReader(
+                  new InputStreamReader(sourceFile, "UTF-8"));
+
+        Path destinationPath = destinationFile.toPath();
+
+        try (BufferedWriter bufferedWriter
+                       = Files.newBufferedWriter(
+                          destinationPath, StandardCharsets.UTF_8)) {
+
+            String readLine;
+            while ((readLine = in.readLine()) != null) {
+                // logger.debug("read line: {}" , readLine);
+                bufferedWriter.append(readLine);
+                bufferedWriter.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

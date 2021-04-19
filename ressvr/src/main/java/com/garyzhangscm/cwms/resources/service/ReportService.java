@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.exception.ReportAccessPermissionException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.ReportRepository;
@@ -16,27 +17,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
 @Service
 public class ReportService implements TestDataInitiableService{
-    private static final Logger logger = LoggerFactory.getLogger(ReportService.class);
+    private static final Logger logger
+            = LoggerFactory.getLogger(ReportService.class);
 
 
-    // folder for source code of the report
-    private static final String REPORT_CODE_FOLDER = "reports\\meta";
+    @Value("${report.template.folder}")
+    private String reportTemplateFolder;
+    // WHen the user upload a customized report
+    // template, we will save it  in a temporary folder
+    // The file will be moved to the final folder
+    // when the user save the customized template
+    @Value("${report.template.tempFolder}")
+    private String tempReportTemplateFolder;
+    @Value("${report.result.folder}")
+    private String reportResultFolder;
 
-    // temporary folder to save the result(in format of html or pdf)
-    // of the report.
-    private static final String REPORT_RESULT_FOLDER = "/usr/local/reports";
+
+
     @Autowired
     private ReportRepository reportRepository;
     @Autowired
@@ -119,6 +133,25 @@ public class ReportService implements TestDataInitiableService{
             loadDetail(reports);
         }
         return reports;
+
+    }
+
+    public List<Report> findAllStandardReports(
+
+    ) {
+        return findAllStandardReports(true);
+    }
+
+    public List<Report> findAllStandardReports(
+            boolean includeDetails
+    ) {
+        List<Report> standardReports =
+                reportRepository.findAllStandardReports();
+
+        if (standardReports.size() > 0 && includeDetails) {
+            loadDetail(standardReports);
+        }
+        return standardReports;
 
     }
 
@@ -250,7 +283,8 @@ public class ReportService implements TestDataInitiableService{
                     testDataFile + ".csv" :
                     testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
 
-            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
+            InputStream inputStream =
+                    new ClassPathResource(testDataFileName).getInputStream();
             List<ReportCSVWrapper> reportCSVWrappers = loadData(inputStream);
             reportCSVWrappers.stream().forEach(
                     reportCSVWrapper -> saveOrUpdate(convertFromCSVWrapper(reportCSVWrapper)));
@@ -383,7 +417,7 @@ public class ReportService implements TestDataInitiableService{
         String reportFileName =
                 getReportResultFileName(companyId, reportMetaData);
         String reportResultAbsoluteFileName =
-                REPORT_RESULT_FOLDER + "/"
+                reportResultFolder + "/"
                         + reportFileName;
 
         logger.debug("start to write report into {}!",
@@ -434,7 +468,7 @@ public class ReportService implements TestDataInitiableService{
 
     public InputStream getReportStream(String url) throws IOException {
 
-        return new ClassPathResource(url).getInputStream();
+        return new FileInputStream(url);
 
     }
 
@@ -442,7 +476,7 @@ public class ReportService implements TestDataInitiableService{
 
         String folder = getReportFolder(report);
 
-        String url = folder + "\\" + report.getFileName();
+        String url = folder + "/" + report.getFileName();
 
         logger.debug("will try to find report by url: {}", url);
         return url;
@@ -451,13 +485,13 @@ public class ReportService implements TestDataInitiableService{
 
     private String getReportFolder(Report report) {
 
-        String folder = REPORT_CODE_FOLDER;
+        String folder = reportTemplateFolder;
 
         if (Objects.nonNull(report.getCompanyId())) {
-            folder += "\\" + report.getCompanyId();
+            folder += "/" + report.getCompanyId();
         }
         if (Objects.nonNull(report.getWarehouseId())) {
-            folder += "\\" + report.getWarehouseId();
+            folder += "/" + report.getWarehouseId();
         }
 
         return folder;
@@ -491,5 +525,124 @@ public class ReportService implements TestDataInitiableService{
         // TODO: Check whether the user has access to the report
 
         return true;
+    }
+
+    public String uploadReportTemplate(
+            Long warehouseId, MultipartFile file) throws IOException {
+
+
+        String filePath = getTemporaryReportTemplateFilePath(warehouseId);
+        logger.debug("Save file to {}{}",
+                filePath, file.getOriginalFilename());
+
+        File savedFile =
+                fileService.saveFile(
+                        file, filePath, file.getOriginalFilename());
+
+        logger.debug("File saved, path: {}",
+                savedFile.getAbsolutePath());
+        return file.getOriginalFilename();
+    }
+
+    private String getTemporaryReportTemplateFilePath(Long warehouseId) {
+
+        String username = userService.getCurrentUserName();
+        return getTemporaryReportTemplateFilePath(warehouseId, username);
+    }
+
+    private String getTemporaryReportTemplateFilePath(Long warehouseId, String username) {
+
+
+        if (!tempReportTemplateFolder.endsWith("/")) {
+            return tempReportTemplateFolder + "/" + warehouseId + "/" + username + "/";
+        }
+        else  {
+
+            return tempReportTemplateFolder + warehouseId + "/" + username + "/";
+        }
+    }
+
+    public File getTemporaryReportTemplate(String fileName) {
+
+        String fileUrl = tempReportTemplateFolder + "/"
+                + fileName;
+
+        logger.debug("Will return {} to the client",
+                fileUrl);
+        return new File(fileUrl);
+    }
+
+    public File getReportTemplate(Long companyId, Long warehouseId, String fileName) {
+
+        String fileUrl = reportTemplateFolder;
+        if (Objects.nonNull(companyId)) {
+            fileUrl += "/" + companyId;
+        }
+        if (Objects.nonNull(warehouseId)) {
+            fileUrl += "/" + warehouseId;
+        }
+        fileUrl += "/" + fileName;
+
+        logger.debug("Will return {} to the client",
+                fileUrl);
+        return new File(fileUrl);
+    }
+
+    public Report addReport(Long warehouseId, String username, Boolean companySpecific,
+                            Boolean warehouseSpecific, Report report) throws IOException {
+        // Copy the file from temporary folder into template folder
+        String sourceTemplateFilePath = getTemporaryReportTemplateFilePath(warehouseId, username)
+                + report.getFileName();
+
+        String destinationTemplateFilePath = getReportTemplateFile(companySpecific, warehouseSpecific, report)
+                + report.getFileName();
+
+        logger.debug("Copy template file from {} to {}", sourceTemplateFilePath, destinationTemplateFilePath);
+
+        fileService.copyFile(sourceTemplateFilePath, destinationTemplateFilePath);
+
+        // clear the company id and warehouse id if
+        // the report is not specific to any company or warehouse
+        if (!companySpecific) {
+            report.setCompanyId(null);
+        }
+        if (!warehouseSpecific) {
+            report.setWarehouseId(null);
+        }
+        return saveOrUpdate(report);
+
+    }
+
+    /**
+     * The template file will be save in the reportTemplateFolder. If the report template is
+     * customized for certain company / warehouse, then it will be saved in the sub-folder
+     * identified by company id and/or warehouse id
+     * so
+     * - standard report: reportTemplateFolder
+     * - company customized report: reportTemplateFolder / companyId
+     * - warehouse customized report: reportTemplateFolder / companyId / warehouseId
+     * @param companySpecific
+     * @param warehouseSpecific
+     * @param report
+     * @return
+     */
+    private String getReportTemplateFile(Boolean companySpecific, Boolean warehouseSpecific, Report report) {
+
+        String filepath;
+        if (!reportTemplateFolder.endsWith("/")) {
+            filepath = reportTemplateFolder + "/";
+        }
+        else  {
+
+            filepath = reportTemplateFolder;
+        }
+        if (companySpecific || warehouseSpecific) {
+            filepath += report.getCompanyId() + "/";
+        }
+        if (warehouseSpecific) {
+            filepath += report.getWarehouseId() + "/";
+        }
+
+        return filepath;
     }
 }

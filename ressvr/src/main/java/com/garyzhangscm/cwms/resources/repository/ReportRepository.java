@@ -41,5 +41,11 @@ public interface ReportRepository
     Report findByWarehouseIdAndName(Long warehouseId, String name);
 
 
+    @Query("select r from Report r where " +
+            " r.companyId is null  " +
+            " and r.warehouseId is null")
+    List<Report> findAllStandardReports();
+
+
 
 }
