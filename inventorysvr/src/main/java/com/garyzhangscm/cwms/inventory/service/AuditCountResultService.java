@@ -48,8 +48,11 @@ public class AuditCountResultService {
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
-    public List<AuditCountResult> findByBatchId(String batchId) {
-        return warehouseLayoutServiceRestemplateClient.setupAuditCountResultLocations(auditCountResultRepository.findByBatchId(batchId));
+    public List<AuditCountResult> findByBatchId(Long warehouseId, String batchId) {
+        return warehouseLayoutServiceRestemplateClient.
+                setupAuditCountResultLocations(
+                        auditCountResultRepository.findByWarehouseIdAndBatchId(
+                                warehouseId, batchId));
     }
 
 

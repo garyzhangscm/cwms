@@ -1166,5 +1166,16 @@
   "file.upload.success": "file uploaded",
   "file.upload.fail": "file upload fail",
   "report.template.upload": "Upload Report Template",
-  "message.report.added": "Report Added"
+  "message.report.added": "Report Added",
+  "REPORT-TYPE-ORDER_PICK_SHEET": "Order Pick Sheet",
+  "REPORT-TYPE-RECEIVING_DOCUMENT": "Receiving Document",
+  "REPORT-TYPE-PUTAWAY_DOCUMENT": "Putaway Document",
+  "REPORT-TYPE-PICK_LIST_SHEET": "Pick List Sheet",
+  "REPORT-TYPE-DELIVERY_NOTE": "Delivery Note",
+  "REPORT-TYPE-PACKING_SLIP": "Packing Slip",
+  "PUTAWAY-PRINTING-ALL": "Print ALL",
+  "PUTAWAY-PRINTING-ALL-RECEIVED": "Print In Receipt",
+  "PUTAWAY-PRINTING-SELECTED": "Print Selected",
+  "PRINTING-ALL": "Print ALL",
+  "PRINTING-SELECTED": "Print Selected"
 }

@@ -358,6 +358,7 @@ public class PickService {
     }
 
     public List<Pick> getOpenPicksByItemId(Long itemId){
+
         return getOpenPicksByItemId(itemId, true);
     }
     public List<Pick> getOpenPicksByItemId(Long itemId, boolean loadDetails){
@@ -368,6 +369,21 @@ public class PickService {
         }
         return picks;
     }
+
+
+    public List<Pick> getOpenPicks(Long warehouseId){
+
+        return getOpenPicks(warehouseId, true);
+    }
+    public List<Pick> getOpenPicks(Long warehouseId, boolean loadDetails){
+
+        List<Pick> picks = pickRepository.getOpenPicks(warehouseId);
+        if (picks.size() > 0 && loadDetails) {
+            loadAttribute(picks);
+        }
+        return picks;
+    }
+
 
     public String getNextPickNumber(Long warehouseId) {
         return commonServiceRestemplateClient.getNextNumber(warehouseId, "pick-number");
@@ -460,20 +476,34 @@ public class PickService {
         pick.setInventoryStatusId(inventorySummary.getInventoryStatus().getId());
 
 
-        pick.setUnitOfMeasureId(pickableUnitOfMeasure.getUnitOfMeasureId());
+        if (Objects.nonNull(pickableUnitOfMeasure)) {
+
+            pick.setUnitOfMeasureId(pickableUnitOfMeasure.getUnitOfMeasureId());
+        }
         pick.setLpn(lpn);
+
+        logger.debug("Start to get pick confirm strategy");
 
         // get the pick confirm flags
         PickConfirmStrategy pickConfirmStrategy
                 = pickConfirmStrategyService.getMatchedPickConfirmStrategy(pick);
+
         if (Objects.isNull(pickConfirmStrategy)) {
             // if no matched strategy, by default, we will force
             // the user to confirm everything(most strict)
+            logger.debug("No strategy found. Setup confirm flag for all fields");
             pick.setConfirmItemFlag(true);
             pick.setConfirmLocationFlag(true);
             pick.setConfirmLocationCodeFlag(true);
         }
         else {
+
+            logger.debug("Pick confirm strategy found. id: {}," +
+                    " confirm item: {}, confirm location: {}, confirm location code: {}",
+                    pickConfirmStrategy.getId(),
+                    pickConfirmStrategy.isConfirmItemFlag(),
+                    pickConfirmStrategy.isConfirmLocationFlag(),
+                    pickConfirmStrategy.isConfirmLocationCodeFlag());
             pick.setConfirmItemFlag(pickConfirmStrategy.isConfirmItemFlag());
             pick.setConfirmLocationFlag(pickConfirmStrategy.isConfirmLocationFlag());
             pick.setConfirmLocationCodeFlag(pickConfirmStrategy.isConfirmLocationCodeFlag());
@@ -517,17 +547,22 @@ public class PickService {
 
     private Pick processPick(Pick pick) {
         // Setup the pick movement
+        logger.debug("start to setup movement path for pick {}", pick.getNumber());
         setupMovementPath(pick);
         logger.debug("{} pick movement path setup for the pick", pick.getPickMovements().size());
 
 
+        logger.debug("start to cartonize pick {}", pick.getNumber());
         processCartonization(pick);
 
         // Let's see if we can group the pick either
         // 1. into an existing pick list
         // 2. or create a new picking list so other picks can be grouped
+        logger.debug("start to create list of pick {}", pick.getNumber());
         processPickList(pick);
 
+        logger.debug("pick {} is processed. we are good to go",
+                pick.getNumber());
         return findById(pick.getId());
     }
 
@@ -535,8 +570,16 @@ public class PickService {
     public Pick generatePick(InventorySummary inventorySummary,
                              ShipmentLine shipmentLine, long quantity,
                              String lpn) {
+        logger.debug("create picks for:");
+        logger.debug("inventory summary: {}", inventorySummary);
+        logger.debug("shipment line: {}", shipmentLine);
+        logger.debug("quantity: {}", quantity);
+        logger.debug("lpn: {}", lpn);
         Pick pick = generateBasicPickInformation(inventorySummary, quantity, lpn);
+        logger.debug("will need to setup shipment line information for the pick: {}", pick.getNumber());
         pick = setupShipmentInformation(pick, shipmentLine);
+        logger.debug("start to process the pick: {}", pick.getNumber());
+
         return processPick(pick);
     }
     @Transactional

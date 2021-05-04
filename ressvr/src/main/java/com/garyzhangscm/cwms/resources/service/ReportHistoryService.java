@@ -34,6 +34,8 @@ public class ReportHistoryService {
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ReportService reportService;
 
 
 
@@ -55,13 +57,11 @@ public class ReportHistoryService {
 
     public List<ReportHistory> findAll(Long companyId,
                                 Long warehouseId,
-                                String name,
                                 String type) {
-        return findAll(companyId, warehouseId, name, type, true);
+        return findAll(companyId, warehouseId, type, true);
     }
     public List<ReportHistory> findAll(Long companyId,
                                 Long warehouseId,
-                                String name,
                                 String type,
                                 boolean includeDetails) {
 
@@ -78,12 +78,6 @@ public class ReportHistoryService {
                         predicates.add(
                                 criteriaBuilder.equal(
                                         root.get("warehouseId"), warehouseId));
-                    }
-
-
-
-                    if (!StringUtils.isBlank(name)) {
-                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
                     }
 
                     if (!StringUtils.isBlank(type)) {
@@ -157,6 +151,49 @@ public class ReportHistoryService {
         logger.debug("Will return {} to the client",
                 fileUrl);
         return new File(fileUrl);
+    }
+
+    public File getReportFile(Long companyId, Long warehouseId, String type, String filename) {
+        if (!verifyReportResultFileAccess(filename)) {
+            throw ReportAccessPermissionException.raiseException(
+                    "Current user doesn't have access to the report file"
+            );
+        }
+
+        // get the meta data of the report so we know where to get the
+        // report result file
+        // The directory depends on whether the report is specific
+        // for the company or warehouse
+        // 1. standard report: reportResultFolder
+        // 2. company specific report: reportResultFolder/companyId
+        // 3. warehouse specific report: reportResultFolder/companyId/warehouseId
+        Report reportMetaData = reportService.findByType(companyId, warehouseId,
+                ReportType.valueOf(type), false);
+
+        String fileUrl = getReportResultFolder(reportMetaData) + filename;
+
+        logger.debug("Will return {} to the client",
+                fileUrl);
+        return new File(fileUrl);
+    }
+
+    private String getReportResultFolder(Report report) {
+
+        String folder;
+        if (!reportResultFolder.endsWith("/")) {
+            folder = reportResultFolder + "/";
+        }
+        else  {
+            folder = reportResultFolder;
+        }
+        if (Objects.nonNull(report.getCompanyId())) {
+            folder += report.getCompanyId() + "/";
+        }
+        if (Objects.nonNull(report.getWarehouseId())) {
+            folder += report.getWarehouseId() + "/";
+        }
+
+        return folder;
     }
 
     public File getReportFile(Long reportHistoryId) {

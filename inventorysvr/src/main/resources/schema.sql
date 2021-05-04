@@ -255,8 +255,7 @@ create table audit_count_request(
   audit_count_request_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   batch_id VARCHAR(100) NOT NULL,
   warehouse_id BIGINT NOT NULL,
-  location_id BIGINT NOT NULL,
-  created_time DATETIME,
+  location_id BIGINT NOT NULL,  created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50)

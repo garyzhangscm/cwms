@@ -68,6 +68,7 @@ public class OrderController {
 
     @RequestMapping(value="/orders/{id}/allocate", method = RequestMethod.POST)
     public Order allocateOrder(@PathVariable Long id){
+
         return orderService.allocate(id);
     }
     @RequestMapping(value="/orders/{id}/complete", method = RequestMethod.POST)
@@ -114,5 +115,11 @@ public class OrderController {
 
         logger.debug("start print pick sheet for order with id: {}", id);
         return orderService.generatePickReportByOrder(id, locale);
+    }
+
+
+    @RequestMapping(value="/orders-with-open-pick", method = RequestMethod.GET)
+    public List<Order> getOrdersWithOpenPick(@RequestParam Long warehouseId) {
+        return orderService.getOrdersWithOpenPick(warehouseId);
     }
 }

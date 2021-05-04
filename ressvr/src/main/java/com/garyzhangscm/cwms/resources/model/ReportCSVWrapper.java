@@ -10,7 +10,7 @@ public class ReportCSVWrapper {
 
     private String warehouse;
 
-    private String name;
+
 
     private String description;
 
@@ -56,13 +56,7 @@ public class ReportCSVWrapper {
         this.warehouse = warehouse;
     }
 
-    public String getName() {
-        return name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getDescription() {
         return description;

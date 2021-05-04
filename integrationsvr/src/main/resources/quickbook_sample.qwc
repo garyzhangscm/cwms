@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<QBWCXML>
+    <AppName>ClayTech_CWMS</AppName>
+    <AppID></AppID>
+    <AppURL>https://staging.claytechsuite.com/api/integration/quickbook/ws/qbWebConnector.wsdl</AppURL>
+    <AppDescription>Integration with Quickbook</AppDescription>
+    <AppSupport>http://www.claytechsuite.com/quickbook_support</AppSupport>
+    <UserName>quickbook</UserName>
+    <OwnerID>{57F3B9B1-86F1-4fcc-B1EE-566DE1813D20}</OwnerID>
+    <FileID>{90A44FB5-33D9-4815-AC85-BC87A7E7D1EB}</FileID>
+    <QBType>QBFS</QBType>
+    <Scheduler>
+        <RunEveryNMinutes>2</RunEveryNMinutes>
+    </Scheduler>
+</QBWCXML>

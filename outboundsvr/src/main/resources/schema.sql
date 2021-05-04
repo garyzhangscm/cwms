@@ -346,6 +346,7 @@ CREATE TABLE pick(
   confirm_item_flag boolean not null default 1,
   confirm_location_flag boolean not null default 1,
   confirm_location_code_flag boolean not null default 1,
+  work_id BIGINT,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,

@@ -30,7 +30,7 @@ import java.util.List;
 
 @Repository
 public interface CycleCountResultRepository extends JpaRepository<CycleCountResult, Long>, JpaSpecificationExecutor<CycleCountResult> {
-    List<CycleCountResult> findByBatchId(String batchId);
+    List<CycleCountResult> findByWarehouseIdAndBatchId(Long warehouseId, String batchId);
 
     CycleCountResult findByLocationId(Long locationId);
 

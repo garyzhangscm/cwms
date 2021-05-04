@@ -54,9 +54,8 @@ public class ReportHistoryController {
     public List<ReportHistory> findAllReports(
             @RequestParam(name="companyId", required = false ) Long companyId,
             @RequestParam(name="warehouseId", required = false ) Long warehouseId,
-            @RequestParam(name="name", required = false, defaultValue = "") String name,
             @RequestParam(name="type", required = false, defaultValue = "") String type) {
-        return reportHistoryService.findAll(companyId, warehouseId, name, type);
+        return reportHistoryService.findAll(companyId, warehouseId, type);
     }
 
 
@@ -81,12 +80,15 @@ public class ReportHistoryController {
                 .body(resource);
     }
 
-    @RequestMapping(value="/report-histories/download/{filename}", method = RequestMethod.GET)
-    public ResponseEntity<Resource>  downloadReport(@PathVariable String filename)
+    @RequestMapping(value="/report-histories/download/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.GET)
+    public ResponseEntity<Resource>  downloadReport(@PathVariable String filename,
+                                                    @PathVariable String type,
+                                                    @PathVariable Long companyId,
+                                                    @PathVariable Long warehouseId)
             throws FileNotFoundException {
 
 
-        File reportResultFile = reportHistoryService.getReportFile(filename);
+        File reportResultFile = reportHistoryService.getReportFile(companyId, warehouseId, type, filename);
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(reportResultFile));
         return ResponseEntity.ok()

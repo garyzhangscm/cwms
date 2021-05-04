@@ -19,7 +19,8 @@ public class IntegrationServerConfiguration extends ResourceServerConfigurerAdap
         http
         .authorizeRequests()
                 .antMatchers("/app").permitAll()
-          .antMatchers("/actuator").permitAll()
+                .antMatchers("/actuator").permitAll()
+                .antMatchers("/quickbook/ws/**").permitAll()
           .anyRequest()
           .authenticated();
     }

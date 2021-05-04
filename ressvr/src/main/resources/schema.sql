@@ -21,9 +21,9 @@ CREATE TABLE report (
   report_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   company_id BIGINT,
   warehouse_id BIGINT,
-  name  VARCHAR(100) NOT NULL,
+
   description  VARCHAR(100),
-  type  VARCHAR(20) NOT NULL,
+  type  VARCHAR(50) NOT NULL,
   file_name  VARCHAR(100) NOT NULL,
   orientation VARCHAR(20) NOT NULL,
 
@@ -36,9 +36,9 @@ CREATE TABLE report (
 CREATE TABLE report_history (
   report_history_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT NOT NULL,
-  name  VARCHAR(100) NOT NULL,
+
   description  VARCHAR(100),
-  type  VARCHAR(20) NOT NULL,
+  type  VARCHAR(50) NOT NULL,
   file_name  VARCHAR(100) NOT NULL,
   orientation VARCHAR(20) NOT NULL,
   printed_date date NOT NULL,

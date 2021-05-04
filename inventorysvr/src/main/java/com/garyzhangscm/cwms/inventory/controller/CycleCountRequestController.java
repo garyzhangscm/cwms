@@ -18,10 +18,12 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.CycleCountRequest;
 import com.garyzhangscm.cwms.inventory.model.CycleCountRequestType;
 import com.garyzhangscm.cwms.inventory.model.CycleCountResult;
+import com.garyzhangscm.cwms.inventory.model.ReportHistory;
 import com.garyzhangscm.cwms.inventory.service.CycleCountRequestService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,53 +62,89 @@ public class CycleCountRequestController {
     public CycleCountRequest getCycleCountRequestsByBatch(@PathVariable Long id){
         return cycleCountRequestService.findById(id);
     }
-    @RequestMapping(value = "/cycle-count-request/batch/{batchId}", method = RequestMethod.GET)
-    public List<CycleCountRequest> getCycleCountRequestsByBatch(@PathVariable String batchId){
-        return cycleCountRequestService.findByBatchId(batchId);
+    @RequestMapping(value = "/cycle-count-request/batch/{warehouseId}/{batchId}", method = RequestMethod.GET)
+    public List<CycleCountRequest> getCycleCountRequestsByBatch(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId){
+        return cycleCountRequestService.findByBatchId(warehouseId, batchId);
     }
 
 
-    @RequestMapping(value = "/cycle-count-request/batch/{batchId}/open", method = RequestMethod.GET)
-    public List<CycleCountRequest> getOpenCycleCountRequests(@PathVariable String batchId){
-        return cycleCountRequestService.getOpenCycleCountRequests(batchId);
+    @RequestMapping(
+            value = "/cycle-count-request/batch/{warehouseId}/{batchId}/open",
+            method = RequestMethod.GET)
+    public List<CycleCountRequest> getOpenCycleCountRequests(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId){
+        return cycleCountRequestService.getOpenCycleCountRequests(
+                warehouseId, batchId);
     }
 
-    @RequestMapping(value = "/cycle-count-request/batch/{batchId}/cancelled", method = RequestMethod.GET)
-    public List<CycleCountRequest> getCancelledCycleCountRequests(@PathVariable String batchId){
-        return cycleCountRequestService.getCancelledCycleCountRequests(batchId);
+    @RequestMapping(
+            value = "/cycle-count-request/batch/{warehouseId}/{batchId}/cancelled",
+            method = RequestMethod.GET)
+    public List<CycleCountRequest> getCancelledCycleCountRequests(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId){
+        return cycleCountRequestService.getCancelledCycleCountRequests(
+                warehouseId, batchId);
     }
 
-    @RequestMapping(value = "/cycle-count-request/confirm", method = RequestMethod.POST)
+    @RequestMapping(value = "/cycle-count-request/confirm",
+            method = RequestMethod.POST)
     public List<CycleCountResult> confirmCycleCountRequests(@RequestParam("cycleCountRequestIds") String cycleCountRequestIds){
         return cycleCountRequestService.confirmCycleCountRequests(cycleCountRequestIds);
     }
 
 
-    @RequestMapping(value = "/cycle-count-request/{cycleCountRequestId}/confirm", method = RequestMethod.POST)
+    @RequestMapping(
+            value = "/cycle-count-request/{cycleCountRequestId}/confirm",
+            method = RequestMethod.POST)
     public List<CycleCountResult> saveCycleCountResults(@PathVariable String cycleCountRequestId,
                                                         @RequestBody List<CycleCountResult> cycleCountResults){
         return cycleCountRequestService.saveCycleCountResults(cycleCountRequestId, cycleCountResults);
     }
 
-    @RequestMapping(value = "/cycle-count-request/cancel", method = RequestMethod.POST)
+    @RequestMapping(value = "/cycle-count-request/cancel",
+            method = RequestMethod.POST)
     public List<CycleCountRequest> cancelCycleCountRequests(@RequestParam("cycleCountRequestIds") String cycleCountRequestIds){
         return cycleCountRequestService.cancelCycleCountRequests(cycleCountRequestIds);
     }
 
-    @RequestMapping(value = "/cycle-count-request/reopen", method = RequestMethod.POST)
+    @RequestMapping(value = "/cycle-count-request/reopen",
+            method = RequestMethod.POST)
     public List<CycleCountRequest> reopenCycleCountRequests(@RequestParam("cycleCountRequestIds") String cycleCountRequestIds){
         return cycleCountRequestService.reopenCancelledCycleCountRequests(cycleCountRequestIds);
     }
 
-    @RequestMapping(value = "/cycle-count-request/{cycleCountRequestId}/inventory-summary", method = RequestMethod.GET)
+    @RequestMapping(
+            value = "/cycle-count-request/{cycleCountRequestId}/inventory-summary",
+            method = RequestMethod.GET)
     public List<CycleCountResult> getInventorySummariesForCount(@PathVariable String cycleCountRequestId){
         return cycleCountRequestService.getInventorySummariesForCount(cycleCountRequestId);
     }
 
 
     @RequestMapping(value = "/cycle-count-request/inventory-summary", method = RequestMethod.GET)
-    public List<CycleCountResult> getInventorySummariesForCounts(@RequestParam("cycle_count_request_ids") String cycleCountRequestIds){
+    public List<CycleCountResult> getInventorySummariesForCounts(
+            @RequestParam("cycle_count_request_ids") String cycleCountRequestIds){
         return cycleCountRequestService.getInventorySummariesForCount(cycleCountRequestIds);
     }
+
+
+
+    @RequestMapping(value="/cycle-count-request/{warehouseId}/{batchId}/cycle-count-sheet",
+            method = RequestMethod.POST)
+    public ReportHistory generateCycleCountSheetByBatch(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId,
+            @RequestParam(name = "cycle_count_request_ids", defaultValue = "", required = false) String cycleCountRequestIds,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        return cycleCountRequestService.generateCycleCountSheet(
+                warehouseId, batchId, cycleCountRequestIds, locale);
+    }
+
+
 
 }

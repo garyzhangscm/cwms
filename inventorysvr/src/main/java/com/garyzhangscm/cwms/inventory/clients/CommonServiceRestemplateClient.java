@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -234,6 +235,35 @@ public class CommonServiceRestemplateClient {
 
         restTemplate.delete(
                     builder.toUriString());
+
+    }
+
+
+
+    public Policy getPolicyByKey(Long warehouseId, String key) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/policies")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("key", key);
+
+        ResponseBodyWrapper<List<Policy>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Policy>>>() {}).getBody();
+
+        logger.debug("getPolicyByKey returns: {}",
+                responseBodyWrapper.getData());
+        List<Policy> policies = responseBodyWrapper.getData();
+        if (policies.size() > 0) {
+            return policies.get(0);
+        }
+        else {
+            return null;
+        }
 
     }
 }

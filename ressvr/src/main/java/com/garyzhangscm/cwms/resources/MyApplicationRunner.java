@@ -85,15 +85,14 @@ public class MyApplicationRunner implements ApplicationRunner {
     }
 
     private void initReportData() throws IOException {
-        reportService.initTestData(null, "");
         System.out.println("Start to init the standard reports");
+        reportService.initTestData(null, "");
 
         createReportFolders();
 
         copyReportFiles();
 
-        logger.debug("Java classpath\n {}",
-                System.getProperty("java.class.path"));
+
 
     }
     private void createReportFolders() {
@@ -151,14 +150,8 @@ public class MyApplicationRunner implements ApplicationRunner {
             throws IOException {
 
 
-        logger.debug("start to get files from {}",
-                reportTemplateResourceFolder);
 
         Resource[] resources = loadResources("classpath*:" + reportTemplateResourceFolder + "/*.*");
-        logger.debug("Get {} resource", resources.length);
-        for (Resource resource : resources) {
-            logger.debug(">> {}", resource.getFilename());
-        }
 
         return resources;
     }

@@ -52,8 +52,11 @@ public class CycleCountResultService {
         return cycleCountResultRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("cycle count result not found by id: " + id));
     }
-    public List<CycleCountResult> findByBatchId(String batchId) {
-        return warehouseLayoutServiceRestemplateClient.setupCycleCountResultLocations(cycleCountResultRepository.findByBatchId(batchId));
+    public List<CycleCountResult> findByBatchId(Long warehouseId, String batchId) {
+        return warehouseLayoutServiceRestemplateClient.
+                setupCycleCountResultLocations(
+                        cycleCountResultRepository.findByWarehouseIdAndBatchId(
+                                warehouseId, batchId));
     }
 
     @Transactional

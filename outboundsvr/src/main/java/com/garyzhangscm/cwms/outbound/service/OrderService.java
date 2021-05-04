@@ -459,6 +459,8 @@ public class OrderService implements TestDataInitiableService {
     @Transactional
     public Order allocate(Long orderId) {
         Order order = findById(orderId);
+        logger.debug(">>>    Start to allocate order  {}  <<<",
+                order.getNumber());
 
         // When we directly allocate the order, we will
         // 1. create a fake wave / shipment for the order
@@ -470,7 +472,8 @@ public class OrderService implements TestDataInitiableService {
         // let's allocate all of the shipment lines
         List<AllocationResult> allocationResults
                     = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
-                        .stream().filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
+                        .stream()
+                         .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
                         .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
                         .collect(Collectors.toList());
 
@@ -688,7 +691,7 @@ public class OrderService implements TestDataInitiableService {
             throws JsonProcessingException {
 
         Long warehouseId = order.getWarehouseId();
-        String reportName = "order_pick_sheet";
+
 
         Report reportData = new Report();
         setupOrderPickReportParameters(
@@ -700,11 +703,11 @@ public class OrderService implements TestDataInitiableService {
 
         logger.debug("will call resource service to print the report with locale: {}",
                 locale);
-        logger.debug("####   Report   Data  ######");
-        logger.debug(reportData.toString());
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                    warehouseId, reportName, reportData, locale
+                    warehouseId, ReportType.ORDER_PICK_SHEET, reportData, locale
                 );
 
 
@@ -741,5 +744,48 @@ public class OrderService implements TestDataInitiableService {
         // set data to be all picks
         List<Pick> picks = pickService.findByOrder(order);
         report.setData(picks);
+    }
+
+    /**
+     * @return All orders that has open pick and not assigned to anyone yet
+     */
+    public List<Order> getOrdersWithOpenPick(Long warehouseId) {
+
+        // get the picks that has open quantity
+        List<Pick> openPicks = pickService.getOpenPicks(warehouseId);
+
+        logger.debug("=======  We get {} open picks  ======",
+                openPicks.size());
+        logger.debug(openPicks.toString());
+        // get the picks that is not assigned yet
+        List<Pick> unassignedOpenPick = openPicks.stream()
+                .filter(pick -> Objects.isNull(pick.getWorkId()))
+                .collect(Collectors.toList());
+
+        logger.debug("=======  We get {} open unassigned picks  ======",
+                unassignedOpenPick.size());
+        logger.debug(unassignedOpenPick.toString());
+
+        Set<Order> ordersWithOpenPickSet = unassignedOpenPick.stream()
+                .filter(pick -> Objects.nonNull(pick.getShipmentLine()))
+                .map(pick -> pick.getShipmentLine().getOrderLine().getOrder())
+                .collect(Collectors.toSet());
+
+        List<Order> ordersWithOpenPickList = new ArrayList<>(ordersWithOpenPickSet);
+
+
+
+        logger.debug("=======  We get {} orders with open pick  ======",
+                ordersWithOpenPickList.size());
+        ordersWithOpenPickList.forEach(order -> calculateStatisticQuantities(order));
+        logger.debug(ordersWithOpenPickList.toString());
+
+        Collections.sort(ordersWithOpenPickList,
+                Comparator.comparing(Order::getNumber));
+
+        return ordersWithOpenPickList;
+
+
+
     }
 }

@@ -64,7 +64,7 @@ public class Receipt {
             mappedBy = "receipt",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     private List<ReceiptLine> receiptLines = new ArrayList<>();
 

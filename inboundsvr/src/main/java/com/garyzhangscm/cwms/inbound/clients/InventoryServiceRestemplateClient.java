@@ -40,6 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class InventoryServiceRestemplateClient {
@@ -221,7 +222,10 @@ public class InventoryServiceRestemplateClient {
         return new HttpEntity<String>(requestBody, headers);
     }
 
-    public List<Inventory> findInventoryByReceipt(Long warehouseId, Long receiptId) {
+    public List<Inventory> findInventoryByReceipt(
+            Long warehouseId, Long receiptId,
+            String inventoryIds,
+            Boolean notPutawayInventoryOnly) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -230,6 +234,12 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("receiptId", receiptId)
                         .queryParam("warehouseId", warehouseId);
 
+        if (Objects.nonNull(inventoryIds)) {
+            builder.queryParam("inventoryIds", inventoryIds);
+        }
+        if (Objects.nonNull(notPutawayInventoryOnly)) {
+            builder.queryParam("notPutawayInventoryOnly", notPutawayInventoryOnly);
+        }
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(

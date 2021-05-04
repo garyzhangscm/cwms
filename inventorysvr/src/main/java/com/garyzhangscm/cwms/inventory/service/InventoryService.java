@@ -135,11 +135,15 @@ public class InventoryService implements TestDataInitiableService{
                                    String workOrderLineIds,
                                    String workOrderByProductIds,
                                    String pickIds,
-                                   String lpn) {
+                                   String lpn,
+                                   String inventoryIds,
+                                   Boolean notPutawayInventoryOnly) {
         return findAll(warehouseId, itemName, itemPackageTypeName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId, receiptId, workOrderId, workOrderLineIds,
                 workOrderByProductIds,
-                pickIds, lpn, true);
+                pickIds, lpn,
+                inventoryIds, notPutawayInventoryOnly,
+                true);
     }
 
 
@@ -159,7 +163,10 @@ public class InventoryService implements TestDataInitiableService{
                                    String workOrderByProductIds,
                                    String pickIds,
                                    String lpn,
+                                   String inventoryIds,
+                                   Boolean notPutawayInventoryOnly,
                                    boolean includeDetails) {
+
         List<Inventory> inventories =  inventoryRepository.findAll(
                 (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -265,6 +272,14 @@ public class InventoryService implements TestDataInitiableService{
                     }
 
 
+                    if (StringUtils.isNotBlank(inventoryIds)) {
+
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("id"));
+                        Arrays.stream(inventoryIds.split(","))
+                                .map(Long::parseLong).forEach(inventoryId -> inClause.value(inventoryId));
+                        predicates.add(inClause);
+                    }
+
                     // Only return actual inventory
 
                     predicates.add(criteriaBuilder.equal(root.get("virtual"), false));
@@ -275,8 +290,64 @@ public class InventoryService implements TestDataInitiableService{
         );
 
 
-        if (includeDetails && inventories.size() > 0) {
+        // if we need to load the details, or asked to return the inventory
+        // that is only in receiving stage,
+        logger.debug("find all inventory with notPutawayInventoryOnly： {}",
+                notPutawayInventoryOnly);
+
+        logger.debug("includeDetails： {}",
+                includeDetails);
+        logger.debug("notPutawayInventoryOnly： {}",
+                notPutawayInventoryOnly);
+        logger.debug("inventories.size()： {}",
+                inventories.size());
+        if ((includeDetails || notPutawayInventoryOnly)
+                && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
+
+
+            if (notPutawayInventoryOnly) {
+                logger.debug(">start to load receiptLocationGroup for warehouse: {}", warehouseId);
+                // the inventory may be in the receipt or in the receiving stage
+                String receiptLocationGroup =
+                        commonServiceRestemplateClient.getPolicyByKey(warehouseId, "LOCATION-GROUP-RECEIPT").getValue();
+
+                logger.debug(">receiptLocationGroup: {}", receiptLocationGroup);
+                List<Inventory> inventoriesOnReceipt = inventories.stream().filter(
+                        inventory -> inventory.getLocation().getLocationGroup().getName().equals(
+                                receiptLocationGroup
+                        )
+                ).collect(Collectors.toList());
+                logger.debug("inventoriesOnReceipt: {}", inventoriesOnReceipt.size());
+
+                logger.debug("========  inventoriesOnReceipt: =====");
+                logger.debug(inventoriesOnReceipt.toString());
+
+                List<Inventory> inventoriesInReceivingStage =
+                        inventories.stream().filter(
+                                inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getReceivingStage() == true
+                        ).collect(Collectors.toList());
+
+                logger.debug("inventoriesInReceivingStage: {}", inventoriesInReceivingStage.size());
+
+                logger.debug("========  inventoriesInReceivingStage: =====");
+                logger.debug(inventoriesInReceivingStage.toString());
+
+                List<Inventory> inventoryNotPutawayYet = new ArrayList<>();
+                // combine those 2 inventory list
+                inventoryNotPutawayYet.addAll(inventoriesOnReceipt);
+                inventoryNotPutawayYet.addAll(inventoriesInReceivingStage);
+                logger.debug("inventoryNotPutawayYet: {}", inventoryNotPutawayYet.size());
+
+                logger.debug("========  inventoryNotPutawayYet: =====");
+                logger.debug(inventoryNotPutawayYet.toString());
+
+                inventories = inventoryNotPutawayYet;
+                logger.debug("inventories: {}", inventories.size());
+                logger.debug("========  inventories: =====");
+                logger.debug(inventories.toString());
+
+            }
         }
 
         // When location group id is passed in, we will only return inventory from this location group
@@ -1491,6 +1562,8 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         pickIds,
+                        null,
+                        null,
                         null
                 );
                 // Let's remove those inventories
@@ -1530,6 +1603,8 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         pickIds,
+                        null,
+                        null,
                         null
                 );
                 // Let's remove those inventories until we reach the

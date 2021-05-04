@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.repository;
 
 import com.garyzhangscm.cwms.resources.model.Report;
+import com.garyzhangscm.cwms.resources.model.ReportType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -31,14 +32,14 @@ import java.util.List;
 public interface ReportRepository
         extends JpaRepository<Report, Long>, JpaSpecificationExecutor<Report> {
 
-    @Query("select r from Report r where r.name = :name " +
+    @Query("select r from Report r where r.type = :type " +
            " and r.companyId is null  " +
            " and r.warehouseId is null")
-    Report findStandardReportByName(String name);
+    Report findStandardReportByType(ReportType type);
 
-    Report findByCompanyIdAndName(Long companyId, String name);
+    Report findByCompanyIdAndType(Long companyId, ReportType type);
 
-    Report findByWarehouseIdAndName(Long warehouseId, String name);
+    Report findByWarehouseIdAndType(Long warehouseId, ReportType type);
 
 
     @Query("select r from Report r where " +

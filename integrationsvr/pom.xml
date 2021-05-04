@@ -22,6 +22,7 @@
         <docker.image.name>garyzhangscm/cwms-integrationserver</docker.image.name>
         <docker.image.tag>latest</docker.image.tag>
         <maven.test.skip>true</maven.test.skip>
+        <maven-jaxb2-plugin.version>0.14.0</maven-jaxb2-plugin.version>
     </properties>
 
     <dependencies><dependency>
@@ -143,6 +144,20 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-sleuth</artifactId>
         </dependency>
+
+
+        <!-- wsdl support. Necessary for quickbook web connector -->
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.ws/spring-ws-core -->
+        <dependency>
+            <groupId>org.springframework.ws</groupId>
+            <artifactId>spring-ws-core</artifactId>
+            <version>3.0.10.RELEASE</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -201,6 +216,29 @@
                             <include>${project.build.finalName}.jar</include>
                         </resource>
                     </resources>
+                </configuration>
+            </plugin>
+
+            <!-- plug in to automatically generate SOAP web service from WSDL
+                 We will need this to support QuickBook Web Connector for communication
+                 with quickbook
+              -->
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>${maven-jaxb2-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <schemaDirectory>${project.basedir}/src/main/resources/wsdl</schemaDirectory>
+                    <schemaIncludes>
+                        <include>*.wsdl</include>
+                    </schemaIncludes>
                 </configuration>
             </plugin>
         </plugins>

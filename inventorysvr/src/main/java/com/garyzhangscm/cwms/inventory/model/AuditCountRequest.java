@@ -50,6 +50,7 @@ public class AuditCountRequest extends AuditibleEntity<String> implements Serial
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+
     @Transient
     private Warehouse warehouse;
 
@@ -110,4 +111,6 @@ public class AuditCountRequest extends AuditibleEntity<String> implements Serial
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
     }
+
+
 }

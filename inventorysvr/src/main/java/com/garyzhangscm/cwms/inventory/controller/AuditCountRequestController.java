@@ -18,15 +18,14 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.model.AuditCountRequest;
 import com.garyzhangscm.cwms.inventory.model.AuditCountResult;
+import com.garyzhangscm.cwms.inventory.model.ReportHistory;
 import com.garyzhangscm.cwms.inventory.service.AuditCountRequestService;
 import com.garyzhangscm.cwms.inventory.service.AuditCountResultService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -35,9 +34,11 @@ public class AuditCountRequestController {
     @Autowired
     AuditCountRequestService auditCountRequestService;
 
-    @RequestMapping(value = "/audit-count-request/batch/{batchId}", method = RequestMethod.GET)
-    public List<AuditCountRequest> getAuditCountRequestByBatch(@PathVariable String batchId){
-        return auditCountRequestService.findByBatchId(batchId);
+    @RequestMapping(value = "/audit-count-request/batch/{warehouseId}/{batchId}", method = RequestMethod.GET)
+    public List<AuditCountRequest> getAuditCountRequestByBatch(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId){
+        return auditCountRequestService.findByBatchId(warehouseId, batchId);
     }
     @RequestMapping(value = "/audit-count-request/{id}", method = RequestMethod.GET)
     public AuditCountRequest getAuditCountRequestByBatch(@PathVariable Long id){
@@ -45,4 +46,17 @@ public class AuditCountRequestController {
     }
 
 
+
+    @RequestMapping(
+            value="/audit-count-request/{warehouseId}/{batchId}/audit-count-sheet",
+            method = RequestMethod.POST)
+    public ReportHistory generateAuditCountSheet(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId,
+            @RequestParam(name = "audit_count_request_ids", defaultValue = "", required = false) String auditCountRequestIds,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        return auditCountRequestService.generateAuditCountSheet(
+                warehouseId, batchId, auditCountRequestIds, locale);
+    }
 }

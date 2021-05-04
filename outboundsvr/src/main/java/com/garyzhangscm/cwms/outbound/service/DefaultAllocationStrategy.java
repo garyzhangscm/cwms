@@ -407,7 +407,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
     private List<Pick> tryAllocateByLPN(AllocationRequest allocationRequest, long openQuantity,
                                   List<InventorySummary> inventorySummaries,
-                                  List<Pick> existingPicks, AllocationRoundUpStrategy allocationRoundUpStrategy) {
+                                  List<Pick> existingPicks,
+                                  AllocationRoundUpStrategy allocationRoundUpStrategy) {
         logger.debug("Start to allocate item: {}, by LPN, total quantity needed: {}, round up strategy: {} / {}",
                 allocationRequest.getItem().getName(), openQuantity,
                 allocationRoundUpStrategy.getType(),
@@ -511,10 +512,15 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     continue;
 
                 }
+                logger.debug("we can allocate from LPN: {}, quantity: {}",
+                        lpnToBeAllocated.getKey(), lpnToBeAllocated.getValue());
                 String lpn = lpnToBeAllocated.getKey();
                 Long lpnQuantityToBeAllocated = lpnToBeAllocated.getValue();
                 // allocate quantity from this LPN
                 totalQuantityToBeAllocated = totalQuantityToBeAllocated - lpnQuantityToBeAllocated;
+
+                logger.debug("After allocate from LPN: {}, we still have quantity: {}",
+                        lpnToBeAllocated.getKey(), totalQuantityToBeAllocated);
                 // create the pick
                 Pick pick = tryCreatePickForLPNAllocation(allocationRequest,
                         lpn, lpnQuantityToBeAllocated,
@@ -591,7 +597,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     .append("Location: ").append(inventorySummary.getLocation().getName()).append("\n")
                     .append("Item: ").append(inventorySummary.getItem().getName())
                     .append(", Total Quantity: ").append(inventorySummary.getQuantity())
-                    .append("inventory: \n");
+                    .append(", inventory: \n");
             Iterator<Map.Entry<String, List<Inventory>>> lpnIterator = inventorySummary.getInventories().entrySet().iterator();
             int index = 1;
             while(lpnIterator.hasNext()) {
@@ -612,6 +618,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                                                InventorySummary inventorySummary) {
 
         if (allocationRequest.getShipmentLines().size() > 0) {
+            logger.debug("Start to create picks for {} shipment ",
+                    allocationRequest.getShipmentLines().size());
             return pickService.generatePick(inventorySummary, allocationRequest.getShipmentLines().get(0),
                     lpnQuantityToBeAllocated, lpn);
         }
@@ -645,6 +653,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                         .anyMatch(inventory -> Objects.nonNull(inventory.getAllocatedByPickId()));
         // if the LPN is allocated by certain pick, then it is not valid for new pick
         if (lpnAlreadyAllocated) {
+            logger.debug("This inventory is already allocated!");
             return false;
         }
         Long quantityByLPN = lpnInventories.stream().mapToLong(Inventory::getQuantity).sum();
@@ -681,6 +690,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         if (maxQuantityToBeAllocated < quantityByLPN) {
             // the max quantity we are allowed to allocate is less than the whole LPN's quantity,
             // which means we can't allocate from this LPN
+            logger.debug("can't allocate from this LPN due to maxQuantityToBeAllocated: {}, quantityByLPN: {}",
+                    maxQuantityToBeAllocated, quantityByLPN);
             return false;
         }
 
@@ -706,9 +717,15 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         // the LPN is not allocated by certain pick, let's see if we can allocate the quantity
         // from this LPN, while not breaking other open picks
         // we will only validate against the picks that allocate by quantity
-        Long pickByQuantityPicksTotalOpenQuantity = pickByQuantityPicksTotalOpenQuantity(existingPicksByInventorySummary);
-        Long availableInventoryQuantity = getAvailableInventoryQuantity(inventorySummary);
+        Long pickByQuantityPicksTotalOpenQuantity
+                = pickByQuantityPicksTotalOpenQuantity(existingPicksByInventorySummary);
+        Long availableInventoryQuantity
+                = getAvailableInventoryQuantity(inventorySummary);
 
+        logger.debug("quantityToBeAllocated: {}, pickByQuantityPicksTotalOpenQuantity: {}, availableInventoryQuantity: {}",
+                quantityToBeAllocated,
+                pickByQuantityPicksTotalOpenQuantity,
+                availableInventoryQuantity);
         if (quantityToBeAllocated + pickByQuantityPicksTotalOpenQuantity <= availableInventoryQuantity) {
             return true;
         }

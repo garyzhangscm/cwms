@@ -30,9 +30,11 @@ public class CycleCountResultController {
     @Autowired
     CycleCountResultService cycleCountResultService;
 
-    @RequestMapping(value = "/cycle-count-result/{batchId}", method = RequestMethod.GET)
-    public List<CycleCountResult> getCycleCountResultByBatch(@PathVariable String batchId){
-        return cycleCountResultService.findByBatchId(batchId);
+    @RequestMapping(value = "/cycle-count-result/{warehouseId}/{batchId}", method = RequestMethod.GET)
+    public List<CycleCountResult> getCycleCountResultByBatch(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId){
+        return cycleCountResultService.findByBatchId(warehouseId, batchId);
     }
 
 

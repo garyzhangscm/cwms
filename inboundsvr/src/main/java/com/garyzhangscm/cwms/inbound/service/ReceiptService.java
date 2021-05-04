@@ -18,9 +18,11 @@
 
 package com.garyzhangscm.cwms.inbound.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.inbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
@@ -39,10 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ReceiptService implements TestDataInitiableService{
@@ -59,6 +59,8 @@ public class ReceiptService implements TestDataInitiableService{
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
     @Autowired
     private FileService fileService;
     @Autowired
@@ -330,7 +332,21 @@ public class ReceiptService implements TestDataInitiableService{
 
         Receipt receipt = findById(receiptId);
 
-        return inventoryServiceRestemplateClient.findInventoryByReceipt(receipt.getWarehouseId(), receiptId);
+        return inventoryServiceRestemplateClient
+                .findInventoryByReceipt(receipt.getWarehouseId(), receiptId,
+                        null, null);
+    }
+
+    public List<Inventory> findInventoryByReceipt(Long receiptId,
+                                                  String inventoryIds,
+                                                  Boolean notPutawayInventoryOnly) {
+
+        Receipt receipt = findById(receiptId);
+
+        return inventoryServiceRestemplateClient.
+                findInventoryByReceipt(receipt.getWarehouseId(), receiptId,
+                        inventoryIds,
+                        notPutawayInventoryOnly);
     }
 
     public Receipt completeReceipt(Receipt receipt) {
@@ -367,5 +383,180 @@ public class ReceiptService implements TestDataInitiableService{
         existingReceipt.setAllowUnexpectedItem(receipt.getAllowUnexpectedItem());
 
         return saveOrUpdate(existingReceipt);
+    }
+
+
+    public ReportHistory generateReceivingDocument(Long receiptId, String locale)
+            throws JsonProcessingException {
+
+
+        return generateReceivingDocument(findById(receiptId), locale);
+    }
+    public ReportHistory generateReceivingDocument(Receipt receipt, String locale)
+            throws JsonProcessingException {
+
+
+        Long warehouseId = receipt.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupReceivingDocumentData(
+                reportData, receipt
+        );
+        setupReceivingDocumentParameters(
+                reportData, receipt
+        );
+
+        logger.debug("will call resource service to print the receiving report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.RECEIVING_DOCUMENT, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupReceivingDocumentParameters(
+            Report report, Receipt receipt) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        logger.debug("Start to setup receiving document's paramters: {}",
+                receipt.getNumber());
+        report.addParameter("receipt_number", receipt.getNumber());
+
+        if (Objects.nonNull(receipt.getSupplier())) {
+
+            report.addParameter("supplier_name", receipt.getSupplier().getName());
+
+            report.addParameter("supplier_contact_name",
+                    receipt.getSupplier().getContactorLastname() + " " + receipt.getSupplier().getContactorFirstname());
+
+            report.addParameter("supplier_address",
+                    receipt.getSupplier().getAddressLine1() + ",  " + receipt.getSupplier().getAddressCity() +
+                            ", " + receipt.getSupplier().getAddressCounty() + ", " + receipt.getSupplier().getAddressPostcode());
+            report.addParameter("supplier_phone", "");
+        }
+        else {
+            report.addParameter("supplier_name", "");
+
+            report.addParameter("supplier_contact_name",
+                    "");
+
+            report.addParameter("supplier_address",
+                    "");
+            report.addParameter("supplier_phone", "");
+
+        }
+
+
+        report.addParameter("totalLineCount", receipt.getReceiptLines().size());
+
+        Set<String> itemNumbers = receipt.getReceiptLines().stream()
+                .map(ReceiptLine::getItem).map(Item::getName).collect(Collectors.toSet());
+        report.addParameter("totalItemCount", itemNumbers.size());
+
+        report.addParameter("totalQuantity",
+                receipt.getReceiptLines().stream().mapToLong(ReceiptLine::getExpectedQuantity).sum());
+
+
+
+    }
+
+    private void setupReceivingDocumentData(Report report, Receipt receipt) {
+
+        // set data to be all picks
+        logger.debug("Start to setup receiving document's data: {}",
+                receipt.getNumber());
+
+        List<ReceiptLine> receiptLines = receipt.getReceiptLines();
+
+        report.setData(receiptLines);
+
+    }
+
+
+
+    public ReportHistory generatePutawayDocument(Long receiptId, String locale,
+                                                 String inventoryIds,
+                                                 Boolean notPutawayInventoryOnly)
+            throws JsonProcessingException {
+        logger.debug("Start to generate putaway document for receipt id: {}",
+                receiptId);
+
+        return generatePutawayDocument(findById(receiptId), locale,
+                inventoryIds, notPutawayInventoryOnly);
+    }
+    public ReportHistory generatePutawayDocument(Receipt receipt, String locale,
+                                                 String inventoryIds,
+                                                 Boolean notPutawayInventoryOnly)
+            throws JsonProcessingException {
+
+        Long warehouseId = receipt.getWarehouseId();
+
+        Report reportData = new Report();
+        List<Inventory> receivedInventories =
+                findInventoryByReceipt(receipt.getId(),
+                    inventoryIds, notPutawayInventoryOnly);
+        setupPutawayDocumentParameters(
+                reportData, receipt, receivedInventories
+        );
+        setupPutawayDocumentData(
+                reportData, receivedInventories
+        );
+
+        logger.debug("will call resource service to print the Putaway report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.PUTAWAY_DOCUMENT, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupPutawayDocumentParameters(
+            Report report, Receipt receipt, List<Inventory> receivedInventories) {
+
+
+        logger.debug("Start to setup putaway document's paramters: {}",
+                receipt.getNumber());
+
+        report.addParameter("receipt_number", receipt.getNumber());
+
+
+        Set<String> lpnNumber = receivedInventories.stream()
+                .map(Inventory::getLpn).collect(Collectors.toSet());
+        report.addParameter("totalLPNCount", lpnNumber.size());
+
+        Set<String> itemNumbers = receivedInventories.stream()
+                .map(Inventory::getItem).map(Item::getName).collect(Collectors.toSet());
+        report.addParameter("totalItemCount", itemNumbers.size());
+
+
+        report.addParameter("totalQuantity", receivedInventories.stream()
+                .mapToLong(Inventory::getQuantity).sum());
+
+    }
+
+    private void setupPutawayDocumentData(Report report, List<Inventory> receivedInventories) {
+
+        // set data to be all picks
+        logger.debug("Start to setup putaway document's data. Inventory count: {}",
+                receivedInventories.size());
+
+        report.setData(receivedInventories);
     }
 }
