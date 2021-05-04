@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.Report;
 import com.garyzhangscm.cwms.outbound.model.ReportHistory;
+import com.garyzhangscm.cwms.outbound.model.ReportType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,18 +50,18 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public ReportHistory generateReport(Long warehouseId, String name,
+    public ReportHistory generateReport(Long warehouseId, ReportType type,
                                  Report reportData, String locale)
             throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/resource/reports/{warehouseId}/{name}")
+                        .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
 
         ResponseBodyWrapper<ReportHistory> responseBodyWrapper
                 = restTemplate.exchange(
-                        builder.buildAndExpand(warehouseId, name).toUriString(),
+                        builder.buildAndExpand(warehouseId, type).toUriString(),
                         HttpMethod.POST,
                         getHttpEntity(objectMapper.writeValueAsString(reportData)),
                         new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();

@@ -20,6 +20,9 @@ package com.garyzhangscm.cwms.outbound;
 
 import com.garyzhangscm.cwms.outbound.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.service.OrderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -51,6 +54,8 @@ import java.util.List;
  */
 @RestControllerAdvice
 public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
+    private static final Logger logger
+            = LoggerFactory.getLogger(BaseGlobalResponseBodyAdvice.class);
 
     /**
      * Only process when the client want to have a JSON return
@@ -64,7 +69,9 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
 
     @ExceptionHandler(GenericException.class)
     public ResponseBodyWrapper defaultErrorHandler(GenericException ex, HttpServletRequest request) {
+        ex.printStackTrace();
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
+
         return new ResponseBodyWrapper(
                 ex.getExceptionCode().getCode(),
                 exceptionResponse.getMessage(), exceptionResponse);
@@ -79,7 +86,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseBodyWrapper RuntimeExceptionErrorHandler(RuntimeException ex, HttpServletRequest request) {
-
+        ex.printStackTrace();
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 500,
@@ -89,7 +96,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     @ExceptionHandler(Exception.class)
     public ResponseBodyWrapper ExceptionErrorHandler(Exception ex, HttpServletRequest request) {
 
-
+        ex.printStackTrace();
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 500,

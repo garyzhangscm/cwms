@@ -28,13 +28,19 @@ import java.util.List;
 
 @Repository
 public interface CycleCountRequestRepository extends JpaRepository<CycleCountRequest, Long>, JpaSpecificationExecutor<CycleCountRequest> {
-    List<CycleCountRequest> findByBatchId(String batchId);
+    List<CycleCountRequest> findByWarehouseIdAndBatchId(Long warehouseId, String batchId);
 
-    @Query("select r from CycleCountRequest r where r.status = com.garyzhangscm.cwms.inventory.model.CycleCountRequestStatus.OPEN and r.batchId = :batchId")
-    List<CycleCountRequest> getOpenRequests(String batchId);
+    @Query("select r from CycleCountRequest r " +
+            "  where r.status = com.garyzhangscm.cwms.inventory.model.CycleCountRequestStatus.OPEN " +
+            "  and r.batchId = :batchId " +
+            "  and r.warehouseId = :warehouseId")
+    List<CycleCountRequest> getOpenRequests(Long warehouseId, String batchId);
 
-    @Query("select r from CycleCountRequest r where r.status = com.garyzhangscm.cwms.inventory.model.CycleCountRequestStatus.CANCELLED and r.batchId = :batchId")
-    List<CycleCountRequest> getCancelledRequests(String batchId);
+    @Query("select r from CycleCountRequest r " +
+            " where r.status = com.garyzhangscm.cwms.inventory.model.CycleCountRequestStatus.CANCELLED " +
+            "  and r.batchId = :batchId "  +
+            "  and r.warehouseId = :warehouseId")
+    List<CycleCountRequest> getCancelledRequests(Long warehouseId, String batchId);
 
     @Query("select r from CycleCountRequest r where r.status = com.garyzhangscm.cwms.inventory.model.CycleCountRequestStatus.OPEN and r.locationId = :locationId")
     CycleCountRequest findOpenCycleCountRequestByLocationId(Long locationId);

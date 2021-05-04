@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.repository;
 
 import com.garyzhangscm.cwms.resources.model.ReportHistory;
+import com.garyzhangscm.cwms.resources.model.ReportType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -30,10 +31,10 @@ import java.util.List;
 public interface ReportHistoryRepository
         extends JpaRepository<ReportHistory, Long>, JpaSpecificationExecutor<ReportHistory> {
 
-    List<ReportHistory> findByName(String name);
+    List<ReportHistory> findByType(ReportType type);
 
 
-    List<ReportHistory> findByWarehouseIdAndName(Long warehouseId, String name);
+    List<ReportHistory> findByWarehouseIdAndType(Long warehouseId, ReportType type);
 
 
 

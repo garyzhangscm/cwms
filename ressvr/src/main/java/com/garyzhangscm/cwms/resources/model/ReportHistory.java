@@ -33,8 +33,7 @@ public class ReportHistory extends AuditibleEntity<String> {
     @Column(name = "printed_username")
     private String printedUsername;
 
-    @Column(name = "name")
-    private String name;
+
     @Column(name = "description")
     private String description;
 
@@ -65,7 +64,6 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.type = report.getType();
         this.reportOrientation  = report.getReportOrientation();
 
-        this.name = report.getName();
         this.description = report.getDescription();
         this.fileName  = fileName;
 
@@ -139,13 +137,7 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.printedUsername = printedUsername;
     }
 
-    public String getName() {
-        return name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getDescription() {
         return description;

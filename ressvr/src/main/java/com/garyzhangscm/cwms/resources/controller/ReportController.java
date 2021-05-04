@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.Report;
 
 import com.garyzhangscm.cwms.resources.model.ReportHistory;
+import com.garyzhangscm.cwms.resources.model.ReportType;
 import com.garyzhangscm.cwms.resources.service.ReportService;
 import net.sf.jasperreports.engine.JRException;
 import org.slf4j.Logger;
@@ -56,9 +57,8 @@ public class ReportController {
     public List<Report> findAllReports(
             @RequestParam(name="companyId", required = false ) Long companyId,
             @RequestParam(name="warehouseId", required = false ) Long warehouseId,
-            @RequestParam(name="name", required = false, defaultValue = "") String name,
             @RequestParam(name="type", required = false, defaultValue = "") String type) {
-        return reportService.findAll(companyId, warehouseId, name, type);
+        return reportService.findAll(companyId, warehouseId, type);
     }
 
     @RequestMapping(value="/reports", method = RequestMethod.PUT)
@@ -83,15 +83,15 @@ public class ReportController {
         return reportService.findById(id);
     }
 
-    @RequestMapping(value="/reports/{warehouseId}/{name}", method = RequestMethod.POST)
+    @RequestMapping(value="/reports/{warehouseId}/{type}", method = RequestMethod.POST)
     public ReportHistory generateReport(@PathVariable Long warehouseId,
-                                        @PathVariable String name,
+                                        @PathVariable String type,
                                         @RequestBody Report reportData,
                                         @RequestParam(name = "locale", defaultValue = "en", required = false) String locale) throws IOException, JRException {
 
         return reportService.generateReport(
                 warehouseId,
-                name,
+                ReportType.valueOf(type),
                 reportData,
                 locale);
     }
@@ -107,12 +107,14 @@ public class ReportController {
     }
 
     @RequestMapping(method=RequestMethod.GET,
-            value="/reports/templates/upload/{fileName}")
+            value="/reports/templates/upload/{warehouseId}/{username}/{fileName}")
     public ResponseEntity<Resource> getTemporaryReportTemplate(
+            @PathVariable Long warehouseId,
+            @PathVariable String username,
             @PathVariable String fileName) throws FileNotFoundException {
 
 
-        File reportTemplateFile = reportService.getTemporaryReportTemplate(fileName);
+        File reportTemplateFile = reportService.getTemporaryReportTemplate(warehouseId, username, fileName);
 
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(reportTemplateFile));

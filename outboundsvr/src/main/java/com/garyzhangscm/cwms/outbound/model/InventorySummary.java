@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -88,6 +91,16 @@ public class InventorySummary implements Serializable {
         List<Inventory> inventoryList = inventories.getOrDefault(lpn, new ArrayList<>());
         inventoryList.forEach(inventory -> inventory.setAllocatedByPickId(pickId));
 
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getLocationId() {

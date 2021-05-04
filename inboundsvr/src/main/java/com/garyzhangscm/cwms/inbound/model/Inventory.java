@@ -24,7 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class Inventory implements Serializable {
 
@@ -66,6 +68,23 @@ public class Inventory implements Serializable {
                 * stockItemUnitOfMeasure.getLength()
                 * stockItemUnitOfMeasure.getWidth()
                 * stockItemUnitOfMeasure.getHeight();
+    }
+
+    public Location getNextLocation() {
+        if (Objects.isNull(inventoryMovements) ||
+                inventoryMovements.size() == 0) {
+            return null;
+        }
+        inventoryMovements.sort(Comparator.comparingLong(InventoryMovement::getSequence));
+        return inventoryMovements.get(0).getLocation();
+    }
+    public Location getFinalLocation() {
+        if (Objects.isNull(inventoryMovements) ||
+                inventoryMovements.size() == 0) {
+            return null;
+        }
+        inventoryMovements.sort(Comparator.comparingLong(InventoryMovement::getSequence));
+        return inventoryMovements.get(inventoryMovements.size() - 1).getLocation();
     }
     public Long getId() {
         return id;

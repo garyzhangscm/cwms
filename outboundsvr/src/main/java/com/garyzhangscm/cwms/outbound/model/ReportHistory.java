@@ -18,7 +18,6 @@ public class ReportHistory extends AuditibleEntity<String> {
     private LocalDateTime printedDate;
     private String printedUsername;
 
-    private String name;
     private String description;
 
     private ReportType type;
@@ -86,14 +85,6 @@ public class ReportHistory extends AuditibleEntity<String> {
 
     public void setPrintedUsername(String printedUsername) {
         this.printedUsername = printedUsername;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {

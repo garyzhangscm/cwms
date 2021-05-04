@@ -2,14 +2,15 @@ package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.exception.ReportAccessPermissionException;
+import com.garyzhangscm.cwms.resources.exception.ReportFileMissingException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.ReportRepository;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.util.JRLoader;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang.StringUtils;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -17,19 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 @Service
@@ -86,13 +82,11 @@ public class ReportService implements TestDataInitiableService{
 
     public List<Report> findAll(Long companyId,
                                 Long warehouseId,
-                                String name,
                                 String type) {
-        return findAll(companyId, warehouseId, name, type, true);
+        return findAll(companyId, warehouseId, type, true);
     }
     public List<Report> findAll(Long companyId,
                                 Long warehouseId,
-                                String name,
                                 String type,
                                 boolean includeDetails) {
 
@@ -111,17 +105,10 @@ public class ReportService implements TestDataInitiableService{
                                         root.get("warehouseId"), warehouseId));
                     }
 
-
-
-                    if (!StringUtils.isBlank(name)) {
-                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
-                    }
-
                     if (!StringUtils.isBlank(type)) {
                         predicates.add(criteriaBuilder.equal(root.get("type"),
                                 ReportType.valueOf(type)));
                     }
-
 
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -155,20 +142,20 @@ public class ReportService implements TestDataInitiableService{
 
     }
 
-    public Report findByName(Long companyId,
+    public Report findByType(Long companyId,
                              Long warehouseId,
-                             String name) {
-        return findByName(companyId, warehouseId, name, true);
+                             ReportType type) {
+        return findByType(companyId, warehouseId, type, true);
     }
-    public Report findByName(Long companyId,
+    public Report findByType(Long companyId,
                              Long warehouseId,
-                             String name,
+                             ReportType type,
                              boolean includeDetails) {
         // check if we already have a customized report
         // 1. warehouse customized report
         // 2. company custmoized report
-        Report warehouseReport = reportRepository.findByWarehouseIdAndName(
-                warehouseId, name
+        Report warehouseReport = reportRepository.findByWarehouseIdAndType(
+                warehouseId, type
         );
         if (Objects.nonNull(warehouseReport)) {
             if (includeDetails) {
@@ -176,8 +163,8 @@ public class ReportService implements TestDataInitiableService{
             }
             return warehouseReport;
         }
-        Report companyReport = reportRepository.findByCompanyIdAndName(
-                    companyId, name
+        Report companyReport = reportRepository.findByCompanyIdAndType(
+                    companyId, type
             );
         if (Objects.nonNull(companyReport)) {
             if (includeDetails) {
@@ -188,7 +175,7 @@ public class ReportService implements TestDataInitiableService{
 
         // we don't have any customized version, let's
         // return the standard version
-        Report standardReport =  findByName(name);
+        Report standardReport =  findByType(type);
         if (Objects.nonNull(standardReport) && includeDetails) {
             loadDetail(standardReport);
         }
@@ -196,18 +183,18 @@ public class ReportService implements TestDataInitiableService{
 
     }
 
-    public  Report findByName(String name) {
-        return findByName(name, true);
+    public  Report findByType(ReportType type) {
+        return findByType(type, true);
     }
     /**
      * Get the standard version of the report
-     * @param name
+     * @param type
      * @param  includeDetails whether includes the detail information
      * @return
      */
-    public  Report findByName(String name, boolean includeDetails) {
+    public  Report findByType(ReportType type, boolean includeDetails) {
 
-        Report standardReport =  reportRepository.findStandardReportByName(name);
+        Report standardReport =  reportRepository.findStandardReportByType(type);
 
         if (Objects.nonNull(standardReport) && includeDetails) {
             loadDetail(standardReport);
@@ -246,8 +233,8 @@ public class ReportService implements TestDataInitiableService{
             // For example, when we pass in a warehouse customized report
             // but there's no such report, then the findByName may return
             // a company customized report, or a standard report
-            Report matchedReport = findByName(report.getCompanyId(),
-                    report.getWarehouseId(), report.getName());
+            Report matchedReport = findByType(report.getCompanyId(),
+                    report.getWarehouseId(), report.getType());
             // Let's see if this is a exact match
             if (report.equals(matchedReport)) {
                 report.setId(matchedReport.getId());
@@ -263,9 +250,8 @@ public class ReportService implements TestDataInitiableService{
         CsvSchema schema = CsvSchema.builder().
                 addColumn("company").
                 addColumn("warehouse").
-                addColumn("name").
-                addColumn("description").
                 addColumn("type").
+                addColumn("description").
                 addColumn("fileName").
                 addColumn("orientation").
                 build().withHeader();
@@ -336,7 +322,7 @@ public class ReportService implements TestDataInitiableService{
 
 
     public ReportHistory generateReport(Long warehouseId,
-                                 String name,
+                                 ReportType type,
                                  Report reportData,
                                  String locale)
             throws IOException, JRException {
@@ -346,7 +332,7 @@ public class ReportService implements TestDataInitiableService{
             return generateReport(
                     warehouse.getCompany().getId(),
                     warehouseId,
-                    name,
+                    type,
                     reportData,
                     locale
             );
@@ -358,13 +344,20 @@ public class ReportService implements TestDataInitiableService{
     }
     public ReportHistory generateReport(Long companyId,
                                  Long warehouseId,
-                                 String name,
+                                 ReportType type,
                                  Report reportData,
                                  String locale)
             throws IOException, JRException {
 
-        Report reportMetaData = findByName(companyId, warehouseId, name);
+        // Meta data without any content
+        Report reportMetaData = findByType(companyId, warehouseId, type);
 
+        if (Objects.isNull(reportMetaData)) {
+            throw ReportFileMissingException.raiseException(
+                    "Can't find report template for company /" + companyId +
+                    ",  warehouse / " + warehouseId +
+                    ", type / " + type);
+        }
         Locale reportLocale = Locale.forLanguageTag(locale);
         if (Objects.isNull(reportLocale)) {
             // default to us english
@@ -377,8 +370,8 @@ public class ReportService implements TestDataInitiableService{
         reportData.addParameter(JRParameter.REPORT_LOCALE, reportLocale);
 
 
-        logger.debug("Find report meta data by company: {}, warehouse: {}, name: {}",
-                companyId, warehouseId, name);
+        logger.debug("Find report meta data by company: {}, warehouse: {}, type: {}",
+                companyId, warehouseId, type);
         logger.debug(reportMetaData.toString());
 
         logger.debug("Start to get report file");
@@ -386,16 +379,7 @@ public class ReportService implements TestDataInitiableService{
         // it is not possible to read any file. But we are able
         // to get inputStream and pass the stream into the
         // JasperCompileManager
-        String reportUrl = getReportUrl(reportMetaData);
-        InputStream reportStream = getReportStream(reportUrl);
-        // File reportFile = getReportFile(reportMetaData);
-
-        logger.debug("Report file stream returned!");
-
-        JasperReport jasperReport =
-                JasperCompileManager.compileReport(reportStream);
-
-        logger.debug("Report file compiled!");
+        JasperReport jasperReport = getJasperReport(reportMetaData);
 
 
         JRBeanCollectionDataSource dataSource
@@ -407,6 +391,23 @@ public class ReportService implements TestDataInitiableService{
         reportData.getParameters().put(
                 JRParameter.REPORT_LOCALE, reportLocale);
 
+        // get custmoized resource boundle
+        // it should be in the same folder as the report template folder
+
+        String reportBundleUrl = getReportBundleUrl(reportMetaData);
+        logger.debug("Start to get resource bundle with base name {}",
+                reportBundleUrl);
+        ResourceBundle resourceBundle = ResourceBundle.getBundle(reportBundleUrl,
+                reportLocale);
+        logger.debug("=====  resource bundle loaded, key count:{}  ====",
+                resourceBundle.keySet().size());
+        for(String key: resourceBundle.keySet()) {
+            logger.debug(">> key: {}, value: {}",
+                    key, resourceBundle.getString(key));
+        }
+        reportData.addParameter("REPORT_RESOURCE_BUNDLE", resourceBundle);
+
+
         JasperPrint jasperPrint = JasperFillManager.fillReport(
                 jasperReport, reportData.getParameters(), dataSource
         );
@@ -414,33 +415,119 @@ public class ReportService implements TestDataInitiableService{
         logger.debug("Report filled!");
 
         // save the result to local file
-        String reportFileName =
-                getReportResultFileName(companyId, reportMetaData);
-        String reportResultAbsoluteFileName =
-                reportResultFolder + "/"
-                        + reportFileName;
-
-        logger.debug("start to write report into {}!",
-                reportResultAbsoluteFileName);
-
-        switch (reportMetaData.getType()) {
-            /**
-            case HTML:
-                JasperExportManager.exportReportToHtmlFile(
-                        jasperPrint, reportResultAbsoluteFileName
-                );
-                break;
-             **/
-            default:
-                JasperExportManager.exportReportToPdfFile(
-                        jasperPrint, reportResultAbsoluteFileName
-                );
-                break;
-        }
+        String reportResultFileName = writeResultFile(reportMetaData, jasperPrint);
 
 
         // save the history information
-        return saveReportHistory(reportMetaData, reportFileName, warehouseId);
+        return saveReportHistory(reportMetaData, reportResultFileName, warehouseId);
+
+    }
+
+    private JasperReport getJasperReport(Report reportMetaData)
+            throws IOException, JRException {
+
+
+        // see if a pre-compiled(.jasper) file exists
+        JasperReport jasperReport;
+        String reportUrl = getReportUrl(reportMetaData, "jasper");
+        File reportFile = new File(reportUrl);
+        if (reportFile.exists()) {
+            // load from the .jasper file
+            logger.debug("Load from jasper file: {}", reportUrl);
+            jasperReport  = (JasperReport)JRLoader.loadObject(reportFile);
+            return jasperReport;
+        }
+
+        // if .jasper file doesn't exist, we will need to compile the jrxml file
+        reportUrl = getReportUrl(reportMetaData, "jrxml");
+        reportFile = new File(reportUrl);
+        if (reportFile.exists()) {
+            // load from the .jasper file
+
+            logger.debug("Load from jrxml file: {}", reportUrl);
+            InputStream reportStream = getReportStream(reportUrl);
+
+
+            logger.debug("Report file stream returned!");
+
+            // if the file is a pre-compiled,
+            jasperReport =
+                    JasperCompileManager.compileReport(reportStream);
+
+            logger.debug("Report file compiled!");
+            return jasperReport;
+        }
+        else {
+            throw ReportFileMissingException.raiseException(
+                    "Can't find the report file for " + reportMetaData.getFileName());
+        }
+
+
+    }
+
+    private String writeResultFile(Report reportMetaData, JasperPrint jasperPrint)
+            throws JRException {
+        String reportFileName =
+                getReportResultFileName(reportMetaData);
+        String reportResultAbsoluteFileName =
+                getReportResultFolder(reportMetaData)
+                        + reportFileName;
+
+        File reportResultFile = new File(reportResultAbsoluteFileName);
+
+        // remove the file if it already exists
+        reportResultFile.deleteOnExit();
+        if (!reportResultFile.getParentFile().exists()) {
+            reportResultFile.getParentFile().mkdirs();
+        }
+
+        logger.debug("start to write report into {} !",
+                reportResultAbsoluteFileName);
+
+
+        // Now we only support printing to PDF file
+        JasperExportManager.exportReportToPdfFile(
+                jasperPrint, reportResultAbsoluteFileName
+        );
+
+        return reportFileName;
+
+    }
+
+    private String getReportResultFolder(Report report) {
+
+        String folder = reportResultFolder;
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
+
+        if (Objects.nonNull(report.getCompanyId())) {
+            folder += report.getCompanyId() + "/";
+        }
+        if (Objects.nonNull(report.getWarehouseId())) {
+            folder += report.getWarehouseId() + "/";
+        }
+
+        return folder;
+    }
+
+    private String getReportBundleUrl(Report report) {
+
+        String folder = "";
+
+        if (Objects.nonNull(report.getCompanyId())) {
+            folder += report.getCompanyId() + "/";
+        }
+        if (Objects.nonNull(report.getWarehouseId())) {
+            folder += report.getWarehouseId() + "/";
+        }
+
+
+        String url = folder  + report.getFileName().replaceFirst("[.][^.]+$", "");;
+
+        logger.debug("will try to find report bundle by url: {}", url);
+        return url;
+
 
     }
 
@@ -453,14 +540,13 @@ public class ReportService implements TestDataInitiableService{
         // logger.debug("Report History saved: {}", reportHistory);
     }
 
-    private String getReportResultFileName(Long companyId, Report report)
-            throws IOException {
+    private String getReportResultFileName(Report report) {
 
         String reportResultFilePostfix =
                 String.format("%04d", (int)(Math.random()*1000));
 
-        return report.getName() + "_" + System.currentTimeMillis() + "_" + reportResultFilePostfix
-                + "." + report.getType();
+        return report.getType() + "_" + System.currentTimeMillis() + "_" + reportResultFilePostfix
+                + ".PDF";
 
     }
 
@@ -472,16 +558,19 @@ public class ReportService implements TestDataInitiableService{
 
     }
 
-    private String getReportUrl(Report report) {
+    private String getReportUrl(Report report, String fileExtension) {
 
         String folder = getReportFolder(report);
 
-        String url = folder + "/" + report.getFileName();
+        String url = folder + "/"
+                + report.getFileName() + "." + fileExtension;
 
         logger.debug("will try to find report by url: {}", url);
         return url;
 
     }
+
+
 
     private String getReportFolder(Report report) {
 
@@ -562,10 +651,9 @@ public class ReportService implements TestDataInitiableService{
         }
     }
 
-    public File getTemporaryReportTemplate(String fileName) {
+    public File getTemporaryReportTemplate(Long warehouseId, String username, String fileName) {
 
-        String fileUrl = tempReportTemplateFolder + "/"
-                + fileName;
+        String fileUrl = getTemporaryReportTemplateFilePath(warehouseId, username) + fileName;
 
         logger.debug("Will return {} to the client",
                 fileUrl);
@@ -590,6 +678,58 @@ public class ReportService implements TestDataInitiableService{
 
     public Report addReport(Long warehouseId, String username, Boolean companySpecific,
                             Boolean warehouseSpecific, Report report) throws IOException {
+        copyUploadedTemplateFile(warehouseId, username, companySpecific,
+                                 warehouseSpecific, report);
+        copyUploadedPropertiesFiles(warehouseId, username, companySpecific,
+                warehouseSpecific, report);
+
+        // clear the company id and warehouse id if
+        // the report is not specific to any company or warehouse
+        if (!companySpecific) {
+            report.setCompanyId(null);
+        }
+        if (!warehouseSpecific) {
+            report.setWarehouseId(null);
+        }
+        return saveOrUpdate(report);
+
+    }
+
+    private void copyUploadedPropertiesFiles(Long warehouseId, String username,
+                                             Boolean companySpecific, Boolean warehouseSpecific, Report report) throws IOException {
+
+        // we will always assume that the properties files has the same name
+        // as the template file
+
+        logger.debug("Start to copy properties file");
+        String filenameWithoutExtension = report.getFileName().replaceFirst("[.][^.]+$", "");
+
+        // get all properties files that start with same name and ends with .properties
+        File dir = new File(getTemporaryReportTemplateFilePath(warehouseId, username));
+
+
+        FileFilter fileFilter = new WildcardFileFilter(filenameWithoutExtension + "*.properties");
+        File[] files = dir.listFiles(fileFilter);
+        logger.debug("get {} properties files under folder {}",
+                files.length, dir.getAbsolutePath());
+        for (int i = 0; i < files.length; i++) {
+            String sourcePropertiesFilePath = getTemporaryReportTemplateFilePath(warehouseId, username)
+                    + files[i].getName();
+
+            String destinationPropertiesFilePath = getReportTemplateFile(companySpecific, warehouseSpecific, report)
+                    + files[i].getName();
+            logger.debug("Copy template file from {} to {}", sourcePropertiesFilePath, destinationPropertiesFilePath);
+            fileService.copyFile(sourcePropertiesFilePath, destinationPropertiesFilePath);
+
+            // remote the original file
+            new File(sourcePropertiesFilePath).deleteOnExit();
+        }
+
+    }
+
+    private void copyUploadedTemplateFile(Long warehouseId, String username,
+                                          Boolean companySpecific, Boolean warehouseSpecific, Report report) throws IOException {
+        logger.debug("Start to copy template file");
         // Copy the file from temporary folder into template folder
         String sourceTemplateFilePath = getTemporaryReportTemplateFilePath(warehouseId, username)
                 + report.getFileName();
@@ -601,15 +741,8 @@ public class ReportService implements TestDataInitiableService{
 
         fileService.copyFile(sourceTemplateFilePath, destinationTemplateFilePath);
 
-        // clear the company id and warehouse id if
-        // the report is not specific to any company or warehouse
-        if (!companySpecific) {
-            report.setCompanyId(null);
-        }
-        if (!warehouseSpecific) {
-            report.setWarehouseId(null);
-        }
-        return saveOrUpdate(report);
+        // remote the original file
+        new File(sourceTemplateFilePath).deleteOnExit();
 
     }
 

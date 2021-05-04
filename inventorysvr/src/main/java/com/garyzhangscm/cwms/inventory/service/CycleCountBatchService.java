@@ -82,11 +82,19 @@ public class CycleCountBatchService {
 
 
         String batchId = cycleCountBatch.getBatchId();
-        int openLocationCount = cycleCountRequestService.getOpenCycleCountRequests(batchId).size();
-        int cancelledLocationCount = cycleCountRequestService.getCancelledCycleCountRequests(batchId).size();
-        int finishedLocationCount = cycleCountResultService.findByBatchId(batchId).size();
-        int openAuditLocationCount = auditCountRequestService.findByBatchId(batchId).size();
-        int finishedAuditLocationCount = auditCountResultService.findByBatchId(batchId).size();
+        Long warehouseId = cycleCountBatch.getWarehouseId();
+        int openLocationCount =
+                cycleCountRequestService.
+                        getOpenCycleCountRequests(warehouseId, batchId).size();
+        int cancelledLocationCount =
+                cycleCountRequestService.
+                        getCancelledCycleCountRequests(warehouseId, batchId).size();
+        int finishedLocationCount =
+                cycleCountResultService.findByBatchId(warehouseId, batchId).size();
+        int openAuditLocationCount =
+                auditCountRequestService.findByBatchId(warehouseId, batchId).size();
+        int finishedAuditLocationCount =
+                auditCountResultService.findByBatchId(warehouseId, batchId).size();
 
         int requestLocationCount = openLocationCount + cancelledLocationCount + finishedLocationCount;
 

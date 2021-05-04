@@ -1171,5 +1171,16 @@
   "file.upload.success": "上传成功",
   "file.upload.fail": "上传失败",
   "report.template.upload": "上传报表模板",
-  "message.report.added": "报表新增成功"
+  "message.report.added": "报表新增成功",
+  "REPORT-TYPE-ORDER_PICK_SHEET": "订单拣货单",
+  "REPORT-TYPE-RECEIVING_DOCUMENT": "入库单",
+  "REPORT-TYPE-PUTAWAY_DOCUMENT": "上架单",
+  "REPORT-TYPE-PICK_LIST_SHEET": "列表拣货单",
+  "REPORT-TYPE-DELIVERY_NOTE": "发货单",
+  "REPORT-TYPE-PACKING_SLIP": "装箱单",
+  "PUTAWAY-PRINTING-ALL": "全部打印",
+  "PUTAWAY-PRINTING-ALL-RECEIVED": "只打印未上架",
+  "PUTAWAY-PRINTING-SELECTED": "只打印已选择记录",
+  "PRINTING-ALL": "全部打印",
+  "PRINTING-SELECTED": "只打印已选择记录"
 }

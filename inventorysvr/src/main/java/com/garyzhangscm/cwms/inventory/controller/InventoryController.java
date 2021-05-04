@@ -55,12 +55,14 @@ public class InventoryController {
                                               @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
-                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
+                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                              @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                              @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly) {
         return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn);
+                pickIds, lpn, inventoryIds, notPutawayInventoryOnly);
     }
     @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
     public int getInventoryCount(@RequestParam Long warehouseId,
@@ -78,12 +80,14 @@ public class InventoryController {
                                               @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
-                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
+                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                 @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                 @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly) {
         return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn).size();
+                pickIds, lpn, inventoryIds, notPutawayInventoryOnly).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)

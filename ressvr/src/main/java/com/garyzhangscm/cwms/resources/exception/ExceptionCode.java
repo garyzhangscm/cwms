@@ -23,7 +23,8 @@ public enum ExceptionCode {
     REQUEST_VALIDATION_FAILED(50001, HttpStatus.BAD_REQUEST, "Validation Fail"),
     MISSING_INFORMATION(50002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"),
     USER_OPERATION_EXCEPTION(50003, HttpStatus.BAD_REQUEST, "User Operation Ex"),
-    REPORT_ACCESS_PERMISSION_EXCEPTION(50004, HttpStatus.BAD_REQUEST, "User Doesn't Have Permission to Access current Report");
+    REPORT_ACCESS_PERMISSION_EXCEPTION(50004, HttpStatus.BAD_REQUEST, "User Doesn't Have Permission to Access current Report"),
+    REPORT_FILE_MISSING_EXCEPTION(50005, HttpStatus.BAD_REQUEST, "Cannot find the report file");
 
     private final int code;
 

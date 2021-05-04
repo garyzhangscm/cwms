@@ -283,7 +283,8 @@ public class ShipmentService {
     public List<Shipment> planShipments(Long warehouseId, List<OrderLine> orderLines){
         List<Shipment> shipments = new ArrayList<>();
         // Plan one wave for each shipment, wave number will be the shipment number
-        Map<Order, List<OrderLine>> orderListMap = segregateOrderLinesBasedOnOrder(orderLines, true);
+        Map<Order, List<OrderLine>> orderListMap
+                = segregateOrderLinesBasedOnOrder(orderLines, true);
 
         orderListMap.entrySet().forEach(entrySet -> {
 
@@ -299,29 +300,44 @@ public class ShipmentService {
 
     }
 
-    private Map<Order, List<OrderLine>> segregateOrderLinesBasedOnOrder(List<OrderLine> orderLines, boolean plannableOrderLine) {
+    private Map<Order, List<OrderLine>> segregateOrderLinesBasedOnOrder(
+            List<OrderLine> orderLines, boolean plannableOrderLine) {
 
         Map<Order, List<OrderLine>> orderListMap = new HashMap<>();
         Stream<OrderLine> orderLineStream = orderLines.stream();
+
+
+
         if (plannableOrderLine) {
             orderLineStream = orderLineStream
                     .filter(orderLine -> orderLine.getOpenQuantity() > 0);
         }
+
         // We will only plan shipment for those lines with open quantity
         // We will plan one shipment per order.
         orderLineStream
                 .forEach(orderLine ->
                 {
                     // in case the order line doesn't have the order setup yet, load the order line again from the db
+                    logger.debug("check order line: {}  ",
+                            orderLine.getId());
                     Order order = orderLine.getOrder();
                     if (Objects.isNull(order)) {
                         order = orderLineService.findById(orderLine.getId()).getOrder();
                     }
-                    logger.debug("Find order: {} for order line: {}", order.getNumber(), orderLine.getId());
+                    logger.debug("Find order: {} for order line: {}",
+                            order.getNumber(), orderLine.getId());
                     List<OrderLine> existingOrderLines = orderListMap.getOrDefault(order, new ArrayList<>());
+                    logger.debug("existingOrderLines for order {}, existing order lines: {}",
+                            order.getNumber(), existingOrderLines.size());
                     existingOrderLines.add(orderLine);
+                    logger.debug("after add current order line we have  {} lines for order {}",
+                            existingOrderLines.size(), order.getNumber());
                     orderListMap.put(order, existingOrderLines);
+                    logger.debug("now we have {} orders", orderListMap.keySet().size());
                 });
+        logger.debug("we get {} orders out of {} order lines",
+                orderListMap.keySet().size(), orderLines.size());
         return orderListMap;
     }
 

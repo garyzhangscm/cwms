@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.inventory.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
@@ -25,8 +27,12 @@ import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -43,6 +49,9 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     OAuth2RestOperations restTemplate;
 
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
@@ -129,5 +138,35 @@ public class ResourceServiceRestemplateClient {
             return roles.get(0);
         }
 
+    }
+
+
+    public ReportHistory generateReport(Long warehouseId, ReportType type,
+                                        Report reportData, String locale)
+            throws JsonProcessingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/reports/{warehouseId}/{type}")
+                        .queryParam("locale", locale);
+
+        ResponseBodyWrapper<ReportHistory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(warehouseId, type).toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(reportData)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
     }
 }

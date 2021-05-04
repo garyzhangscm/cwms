@@ -18,11 +18,13 @@
 
 package com.garyzhangscm.cwms.inbound.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
 import com.garyzhangscm.cwms.inbound.model.Inventory;
 import com.garyzhangscm.cwms.inbound.model.Receipt;
 import com.garyzhangscm.cwms.inbound.model.ReceiptLine;
+import com.garyzhangscm.cwms.inbound.model.ReportHistory;
 import com.garyzhangscm.cwms.inbound.service.ReceiptLineService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,5 +114,25 @@ public class ReceiptController {
     @RequestMapping(value="/receipts/lines", method = RequestMethod.DELETE)
     public void removeReceiptLine(@RequestParam String receiptLineIds) {
         receiptLineService.delete(receiptLineIds);
+    }
+
+
+    @RequestMapping(value="/receipts/{id}/receiving-document", method = RequestMethod.POST)
+    public ReportHistory generateReceivingDocument(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        return receiptService.generateReceivingDocument(id, locale);
+    }
+
+
+    @RequestMapping(value="/receipts/{id}/putaway-document", method = RequestMethod.POST)
+    public ReportHistory generatePutawayDocument(
+            @PathVariable Long id,
+            @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+            @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        return receiptService.generatePutawayDocument(id, locale, inventoryIds, notPutawayInventoryOnly);
     }
 }

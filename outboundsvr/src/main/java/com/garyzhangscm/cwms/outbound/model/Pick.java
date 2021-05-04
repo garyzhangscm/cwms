@@ -105,6 +105,8 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "picked_quantity")
     private Long pickedQuantity;
 
+
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private PickStatus status;
@@ -132,13 +134,22 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
 
-
+    // how to confirm the pick. THe flag
+    // will be setup according to the area/ location's attribute
     @Column(name = "confirm_item_flag")
     private boolean confirmItemFlag;
     @Column(name = "confirm_location_flag")
     private boolean confirmLocationFlag;
     @Column(name = "confirm_location_code_flag")
     private boolean confirmLocationCodeFlag;
+
+    // work related field. The work's ID is setup
+    // if it belongs to certain work. We use the
+    // work concept to assign job/work to certain
+    // person
+    @Column(name = "work_id")
+    private Long workId;
+
 
     @JsonIgnore
     public Double getSize() {
@@ -413,5 +424,13 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setConfirmLocationCodeFlag(boolean confirmLocationCodeFlag) {
         this.confirmLocationCodeFlag = confirmLocationCodeFlag;
+    }
+
+    public Long getWorkId() {
+        return workId;
+    }
+
+    public void setWorkId(Long workId) {
+        this.workId = workId;
     }
 }

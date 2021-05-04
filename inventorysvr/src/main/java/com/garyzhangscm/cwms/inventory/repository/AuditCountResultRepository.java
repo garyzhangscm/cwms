@@ -27,7 +27,7 @@ import java.util.List;
 
 @Repository
 public interface AuditCountResultRepository extends JpaRepository<AuditCountResult, Long>, JpaSpecificationExecutor<AuditCountResult> {
-    List<AuditCountResult> findByBatchId(String batchId);
+    List<AuditCountResult> findByWarehouseIdAndBatchId(Long warehouseId, String batchId);
 
     List<AuditCountResult> findByLocationId(Long locationId);
 }

@@ -19,7 +19,9 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
@@ -58,8 +60,11 @@ public class CycleCountRequestService{
     @Autowired
     private ItemService itemService;
 
+
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     public CycleCountRequest findById(Long id) {
         return cycleCountRequestRepository.findById(id)
@@ -72,16 +77,21 @@ public class CycleCountRequestService{
     public void delete(Long id) {
         cycleCountRequestRepository.deleteById(id);
     }
-    public List<CycleCountRequest> findByBatchId(String batchId) {
-        return cycleCountRequestRepository.findByBatchId(batchId);
+    public List<CycleCountRequest> findByBatchId(Long warehouseId, String batchId) {
+        return cycleCountRequestRepository.findByWarehouseIdAndBatchId(
+                warehouseId, batchId);
     }
 
-    public List<CycleCountRequest> getOpenCycleCountRequests(String batchId) {
-        return warehouseLayoutServiceRestemplateClient.setupCycleCountRequestLocations(cycleCountRequestRepository.getOpenRequests(batchId));
+    public List<CycleCountRequest> getOpenCycleCountRequests(
+            Long warehouseId, String batchId) {
+        return warehouseLayoutServiceRestemplateClient.setupCycleCountRequestLocations(
+                cycleCountRequestRepository.getOpenRequests(warehouseId, batchId));
     }
 
-    public List<CycleCountRequest> getCancelledCycleCountRequests(String batchId) {
-        return warehouseLayoutServiceRestemplateClient.setupCycleCountRequestLocations(cycleCountRequestRepository.getCancelledRequests(batchId));
+    public List<CycleCountRequest> getCancelledCycleCountRequests(
+            Long warehouseId, String batchId) {
+        return warehouseLayoutServiceRestemplateClient.setupCycleCountRequestLocations(
+                cycleCountRequestRepository.getCancelledRequests(warehouseId, batchId));
     }
 
     public CycleCountRequest findOpenCycleCountRequestByLocationId(Long locationId) {
@@ -387,7 +397,8 @@ public class CycleCountRequestService{
             Long warehouseId, String beginValue, String endValue,
             Boolean includeEmptyLocation) {
 
-        List<Location> locations = getCycleCountRequestLocations(cycleCountRequestType, warehouseId, beginValue, endValue, includeEmptyLocation);
+        List<Location> locations
+                = getCycleCountRequestLocations(cycleCountRequestType, warehouseId, beginValue, endValue, includeEmptyLocation);
         logger.debug("Get {} potential locations for cycle count request",
                 locations.size());
         return locations.stream()
@@ -462,8 +473,15 @@ public class CycleCountRequestService{
                     "count", includeEmptyLocation);
         }
     }
-    private List<Location> getCycleCountRequestLocationsByItemRange(String beginValue, String endValue, Boolean includeEmptyLocation) {return new ArrayList<>();}
-    private List<Location> getCycleCountRequestLocationsByAisleRange(String beginValue, String endValue, Boolean includeEmptyLocation) {
+    private List<Location> getCycleCountRequestLocationsByItemRange(
+            String beginValue, String endValue, Boolean includeEmptyLocation) {
+        return new ArrayList<>();
+    }
+    private List<Location> getCycleCountRequestLocationsByAisleRange(
+            String beginValue, String endValue, Boolean includeEmptyLocation) {
+        logger.debug("Start to get locations by aisle range, [{}, {}], including empty location: {}",
+                beginValue, endValue, includeEmptyLocation);
+
         if (beginValue.isEmpty() && endValue.isEmpty()) {
             return new ArrayList<>();
         } else if (beginValue.isEmpty()) {
@@ -477,5 +495,121 @@ public class CycleCountRequestService{
 
 
 
+    public ReportHistory generateCycleCountSheet(Long warehouseId,
+                                                 String batchId,
+                                                 String cycleCountRequestIds,
+                                                 String locale)
+            throws JsonProcessingException {
+
+        List<CycleCountRequest> cycleCountRequests;
+        if (StringUtils.isNotBlank(cycleCountRequestIds)) {
+            // cycle coutn request id list is passed in, let's get
+            // all valid cycle count based on the id list
+            cycleCountRequests =
+                    Arrays.stream(cycleCountRequestIds.split(","))
+                            .map(Long::parseLong)
+                            .map(id -> cycleCountRequestRepository.findById(id).orElse(null))
+                            .collect(Collectors.toList());
+        }
+        else {
+            // If we don't pass in cycle count request id, then get by batch id
+            cycleCountRequests =
+                    findByBatchId(warehouseId, batchId);
+        }
+
+
+
+        return generateCycleCountSheet(warehouseId, batchId, cycleCountRequests, locale);
+    }
+
+
+    public ReportHistory generateCycleCountSheet(
+            Long warehouseId,
+            String batchId,
+            List<CycleCountRequest> cycleCountRequests,
+            String locale)
+            throws JsonProcessingException {
+
+        List<CycleCountResult> inventorySummaries =
+                cycleCountRequests.stream()
+                        .map(cycleCountRequest -> getInventorySummariesForCount(cycleCountRequest.getId()))
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+
+
+
+
+        Report reportData = new Report();
+        setupCycleCountSheetData(
+                reportData, inventorySummaries
+        );
+        setupCycleCountSheetParameters(
+                reportData, batchId, inventorySummaries
+        );
+
+        logger.debug("will call resource service to print the cycle count sheet with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.CYCLE_COUNT_SHEET,
+                        reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupCycleCountSheetParameters(
+            Report report,
+            String batchId,
+            List<CycleCountResult> inventorySummaries) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        logger.debug("Start to setup cycle count's paramters");
+        report.addParameter("cycle_count.batch_number",
+                batchId);
+
+        logger.debug("batch id is set to {}", batchId);
+
+        logger.debug("start to set location names with inventory summaries: {}",
+                inventorySummaries.size());
+        logger.debug("=======    Inventory Summaries  =======");
+        logger.debug(inventorySummaries.toString());
+        Set<String> locationName = inventorySummaries.stream()
+                .map(CycleCountResult::getLocation)
+                .map(Location::getName).collect(Collectors.toSet());
+
+        report.addParameter("totalLocationCount", locationName.size());
+
+        logger.debug("totalLocationCount is set to {}", locationName.size());
+
+        logger.debug("start to set location names with inventory summaries: {}",
+                inventorySummaries.size());
+        Set<String> itemNumbers = inventorySummaries.stream()
+                // filter out empty location that the item number is null
+                .filter(cycleCountResult -> Objects.nonNull(cycleCountResult.getItem()))
+                .map(CycleCountResult::getItem).map(Item::getName)
+                .collect(Collectors.toSet());
+        report.addParameter("totalItemCount", itemNumbers.size());
+        logger.debug("totalLocationCount is set to {}", itemNumbers.size());
+
+
+    }
+
+    private void setupCycleCountSheetData(
+            Report report, List<CycleCountResult> inventorySummaries) {
+
+
+
+
+        report.setData(inventorySummaries);
+
+    }
 }
 

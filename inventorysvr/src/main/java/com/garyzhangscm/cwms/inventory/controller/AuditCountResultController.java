@@ -37,9 +37,11 @@ public class AuditCountResultController {
     @Autowired
     AuditCountResultService auditCountResultService;
 
-    @RequestMapping(value = "/audit-count-result/{batchId}", method = RequestMethod.GET)
-    public List<AuditCountResult> getAuditCountResultByBatch(@PathVariable String batchId){
-        return auditCountResultService.findByBatchId(batchId);
+    @RequestMapping(value = "/audit-count-result/{warehouseId}/{batchId}", method = RequestMethod.GET)
+    public List<AuditCountResult> getAuditCountResultByBatch(
+            @PathVariable Long warehouseId,
+            @PathVariable String batchId){
+        return auditCountResultService.findByBatchId(warehouseId, batchId);
     }
 
 
