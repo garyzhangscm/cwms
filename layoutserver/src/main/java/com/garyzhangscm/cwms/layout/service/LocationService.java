@@ -710,4 +710,18 @@ public class LocationService implements TestDataInitiableService {
                 null);
     }
 
+    public Location addRFLocation(Long warehouseId, String rfCode) {
+        // see if we already hava the location
+        Location location = findByName(rfCode, warehouseId);
+        if (Objects.nonNull(location)) {
+            return location;
+        }
+        else {
+
+            location = new Location(warehouseService.findById(warehouseId),
+                    rfCode, locationGroupService.getRFLocationGroup(warehouseId));
+
+            return saveOrUpdate(location);
+        }
+    }
 }

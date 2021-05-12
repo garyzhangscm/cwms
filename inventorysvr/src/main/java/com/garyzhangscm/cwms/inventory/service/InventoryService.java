@@ -770,7 +770,13 @@ public class InventoryService implements TestDataInitiableService{
             inventory.setVirtual(false);
         }
         // Check if we have finished any movement
-        recalculateMovementPathForInventoryMovement(inventory, destination);
+        if (Objects.nonNull(pickId)) {
+            recalculateMovementPathForPickedInventoryMovement(inventory, destination, pickId);
+        }
+        else {
+
+            recalculateMovementPathForInventoryMovement(inventory, destination);
+        }
 
         // Reset the destination location's size
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
@@ -852,6 +858,28 @@ public class InventoryService implements TestDataInitiableService{
                     destination.getName(), volume);
             warehouseLayoutServiceRestemplateClient.increaseLocationVolume(destination.getId(), volume);
         }
+    }
+
+    private  void recalculateMovementPathForPickedInventoryMovement(Inventory inventory, Location destination, Long pickId) {
+        Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
+        // if the inventory is picked inventory, then we will clear the
+        // movement path that already assigned to the current inventory.
+        // we want to start off with a clear movement path and assign
+        // it with the ones only necessary for outbound
+        inventory.getInventoryMovements().clear();
+        InventoryMovement inventoryMovement = new InventoryMovement();
+        inventoryMovement.setInventory(inventory);
+        inventoryMovement.setLocationId(pick.getDestinationLocation().getId());
+        inventoryMovement.setSequence(0);
+        inventoryMovement.setWarehouseId(inventory.getWarehouseId());
+
+        inventory.getInventoryMovements().add(inventoryMovement);
+
+
+        logger.debug("Add destination {} to the movement path of picked inventory LPN / {}",
+                destination.getName(), inventory.getLpn());
+
+
     }
     private void recalculateMovementPathForInventoryMovement(Inventory inventory, Location destination) {
 

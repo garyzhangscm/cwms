@@ -17,6 +17,19 @@ DROP TABLE IF EXISTS report;
 
 DROP TABLE IF EXISTS report_history;
 
+
+DROP TABLE IF EXISTS rf_info;
+
+CREATE TABLE rf_info (
+  rf_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT,
+  rf_code  VARCHAR(100) NOT NULL,
+  created_time date,
+  created_by VARCHAR(50),
+  last_modified_time date,
+  last_modified_by VARCHAR(50)
+);
+
 CREATE TABLE report (
   report_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   company_id BIGINT,
