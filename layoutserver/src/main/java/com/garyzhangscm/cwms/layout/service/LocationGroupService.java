@@ -270,6 +270,16 @@ public class LocationGroupService implements TestDataInitiableService {
                 .orElseThrow(() -> LocationOperationException.raiseException("Can't find location group for container on the fly"));
     }
 
+    public LocationGroup getRFLocationGroup(Long warehouseId) {
+
+        long[] locationGroupTypeIdArray =
+                locationGroupTypeService.getRFLocationGroupType().stream()
+                        .mapToLong(locationGroupType -> locationGroupType.getId()).toArray();
+
+        return findAll( warehouseId,  locationGroupTypeIdArray).stream().findFirst()
+                .orElseThrow(() -> LocationOperationException.raiseException("Can't find location group for rf on the fly"));
+    }
+
     // Reserve a location from a group with the specific code.
     // We will first try to allocate a location with the same reserve code. If
     // we can't find such location, we will find a empty location and reserve the

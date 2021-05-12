@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.Company;
+import com.garyzhangscm.cwms.resources.model.Location;
 import com.garyzhangscm.cwms.resources.model.Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -218,4 +219,21 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         return restExchange.getBody();
     }
 
+    public Location createRFLocation(Long warehouseId, String rfCode) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout//locations/rf")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("rfCode", rfCode);
+
+        ResponseEntity<Location> restExchange
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                Location.class);
+        return restExchange.getBody();
+    }
 }

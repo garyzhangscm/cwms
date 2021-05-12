@@ -78,6 +78,11 @@ public class LocationGroupTypeService implements TestDataInitiableService {
         return findAll("").stream().filter(locationGroupType -> locationGroupType.getContainer() == true).collect(Collectors.toList());
     }
 
+    public List<LocationGroupType> getRFLocationGroupType() {
+        return findAll("").stream().filter(locationGroupType -> locationGroupType.getRf() == true).collect(Collectors.toList());
+    }
+
+
     public LocationGroupType findByName(String name){
         return locationGroupTypeRepository.findByName(name);
     }
@@ -121,6 +126,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("packingStation").
                 addColumn("shippedParcel").
                 addColumn("shippedOrder").
+                addColumn("rf").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupType.class);
     }
@@ -146,6 +152,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("packingStation").
                 addColumn("shippedParcel").
                 addColumn("shippedOrder").
+                addColumn("rf").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupType.class);

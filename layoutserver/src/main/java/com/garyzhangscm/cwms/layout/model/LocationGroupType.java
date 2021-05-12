@@ -65,6 +65,8 @@ public class LocationGroupType extends AuditibleEntity<String>{
     private Boolean yard;
     @Column(name = "storage_locations")
     private Boolean storage;
+    @Column(name = "rf_locations")
+    private Boolean rf;
     // a typical grid is a distribution wall
     @Column(name = "grid")
     private Boolean grid;
@@ -153,6 +155,14 @@ public class LocationGroupType extends AuditibleEntity<String>{
 
     public void setDock(Boolean dock) {
         this.dock = dock;
+    }
+
+    public Boolean getRf() {
+        return rf;
+    }
+
+    public void setRf(Boolean rf) {
+        this.rf = rf;
     }
 
     public Boolean getYard() {

@@ -904,6 +904,7 @@ public class PickService {
         }
     }
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
+                            String nextLocationName,
                             boolean pickToContainer, String containerId)  {
         Pick pick = findById(pickId);
         if (pickToContainer) {
@@ -917,6 +918,17 @@ public class PickService {
         }
         if (Objects.nonNull(nextLocationId)) {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
+            if (Objects.nonNull(nextLocation)) {
+                return confirmPick(pick, quantity, nextLocation);
+            }
+            else {
+                throw PickingException.raiseException(
+                        "Can't confirm the pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
+            }
+        }
+        else if (StringUtils.isNotBlank(nextLocationName)) {
+            Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                    pick.getWarehouseId(), nextLocationName);
             if (Objects.nonNull(nextLocation)) {
                 return confirmPick(pick, quantity, nextLocation);
             }
