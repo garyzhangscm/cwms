@@ -240,9 +240,9 @@ public class ReceiptLineService implements TestDataInitiableService{
         // Validate if we can receive the inventory
         // 1. over receiving?
         // 3. unexpected item number?
+        logger.debug("Will receive inventory\n {}", inventory);
         validateReceiving(receipt, receiptLine, inventory);
 
-        logger.debug("Will receive inventory\n {}", inventory);
         if (inventory.getLocation() == null) {
             Location location =
                     warehouseLayoutServiceRestemplateClient.getLocationByName(
@@ -277,8 +277,13 @@ public class ReceiptLineService implements TestDataInitiableService{
     // 3. unexpected item number?
     private void validateReceiving(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {
         // unexpected item number?
+        logger.debug("receiptLine== null?: {}", receiptLine == null);
+        logger.debug("receiptLine.getItemId()== null?: {}", receiptLine.getItemId() == null);
+        logger.debug("inventory == null?: {}", inventory == null);
+        logger.debug("inventory.getItem()== null?: {}", inventory.getItem() == null);
         if (!receipt.getAllowUnexpectedItem() &&
-             !receiptLine.getItemId().equals(inventory.getItem().getId())) {
+             !receiptLine.getItemId().equals(
+                     inventory.getItem().getId())) {
             throw ReceiptOperationException.raiseException("Unexpected item not allowed for this receipt");
         }
 

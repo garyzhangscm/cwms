@@ -21,10 +21,28 @@ package com.garyzhangscm.cwms.inventory.repository;
 import com.garyzhangscm.cwms.inventory.model.CycleCountBatch;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface CycleCountBatchRepository extends JpaRepository<CycleCountBatch, Long>, JpaSpecificationExecutor<CycleCountBatch> {
     CycleCountBatch findByBatchId(String batchId);
+
+    @Query("select b from CycleCountBatch b where  b.batchId in " +
+            "  (select r.batchId from CycleCountRequest r " +
+            "       where r.status =  com.garyzhangscm.cwms.inventory.model.CycleCountRequestStatus.OPEN)")
+    List<CycleCountBatch> getCycleCountBatchesWithOpenCycleCount() ;
+
+    @Query("select b from CycleCountBatch b where  b.batchId in " +
+            "  (select r.batchId from AuditCountRequest r )")
+    List<CycleCountBatch> getCycleCountBatchesWithOpenAuditCount();
+
+    @Query("select b from CycleCountBatch b where  b.batchId in " +
+            "  (select r.batchId from CycleCountRequest r " +
+            "       where r.status =  com.garyzhangscm.cwms.inventory.model.CycleCountRequestStatus.OPEN)" +
+            " or b.batchId in (select r.batchId from AuditCountRequest r)")
+    List<CycleCountBatch> getOpenCycleCountBatches() ;
 
 }

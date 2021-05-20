@@ -422,9 +422,9 @@ public class CycleCountRequestService{
             case BY_LOCATION_RANGE:
                 return getCycleCountRequestLocationsByLocationRange(warehouseId, beginValue, endValue, includeEmptyLocation);
             case BY_ITEM_RANGE:
-                return getCycleCountRequestLocationsByItemRange(beginValue, endValue, includeEmptyLocation);
+                return getCycleCountRequestLocationsByItemRange(warehouseId, beginValue, endValue, includeEmptyLocation);
             case BY_AISLE_RANGE:
-                return getCycleCountRequestLocationsByAisleRange(beginValue, endValue, includeEmptyLocation);
+                return getCycleCountRequestLocationsByAisleRange(warehouseId, beginValue, endValue, includeEmptyLocation);
             default:
                 return getCycleCountRequestLocationsByLocationRange(warehouseId, beginValue, endValue, includeEmptyLocation);
         }
@@ -474,22 +474,22 @@ public class CycleCountRequestService{
         }
     }
     private List<Location> getCycleCountRequestLocationsByItemRange(
-            String beginValue, String endValue, Boolean includeEmptyLocation) {
+            Long warehouseId, String beginValue, String endValue, Boolean includeEmptyLocation) {
         return new ArrayList<>();
     }
     private List<Location> getCycleCountRequestLocationsByAisleRange(
-            String beginValue, String endValue, Boolean includeEmptyLocation) {
+            Long warehouseId, String beginValue, String endValue, Boolean includeEmptyLocation) {
         logger.debug("Start to get locations by aisle range, [{}, {}], including empty location: {}",
                 beginValue, endValue, includeEmptyLocation);
 
         if (beginValue.isEmpty() && endValue.isEmpty()) {
             return new ArrayList<>();
         } else if (beginValue.isEmpty()) {
-            return warehouseLayoutServiceRestemplateClient.getLocationByAisle(endValue);
+            return warehouseLayoutServiceRestemplateClient.getLocationByAisle(warehouseId, endValue, includeEmptyLocation);
         } else if (endValue.isEmpty()) {
-            return warehouseLayoutServiceRestemplateClient.getLocationByAisle(beginValue);
+            return warehouseLayoutServiceRestemplateClient.getLocationByAisle(warehouseId, beginValue, includeEmptyLocation);
         } else {
-            return warehouseLayoutServiceRestemplateClient.getLocationByAisleRange(beginValue, endValue);
+            return warehouseLayoutServiceRestemplateClient.getLocationByAisleRange(warehouseId, beginValue, endValue, includeEmptyLocation);
         }
     }
 

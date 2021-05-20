@@ -80,6 +80,8 @@ public class LocationController {
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
                                         @RequestParam(name = "beginSequence", required = false, defaultValue = "") Long beginSequence,
                                         @RequestParam(name = "endSequence", required = false, defaultValue = "") Long endSequence,
+                                        @RequestParam(name = "beginAisle", required = false, defaultValue = "") String beginAisle,
+                                        @RequestParam(name = "endAisle", required = false, defaultValue = "") String endAisle,
                                         @RequestParam(name = "sequenceType", required = false, defaultValue = "") String sequenceType,
                                         @RequestParam(name = "includeEmptyLocation", required = false, defaultValue = "") Boolean includeEmptyLocation,
                                         @RequestParam(name = "emptyLocationOnly", required = false, defaultValue = "") Boolean emptyLocationOnly,
@@ -97,6 +99,8 @@ public class LocationController {
                 .append("\nname: ").append(name)
                 .append("\nbeginSequence: ").append(beginSequence)
                 .append("\nendSequence: ").append(endSequence)
+                .append("\nbeginAisle: ").append(beginAisle)
+                .append("\nendAisle: ").append(endAisle)
                 .append("\nsequenceType: ").append(sequenceType)
                 .append("\nincludeEmptyLocation: ").append(includeEmptyLocation)
                 .append("\nemptyLocationOnly: ").append(emptyLocationOnly)
@@ -111,7 +115,7 @@ public class LocationController {
         List<Location> locations = locationService.findAll(
                 warehouseId,
                 locationGroupTypeIds, locationGroupIds, name,
-                beginSequence, endSequence, sequenceType,
+                beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
                 includeDisabledLocation);
 

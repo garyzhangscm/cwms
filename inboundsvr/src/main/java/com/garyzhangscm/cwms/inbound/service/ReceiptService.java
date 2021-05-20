@@ -39,6 +39,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -83,25 +87,39 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
 
-    public List<Receipt> findAll(Long warehouseId, String number) {
-        return findAll(warehouseId, number, true);
+    public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList) {
+        return findAll(warehouseId, number, receiptStatusList, true);
     }
 
-    public List<Receipt> findAll(Long warehouseId, String number, boolean loadDetails) {
-        List<Receipt> receipts;
+    public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList, boolean loadDetails) {
 
-        if (StringUtils.isBlank(number)) {
-            receipts = receiptRepository.findAll(warehouseId);
-        }
-        else {
-            Receipt receipt = receiptRepository.findByNumber(warehouseId, number);
-            if (receipt != null) {
-                receipts = Arrays.asList(new Receipt[]{receipt});
-            }
-            else {
-                receipts = new ArrayList<>();
-            }
-        }
+
+
+        List<Receipt> receipts =  receiptRepository.findAll(
+                (Root<Receipt> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (StringUtils.isNotBlank(number)) {
+                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+
+                    }
+
+                    if (StringUtils.isNotBlank(receiptStatusList)) {
+                        CriteriaBuilder.In<ReceiptStatus> inReceiptStatuses = criteriaBuilder.in(root.get("receiptStatus"));
+                        for(String receiptStatus : receiptStatusList.split(",")) {
+                            inReceiptStatuses.value(ReceiptStatus.valueOf(receiptStatus));
+                        }
+                        predicates.add(criteriaBuilder.and(inReceiptStatuses));
+                    }
+
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
         if (receipts.size() > 0 && loadDetails) {
             loadReceiptAttribute(receipts);
         }

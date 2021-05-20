@@ -241,12 +241,14 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public List<Location> getLocationByAisle(String aisle) {
+    public List<Location> getLocationByAisle(Long warehouseId, String aisle, boolean includeEmptyLocation) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/locations")
-                        .queryParam("aisle", aisle);
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("aisle", aisle)
+                        .queryParam("includeEmptyLocation", includeEmptyLocation;
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -258,15 +260,18 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public List<Location> getLocationByAisleRange(String beginValue, String endValue) {
+    public List<Location> getLocationByAisleRange(
+            Long warehouseId, String beginValue, String endValue, boolean includeEmptyLocation) {
 
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/locations")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("beginAisle", beginValue)
-                        .queryParam("beginAisle", endValue);
+                        .queryParam("endAisle", endValue)
+                        .queryParam("includeEmptyLocation", includeEmptyLocation);
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper =
                 restTemplate.exchange(

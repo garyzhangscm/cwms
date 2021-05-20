@@ -57,4 +57,5 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Pick By Work Order",menu.mobile.outbound.pick-by-work-order,pick_by_work_order,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByWorkOrder,0xe63a
 "Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,4,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,0xe63a
 "Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,0xe63a
-"Count",menu.mobile.inventory.count,cycle_cycle_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,0xe622
+"Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,0xe622
+"Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,0xe622

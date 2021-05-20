@@ -38,8 +38,24 @@ public class CycleCountBatchController {
 
 
     @RequestMapping(value = "/cycle-count-batches", method = RequestMethod.GET)
-    public List<CycleCountBatch> generateCycleCountRequests() {
-        return cycleCountBatchService.findAll();
+    public List<CycleCountBatch> getCycleCountBatches(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "batchId", required = false, defaultValue = "") String batchId) {
+        return cycleCountBatchService.findAll(warehouseId, batchId);
+    }
+
+
+    @RequestMapping(value = "/cycle-count-batches/open-with-cycle-count", method = RequestMethod.GET)
+    public List<CycleCountBatch> getCycleCountBatchesWithOpenCycleCount() {
+        return cycleCountBatchService.getCycleCountBatchesWithOpenCycleCount();
+    }
+    @RequestMapping(value = "/cycle-count-batches/open-with-audit-count", method = RequestMethod.GET)
+    public List<CycleCountBatch> getCycleCountBatchesWithOpenAuditCount() {
+        return cycleCountBatchService.getCycleCountBatchesWithOpenAuditCount();
+    }
+    @RequestMapping(value = "/cycle-count-batches/open", method = RequestMethod.GET)
+    public List<CycleCountBatch> getOpenCycleCountBatches() {
+        return cycleCountBatchService.getOpenCycleCountBatches();
     }
 
 }

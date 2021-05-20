@@ -43,8 +43,9 @@ public class ReceiptController {
 
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
     public List<Receipt> findAllReceipts(@RequestParam Long warehouseId,
-                                         @RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return receiptService.findAll(warehouseId, number);
+                                         @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                         @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList) {
+        return receiptService.findAll(warehouseId, number, receiptStatusList);
     }
 
     @RequestMapping(value="/receipts", method = RequestMethod.POST)
@@ -86,6 +87,13 @@ public class ReceiptController {
         return receiptLineService.addReceiptLine(id, receiptLine);
     }
 
+    /**
+     * Receive inventory from a receipt line
+     * @param receiptId Receipt ID
+     * @param receiptLineId receipt line id
+     * @param inventory inventory to be received
+     * @return
+     */
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/receive", method = RequestMethod.POST)
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,

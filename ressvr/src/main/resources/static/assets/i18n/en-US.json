@@ -1177,5 +1177,6 @@
   "PUTAWAY-PRINTING-ALL-RECEIVED": "Print In Receipt",
   "PUTAWAY-PRINTING-SELECTED": "Print Selected",
   "PRINTING-ALL": "Print ALL",
-  "PRINTING-SELECTED": "Print Selected"
+  "PRINTING-SELECTED": "Print Selected",
+  "menu.mobile.inventory.audit-count": "Audit Count"
 }
