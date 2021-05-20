@@ -272,10 +272,6 @@ public class AuditCountRequestService {
 
     private void setupAuditCountSheetData(
             Report report, List<AuditCountRequest> auditCountRequests) {
-
-
-
-
         report.setData(auditCountRequests);
 
     }

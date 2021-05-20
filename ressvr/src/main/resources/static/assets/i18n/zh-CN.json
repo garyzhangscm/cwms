@@ -1182,5 +1182,6 @@
   "PUTAWAY-PRINTING-ALL-RECEIVED": "只打印未上架",
   "PUTAWAY-PRINTING-SELECTED": "只打印已选择记录",
   "PRINTING-ALL": "全部打印",
-  "PRINTING-SELECTED": "只打印已选择记录"
+  "PRINTING-SELECTED": "只打印已选择记录",
+  "menu.mobile.inventory.audit-count": "复盘"
 }

@@ -88,6 +88,8 @@ public class LocationService implements TestDataInitiableService {
                                   String name,
                                   Long beginSequence,
                                   Long endSequence,
+                                  String beginAisle,
+                                  String endAisle,
                                   String sequenceType,
                                   Boolean includeEmptyLocation,
                                   Boolean emptyLocationOnly,
@@ -156,6 +158,14 @@ public class LocationService implements TestDataInitiableService {
                     else if (sequenceType.equals("pick")) {
                         predicates.add(criteriaBuilder.between(root.get("pickSequence"), beginSequence, endSequence));
                     }
+                }
+                if (StringUtils.isNotBlank(beginAisle)) {
+
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("aisle"), beginAisle));
+                }
+                if (StringUtils.isNotBlank(endAisle)) {
+                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("aisle"), endAisle));
+
                 }
                 if (Objects.nonNull(includeEmptyLocation) && !includeEmptyLocation) {
                     logger.debug("Will filter the location by includeEmptyLocation {}", includeEmptyLocation);
@@ -651,6 +661,8 @@ public class LocationService implements TestDataInitiableService {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null);
 
     }
@@ -697,6 +709,8 @@ public class LocationService implements TestDataInitiableService {
     private List<Location> findByReserveCode(Long warehouseId, String reservedCode) {
 
         return findAll(warehouseId,null,
+                null,
+                null,
                 null,
                 null,
                 null,

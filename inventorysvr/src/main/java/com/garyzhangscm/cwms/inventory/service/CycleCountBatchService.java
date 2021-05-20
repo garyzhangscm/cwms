@@ -20,12 +20,15 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.CycleCountBatchRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,13 +75,36 @@ public class CycleCountBatchService {
         }
     }
 
-    public List<CycleCountBatch> findAll() {
-        List<CycleCountBatch> cycleCountBatches = cycleCountBatchRepository.findAll();
-        return cycleCountBatches.stream().map(cycleCountBatch -> loadCycleCountBatchStatistics(cycleCountBatch))
-                .collect(Collectors.toList());
+    public List<CycleCountBatch> findAll(Long warehouseId,
+                                         String batchId) {
+        List<CycleCountBatch> cycleCountBatches = cycleCountBatchRepository.findAll(
+                (Root<CycleCountBatch> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (StringUtils.isNotBlank(batchId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("batchId"), batchId));
+
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+
+        loadCycleCountBatchStatistics(cycleCountBatches);
+        return cycleCountBatches;
     }
 
-    private CycleCountBatch loadCycleCountBatchStatistics(CycleCountBatch cycleCountBatch) {
+    private void loadCycleCountBatchStatistics(List<CycleCountBatch> cycleCountBatches) {
+        cycleCountBatches.forEach(cycleCountBatch -> loadCycleCountBatchStatistics(cycleCountBatch));
+    }
+
+    private void loadCycleCountBatchStatistics(CycleCountBatch cycleCountBatch) {
 
 
         String batchId = cycleCountBatch.getBatchId();
@@ -104,9 +130,30 @@ public class CycleCountBatchService {
         cycleCountBatch.setFinishedLocationCount(finishedLocationCount);
         cycleCountBatch.setOpenAuditLocationCount(openAuditLocationCount);
         cycleCountBatch.setFinishedAuditLocationCount(finishedAuditLocationCount);
-        return cycleCountBatch;
     }
 
 
+    public List<CycleCountBatch> getCycleCountBatchesWithOpenCycleCount() {
+        List<CycleCountBatch> cycleCountBatches =
+                cycleCountBatchRepository.getCycleCountBatchesWithOpenCycleCount();
+
+
+        loadCycleCountBatchStatistics(cycleCountBatches);
+        return cycleCountBatches;
+    }
+
+    public List<CycleCountBatch> getCycleCountBatchesWithOpenAuditCount() {
+        List<CycleCountBatch> cycleCountBatches =
+                cycleCountBatchRepository.getCycleCountBatchesWithOpenAuditCount();
+        loadCycleCountBatchStatistics(cycleCountBatches);
+        return cycleCountBatches;
+    }
+
+    public List<CycleCountBatch> getOpenCycleCountBatches() {
+        List<CycleCountBatch> cycleCountBatches =
+                cycleCountBatchRepository.getOpenCycleCountBatches();
+        loadCycleCountBatchStatistics(cycleCountBatches);
+        return cycleCountBatches;
+    }
 }
 
