@@ -45,7 +45,6 @@ public class LocationGroupType extends AuditibleEntity<String>{
     @Column(name = "four_wall_inventory")
     private Boolean fourWallInventory;
 
-
     @Column(name = "virtual_locations")
     private Boolean virtual;
 

@@ -1,0 +1,2 @@
+company,warehouse,cron
+20901,WMEC,"0 0,15,30,45 * * * ?"

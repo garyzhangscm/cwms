@@ -89,11 +89,29 @@ public class WorkOrder extends AuditibleEntity<String>{
     @Column(name = "produced_quantity")
     private Long producedQuantity;
 
+
+
     @OneToMany(mappedBy = "workOrder")
     private List<WorkOrderAssignment> assignments = new ArrayList<>();
 
     @Column(name = "status")
     private WorkOrderStatus status;
+
+
+    // Some statistics numbers that we can show
+    // in the frontend
+    @Transient
+    private Integer totalLineCount;
+    @Transient
+    private Integer totalItemCount;
+    @Transient
+    private Long totalExpectedQuantity;
+    @Transient
+    private Long totalOpenQuantity; // Open quantity that is not allocated yet
+    @Transient
+    private Long totalOpenPickQuantity;
+    @Transient
+    private Long totalPickedQuantity;
 
     @Override
     public boolean equals(Object o) {
@@ -256,5 +274,53 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setProductionPlanLine(ProductionPlanLine productionPlanLine) {
         this.productionPlanLine = productionPlanLine;
+    }
+
+    public Integer getTotalLineCount() {
+        return totalLineCount;
+    }
+
+    public void setTotalLineCount(Integer totalLineCount) {
+        this.totalLineCount = totalLineCount;
+    }
+
+    public Integer getTotalItemCount() {
+        return totalItemCount;
+    }
+
+    public void setTotalItemCount(Integer totalItemCount) {
+        this.totalItemCount = totalItemCount;
+    }
+
+    public Long getTotalExpectedQuantity() {
+        return totalExpectedQuantity;
+    }
+
+    public void setTotalExpectedQuantity(Long totalExpectedQuantity) {
+        this.totalExpectedQuantity = totalExpectedQuantity;
+    }
+
+    public Long getTotalOpenQuantity() {
+        return totalOpenQuantity;
+    }
+
+    public void setTotalOpenQuantity(Long totalOpenQuantity) {
+        this.totalOpenQuantity = totalOpenQuantity;
+    }
+
+    public Long getTotalOpenPickQuantity() {
+        return totalOpenPickQuantity;
+    }
+
+    public void setTotalOpenPickQuantity(Long totalOpenPickQuantity) {
+        this.totalOpenPickQuantity = totalOpenPickQuantity;
+    }
+
+    public Long getTotalPickedQuantity() {
+        return totalPickedQuantity;
+    }
+
+    public void setTotalPickedQuantity(Long totalPickedQuantity) {
+        this.totalPickedQuantity = totalPickedQuantity;
     }
 }

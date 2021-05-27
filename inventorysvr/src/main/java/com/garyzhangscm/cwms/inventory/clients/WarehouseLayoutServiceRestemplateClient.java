@@ -248,7 +248,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/locations")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("aisle", aisle)
-                        .queryParam("includeEmptyLocation", includeEmptyLocation;
+                        .queryParam("includeEmptyLocation", includeEmptyLocation);
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -458,6 +458,21 @@ public class WarehouseLayoutServiceRestemplateClient {
             default:
                 return getDefaultRemovedInventoryLocation(warehouseId);
         }
+    }
+    public LocationGroupType getLocationGroupTypeById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locationgrouptypes/{id}");
+
+        ResponseBodyWrapper<LocationGroupType> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
     public LocationGroup getLocationGroupById(Long id) {
         UriComponentsBuilder builder =
