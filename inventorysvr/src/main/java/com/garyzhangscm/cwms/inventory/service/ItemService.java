@@ -325,6 +325,9 @@ public class ItemService implements TestDataInitiableService{
                     itemCSVWrapper.getAllocationRoundUpStrategyValue()
             );
         }
+
+        // default to active item
+        item.setActiveFlag(true);
         return item;
 
     }

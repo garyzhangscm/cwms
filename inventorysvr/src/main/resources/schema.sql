@@ -6,6 +6,10 @@ drop table if exists audit_count_result;
 drop table if exists audit_count_request;
 
 
+DROP TABLE if exists inventory_snapshot_configuration;
+DROP TABLE if exists inventory_snapshot_detail;
+DROP TABLE if exists inventory_snapshot;
+
 DROP TABLE if exists inventory_movement;
 DROP TABLE if exists inventory;
 DROP TABLE if exists inventory_adjustment_request;
@@ -59,6 +63,7 @@ CREATE TABLE item(
   tracking_expiration_date_flag boolean not null default 0,
   image_url   VARCHAR(2000),
   thumbnail_url   VARCHAR(2000),
+  active_flag boolean not null default 1,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
@@ -323,4 +328,46 @@ CREATE TABLE movement_path_detail(
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50),
   foreign key(movement_path_id) references movement_path(movement_path_id)
+);
+
+
+CREATE TABLE inventory_snapshot_configuration(
+  inventory_snapshot_configuration_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id    BIGINT NOT NULL,
+  cron VARCHAR(20)  not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
+);
+
+CREATE TABLE inventory_snapshot(
+  inventory_snapshot_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id    BIGINT NOT NULL,
+  batch_number VARCHAR(50)  not null,
+  status VARCHAR(50)  not null,
+  start_time DATETIME,
+  complete_time DATETIME,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
+);
+
+CREATE TABLE inventory_snapshot_detail(
+  inventory_snapshot_detail_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  inventory_snapshot_id    BIGINT NOT NULL,
+  item_id BIGINT not null,
+  item_package_type_id BIGINT not null,
+  inventory_status_id bigint not null,
+  location_group_type_id bigint not null,
+  quantity bigint not null,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
+  foreign key(inventory_snapshot_id) references inventory_snapshot(inventory_snapshot_id),
+  foreign key(item_id) references item(item_id),
+  foreign key(item_package_type_id) references item_package_type(item_package_type_id),
+  foreign key(inventory_status_id) references inventory_status(inventory_status_id)
 );

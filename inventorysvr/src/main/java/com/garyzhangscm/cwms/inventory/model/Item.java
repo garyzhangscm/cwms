@@ -115,6 +115,9 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
+    @Column(name = "active_flag")
+    private Boolean activeFlag;
+
     @Transient
     private Warehouse warehouse;
 
@@ -320,5 +323,13 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public Boolean getActiveFlag() {
+        return activeFlag;
+    }
+
+    public void setActiveFlag(Boolean activeFlag) {
+        this.activeFlag = activeFlag;
     }
 }

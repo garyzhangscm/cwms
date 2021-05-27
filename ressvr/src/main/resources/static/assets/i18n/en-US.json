@@ -1178,5 +1178,19 @@
   "PUTAWAY-PRINTING-SELECTED": "Print Selected",
   "PRINTING-ALL": "Print ALL",
   "PRINTING-SELECTED": "Print Selected",
-  "menu.mobile.inventory.audit-count": "Audit Count"
+  "menu.mobile.inventory.audit-count": "Audit Count",
+  "menu.main.inventory.configuration": "Inventory Configuration",
+  "menu.main.inventory.snapshot": "Inventory Snapshot",
+  "inventory-snapshot": "Inventory Snapshot",
+  "inventory-snapshot.configuration": "Inventory Snapshot Configuration",
+  "inventory-snapshot.configuration.cron": "Schedule",
+  "inventory-snapshot.configuration.cron.description": "Schedule for inventory snapshot. We suggest to run a snapshot once every night",
+  "inventory-snapshot.created.result": "Inventory Snapshot {{batchNumber}} start processing，Please allow the system to take several minutes to create the snapshot and query the result from the Inventory Snapshot page",
+  "inventory-snapshot.batch-number": "Batch Number",
+  "inventory-snapshot.status": "status",
+  "INVENTORY-SNAPSHOT-STATUS-PROCESSING": "In Processing",
+  "INVENTORY-SNAPSHOT-STATUS-DONE": "Done",
+  "inventory-snapshot.generate": "Generate Inventory Snapshot",
+  "start-time": "start  time",
+  "complete-time": "complete time"
 }

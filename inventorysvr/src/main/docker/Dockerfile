@@ -1,4 +1,5 @@
 FROM openjdk:8-jdk-alpine
+# RUN echo -e "http://nl.alpinelinux.org/alpine/v3.5/main\nhttp://nl.alpinelinux.org/alpine/v3.5/community" > /etc/apk/repositories
 RUN apk update && apk upgrade && apk add netcat-openbsd
 RUN mkdir -p /usr/local/inventoryserver
 ADD @project.build.finalName@.jar /usr/local/inventoryserver/

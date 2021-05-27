@@ -20,9 +20,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 
 import com.garyzhangscm.cwms.workorder.model.WorkOrderCompleteTransaction;
-import com.garyzhangscm.cwms.workorder.model.WorkOrderProduceTransaction;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderCompleteTransactionService;
-import com.garyzhangscm.cwms.workorder.service.WorkOrderProduceTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

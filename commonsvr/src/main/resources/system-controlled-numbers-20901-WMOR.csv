@@ -16,3 +16,4 @@ company,warehouse,variable,prefix,postfix,length,currentNumber,rollover
 20901,WMOR,production-plan,PRP,,10,0,true
 20901,WMOR,bill-of-material,BOM,,10,0,true
 20901,WMOR,work-task,WORK,,10,0,true
+20901,WMOR,inventory-snapshot-batch-number,INVSNAP,,10,0,true

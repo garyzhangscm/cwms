@@ -1183,5 +1183,19 @@
   "PUTAWAY-PRINTING-SELECTED": "只打印已选择记录",
   "PRINTING-ALL": "全部打印",
   "PRINTING-SELECTED": "只打印已选择记录",
-  "menu.mobile.inventory.audit-count": "复盘"
+  "menu.mobile.inventory.audit-count": "复盘",
+  "menu.main.inventory.configuration": "策略配置",
+  "menu.main.inventory.snapshot": "库存快照",
+  "inventory-snapshot": "库存快照",
+  "inventory-snapshot.configuration": "库存快照配置",
+  "inventory-snapshot.configuration.cron": "任务时间表",
+  "inventory-snapshot.configuration.cron.description": "配置库存快照的执行时间，建议每天晚上执行一次",
+  "inventory-snapshot.created.result": "库存快照 {{batchNumber}} 开始创建，请等待一段时间后到库存快照界面查看或者下载",
+  "inventory-snapshot.batch-number": "快照号",
+  "inventory-snapshot.status": "快照状态",
+  "inventory-snapshot.generate": "生成快照",
+  "INVENTORY-SNAPSHOT-STATUS-PROCESSING": "处理中",
+  "INVENTORY-SNAPSHOT-STATUS-DONE": "已完成",
+  "start-time": "开始时间",
+  "complete-time": "完成时间"
 }

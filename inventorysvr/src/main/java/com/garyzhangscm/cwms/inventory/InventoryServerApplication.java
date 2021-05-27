@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -38,6 +39,7 @@ import java.util.Collections;
 @EnableResourceServer
 @EnableCaching
 @EnableJpaAuditing
+@EnableScheduling
 // @EnableCircuitBreaker
 public class InventoryServerApplication {
 

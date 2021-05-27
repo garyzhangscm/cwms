@@ -46,6 +46,8 @@ public class TestDataInitService {
     MovementPathService movementPathService;
     InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService;
 
+    InventorySnapshotConfigurationService inventorySnapshotConfigurationService;
+
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
     @Autowired
@@ -56,7 +58,8 @@ public class TestDataInitService {
                                InventoryStatusService inventoryStatusService,
                                InventoryService inventoryService,
                                MovementPathService movementPathService,
-                               InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService) {
+                               InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService,
+                               InventorySnapshotConfigurationService inventorySnapshotConfigurationService) {
         this.itemFamilyService = itemFamilyService;
         this.itemService = itemService;
         this.itemPackageTypeService = itemPackageTypeService;
@@ -65,6 +68,7 @@ public class TestDataInitService {
         this.inventoryService = inventoryService;
         this.movementPathService = movementPathService;
         this.inventoryAdjustmentThresholdService = inventoryAdjustmentThresholdService;
+        this.inventorySnapshotConfigurationService = inventorySnapshotConfigurationService;
 
 
         initiableServices.put("Item_Family", itemFamilyService);
@@ -83,6 +87,8 @@ public class TestDataInitService {
         serviceNames.add("Movement_Path");
         initiableServices.put("Inventory_Adjustment_Threshold", inventoryAdjustmentThresholdService);
         serviceNames.add("Inventory_Adjustment_Threshold");
+        initiableServices.put("inventory_snapshot_configuration", inventorySnapshotConfigurationService);
+        serviceNames.add("inventory_snapshot_configuration");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
@@ -113,6 +119,17 @@ public class TestDataInitService {
 
         jdbcTemplate.update("delete from audit_count_request where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("audit_count_request records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from inventory_snapshot_configuration where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory_snapshot_configuration records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from inventory_snapshot_detail where inventory_snapshot_id in " +
+                " (select inventory_snapshot_id from inventory_snapshot where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("inventory_snapshot_detail records from warehouse ID {} removed!", warehouseId);
+
+        jdbcTemplate.update("delete from inventory_snapshot where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("inventory_snapshot records from warehouse ID {} removed!", warehouseId);
+
 
         jdbcTemplate.update("delete from inventory_movement where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("inventory_movement records from warehouse ID {} removed!", warehouseId);
