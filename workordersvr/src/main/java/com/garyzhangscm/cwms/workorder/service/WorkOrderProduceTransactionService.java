@@ -64,6 +64,8 @@ public class WorkOrderProduceTransactionService  {
     private WorkOrderLineService workOrderLineService;
     @Autowired
     private WorkOrderKPITransactionService workOrderKPITransactionService;
+    @Autowired
+    private ProductionLineService productionLineService;
 
     public WorkOrderProduceTransaction findById(Long id, boolean loadDetails) {
         WorkOrderProduceTransaction workOrderProduceTransaction
@@ -176,7 +178,17 @@ public class WorkOrderProduceTransactionService  {
      * @return
      */
     @Transactional
-    public WorkOrderProduceTransaction startNewTransaction(WorkOrderProduceTransaction workOrderProduceTransaction) {
+    public WorkOrderProduceTransaction startNewTransaction(WorkOrderProduceTransaction workOrderProduceTransaction,
+                                                           Long productionLineId) {
+        return startNewTransaction(
+                workOrderProduceTransaction,
+                productionLineService.findById(productionLineId).getInboundStageLocation()
+
+        );
+    }
+    @Transactional
+    public WorkOrderProduceTransaction startNewTransaction(WorkOrderProduceTransaction workOrderProduceTransaction,
+                                                           Location location) {
 
 
         WorkOrder workOrder = workOrderProduceTransaction.getWorkOrder();
@@ -197,7 +209,8 @@ public class WorkOrderProduceTransactionService  {
             }
             totalProducedQuantity += workOrderProducedInventory.getQuantity();
             // Let's create the inventory
-            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, workOrderProduceTransaction);
+            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, workOrderProduceTransaction,
+                    location);
 
         }
         // Change the produced quantity of the work order
@@ -210,7 +223,7 @@ public class WorkOrderProduceTransactionService  {
         workOrderProduceTransaction.getWorkOrderByProductProduceTransactions().forEach(
                 workOrderByProductProduceTransaction ->
                         workOrderByProductService.processWorkOrderByProductProduceTransaction(
-                                workOrder, workOrderByProductProduceTransaction
+                                workOrder, workOrderByProductProduceTransaction, location
                         )
         );
 
@@ -260,9 +273,10 @@ public class WorkOrderProduceTransactionService  {
 
     private Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder,
                                                     WorkOrderProducedInventory workOrderProducedInventory,
-                                                    WorkOrderProduceTransaction workOrderProduceTransaction) {
+                                                    WorkOrderProduceTransaction workOrderProduceTransaction,
+                                                    Location location) {
         logger.debug("Start to receive inventory from work order: \n{}", workOrder.getNumber());
-        Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction);
+        Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction, location);
 
         return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(inventory);
     }

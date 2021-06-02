@@ -1,5 +1,6 @@
 
 drop table if exists  work_order_kpi;
+drop table if exists production_line_assignment;
 
 drop table if exists  work_order_line_consume_transaction;
 drop table if exists  work_order_by_product_produce_transaction;
@@ -126,7 +127,6 @@ CREATE TABLE production_line (
 CREATE TABLE work_order (
   work_order_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   number   VARCHAR(20) NOT NULL,
-  production_line_id  BIGINT,
   bill_of_material_id BIGINT,
   production_plan_line_id BIGINT,
   warehouse_id  BIGINT NOT NULL,
@@ -138,7 +138,6 @@ CREATE TABLE work_order (
   created_by VARCHAR(50),
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50),
-  foreign key(production_line_id) references production_line(production_line_id),
   foreign key(bill_of_material_id) references bill_of_material(bill_of_material_id),
   foreign key(production_plan_line_id) references production_plan_line(production_plan_line_id));
 
@@ -341,3 +340,17 @@ CREATE TABLE work_order_kpi_transaction (
   foreign key(work_order_produce_transaction_id) references work_order_produce_transaction(work_order_produce_transaction_id),
   foreign key(work_order_complete_transaction_id) references work_order_complete_transaction(work_order_complete_transaction_id),
   foreign key(work_order_id) references work_order(work_order_id));
+
+
+CREATE TABLE production_line_assignment (
+  production_line_assignment_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  work_order_id    BIGINT NOT NULL,
+  production_line_id    BIGINT NOT NULL,
+  quantity    BIGINT NOT NULL,
+  foreign key(work_order_id) references work_order(work_order_id),
+  foreign key(production_line_id) references production_line(production_line_id),
+  created_time date,
+  created_by VARCHAR(50),
+  last_modified_time date,
+  last_modified_by VARCHAR(50)
+);

@@ -362,15 +362,14 @@ public class WorkOrderLineService implements TestDataInitiableService {
         WorkOrderLine workOrderLine = findById(workOrderLineId);
 
         logger.debug("Will check if we need to update the delivered quantity");
-        logger.debug("deliveredLocationId: {}, production's InboundStageLocationId: {}",
-                deliveredLocationId, workOrderLine.getWorkOrder()
-                        .getProductionLine().getInboundStageLocationId());
+
         logger.debug("quantity delivered: {}", quantityBeingDelivered);
         // Make sure the inventory was delivered to the right location,
         // which should be the IN staging of the production line
         if (workOrderLine.getWorkOrder()
-                .getProductionLine().getInboundStageLocationId()
-                .equals(deliveredLocationId)) {
+                .getProductionLineAssignments().stream()
+                .anyMatch(productionLineAssignment ->
+                        productionLineAssignment.getProductionLine().getInboundStageLocationId().equals(deliveredLocationId))) {
 
             workOrderLine.setDeliveredQuantity(workOrderLine.getDeliveredQuantity() + quantityBeingDelivered);
 

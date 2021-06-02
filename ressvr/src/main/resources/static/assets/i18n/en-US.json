@@ -1192,5 +1192,12 @@
   "INVENTORY-SNAPSHOT-STATUS-DONE": "Done",
   "inventory-snapshot.generate": "Generate Inventory Snapshot",
   "start-time": "start  time",
-  "complete-time": "complete time"
+  "complete-time": "complete time",
+  "menu.mobile.inventory.inventoryPutaway": "Inventory Putaway",
+  "work-order.assign-production-line": "Assign Production Line",
+  "steps.work-order.assign-production-line.production-line": "Assign Production Line",
+  "steps.work-order.assign-production-line.quantity": "Assign Quantity",
+  "production-line.unassigned": "Unassigned",
+  "production-line.assigned": "Assigned",
+  "menu.main.work-order.assign-production-line": "Assign Production Line"
 }

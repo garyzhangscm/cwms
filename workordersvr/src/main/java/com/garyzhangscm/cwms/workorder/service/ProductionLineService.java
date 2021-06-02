@@ -130,20 +130,9 @@ public class ProductionLineService implements TestDataInitiableService {
             return false;
         }
         if (productionLine.getWorkOrderExclusiveFlag() &&
-            productionLine.getWorkOrders().size() > 0) {
-            // see if we have inprocess work orders
-            long inprocessWorkOrderCount = productionLine.getWorkOrders().stream()
-                    .filter(workOrder -> workOrder.getStatus() == WorkOrderStatus.INPROCESS).count();
+            productionLine.getProductionLineAssignments().size() > 0) {
 
-            if (inprocessWorkOrderCount == 0) {
-                // there's no in process work order
-                // the production line is ready for new work order
-                return true;
-            }
-            else {
-
-                return false;
-            }
+            return false;
         }
         return true;
     }

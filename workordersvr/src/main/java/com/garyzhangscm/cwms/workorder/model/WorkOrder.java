@@ -53,9 +53,18 @@ public class WorkOrder extends AuditibleEntity<String>{
     )
     List<WorkOrderByProduct> workOrderByProducts = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "production_line_id")
-    private ProductionLine productionLine;
+    /***
+        @ManyToOne
+        @JoinColumn(name = "production_line_id")
+        private ProductionLine productionLine;
+
+     We will switch to a 1 to Many relationship between
+     work order and production line so that one work order
+     can have multiple production line. Some warehouse will use
+     ***/
+
+    @OneToMany(mappedBy = "workOrder")
+    private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
 
     @Column(name = "item_id")
     private Long itemId;
@@ -220,12 +229,12 @@ public class WorkOrder extends AuditibleEntity<String>{
         this.workOrderInstructions = workOrderInstructions;
     }
 
-    public ProductionLine getProductionLine() {
-        return productionLine;
+    public List<ProductionLineAssignment> getProductionLineAssignments() {
+        return productionLineAssignments;
     }
 
-    public void setProductionLine(ProductionLine productionLine) {
-        this.productionLine = productionLine;
+    public void setProductionLineAssignments(List<ProductionLineAssignment> productionLineAssignments) {
+        this.productionLineAssignments = productionLineAssignments;
     }
 
     public List<WorkOrderAssignment> getAssignments() {

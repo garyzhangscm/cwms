@@ -44,8 +44,10 @@ public class WorkOrderProduceTransactionController {
     }
 
     @RequestMapping(value="/work-order-produce-transactions", method = RequestMethod.POST)
-    public WorkOrderProduceTransaction addWorkOrderProduceTransaction(@RequestBody WorkOrderProduceTransaction workOrderProduceTransaction) {
-        return workOrderProduceTransactionService.startNewTransaction(workOrderProduceTransaction);
+    public WorkOrderProduceTransaction addWorkOrderProduceTransaction(
+            @RequestBody WorkOrderProduceTransaction workOrderProduceTransaction,
+            @RequestParam Long productionLineId) {
+        return workOrderProduceTransactionService.startNewTransaction(workOrderProduceTransaction, productionLineId);
     }
 
 

@@ -44,12 +44,13 @@ public class WorkOrderProducedInventory extends AuditibleEntity<String> {
 
 
     public Inventory createInventory(WorkOrder workOrder,
-                                     WorkOrderProduceTransaction workOrderProduceTransaction) {
+                                     WorkOrderProduceTransaction workOrderProduceTransaction,
+                                     Location location) {
 
         Inventory inventory = new Inventory();
         inventory.setLpn(getLpn());
-        inventory.setLocationId(workOrder.getProductionLine().getOutboundStageLocationId());
-        inventory.setLocation(workOrder.getProductionLine().getOutboundStageLocation());
+        inventory.setLocationId(location.getId());
+        inventory.setLocation(location);
         inventory.setItem(workOrder.getItem());
         inventory.setItemPackageType(getItemPackageType());
         inventory.setQuantity(getQuantity());

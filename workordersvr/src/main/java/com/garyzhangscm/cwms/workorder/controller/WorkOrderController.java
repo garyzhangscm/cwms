@@ -105,12 +105,13 @@ public class WorkOrderController {
         workOrderLineService.registerPickCancelled(id, cancelledQuantity);
     }
 
+    /***
     @RequestMapping(value="/work-orders/{id}/change-production-line", method = RequestMethod.POST)
     public WorkOrder changeProductionLine(@PathVariable Long id,
                                   @RequestParam Long productionLineId) {
         return workOrderService.changeProductionLine(id, productionLineId);
     }
-
+***/
 
     @RequestMapping(value="/work-orders/{id}/produced-inventory", method = RequestMethod.GET)
     public List<Inventory> getProducedInventory(@PathVariable Long id) {

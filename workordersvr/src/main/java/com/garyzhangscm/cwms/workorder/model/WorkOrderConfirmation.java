@@ -35,11 +35,11 @@ public class WorkOrderConfirmation  {
         setNumber(workOrder.getNumber());
 
 
-
+/***
         if (Objects.nonNull(workOrder.getProductionLine())) {
             setProductionLineName(workOrder.getProductionLine().getName());
         }
-
+**/
 
         setItemId(workOrder.getItemId());
         if (Objects.nonNull(workOrder.getItem())) {

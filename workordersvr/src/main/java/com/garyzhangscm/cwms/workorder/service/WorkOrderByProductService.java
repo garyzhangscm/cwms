@@ -226,10 +226,11 @@ public class WorkOrderByProductService implements TestDataInitiableService {
 
     }
 
-    public void processWorkOrderByProductProduceTransaction(WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction) {
+    public void processWorkOrderByProductProduceTransaction(WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction,
+                                                            Location location) {
 
         logger.debug("Start to receive inventory from work order by product: \n{}", workOrderByProductProduceTransaction.getWorkOrderByProduct());
-        Inventory inventory = workOrderByProductProduceTransaction.createInventory();
+        Inventory inventory = workOrderByProductProduceTransaction.createInventory(location);
 
         logger.debug("Inventory: \n{}", inventory);
         inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(inventory);
@@ -243,7 +244,8 @@ public class WorkOrderByProductService implements TestDataInitiableService {
     }
 
     public void processWorkOrderByProductProduceTransaction(WorkOrder workOrder,
-                                                            WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction) {
+                                                            WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction,
+                                                            Location location) {
 
         // skip the record with incorrect value
         if (StringUtils.isBlank(workOrderByProductProduceTransaction.getLpn()) ||
@@ -263,18 +265,22 @@ public class WorkOrderByProductService implements TestDataInitiableService {
                     workOrder
             );
         }
-        processWorkOrderByProductProduceTransaction(workOrderByProductProduceTransaction);
+        processWorkOrderByProductProduceTransaction(workOrderByProductProduceTransaction, location);
     }
     public void processWorkOrderByProductProduceTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction,
-                                                            WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction) {
+                                                            WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction,
+                                                            Location location) {
 
-        processWorkOrderByProductProduceTransaction(workOrderCompleteTransaction.getWorkOrder(), workOrderByProductProduceTransaction);
+        processWorkOrderByProductProduceTransaction(workOrderCompleteTransaction.getWorkOrder(),
+                workOrderByProductProduceTransaction, location);
     }
 
     public void processWorkOrderByProductProduceTransaction(WorkOrderProduceTransaction workOrderProduceTransaction,
-                                                            WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction) {
+                                                            WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction,
+                                                            Location location) {
 
-        processWorkOrderByProductProduceTransaction(workOrderProduceTransaction.getWorkOrder(), workOrderByProductProduceTransaction);
+        processWorkOrderByProductProduceTransaction(workOrderProduceTransaction.getWorkOrder(), workOrderByProductProduceTransaction,
+                location);
     }
 
 

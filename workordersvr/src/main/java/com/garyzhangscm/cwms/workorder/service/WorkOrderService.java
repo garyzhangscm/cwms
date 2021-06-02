@@ -67,6 +67,8 @@ public class WorkOrderService implements TestDataInitiableService {
     private WorkOrderKPIService workOrderKPIService;
     @Autowired
     private WorkOrderKPITransactionService workOrderKPITransactionService;
+    @Autowired
+    private ProductionLineAssignmentService productionLineAssignmentService;
 
     @Autowired
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
@@ -170,9 +172,6 @@ public class WorkOrderService implements TestDataInitiableService {
         }
         if (workOrder.getWarehouseId() != null && workOrder.getWarehouse() == null) {
             workOrder.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId()));
-        }
-        if (Objects.nonNull(workOrder.getProductionLine())) {
-            productionLineService.loadAttribute(workOrder.getProductionLine());
         }
 
         // Load the item and inventory status information for each lines
@@ -303,9 +302,6 @@ public class WorkOrderService implements TestDataInitiableService {
 
         WorkOrder workOrder = new WorkOrder();
         workOrder.setNumber(workOrderNumber);
-        if (Objects.nonNull(productionLineId)) {
-            workOrder.setProductionLine(productionLineService.findById(productionLineId));
-        }
         workOrder.setItemId(billOfMaterial.getItemId());
         workOrder.setWarehouseId(billOfMaterial.getWarehouseId());
         workOrder.setExpectedQuantity(expectedQuantity);
@@ -314,6 +310,16 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
         WorkOrder savedWorkOrder = save(workOrder);
+
+
+        // if the production line is passed in, assign the work order onto
+        // the production line
+        if (Objects.nonNull(productionLineId)) {
+            productionLineAssignmentService.assignWorkOrderToProductionLines(
+                    savedWorkOrder,
+                    productionLineService.findById(productionLineId),
+                    workOrder.getExpectedQuantity());
+        }
 
         Long workOrderCount = expectedQuantity / billOfMaterial.getExpectedQuantity();
         // Start to create work order line
@@ -390,7 +396,7 @@ public class WorkOrderService implements TestDataInitiableService {
         return findById(workOrderId);
     }
 
-
+/****
     public WorkOrder changeProductionLine(Long id,
                                           Long productionLineId){
         // only allow to change the production line when the status is
@@ -415,6 +421,7 @@ public class WorkOrderService implements TestDataInitiableService {
         return saveOrUpdate(workOrder);
 
     }
+ **/
 
     public WorkOrder produce(WorkOrder workOrder, Long producedQuantity) {
         workOrder.setProducedQuantity(workOrder.getProducedQuantity() + producedQuantity);
@@ -450,30 +457,48 @@ public class WorkOrderService implements TestDataInitiableService {
 
         // Get all the picked inventory that already arrived at the
         // right location
-        if (Objects.isNull(workOrder.getProductionLine())) {
+        if (workOrder.getProductionLineAssignments().size() == 0) {
             // The work order doesn't have production line assigned yet, probably
             // it is a new work order;
             return new ArrayList<>();
         }
-        Long productionInStagingLocationId = workOrder.getProductionLine().getInboundStageLocationId();
+
+        List<Inventory> deliveredInventory = new ArrayList<>();
 
         try {
+            // Get all the picks that belongs to this work order
             List<Pick> picks = outboundServiceRestemplateClient.getWorkOrderPicks(workOrder);
+
             if (picks.size() > 0) {
                 String pickIds = picks.stream()
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
-                return inventoryServiceRestemplateClient.findDeliveredInventory(
-                        workOrder.getWarehouseId(),
-                        productionInStagingLocationId,
-                        pickIds
-                );
+
+                // loop through each production line's stage location and find the inventory
+                // that is delivered
+                workOrder.getProductionLineAssignments()
+                        .stream()
+                        .map(productionLineAssignment -> productionLineAssignment.getProductionLine().getInboundStageLocationId())
+                        .forEach(productionInStagingLocationId -> {
+
+                            deliveredInventory.addAll(
+                                    inventoryServiceRestemplateClient.findDeliveredInventory(
+                                            workOrder.getWarehouseId(),
+                                            productionInStagingLocationId,
+                                            pickIds)
+                            );
+
+                        });
+
             }
         } catch (IOException e) {
             // in case we can't get any picks, just return empty result to indicate
             // we don't have any delivered inventory
 
         }
-        return new ArrayList<>();
+
+
+
+        return deliveredInventory;
     }
 
     public List<Inventory> getReturnedInventory(Long workOrderId) {
