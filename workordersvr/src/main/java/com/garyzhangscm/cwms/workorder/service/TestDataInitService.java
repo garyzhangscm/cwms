@@ -138,6 +138,10 @@ public class TestDataInitService {
     public void clear(Long warehouseId) {
 
 
+        jdbcTemplate.update("delete from production_line_assignment where work_order_id in " +
+                "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("production_line_assignment records from warehouse ID {} removed!", warehouseId);
+
         jdbcTemplate.update("delete from bill_of_material_line where bill_of_material_id in " +
                              "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("bill_of_material_line records from warehouse ID {} removed!", warehouseId);

@@ -45,9 +45,10 @@ public class ProductionLine extends AuditibleEntity<String>{
     @Transient
     private Location productionLineLocation;
 
-    @OneToMany(mappedBy = "productionLine", fetch = FetchType.LAZY)
+
+    @OneToMany(mappedBy = "productionLine")
     @JsonIgnore
-    private List<WorkOrder> workOrders = new ArrayList<>();
+    private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
 
     // Whether there's only one work order can be worked on
     // this production at any time
@@ -138,12 +139,12 @@ public class ProductionLine extends AuditibleEntity<String>{
         this.productionLineLocation = productionLineLocation;
     }
 
-    public List<WorkOrder> getWorkOrders() {
-        return workOrders;
+    public List<ProductionLineAssignment> getProductionLineAssignments() {
+        return productionLineAssignments;
     }
 
-    public void setWorkOrders(List<WorkOrder> workOrders) {
-        this.workOrders = workOrders;
+    public void setProductionLineAssignments(List<ProductionLineAssignment> productionLineAssignments) {
+        this.productionLineAssignments = productionLineAssignments;
     }
 
     public Boolean getWorkOrderExclusiveFlag() {

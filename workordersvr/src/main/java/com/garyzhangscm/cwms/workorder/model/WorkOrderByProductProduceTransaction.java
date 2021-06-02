@@ -74,7 +74,7 @@ public class WorkOrderByProductProduceTransaction extends AuditibleEntity<String
         return null;
     }
 
-    public Inventory createInventory() {
+    public Inventory createInventory(Location location) {
 
         WorkOrder workOrder = workOrderByProduct.getWorkOrder();
         Inventory inventory = new Inventory();
@@ -84,8 +84,8 @@ public class WorkOrderByProductProduceTransaction extends AuditibleEntity<String
 
         }
         else {
-            inventory.setLocationId(workOrder.getProductionLine().getOutboundStageLocationId());
-            inventory.setLocation(workOrder.getProductionLine().getOutboundStageLocation());
+            inventory.setLocationId(location.getId());
+            inventory.setLocation(location);
         }
         if (Objects.nonNull(location)) {
             inventory.setLocation(location);

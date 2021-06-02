@@ -172,7 +172,14 @@ public class WorkOrderCompleteTransactionService {
      * @param workOrderCompleteTransaction
      * @return
      */
-    public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction) {
+
+    public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction, Long locationId) {
+        return startNewTransaction(
+                workOrderCompleteTransaction,
+                warehouseLayoutServiceRestemplateClient.getLocationById(locationId)
+        );
+    }
+    public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction, Location location) {
 
         // Let's make sure the complete transaction is the right transaction
         WorkOrder workOrder = workOrderCompleteTransaction.getWorkOrder();
@@ -182,12 +189,13 @@ public class WorkOrderCompleteTransactionService {
 
         for (WorkOrderLineCompleteTransaction workOrderLineCompleteTransaction : workOrderCompleteTransaction.getWorkOrderLineCompleteTransactions()) {
             processWorkOrderLineCompleteTransaction(workOrderCompleteTransaction,
-                    workOrderLineCompleteTransaction);
+                    workOrderLineCompleteTransaction, location);
 
         }
         for (WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction : workOrderCompleteTransaction.getWorkOrderByProductProduceTransactions()) {
             processWorkOrderByProductProduceTransaction(workOrderCompleteTransaction,
-                    workOrderByProductProduceTransaction);
+                    workOrderByProductProduceTransaction,
+                    location);
 
         }
 
@@ -205,16 +213,19 @@ public class WorkOrderCompleteTransactionService {
     }
 
     private void processWorkOrderByProductProduceTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction,
-                                                             WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction) {
+                                                             WorkOrderByProductProduceTransaction workOrderByProductProduceTransaction,
+                                                             Location location) {
 
         workOrderByProductService.processWorkOrderByProductProduceTransaction(workOrderCompleteTransaction,
-                workOrderByProductProduceTransaction);
+                workOrderByProductProduceTransaction,
+                location);
     }
 
 
 
     private void processWorkOrderLineCompleteTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction,
-                                                         WorkOrderLineCompleteTransaction workOrderLineCompleteTransaction) {
+                                                         WorkOrderLineCompleteTransaction workOrderLineCompleteTransaction,
+                                                         Location location) {
         WorkOrderLine workOrderLine = workOrderLineCompleteTransaction.getWorkOrderLine();
         workOrderLine.setWorkOrder(workOrderCompleteTransaction.getWorkOrder());
 
@@ -243,7 +254,7 @@ public class WorkOrderCompleteTransactionService {
         // Receive the returned material
         workOrderLineCompleteTransaction.getReturnMaterialRequests().stream().forEach(
                 returnMaterialRequest -> returnMaterial(workOrderCompleteTransaction.getWorkOrder(),
-                        workOrderLine, returnMaterialRequest)
+                        workOrderLine, returnMaterialRequest, location)
         );
 
         // Update the work order line
@@ -254,11 +265,12 @@ public class WorkOrderCompleteTransactionService {
 
     private Inventory returnMaterial(WorkOrder workOrder,
                                 WorkOrderLine workOrderLine,
-                                ReturnMaterialRequest returnMaterialRequest) {
+                                ReturnMaterialRequest returnMaterialRequest,
+                                     Location location) {
 
         logger.debug("Start to return material from work order: {}, line {}",
                 workOrder.getNumber(), workOrderLine.getNumber());
-        Inventory inventory = returnMaterialRequest.createInventory(workOrder, workOrderLine);
+        Inventory inventory = returnMaterialRequest.createInventory(workOrder, workOrderLine, location);
 
         return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(inventory);
     }

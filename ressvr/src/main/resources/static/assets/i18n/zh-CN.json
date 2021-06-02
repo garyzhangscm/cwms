@@ -1197,5 +1197,12 @@
   "INVENTORY-SNAPSHOT-STATUS-PROCESSING": "处理中",
   "INVENTORY-SNAPSHOT-STATUS-DONE": "已完成",
   "start-time": "开始时间",
-  "complete-time": "完成时间"
+  "complete-time": "完成时间",
+  "menu.mobile.inventory.inventoryPutaway": "库存移动",
+  "work-order.assign-production-line": "分配产线",
+  "steps.work-order.assign-production-line.production-line": "分配产线",
+  "steps.work-order.assign-production-line.quantity": "分配数量",
+  "production-line.unassigned": "未分配",
+  "production-line.assigned": "已分配",
+  "menu.main.work-order.assign-production-line": "分配产线"
 }

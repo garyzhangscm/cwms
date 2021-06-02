@@ -45,7 +45,8 @@ public class ReturnMaterialRequest extends AuditibleEntity<String> {
     private WorkOrderLineCompleteTransaction workOrderLineCompleteTransaction;
 
     public Inventory createInventory(WorkOrder workOrder,
-                                     WorkOrderLine workOrderLine) {
+                                     WorkOrderLine workOrderLine,
+                                     Location location) {
 
         Inventory inventory = new Inventory();
         inventory.setLpn(getLpn());
@@ -54,8 +55,8 @@ public class ReturnMaterialRequest extends AuditibleEntity<String> {
 
         }
         else {
-            inventory.setLocationId(workOrder.getProductionLine().getOutboundStageLocationId());
-            inventory.setLocation(workOrder.getProductionLine().getOutboundStageLocation());
+            inventory.setLocationId(location.getId());
+            inventory.setLocation(location);
         }
         if (Objects.nonNull(location)) {
             inventory.setLocation(location);

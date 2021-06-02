@@ -41,8 +41,10 @@ public class WorkOrderCompleteTransactionController {
     }
 
     @RequestMapping(value="/work-order-complete-transactions", method = RequestMethod.POST)
-    public WorkOrderCompleteTransaction addWorkOrderCompleteTransaction(@RequestBody WorkOrderCompleteTransaction workOrderCompleteTransaction) {
-        return workOrderCompleteTransactionService.startNewTransaction(workOrderCompleteTransaction);
+    public WorkOrderCompleteTransaction addWorkOrderCompleteTransaction(
+            @RequestBody WorkOrderCompleteTransaction workOrderCompleteTransaction,
+            @RequestParam Long locationId) {
+        return workOrderCompleteTransactionService.startNewTransaction(workOrderCompleteTransaction, locationId);
     }
 
 
