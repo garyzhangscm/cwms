@@ -593,15 +593,18 @@ public class PickService {
 
 
 
-    private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder, WorkOrderLine workOrderLine) {
+    private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder,
+                                           WorkOrderLine workOrderLine,
+                                           Long destinationLocationId) {
 
         pick.setWorkOrderLineId(workOrderLine.getId());
         pick.setWarehouseId(workOrder.getWarehouseId());
         pick.setPickType(PickType.WORK_ORDER);
 
         // Setup the destination, get from ship staging area
-        Long stagingLocationId = getDestinationLocationIdForPick(workOrder);
-        pick.setDestinationLocationId(stagingLocationId);
+
+        // Long stagingLocationId = getDestinationLocationIdForPick(workOrder);
+        pick.setDestinationLocationId(destinationLocationId);
 
         return save(pick);
     }
@@ -610,19 +613,22 @@ public class PickService {
     @Transactional
     public Pick generatePick(WorkOrder workOrder, InventorySummary inventorySummary,
                              WorkOrderLine workOrderLine, Long quantity,
-                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             Long destinationLocationId) {
         Pick pick = generateBasicPickInformation(inventorySummary, quantity, pickableUnitOfMeasure);
-        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine);
+        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick);
     }
 
     @Transactional
     public Pick generatePick(WorkOrder workOrder,
                              InventorySummary inventorySummary,
-                             WorkOrderLine workOrderLine,  long quantity,
-                             String lpn) {
+                             WorkOrderLine workOrderLine,
+                             long quantity,
+                             String lpn,
+                             Long destinationLocationId) {
         Pick pick = generateBasicPickInformation(inventorySummary, quantity, lpn);
-        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine);
+        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick);
     }
 
@@ -714,22 +720,7 @@ public class PickService {
         );
     }
 
-    // For work order, the destination is always the inbound stage for the production line
-    private Long getDestinationLocationIdForPick(WorkOrder workOrder) {
-        if (workOrder.getProductionLine().getInboundStageLocationId() != null) {
-            logger.debug("inbound stage location ID {} is setup for the production line {} ",
-                    workOrder.getProductionLine().getInboundStageLocationId(), workOrder.getProductionLine().getName() );
-            return workOrder.getProductionLine().getInboundStageLocationId();
-        }
-        else if (workOrder.getProductionLine().getInboundStageLocation() != null) {
-            logger.debug("inbound stage location {} is setup for the production line {} ",
-                    workOrder.getProductionLine().getInboundStageLocation().getName(),
-                    workOrder.getProductionLine().getName() );
-            return workOrder.getProductionLine().getInboundStageLocation().getId();
-        }
-        throw PickingException.raiseException("Can't get inbound location for the work order: " + workOrder.getNumber());
 
-    }
     private Location getDestinationLocationForPick(ShipmentLine shipmentLine, Pick pick) {
         ShippingStageAreaConfiguration shippingStageAreaConfiguration;
         logger.debug(">> Try to get ship stage for the pick");

@@ -58,6 +58,14 @@ public class ProductionLineController {
         return productionLineService.findById(id);
     }
 
+    @RequestMapping(value="/production-lines/{id}", method = RequestMethod.DELETE)
+    public ProductionLine removeProductionLine(@PathVariable Long id) {
+
+        ProductionLine productionLine = productionLineService.findById(id);
+        productionLineService.delete(id);
+        return productionLine;
+    }
+
     @RequestMapping(value="/production-lines/{id}", method = RequestMethod.PUT)
     public ProductionLine changeProductionLine(@RequestBody ProductionLine productionLine){
         return productionLineService.save(productionLine);

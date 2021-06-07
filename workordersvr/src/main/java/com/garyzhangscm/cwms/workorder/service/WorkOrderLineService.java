@@ -139,10 +139,16 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
 
 
-
     public WorkOrderLine save(WorkOrderLine workOrderLine) {
+        return save(workOrderLine, true);
+    }
+
+    public WorkOrderLine save(WorkOrderLine workOrderLine, boolean loadDetails) {
         WorkOrderLine newWorkOrderLine = workOrderLineRepository.save(workOrderLine);
-        loadAttribute(newWorkOrderLine);
+        if (loadDetails) {
+
+            loadAttribute(newWorkOrderLine);
+        }
         return newWorkOrderLine;
     }
 
@@ -152,8 +158,11 @@ public class WorkOrderLineService implements TestDataInitiableService {
         loadAttribute(newWorkOrderLine);
         return newWorkOrderLine;
     }
-
     public WorkOrderLine saveOrUpdate(WorkOrderLine workOrderLine) {
+        return saveOrUpdate(workOrderLine, true);
+    }
+
+    public WorkOrderLine saveOrUpdate(WorkOrderLine workOrderLine, boolean loadDetails) {
         Long warehouseId = workOrderLine.getWorkOrder().getWarehouseId();
         String workOrderNumber = workOrderLine.getWorkOrder().getNumber();
         String number = workOrderLine.getNumber();
@@ -163,7 +172,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
             workOrderLine.setId(
                     findByNumber(warehouseId, workOrderNumber, number).getId());
         }
-        return save(workOrderLine);
+        return save(workOrderLine, loadDetails);
     }
 
 

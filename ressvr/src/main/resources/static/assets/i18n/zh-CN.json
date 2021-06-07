@@ -1204,5 +1204,8 @@
   "steps.work-order.assign-production-line.quantity": "分配数量",
   "production-line.unassigned": "未分配",
   "production-line.assigned": "已分配",
-  "menu.main.work-order.assign-production-line": "分配产线"
+  "menu.main.work-order.assign-production-line": "分配产线",
+  "breadcrumb.production-line": "生产线",
+  "menu.main.production-line.maintenance": "维护",
+  "steps.production-line.info": "基础信息"
 }

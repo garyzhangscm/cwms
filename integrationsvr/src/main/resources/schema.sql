@@ -32,6 +32,19 @@ DROP TABLE if exists integration_work_order_line_confirmation;
 DROP TABLE if exists integration_work_order_by_product_confirmation;
 DROP TABLE if exists integration_work_order_confirmation;
 
+
+
+DROP TABLE if exists integration_bill_of_material_by_product;
+DROP TABLE if exists integration_bill_of_material_line;
+DROP TABLE if exists integration_work_order_instruction_template;
+DROP TABLE if exists integration_bill_of_material;
+
+
+DROP TABLE if exists integration_work_order_by_product;
+DROP TABLE if exists integration_work_order_line;
+DROP TABLE if exists integration_work_order_instruction;
+DROP TABLE if exists integration_work_order;
+
 CREATE TABLE integration_customer (
   integration_customer_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name   VARCHAR(100) NOT NULL,
@@ -527,3 +540,196 @@ CREATE TABLE integration_work_order_by_product_confirmation(
   status VARCHAR(10) NOT NULL,
   error_message VARCHAR(1000),
   foreign key(integration_work_order_confirmation_id) references integration_work_order_confirmation(integration_work_order_confirmation_id));
+
+
+
+CREATE TABLE integration_bill_of_material(
+  integration_bill_of_material_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  number   VARCHAR(100) not null,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000));
+
+
+insert into integration_bill_of_material
+   (number, company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, expected_quantity,  status, insert_time)
+  values ("BOM-901", null, "20901", null, "WMEC", null, "6420704", 100,"PENDING", now());
+
+
+CREATE TABLE integration_bill_of_material_line(
+  integration_bill_of_material_line_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  number   VARCHAR(100) not null,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  inventory_status_id   BIGINT,
+  inventory_status_name   VARCHAR(100),
+  integration_bill_of_material_id BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_bill_of_material_id) references integration_bill_of_material(integration_bill_of_material_id));
+
+insert into integration_bill_of_material_line
+   (integration_bill_of_material_id, number, company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, expected_quantity, inventory_status_id, inventory_status_name,  status, insert_time)
+  select integration_bill_of_material_id,
+         "1" , null, "20901", null, "WMEC", null, "22570P-93-25", 100, null, "AVAL", "PENDING", now()
+         from integration_bill_of_material
+         where number = "BOM-901";
+
+
+
+CREATE TABLE integration_bill_of_material_by_product(
+  integration_bill_of_material_by_product_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  inventory_status_id   BIGINT,
+  inventory_status_name   VARCHAR(100),
+  integration_bill_of_material_id BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_bill_of_material_id) references integration_bill_of_material(integration_bill_of_material_id));
+
+
+insert into integration_bill_of_material_by_product
+   (integration_bill_of_material_id, company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, expected_quantity, inventory_status_id, inventory_status_name,  status, insert_time)
+  select integration_bill_of_material_id,
+         null, "20901", null, "WMEC", null, "22570P-93-25", 100, null, "AVAL", "PENDING", now()
+         from integration_bill_of_material
+         where number = "BOM-901";
+
+
+CREATE TABLE integration_work_order_instruction_template(
+  integration_work_order_instruction_template_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  sequence INT,
+  instruction VARCHAR(100),
+  integration_bill_of_material_id BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_bill_of_material_id) references integration_bill_of_material(integration_bill_of_material_id));
+
+insert into integration_work_order_instruction_template
+   (integration_bill_of_material_id, sequence, instruction,  status, insert_time)
+  select integration_bill_of_material_id,
+         1,"Please print blue", "PENDING", now()
+         from integration_bill_of_material
+         where number = "BOM-901";
+
+CREATE TABLE integration_work_order(
+  integration_work_order_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  number   VARCHAR(100) not null,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000));
+
+
+
+insert into integration_work_order
+   (number, company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, expected_quantity,  status, insert_time)
+  values ("WO-901", null, "20901", null, "WMEC", null, "6420704", 100,"PENDING", now());
+
+
+
+
+CREATE TABLE integration_work_order_line(
+  integration_work_order_line_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  number   VARCHAR(100) not null,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  allocation_strategy_type   VARCHAR(100),
+  inventory_status_id   BIGINT,
+  inventory_status_name   VARCHAR(100),
+  integration_work_order_id BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_work_order_id) references integration_work_order(integration_work_order_id));
+
+insert into integration_work_order_line
+   (integration_work_order_id, number, company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, expected_quantity, inventory_status_id, inventory_status_name,  status, insert_time)
+  select integration_work_order_id,
+         "1" , null, "20901", null, "WMEC", null, "22570P-93-25", 100, null, "AVAL", "PENDING", now()
+         from integration_work_order
+         where number = "WO-901";
+
+
+CREATE TABLE integration_work_order_by_product(
+  integration_work_order_by_product_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT,
+  company_code VARCHAR(100),
+  warehouse_id BIGINT,
+  warehouse_name VARCHAR(100),
+  item_id   BIGINT,
+  item_name   VARCHAR(100),
+  expected_quantity BIGINT NOT NULL,
+  inventory_status_id   BIGINT,
+  inventory_status_name   VARCHAR(100),
+  integration_work_order_id BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_work_order_id) references integration_work_order(integration_work_order_id));
+
+insert into integration_work_order_by_product
+   (integration_work_order_id,  company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, expected_quantity, inventory_status_id, inventory_status_name,  status, insert_time)
+  select integration_work_order_id,
+         null, "20901", null, "WMEC", null, "22570P-93-25", 100, null, "AVAL", "PENDING", now()
+         from integration_work_order
+         where number = "WO-901";
+
+CREATE TABLE integration_work_order_instruction(
+  integration_work_order_instruction_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  sequence INT,
+  instruction VARCHAR(100),
+  integration_work_order_id BIGINT NOT NULL,
+  insert_time  DATETIME  NOT NULL,
+  last_update_time  DATETIME,
+  status VARCHAR(10) NOT NULL,
+  error_message VARCHAR(1000),
+  foreign key(integration_work_order_id) references integration_work_order(integration_work_order_id));
+
+
+insert into integration_work_order_instruction
+   (integration_work_order_id,  sequence, instruction,  status, insert_time)
+  select integration_work_order_id,
+
+         1, "please print in ORANGE color for this work order", "PENDING", now()
+         from integration_work_order
+         where number = "WO-901";

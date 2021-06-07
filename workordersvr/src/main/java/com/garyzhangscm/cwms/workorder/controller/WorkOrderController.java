@@ -19,18 +19,26 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.*;
 
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
 public class WorkOrderController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WorkOrderController.class);
+
+
     @Autowired
     WorkOrderService workOrderService;
 
@@ -172,6 +180,15 @@ public class WorkOrderController {
     public ResponseBodyWrapper<String> validateNewNumber(@RequestParam Long warehouseId,
                                                          @RequestParam String number) {
         return ResponseBodyWrapper.success(workOrderService.validateNewNumber(warehouseId, number));
+    }
+
+    @RequestMapping(value="/work-orders/{id}/pick-report", method = RequestMethod.POST)
+    public ReportHistory generateOrderPickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws IOException {
+
+        logger.debug("start print pick sheet for order with id: {}", id);
+        return workOrderService.generatePickReportByWorkOrder(id, locale);
     }
 
 }

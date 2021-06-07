@@ -46,6 +46,14 @@ public class DBBasedIntegration implements Integration{
     @Autowired
     DBBasedOrderIntegration dbBasedOrderIntegration;
 
+
+    @Autowired
+    DBBasedWorkOrderIntegration dbBasedWorkOrderIntegration;
+
+
+    @Autowired
+    DBBasedBillOfMaterialIntegration dbBasedBillOfMaterialIntegration;
+
     @Autowired
     DBBasedInventoryAdjustmentConfirmationIntegration dbBasedInventoryAdjustmentConfirmationIntegration;
     @Autowired
@@ -88,6 +96,14 @@ public class DBBasedIntegration implements Integration{
 
         logger.debug("#9 Sales Order");
         dbBasedOrderIntegration.listen();
+
+
+        logger.debug("#10 Work  Order");
+        dbBasedWorkOrderIntegration.listen();
+
+
+        logger.debug("#11 Bill Of Material");
+        dbBasedBillOfMaterialIntegration.listen();
 
     }
 
@@ -250,6 +266,42 @@ public class DBBasedIntegration implements Integration{
         return dbBasedOrderIntegration.addIntegrationOrderData(new DBBasedOrder(order));
     }
 
+
+    //
+    // Integration - Work Order and Work Order Line
+    //
+    @Override
+    public List<? extends IntegrationWorkOrderData> getWorkOrderData() {
+        return null;
+    }
+
+    @Override
+    public IntegrationWorkOrderData getWorkOrderData(Long id) {
+        return null;
+    }
+
+    @Override
+    public IntegrationWorkOrderData addWorkOrderData(WorkOrder workOrder) {
+        return null;
+    }
+
+    //
+    // Integration - BOM and BOM line
+    //
+    @Override
+    public List<? extends IntegrationBillOfMaterialData> getBillOfMaterialData() {
+        return null;
+    }
+
+    @Override
+    public IntegrationBillOfMaterialData getBillOfMaterialData(Long id) {
+        return null;
+    }
+
+    @Override
+    public IntegrationBillOfMaterialData addBillOfMaterialData(BillOfMaterial billOfMaterial) {
+        return null;
+    }
 
 
     // Outbound

@@ -19,8 +19,7 @@
 package com.garyzhangscm.cwms.integration.clients;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.client.RestTemplate;
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.InventoryStatus;
 import com.garyzhangscm.cwms.integration.model.Item;
@@ -31,17 +30,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class InventoryServiceRestemplateClient {
@@ -51,9 +44,10 @@ public class InventoryServiceRestemplateClient {
 
     @Autowired
     // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    RestTemplate restTemplate;
 
     public Item getItemByName(Long warehouseId, String name) {
+        logger.debug("Start to get item by name");
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)

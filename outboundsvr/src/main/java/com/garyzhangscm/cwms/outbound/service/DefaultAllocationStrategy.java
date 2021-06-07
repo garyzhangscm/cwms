@@ -283,7 +283,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             return pickService.generatePick(allocationRequest.getWorkOrder() ,
                     inventorySummary, allocationRequest.getWorkOrderLines().get(0),
-                    allocatibleQuantity, smallestPickableUnitOfMeasure);
+                    allocatibleQuantity, smallestPickableUnitOfMeasure,
+                    allocationRequest.getDestinationLocationId());
         }
         else {
             throw AllocationException.raiseException("now we only support new allocation for single shipment line or single work order line");
@@ -628,7 +629,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             return pickService.generatePick(allocationRequest.getWorkOrder() ,
                     inventorySummary, allocationRequest.getWorkOrderLines().get(0),
-                    lpnQuantityToBeAllocated, lpn);
+                    lpnQuantityToBeAllocated, lpn,
+                    allocationRequest.getDestinationLocationId());
         }
         else {
             throw AllocationException.raiseException("now we only support new allocation for single shipment line");

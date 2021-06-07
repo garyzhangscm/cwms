@@ -79,6 +79,20 @@ public interface Integration {
     IntegrationOrderData getOrderData(Long id);
     IntegrationOrderData addOrderData(Order order);
 
+    //
+    // Integration - Work Order and Work Order Line
+    //
+    List<? extends IntegrationWorkOrderData> getWorkOrderData();
+    IntegrationWorkOrderData getWorkOrderData(Long id);
+    IntegrationWorkOrderData addWorkOrderData(WorkOrder workOrder);
+
+    //
+    // Integration - BOM and BOM line
+    //
+    List<? extends IntegrationBillOfMaterialData> getBillOfMaterialData();
+    IntegrationBillOfMaterialData getBillOfMaterialData(Long id);
+    IntegrationBillOfMaterialData addBillOfMaterialData(BillOfMaterial billOfMaterial);
+
 
     // Outbound
     // Integration sent to HOST

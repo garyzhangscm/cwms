@@ -125,10 +125,16 @@ public class WorkOrderByProductService implements TestDataInitiableService {
 
 
 
-
     public WorkOrderByProduct save(WorkOrderByProduct workOrderByProduct) {
+        return save(workOrderByProduct, true);
+    }
+
+    public WorkOrderByProduct save(WorkOrderByProduct workOrderByProduct, boolean loadDetails) {
         WorkOrderByProduct newWorkOrderByProduct = workOrderByProductReRepository.save(workOrderByProduct);
-        loadAttribute(newWorkOrderByProduct);
+        if (loadDetails) {
+
+            loadAttribute(newWorkOrderByProduct);
+        }
         return newWorkOrderByProduct;
     }
 

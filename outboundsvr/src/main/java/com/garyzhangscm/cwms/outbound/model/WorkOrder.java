@@ -1,6 +1,9 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,22 +33,20 @@ public class WorkOrder {
 
     private Long producedQuantity;
 
-    private ProductionLine productionLine;
+
+
+    private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("number: ").append(number).append("\n")
-                .append("workOrderLines: ").append(workOrderLines).append("\n")
-                .append("itemId: ").append(itemId).append("\n")
-                .append("item: ").append(item).append("\n")
-                .append("warehouseId: ").append(warehouseId).append("\n")
-                .append("warehouse: ").append(warehouse).append("\n")
-                .append("expectedQuantity: ").append(expectedQuantity).append("\n")
-                .append("producedQuantity: ").append(producedQuantity).append("\n")
-                .append("productionLine: ").append(productionLine).append("\n")
-                .toString();
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
 
     public Long getId() {
         return id;
@@ -119,11 +120,11 @@ public class WorkOrder {
         this.producedQuantity = producedQuantity;
     }
 
-    public ProductionLine getProductionLine() {
-        return productionLine;
+    public List<ProductionLineAssignment> getProductionLineAssignments() {
+        return productionLineAssignments;
     }
 
-    public void setProductionLine(ProductionLine productionLine) {
-        this.productionLine = productionLine;
+    public void setProductionLineAssignments(List<ProductionLineAssignment> productionLineAssignments) {
+        this.productionLineAssignments = productionLineAssignments;
     }
 }

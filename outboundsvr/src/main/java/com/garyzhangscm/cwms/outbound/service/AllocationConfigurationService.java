@@ -761,7 +761,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
         return 0L;
     }
-
+/****
+ * Allocate has been moved to AllocationService
     @Transactional
     // Allocate Work order line
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine, List<Pick> existingPicks, List<Inventory> pickableInventory) {
@@ -861,6 +862,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return allocationResult;
 
     }
+
+    ***/
 
     private ShortAllocation generateShortAllocation(Item item, ShipmentLine shipmentLine, Long quantity) {
 
@@ -1031,6 +1034,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
     }
 
+    /***
     public AllocationResult allocateWorkOrder(WorkOrder workOrder){
         logger.debug("Start to allocate Work Order {} ", workOrder.getNumber());
         AllocationResult allocationResult = new AllocationResult();
@@ -1044,7 +1048,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return allocationResult;
 
     }
-
+     ***/
+/***
     public AllocationResult allocateWorkOrderLine(WorkOrder workOrder, WorkOrderLine workOrderLine) {
         logger.debug("Start to allocate Work Order Line: {} / {}", workOrderLine.getNumber(), workOrderLine.getItem().getName());
         if (  workOrderLine.getOpenQuantity() <= 0) {
@@ -1074,7 +1079,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
         return allocationResult;
     }
-
+***/
     public AllocationConfiguration addPickableUnitOfMeasure(Long id,
                                                             AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
         AllocationConfiguration allocationConfiguration = findById(id);
