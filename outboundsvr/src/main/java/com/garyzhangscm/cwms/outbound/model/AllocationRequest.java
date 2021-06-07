@@ -4,6 +4,7 @@ package com.garyzhangscm.cwms.outbound.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class AllocationRequest {
 
@@ -18,10 +19,16 @@ public class AllocationRequest {
     private List<ShipmentLine> shipmentLines = new ArrayList<>();
 
     private WorkOrder workOrder;
+
     private List<WorkOrderLine> workOrderLines = new ArrayList<>();
 
 
     private List<AllocationStrategyType> allocationStrategyTypes = new ArrayList<>();
+
+    private Location destinationLocation;
+
+
+    private Long destinationLocationId;
 
     public AllocationRequest() {}
 
@@ -53,7 +60,8 @@ public class AllocationRequest {
     }
 
 
-    public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine) {
+    public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                             ProductionLineAssignment productionLineAssignment) {
         this.workOrder = workOrder;
         this.item = workOrderLine.getItem();
         this.warehouse = workOrderLine.getWarehouse();
@@ -61,8 +69,21 @@ public class AllocationRequest {
         this.workOrderLines =Collections.singletonList(workOrderLine);
         this.inventoryStatus = workOrderLine.getInventoryStatus();
         this.allocationStrategyTypes = Collections.singletonList(workOrderLine.getAllocationStrategyType());
-        this.quantity = workOrderLine.getOpenQuantity();
+        this.destinationLocation = productionLineAssignment.getProductionLine().getInboundStageLocation();
+        // get the destination location id
+        this.destinationLocationId =
+                Objects.nonNull(productionLineAssignment.getProductionLine().getInboundStageLocationId()) ?
+                        productionLineAssignment.getProductionLine().getInboundStageLocationId() :
+                        Objects.nonNull(productionLineAssignment.getProductionLine().getInboundStageLocation()) ?
+                                productionLineAssignment.getProductionLine().getInboundStageLocation().getId() :
+                                null;
+        // since we may have multiple product lines assigned to the work order, we will distribute
+        // the allocate quantity across the production lines as well
+
+        this.quantity = (workOrderLine.getOpenQuantity() * productionLineAssignment.getQuantity()) / workOrder.getExpectedQuantity();
     }
+
+
 
     public Item getItem() {
         return item;
@@ -126,5 +147,21 @@ public class AllocationRequest {
 
     public void setInventoryStatus(InventoryStatus inventoryStatus) {
         this.inventoryStatus = inventoryStatus;
+    }
+
+    public Location getDestinationLocation() {
+        return destinationLocation;
+    }
+
+    public void setDestinationLocation(Location destinationLocation) {
+        this.destinationLocation = destinationLocation;
+    }
+
+    public Long getDestinationLocationId() {
+        return destinationLocationId;
+    }
+
+    public void setDestinationLocationId(Long destinationLocationId) {
+        this.destinationLocationId = destinationLocationId;
     }
 }

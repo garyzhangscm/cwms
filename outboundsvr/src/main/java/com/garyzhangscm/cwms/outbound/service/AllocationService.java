@@ -47,32 +47,72 @@ public class AllocationService {
     public AllocationResult allocate(WorkOrder workOrder){
         logger.debug("Start to allocate Work Order {} ", workOrder.getNumber());
 
+        workOrder.getProductionLineAssignments().forEach(
+                productionLineAssignment ->
+                        logger.debug("production line {} is assigned quantity {}",
+                                productionLineAssignment.getProductionLine().getName(),
+                                productionLineAssignment.getQuantity())
+        );
+
         AllocationResult allocationResult = new AllocationResult();
 
-        workOrder.getWorkOrderLines().forEach(workOrderLine -> {
-            AllocationResult workOrderAllocationResult
-                    = allocate(workOrder, workOrderLine);
-            allocationResult.addPicks(workOrderAllocationResult.getPicks());
-            allocationResult.addShortAllocations(workOrderAllocationResult.getShortAllocations());
-        });
+        // only allow the work order that has open quantity
+        workOrder.getWorkOrderLines()
+                .stream()
+                .filter(workOrderLine ->
+                    workOrderLine.getOpenQuantity() > 0)
+                .forEach(workOrderLine -> {
+                        // if we have multiple production lines, we may need to allocate
+                        AllocationResult workOrderAllocationResult
+                                = allocate(workOrder, workOrderLine);
+                        allocationResult.addPicks(workOrderAllocationResult.getPicks());
+                        allocationResult.addShortAllocations(workOrderAllocationResult.getShortAllocations());
+                    });
         return allocationResult;
 
     }
 
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine){
 
-        AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine);
-        // If we specify the allocation strategy type, then override the one
-        // from the shipment line(order line)
+        // for work order, we may have multiple production lines assign to this work order
+        // in order to generate picks for each production line, we may have to allocate
+        // based on the work order line and production line
+        // after that, we will sum up everything and return the allocate result as a whole
+        AllocationResult fullAllocationResult = new AllocationResult();
 
-        AllocationResult allocationResult = tryAllocate(allocationRequest);
-        logger.debug("We got {} picks, {} short allocations for work order line {} / {}, ",
-                allocationResult.getPicks().size(),
-                allocationResult.getShortAllocations().size(),
-                workOrder.getNumber(),
-                workOrderLine.getNumber());
-        persistAllocationResult(allocationResult);
-        return allocationResult;
+        workOrder.getProductionLineAssignments().forEach(
+                productionLineAssignment -> {
+                    logger.debug("start to allocate work order {} / {} for production line {} / {} / {}",
+                            workOrder.getNumber(),
+                            workOrderLine.getItem().getName(),
+                            productionLineAssignment.getProductionLine().getName(),
+                            productionLineAssignment.getProductionLine().getInboundStageLocationId(),
+                            productionLineAssignment.getProductionLine().getInboundStageLocation() == null ?
+                                    "N/A" : productionLineAssignment.getProductionLine().getInboundStageLocation().getId());
+
+
+                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, productionLineAssignment);
+                    logger.debug("will allocate the work order to destination location id {} for quantity {}",
+                            allocationRequest.getDestinationLocationId(),
+                            allocationRequest.getQuantity());
+                    // If we specify the allocation strategy type, then override the one
+                    // from the shipment line(order line)
+
+                    AllocationResult allocationResult = tryAllocate(allocationRequest);
+
+                    logger.debug("We got {} picks, {} short allocations for work order line {} / {}, ",
+                            allocationResult.getPicks().size(),
+                            allocationResult.getShortAllocations().size(),
+                            workOrder.getNumber(),
+                            workOrderLine.getNumber());
+
+
+                    fullAllocationResult.merge(allocationResult);
+
+                }
+        );
+        persistAllocationResult(fullAllocationResult);
+        return fullAllocationResult;
     }
 
     /**

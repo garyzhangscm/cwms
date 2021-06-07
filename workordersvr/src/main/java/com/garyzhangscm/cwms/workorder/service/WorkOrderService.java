@@ -18,9 +18,11 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
@@ -76,6 +78,8 @@ public class WorkOrderService implements TestDataInitiableService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
     @Autowired
     private FileService fileService;
     @Autowired
@@ -200,19 +204,28 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
 
-
     public WorkOrder save(WorkOrder workOrder) {
+        return save(workOrder, true);
+    }
+
+    public WorkOrder save(WorkOrder workOrder, boolean loadDetails) {
         WorkOrder newWorkOrder = workOrderRepository.save(workOrder);
-        loadAttribute(newWorkOrder);
+        if (loadDetails) {
+
+            loadAttribute(newWorkOrder);
+        }
         return newWorkOrder;
     }
 
     public WorkOrder saveOrUpdate(WorkOrder workOrder) {
+        return saveOrUpdate(workOrder, true);
+    }
+    public WorkOrder saveOrUpdate(WorkOrder workOrder, boolean loadDetails) {
         if (workOrder.getId() == null && findByNumber(workOrder.getWarehouseId(), workOrder.getNumber()) != null) {
             workOrder.setId(
                     findByNumber(workOrder.getWarehouseId(), workOrder.getNumber()).getId());
         }
-        return save(workOrder);
+        return save(workOrder, loadDetails);
     }
 
 
@@ -570,6 +583,8 @@ public class WorkOrderService implements TestDataInitiableService {
             // the open quantity is setup as the expected quantity
             WorkOrderLine workOrderLine = entry.getValue();
             workOrderLine.setOpenQuantity(workOrderLine.getExpectedQuantity());
+            //TO-DO: default the allocation strategy type to FIFO
+            workOrderLine.setAllocationStrategyType(AllocationStrategyType.FIRST_IN_FIRST_OUT);
             workOrderLineService.addWorkOrderLine(workOrder, workOrderLine);
         });
 
@@ -703,5 +718,71 @@ public class WorkOrderService implements TestDataInitiableService {
                 findByNumber(warehouseId, number, false);
 
         return Objects.isNull(workOrder) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+    }
+
+    public ReportHistory generatePickReportByWorkOrder(Long workOrderId, String locale) throws IOException {
+
+        return generatePickReportByWorkOrder(findById(workOrderId), locale);
+    }
+
+    public ReportHistory generatePickReportByWorkOrder(WorkOrder workOrder, String locale)
+            throws IOException {
+
+        Long warehouseId = workOrder.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupWorkOrderPickReportParameters(
+                reportData, workOrder
+        );
+        setupWorkOrderPickReportData(
+                reportData, workOrder
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.ORDER_PICK_SHEET, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+
+    private void setupWorkOrderPickReportParameters(
+            Report report, WorkOrder workOrder) throws IOException {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("order_number", workOrder.getNumber());
+
+
+        report.addParameter("customer_name", "N/A");
+
+        Integer totalLineCount =
+                workOrder.getWorkOrderLines().size();
+        Integer totalItemCount =
+                workOrder.getWorkOrderLines().size();
+        Long totalQuantity =
+                outboundServiceRestemplateClient.getWorkOrderPicks(workOrder)
+                    .stream().mapToLong(Pick::getQuantity).sum();
+
+        report.addParameter("totalLineCount", totalLineCount);
+        report.addParameter("totalItemCount", totalItemCount);
+        report.addParameter("totalQuantity", totalQuantity);
+    }
+
+    private void setupWorkOrderPickReportData(Report report, WorkOrder workOrder) throws IOException {
+
+        // set data to be all picks
+        List<Pick> picks = outboundServiceRestemplateClient.getWorkOrderPicks(workOrder);
+        report.setData(picks);
     }
 }

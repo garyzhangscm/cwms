@@ -1199,5 +1199,8 @@
   "steps.work-order.assign-production-line.quantity": "Assign Quantity",
   "production-line.unassigned": "Unassigned",
   "production-line.assigned": "Assigned",
-  "menu.main.work-order.assign-production-line": "Assign Production Line"
+  "menu.main.work-order.assign-production-line": "Assign Production Line",
+  "breadcrumb.production-line": "Production Line",
+  "menu.main.production-line.maintenance": "Maintenance",
+  "steps.production-line.info": "Basic Info"
 }

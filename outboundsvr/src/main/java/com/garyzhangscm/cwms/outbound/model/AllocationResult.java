@@ -29,6 +29,11 @@ public class AllocationResult  implements Serializable {
         this.shortAllocations = shortAllocations;
     }
 
+    public void merge(AllocationResult anotherAllocationResult) {
+        addPicks(anotherAllocationResult.getPicks());
+        addShortAllocations(anotherAllocationResult.getShortAllocations());
+    }
+
     public void addPick(Pick pick) {
         picks.add(pick);
     }
