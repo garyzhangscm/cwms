@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "production_line_assignment")
@@ -30,6 +31,18 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     @Column(name = "quantity")
     private Long quantity;
 
+
+    @Column(name = "start_time")
+    private LocalDateTime startTime;
+
+
+    // time span that will be reserved by the work order
+    // this is an estimated timespan calculated automatically
+    // and can be override by the user
+    // always in second
+    @Column(name = "estimated_reserved_timespan")
+    private Long estimatedReservedTimespan;
+
     public ProductionLineAssignment(){}
 
     public ProductionLineAssignment(WorkOrder workOrder,
@@ -38,6 +51,7 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
         this.workOrder = workOrder;
         this.productionLine = productionLine;
         this.quantity = quantity;
+        this.startTime = LocalDateTime.now();
 
     }
 
@@ -71,5 +85,21 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public Long getEstimatedReservedTimespan() {
+        return estimatedReservedTimespan;
+    }
+
+    public void setEstimatedReservedTimespan(Long estimatedReservedTimespan) {
+        this.estimatedReservedTimespan = estimatedReservedTimespan;
     }
 }

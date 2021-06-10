@@ -19,7 +19,9 @@
 package com.garyzhangscm.cwms.workorder.clients;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.workorder.model.Inventory;
 import com.garyzhangscm.cwms.workorder.model.SystemControlledNumber;
+import com.garyzhangscm.cwms.workorder.model.UnitOfMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 @Component
 public class CommonServiceRestemplateClient {
@@ -59,6 +63,26 @@ public class CommonServiceRestemplateClient {
     }
     public String getNextWorkOrderNumber(Long warehouseId) {
         return getNextNumber(warehouseId, "work-order-number");
+    }
+
+
+    public UnitOfMeasure getUnitOfMeasureById(Long id) {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/unit-of-measures/{id}");
+
+
+        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
 
