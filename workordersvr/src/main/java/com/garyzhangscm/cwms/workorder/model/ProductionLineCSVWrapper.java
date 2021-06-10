@@ -19,6 +19,7 @@ public class ProductionLineCSVWrapper {
     private Boolean workOrderExclusiveFlag;
 
     private Boolean enabled;
+    private Boolean genericPurpose;
 
     public String getCompany() {
         return company;
@@ -82,5 +83,13 @@ public class ProductionLineCSVWrapper {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getGenericPurpose() {
+        return genericPurpose;
+    }
+
+    public void setGenericPurpose(Boolean genericPurpose) {
+        this.genericPurpose = genericPurpose;
     }
 }

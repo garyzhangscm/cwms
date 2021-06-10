@@ -675,7 +675,7 @@
   "work-order.kpi-transaction.type": "KPI Transaction Type",
   "work-order.number":"Work Order Number",
   "work-order.expected-quantity":"Expected Quantity",
-  "work-order.produced-quantity":"Produced Quantity",
+  "work-order.produced-quantity":"Qty Complete",
   "work-order.producing-inventory":"Producing",
   "work-order.produce":"Produce",
   "work-order.assigned-user-count":"Assigned User Count",
@@ -1202,5 +1202,13 @@
   "menu.main.work-order.assign-production-line": "Assign Production Line",
   "breadcrumb.production-line": "Production Line",
   "menu.main.production-line.maintenance": "Maintenance",
-  "steps.production-line.info": "Basic Info"
+  "steps.production-line.info": "Basic Info",
+  "production-line.model": "model",
+  "production-line.staff-count": "staff count",
+  "production-line.capacity": "capacity",
+  "time-unit": "Time Unit",
+  "work-order.item": "Manufacture Item",
+  "production-line.generic-purpose":"Generic Purpose",
+  "work-order.totalInprocessQuantity": "Inprocess Quantity",
+  "production-line.generic-purpose.no-capacity-message": "No need to setup capacity for generic purpose production line"
 }

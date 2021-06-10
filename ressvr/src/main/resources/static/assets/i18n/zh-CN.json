@@ -1207,5 +1207,13 @@
   "menu.main.work-order.assign-production-line": "分配产线",
   "breadcrumb.production-line": "生产线",
   "menu.main.production-line.maintenance": "维护",
-  "steps.production-line.info": "基础信息"
+  "steps.production-line.info": "基础信息",
+  "production-line.model": "型号",
+  "production-line.staff-count": "员工数",
+  "production-line.capacity": "产能",
+  "time-unit": "时间单位",
+  "work-order.item": "成品",
+  "production-line.generic-purpose":"通用型",
+  "work-order.totalInprocessQuantity": "正在进行数量",
+  "production-line.generic-purpose.no-capacity-message": "通用型产线不需要配置商品和产能"
 }

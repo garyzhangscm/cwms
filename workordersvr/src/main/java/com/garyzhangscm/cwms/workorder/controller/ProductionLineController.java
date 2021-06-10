@@ -42,14 +42,16 @@ public class ProductionLineController {
     }
 
     @RequestMapping(value="/production-lines/available", method = RequestMethod.GET)
-    public List<ProductionLine> findAllAvailableProductionLines(@RequestParam Long warehouseId) {
-        return productionLineService.findAllAvailableProductionLines(warehouseId);
+    public List<ProductionLine> findAllAvailableProductionLines(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId) {
+        return productionLineService.findAllAvailableProductionLines(warehouseId, itemId);
     }
 
 
     @RequestMapping(value="/production-lines", method = RequestMethod.POST)
     public ProductionLine addProductionLine(@RequestBody ProductionLine productionLine) {
-        return productionLineService.save(productionLine);
+        return productionLineService.addProductionLine(productionLine);
     }
 
 
@@ -68,7 +70,7 @@ public class ProductionLineController {
 
     @RequestMapping(value="/production-lines/{id}", method = RequestMethod.PUT)
     public ProductionLine changeProductionLine(@RequestBody ProductionLine productionLine){
-        return productionLineService.save(productionLine);
+        return productionLineService.changeProductionLine(productionLine);
     }
 
     @RequestMapping(value="/production-lines", method = RequestMethod.DELETE)

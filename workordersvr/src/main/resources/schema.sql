@@ -1,6 +1,7 @@
 
 drop table if exists  work_order_kpi;
 drop table if exists production_line_assignment;
+drop table if exists production_line_capacity;
 
 drop table if exists  work_order_line_consume_transaction;
 drop table if exists  work_order_by_product_produce_transaction;
@@ -118,6 +119,9 @@ CREATE TABLE production_line (
   production_line_location_id BIGINT NOT NULL,
   work_order_exclusive_flag boolean not null,
   enabled boolean not null,
+  generic_purpose boolean not null,
+  model  VARCHAR(200),
+  staff_count int,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
@@ -347,10 +351,28 @@ CREATE TABLE production_line_assignment (
   work_order_id    BIGINT NOT NULL,
   production_line_id    BIGINT NOT NULL,
   quantity    BIGINT NOT NULL,
+  start_time DATETIME not null,
+  estimated_reserved_timespan  BIGINT NOT NULL,
   foreign key(work_order_id) references work_order(work_order_id),
   foreign key(production_line_id) references production_line(production_line_id),
-  created_time date,
+  created_time DATETIME,
   created_by VARCHAR(50),
-  last_modified_time date,
+  last_modified_time DATETIME,
   last_modified_by VARCHAR(50)
+);
+
+
+CREATE TABLE production_line_capacity (
+  production_line_capacity_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id BIGINT not null,
+  production_line_id    BIGINT NOT NULL,
+  item_id    BIGINT NOT NULL,
+  capacity    BIGINT NOT NULL,
+  unit_of_measure_id    BIGINT NOT NULL,
+  capacity_unit VARCHAR(20) NOT NULL,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50),
+  foreign key(production_line_id) references production_line(production_line_id)
 );

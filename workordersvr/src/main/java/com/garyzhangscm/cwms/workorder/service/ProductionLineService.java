@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
@@ -39,6 +40,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -55,6 +57,8 @@ public class ProductionLineService implements TestDataInitiableService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private FileService fileService;
 
@@ -105,13 +109,19 @@ public class ProductionLineService implements TestDataInitiableService {
         return findAll(warehouseId, name, productionLineIds, true);
     }
 
-    public List<ProductionLine> findAllAvailableProductionLines(Long warehouseId) {
-        return findAllAvailableProductionLines(warehouseId, true);
+    public List<ProductionLine> findAllAvailableProductionLines(
+            Long warehouseId, Long itemId) {
+        return findAllAvailableProductionLines(warehouseId, itemId,true);
     }
 
-    public List<ProductionLine> findAllAvailableProductionLines(Long warehouseId, boolean loadDetails) {
-        List<ProductionLine> productionLines = productionLineRepository.findByWarehouseId(warehouseId);
-        productionLines = productionLines.stream().filter(this::isAvailableForNewWorkOrder)
+    public List<ProductionLine> findAllAvailableProductionLines(
+            Long warehouseId, Long itemId, boolean loadDetails) {
+        List<ProductionLine> productionLines
+                = productionLineRepository.findByWarehouseId(warehouseId);
+        productionLines =
+                productionLines.stream()
+                        .filter(productionLine ->
+                                isAvailableForNewWorkOrder(productionLine, itemId))
                             .collect(Collectors.toList());
         if (productionLines.size() > 0 && loadDetails) {
             loadAttribute(productionLines);
@@ -120,19 +130,44 @@ public class ProductionLineService implements TestDataInitiableService {
 
     }
 
-    private boolean isAvailableForNewWorkOrder(ProductionLine productionLine) {
+    private boolean isAvailableForNewWorkOrder(
+            ProductionLine productionLine, Long itemId) {
+        logger.debug("Start to check if production line {} can be used by itemId: {}",
+                productionLine.getName(),
+                itemId);
         // The production line is available for new work order only if
         // both of the following conditions are met
         // 1. production line is enabled
         // 2. production line is not exclusive
         //    or is exclusive but no work order on it yet
         if (!productionLine.getEnabled()) {
+            logger.debug("> production line is disabled");
             return false;
         }
         if (productionLine.getWorkOrderExclusiveFlag() &&
             productionLine.getProductionLineAssignments().size() > 0) {
 
+            logger.debug("> production line is assigned and setup as exclusive");
             return false;
+        }
+        // if this production line is not for generic purpose, then we
+        // know it is for certain item only , we will need to make sure
+        // the item id is in the list
+        if (!productionLine.getGenericPurpose()) {
+            if (Objects.isNull(itemId)) {
+                // the production line is for certain item only but
+                // we didn't pass in the item as qualifier, let's return false
+
+                logger.debug("> production line is not generic purpose but item id is not passed in");
+                return false;
+            }
+            if (productionLine.getProductionLineCapacities().stream()
+                    .noneMatch(productionLineCapacity
+                            -> itemId.equals(productionLineCapacity.getItemId()))) {
+                logger.debug("> production line is not generic purpose but item id is not in the list");
+
+                return false;
+            }
         }
         return true;
     }
@@ -194,6 +229,29 @@ public class ProductionLineService implements TestDataInitiableService {
                     warehouseLayoutServiceRestemplateClient.getLocationById(productionLine.getProductionLineLocationId()));
         }
 
+        productionLine.getProductionLineCapacities().forEach(
+                productionLineCapacity -> {
+                    // setup the item for the production line capacity
+                    productionLineCapacity.setItem(
+                            inventoryServiceRestemplateClient.getItemById(
+                                    productionLineCapacity.getItemId()
+                            )
+                    );
+                    logger.debug("Will set the UOM of production to {} by id {}",
+
+                            commonServiceRestemplateClient.getUnitOfMeasureById(
+                                    productionLineCapacity.getUnitOfMeasureId()
+                            ).getName(),
+                            productionLineCapacity.getUnitOfMeasureId());
+                    productionLineCapacity.setUnitOfMeasure(
+                            commonServiceRestemplateClient.getUnitOfMeasureById(
+                                    productionLineCapacity.getUnitOfMeasureId()
+                            )
+
+                    );
+                }
+        );
+
 
         // productionLine.getWorkOrders().forEach(workOrder -> workOrderService.loadAttribute(workOrder));
 
@@ -247,6 +305,7 @@ public class ProductionLineService implements TestDataInitiableService {
                 addColumn("productionLineLocation").
                 addColumn("workOrderExclusiveFlag").
                 addColumn("enabled").
+                addColumn("genericPurpose").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, ProductionLineCSVWrapper.class);
@@ -276,6 +335,7 @@ public class ProductionLineService implements TestDataInitiableService {
         productionLine.setName(productionLineCSVWrapper.getName());
         productionLine.setWorkOrderExclusiveFlag(productionLineCSVWrapper.getWorkOrderExclusiveFlag());
         productionLine.setEnabled(productionLineCSVWrapper.getEnabled());
+        productionLine.setGenericPurpose(productionLineCSVWrapper.getGenericPurpose());
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
                 productionLineCSVWrapper.getCompany(),
@@ -308,6 +368,26 @@ public class ProductionLineService implements TestDataInitiableService {
                                                 @RequestParam boolean disabled) {
         ProductionLine productionLine = findById(id);
         productionLine.setEnabled(!disabled);
+        return saveOrUpdate(productionLine);
+    }
+
+    public ProductionLine addProductionLine(ProductionLine productionLine) {
+        productionLine.getProductionLineCapacities().forEach(
+                productionLineCapacity ->
+                        productionLineCapacity.setProductionLine(
+                                productionLine
+                        )
+        );
+        return saveOrUpdate(productionLine);
+    }
+
+    public ProductionLine changeProductionLine(ProductionLine productionLine) {
+        productionLine.getProductionLineCapacities().forEach(
+                productionLineCapacity ->
+                        productionLineCapacity.setProductionLine(
+                                productionLine
+                        )
+        );
         return saveOrUpdate(productionLine);
     }
 }

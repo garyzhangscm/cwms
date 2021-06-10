@@ -1,6 +1,8 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -50,6 +52,10 @@ public class ProductionLine extends AuditibleEntity<String>{
     @JsonIgnore
     private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
 
+
+    @OneToMany(mappedBy = "productionLine", cascade = CascadeType.ALL)
+    private List<ProductionLineCapacity> productionLineCapacities = new ArrayList<>();
+
     // Whether there's only one work order can be worked on
     // this production at any time
     @Column(name = "work_order_exclusive_flag")
@@ -58,6 +64,28 @@ public class ProductionLine extends AuditibleEntity<String>{
     @Column(name = "enabled")
     private Boolean enabled = false;
 
+
+    @Column(name = "model")
+    private String model;
+
+
+    @Column(name = "staff_count")
+    private int staffCount;
+
+    // whether the production line can be used for
+    // all items, or specific for certain items
+    @Column(name = "generic_purpose")
+    private Boolean genericPurpose = false;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public String getName() {
         return name;
@@ -163,4 +191,35 @@ public class ProductionLine extends AuditibleEntity<String>{
         this.enabled = enabled;
     }
 
+    public List<ProductionLineCapacity> getProductionLineCapacities() {
+        return productionLineCapacities;
+    }
+
+    public void setProductionLineCapacities(List<ProductionLineCapacity> productionLineCapacities) {
+        this.productionLineCapacities = productionLineCapacities;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public int getStaffCount() {
+        return staffCount;
+    }
+
+    public void setStaffCount(int staffCount) {
+        this.staffCount = staffCount;
+    }
+
+    public Boolean getGenericPurpose() {
+        return genericPurpose;
+    }
+
+    public void setGenericPurpose(Boolean genericPurpose) {
+        this.genericPurpose = genericPurpose;
+    }
 }

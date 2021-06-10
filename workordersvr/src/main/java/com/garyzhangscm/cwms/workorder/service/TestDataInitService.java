@@ -142,6 +142,11 @@ public class TestDataInitService {
                 "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("production_line_assignment records from warehouse ID {} removed!", warehouseId);
 
+
+        jdbcTemplate.update("delete from production_line_capacity where production_line_id in " +
+                "  (select production_line_id from  production_line where warehouse_id = ?)", new Object[] { warehouseId });
+        logger.debug("production_line_capacity records from warehouse ID {} removed!", warehouseId);
+
         jdbcTemplate.update("delete from bill_of_material_line where bill_of_material_id in " +
                              "  (select bill_of_material_id from  bill_of_material where warehouse_id = ?)", new Object[] { warehouseId });
         logger.debug("bill_of_material_line records from warehouse ID {} removed!", warehouseId);
