@@ -30,6 +30,20 @@ drop table if exists bill_of_material_by_product;
 drop table if exists work_order_instruction_template;
 drop table if exists bill_of_material;
 
+drop  table if exists mould;
+
+
+
+CREATE TABLE mould (
+  mould_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  warehouse_id  BIGINT NOT NULL,
+  name   VARCHAR(50) NOT NULL,
+  description   VARCHAR(200) ,
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50));
+
 
 CREATE TABLE bill_of_material (
   bill_of_material_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -121,7 +135,6 @@ CREATE TABLE production_line (
   enabled boolean not null,
   generic_purpose boolean not null,
   model  VARCHAR(200),
-  staff_count int,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
@@ -218,11 +231,13 @@ CREATE TABLE work_order_produce_transaction (
   work_order_produce_transaction_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   work_order_id  BIGINT NOT NULL,
   consume_by_bom_quantity boolean not null default 1,
+  production_line_id BIGINT NOT NULL,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50),
-  foreign key(work_order_id) references work_order(work_order_id));
+  foreign key(work_order_id) references work_order(work_order_id),
+  foreign key(production_line_id) references production_line(production_line_id));
 
 
 CREATE TABLE work_order_line_consume_transaction (
@@ -350,11 +365,14 @@ CREATE TABLE production_line_assignment (
   production_line_assignment_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   work_order_id    BIGINT NOT NULL,
   production_line_id    BIGINT NOT NULL,
+  mould_id BIGINT,
   quantity    BIGINT NOT NULL,
-  start_time DATETIME not null,
-  estimated_reserved_timespan  BIGINT NOT NULL,
+  start_time DATETIME ,
+  end_time DATETIME ,
+  estimated_reserved_timespan  BIGINT,
   foreign key(work_order_id) references work_order(work_order_id),
   foreign key(production_line_id) references production_line(production_line_id),
+  foreign key(mould_id) references mould(mould_id),
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
@@ -366,13 +384,16 @@ CREATE TABLE production_line_capacity (
   production_line_capacity_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT not null,
   production_line_id    BIGINT NOT NULL,
+  mould_id BIGINT,
   item_id    BIGINT NOT NULL,
   capacity    BIGINT NOT NULL,
   unit_of_measure_id    BIGINT NOT NULL,
   capacity_unit VARCHAR(20) NOT NULL,
+  staff_count int,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50),
-  foreign key(production_line_id) references production_line(production_line_id)
+  foreign key(production_line_id) references production_line(production_line_id),
+  foreign key(mould_id) references mould(mould_id)
 );

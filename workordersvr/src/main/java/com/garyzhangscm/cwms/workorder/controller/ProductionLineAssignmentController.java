@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineAssignment;
 import com.garyzhangscm.cwms.workorder.model.ProductionPlan;
+import com.garyzhangscm.cwms.workorder.model.WorkOrder;
 import com.garyzhangscm.cwms.workorder.service.ProductionLineAssignmentService;
 import com.garyzhangscm.cwms.workorder.service.ProductionPlanService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +46,17 @@ public class ProductionLineAssignmentController {
     @RequestMapping(value="/production-line-assignments", method = RequestMethod.POST)
     public List<ProductionLineAssignment> assignWorkOrderToProductionLines(
             @RequestParam Long workOrderId,
-            @RequestParam String productionLineIds,
-            @RequestParam String quantities) {
+            @RequestBody List<ProductionLineAssignment> productionLineAssignments) {
+
         return productionLineAssignmentService.assignWorkOrderToProductionLines(workOrderId,
-                productionLineIds,quantities);
+                productionLineAssignments);
+    }
+
+
+    @RequestMapping(value="/production-line-assignments/assigned-work-orders", method = RequestMethod.GET)
+    public List<WorkOrder> getAssignedWorkOrderByProductionLine(Long productionLineId) {
+
+        return productionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLineId);
     }
 
 

@@ -325,13 +325,14 @@ public class InventoryServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public List<Inventory> consumeMaterialForWorkOrderLine(Long workOrderLineId, Long warehouseId, Long quantity) {
+    public List<Inventory> consumeMaterialForWorkOrderLine(Long workOrderLineId, Long warehouseId, Long quantity, Long inboundLocationId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories/consume/workOrderLine/{id}")
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("quantity", quantity);
+                        .queryParam("quantity", quantity)
+                        .queryParam("locationId", inboundLocationId);
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(

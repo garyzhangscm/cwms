@@ -1,9 +1,18 @@
 package com.garyzhangscm.cwms.workorder.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "production_line_assignment")
@@ -26,6 +35,9 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     @JsonIgnore
     private WorkOrder workOrder;
 
+    @Transient
+    private Long workOrderId;
+
 
 
     @Column(name = "quantity")
@@ -33,7 +45,24 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
 
     @Column(name = "start_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    //@DateTimeFormat(pattern =  "YYYY-MM-DDTHH:mm:ss.SSSZ")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime startTime;
+
+    @Column(name = "end_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // @JsonFormat(pattern="dd/MM/yyyy hh:mm")
+    private LocalDateTime endTime;
+
+
+    @ManyToOne
+    @JoinColumn(name = "mould_id")
+    private Mould mould;
+
 
 
     // time span that will be reserved by the work order
@@ -52,6 +81,7 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
         this.productionLine = productionLine;
         this.quantity = quantity;
         this.startTime = LocalDateTime.now();
+        this.estimatedReservedTimespan = 0L;
 
     }
 
@@ -101,5 +131,29 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setEstimatedReservedTimespan(Long estimatedReservedTimespan) {
         this.estimatedReservedTimespan = estimatedReservedTimespan;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Mould getMould() {
+        return mould;
+    }
+
+    public void setMould(Mould mould) {
+        this.mould = mould;
+    }
+
+    public Long getWorkOrderId() {
+        return workOrderId;
+    }
+
+    public void setWorkOrderId(Long workOrderId) {
+        this.workOrderId = workOrderId;
     }
 }

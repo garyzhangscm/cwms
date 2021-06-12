@@ -69,9 +69,6 @@ public class ProductionLine extends AuditibleEntity<String>{
     private String model;
 
 
-    @Column(name = "staff_count")
-    private int staffCount;
-
     // whether the production line can be used for
     // all items, or specific for certain items
     @Column(name = "generic_purpose")
@@ -207,13 +204,6 @@ public class ProductionLine extends AuditibleEntity<String>{
         this.model = model;
     }
 
-    public int getStaffCount() {
-        return staffCount;
-    }
-
-    public void setStaffCount(int staffCount) {
-        this.staffCount = staffCount;
-    }
 
     public Boolean getGenericPurpose() {
         return genericPurpose;

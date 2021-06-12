@@ -1215,5 +1215,18 @@
   "work-order.item": "成品",
   "production-line.generic-purpose":"通用型",
   "work-order.totalInprocessQuantity": "正在进行数量",
-  "production-line.generic-purpose.no-capacity-message": "通用型产线不需要配置商品和产能"
+  "production-line.generic-purpose.no-capacity-message": "通用型产线不需要配置商品和产能",
+  "steps.work-order-produce.production-line.title": "生产线",
+  "steps.work-order-produce.production-line.description": "选择本次使用的生产线",
+  "production-line.assignment.start-time": "起始时间",
+  "production-line.assignment.end-time": "完成时间",
+  "production-line.assignment.duration": "时长",
+  "menu.main.work-order.mould": "模具",
+  "page.mould.header.title": "模具",
+  "steps.mould.info": "模具基础信息",
+  "menu.main.mould.maintenance": "模具维护",
+  "mould": "模具",
+  "menu.mobile.work-order": "加工",
+  "menu.mobile.work-order.pick-by-work-order": "加工单拣货",
+  "menu.mobile.work-order.produce": "生产"
 }

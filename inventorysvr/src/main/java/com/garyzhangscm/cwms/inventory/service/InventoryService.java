@@ -292,16 +292,21 @@ public class InventoryService implements TestDataInitiableService{
 
         // if we need to load the details, or asked to return the inventory
         // that is only in receiving stage,
-        if ((includeDetails || notPutawayInventoryOnly)
+        logger.debug("includeDetails? {}", includeDetails);
+        logger.debug("Boolean.TRUE.equals(notPutawayInventoryOnly)? {}", Boolean.TRUE.equals(notPutawayInventoryOnly));
+        logger.debug("inventories.size()? {}", inventories.size());
+        if ((includeDetails || Boolean.TRUE.equals(notPutawayInventoryOnly))
                 && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
 
 
-            if (notPutawayInventoryOnly) {
+            logger.debug("Boolean.TRUE.equals(notPutawayInventoryOnly)? {}", Boolean.TRUE.equals(notPutawayInventoryOnly));
+            if (Boolean.TRUE.equals(notPutawayInventoryOnly)) {
                 // the inventory may be in the receipt or in the receiving stage
                 String receiptLocationGroup =
                         commonServiceRestemplateClient.getPolicyByKey(warehouseId, "LOCATION-GROUP-RECEIPT").getValue();
 
+                logger.debug("receiptLocationGroup? {}", receiptLocationGroup);
                 List<Inventory> inventoriesOnReceipt = inventories.stream().filter(
                         inventory -> inventory.getLocation().getLocationGroup().getName().equals(
                                 receiptLocationGroup
@@ -1582,7 +1587,16 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
-    public List<Inventory> consumeInventoriesForWorkOrderLine(Long workOrderLineId, Long warehouseId,Long quantity) {
+    /**
+     * Consume invenotry for work order
+     * @param workOrderLineId  work order line
+     * @param warehouseId
+     * @param quantity quantity to be consumed
+     * @param inboundLocationId location of the inventory to be consumed, we may have multiple production lines associated with the work order
+     * @return
+     */
+    public List<Inventory> consumeInventoriesForWorkOrderLine(Long workOrderLineId, Long warehouseId,
+                                                              Long quantity, Long inboundLocationId) {
 
         try {
             List<Pick> picks = outbuondServiceRestemplateClient.getWorkOrderPicks(warehouseId, String.valueOf(workOrderLineId));
@@ -1597,7 +1611,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
-                        null,
+                        inboundLocationId,
                         null,
                         null,
                         null,

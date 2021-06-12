@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -466,6 +467,11 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     public List<Inventory> getDeliveredInventory(Long workOrderId) {
+        // return the delivered inventory for the whole work order, regardless of the
+        // assigned production line
+        return getDeliveredInventory(workOrderId, null);
+    }
+    public List<Inventory> getDeliveredInventory(Long workOrderId, ProductionLine productionLine) {
         WorkOrder workOrder = findById(workOrderId);
 
         // Get all the picked inventory that already arrived at the
@@ -488,10 +494,20 @@ public class WorkOrderService implements TestDataInitiableService {
 
                 // loop through each production line's stage location and find the inventory
                 // that is delivered
-                workOrder.getProductionLineAssignments()
-                        .stream()
-                        .map(productionLineAssignment -> productionLineAssignment.getProductionLine().getInboundStageLocationId())
-                        .forEach(productionInStagingLocationId -> {
+                Stream<Long> productionInStagingLocationIds =
+                            workOrder.getProductionLineAssignments()
+                            .stream()
+                            .map(productionLineAssignment -> productionLineAssignment.getProductionLine().getInboundStageLocationId());
+                // if the location is passed in, filter the result by the location only
+
+                if (Objects.nonNull(productionLine)) {
+                    productionInStagingLocationIds = productionInStagingLocationIds.filter(
+                            productionInStagingLocationId -> productionInStagingLocationId.equals(productionLine.getInboundStageLocationId())
+                    );
+                }
+
+                productionInStagingLocationIds.forEach(productionInStagingLocationId -> {
+
 
                             deliveredInventory.addAll(
                                     inventoryServiceRestemplateClient.findDeliveredInventory(
@@ -499,6 +515,7 @@ public class WorkOrderService implements TestDataInitiableService {
                                             productionInStagingLocationId,
                                             pickIds)
                             );
+
 
                         });
 

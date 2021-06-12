@@ -637,9 +637,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     public Location deallocateLocation(Location location, Inventory inventory) {
         Double inventorySize = 0.0;
-        if (location.getLocationGroup().getVolumeTrackingPolicy().equals(
+        logger.debug("start to deallocateLocation\n {}",
+                location);
+        if (Boolean.TRUE.equals(location.getLocationGroup().getTrackingVolume()) &&
+              location.getLocationGroup().getVolumeTrackingPolicy().equals(
                 LocationVolumeTrackingPolicy.BY_EACH
-        )) {
+            )) {
             inventorySize = inventory.getQuantity() * 1.0;
         }
         else {
