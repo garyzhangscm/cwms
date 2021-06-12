@@ -191,4 +191,6 @@ public class WorkOrderController {
         return workOrderService.generatePickReportByWorkOrder(id, locale);
     }
 
+
+
 }

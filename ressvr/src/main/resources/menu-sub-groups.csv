@@ -14,3 +14,4 @@ text,i18n,icon,shortcutRoot,sequence,link,badge,menuGroup,name
 "Inbound",menu.mobile.inbound,0xe8d1,,1,,,Mobile-Menu,Mobile-Menu-Inbound
 "Outbound",menu.mobile.outbound,0xeaa8,,2,,,Mobile-Menu,Mobile-Menu-Outbound
 "Inventory",menu.mobile.inventory,0xe63a,,3,,,Mobile-Menu,Mobile-Menu-Inventory
+"WorkOrder",menu.mobile.work-order,0xe63a,,4,,,Mobile-Menu,Mobile-Menu-WorkOrder

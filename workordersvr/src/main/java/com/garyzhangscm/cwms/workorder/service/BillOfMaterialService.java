@@ -254,6 +254,8 @@ public class BillOfMaterialService implements TestDataInitiableService {
         }
 
         // find by the item
+        logger.debug("start to find bill of material by warehouse / item {}, {}",
+                workOrder.getWarehouseId(), workOrder.getItem().getName());
         List<BillOfMaterial> billOfMaterials =
                 findAll(workOrder.getWarehouseId(), "", workOrder.getItem().getName(), false);
 

@@ -36,6 +36,9 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     )
     List<WorkOrderLineConsumeTransaction> workOrderLineConsumeTransactions = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "production_line_id")
+    private ProductionLine productionLine;
 
     @OneToMany(
             mappedBy = "workOrderProduceTransaction",
@@ -129,5 +132,13 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     public void setWorkOrderKPITransactions(List<WorkOrderKPITransaction> workOrderKPITransactions) {
         this.workOrderKPITransactions = workOrderKPITransactions;
+    }
+
+    public ProductionLine getProductionLine() {
+        return productionLine;
+    }
+
+    public void setProductionLine(ProductionLine productionLine) {
+        this.productionLine = productionLine;
     }
 }

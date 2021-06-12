@@ -330,7 +330,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
     }
 
     @Transactional
-    public void consume(WorkOrderLine workOrderLine, Long consumedQuantity) {
+    public void consume(WorkOrderLine workOrderLine, Long consumedQuantity, ProductionLine productionLine) {
 
         // make sure the total consumed quantity won't exceed total delivered quantity
         if (workOrderLine.getConsumedQuantity() + consumedQuantity > workOrderLine.getDeliveredQuantity()) {
@@ -344,7 +344,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
         inventoryServiceRestemplateClient.consumeMaterialForWorkOrderLine(
                 workOrderLine.getId(),
                 workOrderLine.getWorkOrder().getWarehouseId(),
-                consumedQuantity
+                consumedQuantity,
+                productionLine.getInboundStageLocationId()
         );
         workOrderLine.setConsumedQuantity(workOrderLine.getConsumedQuantity() + consumedQuantity);
         save(workOrderLine);

@@ -23,6 +23,10 @@ public class ProductionLineCapacity extends AuditibleEntity<String>{
     @JsonIgnore
     private ProductionLine productionLine;
 
+    @ManyToOne
+    @JoinColumn(name = "mould_id")
+    private Mould mould;
+
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
@@ -49,6 +53,11 @@ public class ProductionLineCapacity extends AuditibleEntity<String>{
     // capacity UNIT
     @Column(name = "capacity_unit")
     private TimeUnit capacityUnit;
+
+
+
+    @Column(name = "staff_count")
+    private int staffCount;
 
     @Override
     public String toString() {
@@ -138,5 +147,21 @@ public class ProductionLineCapacity extends AuditibleEntity<String>{
 
     public void setUnitOfMeasure(UnitOfMeasure unitOfMeasure) {
         this.unitOfMeasure = unitOfMeasure;
+    }
+
+    public int getStaffCount() {
+        return staffCount;
+    }
+
+    public void setStaffCount(int staffCount) {
+        this.staffCount = staffCount;
+    }
+
+    public Mould getMould() {
+        return mould;
+    }
+
+    public void setMould(Mould mould) {
+        this.mould = mould;
     }
 }

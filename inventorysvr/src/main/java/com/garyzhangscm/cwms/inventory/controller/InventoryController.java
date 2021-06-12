@@ -111,8 +111,9 @@ public class InventoryController {
     @RequestMapping(value="/inventories/consume/workOrderLine/{id}", method = RequestMethod.POST)
     public List<Inventory> consumeInventoriesForWorkOrderLine(@PathVariable Long id,
                                                               @RequestParam Long warehouseId,
-                                                              @RequestParam  Long quantity) {
-        return inventoryService.consumeInventoriesForWorkOrderLine(id,warehouseId,  quantity);
+                                                              @RequestParam  Long quantity,
+                                                              @RequestParam  Long locationId) {
+        return inventoryService.consumeInventoriesForWorkOrderLine(id,warehouseId,  quantity, locationId);
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}")

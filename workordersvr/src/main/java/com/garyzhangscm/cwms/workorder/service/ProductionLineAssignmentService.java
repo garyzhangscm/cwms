@@ -65,7 +65,6 @@ public class ProductionLineAssignmentService   {
     }
 
 
-
     public List<ProductionLineAssignment> findAll(Long productionLineId,
                                                   Long workOrderId ) {
         return productionLineAssignmentRepository.findAll(
@@ -73,13 +72,13 @@ public class ProductionLineAssignmentService   {
                             List<Predicate> predicates = new ArrayList<Predicate>();
 
 
-                            if (!Objects.nonNull(productionLineId)) {
+                            if (Objects.nonNull(productionLineId)) {
                                 Join<ProductionLineAssignment, ProductionLine> joinProductionLine = root.join("productionLine", JoinType.INNER);
                                 predicates.add(criteriaBuilder.equal(joinProductionLine.get("id"), productionLineId));
 
                             }
 
-                            if (!Objects.nonNull(workOrderId)) {
+                            if (Objects.nonNull(workOrderId)) {
                                 Join<ProductionLineAssignment, WorkOrder> joinWorkOrder = root.join("workOrder", JoinType.INNER);
                                 predicates.add(criteriaBuilder.equal(joinWorkOrder.get("id"), workOrderId));
 
@@ -137,6 +136,23 @@ public class ProductionLineAssignmentService   {
             delete(productionLineAssignment);
         });
     }
+
+    public List<ProductionLineAssignment> assignWorkOrderToProductionLines(
+            Long workOrderId, List<ProductionLineAssignment> productionLineAssignments) {
+
+        WorkOrder workOrder = workOrderService.findById(workOrderId);
+
+
+
+        for (ProductionLineAssignment productionLineAssignment : productionLineAssignments) {
+
+            assignWorkOrderToProductionLines(workOrder,productionLineAssignment);
+
+        }
+
+        return findAll(null, workOrderId);
+
+    }
     public List<ProductionLineAssignment> assignWorkOrderToProductionLines(Long workOrderId, String productionLineIds, String quantities) {
         // remove the assignment for the work order first
 
@@ -182,5 +198,25 @@ public class ProductionLineAssignmentService   {
                 quantity
         );
         saveOrUpdate(productionLineAssignment);
+    }
+
+
+    public void assignWorkOrderToProductionLines(WorkOrder workOrder, ProductionLineAssignment productionLineAssignment) {
+        productionLineAssignment.setWorkOrder(workOrder);
+        logger.debug("Save production line assignment\n{}",
+                productionLineAssignment);
+        saveOrUpdate(productionLineAssignment);
+    }
+
+    public List<WorkOrder> getAssignedWorkOrderByProductionLine(Long productionLineId) {
+        List<ProductionLineAssignment> productionLineAssignments =
+                findAll(productionLineId, null);
+
+        return productionLineAssignments.stream().map(
+                productionLineAssignment -> productionLineAssignment.getWorkOrder()
+        ).map(workOrder -> {
+            workOrderService.loadAttribute(workOrder);
+            return workOrder;
+        }).collect(Collectors.toList());
     }
 }

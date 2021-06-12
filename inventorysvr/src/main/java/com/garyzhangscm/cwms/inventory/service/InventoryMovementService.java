@@ -100,6 +100,8 @@ public class InventoryMovementService{
                 .forEach(inventoryMovement -> {
                     // remove from the DB and clear the location's pending volume
 
+                    logger.debug("will clear movement path: \n {}",
+                            inventoryMovement);
                     warehouseLayoutServiceRestemplateClient.deallocateLocation(
                             inventoryMovement.getLocation(), inventory
                     );

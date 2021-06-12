@@ -1210,5 +1210,18 @@
   "work-order.item": "Manufacture Item",
   "production-line.generic-purpose":"Generic Purpose",
   "work-order.totalInprocessQuantity": "Inprocess Quantity",
-  "production-line.generic-purpose.no-capacity-message": "No need to setup capacity for generic purpose production line"
+  "production-line.generic-purpose.no-capacity-message": "No need to setup capacity for generic purpose production line",
+  "steps.work-order-produce.production-line.title": "Production Line",
+  "steps.work-order-produce.production-line.description": "Choose the production line that you are using for producing",
+  "production-line.assignment.start-time": "Start Time",
+  "production-line.assignment.end-time": "Complete Time",
+  "production-line.assignment.duration": "Duration",
+  "menu.main.work-order.mould": "Mould",
+  "page.mould.header.title": "Mould",
+  "steps.mould.info": "Mould Information",
+  "menu.main.mould.maintenance": "Mould Maintenance",
+  "mould": "Mould",
+  "menu.mobile.work-order": "Work Order",
+  "menu.mobile.work-order.pick-by-work-order": "Pick By Work Order",
+  "menu.mobile.work-order.produce": "Produce"
 }

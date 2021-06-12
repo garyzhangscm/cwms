@@ -62,6 +62,8 @@ public class TestDataInitService {
 
     WorkOrderInstructionService workOrderInstructionService;
 
+    MouldService mouldService;
+
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
 
@@ -76,7 +78,8 @@ public class TestDataInitService {
                                WorkOrderByProductService workOrderByProductService,
                                WorkOrderInstructionService workOrderInstructionService,
                                ProductionPlanService productionPlanService,
-                               ProductionPlanLineService productionPlanLineService) {
+                               ProductionPlanLineService productionPlanLineService,
+                               MouldService mouldService) {
         this.billOfMaterialService = billOfMaterialService;
         this.billOfMaterialLineService = billOfMaterialLineService;
         this.billOfMaterialByProductService = billOfMaterialByProductService;
@@ -91,6 +94,7 @@ public class TestDataInitService {
 
         this.productionPlanService = productionPlanService;
         this.productionPlanLineService = productionPlanLineService;
+        this.mouldService = mouldService;
 
 
         initiableServices.put("Bill_Of_Material", billOfMaterialService);
@@ -120,6 +124,9 @@ public class TestDataInitService {
         serviceNames.add("Production_Plan");
         initiableServices.put("Production_Plan_Line", productionPlanLineService);
         serviceNames.add("Production_Plan_Line");
+
+        initiableServices.put("mould", mouldService);
+        serviceNames.add("mould");
 
     }
     public String[] getTestDataNames() {
@@ -240,6 +247,10 @@ public class TestDataInitService {
 
         jdbcTemplate.update("delete from bill_of_material where warehouse_id = ?", new Object[] { warehouseId });
         logger.debug("bill_of_material records from warehouse ID {} removed!", warehouseId);
+
+
+        jdbcTemplate.update("delete from mould where warehouse_id = ?", new Object[] { warehouseId });
+        logger.debug("mould records from warehouse ID {} removed!", warehouseId);
 
     }
 }
