@@ -79,6 +79,10 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "work_order_id")
     private Long workOrderId;
 
+    @Transient
+    private WorkOrder workOrder;
+
+
     // When we return material from some work order line
     @Column(name = "work_order_line_id")
     private Long workOrderLineId;
@@ -376,5 +380,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setAllocatedByPick(Pick allocatedByPick) {
         this.allocatedByPick = allocatedByPick;
+    }
+
+    public WorkOrder getWorkOrder() {
+        return workOrder;
+    }
+
+    public void setWorkOrder(WorkOrder workOrder) {
+        this.workOrder = workOrder;
     }
 }

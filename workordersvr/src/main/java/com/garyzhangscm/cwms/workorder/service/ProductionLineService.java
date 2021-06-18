@@ -35,6 +35,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -79,34 +83,47 @@ public class ProductionLineService implements TestDataInitiableService {
     }
 
 
-    public List<ProductionLine> findAll(Long warehouseId, String name, String productionLineIds, boolean loadDetails) {
-        List<ProductionLine> productionLines;
+    public List<ProductionLine> findAll(Long warehouseId, String name, String productionLineIds, boolean genericMatch,
+                                        boolean loadDetails) {
+        List<ProductionLine> productionLines
+                =  productionLineRepository.findAll(
+                (Root<ProductionLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if (!StringUtils.isBlank(name)) {
-            // find by production name
-            ProductionLine productionLine = findByName(warehouseId, name);
-            if (productionLine != null) {
-                productionLines = Arrays.asList(new ProductionLine[]{productionLine});
-            } else {
-                productionLines = new ArrayList<>();
-            }
-        }
-        else if (!StringUtils.isBlank(productionLineIds)) {
-            // find production lines by a list of Ids
-            productionLines = findByIds(warehouseId, productionLineIds);
-        }
-        else {
-            // none of the parameters are passed in, let's return everything
-            productionLines = productionLineRepository.findByWarehouseId(warehouseId);
-        }
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (!StringUtils.isBlank(name)) {
+                        if (genericMatch) {
+
+                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                        }
+
+                    }
+                    if (!StringUtils.isBlank(productionLineIds)) {
+                        CriteriaBuilder.In<Long> inProductionLineIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : productionLineIds.split(",")) {
+                            inProductionLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inProductionLineIds));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+
         if (productionLines.size() > 0 && loadDetails) {
             loadAttribute(productionLines);
         }
         return productionLines;
     }
 
-    public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds) {
-        return findAll(warehouseId, name, productionLineIds, true);
+    public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds, boolean genericMatch) {
+        return findAll(warehouseId, name, productionLineIds, genericMatch, true);
     }
 
     public List<ProductionLine> findAllAvailableProductionLines(

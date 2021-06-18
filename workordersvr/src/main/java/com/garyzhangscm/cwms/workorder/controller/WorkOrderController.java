@@ -50,8 +50,9 @@ public class WorkOrderController {
     public List<WorkOrder> findAllWorkOrders(@RequestParam Long warehouseId,
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                             @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId) {
-        return workOrderService.findAll(warehouseId, number, itemName, productionPlanId);
+                                             @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId,
+                                             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery) {
+        return workOrderService.findAll(warehouseId, number, itemName, productionPlanId, genericQuery);
     }
 
     @RequestMapping(value="/work-orders", method = RequestMethod.POST)
@@ -191,6 +192,11 @@ public class WorkOrderController {
         return workOrderService.generatePickReportByWorkOrder(id, locale);
     }
 
+
+    @RequestMapping(value="/work-orders-with-open-pick", method = RequestMethod.GET)
+    public List<WorkOrder> getWorkOrdersWithOpenPick(@RequestParam Long warehouseId) {
+        return workOrderService.getWorkOrdersWithOpenPick(warehouseId);
+    }
 
 
 }

@@ -27,6 +27,7 @@ public interface IntegrationWorkOrderData {
     Long getItemId();
     String getItemName();
     Long getExpectedQuantity();
+    String getPoNumber();
 
     IntegrationStatus getStatus();
 

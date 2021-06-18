@@ -18,12 +18,10 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
-import com.garyzhangscm.cwms.inventory.model.Inventory;
-import com.garyzhangscm.cwms.inventory.model.InventoryMovement;
-import com.garyzhangscm.cwms.inventory.model.InventoryQuantityChangeType;
-import com.garyzhangscm.cwms.inventory.model.Location;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -275,6 +273,18 @@ public class InventoryController {
                                                       @RequestParam String lpn)  {
 
         return ResponseBodyWrapper.success(inventoryService.validateNewLPN(warehouseId, lpn));
+    }
+
+
+    @RequestMapping(value="/inventories/{warehouseId}/{lpn}/lpn-label/ecotech", method = RequestMethod.POST)
+    public ReportHistory generateEcotechLPNLabel(
+            @PathVariable Long warehouseId,
+            @PathVariable String lpn,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print lpn with warehouse and LPN: {} / {}",
+                warehouseId, lpn);
+        return inventoryService.generateEcotechLPNLabel(warehouseId, lpn, locale);
     }
 
 }

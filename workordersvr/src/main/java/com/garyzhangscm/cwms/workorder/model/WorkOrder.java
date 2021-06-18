@@ -89,6 +89,12 @@ public class WorkOrder extends AuditibleEntity<String>{
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+
+    // customer's PO number that
+    // generate this work order
+    @Column(name = "po_number")
+    private String poNumber;
+
     @Transient
     private Warehouse warehouse;
 
@@ -331,5 +337,13 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setTotalPickedQuantity(Long totalPickedQuantity) {
         this.totalPickedQuantity = totalPickedQuantity;
+    }
+
+    public String getPoNumber() {
+        return poNumber;
+    }
+
+    public void setPoNumber(String poNumber) {
+        this.poNumber = poNumber;
     }
 }

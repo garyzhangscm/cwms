@@ -36,8 +36,9 @@ public class BillOfMaterialController {
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.GET)
     public List<BillOfMaterial> findAllBillOfMaterials(@RequestParam Long warehouseId,
                                                        @RequestParam(name="number", required = false, defaultValue = "") String number,
-                                                       @RequestParam(name="itemName", required = false, defaultValue = "") String itemName) {
-        return billOfMaterialService.findAll(warehouseId, number, itemName);
+                                                       @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                                       @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery) {
+        return billOfMaterialService.findAll(warehouseId, number, itemName, genericQuery);
     }
 
     @RequestMapping(value="/bill-of-materials/matched-with-work-order", method = RequestMethod.GET)

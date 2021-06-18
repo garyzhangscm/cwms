@@ -81,7 +81,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
     }
 
 
-    public List<BillOfMaterial> findAll(Long warehouseId, String number, String itemName, boolean loadDetails) {
+    public List<BillOfMaterial> findAll(Long warehouseId, String number, String itemName, boolean genericMatch, boolean loadDetails) {
         List<BillOfMaterial> billOfMaterials =  billOfMaterialRepository.findAll(
                 (Root<BillOfMaterial> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -89,7 +89,14 @@ public class BillOfMaterialService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(number)) {
-                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        if (genericMatch) {
+
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
 
                     }
                     if (!StringUtils.isBlank(itemName)) {
@@ -114,8 +121,9 @@ public class BillOfMaterialService implements TestDataInitiableService {
         return billOfMaterials;
     }
 
-    public List<BillOfMaterial> findAll(Long warehouseId, String number, String itemName) {
-        return findAll(warehouseId, number, itemName,true);
+    public List<BillOfMaterial> findAll(Long warehouseId, String number, String itemName,
+                                        boolean genericMatch) {
+        return findAll(warehouseId, number, itemName, genericMatch, true);
     }
 
 
@@ -246,6 +254,16 @@ public class BillOfMaterialService implements TestDataInitiableService {
         return getMatchedBillOfMaterial(workOrder);
     }
 
+    /**
+     * Find the matched bill of material
+     * 1. if the work order is created from the BOM, then the BOM is the 'matched BOM'
+     * 2. Otherwise, the BOM needs to have the same master item and details as the work order
+     * 2.1 the same master item
+     * 2.2 the same number of line
+     * 2.3 the ame quantity for each line
+     * @param workOrder
+     * @return
+     */
     public BillOfMaterial getMatchedBillOfMaterial(WorkOrder workOrder) {
         if (Objects.nonNull(workOrder.getBillOfMaterial())) {
             BillOfMaterial billOfMaterial = workOrder.getBillOfMaterial();

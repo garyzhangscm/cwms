@@ -87,7 +87,8 @@ public class ProductionPlanService implements TestDataInitiableService {
     }
 
 
-    public List<ProductionPlan> findAll(Long warehouseId, String number, String itemName, boolean loadDetails) {
+    public List<ProductionPlan> findAll(Long warehouseId, String number, String itemName,
+                                        boolean genericMatch, boolean loadDetails) {
 
         List<ProductionPlan> productionPlans =  productionPlanRepository.findAll(
                 (Root<ProductionPlan> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -96,7 +97,14 @@ public class ProductionPlanService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(number)) {
-                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        if (genericMatch) {
+
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
 
                     }
                     if (!StringUtils.isBlank(itemName)) {
@@ -122,8 +130,9 @@ public class ProductionPlanService implements TestDataInitiableService {
         return productionPlans;
     }
 
-    public List<ProductionPlan> findAll(Long warehouseId, String number, String itemName) {
-        return findAll(warehouseId, number, itemName, true);
+    public List<ProductionPlan> findAll(Long warehouseId, String number, String itemName,
+                                        boolean genericMatch) {
+        return findAll(warehouseId, number, itemName,genericMatch,  true);
     }
 
 

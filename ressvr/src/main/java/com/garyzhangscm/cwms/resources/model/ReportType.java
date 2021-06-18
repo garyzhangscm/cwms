@@ -8,5 +8,6 @@ public enum ReportType {
     DELIVERY_NOTE,
     PACKING_SLIP,
     CYCLE_COUNT_SHEET,
-    AUDIT_COUNT_SHEET
+    AUDIT_COUNT_SHEET,
+    LPN_REPORT
 }

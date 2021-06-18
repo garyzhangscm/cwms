@@ -65,6 +65,10 @@ public class DBBasedWorkOrder implements Serializable, IntegrationWorkOrderData 
     private String itemName;
 
 
+    @Column(name = "po_number")
+    private String poNumber;
+
+
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
 
@@ -109,7 +113,7 @@ public class DBBasedWorkOrder implements Serializable, IntegrationWorkOrderData 
         WorkOrder workOrder = new WorkOrder();
 
         String[] fieldNames = {
-                "number",   "warehouseId", "itemId", "expectedQuantity"
+                "number",   "warehouseId", "itemId", "expectedQuantity", "poNumber"
         };
 
         ObjectCopyUtil.copyValue(this, workOrder, fieldNames);
@@ -134,6 +138,7 @@ public class DBBasedWorkOrder implements Serializable, IntegrationWorkOrderData 
 
         return workOrder;
     }
+
 
     @Override
     public String toString() {
@@ -171,6 +176,15 @@ public class DBBasedWorkOrder implements Serializable, IntegrationWorkOrderData 
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    @Override
+    public String getPoNumber() {
+        return poNumber;
+    }
+
+    public void setPoNumber(String poNumber) {
+        this.poNumber = poNumber;
     }
 
     @Override

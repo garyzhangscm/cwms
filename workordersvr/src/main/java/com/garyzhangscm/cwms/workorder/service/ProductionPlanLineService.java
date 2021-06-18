@@ -88,7 +88,9 @@ public class ProductionPlanLineService implements TestDataInitiableService {
 
     public List<ProductionPlanLine> findAll(Long warehouseId,
                                             String productionPlannumber,
-                                            String itemName, boolean loadDetails) {
+                                            String itemName,
+                                            boolean genericMatch,
+                                            boolean loadDetails) {
 
         List<ProductionPlanLine> productionPlanLines =  productionPlanLineRepository.findAll(
                 (Root<ProductionPlanLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -104,7 +106,14 @@ public class ProductionPlanLineService implements TestDataInitiableService {
                         }
                         if (StringUtils.isNotBlank(productionPlannumber)) {
 
-                            predicates.add(criteriaBuilder.equal(joinProductionPlan.get("number"), productionPlannumber));
+                            if (genericMatch) {
+
+                                predicates.add(criteriaBuilder.like(joinProductionPlan.get("number"), productionPlannumber));
+                            }
+                            else {
+
+                                predicates.add(criteriaBuilder.equal(joinProductionPlan.get("number"), productionPlannumber));
+                            }
                         }
                     }
 
@@ -130,8 +139,9 @@ public class ProductionPlanLineService implements TestDataInitiableService {
         return productionPlanLines;
     }
 
-    public List<ProductionPlanLine> findAll(Long warehouseId, String productionPlannumber, String itemName) {
-        return findAll(warehouseId, productionPlannumber, itemName, true);
+    public List<ProductionPlanLine> findAll(Long warehouseId, String productionPlannumber,
+                                            String itemName, boolean genericQuery) {
+        return findAll(warehouseId, productionPlannumber, itemName, genericQuery, true);
     }
 
 
@@ -166,7 +176,7 @@ public class ProductionPlanLineService implements TestDataInitiableService {
 
     public ProductionPlanLine findByNatrualKey(Long warehouseId, String productionPlanNumber, String itemName) {
         List<ProductionPlanLine> productionPlanLines = findAll(
-                warehouseId, productionPlanNumber, itemName);
+                warehouseId, productionPlanNumber, itemName, false);
         if (productionPlanLines.size() > 0) {
             // if we are able to find something, there should be only one record
             return productionPlanLines.get(0);

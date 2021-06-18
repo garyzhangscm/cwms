@@ -18,11 +18,9 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.*;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
@@ -77,6 +75,8 @@ public class InventoryService implements TestDataInitiableService{
     private InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService;
     @Autowired
     private InventoryAdjustmentRequestService inventoryAdjustmentRequestService;
+    @Autowired
+    private UserService userService;
 
 
     @Autowired
@@ -87,6 +87,9 @@ public class InventoryService implements TestDataInitiableService{
     private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
     @Autowired
     private InboundServiceRestemplateClient inboundServiceRestemplateClient;
+
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
     @Autowired
     private IntegrationService integrationService;
     @Autowired
@@ -1742,5 +1745,68 @@ public class InventoryService implements TestDataInitiableService{
                 findByLpn(warehouseId, lpn, false);
 
         return Objects.isNull(inventories) || inventories.size() == 0 ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+    }
+
+    public ReportHistory generateEcotechLPNLabel(Long warehouseId, String lpn, String locale) throws JsonProcessingException {
+        List<Inventory> inventories = findByLpn(warehouseId, lpn);
+
+        // setup parameters
+        // TO-DO:
+        // For now we have specific design for ecotech only
+        // parameters
+        // > productionLocation: java.lang.String
+        // > itemName: java.lang.String
+        // > itemDescription: java.lang.String
+        // > workOrderNumber: java.lang.String
+        // > completeDate: java.lang.String
+        // > quantity: java.lang.String
+        // > lpn: java.lang.String
+        // > poNumber: java.lang.String
+        // > supervisor: java.lang.String
+        // A map to store the LPN label / report data
+        // key: item - work order - poNumber
+        // value: LPN report data
+        Map<String, LpnReportData> lpnReportDataMap = new HashMap<>();
+        inventories.forEach(inventory -> {
+
+            String key = new StringBuilder()
+                    .append(inventory.getItem().getName())
+                    .append("-")
+                    .append(inventory.getWorkOrderId())
+                    .append("-")
+                    .append(Objects.nonNull(inventory.getWorkOrder()) ? inventory.getWorkOrder().getPoNumber() : "")
+                    .toString();
+            if (lpnReportDataMap.containsKey(key)) {
+                lpnReportDataMap.get(key).addQuantity(inventory.getQuantity());
+            }
+            else {
+                lpnReportDataMap.put(key, new LpnReportData(inventory, userService.getCurrentUserName()));
+            }
+
+        });
+
+
+        Report reportData = new Report();
+        setupLPNReportData(
+                reportData,  lpnReportDataMap.values()
+        );
+
+        logger.debug("Start to fill report by data: \n{}",
+                reportData);
+
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.LPN_REPORT, reportData, locale
+                );
+
+
+
+        return reportHistory;
+    }
+
+    private void setupLPNReportData(Report reportData, Collection<LpnReportData> lpnReportDataList) {
+
+
+        reportData.setData(lpnReportDataList);
     }
 }

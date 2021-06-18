@@ -646,6 +646,7 @@ CREATE TABLE integration_work_order(
   warehouse_name VARCHAR(100),
   item_id   BIGINT,
   item_name   VARCHAR(100),
+  po_number VARCHAR(100),
   expected_quantity BIGINT NOT NULL,
   insert_time  DATETIME  NOT NULL,
   last_update_time  DATETIME,
@@ -655,8 +656,8 @@ CREATE TABLE integration_work_order(
 
 
 insert into integration_work_order
-   (number, company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, expected_quantity,  status, insert_time)
-  values ("WO-901", null, "20901", null, "WMEC", null, "6420704", 100,"PENDING", now());
+   (number, company_id, company_code, warehouse_id, warehouse_name, item_id, item_name, po_number, expected_quantity,  status, insert_time)
+  values ("WO-901", null, "20901", null, "WMEC", null, "6420704", "CPO000001",  100,"PENDING", now());
 
 
 

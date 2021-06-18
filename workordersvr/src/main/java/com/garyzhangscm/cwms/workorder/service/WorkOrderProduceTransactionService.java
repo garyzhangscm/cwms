@@ -83,10 +83,11 @@ public class WorkOrderProduceTransactionService  {
     }
 
 
-    public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber) {
-        return findAll(warehouseId, workOrderNumber, true);
+    public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber, boolean genericQuery) {
+        return findAll(warehouseId, workOrderNumber, genericQuery, true);
     }
-    public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber, boolean loadDetails) {
+    public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber,
+                                                     boolean genericQuery, boolean loadDetails) {
 
         List<WorkOrderProduceTransaction> workOrderProduceTransactions
                 =  workOrderProduceTransactionRepository.findAll(
@@ -97,8 +98,16 @@ public class WorkOrderProduceTransactionService  {
 
                     if (!StringUtils.isBlank(workOrderNumber)) {
 
+
                         Join<WorkOrderProduceTransaction, WorkOrder> joinWorkOrder = root.join("workOrder", JoinType.INNER);
-                        predicates.add(criteriaBuilder.equal(joinWorkOrder.get("number"), workOrderNumber));
+                        if (genericQuery) {
+
+                            predicates.add(criteriaBuilder.like(joinWorkOrder.get("number"), workOrderNumber));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(joinWorkOrder.get("number"), workOrderNumber));
+
+                        }
 
                     }
 

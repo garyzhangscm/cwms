@@ -32,4 +32,8 @@ import java.util.List;
 public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, JpaSpecificationExecutor<WorkOrder> {
     WorkOrder findByWarehouseIdAndNumber(Long warehouseId, String number);
 
+    @Query("select wo from WorkOrder wo where wo.status  = com.garyzhangscm.cwms.workorder.model.WorkOrderStatus.INPROCESS" +
+            " and wo.warehouseId = :warehouseId")
+    List<WorkOrder> findInprocessWorkOrder(Long warehouseId);
+
 }

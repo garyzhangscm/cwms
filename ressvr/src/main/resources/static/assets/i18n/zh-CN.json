@@ -1228,5 +1228,7 @@
   "mould": "模具",
   "menu.mobile.work-order": "加工",
   "menu.mobile.work-order.pick-by-work-order": "加工单拣货",
-  "menu.mobile.work-order.produce": "生产"
+  "menu.mobile.work-order.produce": "生产",
+  "report.printedDate": "打印时间",
+  "report.printedUsername": "打印人"
 }
