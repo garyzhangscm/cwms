@@ -31,6 +31,9 @@ public class WorkOrder implements Serializable {
     private Long warehouseId;
     private String warehouseName;
 
+
+    private String poNumber;
+
     private List<WorkOrderLine> workOrderLines = new ArrayList<>();
 
     List<WorkOrderInstruction> workOrderInstructions = new ArrayList<>();
@@ -91,6 +94,14 @@ public class WorkOrder implements Serializable {
 
     public void setWorkOrderByProducts(List<WorkOrderByProduct> workOrderByProducts) {
         this.workOrderByProducts = workOrderByProducts;
+    }
+
+    public String getPoNumber() {
+        return poNumber;
+    }
+
+    public void setPoNumber(String poNumber) {
+        this.poNumber = poNumber;
     }
 
     public Long getItemId() {

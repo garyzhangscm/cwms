@@ -1216,12 +1216,14 @@
   "production-line.assignment.start-time": "Start Time",
   "production-line.assignment.end-time": "Complete Time",
   "production-line.assignment.duration": "Duration",
-  "menu.main.work-order.mould": "Mould",
-  "page.mould.header.title": "Mould",
+  "menu.main.work-order.mould": "Mold",
+  "page.mould.header.title": "Mold",
   "steps.mould.info": "Mould Information",
-  "menu.main.mould.maintenance": "Mould Maintenance",
-  "mould": "Mould",
+  "menu.main.mould.maintenance": "Mold Maintenance",
+  "mould": "Mold",
   "menu.mobile.work-order": "Work Order",
   "menu.mobile.work-order.pick-by-work-order": "Pick By Work Order",
-  "menu.mobile.work-order.produce": "Produce"
+  "menu.mobile.work-order.produce": "Produce",
+  "report.printedDate": "Printed Date",
+  "report.printedUsername": "Printed User"
 }

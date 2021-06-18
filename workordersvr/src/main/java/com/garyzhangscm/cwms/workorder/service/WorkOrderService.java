@@ -105,7 +105,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
                                    String itemName, Long productionPlanId,
-                                   boolean loadDetails) {
+                                   boolean genericQuery, boolean loadDetails) {
 
         List<WorkOrder> workOrders =  workOrderRepository.findAll(
                 (Root<WorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -114,7 +114,14 @@ public class WorkOrderService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(number)) {
-                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        if (genericQuery) {
+
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
 
                     }
                     if (!StringUtils.isBlank(itemName)) {
@@ -146,8 +153,9 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
-                                   String itemName, Long productionPlanId) {
-        return findAll(warehouseId, number, itemName, productionPlanId, true);
+                                   String itemName, Long productionPlanId,
+                                   boolean genericQuery) {
+        return findAll(warehouseId, number, itemName, productionPlanId, genericQuery, true);
     }
 
 
@@ -484,7 +492,6 @@ public class WorkOrderService implements TestDataInitiableService {
 
         List<Inventory> deliveredInventory = new ArrayList<>();
 
-        try {
             // Get all the picks that belongs to this work order
             List<Pick> picks = outboundServiceRestemplateClient.getWorkOrderPicks(workOrder);
 
@@ -520,11 +527,6 @@ public class WorkOrderService implements TestDataInitiableService {
                         });
 
             }
-        } catch (IOException e) {
-            // in case we can't get any picks, just return empty result to indicate
-            // we don't have any delivered inventory
-
-        }
 
 
 
@@ -801,5 +803,30 @@ public class WorkOrderService implements TestDataInitiableService {
         // set data to be all picks
         List<Pick> picks = outboundServiceRestemplateClient.getWorkOrderPicks(workOrder);
         report.setData(picks);
+    }
+
+    public List<WorkOrder> findInprocessWorkOrder(Long warehouseId) {
+        return workOrderRepository.findInprocessWorkOrder(warehouseId);
+    }
+    public List<WorkOrder> getWorkOrdersWithOpenPick(Long warehouseId) {
+
+        List<WorkOrder> workOrders = findInprocessWorkOrder(warehouseId);
+        // only return the work order that has any line with  open quantity
+        workOrders = workOrders.stream().filter(workOrder ->
+                workOrder.getWorkOrderLines().stream().anyMatch(
+                    workOrderLine -> workOrderLine.getInprocessQuantity() > 0)
+
+        ).collect(Collectors.toList());
+
+        // for each work order, see if we still have open picks
+        workOrders = workOrders.stream().filter(workOrder ->
+                outboundServiceRestemplateClient
+                        .getWorkOrderPicks(workOrder)
+                        .stream().anyMatch(pick -> pick.getPickedQuantity() < pick.getQuantity())
+
+        ).collect(Collectors.toList());
+
+
+        return workOrders;
     }
 }

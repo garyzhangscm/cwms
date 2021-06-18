@@ -63,7 +63,8 @@ public class WorkOrderKPITransactionService {
 
 
     public List<WorkOrderKPITransaction> findAll(Long warehouseId, WorkOrder workOrder,
-                                                 String username, String workingTeamName, boolean loadDetails) {
+                                                 String username, String workingTeamName,
+                                                 boolean genericQuery, boolean loadDetails) {
 
         List<WorkOrderKPITransaction> workOrderKPITransactions =  workOrderKPITransactionRepository.findAll(
                 (Root<WorkOrderKPITransaction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -100,17 +101,19 @@ public class WorkOrderKPITransactionService {
     }
 
     public List<WorkOrderKPITransaction> findAll(Long warehouseId, WorkOrder workOrder,
-                                                 String username, String workingTeamName) {
-        return findAll(warehouseId, workOrder, username, workingTeamName, true);
+                                                 String username, String workingTeamName,
+                                                 boolean genericQuery ) {
+        return findAll(warehouseId, workOrder, username, workingTeamName, genericQuery, true);
     }
 
     public List<WorkOrderKPITransaction> findAll(Long warehouseId, String workOrderNumber,
-                                                 String username, String workingTeamName) {
+                                                 String username, String workingTeamName,
+                                                 boolean genericQuery) {
         WorkOrder workOrder = null;
         if (StringUtils.isNotBlank(workOrderNumber)) {
             workOrder = workOrderService.findByNumber(warehouseId, workOrderNumber);
         }
-        return findAll(warehouseId, workOrder, username, workingTeamName);
+        return findAll(warehouseId, workOrder, username, workingTeamName, genericQuery);
     }
 
 

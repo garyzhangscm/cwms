@@ -38,8 +38,9 @@ public class ProductionPlanController {
     @RequestMapping(value="/production-plans", method = RequestMethod.GET)
     public List<ProductionPlan> findAllProductionPlans(@RequestParam Long warehouseId,
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
-                                             @RequestParam(name="itemName", required = false, defaultValue = "") String itemName) {
-        return productionPlanService.findAll(warehouseId, number, itemName);
+                                             @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericMatch) {
+        return productionPlanService.findAll(warehouseId, number, itemName, genericMatch);
     }
 
     @RequestMapping(value="/production-plans", method = RequestMethod.POST)

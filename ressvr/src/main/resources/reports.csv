@@ -4,3 +4,4 @@ company,warehouse,type,description,fileName,orientation
 , ,PUTAWAY_DOCUMENT,Putaway Document,putaway_document,LANDSCAPE
 , ,CYCLE_COUNT_SHEET,Cycle Count Sheet,cycle_count_sheet,LANDSCAPE
 , ,AUDIT_COUNT_SHEET,Audit Count Sheet,audit_count_sheet,LANDSCAPE
+, ,LPN_REPORT,LPN Report,ecotech_lpn_label,PORTRAIT

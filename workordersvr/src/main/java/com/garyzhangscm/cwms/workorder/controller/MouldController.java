@@ -37,8 +37,9 @@ public class MouldController {
     @RequestMapping(value="/moulds", method = RequestMethod.GET)
     public List<Mould> findAllMoulds(@RequestParam Long warehouseId,
                                      @RequestParam(name="name", required = false, defaultValue = "") String name,
-                                     @RequestParam(name="description", required = false, defaultValue = "") String description) {
-        return mouldService.findAll(warehouseId, name, description);
+                                     @RequestParam(name="description", required = false, defaultValue = "") String description,
+                                     @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericMatch) {
+        return mouldService.findAll(warehouseId, name, description, genericMatch);
     }
 
 

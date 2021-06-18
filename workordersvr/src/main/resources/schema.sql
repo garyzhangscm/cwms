@@ -147,6 +147,7 @@ CREATE TABLE work_order (
   bill_of_material_id BIGINT,
   production_plan_line_id BIGINT,
   warehouse_id  BIGINT NOT NULL,
+  po_number VARCHAR(100),
   item_id   BIGINT NOT NULL,
   expected_quantity  BIGINT NOT NULL,
   produced_quantity BIGINT NOT NULL,

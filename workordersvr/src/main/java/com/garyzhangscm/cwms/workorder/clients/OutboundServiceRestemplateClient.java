@@ -100,7 +100,7 @@ public class OutboundServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public List<Pick> getWorkOrderPicks(WorkOrder workOrder) throws IOException {
+    public List<Pick> getWorkOrderPicks(WorkOrder workOrder)   {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -220,6 +220,8 @@ public class OutboundServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+
 
 
     private HttpEntity<String> getHttpEntity(String requestBody) {

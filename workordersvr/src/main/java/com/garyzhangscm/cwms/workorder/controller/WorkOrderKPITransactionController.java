@@ -39,8 +39,9 @@ public class WorkOrderKPITransactionController {
             @RequestParam Long warehouseId,
                                                               @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber,
                                                               @RequestParam(name="username", required = false, defaultValue = "") String username,
-                                                              @RequestParam(name="workingTeamName", required = false, defaultValue = "") String workingTeamName) {
-        return workOrderKPITransactionService.findAll(warehouseId, workOrderNumber, username, workingTeamName);
+                                                              @RequestParam(name="workingTeamName", required = false, defaultValue = "") String workingTeamName,
+            @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery) {
+        return workOrderKPITransactionService.findAll(warehouseId, workOrderNumber, username, workingTeamName, genericQuery);
     }
 
     @RequestMapping(value="/work-order-kpi-transactions", method = RequestMethod.POST)

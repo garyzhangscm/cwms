@@ -67,7 +67,7 @@ public class MouldService implements TestDataInitiableService {
 
 
 
-    public List<Mould> findAll(Long warehouseId, String name, String description) {
+    public List<Mould> findAll(Long warehouseId, String name, String description, boolean genericMatch) {
         return mouldRepository.findAll(
                 (Root<Mould> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -75,7 +75,14 @@ public class MouldService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(name)) {
-                        predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        if (genericMatch) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("name"), name));
+
+                        }
 
                     }
 
