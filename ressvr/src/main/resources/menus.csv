@@ -64,3 +64,5 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,0xe63a
 "Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,0xe63a
 "Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,0xe63a
+"Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,0xe63a
+"Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,0xe63a

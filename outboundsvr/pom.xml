@@ -25,6 +25,23 @@
 	</properties>
 
 
+    <!--Repository for jasper report-->
+    <repositories>
+        <repository>
+            <id>jaspersoft</id>
+            <name>Repository for Jasper Report</name>
+            <url>https://jaspersoft.jfrog.io</url>
+        </repository>
+        <repository>
+            <id>jaspersoft-third-party</id>
+            <url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts</url>
+        </repository>
+        <repository>
+            <id>jr-ce-releases</id>
+            <url>http://jaspersoft.jfrog.io/jaspersoft/jr-ce-releases</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

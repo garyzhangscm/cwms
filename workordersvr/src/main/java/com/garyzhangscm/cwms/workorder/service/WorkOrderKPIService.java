@@ -346,4 +346,21 @@ public class WorkOrderKPIService{
             save(existingWorkOrderKPI);
         }
     }
+
+
+    @Transactional
+    public WorkOrderKPI recordWorkOrderKPIForCheckedInUser(WorkOrder workOrder,
+                                                           ProductionLine productionLine,
+                                                           String username, Long quantity) {
+
+        WorkOrderKPI workOrderKPI = new WorkOrderKPI();
+        workOrderKPI.setWorkOrder(workOrder);
+        workOrderKPI.setProductionLine(productionLine);
+        workOrderKPI.setKpiMeasurement(KPIMeasurement.BY_QUANTITY);
+        workOrderKPI.setAmount(quantity);
+        workOrderKPI.setUsername(username);
+        workOrderKPI.setWorkingTeamName("");
+        return  save(workOrderKPI);
+
+    }
 }

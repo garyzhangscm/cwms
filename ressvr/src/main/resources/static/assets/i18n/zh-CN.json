@@ -1230,5 +1230,7 @@
   "menu.mobile.work-order.pick-by-work-order": "加工单拣货",
   "menu.mobile.work-order.produce": "生产",
   "report.printedDate": "打印时间",
-  "report.printedUsername": "打印人"
+  "report.printedUsername": "打印人",
+  "menu.mobile.work-order.production_line_check_in": "上工",
+  "menu.mobile.work-order.production_line_check_out": "下工"
 }

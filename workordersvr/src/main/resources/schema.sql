@@ -216,10 +216,13 @@ CREATE TABLE work_order_assignment (
 
 CREATE TABLE production_line_activity (
   production_line_activity_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  user_id  BIGINT NOT NULL,
   work_order_id  BIGINT NOT NULL,
   production_line_id BIGINT NOT NULL,
-  type  VARCHAR(20) NOT NULL,
+  warehouse_id BIGINT NOT NULL,
+  username  VARCHAR(50) NOT NULL,
+  type  VARCHAR(50) NOT NULL,
+  working_team_member_count INT,
+  transaction_time DATETIME,
   created_time DATETIME,
   created_by VARCHAR(50),
   last_modified_time DATETIME,
@@ -312,6 +315,7 @@ CREATE TABLE return_material_request (
 CREATE TABLE work_order_kpi (
   work_order_kpi_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   work_order_id  BIGINT NOT NULL,
+  production_line_id  BIGINT,
   username  VARCHAR(50),
   working_team_name VARCHAR(50),
   kpi_measurement  VARCHAR(20) not null,
@@ -320,7 +324,8 @@ CREATE TABLE work_order_kpi (
   created_by VARCHAR(50),
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50),
-  foreign key(work_order_id) references work_order(work_order_id));
+  foreign key(work_order_id) references work_order(work_order_id),
+  foreign key(production_line_id) references production_line(production_line_id));
 
 
 CREATE TABLE work_order_by_product_produce_transaction (

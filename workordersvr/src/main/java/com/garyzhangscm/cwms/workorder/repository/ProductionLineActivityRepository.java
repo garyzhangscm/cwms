@@ -18,11 +18,25 @@
 
 package com.garyzhangscm.cwms.workorder.repository;
 
+import com.garyzhangscm.cwms.workorder.model.ProductionLine;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineActivity;
+import com.garyzhangscm.cwms.workorder.model.ProductionLineActivityType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductionLineActivityRepository extends JpaRepository<ProductionLineActivity, Long>, JpaSpecificationExecutor<ProductionLineActivity> {
+
+    /***
+    @Query(value= "SELECT * FROM production_line_activity " +
+            " where activity.productionLine.id = :productionLineId and type = :type" +
+            " ORDER BY activity.transactionDate desc LIMIT 1")
+    **/
+    ProductionLineActivity findTop1ByProductionLineAndTypeOrderByTransactionTimeDesc(ProductionLine productionLine, ProductionLineActivityType type);
+
+
+    ProductionLineActivity findTop1ByProductionLineAndUsernameAndTypeOrderByTransactionTimeDesc(
+            ProductionLine productionLine, String username, ProductionLineActivityType type);
 }

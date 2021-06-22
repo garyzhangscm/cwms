@@ -56,6 +56,8 @@ public class ProductionLineService implements TestDataInitiableService {
     private ProductionLineRepository productionLineRepository;
     @Autowired
     private WorkOrderService workOrderService;
+    @Autowired
+    private ProductionLineActivityService productionLineActivityService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -406,5 +408,67 @@ public class ProductionLineService implements TestDataInitiableService {
                         )
         );
         return saveOrUpdate(productionLine);
+    }
+
+    public ProductionLineActivity getCheckedInUser(ProductionLine productionLine) {
+
+        // get the latest check in and check out activity.
+        // if we have someone checked in but not checked out yet, then
+        // return this user
+        ProductionLineActivity lastCheckInActivity =
+                productionLineActivityService.getLastCheckInActivity(productionLine);
+        logger.debug("the last check IN activity on production line: {}",
+                productionLine.getName());
+
+        if (Objects.isNull(lastCheckInActivity)) {
+            logger.debug(">> No check IN activity found on this production line");
+        }
+        else {
+
+            logger.debug("user: {}, transaction time: {}",
+                    lastCheckInActivity.getUsername(), lastCheckInActivity.getTransactionTime());
+        }
+        ProductionLineActivity lastCheckOutActivity =
+                productionLineActivityService.getLastCheckOutActivity(productionLine);
+        logger.debug("the last check OUT activity on production line: {}",
+                productionLine.getName());
+
+        if (Objects.isNull(lastCheckOutActivity)) {
+            logger.debug(">> No check OUT activity found on this production line");
+        }
+        else {
+
+            logger.debug("user: {}, transaction time: {}",
+                    lastCheckOutActivity.getUsername(), lastCheckOutActivity.getTransactionTime());
+        }
+
+
+        if (Objects.isNull(lastCheckInActivity)) {
+            // OK, no one ever checked in
+            logger.debug(">> No one is checked in yet");
+            return null;
+        }
+        else if (Objects.isNull(lastCheckOutActivity)){
+            // OK, someone checked in but no one ever checked out
+            logger.debug(">> Someone checked in but no one is check out");
+
+            return lastCheckInActivity;
+        }
+        else if (lastCheckInActivity.getUsername().equals(lastCheckOutActivity.getUsername()) ||
+                lastCheckInActivity.getTransactionTime().isBefore(
+                        lastCheckOutActivity.getTransactionTime()
+                )){
+            // the last user who checked in is already checked out, there's no one working
+            // on the production line right now
+            logger.debug(">> Someone checked in and already checked out");
+            return null;
+        }
+        else {
+            // the last user who checked in hasn't checked out yet, let's assume the user is
+            // still working on the production line
+            logger.debug(">> Someone checked in and haven't checked out");
+            return lastCheckInActivity;
+
+        }
     }
 }
