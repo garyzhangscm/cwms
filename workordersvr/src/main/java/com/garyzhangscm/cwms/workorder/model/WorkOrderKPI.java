@@ -32,6 +32,10 @@ public class WorkOrderKPI extends AuditibleEntity<String>{
     @JsonIgnore
     private WorkOrder workOrder;
 
+    @ManyToOne
+    @JoinColumn(name = "production_line_id")
+    private ProductionLine productionLine;
+
 
     @Column(name = "username")
     private String username;
@@ -106,5 +110,13 @@ public class WorkOrderKPI extends AuditibleEntity<String>{
 
     public void setWorkingTeamName(String workingTeamName) {
         this.workingTeamName = workingTeamName;
+    }
+
+    public ProductionLine getProductionLine() {
+        return productionLine;
+    }
+
+    public void setProductionLine(ProductionLine productionLine) {
+        this.productionLine = productionLine;
     }
 }

@@ -1225,5 +1225,7 @@
   "menu.mobile.work-order.pick-by-work-order": "Pick By Work Order",
   "menu.mobile.work-order.produce": "Produce",
   "report.printedDate": "Printed Date",
-  "report.printedUsername": "Printed User"
+  "report.printedUsername": "Printed User",
+  "menu.mobile.work-order.production_line_check_in": "Production Check In",
+  "menu.mobile.work-order.production_line_check_out": "Production Check Out"
 }

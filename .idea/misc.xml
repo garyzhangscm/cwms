@@ -29,13 +29,9 @@
     </option>
   </component>
   <component name="ProjectPlainTextFileTypeManager">
-    <file url="file://$PROJECT_DIR$/ressvr/src/main/resources/order_pick_sheet_zh_CN.properties" />
-    <file url="file://$PROJECT_DIR$/ressvr/src/main/resources/report_i18n.properties" />
-    <file url="file://$PROJECT_DIR$/ressvr/src/main/resources/report_i18n_en.properties" />
     <file url="file://$PROJECT_DIR$/ressvr/src/main/resources/reports/meta/order_pick_sheet_en_US.properties" />
-    <file url="file://$PROJECT_DIR$/ressvr/src/main/resources/reports/meta/order_pick_sheet_zh.properties" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_12" default="false" project-jdk-name="12" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="corretto-1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

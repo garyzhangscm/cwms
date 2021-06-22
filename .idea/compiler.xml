@@ -6,25 +6,28 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="ressvr" />
         <module name="inboundsvr" />
+        <module name="inventoryserver" />
+        <module name="inventorysvr" />
+        <module name="inboundserver" />
+        <module name="workordersvr" />
         <module name="authsvr" />
         <module name="configurationserver" />
-        <module name="adminsvr" />
-        <module name="inventorysvr" />
-        <module name="confsvr" />
-        <module name="layoutserver" />
-        <module name="inboundserver" />
-        <module name="ressvr" />
-        <module name="outboundserver" />
-        <module name="workordersvr" />
         <module name="resourceserver" />
-        <module name="zuulsvr" />
-        <module name="commonserver" />
-        <module name="authenticationserver" />
-        <module name="integrationsvr" />
-        <module name="outboundsvr" />
-        <module name="inventoryserver" />
         <module name="commonsvr" />
+        <module name="adminserver" />
+        <module name="layoutserver" />
+        <module name="commonserver" />
+        <module name="outboundsvr" />
+        <module name="confsvr" />
+        <module name="outboundserver" />
+        <module name="workorderserver" />
+        <module name="adminsvr" />
+        <module name="integrationserver" />
+        <module name="integrationsvr" />
+        <module name="zuulsvr" />
+        <module name="authenticationserver" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -36,6 +39,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="adminserver" options="-parameters" />
       <module name="adminsvr" options="-parameters" />
       <module name="authentication-service" options="-parameters" />
       <module name="authenticationserver" options="-parameters" />
@@ -48,6 +52,7 @@
       <module name="confsvr" options="-parameters" />
       <module name="inboundserver" options="-parameters" />
       <module name="inboundsvr" options="-parameters" />
+      <module name="integrationserver" options="-parameters" />
       <module name="integrationsvr" options="-parameters" />
       <module name="inventoryserver" options="-parameters" />
       <module name="inventorysvr" options="-parameters" />
@@ -57,6 +62,7 @@
       <module name="resources" options="-parameters" />
       <module name="resourceserver" options="-parameters" />
       <module name="ressvr" options="-parameters" />
+      <module name="workorderserver" options="-parameters" />
       <module name="workordersvr" options="-parameters" />
       <module name="zuulsvr" options="-parameters" />
     </option>

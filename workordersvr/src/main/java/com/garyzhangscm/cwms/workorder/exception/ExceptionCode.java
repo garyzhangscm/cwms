@@ -22,7 +22,8 @@ public enum ExceptionCode {
     RESOURCE_NOT_FOUND(55000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
     REQUEST_VALIDATION_FAILED(55001, HttpStatus.BAD_REQUEST, "Validation Fail"),
     MISSING_INFORMATION(55002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"),
-    WORK_ORDER_EXCEPTION(55002, HttpStatus.BAD_REQUEST, "Work order exception ");
+    WORK_ORDER_EXCEPTION(55003, HttpStatus.BAD_REQUEST, "Work order exception "),
+    PRODUCTION_LINE_EXCEPTION(55004, HttpStatus.BAD_REQUEST, "Production Line exception ");
 
     private final int code;
 

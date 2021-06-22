@@ -26,6 +26,7 @@ public class Warehouse implements Serializable {
     private Long id;
 
     private String name;
+    private Long companyId;
 
     private String size;
 
@@ -124,5 +125,13 @@ public class Warehouse implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

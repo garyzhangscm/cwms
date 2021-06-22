@@ -52,6 +52,8 @@ public class WorkOrderProduceTransactionService  {
     @Autowired
     private WorkOrderByProductService workOrderByProductService;
     @Autowired
+    private WorkOrderKPIService workOrderKPIService;
+    @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -163,7 +165,7 @@ public class WorkOrderProduceTransactionService  {
                         workOrderProducedInventory.setWorkOrderProduceTransaction(workOrderProduceTransaction)
         );
 
-        logger.debug("=====>   save workOrderProduceTransaction: \n{}", workOrderProduceTransaction);
+
         WorkOrderProduceTransaction newWorkOrderProduceTransaction
                 = workOrderProduceTransactionRepository.save(workOrderProduceTransaction);
         loadAttribute(newWorkOrderProduceTransaction);
@@ -243,6 +245,8 @@ public class WorkOrderProduceTransactionService  {
         for (WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
             consumeQuantity(workOrderLine, workOrderProduceTransaction, totalProducedQuantity);
         }
+
+        // produce the byproduct if there's any
         workOrderProduceTransaction.getWorkOrderByProductProduceTransactions().forEach(
                 workOrderByProductProduceTransaction ->
                         workOrderByProductService.processWorkOrderByProductProduceTransaction(
@@ -251,9 +255,44 @@ public class WorkOrderProduceTransactionService  {
                         )
         );
 
+        // save the transaction itself
         WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
 
-        workOrderKPITransactionService.processWorkOrderKIPTransaction(newWorkOrderProduceTransaction);
+        // save the KPI
+        // if it is explicitly specified , then save the KPI from user input
+        // otherwise, check if there's any person that already checked in the production and
+        //  log the KPI under this person's name
+        if (newWorkOrderProduceTransaction.getWorkOrderKPITransactions().size() > 0) {
+            workOrderKPITransactionService.processWorkOrderKIPTransaction(newWorkOrderProduceTransaction);
+        }
+        else {
+            // check if we have anyone that is working on the production line
+            logger.debug("work order kpi is not passed in, let's check if we have anyone that sign into the production: {}",
+                    newWorkOrderProduceTransaction.getProductionLine().getName());
+            ProductionLineActivity checkedInUser
+                    = productionLineService.getCheckedInUser(newWorkOrderProduceTransaction.getProductionLine());
+
+            if (Objects.nonNull(checkedInUser)) {
+                // OK someone is working on this production line, let's give them the KPI
+                logger.debug("Will save the work order KPI to user {}, work order: {}, production line： {}" +
+                        ", quantity: {}",
+                        checkedInUser.getUsername(),
+                        newWorkOrderProduceTransaction.getWorkOrder().getNumber(),
+                        newWorkOrderProduceTransaction.getProductionLine().getName(),
+                        totalProducedQuantity);
+                WorkOrderKPI workOrderKPI =
+                        workOrderKPIService.recordWorkOrderKPIForCheckedInUser(
+                                newWorkOrderProduceTransaction.getWorkOrder(),
+                                newWorkOrderProduceTransaction.getProductionLine(),
+                                checkedInUser.getUsername(),
+                                totalProducedQuantity
+                        );
+
+                logger.debug("Auto generated work order kpi: \n{}", workOrderKPI);
+
+            }
+
+        }
 
         return newWorkOrderProduceTransaction;
 
