@@ -42,6 +42,7 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     private Long quantity;
 
 
+
     @Column(name = "start_time")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -60,6 +61,13 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     @ManyToOne
     @JoinColumn(name = "mould_id")
     private Mould mould;
+
+    @Transient
+    private Long deliveredPercentage;
+
+    @Transient
+    private Long consumedPercentage;
+
 
 
 
@@ -153,5 +161,21 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setWorkOrderId(Long workOrderId) {
         this.workOrderId = workOrderId;
+    }
+
+    public Long getDeliveredPercentage() {
+        return deliveredPercentage;
+    }
+
+    public void setDeliveredPercentage(Long deliveredPercentage) {
+        this.deliveredPercentage = deliveredPercentage;
+    }
+
+    public Long getConsumedPercentage() {
+        return consumedPercentage;
+    }
+
+    public void setConsumedPercentage(Long consumedPercentage) {
+        this.consumedPercentage = consumedPercentage;
     }
 }

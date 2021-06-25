@@ -975,6 +975,13 @@ public class PickService {
     }
 
     private void sendNotification(Pick pick, Location nextLocation, Long totalQuantityPicked) {
+        /*
+        *  We will move this piece of logic into the inventory movement, not the pick confirm
+        * as we may move to RF first during pick confirm and then into production line
+        * */
+        /**
+         *
+
         if (Objects.nonNull(pick.getWorkOrderLineId())) {
             workOrderServiceRestemplateClient.inventoryPickedForWorkOrderLine(
                     pick.getWorkOrderLineId(), totalQuantityPicked, nextLocation.getId()
@@ -982,6 +989,7 @@ public class PickService {
 
 
         }
+         */
     }
 
     public List<Pick> getPicksByShipment(Long shipmentId){

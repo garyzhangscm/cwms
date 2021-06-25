@@ -9,5 +9,6 @@ public enum ReportType {
     PACKING_SLIP,
     CYCLE_COUNT_SHEET,
     AUDIT_COUNT_SHEET,
-    LPN_REPORT
+    LPN_REPORT,
+    WORK_ORDER_PICK_SHEET,
 }

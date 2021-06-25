@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.12.2.final using JasperReports Library version 6.12.2-75c5e90a222ab406e416cbf590a5397028a52de3  -->
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order_pick_sheet" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="order_pick_sheet" uuid="8baec34c-04ec-43d7-a345-5e1fed03731b">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Mock Pick List"/>
 	<property name="net.sf.jasperreports.export.character.encoding" value="UTF-8"/>
@@ -103,6 +103,14 @@
 		<band height="20" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<rectangle>
+				<reportElement x="100" y="0" width="100" height="20" uuid="6ce9f3f6-c6eb-4818-9c93-58a3fcf7258d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
 				<reportElement x="0" y="0" width="100" height="20" uuid="4e66c551-12f3-4cae-81d7-ff6ffb6b9d3b">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -166,13 +174,6 @@
 				<textFieldExpression><![CDATA[$R{pick.number}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="100" y="0" width="100" height="20" uuid="14edcb19-6789-4544-931f-728e60bf2d75"/>
-				<textElement textAlignment="Center">
-					<font fontName="SimSun"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{sourceLocationGroup}]]></textFieldExpression>
-			</textField>
-			<textField>
 				<reportElement x="200" y="0" width="100" height="20" uuid="160d7854-4092-485d-8090-d71d609ca52f">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -222,13 +223,20 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pick.confirmQuantity}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="100" height="20" uuid="14edcb19-6789-4544-931f-728e60bf2d75"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{sourceLocationGroup}]]></textFieldExpression>
+			</textField>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="20" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<rectangle>
-				<reportElement x="100" y="-20" width="100" height="20" uuid="6fd22a13-b80e-4f4d-9431-b9c2e4bc53ed">
+				<reportElement x="100" y="0" width="100" height="20" uuid="6fd22a13-b80e-4f4d-9431-b9c2e4bc53ed">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -340,15 +348,6 @@
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 			</line>
-			<textField>
-				<reportElement x="100" y="-20" width="100" height="20" uuid="353a38e2-b7c0-44f3-9155-a733d67dbd5c">
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<textElement textAlignment="Center">
-					<font fontName="SimSun"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{sourceLocationGroup}]]></textFieldExpression>
-			</textField>
 		</band>
 	</detail>
 	<columnFooter>

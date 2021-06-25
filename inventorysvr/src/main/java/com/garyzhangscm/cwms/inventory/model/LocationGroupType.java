@@ -43,6 +43,11 @@ public class LocationGroupType {
     private Boolean pickupAndDeposit;
     private Boolean trailer;
 
+
+    private Boolean productionLine;
+    private Boolean productionLineInbound;
+    private Boolean productionLineOutbound;
+
     @Override
     public String toString() {
         try {
@@ -147,5 +152,29 @@ public class LocationGroupType {
 
     public void setTrailer(Boolean trailer) {
         this.trailer = trailer;
+    }
+
+    public Boolean getProductionLine() {
+        return productionLine;
+    }
+
+    public void setProductionLine(Boolean productionLine) {
+        this.productionLine = productionLine;
+    }
+
+    public Boolean getProductionLineInbound() {
+        return productionLineInbound;
+    }
+
+    public void setProductionLineInbound(Boolean productionLineInbound) {
+        this.productionLineInbound = productionLineInbound;
+    }
+
+    public Boolean getProductionLineOutbound() {
+        return productionLineOutbound;
+    }
+
+    public void setProductionLineOutbound(Boolean productionLineOutbound) {
+        this.productionLineOutbound = productionLineOutbound;
     }
 }

@@ -20,6 +20,22 @@ DROP TABLE IF EXISTS report_history;
 
 DROP TABLE IF EXISTS rf_info;
 
+DROP TABLE IF EXISTS web_client_tab_display_configuration;
+
+CREATE TABLE web_client_tab_display_configuration (
+  web_client_tab_display_configuration_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name  VARCHAR(100) NOT NULL,
+  description  VARCHAR(100),
+  company_id BIGINT,
+  warehouse_id BIGINT,
+  user_id BIGINT,
+  display_flag boolean not null,
+  created_time date,
+  created_by VARCHAR(50),
+  last_modified_time date,
+  last_modified_by VARCHAR(50)
+);
+
 CREATE TABLE rf_info (
   rf_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   warehouse_id BIGINT,

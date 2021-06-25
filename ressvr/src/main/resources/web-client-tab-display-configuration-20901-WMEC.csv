@@ -1,0 +1,14 @@
+name,description,company,warehouse,username,displayFlag
+"work-order.work-order.work-order.line","work order line",20901,,,true
+"work-order.work-order.work-order.by-product","work order line",20901,,,true
+"work-order.work-order.production-line","work order line",20901,,,true
+"work-order.work-order.work-order.kpi","work order line",20901,,,true
+"work-order.work-order.work-order.kpi-transaction","work order line",20901,,,false
+"work-order.work-order.work-order-instruction","work order line",20901,,,false
+"work-order.work-order.work-order.assigned-users","work order line",20901,,,false
+"work-order.work-order.pick","work order line",20901,,,true
+"work-order.work-order.short-allocation","work order line",20901,,,true
+"work-order.work-order.work-order.delivered-inventory","work order line",20901,,,true
+"work-order.work-order.work-order.produced-inventory","work order line",20901,,,true
+"work-order.work-order.work-order.by-product.produced","work order line",20901,,,true
+"work-order.work-order.work-order.returned-inventory","work order line",20901,,,true

@@ -54,6 +54,8 @@ public class UserService  implements TestDataInitiableService{
     @Autowired
     private MenuService menuService;
     @Autowired
+    private WebClientConfigurationService webClientConfigurationService;
+    @Autowired
     private RoleService roleService;
     @Autowired
     private AuthServiceRestemplateClient authServiceRestemplateClient;
@@ -194,11 +196,11 @@ public class UserService  implements TestDataInitiableService{
         }
         return save(user);
     }
-    public SiteInformation getSiteInformaiton(Long companyId, String username) {
+    public SiteInformation getSiteInformaiton(Long companyId, Long warehouseId, String username) {
         User user = findByUsername(companyId, username);
         logger.debug("we find user? {} by username {}, companeId: {}",
                 user != null, username, companyId);
-        return getSiteInformaiton(user);
+        return getSiteInformaiton(companyId, warehouseId, user);
 
     }
 
@@ -207,13 +209,13 @@ public class UserService  implements TestDataInitiableService{
         return getMobileSiteInformation(findByUsername(companyId, username));
     }
     public SiteInformation getMobileSiteInformation(User user) {
-        return getSiteInformaiton(user, true);
+        return getSiteInformaiton(null, null, user, true);
 
     }
-    public SiteInformation getSiteInformaiton(User user) {
-        return getSiteInformaiton(user, false);
+    public SiteInformation getSiteInformaiton(Long companyId, Long warehouseId, User user) {
+        return getSiteInformaiton(companyId, warehouseId, user, false);
     }
-    public SiteInformation getSiteInformaiton(User user, boolean mobile) {
+    public SiteInformation getSiteInformaiton(Long companyId, Long warehouseId, User user, boolean mobile) {
         SiteInformation siteInformation = new SiteInformation();
         siteInformation.setUser(user);
 
@@ -235,7 +237,16 @@ public class UserService  implements TestDataInitiableService{
             siteInformation.setDefaultCompanyCode(defaultCompanyCode);
 
         }
+
+        WebClientConfiguration webClientConfiguration =
+                mobile ? new WebClientConfiguration(): getWebClientConfiguration(companyId, warehouseId, user);
+        siteInformation.setWebClientConfiguration(webClientConfiguration);
         return siteInformation;
+    }
+
+    private WebClientConfiguration getWebClientConfiguration(Long companyId, Long warehouseId, User user) {
+
+        return webClientConfigurationService.getWebClientConfiguration(companyId, warehouseId, user);
     }
 
     public List<User> loadData(InputStream inputStream) throws IOException {

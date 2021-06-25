@@ -53,6 +53,9 @@ public class ProductionLineAssignmentService   {
 
     @Autowired
     private ProductionLineAssignmentRepository productionLineAssignmentRepository;
+
+    @Autowired
+    private ProductionLineDeliveryService productionLineDeliveryService;
     @Autowired
     WorkOrderService workOrderService;
     @Autowired
@@ -63,6 +66,7 @@ public class ProductionLineAssignmentService   {
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("production line assignment not found by id: " + id));
         return productionLineAssignment;
     }
+
 
 
     public List<ProductionLineAssignment> findAll(Long productionLineId,
@@ -219,4 +223,5 @@ public class ProductionLineAssignmentService   {
             return workOrder;
         }).collect(Collectors.toList());
     }
+
 }

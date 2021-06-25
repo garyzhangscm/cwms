@@ -203,7 +203,6 @@ public class WorkOrderKPITransactionService {
     @Transactional
     public void processWorkOrderKIPTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction) {
 
-        List<WorkOrderKPI> updatedWorkOrderKPIs = new ArrayList<>();
 
         workOrderCompleteTransaction.getWorkOrderKPITransactions().forEach(workOrderKPITransaction -> {
             if (Objects.isNull(workOrderKPITransaction.getWorkOrderCompleteTransaction())) {
@@ -219,15 +218,14 @@ public class WorkOrderKPITransactionService {
 
             workOrderKPITransaction = save(workOrderKPITransaction);
 
-            WorkOrderKPI workOrderKPI = workOrderKPITransaction.getWorkOrderKPI();
-            updatedWorkOrderKPIs.add(workOrderKPI);
+            workOrderKPIService.processWorkOrderKPIWhenCompletingWorkOrder(
+                    workOrderKPITransaction
+            );
+
+
         });
 
 
-        workOrderKPIService.processWorkOrderKPIWhenCompletingWorkOrder(
-                workOrderCompleteTransaction.getWorkOrder(),
-                updatedWorkOrderKPIs
-        );
 
     }
 

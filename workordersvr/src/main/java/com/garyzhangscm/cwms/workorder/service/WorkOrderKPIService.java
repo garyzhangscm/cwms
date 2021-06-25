@@ -202,6 +202,31 @@ public class WorkOrderKPIService{
     }
 
 
+    public void processWorkOrderKPIWhenCompletingWorkOrder(WorkOrderKPITransaction workOrderKPITransaction) {
+        switch (workOrderKPITransaction.getType()) {
+            case ADD: OVERRIDE:
+                saveOrUpdate(getWorkOrderKPIFromTransaction(workOrderKPITransaction));
+                break;
+            case REMOVED:
+                delete(workOrderKPITransaction.getWorkOrderKPI());
+                break;
+            // by default, the KPI is unchagned
+        }
+
+    }
+    private WorkOrderKPI getWorkOrderKPIFromTransaction(WorkOrderKPITransaction workOrderKPITransaction) {
+        WorkOrderKPI workOrderKPI =  new WorkOrderKPI();
+        if (Objects.nonNull(workOrderKPITransaction.getWorkOrderKPI())) {
+            workOrderKPI = workOrderKPITransaction.getWorkOrderKPI();
+
+        }
+
+        workOrderKPI.setWorkingTeamName(workOrderKPITransaction.getWorkingTeamName());
+        workOrderKPI.setUsername(workOrderKPITransaction.getUsername());
+        workOrderKPI.setAmount(workOrderKPITransaction.getAmount());
+        workOrderKPI.setKpiMeasurement(workOrderKPITransaction.getKpiMeasurement());
+        return workOrderKPI;
+    }
     /**
      * Process work order KPI when completing the work order. We will allow the user to change
      * the existing work order KPIs

@@ -20,17 +20,17 @@ package com.garyzhangscm.cwms.workorder.service;
 
 
 
+import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.model.Warehouse;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderByProduct;
+import com.garyzhangscm.cwms.workorder.model.WorkOrderConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TestDataInitService {
@@ -38,6 +38,8 @@ public class TestDataInitService {
     private static final Logger logger = LoggerFactory.getLogger(TestDataInitService.class);
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     ProductionPlanService productionPlanService;
     ProductionPlanLineService productionPlanLineService;
@@ -64,6 +66,9 @@ public class TestDataInitService {
 
     MouldService mouldService;
 
+    WorkOrderConfigurationService workOrderConfigurationService;
+
+
     Map<String, TestDataInitiableService> initiableServices = new HashMap<>();
     List<String> serviceNames = new ArrayList<>();
 
@@ -79,7 +84,8 @@ public class TestDataInitService {
                                WorkOrderInstructionService workOrderInstructionService,
                                ProductionPlanService productionPlanService,
                                ProductionPlanLineService productionPlanLineService,
-                               MouldService mouldService) {
+                               MouldService mouldService,
+                               WorkOrderConfigurationService workOrderConfigurationService) {
         this.billOfMaterialService = billOfMaterialService;
         this.billOfMaterialLineService = billOfMaterialLineService;
         this.billOfMaterialByProductService = billOfMaterialByProductService;
@@ -95,6 +101,7 @@ public class TestDataInitService {
         this.productionPlanService = productionPlanService;
         this.productionPlanLineService = productionPlanLineService;
         this.mouldService = mouldService;
+        this.workOrderConfigurationService = workOrderConfigurationService;
 
 
         initiableServices.put("Bill_Of_Material", billOfMaterialService);
@@ -128,6 +135,10 @@ public class TestDataInitService {
         initiableServices.put("mould", mouldService);
         serviceNames.add("mould");
 
+        initiableServices.put("work_order_configuration", workOrderConfigurationService);
+        serviceNames.add("work_order_configuration");
+
+
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);
@@ -144,6 +155,18 @@ public class TestDataInitService {
 
     public void clear(Long warehouseId) {
 
+
+
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                warehouseId
+        );
+        if (Objects.nonNull(warehouse)) {
+
+            jdbcTemplate.update("delete from work_order_configuration where company_id = ?", new Object[] { warehouse.getCompany().getId() });
+            logger.debug("work order configuration records for company {}!", warehouse.getCompany().getCode());
+
+
+        }
 
         jdbcTemplate.update("delete from production_line_assignment where work_order_id in " +
                 "  (select work_order_id from  work_order where warehouse_id = ?)", new Object[] { warehouseId });

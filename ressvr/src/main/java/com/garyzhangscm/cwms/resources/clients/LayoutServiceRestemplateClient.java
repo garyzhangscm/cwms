@@ -224,7 +224,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout//locations/rf")
+                        .path("/api/layout/locations/rf")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("rfCode", rfCode);
 

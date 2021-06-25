@@ -49,6 +49,9 @@ public class Pick implements Serializable {
 
     private Long pickedQuantity;
 
+
+    private Long workOrderLineId;
+
     private List<PickMovement> pickMovements = new ArrayList<>();
 
     @Override
@@ -147,5 +150,13 @@ public class Pick implements Serializable {
 
     public void setPickMovements(List<PickMovement> pickMovements) {
         this.pickMovements = pickMovements;
+    }
+
+    public Long getWorkOrderLineId() {
+        return workOrderLineId;
+    }
+
+    public void setWorkOrderLineId(Long workOrderLineId) {
+        this.workOrderLineId = workOrderLineId;
     }
 }

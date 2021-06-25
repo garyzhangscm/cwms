@@ -100,6 +100,8 @@ public class RFService implements TestDataInitiableService{
 
     public RF save(RF rf) {
         // before we save the RF, let's create a location for it
+        logger.debug("Will create the location for the rf {} / {}",
+                rf.getWarehouseId(), rf.getRfCode());
         layoutServiceRestemplateClient.createRFLocation(
                 rf.getWarehouseId(),
                 rf.getRfCode()
