@@ -34,12 +34,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Service
@@ -50,6 +52,13 @@ public class WorkOrderLineService implements TestDataInitiableService {
     private WorkOrderLineRepository workOrderLineRepository;
     @Autowired
     private WorkOrderService workOrderService;
+    @Autowired
+    private ProductionLineDeliveryService productionLineDeliveryService;
+    @Autowired
+    private WorkOrderConfigurationService workOrderConfigurationService;
+
+    @Autowired
+    EntityManager entityManager;
 
     @Autowired
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
@@ -57,6 +66,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+
     @Autowired
     private FileService fileService;
 
@@ -153,8 +163,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
     }
 
     public WorkOrderLine saveAndFlush(WorkOrderLine workOrderLine) {
-        WorkOrderLine newWorkOrderLine = workOrderLineRepository.save(workOrderLine);
-        workOrderLineRepository.flush();
+        WorkOrderLine newWorkOrderLine = workOrderLineRepository.saveAndFlush(workOrderLine);
+        // workOrderLineRepository.flush();
         loadAttribute(newWorkOrderLine);
         return newWorkOrderLine;
     }
@@ -333,21 +343,47 @@ public class WorkOrderLineService implements TestDataInitiableService {
     public void consume(WorkOrderLine workOrderLine, Long consumedQuantity, ProductionLine productionLine) {
 
         // make sure the total consumed quantity won't exceed total delivered quantity
+        /**
+         * Obsolete the logic. We will validate the quantity in
+         * WorkOrderProduceTransactionService.validateWorkOrderProduceTransaction since we switch
+         * to multiple production per work order modal.
+         * */
+        /***
+         *
         if (workOrderLine.getConsumedQuantity() + consumedQuantity > workOrderLine.getDeliveredQuantity()) {
 
             throw WorkOrderException.raiseException("Can't consume more than delivered. Total Delivered: " +
                     workOrderLine.getDeliveredQuantity() + ", already consumed: " +
                     workOrderLine.getConsumedQuantity() + ", will be consumed this time: " + consumedQuantity);
         }
+
+         */
         // Let's consume the inventory and remove it from the production line
 
+        logger.debug("Start to consume inventory with quantity {} from work order line {} / {}, production line {}",
+                consumedQuantity,
+                workOrderLine.getWorkOrder().getNumber(),
+                workOrderLine.getItem().getName(),
+                productionLine.getName());
+        /*
+        * We will remove the inventory only when the work order is completed.
+        * For now, we will only log the quantity
+        * */
+        /***
         inventoryServiceRestemplateClient.consumeMaterialForWorkOrderLine(
                 workOrderLine.getId(),
                 workOrderLine.getWorkOrder().getWarehouseId(),
                 consumedQuantity,
                 productionLine.getInboundStageLocationId()
         );
+         **/
+
+        // setup the consume quantity on the production line delivery record
+        productionLineDeliveryService.addConsumedQuantity(workOrderLine, productionLine, consumedQuantity);
+
+
         workOrderLine.setConsumedQuantity(workOrderLine.getConsumedQuantity() + consumedQuantity);
+
         save(workOrderLine);
     }
 
@@ -364,26 +400,72 @@ public class WorkOrderLineService implements TestDataInitiableService {
      * @param deliveredLocationId
      * @return
      */
-    @Transactional
     synchronized public WorkOrderLine changeDeliveredQuantity(Long workOrderLineId,
                                                  Long quantityBeingDelivered,
                                                  Long deliveredLocationId) {
+        // clear the cache. We may have scenario that when confirm
+        // picks for the same work order line, we will update the same work order line
+        // and production line delivery entity at the same time. Even we add the
+        // synchronized keyword here to avoid concurrent read and write, we will still
+        // need to call entityManger.clear() to clear the cache so every time we
+        // start with a most recent work order line object
+        // logger.debug("clear the entity manager's cache");
+        // entityManager.clear();
+
 
         WorkOrderLine workOrderLine = findById(workOrderLineId);
 
         logger.debug("Will check if we need to update the delivered quantity");
+        logger.debug("Current work order line {} / {} 's delivered quantity: {}",
+                workOrderLine.getWorkOrder().getNumber(),
+                workOrderLine.getNumber(),
+                workOrderLine.getDeliveredQuantity());
 
         logger.debug("quantity delivered: {}", quantityBeingDelivered);
         // Make sure the inventory was delivered to the right location,
         // which should be the IN staging of the production line
-        if (workOrderLine.getWorkOrder()
-                .getProductionLineAssignments().stream()
-                .anyMatch(productionLineAssignment ->
-                        productionLineAssignment.getProductionLine().getInboundStageLocationId().equals(deliveredLocationId))) {
+        Optional<ProductionLineAssignment> matchedProductionLineAssignment =
+                workOrderLine.getWorkOrder()
+                        .getProductionLineAssignments().stream()
+                .filter(productionLineAssignment ->
+                        productionLineAssignment.getProductionLine().
+                                getInboundStageLocationId().equals(deliveredLocationId))
+                .findFirst();
+        if (matchedProductionLineAssignment.isPresent()){
+            ProductionLineAssignment productionLineAssignment =
+                    matchedProductionLineAssignment.get();
 
+            // update the delivery quantity of the production assignment
+            logger.debug("Add delivery quantity {} to line {} for work order {}",
+                    quantityBeingDelivered,
+                    productionLineAssignment.getProductionLine().getName(),
+                    productionLineAssignment.getWorkOrder().getNumber());
+            productionLineDeliveryService.
+                    addDeliveryQuantity(workOrderLine,
+                            productionLineAssignment.getProductionLine(),
+                             quantityBeingDelivered);
             workOrderLine.setDeliveredQuantity(workOrderLine.getDeliveredQuantity() + quantityBeingDelivered);
 
-            return saveAndFlush(workOrderLine);
+            // if we configure to consume the quantity right after deliver, then
+            // consume the inventory
+            if (workOrderConfigurationService.getWorkOrderConfiguration(
+                    workOrderLine.getWorkOrder().getWarehouse().getCompanyId(),
+                    workOrderLine.getWorkOrder().getWarehouseId()
+            ).getMaterialConsumeTiming().equals(WorkOrderMaterialConsumeTiming.WHEN_DELIVER)) {
+                logger.debug("# Configuration is setup to consume the inventory right after delivery, will consume the inventory");
+                consume(workOrderLine, quantityBeingDelivered, productionLineAssignment.getProductionLine());
+            }
+
+            logger.debug("# will update work order line {} / {} 's delivered quantity to {}",
+                    workOrderLine.getWorkOrder().getNumber(),
+                    workOrderLine.getNumber(),
+                    workOrderLine.getDeliveredQuantity());
+            WorkOrderLine newWorkOrderLine = saveAndFlush(workOrderLine);
+            logger.debug("# Now work order line {} / {} 's delivered quantity is {}",
+                    newWorkOrderLine.getWorkOrder().getNumber(),
+                    newWorkOrderLine.getNumber(),
+                    newWorkOrderLine.getDeliveredQuantity());
+            return newWorkOrderLine;
         }
         else {
             return workOrderLine;

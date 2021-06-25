@@ -57,6 +57,8 @@ public class WorkOrderCompleteTransactionService {
     private WorkOrderService workOrderService;
     @Autowired
     private WorkOrderLineService workOrderLineService;
+    @Autowired
+    private ProductionLineAssignmentService productionLineAssignmentService;
 
     public WorkOrderCompleteTransaction findById(Long id, boolean loadDetails) {
         WorkOrderCompleteTransaction workOrderCompleteTransaction
@@ -174,9 +176,29 @@ public class WorkOrderCompleteTransactionService {
      */
 
     public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction, Long locationId) {
+        // a location to hold the return material and by product
+        Location productionOutBoundLocation ;
+        if (Objects.isNull(locationId)) {
+            // the user didn't specify any location, choose any production
+            List<ProductionLineAssignment> productionLineAssignments =
+                    productionLineAssignmentService.findAll(null, workOrderCompleteTransaction.getWorkOrder().getId());
+            logger.debug("We get {} production line assignment for work order {} when closing this work order",
+                    productionLineAssignments.size(), workOrderCompleteTransaction.getWorkOrder().getNumber());
+            logger.debug("We will choose the first production line to complete the work order and receive returned material");
+            if (productionLineAssignments.size() > 0) {
+                locationId = productionLineAssignments.get(0).getProductionLine().getOutboundStageLocationId();
+            }
+            else {
+                throw WorkOrderException.raiseException("Can't close work order. We are not able to find a good location to return material");
+            }
+        }
+
+        logger.debug("Will close the work order from location {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(locationId).getName());
         return startNewTransaction(
                 workOrderCompleteTransaction,
                 warehouseLayoutServiceRestemplateClient.getLocationById(locationId)
+
         );
     }
     public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction, Location location) {

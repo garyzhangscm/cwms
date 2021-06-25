@@ -1232,5 +1232,11 @@
   "report.printedDate": "打印时间",
   "report.printedUsername": "打印人",
   "menu.mobile.work-order.production_line_check_in": "上工",
-  "menu.mobile.work-order.production_line_check_out": "下工"
+  "menu.mobile.work-order.production_line_check_out": "下工",
+  "error": "错误",
+  "warning": "提示",
+  "error.work-order.production-line-assignment.quantity-exceed": "分配的数量超过了工单数量",
+  "warning.work-order.production-line-assignment.quantity-below": "分配的数量少于工单数量，点击确认继续",
+  "confirm": "确认",
+  "error.work-order.production-line-assignment.quantity-not-match": "分配的数量和工单数量不一致"
 }

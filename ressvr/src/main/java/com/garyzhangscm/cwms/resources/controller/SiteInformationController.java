@@ -44,14 +44,15 @@ public class SiteInformationController {
     private SiteInformationService siteInformationService;
 
     @RequestMapping(value = "/site-information")
-    public SiteInformation getSiteInformation(@RequestParam Long companyId) {
+    public SiteInformation getSiteInformation(@RequestParam Long companyId,
+                                              @RequestParam(name = "warehouseId", required = false, defaultValue = "") Long warehouseId) {
         logger.debug("Start to get site information for user {}",
                 userService.getCurrentUserName());
         if (StringUtils.isBlank(userService.getCurrentUserName())) {
             return siteInformationService.getDefaultSiteInformation();
         }
         else {
-            return userService.getSiteInformaiton(companyId, userService.getCurrentUserName());
+            return userService.getSiteInformaiton(companyId, warehouseId, userService.getCurrentUserName());
         }
     }
 

@@ -1227,5 +1227,11 @@
   "report.printedDate": "Printed Date",
   "report.printedUsername": "Printed User",
   "menu.mobile.work-order.production_line_check_in": "Production Check In",
-  "menu.mobile.work-order.production_line_check_out": "Production Check Out"
+  "menu.mobile.work-order.production_line_check_out": "Production Check Out",
+  "error": "Error",
+  "warning": "Warning",
+  "error.work-order.production-line-assignment.quantity-exceed": "Total assigned quantity exceeds the work order's quantity",
+  "warning.work-order.production-line-assignment.quantity-below": "Total assigned quantity is less than the work order's quantity, click confirm to continue",
+  "confirm": "Confirm",
+  "error.work-order.production-line-assignment.quantity-not-match": "Total assigned quantity dest not match the work order's quantity"
 }

@@ -40,6 +40,7 @@ public class InitTestDataService {
     WorkingTeamService workingTeamService;
     WorkingTeamUserService workingTeamUserService;
     ReportService reportService;
+    WebClientTabDisplayConfigurationService webClientTabDisplayConfigurationService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -89,6 +90,7 @@ public class InitTestDataService {
                                IntegrationServiceRestemplateClient integrationServiceRestemplateClient,
                                UserService userService,
                                RoleService roleService,
+                               WebClientTabDisplayConfigurationService webClientTabDisplayConfigurationService,
                                // MenuGroupService menuGroupService,
                                // MenuSubGroupService menuSubGroupService,
                                // MenuService menuService,
@@ -109,6 +111,7 @@ public class InitTestDataService {
         this.workingTeamService = workingTeamService;
         this.workingTeamUserService = workingTeamUserService;
         this.reportService = reportService;
+        this.webClientTabDisplayConfigurationService = webClientTabDisplayConfigurationService;
 
 
         initiableServices.put("User", userService);
@@ -135,6 +138,10 @@ public class InitTestDataService {
         serviceNames.add("working_team_user");
         initiableServices.put("report", reportService);
         serviceNames.add("report");
+
+        initiableServices.put("web_client_tab_display_configuration", webClientTabDisplayConfigurationService);
+        serviceNames.add("web_client_tab_display_configuration");
+
 
 
 
@@ -210,6 +217,7 @@ public class InitTestDataService {
 
 
 
+
         jdbcTemplate.execute("delete from user_role");
         logger.debug("user_role records removed!");
 
@@ -242,6 +250,11 @@ public class InitTestDataService {
             logger.debug("report records for warehouse {}!", warehouse.getName());
             jdbcTemplate.update("delete from report where company_id = ?", new Object[] { warehouse.getCompany().getId() });
             logger.debug("report records for company {}!", warehouse.getCompany().getCode());
+
+
+            jdbcTemplate.update("delete from web_client_tab_display_configuration where company_id = ?", new Object[] { warehouse.getCompany().getId() });
+            logger.debug("web client tab display configuration records for company {}!", warehouse.getCompany().getCode());
+
 
         }
 

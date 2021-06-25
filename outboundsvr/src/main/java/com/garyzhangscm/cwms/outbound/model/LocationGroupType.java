@@ -36,9 +36,14 @@ public class LocationGroupType {
 
     private Boolean receivingStage;
     private Boolean shippingStage;
+    private Boolean productionLine;
+    private Boolean productionLineInbound;
+    private Boolean productionLineOutbound;
     private Boolean dock;
     private Boolean yard;
     private Boolean storage;
+    private Boolean rf;
+    private Boolean grid;
     private Boolean pickupAndDeposit;
 
     @Override
@@ -144,5 +149,45 @@ public class LocationGroupType {
 
     public void setPickupAndDeposit(Boolean pickupAndDeposit) {
         this.pickupAndDeposit = pickupAndDeposit;
+    }
+
+    public Boolean getProductionLine() {
+        return productionLine;
+    }
+
+    public void setProductionLine(Boolean productionLine) {
+        this.productionLine = productionLine;
+    }
+
+    public Boolean getProductionLineInbound() {
+        return productionLineInbound;
+    }
+
+    public void setProductionLineInbound(Boolean productionLineInbound) {
+        this.productionLineInbound = productionLineInbound;
+    }
+
+    public Boolean getProductionLineOutbound() {
+        return productionLineOutbound;
+    }
+
+    public void setProductionLineOutbound(Boolean productionLineOutbound) {
+        this.productionLineOutbound = productionLineOutbound;
+    }
+
+    public Boolean getRf() {
+        return rf;
+    }
+
+    public void setRf(Boolean rf) {
+        this.rf = rf;
+    }
+
+    public Boolean getGrid() {
+        return grid;
+    }
+
+    public void setGrid(Boolean grid) {
+        this.grid = grid;
     }
 }

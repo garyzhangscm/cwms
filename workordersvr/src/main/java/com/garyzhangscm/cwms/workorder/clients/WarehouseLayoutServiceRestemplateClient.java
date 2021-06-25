@@ -67,6 +67,32 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    public Company getCompanyByCode(String companyCode) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies")
+                        .queryParam("code", companyCode);
+
+
+        ResponseBodyWrapper<List<Company>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {
+                }).getBody();
+
+        List<Company> companies = responseBodyWrapper.getData();
+        if (companies.size() != 1) {
+            return null;
+        }
+        else {
+            return companies.get(0);
+        }
+    }
+
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

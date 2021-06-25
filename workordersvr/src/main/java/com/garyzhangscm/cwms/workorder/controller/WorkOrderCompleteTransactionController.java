@@ -40,10 +40,16 @@ public class WorkOrderCompleteTransactionController {
         return workOrderCompleteTransactionService.findAll(warehouseId, workOrderNumber);
     }
 
+    /**
+     * Add a work order complete transaction
+     * @param workOrderCompleteTransaction work order complete transaction
+     * @param locationId production line outbound location id
+     * @return
+     */
     @RequestMapping(value="/work-order-complete-transactions", method = RequestMethod.POST)
     public WorkOrderCompleteTransaction addWorkOrderCompleteTransaction(
             @RequestBody WorkOrderCompleteTransaction workOrderCompleteTransaction,
-            @RequestParam Long locationId) {
+            @RequestParam(name = "locationId", required = false, defaultValue = "") Long locationId) {
         return workOrderCompleteTransactionService.startNewTransaction(workOrderCompleteTransaction, locationId);
     }
 

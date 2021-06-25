@@ -24,6 +24,12 @@ public class WorkOrderKPITransaction extends AuditibleEntity<String>{
     @JsonIgnore
     private WorkOrder workOrder;
 
+    // will be setup only when we are changing an existing
+    // kpi
+    @ManyToOne
+    @JoinColumn(name = "work_order_kpi_id")
+    private WorkOrderKPI workOrderKPI;
+
     @Column(name = "username")
     private String username;
 
@@ -60,26 +66,7 @@ public class WorkOrderKPITransaction extends AuditibleEntity<String>{
     @JsonIgnore
     private WorkOrderProduceTransaction workOrderProduceTransaction;
 
-    public WorkOrderKPI getWorkOrderKPI() {
-        WorkOrderKPI workOrderKPI = new WorkOrderKPI();
 
-        if (Objects.nonNull(workOrderCompleteTransaction)) {
-            workOrderKPI.setWorkOrder(
-                    workOrderCompleteTransaction.getWorkOrder()
-            );
-        }
-        else if (Objects.nonNull(workOrderProduceTransaction)) {
-            workOrderKPI.setWorkOrder(
-                    workOrderProduceTransaction.getWorkOrder()
-            );
-        }
-
-        workOrderKPI.setUsername(getUsername());
-        workOrderKPI.setWorkingTeamName(getWorkingTeamName());
-        workOrderKPI.setKpiMeasurement(getKpiMeasurement());
-        workOrderKPI.setAmount(getAmount());
-        return workOrderKPI;
-    }
 
     @Override
     public String toString() {
@@ -162,5 +149,14 @@ public class WorkOrderKPITransaction extends AuditibleEntity<String>{
 
     public void setType(WorkOrderKPITransactionType type) {
         this.type = type;
+    }
+
+
+    public void setWorkOrderKPI(WorkOrderKPI workOrderKPI) {
+        this.workOrderKPI = workOrderKPI;
+    }
+
+    public WorkOrderKPI getWorkOrderKPI() {
+        return workOrderKPI;
     }
 }

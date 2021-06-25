@@ -726,8 +726,12 @@ public class LocationService implements TestDataInitiableService {
 
     public Location addRFLocation(Long warehouseId, String rfCode) {
         // see if we already hava the location
+        logger.debug("will add RF location {} / {}",
+                warehouseId, rfCode);
         Location location = findByName(rfCode, warehouseId);
         if (Objects.nonNull(location)) {
+            logger.debug("RF location {} already exists",
+                    location.getName());
             return location;
         }
         else {
@@ -735,6 +739,8 @@ public class LocationService implements TestDataInitiableService {
             location = new Location(warehouseService.findById(warehouseId),
                     rfCode, locationGroupService.getRFLocationGroup(warehouseId));
 
+            logger.debug("Created a new location {} for the RF",
+                    location.getName());
             return saveOrUpdate(location);
         }
     }

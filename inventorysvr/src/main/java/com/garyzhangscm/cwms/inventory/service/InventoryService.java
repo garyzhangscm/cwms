@@ -82,6 +82,8 @@ public class InventoryService implements TestDataInitiableService{
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
+    private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
+    @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
@@ -217,8 +219,13 @@ public class InventoryService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.equal(root.get("locationId"), locationId));
                     }
                     else if (StringUtils.isNotBlank(locationName) &&
-                            Objects.nonNull(warehouseId != null)) {
+                            Objects.nonNull(warehouseId)) {
+                        logger.debug("Will get inventory from location {} / {}",
+                                warehouseId, locationName);
                         Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+
+                        logger.debug(">> location id: {}",
+                                location.getId());
                         if (location != null) {
                             predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
                         }
@@ -738,9 +745,11 @@ public class InventoryService implements TestDataInitiableService{
 
         // we will need to get the destination location's location group
         // so we can know whether the inventory become a virtual inventory
-        if (destination.getLocationGroup() == null || destination.getLocationGroup().getLocationGroupType() == null) {
+       if (destination.getLocationGroup() == null || destination.getLocationGroup().getLocationGroupType() == null) {
             // Refresh the location's information from layout service
             destination = warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId());
+
+
         }
         if (destination.getLocationGroup().getLocationGroupType().getVirtual()) {
             // The inventory is moved to the virtual location, let's mark the inventory
@@ -750,6 +759,24 @@ public class InventoryService implements TestDataInitiableService{
         else {
 
             inventory.setVirtual(false);
+        }
+        // if we are moving inventory to a production line inbound area, let's update the delivery
+        // quantity of the work order
+
+        if (Boolean.TRUE.equals(destination.getLocationGroup().getLocationGroupType().getProductionLineInbound())) {
+            logger.debug("Inventory is moved into {}, which is a production line inbound location",
+                    destination.getName());
+            if (Objects.nonNull(inventory.getPick())) {
+
+                logger.debug("will check if we will need to update the delivery quantity for work order line {}",
+                        inventory.getPick().getWorkOrderLineId());
+                workOrderServiceRestemplateClient.inventoryDeliveredForWorkOrderLine(
+                        inventory.getPick().getWorkOrderLineId(),
+                        inventory.getQuantity(),
+                        destination.getId()
+                );
+            }
+
         }
         // Check if we have finished any movement
         if (Objects.nonNull(pickId)) {
@@ -1004,6 +1031,7 @@ public class InventoryService implements TestDataInitiableService{
         }
         inventory.setPickId(pickId);
         Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
+        inventory.setPick(pick);
         if (inventory.getInventoryMovements().size() == 0) {
             // copy the pick movement and assign it to the inventory's movement
             copyMovementsFromPick(pick, inventory);
@@ -1601,8 +1629,14 @@ public class InventoryService implements TestDataInitiableService{
     public List<Inventory> consumeInventoriesForWorkOrderLine(Long workOrderLineId, Long warehouseId,
                                                               Long quantity, Long inboundLocationId) {
 
+        logger.debug("# start to consume quantity {} from work order line id {}, location id {}",
+                quantity,
+                workOrderLineId,
+                inboundLocationId);
         try {
             List<Pick> picks = outbuondServiceRestemplateClient.getWorkOrderPicks(warehouseId, String.valueOf(workOrderLineId));
+            logger.debug("# get {} picks for this work order line" ,
+                    picks.size());
             if (picks.size() > 0) {
                 String pickIds = picks.stream()
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
@@ -1626,16 +1660,21 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null
                 );
+                logger.debug("# Get {} inventory to be consumed", pickedInventories.size());
                 // Let's remove those inventories until we reach the
                 // required quantity
                 Long quantityToBeRemoved = quantity;
                 Iterator<Inventory> inventoryIterator = pickedInventories.iterator();
                 while (inventoryIterator.hasNext() && quantityToBeRemoved > 0) {
                     Inventory inventory = inventoryIterator.next();
+                    logger.debug("# start to consume inventory {}, quantity {}",
+                            inventory.getLpn(), quantityToBeRemoved);
                     if (inventory.getQuantity() <= quantityToBeRemoved) {
                         // The whole inventory can be removed
                         quantityToBeRemoved -= inventory.getQuantity();
                         removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL);
+
+                        logger.debug("# consume the whole LPN {}, ", inventory.getLpn());
 
 
                     }
@@ -1650,6 +1689,8 @@ public class InventoryService implements TestDataInitiableService{
                         saveOrUpdate(inventory);
                         quantityToBeRemoved -= splitedInventory.getQuantity();
                         removeInventory(splitedInventory, InventoryQuantityChangeType.CONSUME_MATERIAL);
+
+                        logger.debug("# consume the partial LPN {}", inventory.getLpn());
 
                     }
                 }

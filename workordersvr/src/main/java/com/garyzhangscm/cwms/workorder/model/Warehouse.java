@@ -39,6 +39,8 @@ public class Warehouse implements Serializable {
     private String addressLine2;
     private String addressPostcode;
 
+    private Company company;
+
     public Long getId() {
         return id;
     }
@@ -133,5 +135,13 @@ public class Warehouse implements Serializable {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 }

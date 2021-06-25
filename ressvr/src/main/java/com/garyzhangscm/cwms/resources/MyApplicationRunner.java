@@ -82,7 +82,11 @@ public class MyApplicationRunner implements ApplicationRunner {
         menuService.initTestData(null, "");
 
         initReportData();
+
+
     }
+
+
 
     private void initReportData() throws IOException {
         System.out.println("Start to init the standard reports");

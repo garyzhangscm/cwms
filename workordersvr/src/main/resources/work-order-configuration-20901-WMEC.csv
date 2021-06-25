@@ -1,0 +1,2 @@
+company,warehouse,materialConsumeTiming,overConsumeIsAllowed,overProduceIsAllowed
+20901,,WHEN_DELIVER,true,true

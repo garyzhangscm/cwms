@@ -64,11 +64,15 @@ public class WorkOrderProduceTransactionService  {
     @Autowired
     private WorkOrderService workOrderService;
     @Autowired
+    private ProductionLineDeliveryService productionLineDeliveryService;
+    @Autowired
     private WorkOrderLineService workOrderLineService;
     @Autowired
     private WorkOrderKPITransactionService workOrderKPITransactionService;
     @Autowired
     private ProductionLineService productionLineService;
+    @Autowired
+    private WorkOrderConfigurationService workOrderConfigurationService;
 
     public WorkOrderProduceTransaction findById(Long id, boolean loadDetails) {
         WorkOrderProduceTransaction workOrderProduceTransaction
@@ -190,7 +194,8 @@ public class WorkOrderProduceTransactionService  {
      * @return
      */
     @Transactional
-    public WorkOrderProduceTransaction startNewTransaction(WorkOrderProduceTransaction workOrderProduceTransaction) {
+    public WorkOrderProduceTransaction startNewTransaction(
+            WorkOrderProduceTransaction workOrderProduceTransaction) {
 
         // setup the location for later use
         if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getInboundStageLocation())) {
@@ -209,16 +214,13 @@ public class WorkOrderProduceTransactionService  {
             );
         }
 
-        WorkOrder workOrder = workOrderProduceTransaction.getWorkOrder();
-        // will load the work order's attribute. Some actions
-        // are based on the work order's detail attribute, like the
-        // location that for production line
-        workOrderService.loadAttribute(workOrder);
+        // get the latest information
+        WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
 
         // make sure
         // 1. we are not over produce
         // 2. we are not over consume
-        if (!validateWorkOrderProduceTransaction(workOrderProduceTransaction, workOrder)) {
+        if (!validateWorkOrderProduceTransaction(workOrderProduceTransaction)) {
              logger.debug("Current work order production transaction is not valid ");
              throw WorkOrderException.raiseException("Work work produce transaction is not valid");
         }
@@ -258,6 +260,15 @@ public class WorkOrderProduceTransactionService  {
         // save the transaction itself
         WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
 
+        processWorkOrderKPI(newWorkOrderProduceTransaction, totalProducedQuantity);
+
+
+        return newWorkOrderProduceTransaction;
+
+    }
+
+    private void processWorkOrderKPI(WorkOrderProduceTransaction newWorkOrderProduceTransaction,
+                                     Long totalProducedQuantity) {
         // save the KPI
         // if it is explicitly specified , then save the KPI from user input
         // otherwise, check if there's any person that already checked in the production and
@@ -275,7 +286,7 @@ public class WorkOrderProduceTransactionService  {
             if (Objects.nonNull(checkedInUser)) {
                 // OK someone is working on this production line, let's give them the KPI
                 logger.debug("Will save the work order KPI to user {}, work order: {}, production line： {}" +
-                        ", quantity: {}",
+                                ", quantity: {}",
                         checkedInUser.getUsername(),
                         newWorkOrderProduceTransaction.getWorkOrder().getNumber(),
                         newWorkOrderProduceTransaction.getProductionLine().getName(),
@@ -293,16 +304,37 @@ public class WorkOrderProduceTransactionService  {
             }
 
         }
-
-        return newWorkOrderProduceTransaction;
-
     }
 
-    private boolean validateWorkOrderProduceTransaction(WorkOrderProduceTransaction workOrderProduceTransaction, WorkOrder workOrder) {
+    private boolean validateWorkOrderProduceTransaction(
+            WorkOrderProduceTransaction workOrderProduceTransaction) {
         // make sure we won't over consume
 
-        boolean result;
+        boolean result = true;
 
+        // only validate the consume transaction
+        // if we consume the material line per each produce transaction
+        if (workOrderConfigurationService.getWorkOrderConfiguration(
+                workOrderProduceTransaction.getWorkOrder().getWarehouse().getCompanyId(),
+                workOrderProduceTransaction.getWorkOrder().getWarehouseId()
+        ).getMaterialConsumeTiming().equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)) {
+
+            result = workOrderProduceTransaction.getWorkOrderLineConsumeTransactions()
+                    .stream().allMatch(
+                            workOrderLineConsumeTransaction ->  validateWorkOrderLineConsumeTransaction(
+                                    workOrderLineConsumeTransaction,
+                                    workOrderProduceTransaction.getProductionLine()
+
+                            ));
+        }
+
+
+/***
+ * Since we may already consume the inventory when it is delivered, we will validate against
+ * the production line assignment's delivery quantity instead of the inventory
+ */
+/** Obselete
+ *
         List<Inventory> inventories = workOrderService.getDeliveredInventory(workOrder.getId(),
                 workOrderProduceTransaction.getProductionLine());
         logger.debug("start to validate work order product transaction against production line: {}",
@@ -332,14 +364,60 @@ public class WorkOrderProduceTransactionService  {
 
                             return !lineValid;
                         });
+
+ */
         return result;
     }
 
     private boolean validateWorkOrderLineConsumeTransaction(
-            WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction, List<Inventory> deliveredInventories) {
+            WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
+            ProductionLine productionLine) {
+
+        Optional<ProductionLineDelivery> productionLineDelivery =
+                Optional.of(
+                        productionLineDeliveryService.getProductionLineDelivery(
+                                productionLine,
+                                workOrderLineConsumeTransaction.getWorkOrderLine()
+                        )
+                );
+        Long totalDeliveredQuantity = 0L;
+        Long totalConsumedQuantity = 0L;
+        if (productionLineDelivery.isPresent()) {
+            totalDeliveredQuantity = productionLineDelivery.get().getDeliveredQuantity();
+            totalConsumedQuantity = productionLineDelivery.get().getConsumedQuantity();
+        }
+        else {
+            logger.debug(
+                    "Can't consume for work order line {} / {}" +
+                            " from Production line  {}. There's nothing delivered yet",
+                    workOrderLineConsumeTransaction.getWorkOrderLine().getWorkOrder().getNumber(),
+                    workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName(),
+                    productionLine.getName()
+                    );
+
+            throw  WorkOrderException.raiseException(
+                    "Can't consume the quantity for work order line " +
+                            workOrderLineConsumeTransaction.getWorkOrderLine().getWorkOrder().getNumber() +
+                            " / " + workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName() +
+                            " from Production line " + productionLine.getName() +
+                            ". There's nothing delivered yet");
+        }
+        logger.debug("Validate by quantity / For work order line  {} 's consume transaction, " +
+                " we have total deliver quantity {}, consumed quantity {}, consuming quantity {}",
+
+                workOrderLineConsumeTransaction.getWorkOrderLine().getNumber(),
+                totalDeliveredQuantity,
+                totalConsumedQuantity,
+                workOrderLineConsumeTransaction.getConsumedQuantity());
+        return (totalDeliveredQuantity -totalConsumedQuantity)>= workOrderLineConsumeTransaction.getConsumedQuantity();
+
+    }
+    private boolean validateWorkOrderLineConsumeTransaction(
+            WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
+            List<Inventory> deliveredInventories) {
         Long totalDeliveredQuantity = deliveredInventories.stream().mapToLong(Inventory::getQuantity).sum();
 
-        logger.debug("For work order line  {} 's consume transaction, we have total deliver quantity {}, consumed quantity {}",
+        logger.debug("Validate by inventory / For work order line  {} 's consume transaction, we have total deliver quantity {}, consumed quantity {}",
 
                 workOrderLineConsumeTransaction.getWorkOrderLine().getNumber(),
                 totalDeliveredQuantity,
@@ -350,10 +428,20 @@ public class WorkOrderProduceTransactionService  {
     @Transactional
     public void consumeQuantity(WorkOrderLine workOrderLine, WorkOrderProduceTransaction workOrderProduceTransaction,
                                  Long totalProducedQuantity) {
+        // only continue if we consume the quantity per transaction
+        if (!workOrderConfigurationService.getWorkOrderConfiguration(
+                workOrderProduceTransaction.getWorkOrder().getWarehouse().getCompanyId(),
+                workOrderProduceTransaction.getWorkOrder().getWarehouseId()
+        ).getMaterialConsumeTiming().equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)){
+            return;
+        }
+
+        // consume by BOM
         if (workOrderProduceTransaction.getConsumeByBomQuantity() == true) {
             consumeQuantityByBomQuantity(workOrderLine, workOrderProduceTransaction, totalProducedQuantity);
         }
         else {
+            // USER specify the quantity to be consumed
             workOrderProduceTransaction.getWorkOrderLineConsumeTransactions().forEach(workOrderLineConsumeTransaction -> {
                 if (workOrderLine.equals(workOrderLineConsumeTransaction.getWorkOrderLine())) {
 

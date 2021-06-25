@@ -21,6 +21,8 @@ public class SiteInformation {
     @JsonProperty("menu")
     private List<MenuGroup> menuGroups = new ArrayList<>();
 
+    private WebClientConfiguration webClientConfiguration;
+
 
     public static SiteInformation getDefaultSiteInformation(List<MenuGroup> menuGroups) {
         SiteInformation siteInformation = new SiteInformation();
@@ -33,6 +35,11 @@ public class SiteInformation {
 
         // default menu
         siteInformation.setMenuGroups(menuGroups);
+
+        // An empty configuration normally means enable everything and display everything
+        WebClientConfiguration webClientConfiguration = new WebClientConfiguration();
+        siteInformation.setWebClientConfiguration(webClientConfiguration);
+
 
         return siteInformation;
 
@@ -77,5 +84,13 @@ public class SiteInformation {
 
     public void setDefaultCompanyCode(String defaultCompanyCode) {
         this.defaultCompanyCode = defaultCompanyCode;
+    }
+
+    public WebClientConfiguration getWebClientConfiguration() {
+        return webClientConfiguration;
+    }
+
+    public void setWebClientConfiguration(WebClientConfiguration webClientConfiguration) {
+        this.webClientConfiguration = webClientConfiguration;
     }
 }

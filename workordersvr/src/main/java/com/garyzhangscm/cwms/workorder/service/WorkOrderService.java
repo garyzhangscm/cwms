@@ -446,6 +446,9 @@ public class WorkOrderService implements TestDataInitiableService {
  **/
 
     public WorkOrder produce(WorkOrder workOrder, Long producedQuantity) {
+        logger.debug("Will change the work order's produced quantity from {}, to {}",
+                workOrder.getProducedQuantity(),
+                workOrder.getProducedQuantity() + producedQuantity);
         workOrder.setProducedQuantity(workOrder.getProducedQuantity() + producedQuantity);
         return saveOrUpdate(workOrder);
     }
@@ -764,7 +767,7 @@ public class WorkOrderService implements TestDataInitiableService {
         // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.ORDER_PICK_SHEET, reportData, locale
+                        warehouseId, ReportType.WORK_ORDER_PICK_SHEET, reportData, locale
                 );
 
 
@@ -780,22 +783,8 @@ public class WorkOrderService implements TestDataInitiableService {
         // set the parameters to be the meta data of
         // the order
 
-        report.addParameter("order_number", workOrder.getNumber());
+        report.addParameter("work_order_number", workOrder.getNumber());
 
-
-        report.addParameter("customer_name", "N/A");
-
-        Integer totalLineCount =
-                workOrder.getWorkOrderLines().size();
-        Integer totalItemCount =
-                workOrder.getWorkOrderLines().size();
-        Long totalQuantity =
-                outboundServiceRestemplateClient.getWorkOrderPicks(workOrder)
-                    .stream().mapToLong(Pick::getQuantity).sum();
-
-        report.addParameter("totalLineCount", totalLineCount);
-        report.addParameter("totalItemCount", totalItemCount);
-        report.addParameter("totalQuantity", totalQuantity);
     }
 
     private void setupWorkOrderPickReportData(Report report, WorkOrder workOrder) throws IOException {

@@ -1,11 +1,13 @@
 
+drop table if exists  work_order_kpi_transaction;
 drop table if exists  work_order_kpi;
+
 drop table if exists production_line_assignment;
+drop table if exists production_line_delivery;
 drop table if exists production_line_capacity;
 
 drop table if exists  work_order_line_consume_transaction;
 drop table if exists  work_order_by_product_produce_transaction;
-drop table if exists  work_order_kpi_transaction;
 drop table if exists  work_order_produced_inventory;
 drop table if exists  work_order_produce_transaction;
 
@@ -32,7 +34,21 @@ drop table if exists bill_of_material;
 
 drop  table if exists mould;
 
+DROP TABLE IF EXISTS work_order_configuration;
 
+
+CREATE TABLE work_order_configuration (
+  work_order_configuration_id    BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT,
+  warehouse_id BIGINT,
+  material_consume_timing VARCHAR(50) NOT NULL,
+  over_consume_is_allowed boolean not null,
+  over_produce_is_allowed boolean not null,
+  created_time date,
+  created_by VARCHAR(50),
+  last_modified_time date,
+  last_modified_by VARCHAR(50)
+);
 
 CREATE TABLE mould (
   mould_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -353,6 +369,7 @@ CREATE TABLE work_order_kpi_transaction (
   work_order_id  BIGINT NOT NULL,
   work_order_complete_transaction_id  BIGINT,
   work_order_produce_transaction_id  BIGINT,
+  work_order_kpi_id BIGINT,
   username  VARCHAR(50),
   type VARCHAR(50),
   working_team_name VARCHAR(50),
@@ -362,6 +379,7 @@ CREATE TABLE work_order_kpi_transaction (
   created_by VARCHAR(50),
   last_modified_time DATETIME,
   last_modified_by VARCHAR(50),
+  foreign key(work_order_kpi_id) references work_order_kpi(work_order_kpi_id),
   foreign key(work_order_produce_transaction_id) references work_order_produce_transaction(work_order_produce_transaction_id),
   foreign key(work_order_complete_transaction_id) references work_order_complete_transaction(work_order_complete_transaction_id),
   foreign key(work_order_id) references work_order(work_order_id));
@@ -385,6 +403,19 @@ CREATE TABLE production_line_assignment (
   last_modified_by VARCHAR(50)
 );
 
+CREATE TABLE production_line_delivery (
+  production_line_delivery_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  work_order_line_id    BIGINT NOT NULL,
+  production_line_id    BIGINT NOT NULL,
+  delivered_quantity    BIGINT NOT NULL,
+  consumed_quantity    BIGINT NOT NULL,
+  foreign key(work_order_line_id) references work_order_line(work_order_line_id),
+  foreign key(production_line_id) references production_line(production_line_id),
+  created_time DATETIME,
+  created_by VARCHAR(50),
+  last_modified_time DATETIME,
+  last_modified_by VARCHAR(50)
+);
 
 CREATE TABLE production_line_capacity (
   production_line_capacity_id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
