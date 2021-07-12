@@ -44,6 +44,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -61,12 +62,19 @@ public class OutboundServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
-    public AllocationResult allocateWorkOrder(WorkOrder workOrder) {
+    public AllocationResult allocateWorkOrder(WorkOrder workOrder, Long productionLineId, Long quantity) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/allocation/work-order");
+
+        if (Objects.nonNull(productionLineId)) {
+            builder = builder.queryParam("productionLineId", productionLineId);
+        }
+        if (Objects.nonNull(quantity)) {
+            builder = builder.queryParam("quantity", quantity);
+        }
 
         ResponseBodyWrapper<AllocationResult> responseBodyWrapper
                 = null;
@@ -83,6 +91,7 @@ public class OutboundServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
 
     public OrderLine getOrderLineById(Long orderLineId) {
 

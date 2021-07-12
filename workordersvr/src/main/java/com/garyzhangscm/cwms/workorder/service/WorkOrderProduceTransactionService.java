@@ -296,6 +296,7 @@ public class WorkOrderProduceTransactionService  {
                                 newWorkOrderProduceTransaction.getWorkOrder(),
                                 newWorkOrderProduceTransaction.getProductionLine(),
                                 checkedInUser.getUsername(),
+                                checkedInUser.getWorkingTeamMemberCount(),
                                 totalProducedQuantity
                         );
 
@@ -429,10 +430,16 @@ public class WorkOrderProduceTransactionService  {
     public void consumeQuantity(WorkOrderLine workOrderLine, WorkOrderProduceTransaction workOrderProduceTransaction,
                                  Long totalProducedQuantity) {
         // only continue if we consume the quantity per transaction
-        if (!workOrderConfigurationService.getWorkOrderConfiguration(
-                workOrderProduceTransaction.getWorkOrder().getWarehouse().getCompanyId(),
-                workOrderProduceTransaction.getWorkOrder().getWarehouseId()
-        ).getMaterialConsumeTiming().equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)){
+        WorkOrderConfiguration workOrderConfiguration =
+                workOrderConfigurationService.getWorkOrderConfiguration(
+                        workOrderProduceTransaction.getWorkOrder().getWarehouse().getCompanyId(),
+                        workOrderProduceTransaction.getWorkOrder().getWarehouseId()
+                );
+        logger.debug("We configured to consume the work order line at {}",
+                workOrderConfiguration.getMaterialConsumeTiming());
+        if (!workOrderConfiguration.getMaterialConsumeTiming().equals(
+                WorkOrderMaterialConsumeTiming.BY_TRANSACTION)){
+            logger.debug("So we won't consume the work order line during the produce transaction");
             return;
         }
 

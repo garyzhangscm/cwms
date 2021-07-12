@@ -1238,5 +1238,14 @@
   "error.work-order.production-line-assignment.quantity-exceed": "分配的数量超过了工单数量",
   "warning.work-order.production-line-assignment.quantity-below": "分配的数量少于工单数量，点击确认继续",
   "confirm": "确认",
-  "error.work-order.production-line-assignment.quantity-not-match": "分配的数量和工单数量不一致"
+  "error.work-order.production-line-assignment.quantity-not-match": "分配的数量和工单数量不一致",
+  "working-team.member-count": "班组人数",
+  "menu.main.util.system-config": "系统配置",
+  "system-configuration.server-side-printing": "服务器端打印",
+  "system-configuration.allow-data-initial-flag": "允许加载测试数据",
+  "work-order.allocate-whole-work-order": "分配整个工单",
+  "work-order.allocate-by-production-line": "按产线分配",
+  "production-line-assignment.assigned-quantity": "总数量",
+  "production-line-assignment.open-quantity": "未分配数量",
+  "production-line-assignment.allocating-quantity": "本次分配数量"
 }

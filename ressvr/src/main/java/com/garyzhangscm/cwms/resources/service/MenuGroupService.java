@@ -80,6 +80,15 @@ public class MenuGroupService implements TestDataInitiableService{
         return menuGroupRepository.save(menuGroup);
     }
 
+    public MenuGroup saveOrUpdate(MenuGroup menuGroup) {
+        if (Objects.nonNull(findByName(menuGroup.getName()))) {
+            menuGroup.setId(
+                    findByName(menuGroup.getName()).getId()
+            );
+        }
+        return menuGroupRepository.save(menuGroup);
+    }
+
 
     public List<MenuGroup> getAccessibleMenus(User user, MenuType menuType) {
         List<MenuGroup> menuGroups;
@@ -207,7 +216,7 @@ public class MenuGroupService implements TestDataInitiableService{
 
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<MenuGroup> menuGroups = loadData(inputStream);
-            menuGroups.stream().forEach(menuGroup -> save(menuGroup));
+            menuGroups.stream().forEach(menuGroup -> saveOrUpdate(menuGroup));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }

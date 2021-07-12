@@ -41,6 +41,10 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     @Column(name = "quantity")
     private Long quantity;
 
+    @Column(name = "open_quantity")
+    private Long openQuantity;
+
+
 
 
     @Column(name = "start_time")
@@ -177,5 +181,13 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setConsumedPercentage(Long consumedPercentage) {
         this.consumedPercentage = consumedPercentage;
+    }
+
+    public Long getOpenQuantity() {
+        return openQuantity;
+    }
+
+    public void setOpenQuantity(Long openQuantity) {
+        this.openQuantity = openQuantity;
     }
 }

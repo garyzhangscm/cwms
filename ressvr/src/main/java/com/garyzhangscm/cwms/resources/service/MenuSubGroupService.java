@@ -34,10 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class MenuSubGroupService implements TestDataInitiableService{
@@ -73,6 +70,15 @@ public class MenuSubGroupService implements TestDataInitiableService{
     public MenuSubGroup save(MenuSubGroup menuSubGroup) {
         return menuSubGroupRepository.save(menuSubGroup);
     }
+    public MenuSubGroup saveOrUpdate(MenuSubGroup menuSubGroup) {
+        if (Objects.nonNull(findByName(menuSubGroup.getName()))) {
+            menuSubGroup.setId(
+                    findByName(menuSubGroup.getName()).getId()
+            );
+        }
+
+        return menuSubGroupRepository.save(menuSubGroup);
+    }
 
 
 
@@ -103,7 +109,7 @@ public class MenuSubGroupService implements TestDataInitiableService{
                     testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<MenuSubGroupCSVWrapper> menuSubGroupCSVWrappers = loadData(inputStream);
-            menuSubGroupCSVWrappers.stream().forEach(menuSubGroupCSVWrapper -> save(convertFromCSVWrapper(menuSubGroupCSVWrapper)));
+            menuSubGroupCSVWrappers.stream().forEach(menuSubGroupCSVWrapper -> saveOrUpdate(convertFromCSVWrapper(menuSubGroupCSVWrapper)));
         } catch (IOException ex) {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }

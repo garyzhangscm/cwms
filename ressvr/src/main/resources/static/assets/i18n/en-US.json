@@ -1223,7 +1223,7 @@
   "mould": "Mold",
   "menu.mobile.work-order": "Work Order",
   "menu.mobile.work-order.pick-by-work-order": "Pick By Work Order",
-  "menu.mobile.work-order.produce": "Produce",
+  "menu.mobile.work-order.produce": "WO Completion",
   "report.printedDate": "Printed Date",
   "report.printedUsername": "Printed User",
   "menu.mobile.work-order.production_line_check_in": "Production Check In",
@@ -1233,5 +1233,14 @@
   "error.work-order.production-line-assignment.quantity-exceed": "Total assigned quantity exceeds the work order's quantity",
   "warning.work-order.production-line-assignment.quantity-below": "Total assigned quantity is less than the work order's quantity, click confirm to continue",
   "confirm": "Confirm",
-  "error.work-order.production-line-assignment.quantity-not-match": "Total assigned quantity dest not match the work order's quantity"
+  "error.work-order.production-line-assignment.quantity-not-match": "Total assigned quantity dest not match the work order's quantity",
+  "working-team.member-count": "Member Count",
+  "menu.main.util.system-config": "System Configuration",
+  "system-configuration.server-side-printing": "Server Side Printing",
+  "system-configuration.allow-data-initial-flag": "Allow Data Initial",
+  "work-order.allocate-whole-work-order": "Allocate Whole Work Order",
+  "work-order.allocate-by-production-line": "Allocate By Production Line",
+  "production-line-assignment.assigned-quantity": "Total Quantity",
+  "production-line-assignment.open-quantity": "Open Quantity",
+  "production-line-assignment.allocating-quantity": "Allocating Quantity"
 }

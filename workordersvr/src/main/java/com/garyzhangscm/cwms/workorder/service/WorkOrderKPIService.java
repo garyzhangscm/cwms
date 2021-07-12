@@ -376,13 +376,16 @@ public class WorkOrderKPIService{
     @Transactional
     public WorkOrderKPI recordWorkOrderKPIForCheckedInUser(WorkOrder workOrder,
                                                            ProductionLine productionLine,
-                                                           String username, Long quantity) {
+                                                           String username,
+                                                           Integer workingTeamMemberCount,
+                                                           Long quantity) {
 
         WorkOrderKPI workOrderKPI = new WorkOrderKPI();
         workOrderKPI.setWorkOrder(workOrder);
         workOrderKPI.setProductionLine(productionLine);
         workOrderKPI.setKpiMeasurement(KPIMeasurement.BY_QUANTITY);
         workOrderKPI.setAmount(quantity);
+        workOrderKPI.setWorkingTeamMemberCount(workingTeamMemberCount);
         workOrderKPI.setUsername(username);
         workOrderKPI.setWorkingTeamName("");
         return  save(workOrderKPI);

@@ -43,6 +43,10 @@ public class WorkOrderKPI extends AuditibleEntity<String>{
     @Column(name = "working_team_name")
     private String workingTeamName;
 
+
+    @Column(name = "working_team_member_count")
+    private Integer workingTeamMemberCount = 0;
+
     @Column(name="kpi_measurement")
     @Enumerated(EnumType.STRING)
     private KPIMeasurement kpiMeasurement;
@@ -118,5 +122,13 @@ public class WorkOrderKPI extends AuditibleEntity<String>{
 
     public void setProductionLine(ProductionLine productionLine) {
         this.productionLine = productionLine;
+    }
+
+    public Integer getWorkingTeamMemberCount() {
+        return workingTeamMemberCount;
+    }
+
+    public void setWorkingTeamMemberCount(Integer workingTeamMemberCount) {
+        this.workingTeamMemberCount = workingTeamMemberCount;
     }
 }

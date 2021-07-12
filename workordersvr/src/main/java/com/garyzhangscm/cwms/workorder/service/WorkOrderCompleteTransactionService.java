@@ -176,8 +176,6 @@ public class WorkOrderCompleteTransactionService {
      */
 
     public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction, Long locationId) {
-        // a location to hold the return material and by product
-        Location productionOutBoundLocation ;
         if (Objects.isNull(locationId)) {
             // the user didn't specify any location, choose any production
             List<ProductionLineAssignment> productionLineAssignments =
@@ -218,7 +216,6 @@ public class WorkOrderCompleteTransactionService {
             processWorkOrderByProductProduceTransaction(workOrderCompleteTransaction,
                     workOrderByProductProduceTransaction,
                     location);
-
         }
 
 
@@ -229,8 +226,16 @@ public class WorkOrderCompleteTransactionService {
         // let's change the status of the work order
         workOrderService.completeWorkOrder(workOrder);
 
+        deassignProductLine(workOrder);
         // save the transaction
         return save(workOrderCompleteTransaction);
+
+    }
+
+    private void deassignProductLine(WorkOrder workOrder) {
+        logger.debug("Remove production line assignment for work order {} as it is closed",
+                workOrder.getNumber());
+        productionLineAssignmentService.removeProductionLineAssignmentForWorkOrder(workOrder.getId());
 
     }
 
