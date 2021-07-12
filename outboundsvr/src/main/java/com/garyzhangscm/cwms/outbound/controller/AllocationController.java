@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.outbound.model.AllocationResult;
 import com.garyzhangscm.cwms.outbound.model.WorkOrder;
 import com.garyzhangscm.cwms.outbound.service.AllocationConfigurationService;
 import com.garyzhangscm.cwms.outbound.service.AllocationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,15 +32,22 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class AllocationController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AllocationController.class);
     @Autowired
     private AllocationConfigurationService allocationConfigurationService;
     @Autowired
     private AllocationService allocationService;
 
     @RequestMapping(value="/allocation/work-order", method = RequestMethod.POST)
-    public AllocationResult allocateWorkOrder(@RequestBody WorkOrder workOrder) {
+    public AllocationResult allocateWorkOrder(
+            @RequestBody WorkOrder workOrder,
+            @RequestParam(name = "productionLineId", defaultValue = "", required = false) Long productionId,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long allocatingWorkOrderQuantity) {
         // return allocationConfigurationService.allocateWorkOrder(workOrder);
-        return allocationService.allocate(workOrder);
+
+        logger.debug("Start to allocate work order {}, by production line id {}, with quantity {}",
+                workOrder.getNumber(), productionId, allocatingWorkOrderQuantity);
+        return allocationService.allocate(workOrder, productionId, allocatingWorkOrderQuantity);
     }
 
 

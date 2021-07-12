@@ -16,6 +16,15 @@ public class SiteInformation {
     private Boolean singleCompanySite;
     private String defaultCompanyCode;
 
+    // whether we allow the user to load pre-defined testing data
+    // this is for test purpose and default to false;
+    private Boolean allowDataInitialFlag = false;
+
+    // whether we use server side printing or client side printing
+    // Server side printing: print from spring framework
+    // client side printing: print by 3rd party tools
+    private Boolean serverSidePrinting = true;
+
     private User user;
 
     @JsonProperty("menu")
@@ -92,5 +101,21 @@ public class SiteInformation {
 
     public void setWebClientConfiguration(WebClientConfiguration webClientConfiguration) {
         this.webClientConfiguration = webClientConfiguration;
+    }
+
+    public Boolean getAllowDataInitialFlag() {
+        return allowDataInitialFlag;
+    }
+
+    public void setAllowDataInitialFlag(Boolean allowDataInitialFlag) {
+        this.allowDataInitialFlag = allowDataInitialFlag;
+    }
+
+    public Boolean getServerSidePrinting() {
+        return serverSidePrinting;
+    }
+
+    public void setServerSidePrinting(Boolean serverSidePrinting) {
+        this.serverSidePrinting = serverSidePrinting;
     }
 }

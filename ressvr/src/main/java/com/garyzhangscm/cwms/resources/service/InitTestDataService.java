@@ -41,6 +41,7 @@ public class InitTestDataService {
     WorkingTeamUserService workingTeamUserService;
     ReportService reportService;
     WebClientTabDisplayConfigurationService webClientTabDisplayConfigurationService;
+    SystemConfigurationService systemConfigurationService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -91,6 +92,7 @@ public class InitTestDataService {
                                UserService userService,
                                RoleService roleService,
                                WebClientTabDisplayConfigurationService webClientTabDisplayConfigurationService,
+                               SystemConfigurationService systemConfigurationService,
                                // MenuGroupService menuGroupService,
                                // MenuSubGroupService menuSubGroupService,
                                // MenuService menuService,
@@ -112,6 +114,7 @@ public class InitTestDataService {
         this.workingTeamUserService = workingTeamUserService;
         this.reportService = reportService;
         this.webClientTabDisplayConfigurationService = webClientTabDisplayConfigurationService;
+        this.systemConfigurationService = systemConfigurationService;
 
 
         initiableServices.put("User", userService);
@@ -141,6 +144,9 @@ public class InitTestDataService {
 
         initiableServices.put("web_client_tab_display_configuration", webClientTabDisplayConfigurationService);
         serviceNames.add("web_client_tab_display_configuration");
+
+        initiableServices.put("system_configuration", systemConfigurationService);
+        serviceNames.add("system_configuration");
 
 
 
@@ -245,6 +251,13 @@ public class InitTestDataService {
                 warehouseId
         );
         if (Objects.nonNull(warehouse)) {
+            // we will not rmeove the system configuration during the clear session.
+            // otherwise the clear may default the 'allow test data init' flag back to false
+            // which means the user click the 'clear' button and then will need to setup the
+            // configuration to allow the test data init flag and then init the test data
+
+            // jdbcTemplate.update("delete from system_configuration where warehouse_id = ?", new Object[] { warehouseId });
+            // logger.debug("system configuration records for warehouse {}!", warehouse.getName());
 
             jdbcTemplate.update("delete from report where warehouse_id = ?", new Object[] { warehouseId });
             logger.debug("report records for warehouse {}!", warehouse.getName());
@@ -254,7 +267,6 @@ public class InitTestDataService {
 
             jdbcTemplate.update("delete from web_client_tab_display_configuration where company_id = ?", new Object[] { warehouse.getCompany().getId() });
             logger.debug("web client tab display configuration records for company {}!", warehouse.getCompany().getCode());
-
 
         }
 

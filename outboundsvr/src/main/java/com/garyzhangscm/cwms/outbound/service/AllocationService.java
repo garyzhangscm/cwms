@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 public class AllocationService {
@@ -44,14 +45,27 @@ public class AllocationService {
         return allocationResult;
     }
 
-    public AllocationResult allocate(WorkOrder workOrder){
+    public AllocationResult allocate(WorkOrder workOrder, Long productionLineId, Long allocatingWorkOrderQuantity){
         logger.debug("Start to allocate Work Order {} ", workOrder.getNumber());
 
         workOrder.getProductionLineAssignments().forEach(
-                productionLineAssignment ->
-                        logger.debug("production line {} is assigned quantity {}",
-                                productionLineAssignment.getProductionLine().getName(),
-                                productionLineAssignment.getQuantity())
+                productionLineAssignment -> {
+                    logger.debug("production line {} is assigned quantity {}",
+                            productionLineAssignment.getProductionLine().getName(),
+                            productionLineAssignment.getQuantity());
+                    if (Objects.nonNull(productionLineId)) {
+                        logger.debug("Production Line ID is passsed in, we will only allocate for certain production line");
+                        logger.debug("Current production id: {}, required production id: {}, current production line will be skipped? {}",
+                                productionLineAssignment.getProductionLine().getId(), productionLineId,
+                                productionLineId.equals(productionLineAssignment.getProductionLine().getId()));
+
+                    }
+                    if (Objects.nonNull(allocatingWorkOrderQuantity)) {
+                        logger.debug("Quantity is specified, we will only allocate {}", allocatingWorkOrderQuantity);
+                    }
+
+                }
+
         );
 
         AllocationResult allocationResult = new AllocationResult();
@@ -64,7 +78,7 @@ public class AllocationService {
                 .forEach(workOrderLine -> {
                         // if we have multiple production lines, we may need to allocate
                         AllocationResult workOrderAllocationResult
-                                = allocate(workOrder, workOrderLine);
+                                = allocate(workOrder, workOrderLine, productionLineId, allocatingWorkOrderQuantity);
                         allocationResult.addPicks(workOrderAllocationResult.getPicks());
                         allocationResult.addShortAllocations(workOrderAllocationResult.getShortAllocations());
                     });
@@ -72,15 +86,21 @@ public class AllocationService {
 
     }
 
-    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine){
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                     Long productionLineId, Long allocatingWorkOrderQuantity){
 
         // for work order, we may have multiple production lines assign to this work order
         // in order to generate picks for each production line, we may have to allocate
         // based on the work order line and production line
         // after that, we will sum up everything and return the allocate result as a whole
         AllocationResult fullAllocationResult = new AllocationResult();
+        Stream<ProductionLineAssignment> productionLineAssignmentStream = workOrder.getProductionLineAssignments().stream();
+        if (Objects.nonNull(productionLineId)) {
+            productionLineAssignmentStream = productionLineAssignmentStream
+                    .filter(productionLineAssignment -> productionLineId.equals(productionLineAssignment.getProductionLine().getId()));
+        }
 
-        workOrder.getProductionLineAssignments().forEach(
+        productionLineAssignmentStream.forEach(
                 productionLineAssignment -> {
                     logger.debug("start to allocate work order {} / {} for production line {} / {} / {}",
                             workOrder.getNumber(),
@@ -91,7 +111,7 @@ public class AllocationService {
                                     "N/A" : productionLineAssignment.getProductionLine().getInboundStageLocation().getId());
 
 
-                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, productionLineAssignment);
+                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, productionLineAssignment, allocatingWorkOrderQuantity);
                     logger.debug("will allocate the work order to destination location id {} for quantity {}",
                             allocationRequest.getDestinationLocationId(),
                             allocationRequest.getQuantity());

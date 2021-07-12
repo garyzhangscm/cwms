@@ -98,4 +98,20 @@ public class ReportHistoryController {
                 .body(resource);
     }
 
+    @RequestMapping(value="/report-histories/print/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String>  printReport(@PathVariable String filename,
+                                                    @PathVariable String type,
+                                                    @PathVariable Long companyId,
+                                                    @PathVariable Long warehouseId)
+            throws FileNotFoundException, IOException {
+
+        logger.debug("Start to print report for {} / {}",
+                type, filename);
+        // print the report from the printer attached to the server
+        File reportResultFile =
+                reportHistoryService.printReport(companyId, warehouseId, type, filename);
+        return ResponseBodyWrapper.success(reportResultFile.getName() + " printed!");
+
+    }
+
 }

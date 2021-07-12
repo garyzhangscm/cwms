@@ -1,12 +1,1 @@
 company,warehouse,carrier,name,description,type
-20901,WMEC,落地配,SAMEDAY,当日达,PACKAGE
-20901,WMEC,落地配,城配,次日达,LESS_THAN_LOAD
-20901,WMEC,落地配,整车,当日达,TAILER_LOAD
-20901,WMEC,Amazon,SAMEDAY,当日达,PACKAGE
-20901,WMEC,Amazon,OverNight,次日达,PACKAGE
-20901,WMEC,Amazon,Domestic,全国配,PACKAGE
-20901,WMEC,Cainiao,SAMEDAY,当日达,PACKAGE
-20901,WMEC,Cainiao,OverNight,次日达,PACKAGE
-20901,WMEC,Cainiao,Domestic,全国配,PACKAGE
-20901,WMEC,Cainiao,城配,次日达,LESS_THAN_LOAD
-20901,WMEC,Cainiao,整车,当日达,TAILER_LOAD

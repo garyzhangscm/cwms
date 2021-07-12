@@ -39,6 +39,12 @@
 			<id>jr-ce-releases</id>
 			<url>http://jaspersoft.jfrog.io/jaspersoft/jr-ce-releases</url>
 		</repository>
+		<repository>
+			<id>my-repo2</id>
+			<name>your custom repo</name>
+			<url>https://mvnrepository.com</url>
+		</repository>
+
 	</repositories>
 
 	<dependencies>
@@ -67,6 +73,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		<!--
+		disable the configuration server / client.
+		We will read the configuration from kubernetes ConfigMap
+
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-config</artifactId>
@@ -76,6 +86,7 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-config-client</artifactId>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -175,10 +186,18 @@
             <version>2.6</version>
             <scope>compile</scope>
         </dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>2.0.24</version>
+		</dependency>
 
 
 
-    </dependencies>
+
+
+	</dependencies>
 
 	<dependencyManagement>
 		<dependencies>
@@ -225,6 +244,8 @@
 					</execution>
 				</executions>
 			</plugin>
+
+
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
@@ -241,6 +262,7 @@
 					</resources>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 </project>

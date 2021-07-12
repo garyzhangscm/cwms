@@ -1,0 +1,20 @@
+#### ROM openjdk:12-oraclelinux7
+# FROM centos:centos8
+# Customized centos environment with java and CUPS
+# CUPS is a tool for printing
+FROM garyzhangscm/centos
+# RUN apt-get install openjdk-12-jre
+# RUN apt-get install openjdk-12-jdk
+# RUN export JAVA_HOME=/usr/lib/jvm/openjdk-12-jdk
+# RUN export PATH=$PATH:$JAVA_HOME/bin
+RUN mkdir -p /usr/local/ressvr
+RUN mkdir -p /usr/local/reports
+RUN mkdir -p /usr/local/reports/templates
+RUN mkdir -p /usr/local/reports/templates_temp
+ADD @project.build.finalName@.jar /usr/local/ressvr/
+ADD run.sh run.sh
+# below is the command to change the line feed. It is only needed when
+# build the image from windows as windows and linux has different line feed
+RUN sed -i 's/\r$//' run.sh  && \
+        chmod +x run.sh
+CMD ./run.sh

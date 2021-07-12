@@ -45,10 +45,13 @@ RUN mkdir -p /usr/local/ressvr
 RUN mkdir -p /usr/local/reports
 RUN mkdir -p /usr/local/reports/templates
 RUN mkdir -p /usr/local/reports/templates_temp
-ADD @project.build.finalName@.jar /usr/local/ressvr/
-ADD run.sh run.sh
+ADD @project.build.finalName@.jar /usr/local/service/
+# ADD resourceserver-0.0.1-SNAPSHOT.jar /usr/local/ressvr/
+# ADD run.sh run.sh
 # below is the command to change the line feed. It is only needed when
 # build the image from windows as windows and linux has different line feed
-RUN sed -i 's/\r$//' run.sh  && \
-        chmod +x run.sh
-CMD ./run.sh
+# RUN sed -i 's/\r$//' run.sh  && \
+#        chmod +x run.sh
+# CMD ./run.sh
+ENTRYPOINT ["java",   "-jar", "/usr/local/service/@project.build.finalName@.jar", "-Dfile.encoding=UTF-8", "-Dloader.path=/usr/local/reports/templates/", "org.springframework.boot.loader.PropertiesLauncher"]
+# ENTRYPOINT ["java", "-jar", "/usr/local/ressvr/@project.build.finalName@.jar"]

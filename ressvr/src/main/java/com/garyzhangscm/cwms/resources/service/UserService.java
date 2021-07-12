@@ -60,6 +60,8 @@ public class UserService  implements TestDataInitiableService{
     @Autowired
     private AuthServiceRestemplateClient authServiceRestemplateClient;
     @Autowired
+    private SystemConfigurationService systemConfigurationService;
+    @Autowired
     private FileService fileService;
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
@@ -237,6 +239,33 @@ public class UserService  implements TestDataInitiableService{
             siteInformation.setDefaultCompanyCode(defaultCompanyCode);
 
         }
+
+        SystemConfiguration systemConfiguration
+                = systemConfigurationService.findByCompanyAndWarehouse(
+                companyId, warehouseId
+        );
+        if (Objects.isNull(systemConfiguration)) {
+            logger.debug("Configuration is not setup for system of company / warehouse {} / {}",
+                    companyId, warehouseId);
+            logger.debug("will default to side side printing and NOT allow data initial");
+            siteInformation.setServerSidePrinting(
+                    true
+            );
+            siteInformation.setAllowDataInitialFlag(false);
+        }
+        else {
+            logger.debug("Configuration is setup for system of company / warehouse {} / {}",
+                    companyId, warehouseId);
+
+            siteInformation.setServerSidePrinting(
+                    systemConfiguration.getServerSidePrinting()
+            );
+            siteInformation.setAllowDataInitialFlag(
+                    systemConfiguration.getAllowDataInitialFlag()
+            );
+
+        }
+
 
         WebClientConfiguration webClientConfiguration =
                 mobile ? new WebClientConfiguration(): getWebClientConfiguration(companyId, warehouseId, user);

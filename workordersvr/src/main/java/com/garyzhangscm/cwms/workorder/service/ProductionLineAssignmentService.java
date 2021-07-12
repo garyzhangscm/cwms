@@ -132,7 +132,7 @@ public class ProductionLineAssignmentService   {
         productionLineAssignmentRepository.deleteById(id);
     }
 
-    private void removeProductionLineAssignmentForWorkOrder(Long workOrderId) {
+    public void removeProductionLineAssignmentForWorkOrder(Long workOrderId) {
         List<ProductionLineAssignment> productionLineAssignments = findAll(
                 null, workOrderId
         );
@@ -145,8 +145,6 @@ public class ProductionLineAssignmentService   {
             Long workOrderId, List<ProductionLineAssignment> productionLineAssignments) {
 
         WorkOrder workOrder = workOrderService.findById(workOrderId);
-
-
 
         for (ProductionLineAssignment productionLineAssignment : productionLineAssignments) {
 
@@ -207,6 +205,11 @@ public class ProductionLineAssignmentService   {
 
     public void assignWorkOrderToProductionLines(WorkOrder workOrder, ProductionLineAssignment productionLineAssignment) {
         productionLineAssignment.setWorkOrder(workOrder);
+        // set the open quantity to the total quantity of the assignment
+        // we will use this quantity to keep track of how much quantity we can still
+        // allocate from the work order on this production line. When this number
+        // become 0, it means we have fully allocated this work order
+        productionLineAssignment.setOpenQuantity(productionLineAssignment.getQuantity());
         logger.debug("Save production line assignment\n{}",
                 productionLineAssignment);
         saveOrUpdate(productionLineAssignment);
