@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.model.ReportHistory;
 import com.garyzhangscm.cwms.resources.model.ReportPrinterConfiguration;
 import com.garyzhangscm.cwms.resources.service.ReportHistoryService;
@@ -47,6 +48,8 @@ public class ReportPrinterConfigurationController {
 
     @Autowired
     ReportPrinterConfigurationService reportPrinterConfigurationService;
+    @Autowired
+    PrintingServiceRestemplateClient printingServiceRestemplateClient;
 
 
     @RequestMapping(value="/report-printer-configuration", method = RequestMethod.GET)
@@ -65,6 +68,14 @@ public class ReportPrinterConfigurationController {
         return reportPrinterConfigurationService.findById(id);
     }
 
+    @RequestMapping(value="/report-printer-configuration/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeReportPrinterConfiguration(@PathVariable Long id) {
+
+         reportPrinterConfigurationService.deleteReportPrinterConfiguration(id);
+        return ResponseBodyWrapper.success("Report Printer Configuration Removed");
+    }
+
+
 
 
     @RequestMapping(value="/report-printer-configuration", method = RequestMethod.PUT)
@@ -74,6 +85,13 @@ public class ReportPrinterConfigurationController {
 
         return reportPrinterConfigurationService.addReportPrinterConfiguration(reportPrinterConfiguration);
     }
+
+    @RequestMapping(value="/printers", method = RequestMethod.GET)
+    public List<String> getPrinters() {
+
+        return printingServiceRestemplateClient.getPrinters();
+    }
+
     @RequestMapping(value="/report-printer-configuration/{id}", method = RequestMethod.POST)
     public ReportPrinterConfiguration changeReportPrinterConfiguration(@PathVariable Long id,
                                                                        @RequestBody ReportPrinterConfiguration reportPrinterConfiguration) {

@@ -38,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class PrintingServiceRestemplateClient  {
@@ -45,14 +46,31 @@ public class PrintingServiceRestemplateClient  {
     private static final Logger logger
             = LoggerFactory.getLogger(PrintingServiceRestemplateClient.class);
 
-    private final String PRINTING_SERVER_URL = "http://10.0.10.5:10888/printing/pdf";
+    private final String PRINTING_SERVER_URL = "http://10.0.10.5:10888";
 
+    public List<String> getPrinters() {
+        String url = PRINTING_SERVER_URL + "/printers";
+
+
+        RestTemplate restTemplate = new RestTemplate();
+
+
+        List<String> printers
+                = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<String>>() {}).getBody();
+        return printers;
+
+
+    }
     public void sendPrintingRequest(File file, String printer) {
 
         logger.debug("Start to send file {} to printing server: {}",
                 file.getName(), PRINTING_SERVER_URL);
 
-        String url = PRINTING_SERVER_URL;
+        String url = PRINTING_SERVER_URL + "/printing/pdf";
         // if printer is specified, add printer to the parameters
         if (Strings.isNotBlank(printer)) {
             url +="?printer=" + printer;

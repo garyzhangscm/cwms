@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.model.ReportType;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,12 @@ public class PrinterService  {
 
     @Autowired
     private ReportPrinterConfigurationService reportPrinterConfigurationService;
-    public String getPrinter(Long companyId, Long warehouseId, ReportType reportType, String findPrinterByValue) {
-        // we will always print from the default printer right now
+    public String getPrinter(Long companyId, Long warehouseId, ReportType reportType, String findPrinterByValue, String printerName) {
+        // if the printer name is passed it, return it
+        if (Strings.isNotBlank(printerName)) {
+            return printerName;
+        }
+        // otherwise, get from the configuration
         return reportPrinterConfigurationService.getPrinterName(
                 warehouseId, reportType, findPrinterByValue
         );
