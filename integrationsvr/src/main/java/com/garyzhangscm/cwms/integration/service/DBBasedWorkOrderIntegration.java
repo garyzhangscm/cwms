@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedWorkOrderIntegration {
@@ -68,7 +69,7 @@ public class DBBasedWorkOrderIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedWorkOrder save(DBBasedWorkOrder dbBasedWorkOrder) {
@@ -84,39 +85,77 @@ public class DBBasedWorkOrderIntegration {
 
     private void process(DBBasedWorkOrder dbBasedWorkOrder) {
 
-        WorkOrder workOrder = dbBasedWorkOrder.convertToWorkOrder();
 
-        setupMissingField(workOrder, dbBasedWorkOrder);
+        try {
 
-        // Item item = getItemFromDatabase(dbBasedItem);
-        logger.debug(">> will process Work Order:\n{}", workOrder);
 
-        kafkaSender.send(IntegrationType.INTEGRATION_WORK_ORDER, workOrder);
+            WorkOrder workOrder = dbBasedWorkOrder.convertToWorkOrder();
 
-        dbBasedWorkOrder.setStatus(IntegrationStatus.COMPLETED);
-        dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
-        dbBasedWorkOrder = save(dbBasedWorkOrder);
+            setupMissingField(workOrder, dbBasedWorkOrder);
 
-        // Save the WORK order line as well
-        dbBasedWorkOrder.getWorkOrderLines().forEach(dbBasedWorkOrderLine ->{
-            dbBasedWorkOrderLine.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedWorkOrderLine.setLastUpdateTime(LocalDateTime.now());
-            dbBasedWorkOrderLineRepository.save(dbBasedWorkOrderLine);
-        });
+            // Item item = getItemFromDatabase(dbBasedItem);
+            logger.debug(">> will process Work Order:\n{}", workOrder);
 
-        dbBasedWorkOrder.getWorkOrderInstructions().forEach(dbBasedWorkOrderInstruction ->{
-            dbBasedWorkOrderInstruction.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedWorkOrderInstruction.setLastUpdateTime(LocalDateTime.now());
-            dbBasedWorkOrderInstructionRepository.save(dbBasedWorkOrderInstruction);
-        });
+            kafkaSender.send(IntegrationType.INTEGRATION_WORK_ORDER, workOrder);
 
-        dbBasedWorkOrder.getWorkOrderByProduct().forEach(dbBasedWorkOrderByProduct ->{
-            dbBasedWorkOrderByProduct.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedWorkOrderByProduct.setLastUpdateTime(LocalDateTime.now());
-            dbBasedWorkOrderByProductRepository.save(dbBasedWorkOrderByProduct);
-        });
+            dbBasedWorkOrder.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedWorkOrder.setErrorMessage("");
+            dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
+            dbBasedWorkOrder = save(dbBasedWorkOrder);
 
-        logger.debug(">> Work Order data process, {}", dbBasedWorkOrder.getStatus());
+            // Save the WORK order line as well
+            dbBasedWorkOrder.getWorkOrderLines().forEach(dbBasedWorkOrderLine ->{
+                dbBasedWorkOrderLine.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedWorkOrderLine.setErrorMessage("");
+                dbBasedWorkOrderLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderLineRepository.save(dbBasedWorkOrderLine);
+            });
+
+            dbBasedWorkOrder.getWorkOrderInstructions().forEach(dbBasedWorkOrderInstruction ->{
+                dbBasedWorkOrderInstruction.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedWorkOrderInstruction.setErrorMessage("");
+                dbBasedWorkOrderInstruction.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderInstructionRepository.save(dbBasedWorkOrderInstruction);
+            });
+
+            dbBasedWorkOrder.getWorkOrderByProduct().forEach(dbBasedWorkOrderByProduct ->{
+                dbBasedWorkOrderByProduct.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedWorkOrderByProduct.setErrorMessage("");
+                dbBasedWorkOrderByProduct.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderByProductRepository.save(dbBasedWorkOrderByProduct);
+            });
+
+            logger.debug(">> Work Order data process, {}", dbBasedWorkOrder.getStatus());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            dbBasedWorkOrder.setStatus(IntegrationStatus.ERROR);
+            dbBasedWorkOrder.setErrorMessage(ex.getMessage());
+            dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
+            dbBasedWorkOrder = save(dbBasedWorkOrder);
+
+            // Save the WORK order line as well
+            dbBasedWorkOrder.getWorkOrderLines().forEach(dbBasedWorkOrderLine ->{
+                dbBasedWorkOrderLine.setStatus(IntegrationStatus.ERROR);
+                dbBasedWorkOrderLine.setErrorMessage(ex.getMessage());
+                dbBasedWorkOrderLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderLineRepository.save(dbBasedWorkOrderLine);
+            });
+
+            dbBasedWorkOrder.getWorkOrderInstructions().forEach(dbBasedWorkOrderInstruction ->{
+                dbBasedWorkOrderInstruction.setStatus(IntegrationStatus.ERROR);
+                dbBasedWorkOrderInstruction.setErrorMessage(ex.getMessage());
+                dbBasedWorkOrderInstruction.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderInstructionRepository.save(dbBasedWorkOrderInstruction);
+            });
+
+            dbBasedWorkOrder.getWorkOrderByProduct().forEach(dbBasedWorkOrderByProduct ->{
+                dbBasedWorkOrderByProduct.setStatus(IntegrationStatus.ERROR);
+                dbBasedWorkOrderByProduct.setErrorMessage(ex.getMessage());
+                dbBasedWorkOrderByProduct.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderByProductRepository.save(dbBasedWorkOrderByProduct);
+            });
+        }
     }
 
 

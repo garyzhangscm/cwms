@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedItemIntegration {
@@ -71,7 +72,7 @@ public class DBBasedItemIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedItem save(DBBasedItem dbBasedItem) {
@@ -99,6 +100,7 @@ public class DBBasedItemIntegration {
             kafkaSender.send(IntegrationType.INTEGRATION_ITEM, item);
 
 
+            dbBasedItem.setErrorMessage("");
             dbBasedItem.completeIntegration(IntegrationStatus.COMPLETED);
 
 

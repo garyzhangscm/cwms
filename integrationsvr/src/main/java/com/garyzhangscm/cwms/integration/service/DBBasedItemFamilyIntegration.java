@@ -18,6 +18,7 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedItemFamilyIntegration {
@@ -55,7 +56,7 @@ public class DBBasedItemFamilyIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedItemFamily save(DBBasedItemFamily dbBasedItemFamily) {
@@ -71,18 +72,28 @@ public class DBBasedItemFamilyIntegration {
 
     private void process(DBBasedItemFamily dbBasedItemFamily) {
 
-        ItemFamily itemFamily = dbBasedItemFamily.convertToItemFamily(warehouseLayoutServiceRestemplateClient);
-        // Item item = getItemFromDatabase(dbBasedItem);
-        logger.debug(">> will process Item Family:\n{}", itemFamily);
-
-        kafkaSender.send(IntegrationType.INTEGRATION_ITEM_FAMILY, itemFamily);
+        try {
 
 
-        dbBasedItemFamily.setStatus(IntegrationStatus.COMPLETED);
+            ItemFamily itemFamily = dbBasedItemFamily.convertToItemFamily(warehouseLayoutServiceRestemplateClient);
+            // Item item = getItemFromDatabase(dbBasedItem);
+            logger.debug(">> will process Item Family:\n{}", itemFamily);
+
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_FAMILY, itemFamily);
+
+
+            dbBasedItemFamily.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedItemFamily.setErrorMessage("");
+
+            logger.debug(">> Item family data process, {}", dbBasedItemFamily.getStatus());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            dbBasedItemFamily.setStatus(IntegrationStatus.ERROR);
+            dbBasedItemFamily.setErrorMessage(ex.getMessage());
+        }
         dbBasedItemFamily.setLastUpdateTime(LocalDateTime.now());
-        dbBasedItemFamily = save(dbBasedItemFamily);
-
-        logger.debug(">> Item family data process, {}", dbBasedItemFamily.getStatus());
+        save(dbBasedItemFamily);
     }
 
 

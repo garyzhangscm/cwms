@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedReceiptIntegration {
@@ -68,7 +69,7 @@ public class DBBasedReceiptIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedReceipt save(DBBasedReceipt dbBasedReceipt) {
@@ -84,35 +85,57 @@ public class DBBasedReceiptIntegration {
 
     private void process(DBBasedReceipt dbBasedReceipt) {
 
-        Receipt receipt = dbBasedReceipt.convertToReceipt();
 
-        // we will support host to send name
-        // instead of id for the following field . In such case, we will
-        // set to setup the IDs from the name so that
-        // the correpondent service can handle it
-        // 1. warehouse
-        // 2. client
-        // 3. Supplier
-        setupMissingField(receipt, dbBasedReceipt);
+        try {
+
+            Receipt receipt = dbBasedReceipt.convertToReceipt();
+
+            // we will support host to send name
+            // instead of id for the following field . In such case, we will
+            // set to setup the IDs from the name so that
+            // the correpondent service can handle it
+            // 1. warehouse
+            // 2. client
+            // 3. Supplier
+            setupMissingField(receipt, dbBasedReceipt);
 
 
-        // Item item = getItemFromDatabase(dbBasedItem);
-        logger.debug(">> will process Receipt:\n{}", receipt);
+            // Item item = getItemFromDatabase(dbBasedItem);
+            logger.debug(">> will process Receipt:\n{}", receipt);
 
-        kafkaSender.send(IntegrationType.INTEGRATION_RECEIPT, receipt);
+            kafkaSender.send(IntegrationType.INTEGRATION_RECEIPT, receipt);
 
-        dbBasedReceipt.setStatus(IntegrationStatus.COMPLETED);
-        dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
-        dbBasedReceipt = save(dbBasedReceipt);
+            dbBasedReceipt.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedReceipt.setErrorMessage("");
+            dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
+            dbBasedReceipt = save(dbBasedReceipt);
 
-        // Save the order line as well
-        dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
-            dbBasedReceiptLine.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
-            dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
-        });
+            // Save the order line as well
+            dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
+                dbBasedReceiptLine.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedReceiptLine.setErrorMessage("");
+                dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
+            });
 
-        logger.debug(">> Receipt data process, {}", dbBasedReceipt.getStatus());
+            logger.debug(">> Receipt data process, {}", dbBasedReceipt.getStatus());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            dbBasedReceipt.setStatus(IntegrationStatus.ERROR);
+            dbBasedReceipt.setErrorMessage(ex.getMessage());
+            dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
+            dbBasedReceipt = save(dbBasedReceipt);
+
+            // Save the order line as well
+            dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
+                dbBasedReceiptLine.setStatus(IntegrationStatus.ERROR);
+                dbBasedReceiptLine.setErrorMessage(ex.getMessage());
+                dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
+            });
+        }
+
     }
 
 

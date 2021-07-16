@@ -89,6 +89,8 @@ public class WorkOrderController {
     public WorkOrder allocateWorkOrder(@PathVariable Long id,
                                        @RequestParam(name = "productionLineIds", required = false, defaultValue = "") String productionLineIds,
                                        @RequestParam(name = "quantities", required = false, defaultValue = "") String quantities) {
+        logger.debug("Get request for allocate work order by id {}, productionLineIds: {}, quantities: {}",
+                id, productionLineIds, quantities);
         return workOrderService.allocateWorkOrder(id, productionLineIds, quantities);
     }
 

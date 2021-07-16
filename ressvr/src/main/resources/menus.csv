@@ -1,6 +1,6 @@
 text,i18n,link,sequence,menuSubGruop,name,icon
 "Default",menu.dashboard.default,/dashboard/default,1,User-Menu-Dashboard,Dashboard-Default,
-"Locations",menu.dashboard.locations,/dashboard/locations,2,User-Menu-Dashboard,Dashboard-Locations,
+"Production Kanban",menu.dashboard.production-kanban,/dashboard/production-kanban,2,User-Menu-Dashboard,Dashboard-Locations,
 "User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User,
 "Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role,
 "WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam,
@@ -54,7 +54,8 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "System Configuration",menu.main.util.system-config,/util/system-configuration,5,Main-Menu-Util,Util-SystemConfiguration,
 "Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,
 "Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,
-"Report History",menu.main.report.report-history,/report/report-history,1,Main-Menu-Report,Report-Report-History,
+"Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,
+"Report Printer Configuration",menu.main.report.report-printer-configuration,/report/report-printer-configuration,3,Main-Menu-Report,Report-Report-PRINTER-CONFIGURATION,
 "Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,0xe63a
 "Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,0xe63a
 "Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,0xe63a

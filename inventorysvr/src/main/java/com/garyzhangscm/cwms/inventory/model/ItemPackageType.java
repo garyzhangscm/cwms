@@ -62,6 +62,8 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     @JoinColumn(name = "item_id")
     private Item item;
 
+
+
     @Transient
     private ItemUnitOfMeasure stockItemUnitOfMeasure;
 

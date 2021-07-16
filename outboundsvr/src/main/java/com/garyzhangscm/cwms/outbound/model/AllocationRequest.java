@@ -1,12 +1,19 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.garyzhangscm.cwms.outbound.service.AllocationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class AllocationRequest {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(AllocationRequest.class);
 
     private Item item;
 
@@ -60,30 +67,6 @@ public class AllocationRequest {
     }
 
 
-    public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine,
-                             ProductionLineAssignment productionLineAssignment) {
-
-        this.workOrder = workOrder;
-        this.item = workOrderLine.getItem();
-        this.warehouse = workOrderLine.getWarehouse();
-        this.shipmentLines =  new ArrayList<>();
-        this.workOrderLines =Collections.singletonList(workOrderLine);
-        this.inventoryStatus = workOrderLine.getInventoryStatus();
-        this.allocationStrategyTypes = Collections.singletonList(workOrderLine.getAllocationStrategyType());
-        this.destinationLocation = productionLineAssignment.getProductionLine().getInboundStageLocation();
-        // get the destination location id
-        this.destinationLocationId =
-                Objects.nonNull(productionLineAssignment.getProductionLine().getInboundStageLocationId()) ?
-                        productionLineAssignment.getProductionLine().getInboundStageLocationId() :
-                        Objects.nonNull(productionLineAssignment.getProductionLine().getInboundStageLocation()) ?
-                                productionLineAssignment.getProductionLine().getInboundStageLocation().getId() :
-                                null;
-        // since we may have multiple product lines assigned to the work order, we will distribute
-        // the allocate quantity across the production lines as well
-
-        this.quantity = (workOrderLine.getOpenQuantity() * productionLineAssignment.getQuantity()) / workOrder.getExpectedQuantity();
-
-    }
 
     public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine,
                              ProductionLineAssignment productionLineAssignment,
@@ -108,9 +91,22 @@ public class AllocationRequest {
         // if the user doesn't specify the quantity to be allocated on the work order, we will
         // try to allocate the whole work order quantity
         if (Objects.isNull(allocatingWorkOrderQuantity)) {
-            allocatingWorkOrderQuantity = workOrderLine.getOpenQuantity();
+            allocatingWorkOrderQuantity = productionLineAssignment.getOpenQuantity();
         }
-        this.quantity = (allocatingWorkOrderQuantity * productionLineAssignment.getQuantity()) / workOrder.getExpectedQuantity();
+        logger.debug("Will allocate {} from the work order {}, production line {}",
+                allocatingWorkOrderQuantity, workOrder.getNumber(), productionLineAssignment.getProductionLine().getName());
+        logger.debug("We are suppose to produce {} of item {} out of row material {} of {}, according to the work order",
+                workOrder.getExpectedQuantity(),
+                workOrder.getItem().getName(),
+                workOrderLine.getExpectedQuantity(),
+                workOrderLine.getItem().getName());
+
+        this.quantity = (allocatingWorkOrderQuantity * workOrderLine.getExpectedQuantity()) / workOrder.getExpectedQuantity() ;
+        logger.debug("so in order to produce {} of item {}, we will need row material {} of raw material {}",
+                allocatingWorkOrderQuantity,
+                workOrder.getItem().getName(),
+                this.quantity,
+                workOrderLine.getItem().getName());
     }
 
 
