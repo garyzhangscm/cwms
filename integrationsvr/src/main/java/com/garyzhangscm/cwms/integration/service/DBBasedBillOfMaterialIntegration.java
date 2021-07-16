@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedBillOfMaterialIntegration {
@@ -64,11 +66,10 @@ public class DBBasedBillOfMaterialIntegration {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
-
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedBillOfMaterial save(DBBasedBillOfMaterial dbBasedBillOfMaterial) {
@@ -84,40 +85,76 @@ public class DBBasedBillOfMaterialIntegration {
 
     private void process(DBBasedBillOfMaterial dbBasedBillOfMaterial) {
 
-        BillOfMaterial billOfMaterial = dbBasedBillOfMaterial.convertToBillOfMaterial();
+        try {
+            BillOfMaterial billOfMaterial = dbBasedBillOfMaterial.convertToBillOfMaterial();
 
-        setupMissingField(billOfMaterial, dbBasedBillOfMaterial);
+            setupMissingField(billOfMaterial, dbBasedBillOfMaterial);
 
 
-        // Item item = getItemFromDatabase(dbBasedItem);
-        logger.debug(">> will process B.O.M :\n{}", billOfMaterial);
+            // Item item = getItemFromDatabase(dbBasedItem);
+            logger.debug(">> will process B.O.M :\n{}", billOfMaterial);
 
-        kafkaSender.send(IntegrationType.INTEGRATION_BILL_OF_MATERIAL, billOfMaterial);
+            kafkaSender.send(IntegrationType.INTEGRATION_BILL_OF_MATERIAL, billOfMaterial);
 
-        dbBasedBillOfMaterial.setStatus(IntegrationStatus.COMPLETED);
-        dbBasedBillOfMaterial.setLastUpdateTime(LocalDateTime.now());
-        dbBasedBillOfMaterial = save(dbBasedBillOfMaterial);
+            dbBasedBillOfMaterial.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedBillOfMaterial.setErrorMessage("");
+            dbBasedBillOfMaterial.setLastUpdateTime(LocalDateTime.now());
+            dbBasedBillOfMaterial = save(dbBasedBillOfMaterial);
 
-        // Save the WORK order line as well
-        dbBasedBillOfMaterial.getBillOfMaterialLines().forEach(dbBasedBillOfMaterialLine ->{
-            dbBasedBillOfMaterialLine.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedBillOfMaterialLine.setLastUpdateTime(LocalDateTime.now());
-            dbBasedBillOfMaterialLineRepository.save(dbBasedBillOfMaterialLine);
-        });
+            // Save the WORK order line as well
+            dbBasedBillOfMaterial.getBillOfMaterialLines().forEach(dbBasedBillOfMaterialLine ->{
+                dbBasedBillOfMaterialLine.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedBillOfMaterialLine.setErrorMessage("");
+                dbBasedBillOfMaterialLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedBillOfMaterialLineRepository.save(dbBasedBillOfMaterialLine);
+            });
 
-        dbBasedBillOfMaterial.getWorkOrderInstructionTemplates().forEach(dbBasedWorkOrderInstructionTemplate ->{
-            dbBasedWorkOrderInstructionTemplate.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedWorkOrderInstructionTemplate.setLastUpdateTime(LocalDateTime.now());
-            dbBasedWorkOrderInstructionTemplateRepository.save(dbBasedWorkOrderInstructionTemplate);
-        });
+            dbBasedBillOfMaterial.getWorkOrderInstructionTemplates().forEach(dbBasedWorkOrderInstructionTemplate ->{
+                dbBasedWorkOrderInstructionTemplate.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedWorkOrderInstructionTemplate.setErrorMessage("");
+                dbBasedWorkOrderInstructionTemplate.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderInstructionTemplateRepository.save(dbBasedWorkOrderInstructionTemplate);
+            });
 
-        dbBasedBillOfMaterial.getBillOfMaterialByProducts().forEach(dbBasedBillOfMaterialByProduct ->{
-            dbBasedBillOfMaterialByProduct.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedBillOfMaterialByProduct.setLastUpdateTime(LocalDateTime.now());
-            dbBasedBillOfMaterialByProductRepository.save(dbBasedBillOfMaterialByProduct);
-        });
+            dbBasedBillOfMaterial.getBillOfMaterialByProducts().forEach(dbBasedBillOfMaterialByProduct ->{
+                dbBasedBillOfMaterialByProduct.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedBillOfMaterialByProduct.setErrorMessage("");
+                dbBasedBillOfMaterialByProduct.setLastUpdateTime(LocalDateTime.now());
+                dbBasedBillOfMaterialByProductRepository.save(dbBasedBillOfMaterialByProduct);
+            });
 
-        logger.debug(">> Work Order data process, {}", dbBasedBillOfMaterial.getStatus());
+            logger.debug(">> Work Order data process, {}", dbBasedBillOfMaterial.getStatus());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            dbBasedBillOfMaterial.setStatus(IntegrationStatus.ERROR);
+            dbBasedBillOfMaterial.setErrorMessage(ex.getMessage());
+            dbBasedBillOfMaterial.setLastUpdateTime(LocalDateTime.now());
+            dbBasedBillOfMaterial = save(dbBasedBillOfMaterial);
+
+            // Save the WORK order line as well
+            dbBasedBillOfMaterial.getBillOfMaterialLines().forEach(dbBasedBillOfMaterialLine ->{
+                dbBasedBillOfMaterialLine.setStatus(IntegrationStatus.ERROR);
+                dbBasedBillOfMaterialLine.setErrorMessage(ex.getMessage());
+                dbBasedBillOfMaterialLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedBillOfMaterialLineRepository.save(dbBasedBillOfMaterialLine);
+            });
+
+            dbBasedBillOfMaterial.getWorkOrderInstructionTemplates().forEach(dbBasedWorkOrderInstructionTemplate ->{
+                dbBasedWorkOrderInstructionTemplate.setStatus(IntegrationStatus.ERROR);
+                dbBasedWorkOrderInstructionTemplate.setErrorMessage(ex.getMessage());
+                dbBasedWorkOrderInstructionTemplate.setLastUpdateTime(LocalDateTime.now());
+                dbBasedWorkOrderInstructionTemplateRepository.save(dbBasedWorkOrderInstructionTemplate);
+            });
+
+            dbBasedBillOfMaterial.getBillOfMaterialByProducts().forEach(dbBasedBillOfMaterialByProduct ->{
+                dbBasedBillOfMaterialByProduct.setStatus(IntegrationStatus.ERROR);
+                dbBasedBillOfMaterialByProduct.setErrorMessage(ex.getMessage());
+                dbBasedBillOfMaterialByProduct.setLastUpdateTime(LocalDateTime.now());
+                dbBasedBillOfMaterialByProductRepository.save(dbBasedBillOfMaterialByProduct);
+            });
+        }
+
     }
 
 

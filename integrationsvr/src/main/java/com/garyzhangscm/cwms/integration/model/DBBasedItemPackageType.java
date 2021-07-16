@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,7 +113,7 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     public ItemPackageType convertToItemPackageType(
             InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
             CommonServiceRestemplateClient commonServiceRestemplateClient,
-            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient)   {
 
         ItemPackageType itemPackageType = new ItemPackageType();
 
@@ -122,7 +123,8 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
                 "name","description",
                 "clientId","clientName",
                 "supplierId","supplierName",
-                "warehouseId","warehouseName"
+                "warehouseId","warehouseName",
+                "companyId","companyCode"
         };
 
         ObjectCopyUtil.copyValue(this, itemPackageType,  fieldNames);

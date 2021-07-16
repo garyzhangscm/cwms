@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedOrderIntegration {
@@ -67,7 +68,7 @@ public class DBBasedOrderIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedOrder save(DBBasedOrder dbBasedOrder) {
@@ -83,37 +84,58 @@ public class DBBasedOrderIntegration {
 
     private void process(DBBasedOrder dbBasedOrder) {
 
-        Order order = dbBasedOrder.convertToOrder();
-
-        // we will support client to send name
-        // instead of id for the following field . In such case, we will
-        // set to setup the IDs from the name so that
-        // the correpondent service can handle it
-        // 1. warehouse
-        // 2. customer: bill to customer and ship to customer
-        // 3. carrier
-        // 4. carrier service level
-        // 5. client
-        setupMissingField(order, dbBasedOrder);
+        try {
 
 
-        // Item item = getItemFromDatabase(dbBasedItem);
-        logger.debug(">> will process Order:\n{}", order);
+            Order order = dbBasedOrder.convertToOrder();
 
-        kafkaSender.send(IntegrationType.INTEGRATION_ORDER, order);
+            // we will support client to send name
+            // instead of id for the following field . In such case, we will
+            // set to setup the IDs from the name so that
+            // the correpondent service can handle it
+            // 1. warehouse
+            // 2. customer: bill to customer and ship to customer
+            // 3. carrier
+            // 4. carrier service level
+            // 5. client
+            setupMissingField(order, dbBasedOrder);
 
-        dbBasedOrder.setStatus(IntegrationStatus.COMPLETED);
-        dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
-        dbBasedOrder = save(dbBasedOrder);
 
-        // Save the order line as well
-        dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
-            dbBasedOrderLine.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
-            dbBasedOrderLineRepository.save(dbBasedOrderLine);
-        });
+            // Item item = getItemFromDatabase(dbBasedItem);
+            logger.debug(">> will process Order:\n{}", order);
 
-        logger.debug(">> Order data process, {}", dbBasedOrder.getStatus());
+            kafkaSender.send(IntegrationType.INTEGRATION_ORDER, order);
+
+            dbBasedOrder.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedOrder.setErrorMessage("");
+            dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
+            dbBasedOrder = save(dbBasedOrder);
+
+            // Save the order line as well
+            dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
+                dbBasedOrderLine.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedOrderLine.setErrorMessage("");
+                dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedOrderLineRepository.save(dbBasedOrderLine);
+            });
+
+            logger.debug(">> Order data process, {}", dbBasedOrder.getStatus());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            dbBasedOrder.setStatus(IntegrationStatus.ERROR);
+            dbBasedOrder.setErrorMessage(ex.getMessage());
+            dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
+            dbBasedOrder = save(dbBasedOrder);
+
+            // Save the order line as well
+            dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
+                dbBasedOrderLine.setStatus(IntegrationStatus.ERROR);
+                dbBasedOrderLine.setErrorMessage(ex.getMessage());
+                dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
+                dbBasedOrderLineRepository.save(dbBasedOrderLine);
+            });
+        }
     }
 
 

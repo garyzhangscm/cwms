@@ -86,7 +86,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
 
     @Column(name="unit_cost")
-    private double unitCost;
+    private Double unitCost;
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -261,11 +261,11 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         this.trackingExpirationDateFlag = trackingExpirationDateFlag;
     }
 
-    public double getUnitCost() {
+    public Double getUnitCost() {
         return unitCost;
     }
 
-    public void setUnitCost(double unitCost) {
+    public void setUnitCost(Double unitCost) {
         this.unitCost = unitCost;
     }
 

@@ -17,6 +17,7 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
 
     private Long quantity;
+    private Long openQuantity;
 
 
     public Long getId() {
@@ -49,5 +50,13 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    public Long getOpenQuantity() {
+        return openQuantity;
+    }
+
+    public void setOpenQuantity(Long openQuantity) {
+        this.openQuantity = openQuantity;
     }
 }

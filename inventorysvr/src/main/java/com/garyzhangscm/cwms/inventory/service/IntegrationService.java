@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.KafkaSender;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,13 +52,38 @@ public class IntegrationService {
                     itemUnitOfMeasure.setItemPackageType(itemPackageType));
             itemPackageType.setItem(item);
         });
-        Item savedItem = itemService.saveOrUpdate(item);
+        itemService.saveOrUpdate(item);
         logger.debug(">> item information saved!");
 
 
 
     }
 
+    // Add/ change item
+    public void process(Item item,ItemPackageType itemPackageType) {
+
+        Item matchedItem = null;
+        if (Objects.nonNull(item.getId())) {
+            matchedItem = itemService.findById(item.getId());
+        }
+        else {
+            matchedItem = itemService.findByName(item.getWarehouseId(), item.getName());
+
+
+        }
+        if (Objects.isNull(matchedItem)) {
+            throw ItemException.raiseException("Can't process item package type integration. " +
+                    " We can't find matched item by id： " + item.getId() +
+                    ", warehouse id: " + item.getWarehouseId() +
+                    ", item name: " + item.getName());
+        }
+        itemPackageType.setItem(matchedItem);
+        itemPackageTypeService.saveOrUpdate(itemPackageType);
+
+
+
+
+    }
     // Add/ change item family
     public void process(ItemFamily itemFamily) {
 

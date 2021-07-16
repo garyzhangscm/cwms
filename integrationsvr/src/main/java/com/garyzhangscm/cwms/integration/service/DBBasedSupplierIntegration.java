@@ -17,6 +17,7 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedSupplierIntegration {
@@ -52,7 +53,7 @@ public class DBBasedSupplierIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedSupplier save(DBBasedSupplier dbBasedSupplier) {
@@ -67,16 +68,27 @@ public class DBBasedSupplierIntegration {
     }
 
     private void process(DBBasedSupplier dbBasedSupplier) {
-        Supplier supplier = dbBasedSupplier.convertToSupplier();
-        logger.debug(">> will process Supplier :\n{}", supplier);
 
-        kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER, supplier);
+        try {
+
+            Supplier supplier = dbBasedSupplier.convertToSupplier();
+            logger.debug(">> will process Supplier :\n{}", supplier);
+
+            kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER, supplier);
 
 
-        dbBasedSupplier.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedSupplier.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedSupplier.setErrorMessage("");
+
+            logger.debug(">> customer data process, {}", dbBasedSupplier.getStatus());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            dbBasedSupplier.setStatus(IntegrationStatus.ERROR);
+            dbBasedSupplier.setErrorMessage(ex.getMessage());
+        }
         dbBasedSupplier.setLastUpdateTime(LocalDateTime.now());
         dbBasedSupplier = save(dbBasedSupplier);
 
-        logger.debug(">> customer data process, {}", dbBasedSupplier.getStatus());
     }
 }

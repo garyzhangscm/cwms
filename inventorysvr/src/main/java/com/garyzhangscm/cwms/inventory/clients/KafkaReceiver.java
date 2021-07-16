@@ -87,6 +87,26 @@ public class KafkaReceiver {
 
     }
 
+    @KafkaListener(topics = {"INTEGRATION_ITEM_PACKAGE_TYPE"})
+    public void processItemPackageTypeIntegration(@Payload String itemPackageTypeRepresent,
+                                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String itemJsonRepresent)  {
+        logger.debug("# received item package type data's  header: {}", itemPackageTypeRepresent);
+        logger.debug("# received item unit of measure data's  header: {}", itemJsonRepresent);
+        try {
+            Item item = objectMapper.readValue(itemJsonRepresent, Item.class);
+            logger.info("Item: {}", item);
+            ItemPackageType itemPackageType = objectMapper.readValue(itemPackageTypeRepresent, ItemPackageType.class);
+            logger.info("Item package type: {}", itemPackageType);
+
+            integrationService.process(item, itemPackageType);
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
+
     @KafkaListener(topics = {"INTEGRATION_ITEM_UNIT_OF_MEASURE"})
     public void processItemUnitOfMeasureIntegration(@Payload String itemUnitOfMeasureJsonRepresent,
                                                     @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String itemJsonRepresent)  {

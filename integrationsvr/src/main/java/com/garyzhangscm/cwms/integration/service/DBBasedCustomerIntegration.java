@@ -16,6 +16,7 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedCustomerIntegration {
@@ -51,7 +52,7 @@ public class DBBasedCustomerIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedCustomer save(DBBasedCustomer dbBasedCustomer) {
@@ -66,16 +67,27 @@ public class DBBasedCustomerIntegration {
     }
 
     private void process(DBBasedCustomer dbBasedCustomer) {
-        Customer customer = dbBasedCustomer.convertToCustomer();
-        logger.debug(">> will process customer:\n{}", customer);
 
-        kafkaSender.send(IntegrationType.INTEGRATION_CUSTOMER, customer);
+        try {
+
+            Customer customer = dbBasedCustomer.convertToCustomer();
+            logger.debug(">> will process customer:\n{}", customer);
+
+            kafkaSender.send(IntegrationType.INTEGRATION_CUSTOMER, customer);
 
 
-        dbBasedCustomer.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedCustomer.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedCustomer.setErrorMessage("");
+
+            logger.debug(">> customer data process, {}", dbBasedCustomer.getStatus());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            dbBasedCustomer.setStatus(IntegrationStatus.ERROR);
+            dbBasedCustomer.setErrorMessage(ex.getMessage());
+        }
         dbBasedCustomer.setLastUpdateTime(LocalDateTime.now());
         dbBasedCustomer = save(dbBasedCustomer);
 
-        logger.debug(">> customer data process, {}", dbBasedCustomer.getStatus());
     }
 }

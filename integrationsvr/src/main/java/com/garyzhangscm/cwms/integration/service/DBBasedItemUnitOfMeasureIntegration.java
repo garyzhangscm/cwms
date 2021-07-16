@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedItemUnitOfMeasureIntegration {
@@ -63,7 +64,7 @@ public class DBBasedItemUnitOfMeasureIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedItemUnitOfMeasure save(DBBasedItemUnitOfMeasure dbBasedItem) {
@@ -118,16 +119,16 @@ public class DBBasedItemUnitOfMeasureIntegration {
 
 
             dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.COMPLETED);
-            dbBasedItemUnitOfMeasure.setLastUpdateTime(LocalDateTime.now());
-            dbBasedItemUnitOfMeasure = save(dbBasedItemUnitOfMeasure);
+            dbBasedItemUnitOfMeasure.setErrorMessage("");
 
             logger.debug(">> Item Unit of Measure data process, {}", dbBasedItemUnitOfMeasure.getStatus());
         }
         catch (Exception ex) {
+            ex.printStackTrace();
             dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.ERROR);
-            dbBasedItemUnitOfMeasure.setLastUpdateTime(LocalDateTime.now());
-            save(dbBasedItemUnitOfMeasure);
         }
+        dbBasedItemUnitOfMeasure.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedItemUnitOfMeasure);
     }
 
 

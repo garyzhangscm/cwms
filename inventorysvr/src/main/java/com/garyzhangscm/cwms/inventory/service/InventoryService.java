@@ -486,6 +486,12 @@ public class InventoryService implements TestDataInitiableService{
             inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
         }
 
+        if (Objects.nonNull(inventory.getWorkOrderId()) &&
+               Objects.isNull(inventory.getWorkOrder())) {
+            inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId()));
+        }
+
+
 
 
     }
@@ -1808,6 +1814,8 @@ public class InventoryService implements TestDataInitiableService{
         // key: item - work order - poNumber
         // value: LPN report data
         Map<String, LpnReportData> lpnReportDataMap = new HashMap<>();
+
+
         inventories.forEach(inventory -> {
 
             String key = new StringBuilder()
@@ -1824,6 +1832,7 @@ public class InventoryService implements TestDataInitiableService{
                 lpnReportDataMap.put(key, new LpnReportData(inventory, userService.getCurrentUserName()));
             }
 
+
         });
 
 
@@ -1832,8 +1841,14 @@ public class InventoryService implements TestDataInitiableService{
                 reportData,  lpnReportDataMap.values()
         );
 
-        logger.debug("Start to fill report by data: \n{}",
+        logger.debug("Start to fill report by data: \n{}, ",
                 reportData);
+
+        logger.debug("will find a printer by : \n{}, ",
+                reportData);
+        // we will print from the printer that assigned to the
+        // inventory's location group or location
+        // if not configured, then we will print the default printer
 
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(

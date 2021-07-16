@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.clients;
 
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inventory.model.Company;
+import com.garyzhangscm.cwms.inventory.model.WorkOrder;
 import com.garyzhangscm.cwms.inventory.model.WorkOrderLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,22 @@ public class WorkOrderServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    public WorkOrder getWorkOrderById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/work-orders/{id}");
+
+        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
 
     public WorkOrderLine inventoryDeliveredForWorkOrderLine(Long workOrderLineId,

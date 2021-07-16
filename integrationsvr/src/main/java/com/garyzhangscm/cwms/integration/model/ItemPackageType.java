@@ -47,6 +47,10 @@ public class ItemPackageType implements Serializable {
     private Long warehouseId;
     private String warehouseName;
 
+
+    private Long companyId;
+    private String companyCode;
+
     @Override
     public String toString() {
         return "ItemPackageType{" +
@@ -151,6 +155,22 @@ public class ItemPackageType implements Serializable {
 
     public void addItemUnitOfMeasure(ItemUnitOfMeasure itemUnitOfMeasure) {
         getItemUnitOfMeasures().add(itemUnitOfMeasure);
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public void setItemUnitOfMeasures(List<ItemUnitOfMeasure> itemUnitOfMeasures) {

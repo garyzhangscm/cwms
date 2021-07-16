@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -142,7 +144,7 @@ public class ResourceServiceRestemplateClient {
 
 
     public ReportHistory generateReport(Long warehouseId, ReportType type,
-                                        Report reportData, String locale)
+                                        Report reportData, String locale )
             throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -152,7 +154,7 @@ public class ResourceServiceRestemplateClient {
 
         ResponseBodyWrapper<ReportHistory> responseBodyWrapper
                 = restTemplate.exchange(
-                builder.buildAndExpand(warehouseId, type).toUriString(),
+                builder.buildAndExpand(warehouseId, type).toUri(),
                 HttpMethod.POST,
                 getHttpEntity(objectMapper.writeValueAsString(reportData)),
                 new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();

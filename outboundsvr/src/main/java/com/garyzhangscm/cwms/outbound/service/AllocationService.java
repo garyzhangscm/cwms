@@ -19,6 +19,7 @@ public class AllocationService {
     @Autowired
     private PickService pickService;
 
+
     /**
      * Allocate the shipment line
      * @param shipmentLine shipment line to be allocated
@@ -102,6 +103,7 @@ public class AllocationService {
 
         productionLineAssignmentStream.forEach(
                 productionLineAssignment -> {
+
                     logger.debug("start to allocate work order {} / {} for production line {} / {} / {}",
                             workOrder.getNumber(),
                             workOrderLine.getItem().getName(),

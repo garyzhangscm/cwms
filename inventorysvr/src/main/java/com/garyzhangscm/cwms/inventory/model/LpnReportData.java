@@ -36,6 +36,7 @@ public class LpnReportData {
                 inventory.getWorkOrder().getPoNumber() : "";
         this.supervisor = username;
 
+
     };
 
     public void addQuantity(Long quantity) {
@@ -122,4 +123,5 @@ public class LpnReportData {
     public void setSupervisor(String supervisor) {
         this.supervisor = supervisor;
     }
+
 }

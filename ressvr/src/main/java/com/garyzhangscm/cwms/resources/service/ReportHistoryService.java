@@ -227,15 +227,19 @@ public class ReportHistoryService {
     }
 
 
-    public File printReport(Long companyId, Long warehouseId, String type, String filename)
+    public File printReport(Long companyId, Long warehouseId,
+                            String type, String filename,
+                            String findPrinterBy)
         throws  IOException{
 
 
         File reportResultFile = getReportFile(companyId, warehouseId, type, filename);
 
-        String printer = printerService.getPrinter(companyId, warehouseId, ReportType.valueOf(type));
+        String printer = printerService.getPrinter(companyId, warehouseId, ReportType.valueOf(type), findPrinterBy);
+        logger.debug("We find a printer by criertia {} / {} / {} / {}, IT IS {}",
+                companyId, warehouseId, type, findPrinterBy, printer);
 
-        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile);
+        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, printer);
 
         // we will send the printing request to the remote printing service
 

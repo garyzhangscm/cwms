@@ -20,6 +20,7 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DBBasedItemPackageTypeIntegration {
@@ -61,7 +62,7 @@ public class DBBasedItemPackageTypeIntegration {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
-        );
+        ).stream().limit(30).collect(Collectors.toList());
     }
 
     private DBBasedItemPackageType save(DBBasedItemPackageType dbBasedItemPackageType) {
@@ -77,20 +78,47 @@ public class DBBasedItemPackageTypeIntegration {
 
     private void process(DBBasedItemPackageType dbBasedItemPackageType) {
 
-        ItemPackageType itemPackageType = dbBasedItemPackageType.convertToItemPackageType(inventoryServiceRestemplateClient,
-                commonServiceRestemplateClient,
-                warehouseLayoutServiceRestemplateClient);
-        // Item item = getItemFromDatabase(dbBasedItem);
-        logger.debug(">> will process Item Package Type:\n{}", itemPackageType);
 
-        kafkaSender.send(IntegrationType.INTEGRATION_ITEM_PACKAGE_TYPE, itemPackageType);
+        try {
+
+            Long warehouseId
+                    = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    dbBasedItemPackageType.getCompanyId(),
+                    dbBasedItemPackageType.getCompanyCode(),
+                    dbBasedItemPackageType.getWarehouseId(),
+                    dbBasedItemPackageType.getWarehouseName()
+            );
+            Item item = new Item();
+            item.setName(dbBasedItemPackageType.getItemName());
+            item.setWarehouseId(warehouseId);
 
 
-        dbBasedItemPackageType.setStatus(IntegrationStatus.COMPLETED);
+            logger.debug(">> will add Item to the item package type:\n{}", item);
+
+            ItemPackageType itemPackageType = dbBasedItemPackageType.convertToItemPackageType(inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient);
+            // Item item = getItemFromDatabase(dbBasedItem);
+            logger.debug(">> will process Item Package Type:\n{}", itemPackageType);
+
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_PACKAGE_TYPE, item, itemPackageType);
+
+
+            dbBasedItemPackageType.setErrorMessage("");
+            dbBasedItemPackageType.setStatus(IntegrationStatus.COMPLETED);
+
+            logger.debug(">> Item Package Type data process, {}", dbBasedItemPackageType.getStatus());
+
+
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+            dbBasedItemPackageType.completeIntegration(IntegrationStatus.ERROR, ex.getMessage());
+
+        }
+
         dbBasedItemPackageType.setLastUpdateTime(LocalDateTime.now());
-        dbBasedItemPackageType = save(dbBasedItemPackageType);
-
-        logger.debug(">> Item Package Type data process, {}", dbBasedItemPackageType.getStatus());
+        save(dbBasedItemPackageType);
     }
 
 

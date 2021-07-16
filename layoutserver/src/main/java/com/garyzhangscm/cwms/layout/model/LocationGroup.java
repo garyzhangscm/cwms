@@ -62,10 +62,12 @@ public class LocationGroup extends AuditibleEntity<String>{
     private Boolean trackingVolume;
 
     @Column(name = "volume_tracking_policy")
+    @Enumerated(EnumType.STRING)
     private LocationVolumeTrackingPolicy volumeTrackingPolicy;
 
 
     @Column(name = "inventory_consolidation_strategy")
+    @Enumerated(EnumType.STRING)
     private InventoryConsolidationStrategy inventoryConsolidationStrategy = InventoryConsolidationStrategy.NONE;
 
 

@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.workorder.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,8 +62,12 @@ public class Item implements Serializable {
 
     @Override
     public String toString() {
-        return "name: " + getName() + "\n"
-                + "description: " + getDescription() + "\n";
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

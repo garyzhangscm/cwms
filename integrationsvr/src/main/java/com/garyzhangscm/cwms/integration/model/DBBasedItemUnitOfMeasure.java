@@ -25,7 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.service.DBBasedItemUnitOfMeasureIntegration;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -36,6 +39,7 @@ import java.util.Objects;
 @Table(name = "integration_item_unit_of_measure")
 public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUnitOfMeasureData {
 
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedItemUnitOfMeasure.class);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "integration_item_unit_of_measure_id")
@@ -130,6 +134,8 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
         }
         itemUnitOfMeasure.setWarehouseId(warehouseId);
 
+        logger.debug("Will get item by warehouse id {}, item name: {}",
+                warehouseId, getItemName());
         if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
             itemUnitOfMeasure.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(warehouseId,
@@ -137,6 +143,8 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
             );
         }
 
+        logger.debug("Will get item package type by id by warehouse id {}, item id: {}, package type name {}",
+                warehouseId, getItemId(), getItemPackageTypeName());
         if (Objects.isNull(getItemPackageTypeId()) && Objects.nonNull(getItemPackageTypeName())) {
             itemUnitOfMeasure.setItemPackageTypeId(
                     inventoryServiceRestemplateClient.getItemPackageTypeByName(

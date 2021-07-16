@@ -30,6 +30,7 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,7 +181,8 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public void loadAttribute(WorkOrder workOrder) {
 
-        if (workOrder.getItemId() != null && workOrder.getItem() == null) {
+        if (workOrder.getItemId() != null &&
+                (workOrder.getItem() == null || Objects.isNull(workOrder.getItem().getId()))) {
             workOrder.setItem(inventoryServiceRestemplateClient.getItemById(workOrder.getItemId()));
         }
         if (workOrder.getWarehouseId() != null && workOrder.getWarehouse() == null) {
@@ -230,9 +232,9 @@ public class WorkOrderService implements TestDataInitiableService {
         return saveOrUpdate(workOrder, true);
     }
     public WorkOrder saveOrUpdate(WorkOrder workOrder, boolean loadDetails) {
-        if (workOrder.getId() == null && findByNumber(workOrder.getWarehouseId(), workOrder.getNumber()) != null) {
+        if (workOrder.getId() == null && findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), loadDetails) != null) {
             workOrder.setId(
-                    findByNumber(workOrder.getWarehouseId(), workOrder.getNumber()).getId());
+                    findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), loadDetails).getId());
         }
         return save(workOrder, loadDetails);
     }
@@ -366,6 +368,7 @@ public class WorkOrderService implements TestDataInitiableService {
                StringUtils.isBlank(quantities)) {
             // if the user doesn't specify the production line or quantities, let's
             // allocate the whole work order
+            logger.debug("# Will allocate the whole work order");
             return allocateWorkOrder(workOrderId);
         }
 
@@ -392,7 +395,13 @@ public class WorkOrderService implements TestDataInitiableService {
     public WorkOrder allocateWorkOrder(Long workOrderId, Long productionLineId, Long quantity) {
 
         WorkOrder workOrder = findById(workOrderId);
-        logger.debug("Start to allocate work order: \n {}", workOrder);
+        logger.debug("Start to allocate work order: {} to production line id {}, with quantity {}",
+                workOrder.getNumber(), productionLineId, quantity);
+        if (Objects.nonNull(quantity) && quantity == 0L) {
+            // quantity is passed in as 0
+            // will skip this production line
+            return workOrder;
+        }
         AllocationResult allocationResult
                 = outboundServiceRestemplateClient.allocateWorkOrder(workOrder, productionLineId, quantity);
 
@@ -548,6 +557,11 @@ public class WorkOrderService implements TestDataInitiableService {
     public List<Inventory> getProducedByProduct(Long workOrderId) {
 
         WorkOrder workOrder = findById(workOrderId);
+        // if we don't have by product setup, then return empty
+        if (Objects.isNull(workOrder.getWorkOrderByProducts()) ||
+                workOrder.getWorkOrderByProducts().size() == 0) {
+            return new ArrayList<>();
+        }
         String workOrderByProductIds =
                 workOrder.getWorkOrderByProducts().stream()
                         .map(WorkOrderByProduct::getId).map(String::valueOf).collect(Collectors.joining(","));

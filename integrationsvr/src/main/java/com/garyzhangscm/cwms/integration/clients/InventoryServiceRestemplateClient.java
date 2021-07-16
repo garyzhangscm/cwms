@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.clients;
 
 
+import com.garyzhangscm.cwms.integration.exception.GenericException;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import org.springframework.web.client.RestTemplate;
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.InventoryStatus;
@@ -34,6 +36,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 @Component
@@ -46,29 +50,38 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     RestTemplate restTemplate;
 
-    public Item getItemByName(Long warehouseId, String name) {
+    public Item getItemByName(Long warehouseId, String name)  {
         logger.debug("Start to get item by name");
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/items")
-                        .queryParam("name", name)
-                        .queryParam("warehouseId", warehouseId);
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/items")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId);
 
 
-        ResponseBodyWrapper<List<Item>> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
+            ResponseBodyWrapper<List<Item>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {
+                    }).getBody();
 
-        List<Item> items = responseBodyWrapper.getData();
-        if (items.size() == 0) {
-            return null;
+            logger.debug("get response from itembyname:\n {}",
+                    responseBodyWrapper);
+            List<Item> items = responseBodyWrapper.getData();
+
+            if (items.size() == 0) {
+                return null;
+            } else {
+                return items.get(0);
+            }
         }
-        else {
-            return items.get(0);
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by name " + name);
         }
     }
 
@@ -98,27 +111,35 @@ public class InventoryServiceRestemplateClient {
     }
 
     public ItemPackageType getItemPackageTypeByName(Long warehouseId, Long itemId, String name) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/itemPackageTypes")
-                        .queryParam("name", name)
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("itemId", itemId);
+        try{
 
-        ResponseBodyWrapper<List<ItemPackageType>> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<ItemPackageType>>>() {}).getBody();
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/itemPackageTypes")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId)
+                            .queryParam("itemId", itemId);
 
-        List<ItemPackageType> itemPackageTypes = responseBodyWrapper.getData();
-        if (itemPackageTypes.size() == 0) {
-            return null;
+            ResponseBodyWrapper<List<ItemPackageType>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<ItemPackageType>>>() {}).getBody();
+
+            List<ItemPackageType> itemPackageTypes = responseBodyWrapper.getData();
+            if (itemPackageTypes.size() == 0) {
+                return null;
+            }
+            else {
+                return itemPackageTypes.get(0);
+            }
+
         }
-        else {
-            return itemPackageTypes.get(0);
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by name " + name);
         }
     }
 

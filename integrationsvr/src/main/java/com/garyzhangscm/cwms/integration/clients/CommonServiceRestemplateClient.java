@@ -102,6 +102,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper

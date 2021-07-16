@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.resources.service;
 import com.garyzhangscm.cwms.resources.model.ReportType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -28,8 +29,12 @@ import org.springframework.stereotype.Service;
 public class PrinterService  {
     private static final Logger logger = LoggerFactory.getLogger(PrinterService.class);
 
-    public String getPrinter(Long companyId, Long warehouseId, ReportType reportType) {
+    @Autowired
+    private ReportPrinterConfigurationService reportPrinterConfigurationService;
+    public String getPrinter(Long companyId, Long warehouseId, ReportType reportType, String findPrinterByValue) {
         // we will always print from the default printer right now
-        return "";
+        return reportPrinterConfigurationService.getPrinterName(
+                warehouseId, reportType, findPrinterByValue
+        );
     }
 }

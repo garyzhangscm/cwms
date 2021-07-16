@@ -116,7 +116,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
                         warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrderLine.getWorkOrder().getWarehouseId()));
             }
         }
-        if (workOrderLine.getItemId() != null && workOrderLine.getItem() == null) {
+        if (workOrderLine.getItemId() != null &&
+                (workOrderLine.getItem() == null || Objects.isNull(workOrderLine.getItem().getId()))) {
             workOrderLine.setItem(inventoryServiceRestemplateClient.getItemById(workOrderLine.getItemId()));
         }
         if (workOrderLine.getInventoryStatusId() != null && workOrderLine.getInventoryStatus() == null) {
