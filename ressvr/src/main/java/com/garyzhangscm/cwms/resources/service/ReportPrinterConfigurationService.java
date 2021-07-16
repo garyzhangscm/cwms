@@ -55,6 +55,15 @@ public class ReportPrinterConfigurationService {
 
         return reportPrinterConfigurationRepository.save(reportPrinterConfiguration);
     }
+    public void delete(ReportPrinterConfiguration reportPrinterConfiguration) {
+
+        reportPrinterConfigurationRepository.delete(reportPrinterConfiguration);
+    }
+    public void delete(Long id) {
+
+        reportPrinterConfigurationRepository.deleteById(id);
+    }
+
 
     public ReportPrinterConfiguration saveOrUpdate(ReportPrinterConfiguration reportPrinterConfiguration) {
 
@@ -134,5 +143,10 @@ public class ReportPrinterConfigurationService {
 
     public ReportPrinterConfiguration changeReportPrinterConfiguration(ReportPrinterConfiguration reportPrinterConfiguration) {
         return  saveOrUpdate(reportPrinterConfiguration);
+    }
+
+    public void deleteReportPrinterConfiguration(Long id) {
+        delete(id);
+
     }
 }
