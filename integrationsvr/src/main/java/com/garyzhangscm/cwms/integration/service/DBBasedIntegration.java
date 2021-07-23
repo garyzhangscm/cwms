@@ -201,6 +201,11 @@ public class DBBasedIntegration implements Integration{
         return dbBasedItemPackageTypeIntegration.addIntegrationItemPackageTypeData(new DBBasedItemPackageType(itemPackageType));
     }
 
+    @Override
+    public IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(IntegrationItemPackageTypeData itemPackageType) {
+        return dbBasedItemPackageTypeIntegration.addIntegrationItemPackageTypeData((DBBasedItemPackageType)itemPackageType);
+    }
+
     //
     // Integration - Item Unit Of Measure
     //
@@ -236,6 +241,17 @@ public class DBBasedIntegration implements Integration{
     public IntegrationSupplierData addIntegrationSupplierData(Supplier supplier) {
         return dbBasedSupplierIntegration.addIntegrationSupplierData(new DBBasedSupplier(supplier));
     }
+
+
+    @Override
+    public IntegrationWorkOrderData addIntegrationWorkOrderData(IntegrationWorkOrderData workOrderData) {
+        return dbBasedWorkOrderIntegration.addIntegrationWorkOrderData((DBBasedWorkOrder) workOrderData);
+    }
+    @Override
+    public IntegrationItemData addIntegrationItemData(IntegrationItemData itemData) {
+        return dbBasedItemIntegration.addIntegrationItemData((DBBasedItem) itemData);
+    }
+
 
 
     //

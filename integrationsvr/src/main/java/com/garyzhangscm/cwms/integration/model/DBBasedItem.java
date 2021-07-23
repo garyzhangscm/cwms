@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClie
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.DBBasedSupplierIntegration;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,12 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     @JoinColumn(name="integration_item_family_id")
     private DBBasedItemFamily itemFamily;
 
+
+    @Column(name = "item_family_name")
+    private String itemFamilyName;
+    @Column(name = "item_family_id")
+    private Long itemFamilyId;
+
     @OneToMany(
         mappedBy = "item",
         cascade = CascadeType.ALL,
@@ -76,7 +83,7 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     private List<DBBasedItemPackageType> itemPackageTypes= new ArrayList<>();
 
     @Column(name="unit_cost")
-    private double unitCost;
+    private Double unitCost;
 
     @Column(name = "company_id")
     private Long companyId;
@@ -89,6 +96,7 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
+
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -107,7 +115,15 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         Item item = new Item();
 
 
-        BeanUtils.copyProperties(this, item);
+        String[] fieldNames = {
+                "name","description",
+                "clientId","clientName",
+                "unitCost",
+                "warehouseId","warehouseName",
+                "companyId","companyCode"
+        };
+
+        ObjectCopyUtil.copyValue(this, item,  fieldNames);
 
         Long warehouseId = getWarehouseId();
         if (Objects.isNull(warehouseId)) {
@@ -116,6 +132,7 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
             );
         }
         item.setWarehouseId(warehouseId);
+
 
         if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
             item.setClientId(
@@ -126,12 +143,41 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         }
 
 
-        item.setItemFamily(getItemFamily().convertToItemFamily(warehouseLayoutServiceRestemplateClient));
+        // if item family data is passed in , then we are probably
+        // creating a new item family along with the item,
+        // if not, but item family name / id is passed in, then we are
+        // assigning an existing item family to this item
+        if (Objects.nonNull(getItemFamily())) {
+            item.setItemFamily(getItemFamily().convertToItemFamily(warehouseLayoutServiceRestemplateClient));
+        }
+        else {
+            if (Objects.nonNull(getItemFamilyId())) {
+                item.setItemFamily(
+                        inventoryServiceRestemplateClient.getItemFamilyById(
+                                getItemFamilyId()
+                        )
+                );
+                logger.debug("The item's family is setup to {} per id {}",
+                        item.getItemFamily().getName(), getItemFamilyId());
+            }
+            else if (Strings.isNotBlank(getItemFamilyName())) {
+                item.setItemFamily(
+                        inventoryServiceRestemplateClient.getItemFamilyByName(
+                                warehouseId, getItemFamilyName()
+                        )
+                );
+                logger.debug("The item's family is setup to {} per name {}",
+                        item.getItemFamily().getName(), getItemFamilyName());
+            }
+        }
+        logger.debug("We have {} item package types for this item {}",
+                getItemPackageTypes().size(), item.getName());
         getItemPackageTypes().forEach(dbBasedItemPackageType -> {
             item.addItemPackageType(dbBasedItemPackageType.convertToItemPackageType(
                     inventoryServiceRestemplateClient,
                     commonServiceRestemplateClient,
-                    warehouseLayoutServiceRestemplateClient));
+                    warehouseLayoutServiceRestemplateClient,
+                    true));
         });
 
         return item;
@@ -207,7 +253,7 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         if (Objects.nonNull(itemFamily)) {
             itemFamily.completeIntegration(integrationStatus, errorMessage);
         }
-        itemPackageTypes.forEach(dbBasedItemPackageType -> dbBasedItemPackageType.completeIntegration(integrationStatus, errorMessage));
+        getItemPackageTypes().forEach(dbBasedItemPackageType -> dbBasedItemPackageType.completeIntegration(integrationStatus, errorMessage));
 
     }
 
@@ -260,11 +306,11 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         this.itemPackageTypes = itemPackageTypes;
     }
 
-    public double getUnitCost() {
+    public Double getUnitCost() {
         return unitCost;
     }
 
-    public void setUnitCost(double unitCost) {
+    public void setUnitCost(Double unitCost) {
         this.unitCost = unitCost;
     }
 
@@ -322,5 +368,21 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getItemFamilyName() {
+        return itemFamilyName;
+    }
+
+    public void setItemFamilyName(String itemFamilyName) {
+        this.itemFamilyName = itemFamilyName;
+    }
+
+    public Long getItemFamilyId() {
+        return itemFamilyId;
+    }
+
+    public void setItemFamilyId(Long itemFamilyId) {
+        this.itemFamilyId = itemFamilyId;
     }
 }

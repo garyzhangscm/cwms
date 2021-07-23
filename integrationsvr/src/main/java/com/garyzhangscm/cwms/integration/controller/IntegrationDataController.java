@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.integration.controller;
 
 
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.service.IntegrationDataService;
 import org.slf4j.Logger;
@@ -247,6 +248,40 @@ public class IntegrationDataController {
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(@PathVariable Long id) {
 
         return integrationDataService.getIntegrationOrderConfirmationData(id);
+    }
+
+    @RequestMapping(value="/work-order", method = RequestMethod.PUT)
+    public ResponseBodyWrapper saveIntegrationWorkOrderData(
+            @RequestBody DBBasedWorkOrder dbBasedWorkOrder
+    ){
+
+        logger.debug("Start to save dbbased work order into database \n{}",
+                dbBasedWorkOrder);
+        integrationDataService.addIntegrationWorkOrderData(dbBasedWorkOrder);
+        return ResponseBodyWrapper.success("success");
+    }
+
+
+    @RequestMapping(value="/item", method = RequestMethod.PUT)
+    public ResponseBodyWrapper saveIntegrationItemData(
+            @RequestBody DBBasedItem dbBasedItem
+    ){
+
+        logger.debug("Start to save dbBasedItem into database \n{}",
+                dbBasedItem);
+        integrationDataService.addIntegrationItemData(dbBasedItem);
+        return ResponseBodyWrapper.success("success");
+    }
+
+    @RequestMapping(value="/item-package-type", method = RequestMethod.PUT)
+    public ResponseBodyWrapper saveIntegrationItemPackageTypeData(
+            @RequestBody DBBasedItemPackageType dbBasedItemPackageType
+    ){
+
+        logger.debug("Start to save dbBasedItemPackageType into database \n{}",
+                dbBasedItemPackageType);
+        integrationDataService.addIntegrationItemPackageTypeData(dbBasedItemPackageType);
+        return ResponseBodyWrapper.success("success");
     }
 
     //

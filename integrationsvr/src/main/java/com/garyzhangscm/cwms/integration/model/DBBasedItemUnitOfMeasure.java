@@ -112,6 +112,20 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
             InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
             CommonServiceRestemplateClient commonServiceRestemplateClient,
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient
+    ){
+        return convertToItemUnitOfMeasure(
+                inventoryServiceRestemplateClient,
+                commonServiceRestemplateClient,
+                warehouseLayoutServiceRestemplateClient,
+                false
+        );
+    }
+
+    public ItemUnitOfMeasure convertToItemUnitOfMeasure(
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+            CommonServiceRestemplateClient commonServiceRestemplateClient,
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+            boolean attachedToItemPackageTypeTransaction
     ) {
         ItemUnitOfMeasure itemUnitOfMeasure = new ItemUnitOfMeasure();
 
@@ -134,24 +148,28 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
         }
         itemUnitOfMeasure.setWarehouseId(warehouseId);
 
-        logger.debug("Will get item by warehouse id {}, item name: {}",
-                warehouseId, getItemName());
-        if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
-            itemUnitOfMeasure.setItemId(
-                    inventoryServiceRestemplateClient.getItemByName(warehouseId,
-                            getItemName()).getId()
-            );
-        }
+        if (!attachedToItemPackageTypeTransaction) {
+            logger.debug("Will get item by warehouse id {}, item name: {}",
+                    warehouseId, getItemName());
+            if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+                itemUnitOfMeasure.setItemId(
+                        inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                                getItemName()).getId()
+                );
+            }
 
-        logger.debug("Will get item package type by id by warehouse id {}, item id: {}, package type name {}",
-                warehouseId, getItemId(), getItemPackageTypeName());
-        if (Objects.isNull(getItemPackageTypeId()) && Objects.nonNull(getItemPackageTypeName())) {
-            itemUnitOfMeasure.setItemPackageTypeId(
-                    inventoryServiceRestemplateClient.getItemPackageTypeByName(
-                            warehouseId,
-                            getItemId(),
-                            getItemPackageTypeName()).getId()
-            );
+
+            logger.debug("Will get item package type by id by warehouse id {}, item id: {}, package type name {}",
+                    warehouseId, getItemId(), getItemPackageTypeName());
+
+            if (Objects.isNull(getItemPackageTypeId()) && Objects.nonNull(getItemPackageTypeName())) {
+                itemUnitOfMeasure.setItemPackageTypeId(
+                        inventoryServiceRestemplateClient.getItemPackageTypeByName(
+                                warehouseId,
+                                getItemId(),
+                                getItemPackageTypeName()).getId()
+                );
+            }
         }
         if (Objects.isNull(getUnitOfMeasureId()) && Objects.nonNull(getUnitOfMeasureName())) {
             itemUnitOfMeasure.setUnitOfMeasureId(

@@ -18,10 +18,8 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
-import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.garyzhangscm.cwms.outbound.clients.*;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -43,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -71,6 +70,8 @@ public class ShipmentService {
     private PickService pickService;
     @Autowired
     private KafkaSender kafkaSender;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -738,7 +739,113 @@ public class ShipmentService {
             completeShipmentByTrailer(shipment, order);
         }
 
+        // print delivery note after we complete the order
+        try {
 
+            printDeliveryNote(order);
+        }
+        catch (Exception ex) {
+            logger.debug("Error while printing delivery note during complete shipment {} of order {}",
+                    shipment.getNumber(), order.getNumber());
+            ex.printStackTrace();
+            logger.debug("We will ignore this error and let the user reprint the document");
+        }
+
+        if (order.getCategory().isAutoGenerateReceipt()) {
+            logger.debug("We will need to automatically generate receipt for this order {}",
+                    order.getNumber());
+            // for every shipment, we will need to generate a correspondent
+            // receipt for it
+            generateReceipt(shipment, order);
+        }
+
+    }
+
+    private void generateReceipt(Shipment shipment, Order order) {
+        logger.debug("Start to generate receipt when the shipment is completed");
+        // key: item name
+        // value: shipped quantity
+        Map<String, Long> shippedItem = new HashMap<>();
+        shipment.getShipmentLines().forEach(
+                shipmentLine -> {
+                    logger.debug("shipped {} of item {}",
+                            shipmentLine.getOrderLine().getItem().getName(),
+                            shipmentLine.getShippedQuantity());
+                    shippedItem.put(
+                            shipmentLine.getOrderLine().getItem().getName(),
+                            shipmentLine.getShippedQuantity());
+                }
+        );
+
+    }
+
+    private void printDeliveryNote(Order order) throws JsonProcessingException, UnsupportedEncodingException {
+        ReportHistory reportHistory
+                = generateDeliveryNote(order);
+        Long companyId = order.getWarehouse().getCompanyId();
+        if (Objects.isNull(companyId)) {
+            order.getWarehouse().getCompany().getId();
+        }
+        logger.debug("Start to print delivery note for company {} / warehouse {}",
+                companyId, order.getWarehouseId());
+        logger.debug("report file: {}", reportHistory.getFileName());
+        String result = resourceServiceRestemplateClient.printReport(
+                companyId, order.getWarehouseId(),
+                ReportType.DELIVERY_NOTE, reportHistory.getFileName(),
+                order.getCategory().toString(), ""
+        );
+        logger.debug(">> print result: {}", result);
+    }
+    private ReportHistory generateDeliveryNote(Order order) throws JsonProcessingException {
+        Long warehouseId = order.getWarehouseId();
+
+        Report reportData = new Report();
+        setupDelieryNoteParameters(
+                reportData, order
+        );
+        setupDelieryNoteReportData(
+                reportData, order
+        );
+
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.ORDER_PICK_SHEET, reportData, ""
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+
+    private void setupDelieryNoteParameters(
+            Report report, Order order) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("order_number", order.getNumber());
+
+        report.addParameter("customer_name",
+                order.getShipToContactorFirstname() + " " +
+                        order.getShipToContactorLastname());
+
+        Integer totalLineCount = order.getTotalLineCount();
+        Integer totalItemCount = order.getTotalItemCount();
+        Long totalQuantity =
+                pickService.findByOrder(order).stream()
+                        .mapToLong(Pick::getQuantity).sum();
+
+        report.addParameter("totalLineCount", totalLineCount);
+        report.addParameter("totalItemCount", totalItemCount);
+        report.addParameter("totalQuantity", totalQuantity);
+    }
+
+    private void setupDelieryNoteReportData(Report report, Order order) {
+
+        // set data to be all picks
+        List<Pick> picks = pickService.findByOrder(order);
+        report.setData(picks);
     }
 
     /**

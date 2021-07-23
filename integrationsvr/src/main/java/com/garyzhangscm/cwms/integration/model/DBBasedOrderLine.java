@@ -22,6 +22,9 @@ package com.garyzhangscm.cwms.integration.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -29,6 +32,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_order_line")
@@ -131,6 +135,45 @@ public class DBBasedOrderLine implements Serializable, IntegrationOrderLineData 
         setStatus(IntegrationStatus.PENDING);
         setInsertTime(LocalDateTime.now());
     }
+
+    /*
+    *  Convert db based order line into order line so we can process
+    * the integration data by order service
+    *
+    * */
+    public OrderLine convertToOrderLine(Order order,
+                                        InventoryServiceRestemplateClient inventoryServiceRestemplateClient
+                                        ) {
+        OrderLine orderLine = new OrderLine();
+
+        String[] fieldNames = {
+                "number", "itemId",  "expectedQuantity", "openQuantity",
+                "inprocessQuantity", "shippedQuantity", "inventoryStatusId", "carrierId", "carrierServiceLevelId"
+        };
+
+        ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
+
+        orderLine.setWarehouseId(order.getWarehouseId());
+
+        if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+            orderLine.setItemId(
+                    inventoryServiceRestemplateClient.getItemByName(
+                            orderLine.getWarehouseId(), getItemName()
+                    ).getId()
+            );
+        }
+
+        if (Objects.isNull(getInventoryStatusId()) && Objects.nonNull(getInventoryStatusName())) {
+            orderLine.setInventoryStatusId(
+                    inventoryServiceRestemplateClient.getInventoryStatusByName(
+                            orderLine.getWarehouseId(), getInventoryStatusName()
+                    ).getId()
+            );
+        }
+
+        return orderLine;
+    }
+
     @Override
     public String toString() {
         try {

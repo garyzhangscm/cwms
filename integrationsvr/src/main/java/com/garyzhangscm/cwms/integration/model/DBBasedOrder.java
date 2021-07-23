@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -30,6 +32,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_order")
@@ -45,6 +48,12 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
     @Column(name = "number")
     private String number;
 
+    @Column(name = "category")
+    private String category;
+    @Column(name = "transfer_receipt_warehouse_id")
+    private Long transferReceiptWarehouseId;
+    @Column(name = "transfer_receipt_warehouse_name")
+    private String transferReceiptWarehouseName;
 
     @Column(name = "ship_to_customer_id")
     private Long shipToCustomerId;
@@ -177,7 +186,8 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
                 "shipToAddressLine1", "shipToAddressLine2", "shipToAddressPostcode", "billToContactorFirstname",
                 "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty",
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2", "billToAddressPostcode",
-                "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName"
+                "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName",
+                "category", "transferReceiptWarehouseId"
         };
 
         ObjectCopyUtil.copyValue(order, this, fieldNames);
@@ -198,28 +208,36 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
 
     }
 
-    public Order convertToOrder() {
+    public Order convertToOrder(
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient) {
         Order order = new Order();
 
         String[] fieldNames = {
-        "number", "shipToCustomerId", "warehouseId", "billToCustomerId", "shipToContactorFirstname", "shipToContactorLastname",
+        "number", "shipToCustomerId", "billToCustomerId", "shipToContactorFirstname", "shipToContactorLastname",
                 "shipToAddressCountry", "shipToAddressState", "shipToAddressCounty", "shipToAddressCity", "shipToAddressDistrict",
                 "shipToAddressLine1", "shipToAddressLine2", "shipToAddressPostcode", "billToContactorFirstname",
                 "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty",
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2",
-                "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId"
+                "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
+                "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
+                "warehouseId","warehouseName",
+                "companyId","companyCode"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);
 
+        Long warehouseId = getWarehouseId();
+        if (Objects.isNull(warehouseId)) {
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    getCompanyId(), getCompanyCode(), getWarehouseId(), getWarehouseName()
+            );
+        }
+        order.setWarehouseId(warehouseId);
+
         // Copy each order line as well
         getOrderLines().forEach(dbBasedOrderLine -> {
-            OrderLine orderLine = new OrderLine();
-            String[] orderLineFieldNames = {
-                "number", "itemId", "warehouseId", "expectedQuantity", "openQuantity",
-                    "inprocessQuantity", "shippedQuantity", "inventoryStatusId", "carrierId", "carrierServiceLevelId"
-            };
-            ObjectCopyUtil.copyValue(dbBasedOrderLine, orderLine, orderLineFieldNames);
+            OrderLine orderLine = dbBasedOrderLine.convertToOrderLine(order, inventoryServiceRestemplateClient);
             order.getOrderLines().add(orderLine);
         });
 
@@ -615,5 +633,32 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    @Override
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    @Override
+    public Long getTransferReceiptWarehouseId() {
+        return transferReceiptWarehouseId;
+    }
+
+    public void setTransferReceiptWarehouseId(Long transferReceiptWarehouseId) {
+        this.transferReceiptWarehouseId = transferReceiptWarehouseId;
+    }
+
+    @Override
+    public String getTransferReceiptWarehouseName() {
+        return transferReceiptWarehouseName;
+    }
+
+    public void setTransferReceiptWarehouseName(String transferReceiptWarehouseName) {
+        this.transferReceiptWarehouseName = transferReceiptWarehouseName;
     }
 }

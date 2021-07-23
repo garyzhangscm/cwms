@@ -113,7 +113,32 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     public ItemPackageType convertToItemPackageType(
             InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
             CommonServiceRestemplateClient commonServiceRestemplateClient,
-            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient)   {
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+        return convertToItemPackageType(
+                inventoryServiceRestemplateClient,
+                commonServiceRestemplateClient,
+                warehouseLayoutServiceRestemplateClient,
+                false
+        );
+    }
+
+    /**
+     * Read data from the integration table and convert to the item package type object
+     * so we can send it to the right service for process
+     * @param inventoryServiceRestemplateClient
+     * @param commonServiceRestemplateClient
+     * @param warehouseLayoutServiceRestemplateClient
+     * @param attachedToItemTransaction whether this is a stand-alone transaction, or a transaction attached to the item
+     *                                  transaction. If this is a stand-alone transaction, then we need to make sure the
+     *                                  item is already exists, otherwise, we allow the item to be a new item as we know
+     *                                  the attached item transaction may create the new item
+     * @return
+     */
+    public ItemPackageType convertToItemPackageType(
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+            CommonServiceRestemplateClient commonServiceRestemplateClient,
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+            boolean attachedToItemTransaction)   {
 
         ItemPackageType itemPackageType = new ItemPackageType();
 
@@ -138,11 +163,16 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
         }
         itemPackageType.setWarehouseId(warehouseId);
 
-        if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
-            itemPackageType.setItemId(
-                    inventoryServiceRestemplateClient.getItemByName(warehouseId,
-                            getItemName()).getId()
-            );
+        if (!attachedToItemTransaction) {
+            // ok this is a standalone transaction to create / modify the item package type
+            // we will need to make sure the item already exists
+            if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+                itemPackageType.setItemId(
+                        inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                                getItemName()).getId()
+                );
+            }
+
         }
 
         if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
@@ -165,7 +195,8 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
             itemPackageType.addItemUnitOfMeasure(dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure(
                     inventoryServiceRestemplateClient,
                     commonServiceRestemplateClient,
-                    warehouseLayoutServiceRestemplateClient
+                    warehouseLayoutServiceRestemplateClient,
+                    true
             ));
         });
 

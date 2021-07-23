@@ -89,10 +89,12 @@ public class WorkOrderProduceTransactionService  {
     }
 
 
-    public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber, boolean genericQuery) {
-        return findAll(warehouseId, workOrderNumber, genericQuery, true);
+    public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber,
+                                                     Long productionLineId, boolean genericQuery) {
+        return findAll(warehouseId, workOrderNumber, productionLineId, genericQuery, true);
     }
     public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber,
+                                                     Long productionLineId,
                                                      boolean genericQuery, boolean loadDetails) {
 
         List<WorkOrderProduceTransaction> workOrderProduceTransactions
@@ -115,6 +117,12 @@ public class WorkOrderProduceTransactionService  {
 
                         }
 
+                    }
+                    if (Objects.nonNull(productionLineId)) {
+
+                        Join<WorkOrderProduceTransaction, ProductionLine> joinProductionLine
+                                = root.join("productionLine", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinProductionLine.get("id"), productionLineId));
                     }
 
 

@@ -67,7 +67,7 @@ public class DBBasedItemUnitOfMeasureIntegration {
         ).stream().limit(30).collect(Collectors.toList());
     }
 
-    private DBBasedItemUnitOfMeasure save(DBBasedItemUnitOfMeasure dbBasedItem) {
+    public DBBasedItemUnitOfMeasure save(DBBasedItemUnitOfMeasure dbBasedItem) {
         return dbBasedItemUnitOfMeasureRepository.save(dbBasedItem);
     }
 

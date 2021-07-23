@@ -87,7 +87,7 @@ public class DBBasedOrderIntegration {
         try {
 
 
-            Order order = dbBasedOrder.convertToOrder();
+            Order order = dbBasedOrder.convertToOrder(warehouseLayoutServiceRestemplateClient, inventoryServiceRestemplateClient);
 
             // we will support client to send name
             // instead of id for the following field . In such case, we will

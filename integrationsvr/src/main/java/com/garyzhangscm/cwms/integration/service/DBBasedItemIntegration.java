@@ -34,6 +34,10 @@ public class DBBasedItemIntegration {
     @Autowired
     DBBasedItemFamilyIntegration dbBasedItemFamilyIntegration;
     @Autowired
+    DBBasedItemPackageTypeIntegration dbBasedItemPackageTypeIntegration;
+    @Autowired
+    DBBasedItemUnitOfMeasureIntegration dbBasedItemUnitOfMeasureIntegration;
+    @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -50,15 +54,22 @@ public class DBBasedItemIntegration {
     }
 
     public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem) {
-/****
-        if (Objects.nonNull(dbBasedItem.getItemFamily())) {
-            IntegrationItemFamilyData integrationItemFamilyData =
-                    dbBasedItemFamilyIntegration.addIntegrationItemFamilyData(dbBasedItem.getItemFamily());
-            dbBasedItem.setItemFamily((DBBasedItemFamily)integrationItemFamilyData);
 
-        }
-***/
-
+        dbBasedItem.getItemPackageTypes().forEach(
+                dbBasedItemPackageType -> {
+                    dbBasedItemPackageType.setItem(dbBasedItem);
+                    dbBasedItemPackageType.setId(null);
+                    dbBasedItemPackageType.getItemUnitOfMeasures().forEach(
+                            dbBasedItemUnitOfMeasure -> {
+                                dbBasedItemUnitOfMeasure.setItemPackageType(dbBasedItemPackageType);
+                                dbBasedItemUnitOfMeasure.setItemId(null);
+                            }
+                    );
+                }
+        );
+        dbBasedItem.setId(null);
+        logger.debug("Start to save dbBasedItem: \n {}",
+                dbBasedItem);
         return dbBasedItemRepository.save(dbBasedItem);
     }
 
@@ -102,15 +113,60 @@ public class DBBasedItemIntegration {
 
             dbBasedItem.setErrorMessage("");
             dbBasedItem.completeIntegration(IntegrationStatus.COMPLETED);
+            if (Objects.nonNull(dbBasedItem.getItemFamily())) {
+
+                dbBasedItem.getItemFamily().setErrorMessage("");
+                dbBasedItem.getItemFamily().completeIntegration(IntegrationStatus.COMPLETED);
+                dbBasedItemFamilyIntegration.save(dbBasedItem.getItemFamily());
+            }
+            dbBasedItem.getItemPackageTypes().forEach(
+                    dbBasedItemPackageType -> {
+                        dbBasedItemPackageType.setErrorMessage("");
+                        dbBasedItemPackageType.completeIntegration(IntegrationStatus.COMPLETED);
+                        dbBasedItemPackageTypeIntegration.save(dbBasedItemPackageType);
+                        dbBasedItemPackageType.getItemUnitOfMeasures().forEach(
+                                dbBasedItemUnitOfMeasure -> {
+                                    dbBasedItemUnitOfMeasure.setErrorMessage("");
+                                    dbBasedItemUnitOfMeasure.completeIntegration(IntegrationStatus.COMPLETED);
+                                    dbBasedItemUnitOfMeasureIntegration.save(dbBasedItemUnitOfMeasure);
+
+                                }
+                        );
+                    }
+            );
 
 
         }
         catch(Exception ex) {
+            ex.printStackTrace();
             logger.debug("Exception : {} \n while process item integration: \n{}",
                     ex.getMessage(), dbBasedItem);
             dbBasedItem.completeIntegration(IntegrationStatus.ERROR, ex.getMessage());
+            if (Objects.nonNull(dbBasedItem.getItemFamily())) {
+
+                dbBasedItem.getItemFamily().completeIntegration(IntegrationStatus.ERROR, ex.getMessage());
+                dbBasedItemFamilyIntegration.save(dbBasedItem.getItemFamily());
+            }
+
+            dbBasedItem.getItemPackageTypes().forEach(
+                    dbBasedItemPackageType -> {
+                        dbBasedItemPackageType.setErrorMessage(ex.getMessage());
+                        dbBasedItemPackageType.completeIntegration(IntegrationStatus.ERROR);
+                        dbBasedItemPackageTypeIntegration.save(dbBasedItemPackageType);
+                        dbBasedItemPackageType.getItemUnitOfMeasures().forEach(
+                                dbBasedItemUnitOfMeasure -> {
+                                    dbBasedItemUnitOfMeasure.setErrorMessage(ex.getMessage());
+                                    dbBasedItemUnitOfMeasure.completeIntegration(IntegrationStatus.ERROR);
+                                    dbBasedItemUnitOfMeasureIntegration.save(dbBasedItemUnitOfMeasure);
+
+                                }
+                        );
+                    }
+            );
+
 
         }
+
 
         dbBasedItem = save(dbBasedItem);
 

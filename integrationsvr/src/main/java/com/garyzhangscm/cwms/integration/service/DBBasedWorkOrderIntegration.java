@@ -56,6 +56,16 @@ public class DBBasedWorkOrderIntegration {
 
 
     public IntegrationWorkOrderData addIntegrationWorkOrderData(DBBasedWorkOrder dbBasedWorkOrder) {
+        dbBasedWorkOrder.getWorkOrderLines().forEach(
+                dbBasedWorkOrderLine -> {
+                    dbBasedWorkOrderLine.setWorkOrder(dbBasedWorkOrder);
+                    dbBasedWorkOrderLine.setId(null);
+                }
+        );
+        dbBasedWorkOrder.setId(null);
+        logger.debug("Start to save dbBasedWorkOrder: \n {}",
+                dbBasedWorkOrder);
+        // dbBasedWorkOrder.setId(null);
         return dbBasedWorkOrderRepository.save(dbBasedWorkOrder);
     }
 

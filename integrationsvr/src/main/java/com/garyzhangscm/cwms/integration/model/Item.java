@@ -44,10 +44,12 @@ public class Item implements Serializable {
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
 
 
-    private double unitCost;
+    private Double unitCost;
 
     private Long warehouseId;
     private String warehouseName;
+
+
 
     @Override
     public String toString() {
@@ -110,11 +112,11 @@ public class Item implements Serializable {
     public void addItemPackageType(ItemPackageType itemPackageType) {
         getItemPackageTypes().add(itemPackageType);
     }
-    public double getUnitCost() {
+    public Double getUnitCost() {
         return unitCost;
     }
 
-    public void setUnitCost(double unitCost) {
+    public void setUnitCost(Double unitCost) {
         this.unitCost = unitCost;
     }
 

@@ -65,7 +65,7 @@ public class DBBasedItemPackageTypeIntegration {
         ).stream().limit(30).collect(Collectors.toList());
     }
 
-    private DBBasedItemPackageType save(DBBasedItemPackageType dbBasedItemPackageType) {
+    public DBBasedItemPackageType save(DBBasedItemPackageType dbBasedItemPackageType) {
         return dbBasedItemPackageTypeRepository.save(dbBasedItemPackageType);
     }
 

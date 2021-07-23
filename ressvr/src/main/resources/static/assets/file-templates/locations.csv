@@ -1,1 +1,1 @@
-warehouse,name,aisle,x,y,z,length,width,height,pickSequence,putawaySequence,countSequence,capacity,fillPercentage,locationGroup,enabled
+company,warehouse,name,aisle,x,y,z,length,width,height,pickSequence,putawaySequence,countSequence,capacity,fillPercentage,locationGroup,enabled
