@@ -81,6 +81,9 @@ public class IntegrationDataService {
     public IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(ItemPackageType itemPackageType) {
         return integration.addIntegrationItemPackageTypeData(itemPackageType);
     }
+    public IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(IntegrationItemPackageTypeData integrationItemPackageTypeData) {
+        return integration.addIntegrationItemPackageTypeData(integrationItemPackageTypeData);
+    }
 
 
     //
@@ -109,6 +112,15 @@ public class IntegrationDataService {
         return integration.addIntegrationSupplierData(supplier);
     }
 
+    // Integration - Work order
+    public IntegrationWorkOrderData addIntegrationWorkOrderData(IntegrationWorkOrderData workOrderData) {
+        return integration.addIntegrationWorkOrderData(workOrderData);
+    }
+
+    // Integration - Item
+    public IntegrationItemData addIntegrationItemData(IntegrationItemData itemData) {
+        return integration.addIntegrationItemData(itemData);
+    }
 
     //
     // Integration - Receipt and Receipt Line
@@ -153,6 +165,7 @@ public class IntegrationDataService {
     public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
         return integration.sendIntegrationOrderConfirmationData(orderConfirmation);
     }
+
 
 
     // Work Order Confirmation Data
@@ -202,5 +215,8 @@ public class IntegrationDataService {
     }
     public IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
         return integration.sendInventoryAttributeChangeConfirmationData(inventoryAttributeChangeConfirmation);
+    }
+
+    public void saveIntegrationItemData(DBBasedItem dbBasedItem) {
     }
 }

@@ -9,6 +9,9 @@ public interface IntegrationOrderData {
     String getNumber();
     Long getShipToCustomerId();
     String getShipToCustomerName();
+    String getCategory();
+    Long getTransferReceiptWarehouseId();
+    String getTransferReceiptWarehouseName();
 
     public Long getCompanyId();
     public String getCompanyCode() ;

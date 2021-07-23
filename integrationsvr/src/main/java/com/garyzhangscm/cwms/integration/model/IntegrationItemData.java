@@ -15,7 +15,7 @@ public interface IntegrationItemData extends IntegrationData{
     public List<? extends  IntegrationItemPackageTypeData> getItemPackageTypes() ;
 
 
-    public double getUnitCost() ;
+    public Double getUnitCost() ;
 
 
     public Long getCompanyId();

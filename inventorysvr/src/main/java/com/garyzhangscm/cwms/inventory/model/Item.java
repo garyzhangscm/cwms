@@ -86,7 +86,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
 
     @Column(name="unit_cost")
-    private Double unitCost;
+    private Double unitCost= 0.0;
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -116,7 +116,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     private String thumbnailUrl;
 
     @Column(name = "active_flag")
-    private Boolean activeFlag;
+    private Boolean activeFlag = true;
 
     @Transient
     private Warehouse warehouse;

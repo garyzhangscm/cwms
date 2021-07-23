@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="ressvr" />
         <module name="inboundsvr" />
+        <module name="dblink" />
         <module name="inventoryserver" />
         <module name="inventorysvr" />
         <module name="inboundserver" />
@@ -50,6 +51,7 @@
       <module name="commonsvr" options="-parameters" />
       <module name="configurationserver" options="-parameters" />
       <module name="confsvr" options="-parameters" />
+      <module name="dblink" options="-parameters" />
       <module name="inboundserver" options="-parameters" />
       <module name="inboundsvr" options="-parameters" />
       <module name="integrationserver" options="-parameters" />

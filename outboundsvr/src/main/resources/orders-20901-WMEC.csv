@@ -1,7 +1,1 @@
 company,warehouse,number,shipToCustomer,billToCustomer,shipToContactorFirstname,shipToContactorLastname,shipToAddressCountry,shipToAddressState,shipToAddressCounty,shipToAddressCity,shipToAddressDistrict,shipToAddressLine1,shipToAddressLine2,shipToAddressPostcode,billToContactorFirstname,billToContactorLastname,billToAddressCountry,billToAddressState,billToAddressCounty,billToAddressCity,billToAddressDistrict,billToAddressLine1,billToAddressLine2,billToAddressPostcode,client
-20901,WMEC,ORD000001,GZ,GZ,,,,,,,,,,,,,,,,,,,,,
-20901,WMEC,ORD000002,YZ,YZ,,,,,,,,,,,,,,,,,,,,,
-20901,WMEC,ORD000010,YZ,YZ,,,,,,,,,,,,,,,,,,,,,
-20901,WMEC,ORD000011,YZ,YZ,,,,,,,,,,,,,,,,,,,,,
-20901,WMEC,ORD000012,YZ,YZ,,,,,,,,,,,,,,,,,,,,,
-20901,WMEC,ORD000013,YZ,YZ,,,,,,,,,,,,,,,,,,,,,

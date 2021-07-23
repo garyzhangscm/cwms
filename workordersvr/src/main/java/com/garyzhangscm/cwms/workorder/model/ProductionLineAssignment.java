@@ -46,7 +46,6 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
 
 
-
     @Column(name = "start_time")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

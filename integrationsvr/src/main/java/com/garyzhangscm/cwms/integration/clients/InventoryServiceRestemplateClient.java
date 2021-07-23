@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.integration.clients;
 
 import com.garyzhangscm.cwms.integration.exception.GenericException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.integration.model.ItemFamily;
 import org.springframework.web.client.RestTemplate;
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.InventoryStatus;
@@ -49,6 +50,57 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     // OAuth2RestTemplate restTemplate;
     RestTemplate restTemplate;
+
+    public ItemFamily getItemFamilyByName(Long warehouseId, String name)  {
+        logger.debug("Start to get item family by name");
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/item-families")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId);
+
+
+            ResponseBodyWrapper<List<ItemFamily>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<ItemFamily>>>() {
+                    }).getBody();
+
+            logger.debug("get response from itemFamilybyname:\n {}",
+                    responseBodyWrapper);
+            List<ItemFamily> itemFamilies = responseBodyWrapper.getData();
+
+            if (itemFamilies.size() == 0) {
+                return null;
+            } else {
+                return itemFamilies.get(0);
+            }
+        }
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item family by name " + name);
+        }
+    }
+    public ItemFamily getItemFamilyById(Long id)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/item-family/{id}");
+
+        ResponseBodyWrapper<ItemFamily> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<ItemFamily>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
     public Item getItemByName(Long warehouseId, String name)  {
         logger.debug("Start to get item by name");

@@ -59,7 +59,7 @@ public class DBBasedItemFamilyIntegration {
         ).stream().limit(30).collect(Collectors.toList());
     }
 
-    private DBBasedItemFamily save(DBBasedItemFamily dbBasedItemFamily) {
+    public DBBasedItemFamily save(DBBasedItemFamily dbBasedItemFamily) {
         return dbBasedItemFamilyRepository.save(dbBasedItemFamily);
     }
 

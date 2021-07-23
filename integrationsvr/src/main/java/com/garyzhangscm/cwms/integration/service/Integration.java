@@ -48,6 +48,7 @@ public interface Integration {
     List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData();
     IntegrationItemPackageTypeData getItemPackageTypeData(Long id);
     IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(ItemPackageType itemPackageType);
+    IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(IntegrationItemPackageTypeData integrationItemPackageTypeData);
 
 
     //
@@ -64,6 +65,10 @@ public interface Integration {
     IntegrationSupplierData getSupplierData(Long id);
     IntegrationSupplierData addIntegrationSupplierData(Supplier supplier);
 
+
+    // Integration - Work order
+    public IntegrationWorkOrderData addIntegrationWorkOrderData(IntegrationWorkOrderData workOrderData);
+    public IntegrationItemData addIntegrationItemData(IntegrationItemData itemData);
 
     //
     // Integration - Receipt and Receipt Line

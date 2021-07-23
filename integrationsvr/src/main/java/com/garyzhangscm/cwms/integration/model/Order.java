@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.integration.model;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,9 @@ public class Order implements Serializable {
     private String shipToCustomerName;
 
 
+    private String category;
+    private Long transferReceiptWarehouseId;
+    private String transferReceiptWarehouseName;
 
     private Long warehouseId;
     private String warehouseName;
@@ -324,5 +328,78 @@ public class Order implements Serializable {
 
     public void setStageLocationGroupId(Long stageLocationGroupId) {
         this.stageLocationGroupId = stageLocationGroupId;
+    }
+
+
+    public String getShipToCustomerName() {
+        return shipToCustomerName;
+    }
+
+    public void setShipToCustomerName(String shipToCustomerName) {
+        this.shipToCustomerName = shipToCustomerName;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getBillToCustomerName() {
+        return billToCustomerName;
+    }
+
+    public void setBillToCustomerName(String billToCustomerName) {
+        this.billToCustomerName = billToCustomerName;
+    }
+
+    public String getCarrierName() {
+        return carrierName;
+    }
+
+    public void setCarrierName(String carrierName) {
+        this.carrierName = carrierName;
+    }
+
+    public String getCarrierServiceLevelName() {
+        return carrierServiceLevelName;
+    }
+
+    public void setCarrierServiceLevelName(String carrierServiceLevelName) {
+        this.carrierServiceLevelName = carrierServiceLevelName;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getStageLocationGroupName() {
+        return stageLocationGroupName;
+    }
+
+    public void setStageLocationGroupName(String stageLocationGroupName) {
+        this.stageLocationGroupName = stageLocationGroupName;
+    }
+
+    public Long getTransferReceiptWarehouseId() {
+        return transferReceiptWarehouseId;
+    }
+
+    public void setTransferReceiptWarehouseId(Long transferReceiptWarehouseId) {
+        this.transferReceiptWarehouseId = transferReceiptWarehouseId;
     }
 }

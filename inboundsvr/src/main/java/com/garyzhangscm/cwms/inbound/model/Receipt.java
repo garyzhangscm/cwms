@@ -57,6 +57,16 @@ public class Receipt {
     @Column(name = "supplier_id")
     private Long supplierId;
 
+
+    @Column(name = "transfer_order_number")
+    private String transferOrderNumber;
+    @Column(name = "transfer_order_warehouse_id")
+    private Long transferOrderWarehouseId;
+
+    @Column(name = "category")
+    @Enumerated(EnumType.STRING)
+    private ReceiptCategory category = ReceiptCategory.PURCHASE_ORDER;
+
     @Transient
     private Supplier supplier;
 
@@ -170,5 +180,29 @@ public class Receipt {
 
     public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
         this.allowUnexpectedItem = allowUnexpectedItem;
+    }
+
+    public ReceiptCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(ReceiptCategory category) {
+        this.category = category;
+    }
+
+    public String getTransferOrderNumber() {
+        return transferOrderNumber;
+    }
+
+    public void setTransferOrderNumber(String transferOrderNumber) {
+        this.transferOrderNumber = transferOrderNumber;
+    }
+
+    public Long getTransferOrderWarehouseId() {
+        return transferOrderWarehouseId;
+    }
+
+    public void setTransferOrderWarehouseId(Long transferOrderWarehouseId) {
+        this.transferOrderWarehouseId = transferOrderWarehouseId;
     }
 }

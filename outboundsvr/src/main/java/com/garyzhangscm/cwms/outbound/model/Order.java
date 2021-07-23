@@ -50,6 +50,16 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "category")
+    @Enumerated(EnumType.STRING)
+    private OrderCategory category = OrderCategory.SALES_ORDER;
+
+    @Column(name = "transfer_receipt_number")
+    private String transferReceiptNumber;
+    @Column(name = "transfer_receipt_warehouse_id")
+    private Long transferReceiptWarehouseId;
+
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.OPEN;
@@ -569,5 +579,29 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public OrderCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(OrderCategory category) {
+        this.category = category;
+    }
+
+    public String getTransferReceiptNumber() {
+        return transferReceiptNumber;
+    }
+
+    public void setTransferReceiptNumber(String transferReceiptNumber) {
+        this.transferReceiptNumber = transferReceiptNumber;
+    }
+
+    public Long getTransferReceiptWarehouseId() {
+        return transferReceiptWarehouseId;
+    }
+
+    public void setTransferReceiptWarehouseId(Long transferReceiptWarehouseId) {
+        this.transferReceiptWarehouseId = transferReceiptWarehouseId;
     }
 }

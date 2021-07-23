@@ -42,6 +42,7 @@
         <module>ressvr</module>
         <!-- Integration Service: Integration -->
         <module>integrationsvr</module>
+        <module>dblink</module>
         <!--
         <module>licensing-service</module>
         -->
