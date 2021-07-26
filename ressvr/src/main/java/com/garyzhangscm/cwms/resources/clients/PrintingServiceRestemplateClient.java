@@ -65,15 +65,15 @@ public class PrintingServiceRestemplateClient  {
 
 
     }
-    public void sendPrintingRequest(File file, String printer) {
+    public void sendPrintingRequest(File file, String printer, int copies) {
 
-        logger.debug("Start to send file {} to printing server: {}",
-                file.getName(), PRINTING_SERVER_URL);
+        logger.debug("Start to send file {} to printing server: {}, copies: {}",
+                file.getName(), PRINTING_SERVER_URL, copies);
 
-        String url = PRINTING_SERVER_URL + "/printing/pdf";
+        String url = PRINTING_SERVER_URL + "/printing/pdf?copies=" + copies;
         // if printer is specified, add printer to the parameters
         if (Strings.isNotBlank(printer)) {
-            url +="?printer=" + printer;
+            url +="&printer=" + printer;
         }
 
         HttpHeaders headers = new HttpHeaders();

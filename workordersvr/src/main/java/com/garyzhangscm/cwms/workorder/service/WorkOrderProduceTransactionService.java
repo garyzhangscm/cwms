@@ -102,12 +102,14 @@ public class WorkOrderProduceTransactionService  {
                 (Root<WorkOrderProduceTransaction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    Join<WorkOrderProduceTransaction, WorkOrder> joinWorkOrder = root.join("workOrder", JoinType.INNER);
+
+                    predicates.add(criteriaBuilder.equal(joinWorkOrder.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(workOrderNumber)) {
 
 
-                        Join<WorkOrderProduceTransaction, WorkOrder> joinWorkOrder = root.join("workOrder", JoinType.INNER);
                         if (genericQuery) {
 
                             predicates.add(criteriaBuilder.like(joinWorkOrder.get("number"), workOrderNumber));

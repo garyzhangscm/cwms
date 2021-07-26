@@ -34,8 +34,9 @@ public class WorkOrderCompleteTransactionController {
 
 
     @RequestMapping(value="/work-order-complete-transactions", method = RequestMethod.GET)
-    public List<WorkOrderCompleteTransaction> findAllWorkOrderCompleteTransactions(@RequestParam Long warehouseId,
-                                                                                 @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber
+    public List<WorkOrderCompleteTransaction> findAllWorkOrderCompleteTransactions(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber
                                              ) {
         return workOrderCompleteTransactionService.findAll(warehouseId, workOrderNumber);
     }

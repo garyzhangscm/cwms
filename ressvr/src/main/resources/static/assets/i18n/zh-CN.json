@@ -1266,5 +1266,6 @@
   "REPORT-TYPE-WORK_ORDER_PICK_SHEET": "工单拣货单",
   "page.report-printer-configuration.maintenance.modify": "报表打印机配置维护",
   "steps.report-printer-configuration.info": "配置",
-  "steps.report-printer-configuration.confirm": "确认"
+  "steps.report-printer-configuration.confirm": "确认",
+  "menu.dashboard.production-kanban": "生产看板"
 }

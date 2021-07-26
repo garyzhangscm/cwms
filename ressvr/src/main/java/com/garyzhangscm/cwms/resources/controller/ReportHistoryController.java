@@ -104,14 +104,16 @@ public class ReportHistoryController {
                                                     @PathVariable Long companyId,
                                                     @PathVariable Long warehouseId,
                                                     @RequestParam(name = "findPrinterBy", required = false, defaultValue = "") String findPrinterBy,
-                                                    @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName)
+                                                    @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName,
+                                                    @RequestParam(name = "copies", required = false, defaultValue = "1") int copies)
             throws FileNotFoundException, IOException {
 
-        logger.debug("Start to print report for {} / {}",
-                type, filename);
+        logger.debug("Start to print report for {} / {}, copies: {}",
+                type, filename, copies);
         // print the report from the printer attached to the server
         File reportResultFile =
-                reportHistoryService.printReport(companyId, warehouseId, type, filename, findPrinterBy, printerName);
+                reportHistoryService.printReport(companyId, warehouseId, type, filename,
+                        findPrinterBy, printerName, copies);
         return ResponseBodyWrapper.success(reportResultFile.getName() + " printed!");
 
     }

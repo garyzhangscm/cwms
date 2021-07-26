@@ -44,8 +44,9 @@ public class ProductionLineKanbanDataController {
 
     @RequestMapping(value="/production-line/kanban", method = RequestMethod.GET)
     public List<ProductionLineKanbanData> getProductionLineKanbanData(
-                                             @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId) {
-        return productionLineKanbanService.getProductionLineKanbanData(productionPlanId);
+                @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId,
+                @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds) {
+        return productionLineKanbanService.getProductionLineKanbanData(productionPlanId, productionLineIds);
     }
 
 

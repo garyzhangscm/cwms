@@ -1261,5 +1261,6 @@
   "REPORT-TYPE-WORK_ORDER_PICK_SHEET": "WO Pick Sheet",
   "page.report-printer-configuration.maintenance.modify": "Report Printer Configuration Maintenance",
   "steps.report-printer-configuration.info": "Configuration",
-  "steps.report-printer-configuration.confirm": "Confirm"
+  "steps.report-printer-configuration.confirm": "Confirm",
+  "menu.dashboard.production-kanban": "Production Kanban"
 }

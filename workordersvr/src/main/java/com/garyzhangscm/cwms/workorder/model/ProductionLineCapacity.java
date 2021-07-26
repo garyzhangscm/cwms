@@ -57,7 +57,7 @@ public class ProductionLineCapacity extends AuditibleEntity<String>{
 
 
     @Column(name = "staff_count")
-    private int staffCount;
+    private Integer staffCount;
 
     @Override
     public String toString() {
@@ -149,11 +149,11 @@ public class ProductionLineCapacity extends AuditibleEntity<String>{
         this.unitOfMeasure = unitOfMeasure;
     }
 
-    public int getStaffCount() {
+    public Integer getStaffCount() {
         return staffCount;
     }
 
-    public void setStaffCount(int staffCount) {
+    public void setStaffCount(Integer staffCount) {
         this.staffCount = staffCount;
     }
 

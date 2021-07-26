@@ -230,7 +230,8 @@ public class ReportHistoryService {
     public File printReport(Long companyId, Long warehouseId,
                             String type, String filename,
                             String findPrinterBy,
-                            String printerName)
+                            String printerName,
+                            int copies)
         throws  IOException{
 
 
@@ -240,7 +241,7 @@ public class ReportHistoryService {
         logger.debug("We find a printer by criertia {} / {} / {} / {}, printer name passed in? {}, IT IS {}",
                 companyId, warehouseId, type, findPrinterBy, printerName, printer);
 
-        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, printer);
+        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, printer, copies);
 
         // we will send the printing request to the remote printing service
 
