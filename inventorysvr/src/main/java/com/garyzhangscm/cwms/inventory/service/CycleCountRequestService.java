@@ -532,6 +532,7 @@ public class CycleCountRequestService{
 
         List<CycleCountResult> inventorySummaries =
                 cycleCountRequests.stream()
+                        .filter(cycleCountRequest -> cycleCountRequest.getStatus() != CycleCountRequestStatus.CANCELLED)
                         .map(cycleCountRequest -> getInventorySummariesForCount(cycleCountRequest.getId()))
                     .flatMap(List::stream)
                     .collect(Collectors.toList());

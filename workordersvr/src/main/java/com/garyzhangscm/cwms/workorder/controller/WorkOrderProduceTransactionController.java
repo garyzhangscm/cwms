@@ -40,9 +40,10 @@ public class WorkOrderProduceTransactionController {
     public List<WorkOrderProduceTransaction> findAllWorkOrderProduceTransactions(
             @RequestParam Long warehouseId,
             @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber,
+            @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery
                                              ) {
-        return workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber, genericQuery);
+        return workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber,productionLineId,  genericQuery);
     }
 
     @RequestMapping(value="/work-order-produce-transactions", method = RequestMethod.POST)

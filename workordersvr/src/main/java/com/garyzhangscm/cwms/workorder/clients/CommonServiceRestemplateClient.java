@@ -84,6 +84,30 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+    public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/unit-of-measures")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("name", name);
+
+        ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<UnitOfMeasure>>>() {}).getBody();
+
+        List<UnitOfMeasure> unitOfMeasures = responseBodyWrapper.getData();
+
+        if (unitOfMeasures.size() != 1) {
+            return null;
+        }
+        else {
+            return unitOfMeasures.get(0);
+        }
+    }
 
 }

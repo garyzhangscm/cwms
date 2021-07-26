@@ -6,11 +6,11 @@ public class ProductionLineKanbanData {
     private String workOrderNumber;
     private String productionLineModel;
 
-    private Double productionLineTargetOutput;
-    private Double productionLineActualOutput;
+    private Long productionLineTargetOutput;
+    private Long productionLineActualOutput;
 
-    private Double productionLineTotalTargetOutput;
-    private Double productionLineTotalActualOutput;
+    private Long productionLineTotalTargetOutput;
+    private Long productionLineTotalActualOutput;
 
     private WorkOrderStatus workOrderStatus;
 
@@ -41,35 +41,35 @@ public class ProductionLineKanbanData {
         this.productionLineModel = productionLineModel;
     }
 
-    public Double getProductionLineTargetOutput() {
+    public Long getProductionLineTargetOutput() {
         return productionLineTargetOutput;
     }
 
-    public void setProductionLineTargetOutput(Double productionLineTargetOutput) {
+    public void setProductionLineTargetOutput(Long productionLineTargetOutput) {
         this.productionLineTargetOutput = productionLineTargetOutput;
     }
 
-    public Double getProductionLineActualOutput() {
+    public Long getProductionLineActualOutput() {
         return productionLineActualOutput;
     }
 
-    public void setProductionLineActualOutput(Double productionLineActualOutput) {
+    public void setProductionLineActualOutput(Long productionLineActualOutput) {
         this.productionLineActualOutput = productionLineActualOutput;
     }
 
-    public Double getProductionLineTotalTargetOutput() {
+    public Long getProductionLineTotalTargetOutput() {
         return productionLineTotalTargetOutput;
     }
 
-    public void setProductionLineTotalTargetOutput(Double productionLineTotalTargetOutput) {
+    public void setProductionLineTotalTargetOutput(Long productionLineTotalTargetOutput) {
         this.productionLineTotalTargetOutput = productionLineTotalTargetOutput;
     }
 
-    public Double getProductionLineTotalActualOutput() {
+    public Long getProductionLineTotalActualOutput() {
         return productionLineTotalActualOutput;
     }
 
-    public void setProductionLineTotalActualOutput(Double productionLineTotalActualOutput) {
+    public void setProductionLineTotalActualOutput(Long productionLineTotalActualOutput) {
         this.productionLineTotalActualOutput = productionLineTotalActualOutput;
     }
 
