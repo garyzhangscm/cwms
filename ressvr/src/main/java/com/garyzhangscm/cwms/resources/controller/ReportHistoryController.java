@@ -105,7 +105,7 @@ public class ReportHistoryController {
                                                     @PathVariable Long warehouseId,
                                                     @RequestParam(name = "findPrinterBy", required = false, defaultValue = "") String findPrinterBy,
                                                     @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName,
-                                                    @RequestParam(name = "copies", required = false, defaultValue = "1") int copies)
+                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies)
             throws FileNotFoundException, IOException {
 
         logger.debug("Start to print report for {} / {}, copies: {}",

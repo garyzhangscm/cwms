@@ -43,16 +43,16 @@ public class DBBasedItemUnitOfMeasure implements Serializable{
     private String itemName;
 
 
-    @Column(name = "item_package_type_id")
+    @Column(name = "item_pkg_type_id")
     private Long itemPackageTypeId;
 
-    @Column(name = "item_package_type_name")
+    @Column(name = "item_pkg_type_name")
     private String itemPackageTypeName;
 
-    @Column(name = "unit_of_measure_id")
+    @Transient
     private Long unitOfMeasureId;
 
-    @Column(name = "unit_of_measure_name")
+    @Column(name = "uom_name")
     private String unitOfMeasureName;
 
 

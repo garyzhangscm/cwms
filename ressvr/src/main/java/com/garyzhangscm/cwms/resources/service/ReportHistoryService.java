@@ -7,6 +7,7 @@ import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.ReportHistoryRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,8 @@ public class ReportHistoryService {
 
     @Autowired
     private ReportHistoryRepository reportHistoryRepository;
+    @Autowired
+    private ReportPrinterConfigurationService reportPrinterConfigurationService;
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
     @Autowired
@@ -231,15 +234,40 @@ public class ReportHistoryService {
                             String type, String filename,
                             String findPrinterBy,
                             String printerName,
-                            int copies)
+                            Integer copies)
         throws  IOException{
 
 
         File reportResultFile = getReportFile(companyId, warehouseId, type, filename);
 
-        String printer = printerService.getPrinter(companyId, warehouseId, ReportType.valueOf(type), findPrinterBy, printerName);
+        // String printer = printerService.getPrinter(companyId, warehouseId, ReportType.valueOf(type), findPrinterBy, printerName);
+
+        // default the printer to the one that passed in. If the user didn't pass in
+        // then we will use the printer defined by the configuration.
+        // if there's no printer defined by the configuration, then we will set printer to null
+        // which will tell the system to use the default printer
+        String printer = printerName;
+
+        ReportPrinterConfiguration reportPrinterConfiguration =
+                reportPrinterConfigurationService.findByWarehouseIdAndReportTypeAndCriteriaValue(
+                        warehouseId, ReportType.valueOf(type), findPrinterBy);
+
+        // printer name is not passed in , let's get from the configuration
+        if (Strings.isBlank(printerName) && Objects.nonNull(reportPrinterConfiguration)) {
+
+            printerName = reportPrinterConfiguration.getPrinterName();
+        }
+        // if copies is not passed in the user, get from the configuration or
+        // default to 1 copy
+        if (Objects.isNull(copies)) {
+            copies = Objects.nonNull(reportPrinterConfiguration) ?
+                    reportPrinterConfiguration.getCopies() :
+                    1;
+        }
+
         logger.debug("We find a printer by criertia {} / {} / {} / {}, printer name passed in? {}, IT IS {}",
                 companyId, warehouseId, type, findPrinterBy, printerName, printer);
+        logger.debug("and will printer copies: {} ", copies );
 
         printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, printer, copies);
 
