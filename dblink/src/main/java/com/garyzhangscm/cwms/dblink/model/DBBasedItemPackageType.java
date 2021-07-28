@@ -34,7 +34,7 @@ public class DBBasedItemPackageType implements Serializable {
 
 
     @Id
-    @Column(name = "int_item_package_type_id")
+    @Column(name = "int_pkg_type_id")
     @JsonProperty(value="id")
     private Long id;
 

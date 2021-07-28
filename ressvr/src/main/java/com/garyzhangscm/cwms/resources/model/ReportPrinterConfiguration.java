@@ -47,6 +47,10 @@ public class ReportPrinterConfiguration extends AuditibleEntity<String> {
     private String printerName;
 
 
+    @Column(name = "copies")
+    private Integer copies = 1;
+
+
     public Long getId() {
         return id;
     }
@@ -85,5 +89,13 @@ public class ReportPrinterConfiguration extends AuditibleEntity<String> {
 
     public void setPrinterName(String printerName) {
         this.printerName = printerName;
+    }
+
+    public Integer getCopies() {
+        return copies;
+    }
+
+    public void setCopies(Integer copies) {
+        this.copies = copies;
     }
 }

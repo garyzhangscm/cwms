@@ -121,6 +121,12 @@ public class ReportPrinterConfigurationService {
     }
 
 
+    public ReportPrinterConfiguration findByWarehouseIdAndReportTypeAndCriteriaValue(
+            Long warehouseId, ReportType reportType, String criteriaValue) {
+        return reportPrinterConfigurationRepository.findByWarehouseIdAndReportTypeAndCriteriaValue(
+                warehouseId, reportType, criteriaValue);
+    }
+
     public String getPrinterName(Long warehouseId, ReportType reportType, String criteriaValue) {
         // we will always print from the default printer right now
         ReportPrinterConfiguration reportPrinterConfiguration
