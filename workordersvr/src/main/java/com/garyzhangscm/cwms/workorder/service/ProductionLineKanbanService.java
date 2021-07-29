@@ -48,6 +48,8 @@ public class ProductionLineKanbanService {
     private WorkOrderProduceTransactionService workOrderProduceTransactionService;
     @Autowired
     private ProductionLineCapacityService productionLineCapacityService;
+    @Autowired
+    private ProductionLineService productionLineService;
 
     public List<ProductionLineKanbanData> getProductionLineKanbanData(Long productionLineId,
                                                                       String productionLineIds) {
@@ -101,6 +103,13 @@ public class ProductionLineKanbanService {
                     productionLineKanbanData.setProductionLineTotalActualOutput(
                             getTotalProducedQuantity(workOrderProduceTransactions)
                     );
+                    ProductionLineActivity checkedInUser
+                            = productionLineService.getCheckedInUser(
+                                productionLineAssignment.getProductionLine());
+                    if (Objects.nonNull(checkedInUser)) {
+
+                        productionLineKanbanData.setShift(checkedInUser.getUsername());
+                    }
 
                     productionLineKanbanDataList.add(productionLineKanbanData);
                 }

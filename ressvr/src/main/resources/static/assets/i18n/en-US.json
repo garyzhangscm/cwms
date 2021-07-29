@@ -1263,5 +1263,6 @@
   "steps.report-printer-configuration.info": "Configuration",
   "steps.report-printer-configuration.confirm": "Confirm",
   "menu.dashboard.production-kanban": "Production Kanban",
-  "report-printer-configuration.copies": "Copies"
+  "report-printer-configuration.copies": "Copies",
+  "finished-rate": "Finished Rate"
 }
