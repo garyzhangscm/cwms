@@ -229,6 +229,8 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("workOrderId", workOrderId);
 
+        logger.debug("Start to find produced inventory by work order id {}",
+                workOrderId);
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -236,7 +238,11 @@ public class InventoryServiceRestemplateClient {
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+        logger.debug("Returned");
+        List<Inventory> inventories = responseBodyWrapper.getData();
+        logger.debug("got {} inventory record produced by work order",
+                inventories.size());
+        return inventories;
 
     }
     public Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder, Inventory inventory) {

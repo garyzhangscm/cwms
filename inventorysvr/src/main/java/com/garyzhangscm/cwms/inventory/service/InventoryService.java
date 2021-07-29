@@ -44,6 +44,8 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -172,6 +174,8 @@ public class InventoryService implements TestDataInitiableService{
                                    Boolean notPutawayInventoryOnly,
                                    boolean includeDetails) {
 
+        LocalDateTime currentLocalDateTime = LocalDateTime.now();
+        logger.debug("====> Start to find all inventory that match criteria @ {}", currentLocalDateTime );
         List<Inventory> inventories =  inventoryRepository.findAll(
                 (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -299,6 +303,11 @@ public class InventoryService implements TestDataInitiableService{
                 }
         );
 
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we found {} record",
+                 ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventories.size());
+        currentLocalDateTime = LocalDateTime.now();
 
         // if we need to load the details, or asked to return the inventory
         // that is only in receiving stage,
@@ -308,6 +317,11 @@ public class InventoryService implements TestDataInitiableService{
         if ((includeDetails || Boolean.TRUE.equals(notPutawayInventoryOnly))
                 && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
+            logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we loaded the details for {} record",
+                    ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                    LocalDateTime.now(),
+                    inventories.size());
+            currentLocalDateTime = LocalDateTime.now();
 
 
             logger.debug("Boolean.TRUE.equals(notPutawayInventoryOnly)? {}", Boolean.TRUE.equals(notPutawayInventoryOnly));
@@ -352,6 +366,10 @@ public class InventoryService implements TestDataInitiableService{
 
             return inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
         }
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we will return inventory for {} record",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventories.size());
         return inventories;
     }
 
@@ -448,17 +466,51 @@ public class InventoryService implements TestDataInitiableService{
 
 
     public void loadInventoryAttribute(List<Inventory> inventories) {
+        // Temp map to save the details so that we don't have to call
+        // web API to get the same value again
+        Map<Long, Location> locationMap = new HashMap<>();
+        Map<Long, UnitOfMeasure> unitOfMeasureHashMap = new HashMap<>();
+        Map<Long, WorkOrder> workOrderHashMap = new HashMap<>();
         for(Inventory inventory : inventories) {
-            loadInventoryAttribute(inventory);
+            loadInventoryAttribute(inventory,
+                    locationMap, unitOfMeasureHashMap, workOrderHashMap);
         }
     }
 
     public void loadInventoryAttribute(Inventory inventory) {
+        loadInventoryAttribute(inventory, new HashMap<>(), new HashMap<>(), new HashMap<>());
+    }
+    public void loadInventoryAttribute(Inventory inventory,
+                                       Map<Long, Location> locationMap,
+                                        Map<Long, UnitOfMeasure> unitOfMeasureHashMap,
+                                        Map<Long, WorkOrder> workOrderHashMap) {
+
+        LocalDateTime currentLocalDateTime = LocalDateTime.now();
+        logger.debug("========> @ {} start to load inventory details for lpn {}",
+                currentLocalDateTime, inventory.getLpn());
+
 
         // Load location information
         if (inventory.getLocationId() != null) {
-            inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
+            if (locationMap.containsKey(inventory.getLocationId())) {
+                inventory.setLocation(locationMap.get(inventory.getLocationId()));
+            }
+            else {
+                Location location = warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId());
+
+                inventory.setLocation(location);
+                locationMap.put(
+                        inventory.getLocationId(),
+                        location
+                );
+            }
         }
+
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the location for LPN {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventory.getLpn());
+        currentLocalDateTime = LocalDateTime.now();
 
         if (inventory.getInventoryMovements() != null && inventory.getInventoryMovements().size() > 0) {
             inventory.getInventoryMovements().forEach(
@@ -469,27 +521,81 @@ public class InventoryService implements TestDataInitiableService{
                     }
             );
         }
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the movement path for LPN {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventory.getLpn());
+        currentLocalDateTime = LocalDateTime.now();
 
         // load the unit of measure details for the packate types
         // logger.debug("Start to load item unit of measure for item package type: {}",
         //         inventory.getItemPackageType());
         inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
             // logger.debug(">> Load information for item unit of measure: {}", itemUnitOfMeasure);
-            itemUnitOfMeasure.setUnitOfMeasure(commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId()));
+            if (unitOfMeasureHashMap.containsKey(itemUnitOfMeasure.getUnitOfMeasureId())) {
+                itemUnitOfMeasure.setUnitOfMeasure(
+                        unitOfMeasureHashMap.get(itemUnitOfMeasure.getUnitOfMeasureId())
+                );
+
+            }
+            else {
+                UnitOfMeasure unitOfMeasure =
+                        commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId());
+                itemUnitOfMeasure.setUnitOfMeasure(unitOfMeasure);
+                unitOfMeasureHashMap.put(
+                        itemUnitOfMeasure.getUnitOfMeasureId(),
+                        unitOfMeasure
+                );
+
+            }
         });
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the unit of measure for LPN {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventory.getLpn());
+        currentLocalDateTime = LocalDateTime.now();
 
         if (inventory.getPickId() != null) {
             inventory.setPick(outbuondServiceRestemplateClient.getPickById(inventory.getPickId()));
         }
 
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the pick for LPN {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventory.getLpn());
+        currentLocalDateTime = LocalDateTime.now();
+
         if (inventory.getAllocatedByPickId() != null) {
             inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
         }
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the allocated by pick for LPN {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventory.getLpn());
+        currentLocalDateTime = LocalDateTime.now();
 
         if (Objects.nonNull(inventory.getWorkOrderId()) &&
                Objects.isNull(inventory.getWorkOrder())) {
-            inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId()));
+            if (workOrderHashMap.containsKey(inventory.getWorkOrderId())) {
+                inventory.setWorkOrder(
+                        workOrderHashMap.get(inventory.getWorkOrderId())
+                );
+            }
+            else {
+                WorkOrder workOrder =
+                        workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId());
+                inventory.setWorkOrder(workOrder);
+                workOrderHashMap.put(
+                        inventory.getWorkOrderId(),
+                        workOrder
+                );
+            }
+
         }
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the work order for LPN {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventory.getLpn());
 
 
 

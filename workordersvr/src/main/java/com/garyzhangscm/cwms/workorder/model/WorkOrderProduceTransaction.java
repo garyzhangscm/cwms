@@ -42,14 +42,14 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     @OneToMany(
             mappedBy = "workOrderProduceTransaction",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     List<WorkOrderProducedInventory> workOrderProducedInventories = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "workOrderProduceTransaction",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     List<WorkOrderByProductProduceTransaction> workOrderByProductProduceTransactions = new ArrayList<>();
@@ -57,7 +57,7 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     @OneToMany(
             mappedBy = "workOrderProduceTransaction",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     List<WorkOrderKPITransaction> workOrderKPITransactions = new ArrayList<>();

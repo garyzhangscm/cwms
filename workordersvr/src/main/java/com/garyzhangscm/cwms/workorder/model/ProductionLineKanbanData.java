@@ -12,7 +12,7 @@ public class ProductionLineKanbanData {
     private Long productionLineTotalTargetOutput;
     private Long productionLineTotalActualOutput;
 
-    private WorkOrderStatus workOrderStatus;
+    private WorkOrderStatus workOrderStatus = WorkOrderStatus.WORK_IN_PROCESS;
 
     private String shift;
 

@@ -1268,5 +1268,6 @@
   "steps.report-printer-configuration.info": "配置",
   "steps.report-printer-configuration.confirm": "确认",
   "menu.dashboard.production-kanban": "生产看板",
-  "report-printer-configuration.copies": "打印份数"
+  "report-printer-configuration.copies": "打印份数",
+  "finished-rate": "完成率"
 }
