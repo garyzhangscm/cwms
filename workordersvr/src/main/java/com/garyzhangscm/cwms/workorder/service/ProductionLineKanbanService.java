@@ -89,6 +89,10 @@ public class ProductionLineKanbanService {
                             false, false
                     );
 
+                    logger.debug("We found {} work order produce transaction for work order {} on line {}",
+                            workOrderProduceTransactions.size(),
+                            productionLineAssignment.getWorkOrder().getNumber(),
+                            productionLineAssignment.getProductionLine().getName());
 
                     productionLineKanbanData.setProductionLineActualOutput(
 
@@ -118,12 +122,22 @@ public class ProductionLineKanbanService {
         LocalDateTime dayStartDateTime = getProductionLineKanbanDataStartTime();
         LocalDateTime dayEndDateTime = getProductionLineKanbanDataEndTime();
 
+        logger.debug("Will get daily output from {} to {}",
+                dayStartDateTime, dayEndDateTime);
+
         // only return the transaction that between the start and end time
         // and get the total quantity of the produced inventory
         return workOrderProduceTransactions.stream().filter(
-                    workOrderProduceTransaction ->
-                            !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime)
-                            & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime)
+                    workOrderProduceTransaction -> {
+                        logger.debug("workOrderProduceTransaction.getCreatedTime(): {}",
+                                workOrderProduceTransaction.getCreatedTime());
+                        logger.debug("!workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime): {}",
+                                !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime));
+                        logger.debug("workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime): {}",
+                                workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime));
+                        return !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime)
+                                        & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime);
+                    }
                 ).map(workOrderProduceTransaction -> workOrderProduceTransaction.getWorkOrderProducedInventories())
                  .flatMap(Collection::stream).mapToLong(WorkOrderProducedInventory::getQuantity).sum();
 

@@ -161,7 +161,8 @@ public class OutboundServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("workOrderLineId", workOrderLine.getId())
-                        .queryParam("warehouseId", workOrderLine.getWorkOrder().getWarehouseId());
+                        .queryParam("warehouseId", workOrderLine.getWorkOrder().getWarehouseId())
+                        .queryParam("loadDetails", false);
 
 
         ResponseBodyWrapper<List<Pick>> responseBodyWrapper
@@ -182,7 +183,8 @@ public class OutboundServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/shortAllocations")
                         .queryParam("warehouseId", workOrderLine.getWorkOrder().getWarehouseId())
-                        .queryParam("workOrderLineId", workOrderLine.getId());
+                        .queryParam("workOrderLineId", workOrderLine.getId())
+                        .queryParam("loadDetails", false);
 
         ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper
                 = restTemplate.exchange(

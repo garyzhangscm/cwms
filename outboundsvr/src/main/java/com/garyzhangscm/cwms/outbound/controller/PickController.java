@@ -50,7 +50,8 @@ public class PickController {
                                    @RequestParam(name="workOrderLineId", required = false, defaultValue = "") Long workOrderLineId,
                                    @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                    @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId,
-                                   @RequestParam(name="containerId", required = false, defaultValue = "") String containerId) {
+                                   @RequestParam(name="containerId", required = false, defaultValue = "") String containerId,
+            @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
 
         logger.debug("Start to find pick by: {}", listId);
         if (StringUtils.isNotBlank(containerId)) {
@@ -58,7 +59,7 @@ public class PickController {
         }
         return pickService.findAll(number, orderId, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
-                shortAllocationId);
+                shortAllocationId, loadDetails);
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)
     public Pick findPick(@PathVariable Long id) {

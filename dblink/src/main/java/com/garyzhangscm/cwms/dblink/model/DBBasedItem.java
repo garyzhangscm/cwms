@@ -57,6 +57,12 @@ public class DBBasedItem implements Serializable{
     @JoinColumn(name="integration_item_family_id")
     private DBBasedItemFamily itemFamily;
 
+    @Column(name = "item_family_name")
+    private String itemFamilyName;
+    @Column(name = "item_family_id")
+    private Long itemFamilyId;
+
+
     @OneToMany(
         mappedBy = "item",
         cascade = CascadeType.ALL,
@@ -217,5 +223,21 @@ public class DBBasedItem implements Serializable{
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getItemFamilyName() {
+        return itemFamilyName;
+    }
+
+    public void setItemFamilyName(String itemFamilyName) {
+        this.itemFamilyName = itemFamilyName;
+    }
+
+    public Long getItemFamilyId() {
+        return itemFamilyId;
+    }
+
+    public void setItemFamilyId(Long itemFamilyId) {
+        this.itemFamilyId = itemFamilyId;
     }
 }

@@ -40,6 +40,12 @@ public class InventoryAdjustmentConfirmation implements Serializable {
 
     private Client client;
 
+    private InventoryQuantityChangeType inventoryQuantityChangeType;
+
+    private String documentNumber;
+
+    private String comment;
+
     @Override
     public String toString() {
         try {
@@ -88,5 +94,29 @@ public class InventoryAdjustmentConfirmation implements Serializable {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public InventoryQuantityChangeType getInventoryQuantityChangeType() {
+        return inventoryQuantityChangeType;
+    }
+
+    public void setInventoryQuantityChangeType(InventoryQuantityChangeType inventoryQuantityChangeType) {
+        this.inventoryQuantityChangeType = inventoryQuantityChangeType;
+    }
+
+    public String getDocumentNumber() {
+        return documentNumber;
+    }
+
+    public void setDocumentNumber(String documentNumber) {
+        this.documentNumber = documentNumber;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

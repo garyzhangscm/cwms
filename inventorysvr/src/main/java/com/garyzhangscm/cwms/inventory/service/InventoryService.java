@@ -1342,7 +1342,8 @@ public class InventoryService implements TestDataInitiableService{
 
         // send integration to add a new inventory
         integrationService.processInventoryAdjustment(inventoryQuantityChangeType, inventory,
-                0L, inventory.getQuantity());
+                0L, inventory.getQuantity(),
+                documentNumber, comment);
 
         return moveInventory(inventory, destinationLocation);
 

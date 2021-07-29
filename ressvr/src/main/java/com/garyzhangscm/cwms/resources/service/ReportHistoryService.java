@@ -255,7 +255,7 @@ public class ReportHistoryService {
         // printer name is not passed in , let's get from the configuration
         if (Strings.isBlank(printerName) && Objects.nonNull(reportPrinterConfiguration)) {
 
-            printerName = reportPrinterConfiguration.getPrinterName();
+            printer = reportPrinterConfiguration.getPrinterName();
         }
         // if copies is not passed in the user, get from the configuration or
         // default to 1 copy

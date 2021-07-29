@@ -239,14 +239,17 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Inventory receiveInventoryFromWorkOrder(Inventory inventory) {
+    public Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder, Inventory inventory) {
 
         // Convert the inventory to JSON and send to the inventory service
+        logger.debug("Will receive inventory under the document number {}",
+                workOrder.getNumber());
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/receive");
+                        .path("/api/inventory/receive")
+                .queryParam("documentNumber", workOrder.getNumber());
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = null;

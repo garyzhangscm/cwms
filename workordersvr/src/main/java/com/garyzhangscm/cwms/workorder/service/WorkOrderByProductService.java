@@ -239,7 +239,8 @@ public class WorkOrderByProductService implements TestDataInitiableService {
         Inventory inventory = workOrderByProductProduceTransaction.createInventory(location);
 
         logger.debug("Inventory: \n{}", inventory);
-        inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(inventory);
+        inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(
+                workOrderByProductProduceTransaction.getWorkOrderByProduct().getWorkOrder(), inventory);
 
         // Let's change the quantities of the by product information
         WorkOrderByProduct workOrderByProduct = workOrderByProductProduceTransaction.getWorkOrderByProduct();

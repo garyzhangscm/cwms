@@ -20,6 +20,7 @@ public class DBBasedIntegration implements Integration{
 
     private static final Logger logger = LoggerFactory.getLogger(DBBasedIntegration.class);
 
+    ////   Inbound
     @Autowired
     DBBasedClientIntegration dbBasedClientIntegration;
 
@@ -54,6 +55,7 @@ public class DBBasedIntegration implements Integration{
     @Autowired
     DBBasedBillOfMaterialIntegration dbBasedBillOfMaterialIntegration;
 
+    ////// Outbound
     @Autowired
     DBBasedInventoryAdjustmentConfirmationIntegration dbBasedInventoryAdjustmentConfirmationIntegration;
     @Autowired
@@ -68,8 +70,9 @@ public class DBBasedIntegration implements Integration{
 
 
 
+
     public void listen() {
-        logger.debug("Will use DBBasedIntegration to process the integration data");
+        logger.debug("Will use DBBasedIntegration to process the inbound integration data");
 
         logger.debug("#1 Customer data");
         dbBasedCustomerIntegration.listen();
@@ -107,6 +110,15 @@ public class DBBasedIntegration implements Integration{
 
     }
 
+
+    @Override
+    public void send() {
+
+        logger.debug("Will use DBBasedIntegration to process the outbound integration data");
+
+        logger.debug("#1 Customer data");
+        dbBasedInventoryAdjustmentConfirmationIntegration.sendToHost();
+    }
     @Override
     public List<DBBasedClient> getClientData() {
         return dbBasedClientIntegration.findAll();
@@ -377,7 +389,7 @@ public class DBBasedIntegration implements Integration{
         return dbBasedInventoryAdjustmentConfirmationIntegration.findById(id);
     }
     public IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
-        return dbBasedInventoryAdjustmentConfirmationIntegration.sendInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
+        return dbBasedInventoryAdjustmentConfirmationIntegration.saveInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
     }
 
     @Override

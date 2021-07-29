@@ -5,11 +5,11 @@ text,i18n,icon,shortcutRoot,sequence,link,badge,menuGroup,name
 "Inventory",menu.main.inventory,anticon-star,,3,,,Main-Menu,Main-Menu-Inventory
 "Inbound",menu.main.inbound,anticon-exception,,4,,,Main-Menu,Main-Menu-Inbound
 "Outbound",menu.main.outbound,anticon-global,,5,,,Main-Menu,Main-Menu-Outbound
-"WorkOrder",menu.main.work-order,anticon-global,,6,,,Main-Menu,Main-Menu-WorkOrder
-"Integration",menu.main.integration,anticon-global,,7,,,Main-Menu,Main-Menu-Integration
+"WorkOrder",menu.main.work-order,anticon-hdd,,6,,,Main-Menu,Main-Menu-WorkOrder
+"Integration",menu.main.integration,anticon-share-alt,,7,,,Main-Menu,Main-Menu-Integration
 "Common",menu.main.common,anticon-setting,,8,,,Main-Menu,Main-Menu-Common
-"WorkTask",menu.main.work-task,anticon-tool,,9,,,Main-Menu,Main-Menu-WorkTask
-"Report",menu.main.report,anticon-tool,,10,,,Main-Menu,Main-Menu-Report
+"WorkTask",menu.main.work-task,anticon-user,,9,,,Main-Menu,Main-Menu-WorkTask
+"Report",menu.main.report,anticon-printer,,10,,,Main-Menu,Main-Menu-Report
 "Util",menu.main.util,anticon-tool,,11,,,Main-Menu,Main-Menu-Util
 "Inbound",menu.mobile.inbound,0xe8d1,,1,,,Mobile-Menu,Mobile-Menu-Inbound
 "Outbound",menu.mobile.outbound,0xeaa8,,2,,,Mobile-Menu,Mobile-Menu-Outbound

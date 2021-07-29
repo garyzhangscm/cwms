@@ -133,7 +133,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="22"/>
+					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productionLocation}]]></textFieldExpression>
 			</textField>
@@ -144,7 +144,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="22"/>
+					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{itemName}]]></textFieldExpression>
 			</textField>
@@ -155,7 +155,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="22"/>
+					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{workOrderNumber}]]></textFieldExpression>
 			</textField>
@@ -166,7 +166,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="22"/>
+					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{completeDate}]]></textFieldExpression>
 			</textField>
@@ -177,7 +177,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="22"/>
+					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
 			</textField>
@@ -188,7 +188,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="22"/>
+					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lpn}]]></textFieldExpression>
 			</textField>
@@ -199,7 +199,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="22"/>
+					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{supervisor}]]></textFieldExpression>
 			</textField>

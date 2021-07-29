@@ -16,108 +16,54 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.integration.model;
+package com.garyzhangscm.cwms.dblink.model;
 
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Entity
-@Table(name = "integration_inventory_adjustment_confirmation")
-public class DBBasedInventoryAdjustmentConfirmation implements Serializable, IntegrationInventoryAdjustmentConfirmationData {
+public class DBBasedInventoryAdjustmentConfirmation implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_inventory_adjustment_confirmation_id")
-    @JsonProperty(value="id")
-    private Long id;
-
-    @Column(name = "item_id")
     private Long itemId;
-    @Column(name = "item_name")
     private String itemName;
 
-    @Column(name = "warehouse_id")
     private Long warehouseId;
 
-    @Column(name = "warehouse_name")
     private String warehouseName;
 
-    @Column(name = "adjust_quantity")
     private Long adjustQuantity;
 
     // Specific the inventory status that
     // user ordered. For example, when return
     // to vendor, we may return DAMAGED inventory
-    @Column(name = "inventory_status_id")
     private Long inventoryStatusId;
 
-    @Column(name = "inventory_status_name")
     private String inventoryStatusName;
 
 
-    @Column(name = "client_id")
     private Long clientId;
 
-    @Column(name = "client_name")
     private String clientName;
 
-
-
-    @Column(name = "inventory_quantity_change_type")
-    @Enumerated(EnumType.STRING)
     private InventoryQuantityChangeType inventoryQuantityChangeType;
 
-    @Column(name = "document_number")
     private String documentNumber;
 
-    @Column(name = "comment")
     private String comment;
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
     private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
     private LocalDateTime lastUpdateTime;
-    @Column(name = "error_message")
     private String errorMessage;
 
 
-    public DBBasedInventoryAdjustmentConfirmation(){}
-
-    public DBBasedInventoryAdjustmentConfirmation(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation){
-
-        setItemId(inventoryAdjustmentConfirmation.getItem().getId());
-        setItemName(inventoryAdjustmentConfirmation.getItem().getName());
-
-        setWarehouseId(inventoryAdjustmentConfirmation.getWarehouse().getId());
-        setWarehouseName(inventoryAdjustmentConfirmation.getWarehouse().getName());
-
-        setAdjustQuantity(inventoryAdjustmentConfirmation.getAdjustQuantity());
-
-        setInventoryStatusId(inventoryAdjustmentConfirmation.getInventoryStatus().getId());
-        setInventoryStatusName(inventoryAdjustmentConfirmation.getInventoryStatus().getName());
-        setInventoryQuantityChangeType(inventoryAdjustmentConfirmation.getInventoryQuantityChangeType());
-        setDocumentNumber(inventoryAdjustmentConfirmation.getDocumentNumber());
-        setComment(inventoryAdjustmentConfirmation.getComment());
-
-        // Client is optional
-        if (Objects.nonNull(inventoryAdjustmentConfirmation.getClient())) {
-
-            setClientId(inventoryAdjustmentConfirmation.getClient().getId());
-            setClientName(inventoryAdjustmentConfirmation.getClient().getName());
-        }
-
-    }
 
     @Override
     public String toString() {
@@ -129,16 +75,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         return null;
     }
 
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
     public Long getItemId() {
         return itemId;
     }
@@ -147,7 +83,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.itemId = itemId;
     }
 
-    @Override
     public String getItemName() {
         return itemName;
     }
@@ -156,7 +91,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.itemName = itemName;
     }
 
-    @Override
     public Long getWarehouseId() {
         return warehouseId;
     }
@@ -165,7 +99,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.warehouseId = warehouseId;
     }
 
-    @Override
     public String getWarehouseName() {
         return warehouseName;
     }
@@ -174,7 +107,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.warehouseName = warehouseName;
     }
 
-    @Override
     public Long getAdjustQuantity() {
         return adjustQuantity;
     }
@@ -183,7 +115,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.adjustQuantity = adjustQuantity;
     }
 
-    @Override
     public Long getInventoryStatusId() {
         return inventoryStatusId;
     }
@@ -192,7 +123,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.inventoryStatusId = inventoryStatusId;
     }
 
-    @Override
     public String getInventoryStatusName() {
         return inventoryStatusName;
     }
@@ -201,7 +131,6 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.inventoryStatusName = inventoryStatusName;
     }
 
-    @Override
     public Long getClientId() {
         return clientId;
     }
@@ -210,48 +139,12 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
         this.clientId = clientId;
     }
 
-    @Override
     public String getClientName() {
         return clientName;
     }
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
-    }
-
-    @Override
-    public IntegrationStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(IntegrationStatus status) {
-        this.status = status;
-    }
-
-    @Override
-    public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
-    }
-
-    @Override
-    public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 
     public InventoryQuantityChangeType getInventoryQuantityChangeType() {
@@ -276,5 +169,37 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public IntegrationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(IntegrationStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getInsertTime() {
+        return insertTime;
+    }
+
+    public void setInsertTime(LocalDateTime insertTime) {
+        this.insertTime = insertTime;
+    }
+
+    public LocalDateTime getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

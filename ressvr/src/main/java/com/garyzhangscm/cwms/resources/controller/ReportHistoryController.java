@@ -110,6 +110,9 @@ public class ReportHistoryController {
 
         logger.debug("Start to print report for {} / {}, copies: {}",
                 type, filename, copies);
+
+        logger.debug("> will find a printer by name {} / or value {}",
+                printerName, findPrinterBy);
         // print the report from the printer attached to the server
         File reportResultFile =
                 reportHistoryService.printReport(companyId, warehouseId, type, filename,

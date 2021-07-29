@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.dblink.client;
+package com.garyzhangscm.cwms.integration.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.dblink.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +37,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 
 @Component
-public class IntegrationServiceRestemplateClient {
+public class HostRestemplateClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(IntegrationServiceRestemplateClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(HostRestemplateClient.class);
 
 
     @Qualifier("getObjMapper")
@@ -47,22 +47,24 @@ public class IntegrationServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
-    @Autowired
-    RestTemplate restTemplate;
-    /***
-    @Value("${integration.host.ip}")
+/**
+    @Value("${dblink.host.ip}")
     private String hostIP;
-    @Value("${integration.host.port}")
+
+    @Value("${dblink.host.port}")
     private String hostPort;
 **/
+    @Autowired
+    RestTemplate restTemplate;
 
     public <T> String sendIntegrationData(String subUrl, T data) throws JsonProcessingException {
 
+        logger.debug("Start to send integration data to url {}",
+                subUrl);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        // .scheme("http").host("10.0.10.37").port(32262)
-                        .path("/api/integration/integration-data/" + subUrl);
+                        .path("/api/dblink/integration-data/" + subUrl);
 
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
