@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.dblink.service;
 
+import com.garyzhangscm.cwms.dblink.model.DBBasedInventoryAdjustmentConfirmation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,10 @@ public class RecordCopyService {
     @Autowired
     private DBBasedItemPackageTypeService dbBasedItemPackageTypeService;
 
-    @Scheduled(fixedDelay = 15000)
+    @Autowired
+    private DBBasedInventoryAdjustmentConfirmationIntegration dbBasedInventoryAdjustmentConfirmationIntegration;
+
+    @Scheduled(fixedDelay = 1000)
     public void copyRecord() {
 
         logger.debug("# copy data data @ {}", LocalDateTime.now());
@@ -36,5 +40,11 @@ public class RecordCopyService {
         logger.debug("@{}, Start to process item package type data", LocalDateTime.now());
         dbBasedItemPackageTypeService.sendIntegrationData();
 
+    }
+
+    public DBBasedInventoryAdjustmentConfirmation saveIntegration(DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation) {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.save(
+                dbBasedInventoryAdjustmentConfirmation
+        );
     }
 }

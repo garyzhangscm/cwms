@@ -10,6 +10,7 @@ public interface Integration {
 
     void listen();
 
+    void send();
     //
     // Integration - Client
     //

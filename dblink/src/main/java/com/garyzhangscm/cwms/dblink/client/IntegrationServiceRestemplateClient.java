@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -48,12 +49,19 @@ public class IntegrationServiceRestemplateClient {
 
     @Autowired
     RestTemplate restTemplate;
+    /***
+    @Value("${integration.host.ip}")
+    private String hostIP;
+    @Value("${integration.host.port}")
+    private String hostPort;
+**/
 
     public <T> String sendIntegrationData(String subUrl, T data) throws JsonProcessingException {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("server.example.invalid").port(32262)
+                        .scheme("http").host("zuulserver").port(5555)
+                        // .scheme("http").host("server.example.invalid").port(32262)
                         .path("/api/integration/integration-data/" + subUrl);
 
         ResponseBodyWrapper<String> responseBodyWrapper

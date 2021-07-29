@@ -71,6 +71,16 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
 
 
 
+    @Column(name = "inventory_quantity_change_type")
+    @Enumerated(EnumType.STRING)
+    private InventoryQuantityChangeType inventoryQuantityChangeType;
+
+    @Column(name = "document_number")
+    private String documentNumber;
+
+    @Column(name = "comment")
+    private String comment;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -96,6 +106,9 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
 
         setInventoryStatusId(inventoryAdjustmentConfirmation.getInventoryStatus().getId());
         setInventoryStatusName(inventoryAdjustmentConfirmation.getInventoryStatus().getName());
+        setInventoryQuantityChangeType(inventoryAdjustmentConfirmation.getInventoryQuantityChangeType());
+        setDocumentNumber(inventoryAdjustmentConfirmation.getDocumentNumber());
+        setComment(inventoryAdjustmentConfirmation.getComment());
 
         // Client is optional
         if (Objects.nonNull(inventoryAdjustmentConfirmation.getClient())) {
@@ -239,5 +252,29 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public InventoryQuantityChangeType getInventoryQuantityChangeType() {
+        return inventoryQuantityChangeType;
+    }
+
+    public void setInventoryQuantityChangeType(InventoryQuantityChangeType inventoryQuantityChangeType) {
+        this.inventoryQuantityChangeType = inventoryQuantityChangeType;
+    }
+
+    public String getDocumentNumber() {
+        return documentNumber;
+    }
+
+    public void setDocumentNumber(String documentNumber) {
+        this.documentNumber = documentNumber;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

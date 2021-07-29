@@ -138,28 +138,31 @@ public class InventoryController {
     }
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/receive")
-    public Inventory addInventoryByReceiving(@RequestBody Inventory inventory) {
-        logger.debug("Start to receive inventory: {}", inventory);
+    public Inventory addInventoryByReceiving(@RequestBody Inventory inventory,
+                                             @RequestParam(name = "documentNumber", required = false, defaultValue = "") String documentNumber,
+                                             @RequestParam(name = "comment", required = false, defaultValue = "") String comment) {
+        logger.debug("Start to receive inventory: {}, document number: {}, comment: {}",
+                inventory.getLpn(), documentNumber, comment);
         // We may receive  from a receipt, or a work order
         if (Objects.nonNull(inventory.getReceiptId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING, documentNumber, comment);
         }
         else if (Objects.nonNull(inventory.getWorkOrderId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING, documentNumber, comment);
         }
         else if (Objects.nonNull(inventory.getWorkOrderLineId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL, documentNumber, comment);
         }
         else if (Objects.nonNull(inventory.getWorkOrderByProductId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT, documentNumber, comment);
         }
         else {
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN, documentNumber, comment);
         }
     }
 

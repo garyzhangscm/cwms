@@ -16,11 +16,18 @@ public class IntegrationProcessingJob {
     @Autowired
     private Integration integration;
 
-    @Scheduled(fixedDelay = 15000)
-    public void processIntegration() {
+    @Scheduled(fixedDelay = 2000)
+    public void processInboundIntegration() {
 
-        logger.debug("# porcess integration data @ {}", LocalDateTime.now());
+        logger.debug("# process inbound integration data @ {}", LocalDateTime.now());
         integration.listen();
+    }
+
+    @Scheduled(fixedDelay = 2000)
+    public void processOutboundIntegration() {
+
+        logger.debug("# process outbound integration data @ {}", LocalDateTime.now());
+        integration.send();
     }
 
 

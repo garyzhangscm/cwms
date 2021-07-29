@@ -299,7 +299,7 @@ public class WorkOrderCompleteTransactionService {
                 workOrder.getNumber(), workOrderLine.getNumber());
         Inventory inventory = returnMaterialRequest.createInventory(workOrder, workOrderLine, location);
 
-        return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(inventory);
+        return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder, inventory);
     }
 
 

@@ -1262,5 +1262,6 @@
   "page.report-printer-configuration.maintenance.modify": "Report Printer Configuration Maintenance",
   "steps.report-printer-configuration.info": "Configuration",
   "steps.report-printer-configuration.confirm": "Confirm",
-  "menu.dashboard.production-kanban": "Production Kanban"
+  "menu.dashboard.production-kanban": "Production Kanban",
+  "report-printer-configuration.copies": "Copies"
 }

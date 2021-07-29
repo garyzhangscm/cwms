@@ -10,6 +10,10 @@ import com.garyzhangscm.cwms.integration.repository.DBBasedItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -44,6 +48,9 @@ public class DBBasedItemIntegration {
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
+    @Value("${integration.record.process.limit:100}")
+    int recordLimit;
+
 
     public List<DBBasedItem> findAll() {
         return dbBasedItemRepository.findAll();
@@ -74,7 +81,10 @@ public class DBBasedItemIntegration {
     }
 
     private List<DBBasedItem> findPendingIntegration() {
-        return dbBasedItemRepository.findAll(
+        Pageable limit = PageRequest.of(0,recordLimit);
+
+        Page<DBBasedItem> dbBasedItemPage
+                = dbBasedItemRepository.findAll(
                 (Root<DBBasedItem> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -82,8 +92,10 @@ public class DBBasedItemIntegration {
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
-                }
-        ).stream().limit(30).collect(Collectors.toList());
+                },
+                limit
+        );
+        return dbBasedItemPage.getContent();
     }
 
     private DBBasedItem save(DBBasedItem dbBasedItem) {

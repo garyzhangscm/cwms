@@ -39,12 +39,23 @@ public class InventoryAdjustmentConfirmation implements Serializable {
 
     private Client client;
 
-    public InventoryAdjustmentConfirmation(Warehouse warehouse, Inventory inventory, Long originalQuantity, Long newQuantity) {
+    private InventoryQuantityChangeType inventoryQuantityChangeType;
+
+    private String documentNumber;
+
+    private String comment;
+
+    public InventoryAdjustmentConfirmation(InventoryQuantityChangeType inventoryQuantityChangeType,
+                                           Warehouse warehouse, Inventory inventory, Long originalQuantity,
+                                           Long newQuantity, String documentNumber, String comment) {
+        this.inventoryQuantityChangeType = inventoryQuantityChangeType;
         this.item = inventory.getItem();
         this.warehouse = warehouse;
         this.adjustQuantity = newQuantity - originalQuantity;
         this.inventoryStatus = inventory.getInventoryStatus();
         this.client = inventory.getItem().getClient();
+        this.documentNumber = documentNumber;
+        this.comment = comment;
     }
 
     @Override
@@ -95,5 +106,29 @@ public class InventoryAdjustmentConfirmation implements Serializable {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public InventoryQuantityChangeType getInventoryQuantityChangeType() {
+        return inventoryQuantityChangeType;
+    }
+
+    public void setInventoryQuantityChangeType(InventoryQuantityChangeType inventoryQuantityChangeType) {
+        this.inventoryQuantityChangeType = inventoryQuantityChangeType;
+    }
+
+    public String getDocumentNumber() {
+        return documentNumber;
+    }
+
+    public void setDocumentNumber(String documentNumber) {
+        this.documentNumber = documentNumber;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

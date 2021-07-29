@@ -111,6 +111,20 @@ public class IntegrationService {
 
     public void processInventoryAdjustment(InventoryQuantityChangeType inventoryQuantityChangeType,
                                            Inventory inventory, Long originalQuantity, Long newQuantity) {
+        processInventoryAdjustment(inventoryQuantityChangeType,
+                inventory, originalQuantity, newQuantity, "", "");
+    }
+    public void processInventoryAdjustment(InventoryQuantityChangeType inventoryQuantityChangeType,
+                                           Inventory inventory, Long originalQuantity, Long newQuantity,
+                                           String documentNumber, String comment) {
+        logger.debug("Start to sent inventory adjust integration data: ");
+        logger.debug("> inventoryQuantityChangeType: {}", inventoryQuantityChangeType);
+        logger.debug("> inventory: {}", inventory.getLpn());
+        logger.debug("> originalQuantity: {}", originalQuantity);
+        logger.debug("> newQuantity: {}", newQuantity);
+        logger.debug("> documentNumber: {}", documentNumber);
+        logger.debug("> comment: {}", comment);
+        /**
         if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING) ||
                 inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)||
                 inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RETURN_MATERAIL)||
@@ -120,25 +134,31 @@ public class IntegrationService {
             // return material from a work order, we will not send integration data for individual
             // inventory. instead we will send integration data for the whole receipt
             return;
-        }
+        }**/
         Warehouse warehouse = inventory.getWarehouse();
         if (Objects.isNull(warehouse)) {
             warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(inventory.getWarehouseId());
         }
-        processInventoryAdjustment(inventoryQuantityChangeType, warehouse, inventory, originalQuantity, newQuantity);
+        processInventoryAdjustment(inventoryQuantityChangeType, warehouse, inventory,
+                originalQuantity, newQuantity, documentNumber, comment);
 
     }
     public void processInventoryAdjustment(InventoryQuantityChangeType inventoryQuantityChangeType, Warehouse warehouse,
-                                           Inventory inventory, Long originalQuantity, Long newQuantity) {
+                                           Inventory inventory, Long originalQuantity, Long newQuantity,
+                                           String documentNumber, String comment) {
 
 
+        /**
         if (inventoryQuantityChangeType.equals(InventoryQuantityChangeType.RECEIVING)) {
             // when we are receiving inventory, we will not send integration data for individual
             // inventory. instead we will send integration data for the whole receipt
             return;
         }
+         **/
         InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation =
-                new InventoryAdjustmentConfirmation(warehouse, inventory, originalQuantity, newQuantity);
+                new InventoryAdjustmentConfirmation(inventoryQuantityChangeType,
+                        warehouse, inventory, originalQuantity, newQuantity,
+                        documentNumber, comment);
 
         logger.debug("Will send inventory adjust confirmation\n ");
         kafkaSender.send(inventoryAdjustmentConfirmation);
