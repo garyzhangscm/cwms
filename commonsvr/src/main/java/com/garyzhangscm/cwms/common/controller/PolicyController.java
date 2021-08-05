@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
+import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.Client;
@@ -43,7 +44,7 @@ public class PolicyController {
 
     @RequestMapping(value="/policies", method = RequestMethod.POST)
     public Policy addPolicy(@RequestBody Policy policy) {
-        return policyService.save(policy);
+        return policyService.saveOrUpdate(policy);
     }
 
     @RequestMapping(value="/policies/{id}", method = RequestMethod.GET)
@@ -67,6 +68,13 @@ public class PolicyController {
         Policy policy = policyService.findById(id);
         policyService.delete(id);
         return policy;
+    }
+
+    @RequestMapping(value="/policies", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removePolicy(@RequestParam Long warehouseId,
+                                            @RequestParam(name="key", required = false, value = "") String key) {
+        policyService.removePolicy(warehouseId, key);
+        return ResponseBodyWrapper.success("policy returned for warehouse id: " + warehouseId + ", key: " + key);
     }
 
 }

@@ -430,4 +430,9 @@ public class LocationGroupService implements TestDataInitiableService {
         }
         return save(locationGroup);
     }
+
+    @Transactional
+    public void removeLocationGroups(Warehouse warehouse) {
+        locationGroupRepository.deleteByWarehouseId(warehouse.getId());
+    }
 }

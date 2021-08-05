@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -48,5 +49,10 @@ public interface LocationGroupRepository extends JpaRepository<LocationGroup, Lo
 
     @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.shippedOrder = true and lg.warehouse.id = :warehouseId" )
     List<LocationGroup> getShippedOrderLocationGroup(Long warehouseId);
+
+
+    @Modifying
+    @Query( "delete from LocationGroup lg where lg.warehouse.id = :warehouseId" )
+    void deleteByWarehouseId(Long warehouseId);
 
 }

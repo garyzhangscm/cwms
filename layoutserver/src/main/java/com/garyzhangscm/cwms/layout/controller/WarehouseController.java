@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.layout.exception.GenericException;
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
@@ -54,7 +55,7 @@ public class WarehouseController {
 
     @RequestMapping(value="/warehouses", method=RequestMethod.POST)
     public Warehouse addWarehouses(@RequestParam Long companyId,
-                                   @RequestBody Warehouse warehouse) {
+                                   @RequestBody Warehouse warehouse) throws JsonProcessingException {
         return warehouseService.addWarehouses(companyId, warehouse);
     }
 
@@ -69,8 +70,7 @@ public class WarehouseController {
 
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.DELETE)
     public Warehouse removeWarehouses(@PathVariable long id) {
-        Warehouse removedWarehouse = warehouseService.findById(id);
-        warehouseService.delete(id);
+        Warehouse removedWarehouse = warehouseService.removeWarehouses(id);
         return removedWarehouse;
     }
 

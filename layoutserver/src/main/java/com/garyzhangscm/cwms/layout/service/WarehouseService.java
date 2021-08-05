@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.layout.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
@@ -30,8 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Column;
 import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +53,15 @@ public class WarehouseService implements TestDataInitiableService {
     @Autowired
     private WarehouseRepository warehouseRepository;
     @Autowired
+    private LocationGroupService locationGroupService;
+    @Autowired
+    private LocationService locationService;
+    @Autowired
+    private LocationGroupTypeService locationGroupTypeService;
+    @Autowired
     private CompanyService companyService;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private FileService fileService;
 
@@ -217,9 +229,313 @@ public class WarehouseService implements TestDataInitiableService {
         return saveOrUpdate(existingWarehouse);
     }
 
-    public Warehouse addWarehouses(Long companyId, Warehouse warehouse) {
+    public Warehouse addWarehouses(Long companyId, Warehouse warehouse) throws JsonProcessingException {
         Company company = companyService.findById(companyId);
         warehouse.setCompany(company);
-        return saveOrUpdate(warehouse);
+        Warehouse newWarehouse = saveOrUpdate(warehouse);
+
+        // we will need to setup all the default configuration /
+        // location group and locations
+        setupDefaultLocationGroupAndLocation(newWarehouse);
+        setupDefaultConfiguration(newWarehouse);
+
+
+        return newWarehouse;
+    }
+
+    private void setupDefaultLocationGroupAndLocation(Warehouse newWarehouse) {
+        // Setup receiving stage location group and one example location
+        // Receiving Stage
+        LocationGroup locationGroup = setupLocationGroup(newWarehouse, "RECV_STG", "Receiving Stage", "Receive_Stage",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        // Receiving Stage Location
+        for(int i = 0; i < 20; i++) {
+            String locationName = "RSTG0" + String.format("%02d", i);
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "201",
+                    999.0, 999.0, 999.0,
+                    20100000L + i, 20100000L + i,20100000L + i,
+                    999999.0, 100.0, true);
+        }
+
+        // Receiving Dock
+        locationGroup = setupLocationGroup(newWarehouse, "RECV_DCK", "Receiving Dock", "Receive_Dock",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        // Receiving Dock Location
+
+        for(int i = 0; i < 20; i++) {
+            String locationName = "RDOCK0" + String.format("%02d", i);
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "301",
+                    999.0, 999.0, 999.0,
+                    30100000L + i, 30100000L + i,30100000L + i,
+                    999999.0, 100.0, true);
+        }
+
+        // Receipt. Inventory received from the receipt and without any destination location will be
+        // in those locations temporarily
+        // locations will be created temporarily in the name of the receipt number
+        locationGroup = setupLocationGroup(newWarehouse, "RECEIPT", "Receipt", "RECEIPT",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+
+        // Shipping Stage
+        locationGroup = setupLocationGroup(newWarehouse, "SHIP_STG", "Shipping Stage", "Shipping_Stage",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+
+        // Shipping Stage Locations
+        for(int i = 0; i < 20; i++) {
+            String locationName = "SSTG00" + String.format("%02d", i);
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "401",
+                    999.0, 999.0, 999.0,
+                    40100000L + i, 40100000L + i,40100000L + i,
+                    999999.0, 100.0, true);
+
+        }
+
+        // Shipping Dock
+        locationGroup = setupLocationGroup(newWarehouse, "SHIP_DCK", "Shipping Dock", "Shipping_Dock",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        // Shipping Dock Locations
+        for(int i = 0; i < 20; i++) {
+            String locationName = "SDOCK0" + String.format("%02d", i);
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "401",
+                    999.0, 999.0, 999.0,
+                    40100000L + i, 40100000L + i,40100000L + i,
+                    999999.0, 100.0, true);
+
+        }
+
+        // dispatched trailer location group
+        // location will be created by the name of trailer number
+        locationGroup = setupLocationGroup(newWarehouse, "DISPATCHED", "Dispatched Trailer", "Dispatched",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+
+        // Trailer locations
+        locationGroup = setupLocationGroup(newWarehouse, "TRAILER", "Trailer", "Trailer",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+
+        // RF locations
+        locationGroup = setupLocationGroup(newWarehouse, "RF", "RF locations", "RF",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+
+        for(int i = 0; i < 20; i++) {
+            String locationName = "RF0" + String.format("%02d", i);
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "401",
+                    999.0, 999.0, 999.0,
+                    50100000L + i, 50100000L + i,50100000L + i,
+                    999999.0, 100.0, true);
+
+        }
+
+        // Yard Locations
+        locationGroup = setupLocationGroup(newWarehouse, "YARD", "Yard for parking", "Yard",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+
+        // Pickup and Deposit locations
+        locationGroup = setupLocationGroup(newWarehouse, "P&D", "Pickup and Deposit", "PickupDeposit",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,true);
+
+        // Removed inventory(used by system)
+        locationGroup = setupLocationGroup(newWarehouse, "Default_Removed_Inventory_Location", "Default Location For Removed Inventory",
+                "Removed_Inventory",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        setupSampleLocation(newWarehouse, locationGroup, "REMOVE_INV", "1001",
+                999.0, 999.0, 999.0,
+                100100000L, 100200000L,100100000L ,
+                999999.0, 100.0, true);
+
+        // locations for inventory being removed by count / audit count
+        locationGroup = setupLocationGroup(newWarehouse, "Audit_Count_Inventory_Location", "Location For Inventory Removed By Audit Count",
+                "Removed_Inventory",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+
+        setupSampleLocation(newWarehouse, locationGroup, "AUDIT", "1001",
+                999.0, 999.0, 999.0,
+                100100001L, 100200001L,100200001L ,
+                999999.0, 100.0, true);
+        setupSampleLocation(newWarehouse, locationGroup, "COUNT", "1001",
+                999.0, 999.0, 999.0,
+                100100002L, 10100002L,100100002L ,
+                999999.0, 100.0, true);
+
+        // locations for inventory being removed by adjustment
+        locationGroup = setupLocationGroup(newWarehouse, "Inventory_Adjustment_Location", "Location For Inventory Removed By Adjust",
+                "Removed_Inventory",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        setupSampleLocation(newWarehouse, locationGroup, "INVADJ", "1001",
+                999.0, 999.0, 999.0,
+                100100003L, 10100003L,100100003L ,
+                999999.0, 100.0, true);
+
+        // locations for inventory removed by receiving
+        locationGroup = setupLocationGroup(newWarehouse, "Inventory_Receiving_Location", "Location For Inventory Removed By Inventory receiving",
+                "Removed_Inventory",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        setupSampleLocation(newWarehouse, locationGroup, "INVRCV", "1001",
+                999.0, 999.0, 999.0,
+                100100004L, 10100004L,100100004L ,
+                999999.0, 100.0, true);
+
+        // Production Line
+        locationGroup = setupLocationGroup(newWarehouse, "ProductionLine", "Production Line",
+                "ProductionLine",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        for(int i = 0; i < 20; i++) {
+            String locationName = "LINE" + String.format("%02d", i);
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "601",
+                    999.0, 999.0, 999.0,
+                    60100000L + i, 60100000L + i,60100000L + i,
+                    999999.0, 100.0, true);
+
+        }
+        // Production Line Inbound
+        locationGroup = setupLocationGroup(newWarehouse, "ProductionLineInbound", "Production Line Inbound Stage",
+                "ProductionLineInbound",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        for(int i = 0; i < 20; i++) {
+            String locationName = "LINE" + String.format("%02d", i) + "-IN";
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "602",
+                    999.0, 999.0, 999.0,
+                    60200000L + i, 60200000L + i,60200000L + i,
+                    999999.0, 100.0, true);
+
+        }
+        // production line outbound
+        locationGroup = setupLocationGroup(newWarehouse, "ProductionLineOutbound", "Production Line Outbound Stage",
+                "ProductionLineOutbound",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+        for(int i = 0; i < 20; i++) {
+            String locationName = "LINE" + String.format("%02d", i) + "-OUT";
+            setupSampleLocation(newWarehouse, locationGroup, locationName, "603",
+                    999.0, 999.0, 999.0,
+                    60300000L + i, 60300000L + i,60300000L + i,
+                    999999.0, 100.0, true);
+
+        }
+        /// order that is shipped
+        // locations will be created per order in the name of order number
+        locationGroup = setupLocationGroup(newWarehouse, "Order", "Order",
+                "Shipped_Order",
+                false, false, false,false,null,
+                InventoryConsolidationStrategy.NONE,false,false);
+    }
+
+    private Location setupSampleLocation(Warehouse warehouse, LocationGroup locationGroup, String locationName,
+                                     String aisle, Double length, Double width, Double height,
+                                     Long pickSequence, Long putawaySequence, Long countSequence,
+                                     Double capacity, Double fillPercentage, boolean enabled) {
+        Location location = new Location();
+        location.setWarehouse(warehouse);
+        location.setLocationGroup(locationGroup);
+        location.setName(locationName);
+        location.setAisle(aisle);
+        location.setLength(length);
+        location.setWidth(width);
+        location.setHeight(height);
+        location.setPickSequence(pickSequence);
+        location.setPutawaySequence(putawaySequence);
+        location.setCountSequence(countSequence);
+        location.setCapacity(capacity);
+        location.setFillPercentage(fillPercentage);
+        location.setEnabled(enabled);
+        return locationService.save(location);
+
+    }
+
+    private LocationGroup setupLocationGroup(
+            Warehouse warehouse, String name, String description, String locationGroupTypeName,
+            boolean pickable, boolean storable, boolean countable,
+            boolean trackingVolume, LocationVolumeTrackingPolicy locationVolumeTrackingPolicy,
+            InventoryConsolidationStrategy inventoryConsolidationStrategy,
+            boolean allowCartonization, boolean adjustable) {
+        LocationGroupType locationGroupType = locationGroupTypeService.findByName(locationGroupTypeName);
+        LocationGroup locationGroup = new LocationGroup();
+        locationGroup.setLocationGroupType(locationGroupType);
+        locationGroup.setWarehouse(warehouse);
+        locationGroup.setName(name);
+        locationGroup.setDescription(description);
+        locationGroup.setPickable(pickable);
+        locationGroup.setStorable(storable);
+        locationGroup.setCountable(countable);
+        locationGroup.setTrackingVolume(trackingVolume);
+        locationGroup.setVolumeTrackingPolicy(locationVolumeTrackingPolicy);
+        locationGroup.setInventoryConsolidationStrategy(inventoryConsolidationStrategy);
+        locationGroup.setAllowCartonization(allowCartonization);
+        locationGroup.setAdjustable(adjustable);
+
+        return locationGroupService.save(locationGroup);
+
+
+    }
+
+    private void setupDefaultConfiguration(Warehouse newWarehouse) throws JsonProcessingException {
+
+        Policy policy = setupPolicy(newWarehouse,
+                "LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION","REMOVE_INV","Location to Save Removed Inventory");
+        commonServiceRestemplateClient.createPolicy(policy);
+
+        policy = setupPolicy(newWarehouse,
+                "LOCATION-AUDIT-COUNT","AUDIT","Location to Save Removed Inventory by Audit Count");
+        commonServiceRestemplateClient.createPolicy(policy);
+
+        policy = setupPolicy(newWarehouse,
+                "LOCATION-COUNT","COUNT","Location to Save Removed Inventory by Count");
+        commonServiceRestemplateClient.createPolicy(policy);
+
+        policy = setupPolicy(newWarehouse,
+                "LOCATION-INVENTORY-ADJUST","INVADJ","Location to Save Removed Inventory by Inventory Adjustment");
+        commonServiceRestemplateClient.createPolicy(policy);
+
+        policy = setupPolicy(newWarehouse,
+                "LOCATION-RECEIVING","INVRCV","Location to Save Removed Inventory by Inventory Receiving");
+        commonServiceRestemplateClient.createPolicy(policy);
+
+        policy = setupPolicy(newWarehouse,
+                "LOCATION-GROUP-RECEIPT","RECEIPT","Location Group for Receipt");
+        commonServiceRestemplateClient.createPolicy(policy);
+
+        policy = setupPolicy(newWarehouse,
+                "JOB-EMERGENCY-REPLENISHMENT-MAX-COUNT","50","Max emergency replenishment can be processed in one round");
+        commonServiceRestemplateClient.createPolicy(policy);
+
+    }
+
+    private Policy setupPolicy(Warehouse warehouse, String key, String value, String description) {
+        Policy policy = new Policy();
+        policy.setWarehouseId(warehouse.getId());
+        policy.setKey(key);
+        policy.setValue(value);
+        policy.setDescription(description);
+        return policy;
+    }
+
+    public Warehouse removeWarehouses(long id) {
+        Warehouse warehouse = findById(id);
+        // remove the location and location group
+
+        locationService.removeLocations(warehouse);
+        locationGroupService.removeLocationGroups(warehouse);
+
+        // remove the configuration
+        commonServiceRestemplateClient.removePolicy(warehouse, "");
+
+        delete(id);
+
+        return warehouse;
     }
 }

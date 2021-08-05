@@ -44,6 +44,12 @@
 			<name>your custom repo</name>
 			<url>https://mvnrepository.com</url>
 		</repository>
+		<repository>
+			<id>central</id>
+			<name>Maven Central</name>
+			<url>https://repo1.maven.org/maven2/</url>
+		</repository>
+
 
 	</repositories>
 
@@ -193,8 +199,16 @@
 			<version>2.0.24</version>
 		</dependency>
 
-
-
+		<!-- Send Email --><!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-mail -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+			<version>2.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+		</dependency>
 
 
 	</dependencies>
@@ -216,6 +230,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${project.parent.version}</version>
 				<configuration>
 					<layout>ZIP</layout>
 				</configuration>

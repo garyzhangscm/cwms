@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -93,6 +94,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "location")
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -144,6 +146,7 @@ public class WarehouseLayoutServiceRestemplateClient {
             return locations[0];
         }
     }
+    @Cacheable(cacheNames = "warehouse")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

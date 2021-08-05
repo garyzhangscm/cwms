@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.inventory.model.WorkOrderLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -44,6 +45,7 @@ public class WorkOrderServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Cacheable(cacheNames = "workOrder")
     public WorkOrder getWorkOrderById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

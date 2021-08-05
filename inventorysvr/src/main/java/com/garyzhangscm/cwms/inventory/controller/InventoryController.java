@@ -55,12 +55,14 @@ public class InventoryController {
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
-                                              @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly) {
+                                              @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+                                              @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, inventoryIds, notPutawayInventoryOnly);
+                pickIds, lpn, inventoryIds, notPutawayInventoryOnly,
+                includeDetails);
     }
     @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
     public int getInventoryCount(@RequestParam Long warehouseId,
@@ -110,8 +112,9 @@ public class InventoryController {
     public List<Inventory> consumeInventoriesForWorkOrderLine(@PathVariable Long id,
                                                               @RequestParam Long warehouseId,
                                                               @RequestParam  Long quantity,
-                                                              @RequestParam  Long locationId) {
-        return inventoryService.consumeInventoriesForWorkOrderLine(id,warehouseId,  quantity, locationId);
+                                                              @RequestParam  Long locationId,
+                                                              @RequestParam(name = "inventoryId", required = false, defaultValue = "")  Long inventoryId) {
+        return inventoryService.consumeInventoriesForWorkOrderLine(id,warehouseId,  quantity, locationId, inventoryId);
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}")
@@ -148,10 +151,6 @@ public class InventoryController {
 
             return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING, documentNumber, comment);
         }
-        else if (Objects.nonNull(inventory.getWorkOrderId())){
-
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING, documentNumber, comment);
-        }
         else if (Objects.nonNull(inventory.getWorkOrderLineId())){
 
             return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL, documentNumber, comment);
@@ -159,6 +158,10 @@ public class InventoryController {
         else if (Objects.nonNull(inventory.getWorkOrderByProductId())){
 
             return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT, documentNumber, comment);
+        }
+        else if (Objects.nonNull(inventory.getWorkOrderId())){
+
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING, documentNumber, comment);
         }
         else {
 

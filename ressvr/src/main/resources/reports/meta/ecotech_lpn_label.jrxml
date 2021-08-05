@@ -28,12 +28,12 @@
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SimSun" size="29"/>
+					<font fontName="SimSun" size="25"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{production_location}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="235" y="120" width="225" height="60" uuid="2e2d5e03-a278-4136-b115-57d6c9cc284a">
+				<reportElement x="20" y="120" width="509" height="60" uuid="2e2d5e03-a278-4136-b115-57d6c9cc284a">
 					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
@@ -44,24 +44,13 @@
 				</jr:barbecue>
 			</componentElement>
 			<textField>
-				<reportElement x="22" y="70" width="178" height="40" uuid="e4a6aea3-7875-48e8-a933-76f0f2d34195">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement>
-					<font fontName="SimSun" size="29"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{item.name}]]></textFieldExpression>
-			</textField>
-			<textField>
 				<reportElement x="22" y="196" width="178" height="40" uuid="b9a5604b-a706-486e-8ae8-66cb8c89054c">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SimSun" size="29"/>
+					<font fontName="SimSun" size="25"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{work_order.number}]]></textFieldExpression>
 			</textField>
@@ -72,7 +61,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SimSun" size="29"/>
+					<font fontName="SimSun" size="25"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{complete_date}]]></textFieldExpression>
 			</textField>
@@ -83,23 +72,23 @@
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SimSun" size="29"/>
+					<font fontName="SimSun" size="25"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="22" y="346" width="178" height="40" uuid="9c022ffa-8c42-4f7e-8eac-bd068d7d7cd7">
+				<reportElement x="22" y="430" width="178" height="40" uuid="9c022ffa-8c42-4f7e-8eac-bd068d7d7cd7">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SimSun" size="29"/>
+					<font fontName="SimSun" size="25"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{lpn}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="230" y="396" width="225" height="40" uuid="3e82613b-35f8-4c6d-9a3c-cf536be064c6">
+				<reportElement x="30" y="490" width="499" height="140" uuid="3e82613b-35f8-4c6d-9a3c-cf536be064c6">
 					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
@@ -111,13 +100,13 @@
 				</jr:barbecue>
 			</componentElement>
 			<textField>
-				<reportElement x="22" y="446" width="178" height="40" uuid="7ef08f99-6509-40e1-8039-65ec104b9ed8">
+				<reportElement x="20" y="360" width="178" height="40" uuid="7ef08f99-6509-40e1-8039-65ec104b9ed8">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SimSun" size="29"/>
+					<font fontName="SimSun" size="25"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{supervisor}]]></textFieldExpression>
 			</textField>
@@ -133,73 +122,73 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="16"/>
+					<font size="25" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productionLocation}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="232" y="70" width="297" height="40" uuid="508f4778-37c8-4cef-85c3-496b482c2f79">
+				<reportElement x="22" y="70" width="507" height="40" uuid="508f4778-37c8-4cef-85c3-496b482c2f79">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
-				<textElement textAlignment="Left">
-					<font size="16"/>
+				<textElement textAlignment="Center">
+					<font size="29"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{itemName}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="232" y="196" width="297" height="40" uuid="05b3ef26-fc32-4f44-ab32-f61ea891b088">
+				<reportElement x="232" y="196" width="338" height="40" uuid="05b3ef26-fc32-4f44-ab32-f61ea891b088">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="16"/>
+					<font size="25" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{workOrderNumber}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="232" y="246" width="297" height="40" uuid="a83fd7de-3715-49f9-ab3c-524e32a0d401">
+				<reportElement x="232" y="246" width="338" height="40" uuid="a83fd7de-3715-49f9-ab3c-524e32a0d401">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="16"/>
+					<font size="25" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{completeDate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="232" y="296" width="297" height="40" uuid="4736a06b-3466-46b2-aa96-062273550401">
+				<reportElement x="232" y="296" width="338" height="40" uuid="4736a06b-3466-46b2-aa96-062273550401">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="16"/>
+					<font size="25" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="230" y="346" width="297" height="40" uuid="38fe6d9a-450f-4e8f-a5e8-c5dcfea655b3">
+				<reportElement x="230" y="430" width="340" height="40" uuid="38fe6d9a-450f-4e8f-a5e8-c5dcfea655b3">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="16"/>
+					<font size="25" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lpn}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="232" y="446" width="297" height="40" uuid="41130698-9738-4d30-a777-0bf52134e918">
+				<reportElement x="230" y="360" width="340" height="40" uuid="41130698-9738-4d30-a777-0bf52134e918">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="16"/>
+					<font size="25" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{supervisor}]]></textFieldExpression>
 			</textField>

@@ -27,6 +27,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "outbound_order_line")
@@ -40,6 +41,10 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     @Column(name = "number")
     private String number;
+
+
+    @Transient
+    private String orderNumber;
 
     @Column(name = "item_id")
     private Long itemId;
@@ -211,7 +216,7 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     }
 
     public String getOrderNumber() {
-        return order.getNumber();
+        return Objects.isNull(order) ? "" : order.getNumber();
     }
 
     public Long getWarehouseId() {
@@ -292,5 +297,9 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setAllocationStrategyType(AllocationStrategyType allocationStrategyType) {
         this.allocationStrategyType = allocationStrategyType;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 }

@@ -6,16 +6,32 @@ public class ProductionLineKanbanData {
     private String workOrderNumber;
     private String productionLineModel;
 
+    private String itemName;
+
     private Long productionLineTargetOutput;
+    // daily output created by the work order and production line
     private Long productionLineActualOutput;
+    // daily output that is already putaway
+    private Long productionLineActualPutawayOutput;
+
 
     private Long productionLineTotalTargetOutput;
+    // total output created by the work order and production line
     private Long productionLineTotalActualOutput;
+    // total output that is already putaway
+    private Long productionLineTotalActualPutawayOutput;
 
     private WorkOrderStatus workOrderStatus = WorkOrderStatus.WORK_IN_PROCESS;
 
     private String shift;
 
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
 
     public String getProductionLineName() {
         return productionLineName;
@@ -87,5 +103,21 @@ public class ProductionLineKanbanData {
 
     public void setShift(String shift) {
         this.shift = shift;
+    }
+
+    public Long getProductionLineActualPutawayOutput() {
+        return productionLineActualPutawayOutput;
+    }
+
+    public void setProductionLineActualPutawayOutput(Long productionLineActualPutawayOutput) {
+        this.productionLineActualPutawayOutput = productionLineActualPutawayOutput;
+    }
+
+    public Long getProductionLineTotalActualPutawayOutput() {
+        return productionLineTotalActualPutawayOutput;
+    }
+
+    public void setProductionLineTotalActualPutawayOutput(Long productionLineTotalActualPutawayOutput) {
+        this.productionLineTotalActualPutawayOutput = productionLineTotalActualPutawayOutput;
     }
 }

@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.PolicyRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import javax.transaction.Transactional;
 
 import javax.persistence.criteria.*;
 import java.io.File;
@@ -176,5 +177,16 @@ public class PolicyService implements  TestDataInitiableService{
         policy.setWarehouseId(warehouse.getId());
         return policy;
 
+    }
+
+    @Transactional
+    public void removePolicy(Long warehouseId, String key) {
+
+        if (Strings.isNotBlank(key)) {
+            policyRepository.deleteByWarehouseIdAndKey(warehouseId, key);
+        }
+        else {
+            policyRepository.deleteByWarehouseId(warehouseId);
+        }
     }
 }

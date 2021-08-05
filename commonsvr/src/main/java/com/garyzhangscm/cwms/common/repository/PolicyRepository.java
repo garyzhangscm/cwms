@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.common.model.Customer;
 import com.garyzhangscm.cwms.common.model.Policy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -34,4 +35,14 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
     Policy findByKey(Long warehouseId, String key);
     @Query("select p from Policy p where  p.warehouseId = :warehouseId and p.key = :key")
     Policy findByKeyIgnoreCase(Long warehouseId, String key);
+
+
+    @Modifying
+    @Query( "delete from Policy p where p.warehouseId = :warehouseId" )
+    void deleteByWarehouseId(Long warehouseId);
+
+
+    @Modifying
+    @Query( "delete from Policy p where p.warehouseId = :warehouseId  and p.key = :key" )
+    void deleteByWarehouseIdAndKey(Long warehouseId, String key);
 }

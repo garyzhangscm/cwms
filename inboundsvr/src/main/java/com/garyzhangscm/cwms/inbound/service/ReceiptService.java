@@ -30,9 +30,9 @@ import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -46,6 +46,7 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -576,5 +577,58 @@ public class ReceiptService implements TestDataInitiableService{
                 receivedInventories.size());
 
         report.setData(receivedInventories);
+    }
+
+    /**
+     * Create receipt from the warehouser transfer receipt request
+     * @param warehouseTransferReceipt
+     */
+    public void processWarehouseTransferReceiptRequest(WarehouseTransferReceipt warehouseTransferReceipt) {
+        Receipt receipt = new Receipt();
+        if (Strings.isNotBlank(warehouseTransferReceipt.getReceiptNumber())) {
+            receipt.setNumber(warehouseTransferReceipt.getReceiptNumber());
+        }
+        else {
+            receipt.setNumber(getNextReceiptNumber());
+        }
+
+        receipt.setWarehouseId(warehouseTransferReceipt.getDestinationWarehouseId());
+        receipt.setTransferOrderWarehouseId(warehouseTransferReceipt.getSourceWarehouseId());
+        receipt.setTransferOrderNumber(warehouseTransferReceipt.getOrderNumber());
+        receipt.setCategory(ReceiptCategory.WAREHOUSE_TRANSFER_ORDER);
+
+        // create receipt lines according to the items being shipped
+        AtomicInteger receiptLineSequence = new AtomicInteger();
+        warehouseTransferReceipt.getShippedItem().forEach(
+                (itemId, quantity) -> {
+                    ReceiptLine receiptLine = new ReceiptLine();
+
+                    if (Objects.nonNull(itemId) && quantity > 0) {
+                        receiptLine.setWarehouseId(
+                                receipt.getWarehouseId()
+                        );
+                        receiptLine.setReceipt(receipt);
+                        receiptLine.setItemId(itemId);
+
+                        receiptLine.setNumber(receiptLineSequence.toString());
+                        receiptLineSequence.getAndIncrement();
+                        receiptLine.setExpectedQuantity(quantity);
+                        // over receive is normally disallowed for warehouse transfer order
+                        receiptLine.setOverReceivingQuantity(0L);
+                        receiptLine.setOverReceivingPercent(0.0);
+                        receiptLine.setReceivedQuantity(0L);
+                        receipt.getReceiptLines().add(receiptLine);
+
+                    }
+                }
+        );
+
+        save(receipt, false);
+
+
+    }
+
+    public String getNextReceiptNumber() {
+        return commonServiceRestemplateClient.getNextNumber("receipt-number");
     }
 }
