@@ -52,7 +52,7 @@ public class OrderController {
 
     @RequestMapping(value="/orders", method = RequestMethod.POST)
     public Order addOrders(@RequestBody Order order) {
-        return orderService.save(order);
+        return orderService.addOrders(order);
     }
 
 

@@ -39,6 +39,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
@@ -90,6 +93,26 @@ public class OutboundServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
 
+    }
+
+
+    @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
+    public Pick cancelPick(Long pickId){
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/picks/{id}");
+
+
+        ResponseBodyWrapper<Pick> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(pickId).toUriString(),
+                HttpMethod.DELETE,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
 

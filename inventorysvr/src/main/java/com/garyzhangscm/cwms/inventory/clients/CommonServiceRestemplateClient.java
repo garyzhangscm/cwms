@@ -119,6 +119,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "unitOfMeasure")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
         UriComponentsBuilder builder =

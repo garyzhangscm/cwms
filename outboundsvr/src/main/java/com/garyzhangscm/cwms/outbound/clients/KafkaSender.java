@@ -4,6 +4,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.model.OrderActivity;
 import com.garyzhangscm.cwms.outbound.model.OrderConfirmation;
+import com.garyzhangscm.cwms.outbound.model.WarehouseTransferReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,16 @@ public class KafkaSender {
     public void send(OrderConfirmation orderConfirmation) {
         try {
             send("INTEGRATION_ORDER_CONFIRMATION", objectMapper.writeValueAsString(orderConfirmation));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
+
+    public void send(WarehouseTransferReceipt warehouseTransferReceipt) {
+        try {
+            send("WAREHOUSE_TRANSFER_RECEIPT", objectMapper.writeValueAsString(warehouseTransferReceipt));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

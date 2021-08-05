@@ -674,6 +674,7 @@ public class OrderService implements TestDataInitiableService {
         sendOrderConfirmationIntegration(order);
 
 
+
         return saveOrUpdate(order);
     }
 
@@ -787,5 +788,23 @@ public class OrderService implements TestDataInitiableService {
 
 
 
+    }
+
+    public Order addOrders(Order order) {
+        logger.debug(">> Start to add order: {}",
+                order.getNumber());
+        // we will need to setup the lines of the order
+        // to point to the order so when we save the order
+        // the lines will be saved as well
+        order.getOrderLines().forEach(
+                orderLine -> {
+                    orderLine.setOrder(order);
+
+                    orderLine.setOpenQuantity(orderLine.getExpectedQuantity());
+                }
+        );
+
+
+        return saveOrUpdate(order);
     }
 }

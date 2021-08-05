@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inbound.model.Receipt;
 import com.garyzhangscm.cwms.inbound.model.ReceiptStatus;
+import com.garyzhangscm.cwms.inbound.model.WarehouseTransferReceipt;
 import com.garyzhangscm.cwms.inbound.service.IntegrationService;
+import com.garyzhangscm.cwms.inbound.service.ReceiptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ public class KafkaReceiver {
 
     @Autowired
     IntegrationService integrationService;
+    @Autowired
+    ReceiptService receiptService;
 
 
     /*
@@ -51,6 +55,27 @@ public class KafkaReceiver {
 
     }
 
+    /*
+     * Receipt for warehouse transfer
+     * */
+    @KafkaListener(topics = {"WAREHOUSE_TRANSFER_RECEIPT"})
+    public void processWarehouseTransferReceipt(@Payload String warehouseTransferReceiptJsonRepresent)  {
+        logger.info("# received warehouse transfer receipt - receipt data:\n {}", warehouseTransferReceiptJsonRepresent);
+        try {
+            WarehouseTransferReceipt warehouseTransferReceipt =
+                    objectMapper.readValue(warehouseTransferReceiptJsonRepresent, WarehouseTransferReceipt.class);
+
+            logger.info("warehouseTransferReceipt: {}", warehouseTransferReceipt);
+
+
+            receiptService.processWarehouseTransferReceiptRequest(warehouseTransferReceipt);
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
 
 
 

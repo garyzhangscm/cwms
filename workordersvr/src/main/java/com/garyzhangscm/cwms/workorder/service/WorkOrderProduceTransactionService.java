@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderProduceTransactionRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -322,6 +323,13 @@ public class WorkOrderProduceTransactionService  {
         // make sure we won't over consume
 
         boolean result = true;
+        // we need to make sure the LPNs of the produced inventory
+        // is passed in
+        if (workOrderProduceTransaction
+                .getWorkOrderProducedInventories().stream()
+                .anyMatch(workOrderProducedInventory -> Strings.isBlank(workOrderProducedInventory.getLpn()))) {
+            return false;
+        }
 
         // only validate the consume transaction
         // if we consume the material line per each produce transaction

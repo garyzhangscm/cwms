@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -57,6 +59,7 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Cacheable(cacheNames = "inventory")
     public Inventory getInventoryById(Long id) {
 
         UriComponentsBuilder builder =
@@ -74,6 +77,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "item")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -92,6 +96,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "item")
     public Item getItemByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -120,6 +125,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "inventoryStatus")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -137,6 +143,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "inventoryStatus")
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -245,6 +252,28 @@ public class InventoryServiceRestemplateClient {
         return inventories;
 
     }
+
+    public List<Inventory> findInventoryByLocation(Long warehouseId, Long locationId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationId", locationId);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        List<Inventory> inventories = responseBodyWrapper.getData();
+        return inventories;
+
+    }
+
     public Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder, Inventory inventory) {
 
         // Convert the inventory to JSON and send to the inventory service
@@ -256,6 +285,37 @@ public class InventoryServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/receive")
                 .queryParam("documentNumber", workOrder.getNumber());
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.PUT,
+                    getHttpEntity(objectMapper.writeValueAsString(inventory)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            throw WorkOrderException.raiseException("Can't add inventory due to JsonProcessingException: " + e.getMessage());
+        }
+
+        return responseBodyWrapper.getData();
+    }
+
+    /**
+     * Return material from teh work order line. The inventory structure should already
+     * have the work order line.id setup
+     * @param inventory
+     * @return
+     */
+    public Inventory receiveInventoryFromWorkOrderLine(Inventory inventory) {
+
+        logger.debug("Start to receive material by lpn {}, work order line id {}",
+                inventory.getLpn(), inventory.getWorkOrderLineId());
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/receive")
+                        .queryParam("documentNumber", inventory.getWorkOrderLineId());
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = null;
@@ -334,7 +394,9 @@ public class InventoryServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public List<Inventory> consumeMaterialForWorkOrderLine(Long workOrderLineId, Long warehouseId, Long quantity, Long inboundLocationId) {
+    public List<Inventory> consumeMaterialForWorkOrderLine(Long workOrderLineId, Long warehouseId,
+                                                           Long quantity, Long inboundLocationId,
+                                                           Long inventoryId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -342,6 +404,9 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("quantity", quantity)
                         .queryParam("locationId", inboundLocationId);
+        if (Objects.nonNull(inventoryId)) {
+            builder = builder.queryParam("inventoryId", inventoryId);
+        }
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(

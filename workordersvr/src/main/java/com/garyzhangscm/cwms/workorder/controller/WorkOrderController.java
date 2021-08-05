@@ -138,8 +138,9 @@ public class WorkOrderController {
 
 
     @RequestMapping(value="/work-orders/{id}/delivered-inventory", method = RequestMethod.GET)
-    public List<Inventory> getDeliveredInventory(@PathVariable Long id) {
-        return workOrderService.getDeliveredInventory(id);
+    public List<Inventory> getDeliveredInventory(@PathVariable Long id,
+                                                 @RequestParam(name = "productionLineId", required = false, defaultValue = "") Long productionLineId) {
+        return workOrderService.getDeliveredInventory(id, productionLineId);
     }
 
 

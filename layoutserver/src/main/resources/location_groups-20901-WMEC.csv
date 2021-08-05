@@ -13,8 +13,8 @@ company,warehouse,name, description, locationGroupType, pickable, storable, coun
 20901,WMEC,P&D,Pickup and Deposit,PickupDeposit, false, false, false,false,,NONE,false,true
 20901,WMEC,Default_Removed_Inventory_Location,Default Location For Removed Inventory,Removed_Inventory, false, false, false,false,,NONE,false,false
 20901,WMEC,Audit_Count_Inventory_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
-20901,WMEC,Inventory_Adjustment_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
-20901,WMEC,Inventory_Receiving_Location,Location For Inventory Removed By Audit Count,Removed_Inventory, false, false, false,false,,NONE,false,false
+20901,WMEC,Inventory_Adjustment_Location,Location For Inventory Removed By Adjust,Removed_Inventory, false, false, false,false,,NONE,false,false
+20901,WMEC,Inventory_Receiving_Location,Location For Inventory Removed By Inventory receiving,Removed_Inventory, false, false, false,false,,NONE,false,false
 20901,WMEC,ProductionLine,Production Line,ProductionLine, false, false, false,false,,NONE,false,false
 20901,WMEC,ProductionLineInbound,Production Line Inbound Stage,ProductionLineInbound, false, false, false,false,,NONE,false,false
 20901,WMEC,ProductionLineOutbound,Production Line Outbound Stage,ProductionLineOutbound, false, false, false,false,,NONE,false,false

@@ -92,7 +92,10 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public WorkOrder findById(Long id, boolean loadDetails) {
         WorkOrder workOrder = workOrderRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFoundException.raiseException("work order not found by id: " + id));
+                .orElseThrow(() -> {
+                    logger.debug("work order not found by id: " + id);
+                    return ResourceNotFoundException.raiseException("work order not found by id: " + id);
+                });
         if (loadDetails) {
             loadAttribute(workOrder);
         }
@@ -575,7 +578,17 @@ public class WorkOrderService implements TestDataInitiableService {
     public List<Inventory> getDeliveredInventory(Long workOrderId) {
         // return the delivered inventory for the whole work order, regardless of the
         // assigned production line
-        return getDeliveredInventory(workOrderId, null);
+        ProductionLine productionLine = null;
+        return getDeliveredInventory(workOrderId, productionLine);
+    }
+    public List<Inventory> getDeliveredInventory(Long workOrderId, Long productionLineId) {
+        // return the delivered inventory for the whole work order, regardless of the
+        // assigned production line
+        ProductionLine productionLine = null;
+        if (Objects.nonNull(productionLineId)) {
+            productionLine = productionLineService.findById(productionLineId);
+        }
+        return getDeliveredInventory(workOrderId, productionLine);
     }
     public List<Inventory> getDeliveredInventory(Long workOrderId, ProductionLine productionLine) {
         WorkOrder workOrder = findById(workOrderId);

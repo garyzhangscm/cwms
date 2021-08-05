@@ -48,8 +48,6 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getQuantity(),
                 inventoryStatus.getName());
 
-        logger.debug("2.1 pickService == null?: {}",
-                Objects.isNull(pickService));
 
         List<Pick> existingPicks = pickService.getOpenPicksByItemId(item.getId());
 

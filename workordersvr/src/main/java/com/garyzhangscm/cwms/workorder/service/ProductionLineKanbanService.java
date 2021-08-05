@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
+import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +29,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -51,6 +52,9 @@ public class ProductionLineKanbanService {
     @Autowired
     private ProductionLineService productionLineService;
 
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+
     public List<ProductionLineKanbanData> getProductionLineKanbanData(Long productionLineId,
                                                                       String productionLineIds) {
 
@@ -70,6 +74,11 @@ public class ProductionLineKanbanService {
                     );
                     productionLineKanbanData.setWorkOrderNumber(
                             productionLineAssignment.getWorkOrder().getNumber()
+                    );
+                    productionLineKanbanData.setItemName(
+                            inventoryServiceRestemplateClient.getItemById(
+                                    productionLineAssignment.getWorkOrder().getItemId()
+                            ).getName()
                     );
                     productionLineKanbanData.setProductionLineModel(
                             productionLineAssignment.getProductionLine().getModel()
@@ -96,13 +105,44 @@ public class ProductionLineKanbanService {
                             productionLineAssignment.getWorkOrder().getNumber(),
                             productionLineAssignment.getProductionLine().getName());
 
-                    productionLineKanbanData.setProductionLineActualOutput(
+                    List<Inventory> unPutawayInventory
+                            = inventoryServiceRestemplateClient.findInventoryByLocation(
+                                    productionLineAssignment.getWorkOrder().getWarehouseId(),
+                                    productionLineAssignment.getProductionLine().getOutboundStageLocationId()
+                            );
+                    List<Inventory> dailyUnputawayInventory =
+                            getProductionLineDailyUnputawayInventory(unPutawayInventory, workOrderProduceTransactions);
+                    // get the quantity of the inventory that is not putaway yet, both total and daily
+                    Long dailyUnPutawayInventoryQuantity = dailyUnputawayInventory.stream().mapToLong(
+                            Inventory::getQuantity
+                    ).sum();
+                    Long totalUnPutawayInventoryQuantity = unPutawayInventory.stream().mapToLong(
+                            Inventory::getQuantity
+                    ).sum();
 
-                            getProductionLineDailyActualOutput(workOrderProduceTransactions)
+                    // get the actual output, including inventory that is putaway and not
+                    // putaway
+                    Long productionLineDailyActualOutput =
+                            getProductionLineDailyActualOutput(workOrderProduceTransactions);
+
+                    productionLineKanbanData.setProductionLineActualOutput(
+                            productionLineDailyActualOutput
                     );
+                    productionLineKanbanData.setProductionLineActualPutawayOutput(
+                            productionLineDailyActualOutput - dailyUnPutawayInventoryQuantity
+                    );
+
+
+                    Long totalProducedQuantity =
+                            getTotalProducedQuantity(workOrderProduceTransactions);
                     productionLineKanbanData.setProductionLineTotalActualOutput(
-                            getTotalProducedQuantity(workOrderProduceTransactions)
+                            totalProducedQuantity
                     );
+
+                    productionLineKanbanData.setProductionLineTotalActualPutawayOutput(
+                            totalProducedQuantity - totalUnPutawayInventoryQuantity
+                    );
+
                     ProductionLineActivity checkedInUser
                             = productionLineService.getCheckedInUser(
                                 productionLineAssignment.getProductionLine());
@@ -119,14 +159,46 @@ public class ProductionLineKanbanService {
     }
 
     /**
-     * Get the actual daily output of the previous day , based on the cutoff time
+     * Get the unputaway inventory that is created on the previous day, based on the cutoff time
+     * If NOW is before cutoff time, the it is from previous day's cutoff time to
+     * today's cutoff time. Otherwise, it is from today's cutoff time to next day's
+     * cutoff time
+     * @param unPutawayInventory
+     * @return
+     */
+    private List<Inventory> getProductionLineDailyUnputawayInventory(
+            List<Inventory> unPutawayInventory,
+            List<WorkOrderProduceTransaction> workOrderProduceTransactions) {
+        Set<String> dailyProducedLPNs =
+                getDailyWorkOrderProducedInventory(workOrderProduceTransactions)
+                        .stream()
+                    .map(workOrderProducedInventory -> workOrderProducedInventory.getLpn())
+                .collect(Collectors.toSet());
+        return unPutawayInventory.stream()
+                .filter(inventory -> dailyProducedLPNs.contains(inventory.getLpn()))
+                .collect(Collectors.toList());
+    }
+
+
+
+    private Long getProductionLineDailyActualOutput( List<WorkOrderProduceTransaction>  workOrderProduceTransactions) {
+        return getDailyWorkOrderProducedInventory(workOrderProduceTransactions)
+                .stream()
+                .mapToLong(WorkOrderProducedInventory::getQuantity).sum();
+
+
+    }
+
+    /**
+     * Get the actual daily produced inventory of the previous day , based on the cutoff time
      * If NOW is before cutoff time, the it is from previous day's cutoff time to
      * today's cutoff time. Otherwise, it is from today's cutoff time to next day's
      * cutoff time
      * @param workOrderProduceTransactions all transaction relate to this work order and production line
      * @return
      */
-    private Long getProductionLineDailyActualOutput( List<WorkOrderProduceTransaction>  workOrderProduceTransactions) {
+    private List<WorkOrderProducedInventory> getDailyWorkOrderProducedInventory(
+            List<WorkOrderProduceTransaction>  workOrderProduceTransactions) {
         // the daily actual output is based on the time from 4:00 PM to 3:59:59 PM the next day
         LocalDateTime dayStartDateTime = getProductionLineKanbanDataStartTime();
         LocalDateTime dayEndDateTime = getProductionLineKanbanDataEndTime();
@@ -137,22 +209,19 @@ public class ProductionLineKanbanService {
         // only return the transaction that between the start and end time
         // and get the total quantity of the produced inventory
         return workOrderProduceTransactions.stream().filter(
-                    workOrderProduceTransaction -> {
-                        logger.debug("workOrderProduceTransaction.getCreatedTime(): {}",
-                                workOrderProduceTransaction.getCreatedTime());
-                        logger.debug("!workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime): {}",
-                                !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime));
-                        logger.debug("workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime): {}",
-                                workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime));
-                        return !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime)
-                                        & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime);
-                    }
-                ).map(workOrderProduceTransaction -> workOrderProduceTransaction.getWorkOrderProducedInventories())
-                 .flatMap(Collection::stream).mapToLong(WorkOrderProducedInventory::getQuantity).sum();
-
-
+                workOrderProduceTransaction -> {
+                    logger.debug("workOrderProduceTransaction.getCreatedTime(): {}",
+                            workOrderProduceTransaction.getCreatedTime());
+                    logger.debug("!workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime): {}",
+                            !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime));
+                    logger.debug("workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime): {}",
+                            workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime));
+                    return !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime)
+                            & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime);
+                }
+        ).map(workOrderProduceTransaction -> workOrderProduceTransaction.getWorkOrderProducedInventories())
+                .flatMap(Collection::stream).collect(Collectors.toList());
     }
-
     /**
      * Get the kanban's end time. If it is already after the cut off time, then the kanban
      * will show the data from today's cut off time until next day's cutoff time, otherwise,

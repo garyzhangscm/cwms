@@ -91,13 +91,6 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
 
 
 }

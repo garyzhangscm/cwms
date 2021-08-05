@@ -35,6 +35,8 @@ public class ShortAllocationProcessingJob {
 
     @Autowired
     AuthServiceRestemplateClient authServiceRestemplateClient;
+    @Autowired
+    private OutboundConfiguration outboundConfiguration;
 
     @Autowired
     ShortAllocationService shortAllocationService;
@@ -49,6 +51,10 @@ public class ShortAllocationProcessingJob {
     @Scheduled(fixedDelay = 15000)
     public void processShortAllocation() throws IOException {
         logger.debug("# start JOB to process short allocation data @ {}", LocalDateTime.now());
+        if (!outboundConfiguration.isShortAutoAllocationEnabled()){
+            logger.debug("Short allocation auto allocating is not enabled, return");
+            return;
+        }
         setupOAuth2Context();
 
         List<ShortAllocation> shortAllocationList = shortAllocationService.findAll();

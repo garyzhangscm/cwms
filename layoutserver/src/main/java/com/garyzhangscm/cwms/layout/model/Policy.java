@@ -18,10 +18,16 @@
 
 package com.garyzhangscm.cwms.layout.model;
 
+import javax.persistence.Column;
+import javax.persistence.Transient;
+
 public class Policy {
 
     private Long id;
 
+    private Long warehouseId;
+
+    private Warehouse warehouse;
     private String key;
     private String value;
     private String description;
@@ -56,5 +62,21 @@ public class Policy {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

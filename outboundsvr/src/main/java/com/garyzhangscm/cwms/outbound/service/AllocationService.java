@@ -56,7 +56,7 @@ public class AllocationService {
                             productionLineAssignment.getQuantity());
                     if (Objects.nonNull(productionLineId)) {
                         logger.debug("Production Line ID is passsed in, we will only allocate for certain production line");
-                        logger.debug("Current production id: {}, required production id: {}, current production line will be skipped? {}",
+                        logger.debug("Current production id: {}, required production id: {}, current production line will be used? {}",
                                 productionLineAssignment.getProductionLine().getId(), productionLineId,
                                 productionLineId.equals(productionLineAssignment.getProductionLine().getId()));
 

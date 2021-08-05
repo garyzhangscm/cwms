@@ -18,8 +18,11 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,10 +45,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -55,12 +57,25 @@ public class ProductionLineAssignmentService   {
     @Autowired
     private ProductionLineAssignmentRepository productionLineAssignmentRepository;
 
+
     @Autowired
     private ProductionLineDeliveryService productionLineDeliveryService;
     @Autowired
     WorkOrderService workOrderService;
     @Autowired
     ProductionLineService productionLineService;
+    @Autowired
+    private ProductionLineCapacityService productionLineCapacityService;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+
+
 
     public ProductionLineAssignment findById(Long id ) {
         ProductionLineAssignment productionLineAssignment = productionLineAssignmentRepository.findById(id)
@@ -237,4 +252,232 @@ public class ProductionLineAssignmentService   {
         }).collect(Collectors.toList());
     }
 
+    private void processReturnableMaterial(
+            WorkOrder workOrder, ProductionLine productionLine, List<Inventory> returnableMaterial) {
+        // start to create the returned inventory;
+        List<Inventory> deliveredInventory = workOrderService.getDeliveredInventory(workOrder.getId(), productionLine.getId());
+        logger.debug("We got {} delivered inventory that still in the system, and the user told us there's {} inventory left from the production line {}",
+                deliveredInventory.size(), returnableMaterial.size(), productionLine.getName());
+
+        // setup the work order line. We will need to setup the work order line id for the inventory
+        // so that we know the inventory is a return material for certain work order line
+        // key: item id
+        // value: work order id
+        Map<Long, Long> workOrderLineMap = new HashMap<>();
+        workOrder.getWorkOrderLines().forEach(workOrderLine ->
+                workOrderLineMap.put(workOrderLine.getItemId(), workOrderLine.getId()));
+
+        // for each delivered inventory,
+        // 1. if the inventory doesn't exists in the returnable material list, then we will need to remove it
+        // 2. if the quantity changed, then we will need to update the quantity
+        // for each returnable material, if the inventory doesn't exists in the delivered inventory list(the id of
+        // the inventory is null) then we will create the inventory in the production's out location
+
+        // new inventory structure that without an id, will be added to the system
+        returnableMaterial.stream().filter(
+                inventory -> Objects.isNull(inventory.getId())
+        ).forEach(inventory -> {
+           inventory.setWorkOrderLineId(workOrderLineMap.getOrDefault(inventory.getItem().getId(), null));
+           if (Objects.isNull(inventory.getLocation())) {
+               // location is not setup yet for the new inventory,
+               // we will default to the production line's out location
+               inventory.setLocationId(productionLine.getOutboundStageLocationId());
+               if (Objects.nonNull(productionLine.getOutboundStageLocation())) {
+                   inventory.setLocation(productionLine.getOutboundStageLocation());
+               } else {
+                   inventory.setLocation(
+                           warehouseLayoutServiceRestemplateClient.getLocationById(
+                                   productionLine.getOutboundStageLocationId()
+                           ));
+               }
+           }
+           inventoryServiceRestemplateClient.receiveInventoryFromWorkOrderLine(inventory);
+        });
+
+        // returnable material that with an id, we will compare to the existing inventory with same id
+        // to see whether the quantity is changed
+        // Key: inventory id
+        // value: inventory quantity
+        Map<Long, Long> existingRetunableMaterialMap = new HashMap<>();
+        returnableMaterial.stream().filter(
+                inventory -> Objects.nonNull(inventory.getId())
+        ).forEach(
+                inventory -> existingRetunableMaterialMap.put(inventory.getId(), inventory.getQuantity())
+        );
+
+        for(Inventory inventory : deliveredInventory) {
+            if (!existingRetunableMaterialMap.containsKey(inventory.getId())) {
+                // OK, the delivered inventory is already removed from the final result,
+                // let's consume the whole quantity
+                inventoryServiceRestemplateClient.consumeMaterialForWorkOrderLine(
+                        workOrderLineMap.getOrDefault(inventory.getItem().getId(), null),
+                        workOrder.getWarehouseId(),
+                        inventory.getQuantity(),
+                        productionLine.getInboundStageLocationId(),
+                        inventory.getId()
+                );
+            }
+            // OK, the delivered inventory is still in the  final result,
+            // let's check if the quantity is changed
+            // we will only handle if the final quantity is less than
+            // the original quantity.
+            else if (inventory.getQuantity() >
+                        existingRetunableMaterialMap.get(inventory.getId())
+            ){
+                // OK, the quantity changed, let's adjust the quantity
+                inventoryServiceRestemplateClient.consumeMaterialForWorkOrderLine(
+                        workOrderLineMap.getOrDefault(inventory.getItem().getId(), null),
+                        workOrder.getWarehouseId(),
+                        inventory.getQuantity() - existingRetunableMaterialMap.get(inventory.getId()),
+                        productionLine.getInboundStageLocationId(),
+                        inventory.getId()
+                );
+            }
+        }
+
+    }
+    public ProductionLineAssignment deassignWorkOrderToProductionLines(
+            Long workOrderId, Long productionLineId, List<Inventory> returnableMaterial) {
+
+        logger.debug("Start to deassign work order {} from production line {}",
+                workOrderId, productionLineId);
+        WorkOrder workOrder = workOrderService.findById(workOrderId);
+        ProductionLineAssignment productionLineAssignment =
+                workOrder.getProductionLineAssignments().stream().filter(
+                        existingProductionLineAssignment -> existingProductionLineAssignment.getProductionLine().getId().equals(productionLineId)
+                ).findFirst()
+                        .orElseThrow(() ->
+                                WorkOrderException.raiseException(
+                                        "cannot deassign production line id " + productionLineId + " from work order, THe production line doesn't exist"));
+
+
+        logger.debug("We found the production line assigned! work order: {}, production line {}",
+                productionLineAssignment.getWorkOrder().getNumber(),
+                productionLineAssignment.getProductionLine().getName());
+        // remove the produdction line assignment
+        delete(productionLineAssignment);
+        logger.debug("production line assignment removed, let's start to process the material");
+
+        processReturnableMaterial(
+                workOrder, productionLineAssignment.getProductionLine(), returnableMaterial);
+
+        // we will cancell all the existsing picks that will come into this production line
+        logger.debug("Start to cancel pick that will go into the production line {}",
+                productionLineAssignment.getProductionLine().getName());
+        cancelPicks(workOrder, productionLineAssignment.getProductionLine());
+
+
+        return productionLineAssignment;
+
+    }
+
+    private void cancelPicks(WorkOrder workOrder, ProductionLine productionLine) {
+        // get all the open picks and cancel them
+        List<Pick> openPicks =
+                outboundServiceRestemplateClient.getWorkOrderPicks(workOrder)
+                        .stream()
+                .filter(pick -> pick.getQuantity() > pick.getPickedQuantity())
+                .collect(Collectors.toList());
+
+        openPicks.forEach(
+                pick -> {
+                    logger.debug("Will cancel pick {} ", pick.getNumber());
+                    outboundServiceRestemplateClient.cancelPick(pick.getId());
+                }
+        );
+
+
+    }
+
+    public ReportHistory generateProductionLineAssignmentReport(
+            Long productionLineAssignmentId, String locale) throws JsonProcessingException {
+        ProductionLineAssignment productionLineAssignment =
+                findById(productionLineAssignmentId);
+
+        Report reportData = new Report();
+        setupProductionLineAssignmentReportData(
+                reportData, productionLineAssignment
+        );
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        productionLineAssignment.getWorkOrder().getWarehouseId(),
+                        ReportType.PRODUCTION_LINE_ASSIGNMENT_REPORT,
+                        reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+    private void setupProductionLineAssignmentReportData(
+            Report reportData, ProductionLineAssignment productionLineAssignment) {
+
+
+        ProductionLineAssignmentReportData productionLineAssignmentReportData =
+                new ProductionLineAssignmentReportData();
+
+        if (Objects.nonNull(productionLineAssignment.getWorkOrder().getItem())) {
+            productionLineAssignmentReportData.setItemName(
+                    productionLineAssignment.getWorkOrder().getItem().getName()
+            );
+        }
+        else {
+
+            productionLineAssignmentReportData.setItemName(
+                    inventoryServiceRestemplateClient.getItemById(
+                            productionLineAssignment.getWorkOrder().getItemId()
+                    ).getName()
+            );
+
+
+        }
+
+        productionLineAssignmentReportData.setProductionLineName(
+                productionLineAssignment.getProductionLine().getName()
+        );
+        productionLineAssignmentReportData.setWorkOrderNumber(
+                productionLineAssignment.getWorkOrder().getNumber()
+        );
+        productionLineAssignmentReportData.setQuantity(productionLineAssignment.getQuantity());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        productionLineAssignmentReportData.setStartTime(
+                Objects.isNull(productionLineAssignment.getStartTime()) ?
+                        "" :
+                        productionLineAssignment.getStartTime().format(formatter));
+        productionLineAssignmentReportData.setEndTime(
+                Objects.isNull(productionLineAssignment.getEndTime()) ?
+                        "" : productionLineAssignment.getEndTime().format(formatter));
+
+        productionLineAssignmentReportData.setProductionLineCapacity(getProductionLineDailyTargetOutput(productionLineAssignment));
+
+
+        reportData.setData(Collections.singleton(productionLineAssignmentReportData));
+    }
+
+
+    /**
+     * Get daily production line target output
+     */
+    private Long getProductionLineDailyTargetOutput(ProductionLineAssignment productionLineAssignment) {
+        // Get the total quantity from the transactions
+        ProductionLineCapacity productionLineCapacity =
+                productionLineCapacityService.findByProductionLineAndItem(
+                        productionLineAssignment.getWorkOrder().getWarehouseId(),
+                        productionLineAssignment.getProductionLine().getId(),
+                        productionLineAssignment.getWorkOrder().getItemId(),
+                        false
+                );
+        if (Objects.nonNull(productionLineCapacity)) {
+            return productionLineCapacity.getCapacity();
+        }
+        else {
+            return 0L;
+        }
+    }
 }

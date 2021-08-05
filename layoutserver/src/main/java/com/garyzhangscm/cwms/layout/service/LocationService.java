@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.layout.exception.GenericException;
 import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.LocationOperationException;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
@@ -35,11 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import javax.transaction.Transactional;
 
 import javax.persistence.criteria.*;
 import java.io.*;
@@ -743,5 +737,11 @@ public class LocationService implements TestDataInitiableService {
                     location.getName());
             return saveOrUpdate(location);
         }
+    }
+
+    @Transactional
+    public void removeLocations(Warehouse warehouse) {
+        locationRepository.deleteByWarehouseId(warehouse.getId());
+
     }
 }

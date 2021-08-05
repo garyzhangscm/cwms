@@ -1269,5 +1269,16 @@
   "steps.report-printer-configuration.confirm": "确认",
   "menu.dashboard.production-kanban": "生产看板",
   "report-printer-configuration.copies": "打印份数",
-  "finished-rate": "完成率"
+  "finished-rate": "完成率",
+  "production-line.actual-putaway-production": "已确认数量",
+  "production-line.actual-total-putaway-production": "已确认总数量",
+  "work-order.deassign-production-line": "取消产线分配",
+  "menu.main.work-order.deassign-production-line":"取消产线分配",
+  "pick-to-be-cancelled": "将要取消的拣货任务",
+  "order.category": "类型",
+  "ORDER-CATEGORY-SALES_ORDER": "销售单",
+  "ORDER-CATEGORY-WAREHOUSE_TRANSFER_ORDER": "调拨单",
+  "menu.main.outbound.order-maintenance": "出库单维护",
+  "order.transferReceiptWarehouseId": "目标仓库",
+  "order.transferReceiptNumber": "对应收货单据"
 }

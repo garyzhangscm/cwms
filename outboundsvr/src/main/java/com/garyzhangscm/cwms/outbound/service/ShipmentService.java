@@ -751,9 +751,13 @@ public class ShipmentService {
             logger.debug("We will ignore this error and let the user reprint the document");
         }
 
+
+
         if (order.getCategory().isAutoGenerateReceipt()) {
-            logger.debug("We will need to automatically generate receipt for this order {}",
-                    order.getNumber());
+            logger.debug("Start to create receipt {} for the order {}, into warehouse {}",
+                    order.getTransferReceiptNumber(),
+                    order.getNumber(),
+                    order.getTransferReceiptWarehouseId());
             // for every shipment, we will need to generate a correspondent
             // receipt for it
             generateReceipt(shipment, order);
@@ -763,19 +767,33 @@ public class ShipmentService {
 
     private void generateReceipt(Shipment shipment, Order order) {
         logger.debug("Start to generate receipt when the shipment is completed");
-        // key: item name
+        // key: item id
         // value: shipped quantity
-        Map<String, Long> shippedItem = new HashMap<>();
+        Map<Long, Long> shippedItem = new HashMap<>();
         shipment.getShipmentLines().forEach(
                 shipmentLine -> {
                     logger.debug("shipped {} of item {}",
-                            shipmentLine.getOrderLine().getItem().getName(),
-                            shipmentLine.getShippedQuantity());
+                            shipmentLine.getShippedQuantity(),
+                            shipmentLine.getOrderLine().getItem().getName());
                     shippedItem.put(
-                            shipmentLine.getOrderLine().getItem().getName(),
+                            shipmentLine.getOrderLine().getItem().getId(),
                             shipmentLine.getShippedQuantity());
                 }
         );
+
+        WarehouseTransferReceipt warehouseTransferReceipt =
+                new WarehouseTransferReceipt(
+                        order.getWarehouseId(),
+                        order.getTransferReceiptWarehouseId(),
+                        shippedItem,
+                        order.getTransferReceiptNumber(),
+                        order.getNumber());
+        logger.debug("will send the transfer receipt request to the destination warehouse {} \n{}",
+                warehouseTransferReceipt.getDestinationWarehouseId(),
+                warehouseTransferReceipt);
+
+        // add the receipt to Kafka server
+        kafkaSender.send(warehouseTransferReceipt);
 
     }
 
@@ -878,6 +896,7 @@ public class ShipmentService {
                 throw OrderOperationException.raiseException("Error when moving inventory onto the order: " + order.getNumber());
             }
             shipmentLine.setLoadedQuantity(shipmentLine.getLoadedQuantity() + inventory.getQuantity());
+            shipmentLine.setShippedQuantity(shipmentLine.getShippedQuantity() + inventory.getQuantity());
             shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - inventory.getQuantity());
             shipmentLine.setStatus(ShipmentLineStatus.DISPATCHED);
             shipmentLineService.save(shipmentLine);

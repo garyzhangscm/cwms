@@ -311,9 +311,6 @@ public class InventoryService implements TestDataInitiableService{
 
         // if we need to load the details, or asked to return the inventory
         // that is only in receiving stage,
-        logger.debug("includeDetails? {}", includeDetails);
-        logger.debug("Boolean.TRUE.equals(notPutawayInventoryOnly)? {}", Boolean.TRUE.equals(notPutawayInventoryOnly));
-        logger.debug("inventories.size()? {}", inventories.size());
         if ((includeDetails || Boolean.TRUE.equals(notPutawayInventoryOnly))
                 && inventories.size() > 0) {
             loadInventoryAttribute(inventories);
@@ -431,11 +428,24 @@ public class InventoryService implements TestDataInitiableService{
     }
 
     public Inventory save(Inventory inventory) {
+        LocalDateTime currentLocalDateTime = LocalDateTime.now();
+
         Inventory savedInventory = inventoryRepository.save(inventory);
+
         // reset location's status and volume
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we saved the inventory {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                savedInventory.getId());
+
+        currentLocalDateTime = LocalDateTime.now();
+
         warehouseLayoutServiceRestemplateClient.resetLocation(inventory.getLocationId());
 
-        // loadInventoryAttribute(savedInventory);
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we reset the location {}",
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now(),
+                inventory.getLocationId());
 
         return savedInventory;
     }
@@ -468,18 +478,114 @@ public class InventoryService implements TestDataInitiableService{
     public void loadInventoryAttribute(List<Inventory> inventories) {
         // Temp map to save the details so that we don't have to call
         // web API to get the same value again
+
+        /**
+         * Switch to sprint boot managed cache implementation
+         *
         Map<Long, Location> locationMap = new HashMap<>();
         Map<Long, UnitOfMeasure> unitOfMeasureHashMap = new HashMap<>();
         Map<Long, WorkOrder> workOrderHashMap = new HashMap<>();
         for(Inventory inventory : inventories) {
             loadInventoryAttribute(inventory,
                     locationMap, unitOfMeasureHashMap, workOrderHashMap);
+        }*/
+        for(Inventory inventory : inventories) {
+            loadInventoryAttribute(inventory);
         }
     }
 
-    public void loadInventoryAttribute(Inventory inventory) {
-        loadInventoryAttribute(inventory, new HashMap<>(), new HashMap<>(), new HashMap<>());
-    }
+     public void loadInventoryAttribute(Inventory inventory) {
+
+     LocalDateTime currentLocalDateTime = LocalDateTime.now();
+     logger.debug("========> @ {} start to load inventory details for lpn {}",
+     currentLocalDateTime, inventory.getLpn());
+
+
+     // Load location information
+     if (Objects.nonNull(inventory.getLocationId()) &&
+           Objects.isNull(inventory.getLocation())) {
+
+         inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
+
+     }
+
+     logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the location for LPN {}",
+     ChronoUnit.MILLIS.between(
+             currentLocalDateTime, LocalDateTime.now()),
+             LocalDateTime.now(),
+             inventory.getLpn());
+     currentLocalDateTime = LocalDateTime.now();
+
+     if (inventory.getInventoryMovements() != null && inventory.getInventoryMovements().size() > 0) {
+         inventory.getInventoryMovements().forEach(
+             inventoryMovement -> {
+                 if (inventoryMovement.getLocation() == null && inventoryMovement.getLocationId() != null) {
+                    inventoryMovement.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventoryMovement.getLocationId()));
+                 }
+             }
+         );
+     }
+     logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the movement path for LPN {}",
+     ChronoUnit.MILLIS.between(
+             currentLocalDateTime, LocalDateTime.now()),
+             LocalDateTime.now(),
+             inventory.getLpn());
+     currentLocalDateTime = LocalDateTime.now();
+
+     // load the unit of measure details for the packate types
+     // logger.debug("Start to load item unit of measure for item package type: {}",
+     //         inventory.getItemPackageType());
+     inventory.getItemPackageType().getItemUnitOfMeasures().forEach(itemUnitOfMeasure ->
+
+             itemUnitOfMeasure.setUnitOfMeasure(
+                     commonServiceRestemplateClient.getUnitOfMeasureById(itemUnitOfMeasure.getUnitOfMeasureId()))
+
+     );
+     logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the unit of measure for LPN {}",
+     ChronoUnit.MILLIS.between(
+             currentLocalDateTime, LocalDateTime.now()),
+             LocalDateTime.now(),
+             inventory.getLpn());
+     currentLocalDateTime = LocalDateTime.now();
+
+     if (inventory.getPickId() != null) {
+        inventory.setPick(outbuondServiceRestemplateClient.getPickById(inventory.getPickId()));
+     }
+
+     logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the pick for LPN {}",
+     ChronoUnit.MILLIS.between(
+             currentLocalDateTime, LocalDateTime.now()),
+             LocalDateTime.now(),
+             inventory.getLpn());
+     currentLocalDateTime = LocalDateTime.now();
+
+     if (inventory.getAllocatedByPickId() != null) {
+        inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
+     }
+     logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the allocated by pick for LPN {}",
+     ChronoUnit.MILLIS.between(
+             currentLocalDateTime, LocalDateTime.now()),
+             LocalDateTime.now(),
+             inventory.getLpn());
+     currentLocalDateTime = LocalDateTime.now();
+
+     if (Objects.nonNull(inventory.getWorkOrderId()) &&
+            Objects.isNull(inventory.getWorkOrder())) {
+         inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId()));
+
+     }
+     logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the work order for LPN {}",
+     ChronoUnit.MILLIS.between(
+             currentLocalDateTime, LocalDateTime.now()),
+             LocalDateTime.now(),
+             inventory.getLpn());
+
+
+
+
+     }
+    /**
+     *
     public void loadInventoryAttribute(Inventory inventory,
                                        Map<Long, Location> locationMap,
                                         Map<Long, UnitOfMeasure> unitOfMeasureHashMap,
@@ -600,7 +706,7 @@ public class InventoryService implements TestDataInitiableService{
 
 
 
-    }
+    } */
 
     public List<Inventory> loadInventoryData(File  file) throws IOException {
         List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
@@ -1731,29 +1837,22 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
-    /**
-     * Consume invenotry for work order
-     * @param workOrderLineId  work order line
-     * @param warehouseId
-     * @param quantity quantity to be consumed
-     * @param inboundLocationId location of the inventory to be consumed, we may have multiple production lines associated with the work order
-     * @return
-     */
-    public List<Inventory> consumeInventoriesForWorkOrderLine(Long workOrderLineId, Long warehouseId,
-                                                              Long quantity, Long inboundLocationId) {
+    private List<Inventory> getInventoryForConsume( Long warehouseId, Long inboundLocationId,
+                                                   Long workOrderLineId, Long inventoryId) throws IOException {
+        if (Objects.nonNull(inventoryId)) {
+            Inventory inventory = findById(inventoryId);
+            return  Collections.singletonList(inventory);
+        }
+        else {
+            // if the inventory id is not passed in, get the inventory that is picked for
+            // the work order line
+            List<Inventory> pickedInventories = new ArrayList<>();
 
-        logger.debug("# start to consume quantity {} from work order line id {}, location id {}",
-                quantity,
-                workOrderLineId,
-                inboundLocationId);
-        try {
             List<Pick> picks = outbuondServiceRestemplateClient.getWorkOrderPicks(warehouseId, String.valueOf(workOrderLineId));
-            logger.debug("# get {} picks for this work order line" ,
-                    picks.size());
             if (picks.size() > 0) {
                 String pickIds = picks.stream()
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
-                List<Inventory> pickedInventories = findAll(
+                pickedInventories = findAll(
                         warehouseId,
                         null,
                         null,
@@ -1773,6 +1872,34 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null
                 );
+            }
+            return pickedInventories;
+        }
+    }
+
+    /**
+     * Consume invenotry for work order
+     * @param workOrderLineId  work order line
+     * @param warehouseId
+     * @param quantity quantity to be consumed
+     * @param inboundLocationId location of the inventory to be consumed, we may have multiple production lines associated with the work order
+     * @return
+     */
+    public List<Inventory> consumeInventoriesForWorkOrderLine(Long workOrderLineId, Long warehouseId,
+                                                              Long quantity, Long inboundLocationId,
+                                                              Long inventoryId) {
+
+        logger.debug("# start to consume quantity {} from work order line id {}, location id {}, specified inventory id? {}",
+                quantity,
+                workOrderLineId,
+                inboundLocationId,
+                inventoryId);
+        try {
+            List<Inventory> pickedInventories = getInventoryForConsume(warehouseId, inboundLocationId,
+                    workOrderLineId, inventoryId);
+
+            if (pickedInventories.size() > 0) {
+
                 logger.debug("# Get {} inventory to be consumed", pickedInventories.size());
                 // Let's remove those inventories until we reach the
                 // required quantity

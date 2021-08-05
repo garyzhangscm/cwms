@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.workorder.model.UnitOfMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -66,6 +67,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "unitOfMeasure")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
 

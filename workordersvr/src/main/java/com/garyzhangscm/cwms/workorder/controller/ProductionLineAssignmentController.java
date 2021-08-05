@@ -19,10 +19,9 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.model.ProductionLineAssignment;
-import com.garyzhangscm.cwms.workorder.model.ProductionPlan;
-import com.garyzhangscm.cwms.workorder.model.WorkOrder;
+import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.service.ProductionLineAssignmentService;
 import com.garyzhangscm.cwms.workorder.service.ProductionPlanService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +58,30 @@ public class ProductionLineAssignmentController {
 
         return productionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLineId);
     }
+
+
+    @RequestMapping(value="/production-line-assignments/deassign", method = RequestMethod.POST)
+    public ProductionLineAssignment deassignWorkOrderToProductionLines(
+            @RequestParam Long workOrderId,
+            @RequestParam Long productionLineId,
+            @RequestBody List<Inventory> returnableMaterial) {
+
+        return productionLineAssignmentService.deassignWorkOrderToProductionLines(workOrderId,
+                productionLineId, returnableMaterial);
+    }
+
+
+    @RequestMapping(value="/production-line-assignments/{id}/report", method = RequestMethod.POST)
+    public ReportHistory generateProductionLineAssignmentReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+    ) throws JsonProcessingException {
+
+        return productionLineAssignmentService.generateProductionLineAssignmentReport(id, locale);
+    }
+
+
+
 
 
 }
