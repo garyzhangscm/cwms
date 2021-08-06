@@ -452,19 +452,21 @@ public class PickService {
     }
 
 
-    public Pick generateBasicPickInformation(InventorySummary inventorySummary,
+    public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary,
                                              Long quantity) {
         return generateBasicPickInformation(
-                inventorySummary, quantity, null, null);
+                warehouseId, inventorySummary, quantity, null, null);
     }
 
 
-    public Pick generateBasicPickInformation(InventorySummary inventorySummary,
+    public Pick generateBasicPickInformation(Long warehouseId,
+                                             InventorySummary inventorySummary,
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
                                              String lpn) {
 
         Pick pick = new Pick();
+        pick.setWarehouseId(warehouseId);
         pick.setItem(inventorySummary.getItem());
         pick.setItemId(inventorySummary.getItem().getId());
         pick.setSourceLocation(inventorySummary.getLocation());
@@ -495,36 +497,41 @@ public class PickService {
             pick.setConfirmItemFlag(true);
             pick.setConfirmLocationFlag(true);
             pick.setConfirmLocationCodeFlag(true);
+
+            pick.setConfirmLpnFlag(true);
         }
         else {
 
             logger.debug("Pick confirm strategy found. id: {}," +
-                    " confirm item: {}, confirm location: {}, confirm location code: {}",
+                    " confirm item: {}, confirm location: {}, confirm location code: {}" +
+                    ", confirm lpn: {}",
                     pickConfirmStrategy.getId(),
                     pickConfirmStrategy.isConfirmItemFlag(),
                     pickConfirmStrategy.isConfirmLocationFlag(),
-                    pickConfirmStrategy.isConfirmLocationCodeFlag());
+                    pickConfirmStrategy.isConfirmLocationCodeFlag(),
+                    pickConfirmStrategy.isConfirmLpnFlag());
             pick.setConfirmItemFlag(pickConfirmStrategy.isConfirmItemFlag());
             pick.setConfirmLocationFlag(pickConfirmStrategy.isConfirmLocationFlag());
             pick.setConfirmLocationCodeFlag(pickConfirmStrategy.isConfirmLocationCodeFlag());
+            pick.setConfirmLpnFlag(pickConfirmStrategy.isConfirmLpnFlag());
         }
 
 
         return pick;
     }
 
-    public Pick generateBasicPickInformation(InventorySummary inventorySummary,
+    public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary,
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure) {
 
         return generateBasicPickInformation(
-                inventorySummary, quantity, pickableUnitOfMeasure, null);
+                warehouseId, inventorySummary, quantity, pickableUnitOfMeasure, null);
     }
 
-    public Pick generateBasicPickInformation(InventorySummary inventorySummary, Long quantity, String lpn) {
+    public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary, Long quantity, String lpn) {
 
         return generateBasicPickInformation(
-                inventorySummary, quantity, null, lpn);
+                warehouseId, inventorySummary, quantity, null, lpn);
     }
 
 
@@ -575,7 +582,7 @@ public class PickService {
         logger.debug("shipment line: {}", shipmentLine);
         logger.debug("quantity: {}", quantity);
         logger.debug("lpn: {}", lpn);
-        Pick pick = generateBasicPickInformation(inventorySummary, quantity, lpn);
+        Pick pick = generateBasicPickInformation(shipmentLine.getWarehouseId(), inventorySummary, quantity, lpn);
         logger.debug("will need to setup shipment line information for the pick: {}", pick.getNumber());
         pick = setupShipmentInformation(pick, shipmentLine);
         logger.debug("start to process the pick: {}", pick.getNumber());
@@ -586,7 +593,8 @@ public class PickService {
     public Pick generatePick(InventorySummary inventorySummary,
                              ShipmentLine shipmentLine, long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure) {
-        Pick pick = generateBasicPickInformation(inventorySummary, quantity, pickableUnitOfMeasure);
+        Pick pick = generateBasicPickInformation(shipmentLine.getWarehouseId(),
+                inventorySummary, quantity, pickableUnitOfMeasure);
         pick = setupShipmentInformation(pick, shipmentLine);
         return processPick(pick);
     }
@@ -615,7 +623,8 @@ public class PickService {
                              WorkOrderLine workOrderLine, Long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure,
                              Long destinationLocationId) {
-        Pick pick = generateBasicPickInformation(inventorySummary, quantity, pickableUnitOfMeasure);
+        Pick pick = generateBasicPickInformation(
+                workOrder.getWarehouseId(), inventorySummary, quantity, pickableUnitOfMeasure);
         pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick);
     }
@@ -627,7 +636,8 @@ public class PickService {
                              long quantity,
                              String lpn,
                              Long destinationLocationId) {
-        Pick pick = generateBasicPickInformation(inventorySummary, quantity, lpn);
+        Pick pick = generateBasicPickInformation(
+                workOrder.getWarehouseId(), inventorySummary, quantity, lpn);
         pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick);
     }
@@ -678,7 +688,8 @@ public class PickService {
      */
     public Pick generatePick(InventorySummary inventorySummary, ShortAllocation shortAllocation,
                              Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
-        Pick pick = generateBasicPickInformation(inventorySummary, quantity, pickableUnitOfMeasure);
+        Pick pick = generateBasicPickInformation(
+                shortAllocation.getWarehouseId(), inventorySummary, quantity, pickableUnitOfMeasure);
 
         pick.setShortAllocation(shortAllocation);
         pick.setWarehouseId(shortAllocation.getWarehouseId());
@@ -874,9 +885,12 @@ public class PickService {
      * @return
      */
     public Pick confirmPick(Pick pick, Long quantity) {
+        return confirmPick(pick, quantity, "");
+    }
+    public Pick confirmPick(Pick pick, Long quantity, String lpn) {
         if (pick.getPickMovements().size() == 0) {
 
-            return confirmPick(pick, quantity, pick.getDestinationLocation());
+            return confirmPick(pick, quantity, pick.getDestinationLocation(), lpn);
         }
         else {
             Location nextLocation = pick.getPickMovements().get(0).getLocation();
@@ -891,12 +905,20 @@ public class PickService {
                 throw PickingException.raiseException("Can't find destination location from the pick move for the pick: " +
                         pick.getNumber());
             }
-            return confirmPick(pick, quantity, nextLocation);
+            return confirmPick(pick, quantity, nextLocation, lpn);
         }
+    }
+
+    public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
+                            String nextLocationName,
+                            boolean pickToContainer, String containerId) {
+        return confirmPick(pickId, quantity, nextLocationId, nextLocationName,
+                pickToContainer, containerId, "");
     }
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
                             String nextLocationName,
-                            boolean pickToContainer, String containerId)  {
+                            boolean pickToContainer, String containerId,
+                            String lpn)  {
         Pick pick = findById(pickId);
         if (pickToContainer) {
             // OK we are picking to container, let's check if we already have
@@ -904,13 +926,13 @@ public class PickService {
             // on the fly.
             Location nextLocation =
                     warehouseLayoutServiceRestemplateClient.getLocationByContainerId(pick.getWarehouseId(), containerId);
-            return confirmPick(pick, quantity, nextLocation);
+            return confirmPick(pick, quantity, nextLocation, lpn);
 
         }
         if (Objects.nonNull(nextLocationId)) {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(pick, quantity, nextLocation);
+                return confirmPick(pick, quantity, nextLocation, lpn);
             }
             else {
                 throw PickingException.raiseException(
@@ -921,7 +943,7 @@ public class PickService {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
                     pick.getWarehouseId(), nextLocationName);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(pick, quantity, nextLocation);
+                return confirmPick(pick, quantity, nextLocation, lpn);
             }
             else {
                 throw PickingException.raiseException(
@@ -929,10 +951,14 @@ public class PickService {
             }
         }
         else {
-            return confirmPick(pick, quantity);
+            return confirmPick(pick, quantity, lpn);
         }
     }
+
     public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {
+        return confirmPick(pick, quantity, nextLocation, "");
+    }
+    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation, String lpn)   {
 
         logger.debug("==> Before the pick confirm, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
@@ -946,7 +972,7 @@ public class PickService {
             throw PickingException.raiseException("Over pick is not allowed. Try to pick: " + quantityToBePicked +
                     ", Quantity left: " + (pick.getQuantity() - pick.getPickedQuantity()));
         }
-        List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick);
+        List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
         logger.debug(" Get {} valid inventory for pick {}",
                 pickableInventories.size(), pick.getNumber());
         // pickableInventories.stream().forEach(System.out::print);

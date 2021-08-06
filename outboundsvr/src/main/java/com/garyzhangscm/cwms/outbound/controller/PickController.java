@@ -101,7 +101,8 @@ public class PickController {
                             @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId,
                             @RequestParam(name="nextLocationName", required = false, defaultValue = "") String nextLocationName,
                             @RequestParam(name="pickToContainer", required = false, defaultValue = "false") boolean pickToContainer,
-                            @RequestParam(name="containerId", required = false, defaultValue = "") String containerId) {
+                            @RequestParam(name="containerId", required = false, defaultValue = "") String containerId,
+                            @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
         logger.debug("======        Start to confirm pick   ========");
         logger.debug("==============");
         logger.debug("==============");
@@ -110,7 +111,8 @@ public class PickController {
         logger.debug("=> nextLocationId: {}", nextLocationId);
         logger.debug("=> pickToContainer: {}", pickToContainer);
         logger.debug("=> containerId: {}", containerId);
-            return pickService.confirmPick(id, quantity, nextLocationId, nextLocationName,  pickToContainer, containerId);
+        logger.debug("=> pick from LPN: {}", lpn);
+            return pickService.confirmPick(id, quantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
     }
 
 

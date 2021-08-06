@@ -91,6 +91,8 @@ public class PickConfirmStrategy extends AuditibleEntity<String> implements Seri
     private boolean confirmLocationFlag;
     @Column(name = "confirm_location_code_flag")
     private boolean confirmLocationCodeFlag;
+    @Column(name = "confirm_lpn_flag")
+    private boolean confirmLpnFlag;
 
 
     public Long getId() {
@@ -243,5 +245,13 @@ public class PickConfirmStrategy extends AuditibleEntity<String> implements Seri
 
     public void setConfirmLocationCodeFlag(boolean confirmLocationCodeFlag) {
         this.confirmLocationCodeFlag = confirmLocationCodeFlag;
+    }
+
+    public boolean isConfirmLpnFlag() {
+        return confirmLpnFlag;
+    }
+
+    public void setConfirmLpnFlag(boolean confirmLpnFlag) {
+        this.confirmLpnFlag = confirmLpnFlag;
     }
 }
