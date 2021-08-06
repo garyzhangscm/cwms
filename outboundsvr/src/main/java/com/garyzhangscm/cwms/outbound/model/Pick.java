@@ -142,6 +142,8 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     private boolean confirmLocationFlag;
     @Column(name = "confirm_location_code_flag")
     private boolean confirmLocationCodeFlag;
+    @Column(name = "confirm_lpn_flag")
+    private boolean confirmLpnFlag;
 
     // work related field. The work's ID is setup
     // if it belongs to certain work. We use the
@@ -432,5 +434,13 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setWorkId(Long workId) {
         this.workId = workId;
+    }
+
+    public boolean isConfirmLpnFlag() {
+        return confirmLpnFlag;
+    }
+
+    public void setConfirmLpnFlag(boolean confirmLpnFlag) {
+        this.confirmLpnFlag = confirmLpnFlag;
     }
 }

@@ -96,26 +96,32 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    logger.debug("Add criteria warehouseId: {}", warehouseId);
 
                     if (Objects.nonNull(itemId)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
+                        logger.debug("Add criteria itemId: {}", itemId);
                     }
                     if (Objects.nonNull(itemFamilyId)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("itemFamilyId"), itemFamilyId));
+                        logger.debug("Add criteria itemFamilyId: {}", itemFamilyId);
                     }
                     if (Objects.nonNull(locationId)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("locationId"), locationId));
+                        logger.debug("Add criteria locationId: {}", locationId);
                     }
                     if (Objects.nonNull(locationGroupId)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("locationGroupId"), locationGroupId));
+                        logger.debug("Add criteria locationGroupId: {}", locationGroupId);
                     }
                     if (Objects.nonNull(locationGroupTypeId)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("locationGroupTypeId"), locationGroupTypeId));
+                        logger.debug("Add criteria locationGroupTypeId: {}", locationGroupTypeId);
                     }
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -123,6 +129,7 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
                 }
         );
 
+        logger.debug("We got {} result of pickConfirmStrategies", pickConfirmStrategies.size());
 
         if (pickConfirmStrategies.size() > 0 && loadDetails) {
             loadAttribute(pickConfirmStrategies);
@@ -368,9 +375,13 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
 
     public List<PickConfirmStrategy> getMatchedPickConfirmStrategies(
             Pick pick) {
+        logger.debug("Start to find matched pick confirm strategy for pick {}",
+                pick.getNumber());
         List<PickConfirmStrategy> pickConfirmStrategies =
                 findAll(pick.getWarehouseId(), null, null, null, null,
                         null, false);
+        logger.debug("we have {} strategies configured, for warehouse {}",
+                pickConfirmStrategies.size(), pick.getWarehouseId());
 
         return pickConfirmStrategies.stream().filter(pickConfirmStrategy ->
                 isMatch(pickConfirmStrategy, pick)).collect(Collectors.toList());
@@ -404,14 +415,22 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
         // against the pick.
         // If the field is not setup in the strategy, then it matches with
         // any pick
+        logger.debug("Start to compare picks {} against pick confirm strategy {}",
+                pick.getNumber(), pickConfirmStrategy.getId());
         if (Objects.nonNull(pickConfirmStrategy.getItemId()) &&
                 !pickConfirmStrategy.getItemId().equals(pick.getItemId())) {
+            logger.debug("> strategy's item id is setup to {}, doesn't match with pick's item id {}",
+                    pickConfirmStrategy.getItemId(),
+                    pick.getItemId());
             return false;
         }
 
 
         if (Objects.nonNull(pickConfirmStrategy.getWarehouseId()) &&
                 !pickConfirmStrategy.getWarehouseId().equals(pick.getWarehouseId())) {
+            logger.debug("> strategy's warehouse  id is setup to {}, doesn't match with pick's warehouse id {}",
+                    pickConfirmStrategy.getWarehouseId(),
+                    pick.getWarehouseId());
             return false;
         }
 
@@ -419,6 +438,9 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
         if (Objects.nonNull(pickConfirmStrategy.getItemFamilyId()) &&
                 !pickConfirmStrategy.getItemFamilyId().equals(
                         pick.getItem().getItemFamily().getId())) {
+            logger.debug("> strategy's item family  id is setup to {}, doesn't match with pick's item family id {}",
+                    pickConfirmStrategy.getItemFamilyId(),
+                    pick.getItem().getItemFamily().getId());
             return false;
         }
 
@@ -426,25 +448,38 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
         if (Objects.nonNull(pickConfirmStrategy.getLocationId()) &&
                 !pickConfirmStrategy.getLocationId().equals(
                         pick.getSourceLocationId())) {
+            logger.debug("> strategy's location  id is setup to {}, doesn't match with pick's location id {}",
+                    pickConfirmStrategy.getLocationId(),
+                    pick.getSourceLocationId());
             return false;
         }
         if (Objects.nonNull(pickConfirmStrategy.getLocationGroupId()) &&
-                !pickConfirmStrategy.getLocationId().equals(
+                !pickConfirmStrategy.getLocationGroupId().equals(
                         pick.getSourceLocation().getLocationGroup().getId())) {
+            logger.debug("> strategy's location group id is setup to {}, doesn't match with pick's location group id {}",
+                    pickConfirmStrategy.getLocationGroupId(),
+                    pick.getSourceLocation().getLocationGroup().getId());
             return false;
         }
 
         if (Objects.nonNull(pickConfirmStrategy.getLocationGroupTypeId()) &&
-                !pickConfirmStrategy.getLocationId().equals(
+                !pickConfirmStrategy.getLocationGroupTypeId().equals(
                         pick.getSourceLocation().getLocationGroup().getLocationGroupType().getId())) {
+            logger.debug("> strategy's location group type id is setup to {}, doesn't match with pick's location group type id {}",
+                    pickConfirmStrategy.getLocationGroupTypeId(),
+                    pick.getSourceLocation().getLocationGroup().getLocationGroupType().getId());
             return false;
         }
         if (Objects.nonNull(pickConfirmStrategy.getUnitOfMeasureId()) &&
-                !pickConfirmStrategy.getLocationId().equals(
+                !pickConfirmStrategy.getUnitOfMeasureId().equals(
                         pick.getUnitOfMeasureId())) {
+            logger.debug("> strategy's location unit of measure id is setup to {}, doesn't match with pick's unit of measure id {}",
+                    pickConfirmStrategy.getUnitOfMeasureId(),
+                    pick.getUnitOfMeasureId());
             return false;
         }
 
+        logger.debug(">>> We found match!");
         // we passed all the validation and for all the fields that
         // setup in the strategy, the pick matches all of them
         return  true;

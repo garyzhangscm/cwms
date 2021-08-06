@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -402,7 +403,11 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+
     public List<Inventory> getInventoryForPick(Pick pick) {
+        return getInventoryForPick(pick, "");
+    }
+    public List<Inventory> getInventoryForPick(Pick pick, String lpn) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -410,6 +415,9 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("itemName", pick.getItem().getName())
                         .queryParam("location", pick.getSourceLocation().getName())
                         .queryParam("warehouseId", pick.getWarehouseId());
+        if (Strings.isNotBlank(lpn)) {
+            builder.queryParam("lpn", lpn);
+        }
 
         // If this is a allocated by LPN, then only pick the specific LPN
         if (StringUtils.isNotBlank(pick.getLpn())) {
