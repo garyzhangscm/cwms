@@ -1280,5 +1280,7 @@
   "ORDER-CATEGORY-WAREHOUSE_TRANSFER_ORDER": "调拨单",
   "menu.main.outbound.order-maintenance": "出库单维护",
   "order.transferReceiptWarehouseId": "目标仓库",
-  "order.transferReceiptNumber": "对应收货单据"
+  "order.transferReceiptNumber": "对应收货单据",
+  "shipment.stage.locationGroup": "集货区",
+  "shipment.stage.location": "集货位"
 }

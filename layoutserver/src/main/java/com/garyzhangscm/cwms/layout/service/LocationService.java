@@ -90,7 +90,8 @@ public class LocationService implements TestDataInitiableService {
                                   Double minEmptyCapacity,
                                   Boolean pickableLocationOnly,
                                   String reservedCode,
-                                  Boolean includeDisabledLocation) {
+                                  Boolean includeDisabledLocation,
+                                  Boolean emptyReservedCodeOnly) {
 
         return locationRepository.findAll(
             (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -214,6 +215,10 @@ public class LocationService implements TestDataInitiableService {
                 if (StringUtils.isNotBlank(reservedCode)) {
                     predicates.add(criteriaBuilder.equal(root.get("reservedCode"), reservedCode));
 
+                }
+                if (Boolean.TRUE.equals(emptyReservedCodeOnly)) {
+
+                    predicates.add(criteriaBuilder.isNull(root.get("reservedCode")));
                 }
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
@@ -433,6 +438,16 @@ public class LocationService implements TestDataInitiableService {
 
         // See how we can get the pending volume for the location to be reserved, based on
         // the configuration on the location group
+        logger.debug("Start to reserve location {} with resource code: {}",
+                location.getName(), reservedCode);
+        logger.debug("Location's group: {}, volume tracking policy: {}",
+                location.getLocationGroup().getName(),
+                location.getLocationGroup().getVolumeTrackingPolicy());
+        if (Objects.isNull(location.getLocationGroup().getVolumeTrackingPolicy())) {
+            // location is not setup to volume tracking,
+            return reserveLocation(location, reservedCode, 0.0);
+        }
+
         switch (location.getLocationGroup().getVolumeTrackingPolicy()) {
             case BY_VOLUME:
                 return reserveLocation(location, reservedCode, pendingSize);
@@ -634,7 +649,7 @@ public class LocationService implements TestDataInitiableService {
      */
     public List<Location> getPackingStations(Long warehouseId) {
         List<LocationGroupType> locationGroupTypes
-                = locationGroupTypeService.findAll(null)
+                = locationGroupTypeService.findAll(null, null)
                 .stream()
                 .filter(locationGroupType -> locationGroupType.getPackingStation() == true)
                 .collect(Collectors.toList());
@@ -645,6 +660,7 @@ public class LocationService implements TestDataInitiableService {
                 .map(locationGroupType -> locationGroupType.getId())
                 .map(String::valueOf).collect(Collectors.joining(","));
         return findAll(warehouseId,locationGroupTypeIds,
+                null,
                 null,
                 null,
                 null,
@@ -715,6 +731,7 @@ public class LocationService implements TestDataInitiableService {
                 null,
                 null,
                 reservedCode,
+                null,
                 null);
     }
 

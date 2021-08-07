@@ -805,6 +805,90 @@ public class OrderService implements TestDataInitiableService {
         );
 
 
-        return saveOrUpdate(order);
+        Order newOrder =  saveOrUpdate(order);
+        if (Objects.nonNull(order.getStageLocationId())) {
+            // the user specify a location for this order
+            // let's reserve it now so it won't reserved by other
+            // orders. We will always use the order number as the reserve code
+
+            warehouseLayoutServiceRestemplateClient.reserveLocation(
+                    order.getStageLocationId(),
+                    order.getNumber(),
+                    getTotalVolume(order),
+                    getTotalQuantity(order),
+                    getTotalPalletQuantity(order)
+            );
+        }
+        return newOrder;
+    }
+
+    private Integer getTotalPalletQuantity(Order order) {
+
+        return order.getOrderLines().stream()
+                .map(orderLine -> {
+                    Long itemId = orderLine.getItemId();
+                    Item item = inventoryServiceRestemplateClient.getItemById(itemId);
+                    if (Objects.nonNull(item)) {
+                        // let's estimate the item's volume by its first item package type
+                        // and its biggest UOM
+                        ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
+                        ItemUnitOfMeasure biggestItemUnitOfMeasure = itemPackageType.getItemUnitOfMeasures().get(0);
+                        for (ItemUnitOfMeasure itemUnitOfMeasure : itemPackageType.getItemUnitOfMeasures()) {
+                            if (itemUnitOfMeasure.getQuantity() > biggestItemUnitOfMeasure.getQuantity()) {
+                                biggestItemUnitOfMeasure = itemUnitOfMeasure;
+                            }
+                        }
+                        logger.debug("Start to estimate the pallet quantity of the item {} in order {}",
+                                item.getName(), order.getNumber());
+                        logger.debug("based on uom {}, quantity {}, line quantity {}",
+                                biggestItemUnitOfMeasure.getUnitOfMeasure().getName(),
+                                biggestItemUnitOfMeasure.getQuantity(),
+                                orderLine.getExpectedQuantity());
+                        int palletCount = (int) Math.ceil(orderLine.getExpectedQuantity() * 1.0 / biggestItemUnitOfMeasure.getQuantity());
+                        logger.debug(">> pallet count is {}", palletCount);
+                        return palletCount;
+                    }
+                    else {
+                        return 0;
+                    }
+                }).mapToInt(Integer::intValue).sum();
+    }
+
+    private Double getTotalVolume(Order order) {
+
+        return order.getOrderLines().stream()
+                .map(orderLine -> {
+                    Long itemId = orderLine.getItemId();
+                    Item item = inventoryServiceRestemplateClient.getItemById(itemId);
+                    if (Objects.nonNull(item)) {
+                        // let's estimate the item's volume by its first item package type
+                        // and its smallest UOM
+                        ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
+                        ItemUnitOfMeasure itemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+                        logger.debug("Start to estimate the volume of the item {} in order {}",
+                                item.getName(), order.getNumber());
+                        logger.debug("based on uom {}, quantity {}, size: {} x {} x {}, line quantity {}",
+                                itemUnitOfMeasure.getUnitOfMeasure().getName(),
+                                itemUnitOfMeasure.getQuantity(),
+                                itemUnitOfMeasure.getLength(),
+                                itemUnitOfMeasure.getWidth(),
+                                itemUnitOfMeasure.getHeight(),
+                                orderLine.getExpectedQuantity());
+                        double volume = (orderLine.getExpectedQuantity() *
+                                            itemUnitOfMeasure.getLength()  *
+                                            itemUnitOfMeasure.getWidth() *
+                                            itemUnitOfMeasure.getHeight()) / itemUnitOfMeasure.getQuantity();
+                        logger.debug(">> volume is {}", volume);
+                        return volume;
+                    }
+                    else {
+                        return 0.0d;
+                    }
+                }).mapToDouble(Double::doubleValue).sum();
+    }
+
+    private Long getTotalQuantity(Order order) {
+        return order.getOrderLines().stream().map(orderLine -> orderLine.getExpectedQuantity())
+                .mapToLong(Long::longValue).sum();
     }
 }

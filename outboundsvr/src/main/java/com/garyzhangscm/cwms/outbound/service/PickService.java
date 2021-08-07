@@ -733,6 +733,19 @@ public class PickService {
 
 
     private Location getDestinationLocationForPick(ShipmentLine shipmentLine, Pick pick) {
+
+
+        if (shipmentLine.getOrderLine().getOrder().getStageLocationId() == null) {
+            // we have the location setup on the order, we assume the location should be
+            // already reserved when the order is created.
+            // let's return the location
+            return warehouseLayoutServiceRestemplateClient.getLocationById(
+                    shipmentLine.getOrderLine().getOrder().getStageLocationId()
+            );
+
+        }
+
+
         ShippingStageAreaConfiguration shippingStageAreaConfiguration;
         logger.debug(">> Try to get ship stage for the pick");
         logger.debug(">> shipmentLine.getOrderLine().getOrder().getStageLocationGroupId(): {}",
@@ -746,7 +759,9 @@ public class PickService {
             shippingStageAreaConfiguration = shippingStageAreaConfigurationService.getShippingStageArea(
                     pick, shipmentLine.getOrderLine().getOrder().getStageLocationGroupId());
         }
+
         logger.debug("OK, we find the ship stage configuration: {}", shippingStageAreaConfiguration.getSequence());
+
         Location stagingLocation = shippingStageAreaConfigurationService.reserveShippingStageLocation(shippingStageAreaConfiguration, pick);
 
         logger.debug("Bingo, we got the ship stage location: {}", stagingLocation.getName());

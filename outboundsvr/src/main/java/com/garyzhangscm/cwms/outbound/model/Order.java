@@ -155,6 +155,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     @Transient
     private LocationGroup stageLocationGroup;
 
+    // staging location group
+    @Column(name="stage_location_id")
+    private Long stageLocationId;
+
+    @Transient
+    private Location stageLocation;
+
 
     // Some statistics numbers that we can show
     // in the frontend
@@ -603,5 +610,21 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setTransferReceiptWarehouseId(Long transferReceiptWarehouseId) {
         this.transferReceiptWarehouseId = transferReceiptWarehouseId;
+    }
+
+    public Long getStageLocationId() {
+        return stageLocationId;
+    }
+
+    public void setStageLocationId(Long stageLocationId) {
+        this.stageLocationId = stageLocationId;
+    }
+
+    public Location getStageLocation() {
+        return stageLocation;
+    }
+
+    public void setStageLocation(Location stageLocation) {
+        this.stageLocation = stageLocation;
     }
 }
