@@ -89,7 +89,9 @@ public class LocationController {
                                         @RequestParam(name = "pickableLocationOnly", required = false, defaultValue = "") Boolean pickableLocationOnly,
                                         @RequestParam(name = "includeDisabledLocation", required = false, defaultValue = "") Boolean includeDisabledLocation,
                                         @RequestParam(name = "maxResultCount", required =  false, defaultValue =  "0") Integer maxResultCount,
-                                        @RequestParam(name = "reservedCode", required =  false, defaultValue =  "") String reservedCode) {
+                                        @RequestParam(name = "reservedCode", required =  false, defaultValue =  "") String reservedCode,
+                                        @RequestParam(name = "emptyReservedCodeOnly", required =  false, defaultValue =  "") Boolean emptyReservedCodeOnly
+                                        ) {
 
         StringBuilder params = new StringBuilder()
                 .append("Start to find location with params:")
@@ -117,7 +119,7 @@ public class LocationController {
                 locationGroupTypeIds, locationGroupIds, name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
-                includeDisabledLocation);
+                includeDisabledLocation, emptyReservedCodeOnly);
 
         logger.debug(">> Find {} locations", locations.size());
         if (locations.size() == 0) {
@@ -314,4 +316,6 @@ public class LocationController {
         return locationService.getShippedParcelLocation(warehouseId, carrierName, serviceLevelName);
 
     }
+
+
 }

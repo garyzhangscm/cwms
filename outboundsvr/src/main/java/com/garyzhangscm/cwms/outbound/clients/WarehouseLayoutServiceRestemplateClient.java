@@ -359,6 +359,8 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     public Location reserveLocation(Long locationId, String reservedCode,
                                              Double pendingSize, Long pendingQuantity, Integer pendingPalletQuantity) {
+        logger.debug("Start to reserve location {} with code {}, size {}, quantity {}, pending pallet quantity {}",
+                locationId, reservedCode, pendingSize, pendingQuantity, pendingPalletQuantity);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)

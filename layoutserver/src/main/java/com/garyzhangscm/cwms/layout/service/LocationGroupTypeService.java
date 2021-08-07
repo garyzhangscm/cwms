@@ -20,7 +20,10 @@ package com.garyzhangscm.cwms.layout.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.layout.model.Location;
+import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import com.garyzhangscm.cwms.layout.model.LocationGroupType;
+import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.repository.LocationGroupTypeRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -30,12 +33,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,28 +63,35 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("location group type not found by id: " + id));
     }
 
-    public List<LocationGroupType> findAll(String name) {
+    public List<LocationGroupType> findAll(String name,
+                                           Boolean shippingStage) {
 
-        if (StringUtils.isBlank(name)) {
-            return locationGroupTypeRepository.findAll();
-        }
-        else {
-            LocationGroupType locationGroupType = findByName(name);
-            if (locationGroupType != null) {
-                return Arrays.asList(new LocationGroupType[]{locationGroupType});
-            }
-            else {
-                return new ArrayList<>();
-            }
-        }
+
+        return locationGroupTypeRepository.findAll(
+                (Root<LocationGroupType> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+                    if (StringUtils.isNotBlank(name)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+
+                    if (Objects.nonNull(shippingStage)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("shippingStage"), shippingStage));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
     }
 
     public List<LocationGroupType> getContainerLocationGroupType() {
-        return findAll("").stream().filter(locationGroupType -> locationGroupType.getContainer() == true).collect(Collectors.toList());
+        return findAll("", null).stream().filter(locationGroupType -> locationGroupType.getContainer() == true).collect(Collectors.toList());
     }
 
     public List<LocationGroupType> getRFLocationGroupType() {
-        return findAll("").stream().filter(locationGroupType -> locationGroupType.getRf() == true).collect(Collectors.toList());
+        return findAll("", null).stream().filter(locationGroupType -> locationGroupType.getRf() == true).collect(Collectors.toList());
     }
 
 

@@ -1275,5 +1275,7 @@
   "ORDER-CATEGORY-WAREHOUSE_TRANSFER_ORDER": "Warehouse Transfer",
   "menu.main.outbound.order-maintenance": "Order Maintenance",
   "order.transferReceiptWarehouseId": "Transfer Warehouse ID",
-  "order.transferReceiptNumber": "Transfer Receipt Number"
+  "order.transferReceiptNumber": "Transfer Receipt Number",
+  "shipment.stage.locationGroup": "Shipping Stage Location Group",
+  "shipment.stage.location": "Shipping Stage Location"
 }
