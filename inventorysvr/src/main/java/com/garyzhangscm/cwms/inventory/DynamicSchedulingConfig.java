@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.inventory;
 
+import com.garyzhangscm.cwms.inventory.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.service.InventorySnapshotConfigurationService;
 import com.garyzhangscm.cwms.inventory.service.InventorySnapshotService;
 import org.apache.commons.lang.StringUtils;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.Trigger;
@@ -17,7 +19,11 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.config.TriggerTask;
 import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.web.context.request.RequestContextHolder;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -42,75 +48,93 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
     Map<Long, String> lastCronExpressions = new HashMap<>();
     @Autowired
     private InventorySnapshotService inventorySnapshotService;
+
+    @Autowired
+    AuthServiceRestemplateClient authServiceRestemplateClient;
     @Autowired
     private InventorySnapshotConfigurationService inventorySnapshotConfigurationService;
 
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
+
+    @Autowired
+    @Qualifier("oauth2ClientContext")
+    OAuth2ClientContext oauth2ClientContext;
+
+
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         // Loop through each configuration and
         // generate the inventory snapshot
-        inventorySnapshotConfigurationService.findAll(null).forEach(
 
-                inventorySnapshotConfiguration -> {
-                    logger.debug("Start to setup run task for inventorySnapshotConfiguration: >>>> \n {}",
-                            inventorySnapshotConfiguration);
-                    Runnable runnableTask = () -> {
-                        logger.debug("# auto run inventorySnapshotConfiguration:   >>>>  \n {}",
+            inventorySnapshotConfigurationService.findAll(null).forEach(
+
+                    inventorySnapshotConfiguration -> {
+                        logger.debug("Start to setup run task for inventorySnapshotConfiguration: >>>> \n {}",
                                 inventorySnapshotConfiguration);
-                        inventorySnapshotService.generateInventorySnapshot(
-                                inventorySnapshotConfiguration.getWarehouseId()
-                        );
-                    };
+                        Runnable runnableTask = () -> {
+                            logger.debug("# auto run inventorySnapshotConfiguration:   >>>>  \n {}",
+                                    inventorySnapshotConfiguration);
 
-                    Trigger trigger = triggerContext -> {
+                            try {
 
-                        String newCronExpression =
-                                inventorySnapshotConfiguration.getCron();
-                        String lastCronExpression =
-                                lastCronExpressions.getOrDefault(
-                                        inventorySnapshotConfiguration.getWarehouseId(),
-                                        inventorySnapshotConfiguration.getCron()
+                                setupOAuth2Context();
+                                inventorySnapshotService.generateInventorySnapshot(
+                                        inventorySnapshotConfiguration.getWarehouseId()
                                 );
-                        logger.debug("lastCronExpression: {}, newCronExpression: {}",
-                                lastCronExpression, newCronExpression);
+                            } catch (IOException e) {
 
-                        lastCronExpressions.put(
-                                inventorySnapshotConfiguration.getWarehouseId(),
-                                newCronExpression
-                        );
+                                e.printStackTrace();
+                            }
+                        };
 
-                        // if the cron schedule is changed, restart the
-                        // task
-                        if (!StringUtils.equalsIgnoreCase(
-                                newCronExpression, lastCronExpression)) {
+                        Trigger trigger = triggerContext -> {
 
-                            logger.debug("lastCronExpression: {}, newCronExpression: {} DOESN'T MATCH!",
+                            String newCronExpression =
+                                    inventorySnapshotConfiguration.getCron();
+                            String lastCronExpression =
+                                    lastCronExpressions.getOrDefault(
+                                            inventorySnapshotConfiguration.getWarehouseId(),
+                                            inventorySnapshotConfiguration.getCron()
+                                    );
+                            logger.debug("lastCronExpression: {}, newCronExpression: {}",
                                     lastCronExpression, newCronExpression);
-                            taskRegistrar.setTriggerTasksList(new ArrayList<>());
 
-                            configureTasks(taskRegistrar); // calling recursively.
+                            lastCronExpressions.put(
+                                    inventorySnapshotConfiguration.getWarehouseId(),
+                                    newCronExpression
+                            );
 
-                            taskRegistrar.destroy(); // destroys previously scheduled tasks.
+                            // if the cron schedule is changed, restart the
+                            // task
+                            if (!StringUtils.equalsIgnoreCase(
+                                    newCronExpression, lastCronExpression)) {
 
-                            taskRegistrar.setScheduler(executor);
+                                logger.debug("lastCronExpression: {}, newCronExpression: {} DOESN'T MATCH!",
+                                        lastCronExpression, newCronExpression);
+                                taskRegistrar.setTriggerTasksList(new ArrayList<>());
 
-                            taskRegistrar.afterPropertiesSet(); // this will schedule the task with new cron changes.
+                                configureTasks(taskRegistrar); // calling recursively.
 
-                            return null; // return null when the cron changed so the trigger will stop.
+                                taskRegistrar.destroy(); // destroys previously scheduled tasks.
 
-                        }
+                                taskRegistrar.setScheduler(executor);
 
-                        logger.debug("SETUP NEXT run time: {}",
-                                newCronExpression);
-                        CronTrigger crontrigger = new CronTrigger(newCronExpression);
+                                taskRegistrar.afterPropertiesSet(); // this will schedule the task with new cron changes.
 
-                        return crontrigger.nextExecutionTime(triggerContext);
-                    };
-                    taskRegistrar.addTriggerTask(runnableTask, trigger);
-                }
-        );
+                                return null; // return null when the cron changed so the trigger will stop.
+
+                            }
+
+                            logger.debug("SETUP NEXT run time: {}",
+                                    newCronExpression);
+                            CronTrigger crontrigger = new CronTrigger(newCronExpression);
+
+                            return crontrigger.nextExecutionTime(triggerContext);
+                        };
+                        taskRegistrar.addTriggerTask(runnableTask, trigger);
+                    }
+            );
     }
 
     @Override
@@ -119,5 +143,31 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
             executor.shutdownNow();
         }
     }
+
+
+    /**
+     * Setup the OAuth2 token for the background job
+     * OAuth2 token will be setup automatically in a web request context
+     * but for a separate thread outside the web context, we will need to
+     * setup the OAuth2 manually
+     * @throws IOException
+     */
+    private void setupOAuth2Context() throws IOException {
+
+        // Setup the request context so we can utilize the OAuth
+        // as if we were in a web request context
+        RequestContextHolder.setRequestAttributes(new CustomRequestScopeAttr());
+
+        // Get token. We will use a default user to login and get
+        // the OAuth2 token by the default user
+        String token = authServiceRestemplateClient.getCurrentLoginUser().getToken();
+        // logger.debug("# start to setup the oauth2 token for background job: {}", token);
+        // Setup the access toke for the current thread
+        // oauth2ClientContext is a scope = request bean that hold
+        // the Oauth2 token
+        oauth2ClientContext.setAccessToken(new DefaultOAuth2AccessToken(token));
+
+    }
+
 
 }

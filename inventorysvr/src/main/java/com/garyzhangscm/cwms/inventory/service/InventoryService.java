@@ -931,12 +931,13 @@ public class InventoryService implements TestDataInitiableService{
      */
     @Transactional
     public Inventory processImmediateMoveInventory(Inventory inventory, Location destination, Long pickId, String destinationLpn) {
-        logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}, new LPN? {}",
+        logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}, new LPN? {}, movement path record: {}",
                 inventory.getLpn(),
                 destination.getName(),
                 pickId,
                 Objects.isNull(pickId),
-                destinationLpn);
+                destinationLpn,
+                inventory.getInventoryMovements().size());
 
         logger.debug("==> Before the inventory move, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
@@ -957,9 +958,7 @@ public class InventoryService implements TestDataInitiableService{
             return saveOrUpdate(inventory);
         }
         inventory.setLocationId(destination.getId());
-        if (!Objects.isNull(pickId)) {
-            markAsPicked(inventory, pickId);
-        }
+        inventory.setLocation(destination);
 
         // we will need to get the destination location's location group
         // so we can know whether the inventory become a virtual inventory
@@ -997,13 +996,17 @@ public class InventoryService implements TestDataInitiableService{
 
         }
         // Check if we have finished any movement
-        if (Objects.nonNull(pickId)) {
-            recalculateMovementPathForPickedInventoryMovement(inventory, destination, pickId);
+
+        if (Objects.isNull(pickId)) {
+            recalculateMovementPathForInventoryMovement(inventory, destination);
         }
         else {
 
-            recalculateMovementPathForInventoryMovement(inventory, destination);
+            markAsPicked(inventory, destination, pickId);
+            logger.debug("After markAsPicked, we still have {} movement path on the inventory {}",
+                    inventory.getInventoryMovements().size(), inventory.getLpn());
         }
+
 
         // Reset the destination location's size
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
@@ -1018,8 +1021,12 @@ public class InventoryService implements TestDataInitiableService{
             outbuondServiceRestemplateClient.refreshPickMovement(inventory.getPickId(), destination.getId(), inventory.getQuantity());
         }
         // consolidate the inventory at the destination, if necessary
+        logger.debug("before consolidation, we still have {} movement path on the inventory {}",
+                inventory.getInventoryMovements().size(), inventory.getLpn());
         Inventory consolidatedInventory = inventoryConsolidationService.consolidateInventoryAtLocation(destination, inventory);
 
+        logger.debug("After consolidation, we still have {} movement path on the inventory {}",
+                consolidatedInventory.getInventoryMovements().size(), consolidatedInventory.getLpn());
         logger.debug("6. destination {} has {} inventory",
                 destination.getName(), findByLocationId(destination.getId()).size());
         // check if we will need to remove the original inventory
@@ -1054,6 +1061,7 @@ public class InventoryService implements TestDataInitiableService{
                 warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
                 warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getCurrentVolume());
         return save(consolidatedInventory);
+
     }
     /****
     private void consolidateLpn(Inventory inventory, Location destination) {
@@ -1089,11 +1097,27 @@ public class InventoryService implements TestDataInitiableService{
 
     private  void recalculateMovementPathForPickedInventoryMovement(Inventory inventory, Location destination, Long pickId) {
         Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
+        logger.debug("Start to setup movement path for inventory {}, current location {} / {}, pick's destination: {}",
+                inventory.getLpn(),
+                inventory.getLocationId(),
+                destination.getId(),
+                pick.getDestinationLocationId());
+
+        // clear all inventory movement first.
+        // if the inventory is already in the destination, then we will not assign any movement
+        // otherwise, we will setup the destination of the pick as the only destination
+        inventory.getInventoryMovements().clear();
+
+        // if the inventory is already at the pick's destination, then do nothing
+        if (destination.getId().equals(pick.getDestinationLocationId())) {
+            logger.debug("the LPN is currently at its destination, no need to setup the movement path");
+            return;
+        }
+
         // if the inventory is picked inventory, then we will clear the
         // movement path that already assigned to the current inventory.
         // we want to start off with a clear movement path and assign
         // it with the ones only necessary for outbound
-        inventory.getInventoryMovements().clear();
         InventoryMovement inventoryMovement = new InventoryMovement();
         inventoryMovement.setInventory(inventory);
         inventoryMovement.setLocationId(pick.getDestinationLocation().getId());
@@ -1104,7 +1128,7 @@ public class InventoryService implements TestDataInitiableService{
 
 
         logger.debug("Add destination {} to the movement path of picked inventory LPN / {}",
-                destination.getName(), inventory.getLpn());
+                pick.getDestinationLocation().getName(), inventory.getLpn());
 
 
     }
@@ -1230,10 +1254,10 @@ public class InventoryService implements TestDataInitiableService{
         return inventory;
     }
 
-    public Inventory markAsPicked(Long inventoryId, Long pickId) {
-        return markAsPicked(findById(inventoryId), pickId);
+    public Inventory markAsPicked(Long inventoryId, Location destination, Long pickId) {
+        return markAsPicked(findById(inventoryId),destination,  pickId);
     }
-    public Inventory markAsPicked(Inventory inventory, Long pickId) {
+    public Inventory markAsPicked(Inventory inventory, Location destination,  Long pickId) {
         if (Objects.nonNull(inventory.getAllocatedByPickId())) {
             // The inventory is allocated by certain pick. make sure it is
             // not picked by a different pick
@@ -1250,10 +1274,21 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setPickId(pickId);
         Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
         inventory.setPick(pick);
-        if (inventory.getInventoryMovements().size() == 0) {
-            // copy the pick movement and assign it to the inventory's movement
-            copyMovementsFromPick(pick, inventory);
+        inventory.getInventoryMovements().clear();
+        logger.debug("Start to build movement path for picked inventory {}",
+                inventory.getLpn());
+        // if the inventory is not in the destination location yet, then copy
+        // the whole movement path from the pick
+        logger.debug("Inventory's current location: {} / {}, pick's destination location: {} / {}",
+                inventory.getLocation().getName(),
+                inventory.getLocationId(),
+                pick.getDestinationLocation().getName(),
+                pick.getDestinationLocationId());
+        if (!inventory.getLocationId().equals(pick.getDestinationLocationId())) {
 
+            // copy the pick movement and assign it to the inventory's movement
+            logger.debug("Inventory is not in the destination yet, let's setup the movement");
+            copyMovementsFromPick(pick, inventory);
         }
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.PICKING,
                 "pick", String.valueOf(pickId), "", pick.getNumber());
@@ -1263,13 +1298,20 @@ public class InventoryService implements TestDataInitiableService{
 
         List<InventoryMovement> inventoryMovements = new ArrayList<>();
         pick.getPickMovements().stream().forEach(pickMovement -> {
+            logger.debug("will copy {} as a hop for the picked inventory {}",
+                    pickMovement.getLocationId(), inventory.getLpn());
             inventoryMovements.add(inventoryMovementService.createInventoryMovementFromPickMovement(inventory, pickMovement));
         });
 
         // Note the pick's movement path only contains the hop locations. We will need to set
         // the inventory's movement to include the final destination as well
         inventoryMovements.add(inventoryMovementService.createInventoryMovement(inventory, pick.getDestinationLocationId()));
+
+        logger.debug("will copy {} as a destination for the picked inventory {}",
+                pick.getDestinationLocationId(), inventory.getLpn());
         inventory.setInventoryMovements(inventoryMovements);
+        logger.debug("Now we have {} movement path for the inventory {}",
+                inventory.getInventoryMovements().size(), inventory.getLpn());
     }
 
     // Split the inventory based on the quantity, usually into 2 inventory.

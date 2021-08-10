@@ -71,6 +71,15 @@ public class OrderController {
 
         return orderService.allocate(id);
     }
+
+    @RequestMapping(value="/orders/{id}/change-stage-loctions", method = RequestMethod.POST)
+    public Order changeAssignedStageLocations(@PathVariable Long id,
+                                      @RequestParam(name = "locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                      @RequestParam(name = "locationId", required = false, defaultValue = "") Long locationId){
+
+        return orderService.changeAssignedStageLocations(id, locationGroupId, locationId);
+    }
+
     @RequestMapping(value="/orders/{id}/complete", method = RequestMethod.POST)
     public Order completeOrder(@PathVariable Long id){
         return orderService.completeOrder(id);

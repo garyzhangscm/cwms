@@ -27,12 +27,15 @@ import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.LocationRepository;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import javax.transaction.Transactional;
 
 import javax.persistence.criteria.*;
@@ -93,7 +96,7 @@ public class LocationService implements TestDataInitiableService {
                                   Boolean includeDisabledLocation,
                                   Boolean emptyReservedCodeOnly) {
 
-        return locationRepository.findAll(
+        List<Location> locations = locationRepository.findAll(
             (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
                 if (StringUtils.isNotBlank(locationGroupTypeIds)) {
@@ -216,14 +219,18 @@ public class LocationService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("reservedCode"), reservedCode));
 
                 }
-                if (Boolean.TRUE.equals(emptyReservedCodeOnly)) {
-
-                    predicates.add(criteriaBuilder.isNull(root.get("reservedCode")));
-                }
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
             }
         );
+
+        // only return the locations with empty reserve code
+        if (Boolean.TRUE.equals(emptyReservedCodeOnly)) {
+            locations = locations.stream().filter(
+                    location -> Strings.isBlank(location.getReservedCode())).collect(Collectors.toList());
+
+        }
+        return locations;
 
     }
 
@@ -708,10 +715,22 @@ public class LocationService implements TestDataInitiableService {
      * @param reservedCode reserve code
      * @return all locations that used to have this reserve code
      */
-    public List<Location> unreserveLocation(Long warehouseId, String reservedCode) {
-        List<Location> locations = findByReserveCode(warehouseId, reservedCode);
+    public List<Location> unreserveLocation(Long warehouseId, String reservedCode,
+                                            Long locationId, Boolean clearReservedVolume) {
+        List<Location> locations = new ArrayList<>();
+        if (Objects.nonNull(locationId)) {
+            locations = Collections.singletonList(findById(locationId));
+        }
+        else {
+            locations = findByReserveCode(warehouseId, reservedCode);
+        }
+
+
         return locations.stream().map(location -> {
             location.setReservedCode("");
+            if (Boolean.TRUE.equals(clearReservedVolume)) {
+                location.setPendingVolume(0.0);
+            }
             return saveOrUpdate(location);
         }).collect(Collectors.toList());
     }

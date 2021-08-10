@@ -19,7 +19,9 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
-public class LocationGroup {
+import java.io.Serializable;
+
+public class LocationGroup implements Serializable {
 
     private Long id;
 

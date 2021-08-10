@@ -1,7 +1,9 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
-public class Company {
+import java.io.Serializable;
+
+public class Company implements Serializable {
 
     private Long id;
 

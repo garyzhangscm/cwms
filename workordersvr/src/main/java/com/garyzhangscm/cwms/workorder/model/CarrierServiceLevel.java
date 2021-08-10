@@ -1,7 +1,9 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
-public class CarrierServiceLevel {
+import java.io.Serializable;
+
+public class CarrierServiceLevel implements Serializable {
 
     private Long id;
 

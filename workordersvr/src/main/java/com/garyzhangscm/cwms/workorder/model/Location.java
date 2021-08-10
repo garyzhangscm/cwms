@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.workorder.model;
 
-public class Location {
+import java.io.Serializable;
+
+public class Location implements Serializable {
 
     private Long id;
 

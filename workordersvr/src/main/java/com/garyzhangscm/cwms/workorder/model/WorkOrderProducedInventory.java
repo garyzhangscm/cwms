@@ -52,6 +52,7 @@ public class WorkOrderProducedInventory extends AuditibleEntity<String> {
         inventory.setLocation(workOrderProduceTransaction.getProductionLine().getOutboundStageLocation());
         inventory.setItem(workOrder.getItem());
         inventory.setItemPackageType(getItemPackageType());
+
         inventory.setQuantity(getQuantity());
         inventory.setVirtual(false);
         inventory.setInventoryStatus(getInventoryStatus());

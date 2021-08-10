@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.inventory.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,13 +31,22 @@ public class User {
     private Long id;
 
     private String username;
+    private String password;
     private String firstname;
     private String lastname;
-    private Boolean isAdmin = false;
-
     private String email;
+
     private boolean enabled;
     private boolean locked;
+
+    private String token;
+    private String refreshToken;
+    private String name;
+    private Timestamp time;
+    private int refreshIn;
+
+    private Boolean isAdmin = false;
+
 
     private List<Role> roles = new ArrayList<>();
 
@@ -120,5 +130,53 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Timestamp getTime() {
+        return time;
+    }
+
+    public void setTime(Timestamp time) {
+        this.time = time;
+    }
+
+    public int getRefreshIn() {
+        return refreshIn;
+    }
+
+    public void setRefreshIn(int refreshIn) {
+        this.refreshIn = refreshIn;
     }
 }

@@ -19,10 +19,8 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.CustomRequestScopeAttr;
+import com.garyzhangscm.cwms.inventory.clients.*;
 import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
@@ -33,10 +31,14 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
@@ -78,6 +80,13 @@ public class InventorySnapshotService  {
     private FileService fileService;
 
 
+    @Autowired
+    AuthServiceRestemplateClient authServiceRestemplateClient;
+    @Autowired
+    @Qualifier("oauth2ClientContext")
+    OAuth2ClientContext oauth2ClientContext;
+
+
     public InventorySnapshot findById(Long id) {
         return findById(id, true);
     }
@@ -92,18 +101,28 @@ public class InventorySnapshotService  {
 
 
     public InventorySnapshot save(InventorySnapshot inventorySnapshot) {
+        return save(inventorySnapshot, true);
+    }
+    public InventorySnapshot save(InventorySnapshot inventorySnapshot, boolean loadDetails) {
         InventorySnapshot newInventorySnapshot =  inventorySnapshotRepository.save(inventorySnapshot);
-        loadDetails(newInventorySnapshot);
+        if (loadDetails) {
+
+            loadDetails(newInventorySnapshot);
+        }
         return newInventorySnapshot;
     }
 
     public InventorySnapshot saveOrUpdate(InventorySnapshot inventorySnapshot) {
+        return saveOrUpdate(inventorySnapshot, true);
+
+    }
+    public InventorySnapshot saveOrUpdate(InventorySnapshot inventorySnapshot, boolean loadDetails) {
         if (inventorySnapshot.getId() == null &&
                 findByBatchNumber(inventorySnapshot.getWarehouseId(), inventorySnapshot.getBatchNumber()) != null) {
             inventorySnapshot.setId(
                     findByBatchNumber(inventorySnapshot.getWarehouseId(), inventorySnapshot.getBatchNumber()).getId());
         }
-        return save(inventorySnapshot);
+        return save(inventorySnapshot, loadDetails);
     }
 
     private InventorySnapshot findByBatchNumber(Long warehouseId, String batchNumber) {
@@ -295,7 +314,13 @@ public class InventorySnapshotService  {
 
         // start to generate snapshot for each item
         new Thread(() -> {
-            generateInventorySnapshotDetails(savedInventorySnapshot, inventories);
+
+            try {
+                setupOAuth2Context();
+                generateInventorySnapshotDetails(savedInventorySnapshot, inventories);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
 
         return savedInventorySnapshot;
@@ -355,7 +380,7 @@ public class InventorySnapshotService  {
         // save the result
         logger.debug(">>   3 start to save details to batch {}",
                   inventorySnapshot.getBatchNumber());
-        saveOrUpdate(inventorySnapshot);
+        saveOrUpdate(inventorySnapshot, false);
         logger.debug(">>   4 end of save details to batch {}",
                   inventorySnapshot.getBatchNumber());
 
@@ -367,5 +392,28 @@ public class InventorySnapshotService  {
         return Objects.nonNull(inventorySnapshot) ? inventorySnapshot.getInventorySnapshotDetails() : new ArrayList<>();
     }
 
+    /**
+     * Setup the OAuth2 token for the background job
+     * OAuth2 token will be setup automatically in a web request context
+     * but for a separate thread outside the web context, we will need to
+     * setup the OAuth2 manually
+     * @throws IOException
+     */
+    private void setupOAuth2Context() throws IOException {
+
+        // Setup the request context so we can utilize the OAuth
+        // as if we were in a web request context
+        RequestContextHolder.setRequestAttributes(new CustomRequestScopeAttr());
+
+        // Get token. We will use a default user to login and get
+        // the OAuth2 token by the default user
+        String token = authServiceRestemplateClient.getCurrentLoginUser().getToken();
+        // logger.debug("# start to setup the oauth2 token for background job: {}", token);
+        // Setup the access toke for the current thread
+        // oauth2ClientContext is a scope = request bean that hold
+        // the Oauth2 token
+        oauth2ClientContext.setAccessToken(new DefaultOAuth2AccessToken(token));
+
+    }
 
 }

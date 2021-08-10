@@ -1282,5 +1282,6 @@
   "order.transferReceiptWarehouseId": "目标仓库",
   "order.transferReceiptNumber": "对应收货单据",
   "shipment.stage.locationGroup": "集货区",
-  "shipment.stage.location": "集货位"
+  "shipment.stage.location": "集货位",
+  "order.assign-ship-stage-location": "分配集货位"
 }

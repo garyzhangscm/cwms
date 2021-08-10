@@ -21,9 +21,11 @@ package com.garyzhangscm.cwms.outbound.clients;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 
 import org.springframework.http.HttpMethod;
@@ -36,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class WarehouseLayoutServiceRestemplateClient {
@@ -46,6 +49,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
+    @Cacheable(cacheNames = "company")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -63,6 +67,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "location")
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
@@ -89,6 +94,7 @@ public class WarehouseLayoutServiceRestemplateClient {
      * @param containerName Container Name
      * @return
      */
+    @Cacheable(cacheNames = "container")
     public Location getLocationByContainerId(Long warehouseId, String containerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -132,6 +138,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "location")
     public Location getLocationByName(String companyCode, String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(companyCode, warehouseName);
         if (warehouse == null) {
@@ -140,6 +147,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return getLocationByName(warehouse.getId(), name);
     }
 
+    @Cacheable(cacheNames = "location")
     public Location getLocationByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -168,7 +176,6 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-
     public List<Location> getLocationByLocationGroupId(Long warehouseId, Long locationGroupId) {
 
         UriComponentsBuilder builder =
@@ -190,6 +197,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "warehouse")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -207,6 +215,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "warehouse")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -236,6 +245,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "locationGroup")
     public LocationGroup getLocationGroupById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -252,6 +262,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    @Cacheable(cacheNames = "locationGroup")
     public LocationGroup getLocationGroupByName(String companyCode,
                                                 String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(companyCode, warehouseName);
@@ -286,6 +297,7 @@ public class WarehouseLayoutServiceRestemplateClient {
             return locationGroups[0];
         }
     }
+    @Cacheable(cacheNames = "locationGroupType")
     public LocationGroupType getLocationGroupTypeById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -304,6 +316,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    @Cacheable(cacheNames = "locationGroupType")
     public LocationGroupType getLocationGroupTypeByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -512,13 +525,30 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
     public List<Location> releaseLocations(Long warehouseId, Shipment shipment) {
+        return unreserveLocation(warehouseId, null, shipment.getNumber(),null);
+
+    }
+
+    public List<Location> unreserveLocation(Long warehouseId, Long locationId) {
+        return unreserveLocation(warehouseId, locationId, "",null);
+
+    }
+    public List<Location> unreserveLocation(Long warehouseId, Long locationId, String reserveCode, Boolean clearReservedVolume) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/locations/unreserve")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("reservedCode", shipment.getNumber());
+                        .queryParam("warehouseId", warehouseId);
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
+        }
+        if (Strings.isNotBlank(reserveCode)) {
+            builder = builder.queryParam("reserveCode", reserveCode);
+        }
+        if (Objects.nonNull(clearReservedVolume)) {
+            builder = builder.queryParam("clearReservedVolume", clearReservedVolume);
+        }
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(

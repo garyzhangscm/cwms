@@ -1277,5 +1277,6 @@
   "order.transferReceiptWarehouseId": "Transfer Warehouse ID",
   "order.transferReceiptNumber": "Transfer Receipt Number",
   "shipment.stage.locationGroup": "Shipping Stage Location Group",
-  "shipment.stage.location": "Shipping Stage Location"
+  "shipment.stage.location": "Shipping Stage Location",
+  "order.assign-ship-stage-location": "Assign Stage Location"
 }
