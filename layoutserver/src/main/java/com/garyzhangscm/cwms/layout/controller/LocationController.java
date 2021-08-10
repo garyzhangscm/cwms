@@ -239,12 +239,14 @@ public class LocationController {
      */
     @RequestMapping(method=RequestMethod.POST, value="/locations/unreserve")
     public List<Location> unreserveLocation(@RequestParam Long warehouseId,
-                                            @RequestParam String reservedCode) {
+                                            @RequestParam(name = "reservedCode", required = false, defaultValue = "") String reservedCode,
+                                            @RequestParam(name = "locationId", required = false, defaultValue = "") Long locationId,
+                                            @RequestParam(name = "clearReservedVolume", required = false, defaultValue = "") Boolean clearReservedVolume) {
 
 
         logger.debug(">>> Start to handle unreserveLocation request with warehouseId: {}, reservedCode: {}",
                 warehouseId, reservedCode);
-        return locationService.unreserveLocation(warehouseId, reservedCode);
+        return locationService.unreserveLocation(warehouseId, reservedCode, locationId, clearReservedVolume);
     }
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory

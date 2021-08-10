@@ -92,4 +92,12 @@ public class InventoryServerApplication {
 		return oAuth2RestTemplate;
 	}
 	 ****/
+
+
+	@Bean
+	@Qualifier("noTokenRestTemplate")
+	public RestTemplate noTokenRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		return restTemplate;
+	}
 }

@@ -198,6 +198,22 @@ public class OrderService implements TestDataInitiableService {
             order.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId()));
         }
 
+
+        if (Objects.nonNull(order.getStageLocationGroupId()) &&
+             Objects.isNull(order.getStageLocationGroup())) {
+            order.setStageLocationGroup(
+                    warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                            order.getStageLocationGroupId()));
+        }
+
+        if (Objects.nonNull(order.getStageLocationId()) &&
+                Objects.isNull(order.getStageLocation())) {
+            order.setStageLocation(
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            order.getStageLocationId()));
+        }
+
+
         // Load the item and inventory status information for each lines
         order.getOrderLines().forEach(orderLine -> loadOrderLineAttribute(orderLine));
 
@@ -890,5 +906,92 @@ public class OrderService implements TestDataInitiableService {
     private Long getTotalQuantity(Order order) {
         return order.getOrderLines().stream().map(orderLine -> orderLine.getExpectedQuantity())
                 .mapToLong(Long::longValue).sum();
+    }
+
+    /**
+     * Change the assigned staging location
+     * @param id
+     * @param locationGroupId
+     * @param locationId
+     * @return
+     */
+    public Order changeAssignedStageLocations(Long id, Long locationGroupId, Long locationId) {
+        Order order = findById(id);
+        logger.debug("changeAssignedStageLocations: order: {}, original assignment {} / {}, new assignment {} / {}",
+                order.getNumber(),
+                order.getStageLocationGroupId(), order.getStageLocationId(),
+                locationGroupId, locationId);
+
+        // 1. If we don't assign the location group id and the location , then both of
+        //    then will be assigned when we generate the pick
+        // 2. if we only assign the location group id, then the location will be assigned
+        //    when we create the pick work
+        // 3. if we assign both the location group id and the location, then we will need to
+        //    reserve it now
+        if (Objects.isNull(locationId)) {
+            logger.debug("changeAssignedStageLocations: The user is trying to deassign the current stage location with a new empty staging location");
+            // OK location is reset to null
+            // if we already have a location assigned to the order, then let's unassign it first
+            if (Objects.nonNull(order.getStageLocationId())) {
+                // we already assigned a location to this order and the new
+                // location is either null or a different location. In either way
+                // we will have to unreserve  the location from the order
+                // by default, we will
+                logger.debug("changeAssignedStageLocations: will need to deassign original assignment: id {}",
+                        order.getStageLocationId());
+                warehouseLayoutServiceRestemplateClient.unreserveLocation(
+                        order.getWarehouseId(), order.getStageLocationId());
+            }
+
+            logger.debug("changeAssignedStageLocations: reset to assignment: id {} / {}",
+                    order.getStageLocationGroupId(), order.getStageLocationId());
+            // assign the new location group
+            order.setStageLocationId(locationId);
+            order.setStageLocationGroupId(locationGroupId);
+
+            return saveOrUpdate(order);
+        }
+        // the user pass in the location, we will only continue
+        // if the new location is different from the original location
+        else if (!Objects.equals(locationId, order.getStageLocationId())) {
+
+            logger.debug("changeAssignedStageLocations: The user is trying to deassign the current stage location and assign to a new location {}",
+                    locationId);
+            // OK location is reset to some other location
+            // then let's unassign the original location first
+            if (Objects.nonNull(order.getStageLocationId())) {
+
+                logger.debug("changeAssignedStageLocations: will need to deassign original assignment: id {}",
+                        order.getStageLocationId());
+                warehouseLayoutServiceRestemplateClient.unreserveLocation(
+                        order.getWarehouseId(), order.getStageLocationId());
+            }
+
+
+            logger.debug("changeAssignedStageLocations: will need to reserve new location: id {}",
+                    locationId);
+            // assign the new location to this order
+            warehouseLayoutServiceRestemplateClient.reserveLocation(
+                    locationId,
+                    order.getNumber(),
+                    getTotalVolume(order),
+                    getTotalQuantity(order),
+                    getTotalPalletQuantity(order)
+            );
+
+            logger.debug("changeAssignedStageLocations: reset to assignment: id {} / {}",
+                    order.getStageLocationGroupId(), order.getStageLocationId());
+            // assign the new location group
+            order.setStageLocationId(locationId);
+            order.setStageLocationGroupId(locationGroupId);
+
+            return saveOrUpdate(order);
+        }
+        else {
+            // if we are here, it probably means the user pass in a location id
+            // and it is the same as the one that is already assigned
+            // let's do nothing and return the order
+            return order;
+        }
     }
 }

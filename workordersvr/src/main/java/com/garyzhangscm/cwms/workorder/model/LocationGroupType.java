@@ -20,8 +20,9 @@ package com.garyzhangscm.cwms.workorder.model;
 
 
 import javax.persistence.Column;
+import java.io.Serializable;
 
-public class LocationGroupType {
+public class LocationGroupType implements Serializable {
 
     private Long id;
 

@@ -502,6 +502,8 @@ public class WorkOrderProduceTransactionService  {
                                                     WorkOrderProducedInventory workOrderProducedInventory,
                                                     WorkOrderProduceTransaction workOrderProduceTransaction) {
         logger.debug("Start to receive inventory from work order: \n{}", workOrder.getNumber());
+        logger.debug("Inventory's item package typ is setup to \n{}",
+                workOrderProducedInventory.getItemPackageType());
         Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction);
 
         return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder,inventory);

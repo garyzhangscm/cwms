@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -60,6 +61,7 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Cacheable(cacheNames = "item")
     public Item getItemById(Long id) {
 
 
@@ -146,6 +148,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "inventory-status")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -326,6 +329,7 @@ public class InventoryServiceRestemplateClient {
         return getPickMovementPath(pick.getWarehouseId(), pick.getSourceLocation(), pick.getDestinationLocation());
     }
 
+    @Cacheable(cacheNames = "movement-path")
     public List<MovementPath> getPickMovementPath(Long warehouseId, Location sourceLocation, Location destinationLocation) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

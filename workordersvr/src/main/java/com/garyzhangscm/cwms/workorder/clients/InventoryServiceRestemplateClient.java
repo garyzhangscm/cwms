@@ -295,6 +295,7 @@ public class InventoryServiceRestemplateClient {
                     getHttpEntity(objectMapper.writeValueAsString(inventory)),
                     new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             throw WorkOrderException.raiseException("Can't add inventory due to JsonProcessingException: " + e.getMessage());
         }
 

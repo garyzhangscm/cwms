@@ -207,6 +207,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             ItemUnitOfMeasure smallestPickableUnitOfMeasure =
                     getSmallestPickableUnitOfMeasure(inventorySummary);
 
+
             if (Objects.isNull(smallestPickableUnitOfMeasure)) {
                 logger.debug("No pickable unit of measure defined for the inventory summary, {} / {}",
                         inventorySummary.getItem().getName(), inventorySummary.getItemPackageType().getName());
@@ -248,9 +249,52 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             }
 
             try {
-                Pick pick = tryCreatePickForUOMAllocation(allocationRequest, inventorySummary, allocatibleQuantity, smallestPickableUnitOfMeasure);
-                picks.add(pick);
-                totalQuantityToBeAllocated -= allocatibleQuantity;
+
+                // we will try to make sure each pick's quantity won't exceed the LPN's quantity
+                // in some case, it make no sense to pick more than one LPN each travel
+                // key: LPN
+                // value: LPN's total quantity
+                Map<String, Long> lpnQuantites = new HashMap<>();
+                inventorySummary.getInventories().entrySet().forEach(
+                        entrySet -> {
+                            String lpn = entrySet.getKey();
+                            List<Inventory> inventories = entrySet.getValue();
+                            Long quantityOnLPN = inventories.stream().mapToLong(Inventory::getQuantity).sum();
+                            lpnQuantites.put(lpn, quantityOnLPN);
+                        }
+                );
+                // we will sort the map by LPN's total quantities
+                List<Map.Entry<String, Long>> sortedLPNQuantitesList = new ArrayList<>(lpnQuantites.entrySet());
+                sortedLPNQuantitesList.sort(Map.Entry.comparingByValue());
+
+                Map<String, Long> sortedLPNQuantites = new LinkedHashMap<>();
+                for (Map.Entry<String, Long> entry : sortedLPNQuantitesList) {
+                    sortedLPNQuantites.put(entry.getKey(), entry.getValue());
+                }
+
+                while (allocatibleQuantity > 0 && totalQuantityToBeAllocated > 0
+                        && sortedLPNQuantites.size() > 0)
+                {
+                    // we will always generate one pick work for each LPN. in some scenario
+                    // we think LPN stands for pallet and there's no way to pick more than one
+                    // pallet in one transaction. So it is better to split the pick work based
+                    // on the LPN quantity. If the user is able to pick 2 pallet(or 2 LPN) in one
+                    // travel, then we can either use pick list to group the picks, or just
+                    // confirm 2 or more picks before deposit
+                    Map.Entry<String, Long> quantityOnLpn = sortedLPNQuantitesList.get(0);
+                    Long allocatedQuantity = quantityOnLpn.getValue();
+                    String allocatedLpn = quantityOnLpn.getKey();
+
+                    Pick pick = tryCreatePickForUOMAllocation(allocationRequest, inventorySummary, allocatedQuantity, smallestPickableUnitOfMeasure);
+                    picks.add(pick);
+                    allocatibleQuantity -= allocatedQuantity;
+                    totalQuantityToBeAllocated -= allocatedQuantity;
+                    logger.debug("We are able to allocate {} from LPN {}, after this LPN, we still need to allocate {}, there's still quantity {} left in this inventory summary",
+                            allocatedQuantity, allocatedLpn, totalQuantityToBeAllocated,
+                            allocatibleQuantity, inventorySummary.getLocation().getName());
+                    sortedLPNQuantites.remove(allocatedLpn);
+                }
+
 
 
             }

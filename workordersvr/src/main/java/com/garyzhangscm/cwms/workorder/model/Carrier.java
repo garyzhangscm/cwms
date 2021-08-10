@@ -1,9 +1,10 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Carrier {
+public class Carrier implements Serializable {
     private Long id;
 
     private String name;

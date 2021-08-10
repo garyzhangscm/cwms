@@ -735,7 +735,7 @@ public class PickService {
     private Location getDestinationLocationForPick(ShipmentLine shipmentLine, Pick pick) {
 
 
-        if (shipmentLine.getOrderLine().getOrder().getStageLocationId() == null) {
+        if (Objects.nonNull(shipmentLine.getOrderLine().getOrder().getStageLocationId())) {
             // we have the location setup on the order, we assume the location should be
             // already reserved when the order is created.
             // let's return the location
@@ -905,10 +905,13 @@ public class PickService {
     public Pick confirmPick(Pick pick, Long quantity, String lpn) {
         if (pick.getPickMovements().size() == 0) {
 
+            logger.debug("There's no movement for this pick: {}",
+                    pick.getNumber());
             return confirmPick(pick, quantity, pick.getDestinationLocation(), lpn);
         }
         else {
             Location nextLocation = pick.getPickMovements().get(0).getLocation();
+
             if (Objects.isNull(nextLocation) &&
                 Objects.nonNull(pick.getPickMovements().get(0).getLocationId())) {
                 nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(
@@ -920,6 +923,9 @@ public class PickService {
                 throw PickingException.raiseException("Can't find destination location from the pick move for the pick: " +
                         pick.getNumber());
             }
+
+            logger.debug("we get the next location {} from movement for this pick: {}",
+                    nextLocation.getName(), pick.getNumber());
             return confirmPick(pick, quantity, nextLocation, lpn);
         }
     }
@@ -987,30 +993,39 @@ public class PickService {
             throw PickingException.raiseException("Over pick is not allowed. Try to pick: " + quantityToBePicked +
                     ", Quantity left: " + (pick.getQuantity() - pick.getPickedQuantity()));
         }
-        List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
-        logger.debug(" Get {} valid inventory for pick {}",
-                pickableInventories.size(), pick.getNumber());
-        // pickableInventories.stream().forEach(System.out::print);
-        logger.debug(" start to pick with quantity {}",quantityToBePicked);
-        Iterator<Inventory> inventoryIterator = pickableInventories.iterator();
-        while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
-            Inventory inventory = inventoryIterator.next();
-            logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
-                    inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
-            Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
-            logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
-            quantityToBePicked -= pickedQuantity;
-            totalQuantityPicked += pickedQuantity;
-            logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
+
+        // we will use synchronized to prevent multiple users picking the same item from the
+        // location;
+        // key is the location id and item id
+        String key =  pick.getSourceLocationId() + "-" + pick.getItemId();
+
+
+        synchronized (key) {
+
+            List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
+            logger.debug(" Get {} valid inventory for pick {}",
+                    pickableInventories.size(), pick.getNumber());
+            // pickableInventories.stream().forEach(System.out::print);
+            logger.debug(" start to pick with quantity {}",quantityToBePicked);
+            Iterator<Inventory> inventoryIterator = pickableInventories.iterator();
+            while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
+                Inventory inventory = inventoryIterator.next();
+                logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
+                        inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
+                Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
+                logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
+                quantityToBePicked -= pickedQuantity;
+                totalQuantityPicked += pickedQuantity;
+                logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
+            }
+            logger.debug("==> after the pick confirm, the destination location {} 's volume is {}",
+                    warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                    warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
+
+            // If we are picking for a work order, we will send a notification to the work order
+            sendNotification(pick, nextLocation, totalQuantityPicked);
         }
 
-
-        logger.debug("==> after the pick confirm, the destination location {} 's volume is {}",
-                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
-                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
-
-        // If we are picking for a work order, we will send a notification to the work order
-        sendNotification(pick, nextLocation, totalQuantityPicked);
         // Get the latest pick information
         return findById(pick.getId());
     }
