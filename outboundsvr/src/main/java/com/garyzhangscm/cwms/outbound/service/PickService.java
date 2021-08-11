@@ -967,6 +967,7 @@ public class PickService {
                 return confirmPick(pick, quantity, nextLocation, lpn);
             }
             else {
+                logger.debug("Can't confirm the pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
                 throw PickingException.raiseException(
                         "Can't confirm the pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
             }

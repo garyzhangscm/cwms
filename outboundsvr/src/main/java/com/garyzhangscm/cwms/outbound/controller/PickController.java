@@ -109,6 +109,7 @@ public class PickController {
         logger.debug("==============");
         logger.debug("=> quantity: {}", quantity);
         logger.debug("=> nextLocationId: {}", nextLocationId);
+        logger.debug("=> nextLocationName: {}", nextLocationName);
         logger.debug("=> pickToContainer: {}", pickToContainer);
         logger.debug("=> containerId: {}", containerId);
         logger.debug("=> pick from LPN: {}", lpn);
