@@ -12,6 +12,11 @@ import java.io.Serializable;
 @Configuration
 public class LettuceRedisConfig {
 
+    /*****
+     *
+     * @param connectionFactory
+     * @return
+     */
     @Bean
     public RedisTemplate<String, Serializable> redisTemplate(LettuceConnectionFactory connectionFactory) {
 

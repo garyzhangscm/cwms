@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.workorder.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -123,6 +124,7 @@ public class ItemPackageType implements Serializable {
         this.itemUnitOfMeasures = itemUnitOfMeasures;
     }
 
+    @JsonIgnore
     public ItemUnitOfMeasure getStockItemUnitOfMeasures() {
         if (itemUnitOfMeasures.size() == 0) {
             return null;

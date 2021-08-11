@@ -167,6 +167,8 @@
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
         <!-- redis cache -->
+        <!--
+-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -175,7 +177,6 @@
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
         </dependency>
-
     </dependencies>
     <dependencyManagement>
         <dependencies>
