@@ -23,6 +23,12 @@ public class WorkOrderLine extends AuditibleEntity<String>{
     private WorkOrder workOrder;
 
 
+    @OneToOne
+    @JoinColumn(name = "material_work_order_id")
+    private WorkOrder materialWorkOrder;
+
+
+
     @Column(name = "number")
     private String number;
 

@@ -26,6 +26,8 @@ public class SiteInformationService {
 
     @Autowired
     private MenuGroupService menuGroupService;
+    @Autowired
+    private RFService rfService;
 
 
 
@@ -49,4 +51,5 @@ public class SiteInformationService {
         return siteInformation;
 
     }
+
 }

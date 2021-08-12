@@ -256,6 +256,37 @@ public class OutboundServiceRestemplateClient {
     }
 
 
+    public AllocationResult allocateWorkOrderLine(WorkOrderLine workOrderLine,
+                                                  Long productionLineId,
+                                                  Long allocatingQuantity) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/allocation/work-order-line")
+                .queryParam("workOrderId", workOrderLine.getWorkOrder().getId());
+
+        if (Objects.nonNull(productionLineId)) {
+            builder = builder.queryParam("productionLineId", productionLineId);
+        }
+        if (Objects.nonNull(allocatingQuantity)) {
+            builder = builder.queryParam("quantity", allocatingQuantity);
+        }
+
+        ResponseBodyWrapper<AllocationResult> responseBodyWrapper
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.POST,
+                    getHttpEntity(objectMapper.writeValueAsString(workOrderLine)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<AllocationResult>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw WorkOrderException.raiseException("Can't allocate work order line due to JsonProcessingException: " + e.getMessage());
+        }
+
+        return responseBodyWrapper.getData();
+    }
 
 
     private HttpEntity<String> getHttpEntity(String requestBody) {

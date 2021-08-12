@@ -154,6 +154,7 @@ public class ProductionLineKanbanService {
                     productionLineKanbanDataList.add(productionLineKanbanData);
                 }
         );
+        Collections.sort(productionLineKanbanDataList, (o1, o2) -> o1.getProductionLineName().compareToIgnoreCase(o2.getProductionLineName()));
         return productionLineKanbanDataList;
 
     }

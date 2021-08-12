@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.garyzhangscm.cwms.outbound.model.AllocationResult;
 import com.garyzhangscm.cwms.outbound.model.WorkOrder;
+import com.garyzhangscm.cwms.outbound.model.WorkOrderLine;
 import com.garyzhangscm.cwms.outbound.service.AllocationConfigurationService;
 import com.garyzhangscm.cwms.outbound.service.AllocationService;
 import org.slf4j.Logger;
@@ -50,6 +51,18 @@ public class AllocationController {
         return allocationService.allocate(workOrder, productionId, allocatingWorkOrderQuantity);
     }
 
+    @RequestMapping(value="/allocation/work-order-line", method = RequestMethod.POST)
+    public AllocationResult allocateWorkOrderLine(
+            @RequestBody WorkOrderLine workOrderLine,
+            @RequestParam(name = "workOrderId", defaultValue = "", required = false) Long workOrderId,
+            @RequestParam(name = "productionLineId", defaultValue = "", required = false) Long productionId,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long allocatingWorkOrderLineQuantity) {
+        // return allocationConfigurationService.allocateWorkOrder(workOrder);
+
+        logger.debug("Start to allocate work order line {} / {}, by production line id {}, with quantity {}",
+                workOrderLine.getNumber(), workOrderLine.getItem().getName(), productionId, allocatingWorkOrderLineQuantity);
+        return allocationService.allocate(workOrderId, workOrderLine, productionId,  allocatingWorkOrderLineQuantity);
+    }
 
 
 

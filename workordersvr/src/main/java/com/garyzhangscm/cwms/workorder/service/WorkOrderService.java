@@ -417,6 +417,88 @@ public class WorkOrderService implements TestDataInitiableService {
 
     }
 
+
+    public WorkOrder allocateWorkOrder(Long workOrderId, List<ProductionLineAllocationRequest> productionLineAllocationRequests) {
+
+
+        productionLineAllocationRequests.forEach(
+                productionLineAllocationRequest -> {
+                    if (Boolean.FALSE.equals(productionLineAllocationRequest.getAllocateByLine())) {
+                        // allocate by work order
+                        allocateWorkOrder(
+                                workOrderId,
+                                productionLineAllocationRequest.getProductionLineId(),
+                                productionLineAllocationRequest.getAllocatingQuantity());
+                    }
+                    else {
+                        // allocate by work order line
+                        productionLineAllocationRequest.getLines().forEach(
+                                productionLineAllocationRequestLine -> {
+
+                                    allocateWorkOrderLine(
+                                            productionLineAllocationRequestLine.getWorkOrderLineId(),
+                                            productionLineAllocationRequest.getProductionLineId(),
+                                            productionLineAllocationRequestLine.getAllocatingQuantity());
+                                }
+                        );
+
+                    }
+                }
+        );
+
+        return findById(workOrderId);
+
+
+    }
+
+    private void allocateWorkOrderLine(Long workOrderLineId, Long productionLineId, Long allocatingQuantity) {
+
+        WorkOrderLine workOrderLine = workOrderLineService.findById(workOrderLineId);
+        logger.debug("Start to allocate work order item: {} to production line id {}, with quantity {}",
+                workOrderLine.getItem().getName(), productionLineId, allocatingQuantity);
+        if (Objects.nonNull(allocatingQuantity) && allocatingQuantity == 0L) {
+            // quantity is passed in as 0
+            // will skip this production line / work order line
+            return ;
+        }
+        logger.debug("Start to allocate work order line");
+        AllocationResult allocationResult
+                = outboundServiceRestemplateClient.allocateWorkOrderLine(workOrderLine, productionLineId, allocatingQuantity);
+
+
+        logger.debug("will process the allocation result ");
+        processAllocateResult(workOrderLine.getWorkOrder(), workOrderLine, allocationResult);
+        logger.debug("will process the production line assignment ");
+        processProductionLineAssignment(workOrderLine.getWorkOrder(), workOrderLine, productionLineId, allocatingQuantity);
+
+
+    }
+
+
+    private void processProductionLineAssignment(WorkOrder workOrder, WorkOrderLine workOrderLine, Long productionLineId, Long quantity) {
+
+        workOrder.getProductionLineAssignments().stream().filter(
+                productionLineAssignment -> productionLineAssignment.getProductionLine().getId().equals(productionLineId)
+        ).forEach(
+                productionLineAssignment -> {
+                    logger.debug("Will process the production line assignment {} for work order line {} / {}",
+                            productionLineAssignment,
+                            workOrder.getNumber(), workOrderLine.getItem().getName());
+                    productionLineAssignment.getLines().stream().filter(
+                            productionLineAssignmentLine -> productionLineAssignmentLine.getWorkOrderLine().getId().equals(workOrderLine.getId())
+                    ).forEach(
+                            productionLineAssignmentLine -> {
+                                Long remainOpenQuantity = productionLineAssignmentLine.getOpenQuantity() >= quantity ?
+                                        productionLineAssignmentLine.getOpenQuantity() - quantity : 0L;
+                                logger.debug("> we found a production line assignment for this work order line, will update the open quantity from {} to {}",
+                                        productionLineAssignmentLine.getOpenQuantity(), remainOpenQuantity);
+                                productionLineAssignmentLine.setOpenQuantity(remainOpenQuantity);
+                                productionLineAssignmentService.saveLine(productionLineAssignmentLine);
+                            }
+                    );
+                }
+        );
+    }
     private void processProductionLineAssignment(WorkOrder workOrder, Long productionLineId, Long quantity) {
         if (Objects.isNull(productionLineId) && Objects.isNull(quantity)) {
             // we assume the user allocate the whole work order, then let's set
@@ -450,11 +532,15 @@ public class WorkOrderService implements TestDataInitiableService {
         }
     }
 
-    private void processAllocateResult(WorkOrder workOrder, AllocationResult allocationResult) {
-
-        // A map to store the quantities
-        // Key: work order line id
-        // value: pick quantity + short allocation quantity
+    /**
+     * Get the inprocess quantity out of the allocation result
+     * it will return a map
+     * - Key: work order line id
+     * - value: pick quantity + short allocation quantity
+     * @param allocationResult
+     * @return
+     */
+    private Map<Long, Long> getInprocessQuantities(AllocationResult allocationResult) {
         Map<Long, Long> inprocessQuantities = new HashMap<>();
 
         allocationResult.getPicks().forEach(pick -> {
@@ -468,6 +554,52 @@ public class WorkOrderService implements TestDataInitiableService {
             Long inprocessQuantity = inprocessQuantities.getOrDefault(workOrderLineId, 0L);
             inprocessQuantities.put(workOrderLineId, (inprocessQuantity + shortAllocation.getQuantity()));
         });
+        return inprocessQuantities;
+    }
+
+    private void processAllocateResult(WorkOrder workOrder, WorkOrderLine workOrderLine, AllocationResult allocationResult) {
+
+        // A map to store the quantities
+        // Key: work order line id
+        // value: pick quantity + short allocation quantity
+        Map<Long, Long> inprocessQuantities = getInprocessQuantities(allocationResult);
+        logger.debug("Get in process quantity out of allocation result for the work order line {} :\n {}",
+                workOrderLine.getId(), inprocessQuantities);
+
+        inprocessQuantities.entrySet().stream()
+                .filter(entry -> entry.getKey().equals(workOrderLine.getId()))
+                .forEach(entry ->{
+                    WorkOrderLine existingWorkOrderLine = workOrderLineService.findById(entry.getKey());
+                    // Move the 'inprocess quantity' we just calculated from 'Open quantity'
+                    // to 'inprocess quantity'
+                    Long inprocessQuantity = entry.getValue();
+                    logger.debug("work order line {}'s inprocess quantity will be updated by {}",
+                            existingWorkOrderLine.getNumber(), inprocessQuantity);
+                    // we may allocate more than necessary(when round up for the item is allowed)
+                    if (existingWorkOrderLine.getOpenQuantity() < inprocessQuantity) {
+                        existingWorkOrderLine.setOpenQuantity(0L);
+                    }
+                    else {
+                        existingWorkOrderLine.setOpenQuantity(existingWorkOrderLine.getOpenQuantity() - inprocessQuantity);
+
+                    }
+                    existingWorkOrderLine.setInprocessQuantity(existingWorkOrderLine.getInprocessQuantity() + inprocessQuantity);
+                    workOrderLineService.save(existingWorkOrderLine);
+        });
+        // If the current work order's status is 'Pending', change it to 'INPROCESS'
+        if (workOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
+            workOrder.setStatus(WorkOrderStatus.INPROCESS);
+            saveOrUpdate(workOrder);
+        }
+
+    }
+    private void processAllocateResult(WorkOrder workOrder, AllocationResult allocationResult) {
+
+        // A map to store the quantities
+        // Key: work order line id
+        // value: pick quantity + short allocation quantity
+        Map<Long, Long> inprocessQuantities = getInprocessQuantities(allocationResult);
+
 
         inprocessQuantities.entrySet().stream().forEach(entry ->{
             WorkOrderLine workOrderLine = workOrderLineService.findById(entry.getKey());
