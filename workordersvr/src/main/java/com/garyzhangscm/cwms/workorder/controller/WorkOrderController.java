@@ -87,11 +87,10 @@ public class WorkOrderController {
 
     @RequestMapping(value="/work-orders/{id}/allocate", method = RequestMethod.POST)
     public WorkOrder allocateWorkOrder(@PathVariable Long id,
-                                       @RequestParam(name = "productionLineIds", required = false, defaultValue = "") String productionLineIds,
-                                       @RequestParam(name = "quantities", required = false, defaultValue = "") String quantities) {
-        logger.debug("Get request for allocate work order by id {}, productionLineIds: {}, quantities: {}",
-                id, productionLineIds, quantities);
-        return workOrderService.allocateWorkOrder(id, productionLineIds, quantities);
+                                       @RequestBody List<ProductionLineAllocationRequest> productionLineAllocationRequests) {
+        logger.debug("Get request for allocate work order by id {}, productionLineAllocationRequest: {} ",
+                id, productionLineAllocationRequests);
+        return workOrderService.allocateWorkOrder(id, productionLineAllocationRequests);
     }
 
     @RequestMapping(value="/work-orders/lines/{id}/short-allocation-cancelled", method = RequestMethod.POST)

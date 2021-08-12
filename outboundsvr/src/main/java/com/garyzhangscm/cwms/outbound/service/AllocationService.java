@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,8 @@ public class AllocationService {
     private AllocationStrategyFactory allocationStrategyService;
     @Autowired
     private PickService pickService;
+    @Autowired
+    private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
 
     /**
@@ -46,6 +49,19 @@ public class AllocationService {
         return allocationResult;
     }
 
+    public AllocationResult allocate(Long workOrderId, WorkOrderLine workOrderLine, Long productionLineId, Long allocatingWorkOrderLineQuantity){
+        logger.debug("Start to allocate Work Order Line {} ", workOrderLine.getId());
+
+        AllocationResult allocationResult = new AllocationResult();
+        WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(workOrderId);
+        // only allow the work order line that has open quantity
+        if (workOrderLine.getOpenQuantity() > 0) {
+
+            allocationResult
+                    = allocate(workOrder, workOrderLine, productionLineId, null, allocatingWorkOrderLineQuantity);
+        }
+        return allocationResult;
+    }
     public AllocationResult allocate(WorkOrder workOrder, Long productionLineId, Long allocatingWorkOrderQuantity){
         logger.debug("Start to allocate Work Order {} ", workOrder.getNumber());
 
@@ -87,8 +103,32 @@ public class AllocationService {
 
     }
 
+    /**
+     * Allocate the work order line according to the quantity of the work order's finish good's quantity
+     * @param workOrder
+     * @param workOrderLine
+     * @param productionLineId
+     * @param allocatingWorkOrderQuantity finish good's quantity
+     * @return
+     */
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
                                      Long productionLineId, Long allocatingWorkOrderQuantity){
+        return allocate(workOrder, workOrderLine, productionLineId, allocatingWorkOrderQuantity, 0L);
+
+    }
+
+    /**
+     * Allocate the work order line based on either the finish good's quantity, or the raw material quantity
+     * @param workOrder
+     * @param workOrderLine
+     * @param productionLineId
+     * @param allocatingWorkOrderQuantity
+     * @param allocatingWorkingOrderLineQuantity
+     * @return
+     */
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                     Long productionLineId, Long allocatingWorkOrderQuantity,
+                                     Long allocatingWorkingOrderLineQuantity){
 
         // for work order, we may have multiple production lines assign to this work order
         // in order to generate picks for each production line, we may have to allocate
@@ -113,7 +153,8 @@ public class AllocationService {
                                     "N/A" : productionLineAssignment.getProductionLine().getInboundStageLocation().getId());
 
 
-                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, productionLineAssignment, allocatingWorkOrderQuantity);
+                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, productionLineAssignment
+                            , allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity);
                     logger.debug("will allocate the work order to destination location id {} for quantity {}",
                             allocationRequest.getDestinationLocationId(),
                             allocationRequest.getQuantity());

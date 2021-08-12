@@ -70,7 +70,8 @@ public class AllocationRequest {
 
     public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine,
                              ProductionLineAssignment productionLineAssignment,
-                             Long allocatingWorkOrderQuantity) {
+                             Long allocatingWorkOrderQuantity,
+                             Long allocatingWorkingOrderLineQuantity) {
         this.workOrder = workOrder;
         this.item = workOrderLine.getItem();
         this.warehouse = workOrderLine.getWarehouse();
@@ -86,27 +87,40 @@ public class AllocationRequest {
                         Objects.nonNull(productionLineAssignment.getProductionLine().getInboundStageLocation()) ?
                                 productionLineAssignment.getProductionLine().getInboundStageLocation().getId() :
                                 null;
-        // since we may have multiple product lines assigned to the work order, we will distribute
-        // the allocate quantity across the production lines as well
-        // if the user doesn't specify the quantity to be allocated on the work order, we will
-        // try to allocate the whole work order quantity
-        if (Objects.isNull(allocatingWorkOrderQuantity)) {
-            allocatingWorkOrderQuantity = productionLineAssignment.getOpenQuantity();
-        }
-        logger.debug("Will allocate {} from the work order {}, production line {}",
-                allocatingWorkOrderQuantity, workOrder.getNumber(), productionLineAssignment.getProductionLine().getName());
-        logger.debug("We are suppose to produce {} of item {} out of row material {} of {}, according to the work order",
-                workOrder.getExpectedQuantity(),
-                workOrder.getItem().getName(),
-                workOrderLine.getExpectedQuantity(),
-                workOrderLine.getItem().getName());
+        // if the user specify the work order line quantity, assign it to the allocation
+        // request
+        if (Objects.nonNull(allocatingWorkingOrderLineQuantity) &&
+            allocatingWorkingOrderLineQuantity > 0) {
 
-        this.quantity = (allocatingWorkOrderQuantity * workOrderLine.getExpectedQuantity()) / workOrder.getExpectedQuantity() ;
-        logger.debug("so in order to produce {} of item {}, we will need row material {} of raw material {}",
-                allocatingWorkOrderQuantity,
-                workOrder.getItem().getName(),
-                this.quantity,
-                workOrderLine.getItem().getName());
+            logger.debug("We already have the request line quantity: {}",
+                    allocatingWorkingOrderLineQuantity);
+            this.quantity = allocatingWorkingOrderLineQuantity;
+        }
+        else {
+            logger.debug("The user didn't speicify the quantity on the work order line allocating request, will calculate from the finish goods' quantity");
+            // since we may have multiple product lines assigned to the work order, we will distribute
+            // the allocate quantity across the production lines as well
+            // if the user doesn't specify the quantity to be allocated on the work order, we will
+            // try to allocate the whole work order quantity
+            if (Objects.isNull(allocatingWorkOrderQuantity)) {
+                allocatingWorkOrderQuantity = productionLineAssignment.getOpenQuantity();
+            }
+            logger.debug("Will allocate {} from the work order {}, production line {}",
+                    allocatingWorkOrderQuantity, workOrder.getNumber(), productionLineAssignment.getProductionLine().getName());
+            logger.debug("We are suppose to produce {} of item {} out of row material {} of {}, according to the work order",
+                    workOrder.getExpectedQuantity(),
+                    workOrder.getItem().getName(),
+                    workOrderLine.getExpectedQuantity(),
+                    workOrderLine.getItem().getName());
+
+            this.quantity = (allocatingWorkOrderQuantity * workOrderLine.getExpectedQuantity()) / workOrder.getExpectedQuantity() ;
+            logger.debug("so in order to produce {} of item {}, we will need row material {} of raw material {}",
+                    allocatingWorkOrderQuantity,
+                    workOrder.getItem().getName(),
+                    this.quantity,
+                    workOrderLine.getItem().getName());
+        }
+
     }
 
 

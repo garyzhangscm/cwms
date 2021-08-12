@@ -1278,5 +1278,10 @@
   "order.transferReceiptNumber": "Transfer Receipt Number",
   "shipment.stage.locationGroup": "Shipping Stage Location Group",
   "shipment.stage.location": "Shipping Stage Location",
-  "order.assign-ship-stage-location": "Assign Stage Location"
+  "order.assign-ship-stage-location": "Assign Stage Location",
+  "wor-order.allocate-by-production-line-and-work-order": "By Work Order",
+  "wor-order.allocate-by-production-line-and-work-order-line": "By Work Order Line",
+  "production-line-assignment-line.assigned-quantity": "Line Quantity",
+  "production-line-assignment-line.open-quantity": "Line Open Quantity",
+  "production-line-assignment-line.allocating-quantity": "Allocating Quantity"
 }

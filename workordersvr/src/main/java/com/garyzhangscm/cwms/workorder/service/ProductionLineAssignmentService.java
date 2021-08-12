@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
+import com.garyzhangscm.cwms.workorder.repository.ProductionLineAssignmentLineRepository;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineAssignmentRepository;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
 import org.apache.commons.lang.StringUtils;
@@ -56,6 +57,9 @@ public class ProductionLineAssignmentService   {
 
     @Autowired
     private ProductionLineAssignmentRepository productionLineAssignmentRepository;
+
+    @Autowired
+    private ProductionLineAssignmentLineRepository productionLineAssignmentLineRepository;
 
 
     @Autowired
@@ -227,9 +231,42 @@ public class ProductionLineAssignmentService   {
         saveOrUpdate(productionLineAssignment);
     }
 
+    public ProductionLineAssignmentLine saveLine(ProductionLineAssignmentLine productionLineAssignmentLine) {
+
+        return productionLineAssignmentLineRepository.save(productionLineAssignmentLine);
+    }
+
 
     public void assignWorkOrderToProductionLines(WorkOrder workOrder, ProductionLineAssignment productionLineAssignment) {
         productionLineAssignment.setWorkOrder(workOrder);
+        if (productionLineAssignment.getLines().isEmpty()) {
+            // if we haven't do so, let's split the work line quantity as well and
+            // create the assignment lines, one for each production line & work order line
+            // we will use this information to allow the user to allocate by work order line
+            logger.debug("start to split the work order line quantity to the production line {}",
+                    productionLineAssignment.getProductionLine().getName());
+            Double ratio = productionLineAssignment.getQuantity() * 1.0 / workOrder.getExpectedQuantity();
+            workOrder.getWorkOrderLines().forEach(
+                    workOrderLine -> {
+                        long assignedWorkOrderQuantity = (long)Math.floor(
+                                workOrderLine.getExpectedQuantity() * ratio
+                        );
+                        logger.debug("> will assign {} from work order line {}  / {}",
+                                assignedWorkOrderQuantity, workOrderLine.getId(),
+                                Objects.isNull(workOrderLine.getItem()) ?
+                                        workOrderLine.getItemId() : workOrderLine.getItem().getName());
+                        productionLineAssignment.addLine(
+                                new ProductionLineAssignmentLine(
+                                        workOrderLine,
+                                        productionLineAssignment,
+                                        assignedWorkOrderQuantity,
+                                        assignedWorkOrderQuantity
+                                )
+                        );
+                    }
+            );
+
+        }
         // set the open quantity to the total quantity of the assignment
         // we will use this quantity to keep track of how much quantity we can still
         // allocate from the work order on this production line. When this number

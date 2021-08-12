@@ -282,7 +282,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     // travel, then we can either use pick list to group the picks, or just
                     // confirm 2 or more picks before deposit
                     Map.Entry<String, Long> quantityOnLpn = sortedLPNQuantitesList.get(0);
-                    Long allocatedQuantity = quantityOnLpn.getValue();
+                    Long allocatedQuantity = Math.min(quantityOnLpn.getValue(), allocatibleQuantity);
                     String allocatedLpn = quantityOnLpn.getKey();
 
                     Pick pick = tryCreatePickForUOMAllocation(allocationRequest, inventorySummary, allocatedQuantity, smallestPickableUnitOfMeasure);

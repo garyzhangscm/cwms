@@ -1283,5 +1283,10 @@
   "order.transferReceiptNumber": "对应收货单据",
   "shipment.stage.locationGroup": "集货区",
   "shipment.stage.location": "集货位",
-  "order.assign-ship-stage-location": "分配集货位"
+  "order.assign-ship-stage-location": "分配集货位",
+  "wor-order.allocate-by-production-line-and-work-order": "按工单",
+  "wor-order.allocate-by-production-line-and-work-order-line": "按工单行",
+  "production-line-assignment-line.assigned-quantity": "行总数量",
+  "production-line-assignment-line.open-quantity": "行可分配数量",
+  "production-line-assignment-line.allocating-quantity": "本次分配数量"
 }

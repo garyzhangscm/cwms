@@ -11,6 +11,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "production_line_assignment")
@@ -36,6 +38,12 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     @Transient
     private Long workOrderId;
 
+    @OneToMany(
+            mappedBy = "productionLineAssignment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    List<ProductionLineAssignmentLine> lines = new ArrayList<>();
 
 
     @Column(name = "quantity")
@@ -188,5 +196,17 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setOpenQuantity(Long openQuantity) {
         this.openQuantity = openQuantity;
+    }
+
+    public List<ProductionLineAssignmentLine> getLines() {
+        return lines;
+    }
+
+    public void setLines(List<ProductionLineAssignmentLine> lines) {
+        this.lines = lines;
+    }
+
+    public void addLine(ProductionLineAssignmentLine productionLineAssignmentLine) {
+        this.lines.add(productionLineAssignmentLine);
     }
 }
