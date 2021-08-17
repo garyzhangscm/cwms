@@ -426,7 +426,10 @@ public class PickService {
             shortAllocationService.registerPickCancelled(pick.getShortAllocation(), cancelledQuantity);
         }
         else if (pick.getWorkOrderLineId() != null) {
-            workOrderServiceRestemplateClient.registerPickCancelled(pick.getWorkOrderLineId(), cancelledQuantity);
+            workOrderServiceRestemplateClient.registerPickCancelled(
+                    pick.getWorkOrderLineId(),
+                    cancelledQuantity,
+                    pick.getDestinationLocationId());
         }
 
         // If this is a pick that allocates a whole LPN, release the LPN

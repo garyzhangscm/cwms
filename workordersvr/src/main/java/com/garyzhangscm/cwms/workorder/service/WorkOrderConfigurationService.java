@@ -185,4 +185,18 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
     }
 
 
+    public WorkOrderConfiguration saveOrUpdate(WorkOrderConfiguration workOrderConfiguration) {
+
+        WorkOrderConfiguration existingWorkOrderConfiguration =
+                getWorkOrderConfiguration(workOrderConfiguration.getCompanyId(), workOrderConfiguration.getWarehouseId());
+        if (Objects.nonNull(existingWorkOrderConfiguration) &&
+                Objects.equals(existingWorkOrderConfiguration.getCompanyId(), workOrderConfiguration.getCompanyId()) &&
+                Objects.equals(existingWorkOrderConfiguration.getWarehouseId(), workOrderConfiguration.getWarehouseId())) {
+            workOrderConfiguration.setId(existingWorkOrderConfiguration.getId());
+        }
+        return save(workOrderConfiguration);
+
+    }
+
+
 }

@@ -46,6 +46,7 @@ public class WorkOrder implements Serializable {
     Long expectedQuantity;
 
     private BillOfMaterial billOfMaterial;
+    private WorkOrderStatus status;
 
 
     public String getNumber() {
@@ -134,5 +135,13 @@ public class WorkOrder implements Serializable {
 
     public void setBillOfMaterial(BillOfMaterial billOfMaterial) {
         this.billOfMaterial = billOfMaterial;
+    }
+
+    public WorkOrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WorkOrderStatus status) {
+        this.status = status;
     }
 }

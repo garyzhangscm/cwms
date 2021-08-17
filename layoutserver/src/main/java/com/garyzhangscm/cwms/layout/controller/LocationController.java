@@ -220,6 +220,13 @@ public class LocationController {
         return locationService.addRFLocation(warehouseId, rfCode);
     }
 
+    @RequestMapping(method=RequestMethod.DELETE, value="/locations/rf")
+    public Location removeRFLocation(@RequestParam Long warehouseId,
+                                  @RequestParam String rfCode) {
+
+        return locationService.removeRFLocation(warehouseId, rfCode);
+    }
+
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,

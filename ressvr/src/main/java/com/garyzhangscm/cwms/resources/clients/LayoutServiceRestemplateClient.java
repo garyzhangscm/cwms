@@ -236,4 +236,23 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
                 Location.class);
         return restExchange.getBody();
     }
+
+
+    public Location removeRFLocation(Long warehouseId, String rfCode) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/rf")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("rfCode", rfCode);
+
+        ResponseEntity<Location> restExchange
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.DELETE,
+                null,
+                Location.class);
+        return restExchange.getBody();
+    }
 }

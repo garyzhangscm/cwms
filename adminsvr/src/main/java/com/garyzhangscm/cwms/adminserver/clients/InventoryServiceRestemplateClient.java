@@ -22,11 +22,13 @@ package com.garyzhangscm.cwms.adminserver.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +40,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,27 +81,36 @@ public class InventoryServiceRestemplateClient {
     }
 
     public Item getItemByName(Long warehouseId, String name) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/items")
-                        .queryParam("name", name)
-                        .queryParam("warehouseId", warehouseId);
+
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/items")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId);
 
 
-        ResponseBodyWrapper<List<Item>> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
+            // logger.debug("Start to get item: {} / {}", name, warehouseId);
+            ResponseBodyWrapper<List<Item>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
 
-        List<Item> items = responseBodyWrapper.getData();
-        if (items.size() == 0) {
-            return null;
+            List<Item> items = responseBodyWrapper.getData();
+            // logger.debug(">> get {} item", items.size());
+            if (items.size() == 0) {
+                return null;
+            }
+            else {
+                return items.get(0);
+            }
         }
-        else {
-            return items.get(0);
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by name " + name);
         }
     }
 

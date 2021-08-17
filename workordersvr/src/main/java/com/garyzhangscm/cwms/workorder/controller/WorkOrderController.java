@@ -113,8 +113,9 @@ public class WorkOrderController {
 
     @RequestMapping(value="/work-orders/lines/{id}/pick-cancelled", method = RequestMethod.POST)
     public void registerPickCancelled(@PathVariable Long id,
-                                           @RequestParam Long cancelledQuantity) {
-        workOrderLineService.registerPickCancelled(id, cancelledQuantity);
+                                      @RequestParam Long cancelledQuantity,
+                                      @RequestParam Long destinationLocationId) {
+        workOrderLineService.registerPickCancelled(id, cancelledQuantity, destinationLocationId);
     }
 
     /***

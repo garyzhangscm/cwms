@@ -228,10 +228,15 @@ public class InventoryService implements TestDataInitiableService{
                                 warehouseId, locationName);
                         Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
 
-                        logger.debug(">> location id: {}",
-                                location.getId());
                         if (location != null) {
+                            logger.debug(">> location id: {}",
+                                    location.getId());
                             predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
+                        }
+                        else {
+                            // since the user passed in a wrong location, we will add a
+                            // wrong id into the query so it won't return anything
+                            predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
                         }
                     }
 
@@ -874,10 +879,10 @@ public class InventoryService implements TestDataInitiableService{
                 documentNumber, comment);
 
         // ignore the integration when it is consumption of work order material
-        if (!inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)) {
+        // if (!inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)) {
 
             integrationService.processInventoryAdjustment(InventoryQuantityChangeType.INVENTORY_ADJUST, inventory, inventory.getQuantity(), 0L);
-        }
+        // }
 
         // clear the movement path
         inventory = clearMovementPath(inventory);
@@ -977,6 +982,18 @@ public class InventoryService implements TestDataInitiableService{
 
             inventory.setVirtual(false);
         }
+        // Check if we have finished any movement
+
+        if (Objects.isNull(pickId)) {
+            recalculateMovementPathForInventoryMovement(inventory, destination);
+        }
+        else {
+
+            markAsPicked(inventory, destination, pickId);
+            logger.debug("After markAsPicked, we still have {} movement path on the inventory {}",
+                    inventory.getInventoryMovements().size(), inventory.getLpn());
+        }
+
         // if we are moving inventory to a production line inbound area, let's update the delivery
         // quantity of the work order
 
@@ -995,18 +1012,6 @@ public class InventoryService implements TestDataInitiableService{
             }
 
         }
-        // Check if we have finished any movement
-
-        if (Objects.isNull(pickId)) {
-            recalculateMovementPathForInventoryMovement(inventory, destination);
-        }
-        else {
-
-            markAsPicked(inventory, destination, pickId);
-            logger.debug("After markAsPicked, we still have {} movement path on the inventory {}",
-                    inventory.getInventoryMovements().size(), inventory.getLpn());
-        }
-
 
         // Reset the destination location's size
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
@@ -1879,11 +1884,39 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
-    private List<Inventory> getInventoryForConsume( Long warehouseId, Long inboundLocationId,
-                                                   Long workOrderLineId, Long inventoryId) throws IOException {
+    private List<Inventory> getInventoryForConsume(Long warehouseId, Long inboundLocationId,
+                                                   Long workOrderLineId, Long inventoryId,
+                                                   String lpn, Boolean nonPickedInventory) throws IOException {
         if (Objects.nonNull(inventoryId)) {
             Inventory inventory = findById(inventoryId);
             return  Collections.singletonList(inventory);
+        }
+        else if (Boolean.TRUE.equals(nonPickedInventory)) {
+            // we allow to consume the non picked inventory. So as long as the inventory is in
+            // the location and it is a good item for the work order and
+            // possible match with the lpn, then we will use it
+            List<Inventory> inventories = findAll(
+                    warehouseId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    inboundLocationId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    lpn,
+                    null,
+                    null
+            );
+            // we will only return the inventory without any pick attached to it
+            return inventories.stream().filter(inventory -> Objects.isNull(inventory.getPickId())).collect(Collectors.toList());
         }
         else {
             // if the inventory id is not passed in, get the inventory that is picked for
@@ -1925,20 +1958,26 @@ public class InventoryService implements TestDataInitiableService{
      * @param warehouseId
      * @param quantity quantity to be consumed
      * @param inboundLocationId location of the inventory to be consumed, we may have multiple production lines associated with the work order
+     * @param inventoryId consume from a specific inventory
+     * @param lpn consume from a specific lpn
      * @return
      */
     public List<Inventory> consumeInventoriesForWorkOrderLine(Long workOrderLineId, Long warehouseId,
                                                               Long quantity, Long inboundLocationId,
-                                                              Long inventoryId) {
+                                                              Long inventoryId,
+                                                              String lpn,
+                                                              Boolean nonPickedInventory) {
 
-        logger.debug("# start to consume quantity {} from work order line id {}, location id {}, specified inventory id? {}",
+        logger.debug("# start to consume quantity {} from work order line id {}, location id {}" +
+                ", specified inventory id? {}, specified lpn? {}, nonPickedInventory? {}",
                 quantity,
                 workOrderLineId,
                 inboundLocationId,
-                inventoryId);
+                inventoryId, lpn,
+                nonPickedInventory);
         try {
             List<Inventory> pickedInventories = getInventoryForConsume(warehouseId, inboundLocationId,
-                    workOrderLineId, inventoryId);
+                    workOrderLineId, inventoryId, lpn, nonPickedInventory);
 
             if (pickedInventories.size() > 0) {
 

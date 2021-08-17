@@ -66,6 +66,11 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     @Column(name = "consume_by_bom_quantity")
     private Boolean consumeByBomQuantity;
 
+
+    @ManyToOne
+    @JoinColumn(name = "consume_by_bom_id")
+    private BillOfMaterial consumeByBom;
+
     @Override
     public String toString() {
         try {
@@ -140,5 +145,13 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     public void setProductionLine(ProductionLine productionLine) {
         this.productionLine = productionLine;
+    }
+
+    public BillOfMaterial getConsumeByBom() {
+        return consumeByBom;
+    }
+
+    public void setConsumeByBom(BillOfMaterial consumeByBom) {
+        this.consumeByBom = consumeByBom;
     }
 }

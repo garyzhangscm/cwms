@@ -55,6 +55,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
     @Autowired
     private ProductionLineDeliveryService productionLineDeliveryService;
     @Autowired
+    private ProductionLineAssignmentService productionLineAssignmentService;
+    @Autowired
     private WorkOrderConfigurationService workOrderConfigurationService;
 
     @Autowired
@@ -307,19 +309,68 @@ public class WorkOrderLineService implements TestDataInitiableService {
     }
 
 
+    /**
+     * Return the quantities when the pick for a work order line is cancelled. We will
+     * return the quantity to the work order line as well as the production line assignment
+     * @param workOrderLineId
+     * @param cancelledQuantity
+     * @param destinationLocationId Production In staging Location id. we can use this id to find
+     *                              the assigned production line
+     */
     @Transactional
-    public void registerPickCancelled(Long workOrderLineId, Long cancelledQuantity) {
-        registerPickCancelled(findById(workOrderLineId), cancelledQuantity);
+    public void registerPickCancelled(Long workOrderLineId, Long cancelledQuantity,
+                                      Long destinationLocationId) {
+        registerPickCancelled(findById(workOrderLineId), cancelledQuantity, destinationLocationId);
     }
+
+    /**
+     * Return the quantities when the pick for a work order line is cancelled. We will
+     * return the quantity to the work order line as well as the production line assignment
+     * @param workOrderLine
+     * @param cancelledQuantity
+     * @param destinationLocationId Production In staging Location id. we can use this id to find
+     *                              the assigned production line
+     */
     @Transactional
-    public void registerPickCancelled(WorkOrderLine workOrderLine, Long cancelledQuantity) {
-        logger.debug("registerPickCancelled: work order line: {}, cancelledQuantity: {}",
-                workOrderLine.getNumber(), cancelledQuantity);
+    public void registerPickCancelled(WorkOrderLine workOrderLine, Long cancelledQuantity,
+                                      Long destinationLocationId) {
+        logger.debug("registerPickCancelled: work order line: {}, cancelledQuantity: {}, destinationLocationId: {}",
+                workOrderLine.getNumber(), cancelledQuantity, destinationLocationId);
         workOrderLine.setOpenQuantity(workOrderLine.getOpenQuantity() + cancelledQuantity);
         workOrderLine.setInprocessQuantity(workOrderLine.getInprocessQuantity() - cancelledQuantity);
         workOrderLine = save(workOrderLine);
         logger.debug("after pick cancelled, work order line {} has open quantity {}, in process quantity: {}",
                 workOrderLine.getNumber(), workOrderLine.getOpenQuantity(), workOrderLine.getInprocessQuantity());
+
+        // if the work order is alraedy assigned to some production, let's reset the prodution line assignment as well
+        WorkOrder workOrder = workOrderLine.getWorkOrder();
+        List<ProductionLineAssignment> productionLineAssignments =
+                productionLineAssignmentService.findAll(null,"", workOrder.getId());
+        // loop through all production line assignment until we find the one match with the pick's destination location id
+        // which should be the production line's in staging location
+        long workOrderLineId = workOrderLine.getId();
+        productionLineAssignments.stream().filter(
+                productionLineAssignment -> productionLineAssignment.getProductionLine().getInboundStageLocationId().equals(destinationLocationId)
+        ).forEach(
+                productionLineAssignment -> {
+                    logger.debug("We find production line {} by its inbound stage location id {}, we will reset the assignment",
+                            productionLineAssignment.getProductionLine().getName(),
+                            destinationLocationId);
+                    productionLineAssignment.getLines().stream().filter(
+                            productionLineAssignmentLine -> productionLineAssignmentLine.getWorkOrderLine().getId().equals(workOrderLineId)
+                    ).forEach(
+                            productionLineAssignmentLine -> {
+                                logger.debug("We find the productionLineAssignmentLine for this work order line," +
+                                        " will set it's open quantity from {} to {}",
+                                productionLineAssignmentLine.getOpenQuantity(), productionLineAssignmentLine.getOpenQuantity() + cancelledQuantity);
+                                productionLineAssignmentLine.setOpenQuantity(
+                                        productionLineAssignmentLine.getOpenQuantity() + cancelledQuantity
+                                );
+                                productionLineAssignmentService.saveLine(productionLineAssignmentLine);
+                            }
+                    );
+                }
+        );
 
     }
     @Transactional
@@ -338,6 +389,101 @@ public class WorkOrderLineService implements TestDataInitiableService {
         logger.debug("after pick cancelled, work order line {} has open quantity {}, in process quantity: {}",
                 workOrderLine.getNumber(), workOrderLine.getOpenQuantity(), workOrderLine.getInprocessQuantity());
 
+    }
+
+    @Transactional
+    public void consume(WorkOrderLine workOrderLine, WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction, ProductionLine productionLine) {
+
+        logger.debug("Start to process the work order line consume transaction");
+        logger.debug("1. consume directly from the picked inventory. quantity: {}", workOrderLineConsumeTransaction.getConsumedQuantity() );
+        logger.debug("2. consume from not picked LPN: {} LPNs", workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().size());
+        workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().forEach(
+                workOrderLineConsumeLPNTransaction ->
+                        logger.debug("> will consume quantity {} from lpn {}",
+                                workOrderLineConsumeLPNTransaction.getLpn(),
+                                workOrderLineConsumeLPNTransaction.getConsumedQuantity())
+        );
+        logger.debug("3. consume from another work order? {}",
+                Objects.nonNull(workOrderLineConsumeTransaction.getConsumeFromWorkOrder()));
+        if (Objects.nonNull(workOrderLineConsumeTransaction.getConsumeFromWorkOrder())) {
+            logger.debug("> work order number {}, production line {}, quantity: {}",
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrder().getNumber(),
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrderProductionLine().getName(),
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrderQuantity());
+        }
+
+        // step 1, consume from the picked inventory
+        if (workOrderLineConsumeTransaction.getConsumedQuantity() > 0) {
+            logger.debug("Step 1: consume {} from picked inventory",
+                    workOrderLineConsumeTransaction.getConsumedQuantity());
+            consume(workOrderLine, workOrderLineConsumeTransaction.getConsumedQuantity(),
+                    productionLine);
+        }
+        if (workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().size() > 0) {
+
+            logger.debug("Step 2: consume  from not picked inventory");
+            workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().forEach(
+                    workOrderLineConsumeLPNTransaction -> consume(
+                            workOrderLine, workOrderLineConsumeLPNTransaction, productionLine
+                    )
+            );
+        }if (Objects.nonNull(workOrderLineConsumeTransaction.getConsumeFromWorkOrder())) {
+            logger.debug("Step 3: consume from  work order number {}, production line {}, quantity: {}",
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrder().getNumber(),
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrderProductionLine().getName(),
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrderQuantity());
+            consume(workOrderLine,
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrder(),
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrderProductionLine(),
+                    workOrderLineConsumeTransaction.getConsumeFromWorkOrderQuantity(),
+                    productionLine);
+        }
+    }
+
+    /**
+     * produce the raw material from another work order and consume it for this work order
+     * @param workOrderLine this work order's line
+     * @param consumeFromWorkOrder another work order that will produce raw material
+     * @param consumeFromWorkOrderProductionLine production line of another work order to produce the raw material
+     * @param consumeFromWorkOrderQuantity total quantity that will be produced from the other work order
+     * @param productionLine this work order's production line
+     */
+    private void consume(WorkOrderLine workOrderLine, WorkOrder consumeFromWorkOrder,
+                         ProductionLine consumeFromWorkOrderProductionLine,
+                         Long consumeFromWorkOrderQuantity,
+                         ProductionLine productionLine) {
+    }
+
+    /**
+     * Consume a not picked inventory for the work order line. The lpn needs to be in the
+     * inbound staging of the production line
+     * @param workOrderLine work order line
+     * @param workOrderLineConsumeLPNTransaction non picked lpn to be consumed
+     * @param productionLine production line
+     */
+    private void consume(WorkOrderLine workOrderLine,
+                         WorkOrderLineConsumeLPNTransaction workOrderLineConsumeLPNTransaction,
+                         ProductionLine productionLine) {
+
+        // consume the LPN
+        inventoryServiceRestemplateClient.consumeMaterialForWorkOrderLine(
+                workOrderLine.getId(),
+                workOrderLine.getWorkOrder().getWarehouseId(),
+                workOrderLineConsumeLPNTransaction.getConsumedQuantity(),
+                productionLine.getInboundStageLocationId(),
+                null, workOrderLineConsumeLPNTransaction.getLpn(), true
+        );
+
+        // we don't need to setup the consume quantity on the production line delivery record
+        // since the LPN is not picked for this work order. So we won't calculate it as
+        // delivered inventory
+        // productionLineDeliveryService.addConsumedQuantity(workOrderLine, productionLine, consumedQuantity);
+
+
+        workOrderLine.setConsumedQuantity(workOrderLine.getConsumedQuantity() +
+                workOrderLineConsumeLPNTransaction.getConsumedQuantity());
+
+        save(workOrderLine);
     }
 
     @Transactional
@@ -366,18 +512,13 @@ public class WorkOrderLineService implements TestDataInitiableService {
                 workOrderLine.getWorkOrder().getNumber(),
                 workOrderLine.getItem().getName(),
                 productionLine.getName());
-        /*
-        * We will remove the inventory only when the work order is completed.
-        * For now, we will only log the quantity
-        * */
-        /***
         inventoryServiceRestemplateClient.consumeMaterialForWorkOrderLine(
                 workOrderLine.getId(),
                 workOrderLine.getWorkOrder().getWarehouseId(),
                 consumedQuantity,
-                productionLine.getInboundStageLocationId()
+                productionLine.getInboundStageLocationId(),
+                null, "", null
         );
-         **/
 
         // setup the consume quantity on the production line delivery record
         productionLineDeliveryService.addConsumedQuantity(workOrderLine, productionLine, consumedQuantity);

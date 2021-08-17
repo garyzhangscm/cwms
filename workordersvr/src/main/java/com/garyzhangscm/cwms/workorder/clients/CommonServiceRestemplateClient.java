@@ -67,7 +67,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "unitOfMeasure")
+    @Cacheable(cacheNames = "unitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
 

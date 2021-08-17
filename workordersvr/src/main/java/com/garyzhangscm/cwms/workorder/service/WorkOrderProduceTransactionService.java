@@ -231,10 +231,8 @@ public class WorkOrderProduceTransactionService  {
         // make sure
         // 1. we are not over produce
         // 2. we are not over consume
-        if (!validateWorkOrderProduceTransaction(workOrderProduceTransaction)) {
-             logger.debug("Current work order production transaction is not valid ");
-             throw WorkOrderException.raiseException("Work work produce transaction is not valid");
-        }
+        validateWorkOrderProduceTransaction(workOrderProduceTransaction);
+
         // total work order produced quantity
         Long totalProducedQuantity = 0L;
         for(WorkOrderProducedInventory workOrderProducedInventory :
@@ -269,6 +267,18 @@ public class WorkOrderProduceTransactionService  {
         );
 
         // save the transaction itself
+        // before we save everything, we will need to setup some missing information so
+        // the whole objects will be saved in one transaction
+        workOrderProduceTransaction.getWorkOrderLineConsumeTransactions().forEach(
+                workOrderLineConsumeTransaction -> {
+                    workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().forEach(
+                            workOrderLineConsumeLPNTransaction ->
+                                    workOrderLineConsumeLPNTransaction.setWorkOrderLineConsumeTransaction(
+                                            workOrderLineConsumeTransaction
+                                    )
+                    );
+                }
+        );
         WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
 
         processWorkOrderKPI(newWorkOrderProduceTransaction, totalProducedQuantity);
@@ -318,17 +328,17 @@ public class WorkOrderProduceTransactionService  {
         }
     }
 
-    private boolean validateWorkOrderProduceTransaction(
+    private void validateWorkOrderProduceTransaction(
             WorkOrderProduceTransaction workOrderProduceTransaction) {
         // make sure we won't over consume
 
-        boolean result = true;
         // we need to make sure the LPNs of the produced inventory
         // is passed in
         if (workOrderProduceTransaction
                 .getWorkOrderProducedInventories().stream()
                 .anyMatch(workOrderProducedInventory -> Strings.isBlank(workOrderProducedInventory.getLpn()))) {
-            return false;
+            throw  WorkOrderException.raiseException(
+                    "Can't produce the inventory since the LPN is empty ");
         }
 
         // only validate the consume transaction
@@ -338,65 +348,166 @@ public class WorkOrderProduceTransactionService  {
                 workOrderProduceTransaction.getWorkOrder().getWarehouseId()
         ).getMaterialConsumeTiming().equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)) {
 
-            result = workOrderProduceTransaction.getWorkOrderLineConsumeTransactions()
-                    .stream().allMatch(
-                            workOrderLineConsumeTransaction ->  validateWorkOrderLineConsumeTransaction(
-                                    workOrderLineConsumeTransaction,
-                                    workOrderProduceTransaction.getProductionLine()
+            if(workOrderProduceTransaction.getConsumeByBomQuantity()) {
+                validateWorkOrderLineConsumeTransactionByBom(workOrderProduceTransaction);
+            }
+            else {
 
-                            ));
+                for (WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction
+                        : workOrderProduceTransaction.getWorkOrderLineConsumeTransactions()) {
+                    validateWorkOrderLineConsumeTransaction(
+                            workOrderLineConsumeTransaction,
+                            workOrderProduceTransaction.getProductionLine());
+                }
+            }
+
+
+        }
+
+    }
+
+    private void validateWorkOrderLineConsumeTransactionByBom(
+            WorkOrderProduceTransaction workOrderProduceTransaction) {
+
+        BillOfMaterial billOfMaterial = workOrderProduceTransaction.getConsumeByBom();
+        if (Objects.isNull(billOfMaterial)) {
+            // if the user didn't specify a bom
+            // then find most suitable bom
+            billOfMaterial = billOfMaterialService.getMatchedBillOfMaterial(workOrderProduceTransaction.getWorkOrder());
         }
 
 
-/***
- * Since we may already consume the inventory when it is delivered, we will validate against
- * the production line assignment's delivery quantity instead of the inventory
- */
-/** Obselete
- *
-        List<Inventory> inventories = workOrderService.getDeliveredInventory(workOrder.getId(),
-                workOrderProduceTransaction.getProductionLine());
-        logger.debug("start to validate work order product transaction against production line: {}",
-                workOrderProduceTransaction.getProductionLine().getName());
-        logger.debug("We have following invenotry delivered in this production");
-        inventories.forEach(inventory ->
-                logger.debug(">> inventory {}, location: {}, quantity: {}",
-                        inventory.getLpn(), inventory.getLocation().getName(), inventory.getQuantity() ));
-        // check if we have enough inventory delivered for the work order line
-        result = !workOrderProduceTransaction.getWorkOrderLineConsumeTransactions()
-                .stream().anyMatch(
-                        workOrderLineConsumeTransaction -> {
-                            List<Inventory> deliveredInventories = inventories.stream().filter(
-                                    inventory -> inventory.getItem().getId().equals(
-                                            workOrderLineConsumeTransaction.getWorkOrderLine().getItemId()
-                                            )
-                                    ).collect(Collectors.toList());
+        if (Objects.isNull(billOfMaterial)) {
+            throw WorkOrderException.raiseException("Can't consume the work order by bill of material as none is defined for this work order");
+        }
 
-                            boolean lineValid = validateWorkOrderLineConsumeTransaction(
-                                        workOrderLineConsumeTransaction,deliveredInventories
-                                   );
 
-                            logger.debug("For work order line {} / {} 's consume transaction is valid? {}",
-                                    workOrder.getNumber(),
-                                    workOrderLineConsumeTransaction.getWorkOrderLine().getNumber(),
-                                    lineValid);
+        Long totalProducedQuantity = workOrderProduceTransaction.getWorkOrderProducedInventories()
+                .stream().mapToLong(inventory -> inventory.getQuantity()).sum();
 
-                            return !lineValid;
-                        });
 
- */
-        return result;
+        for (WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction : workOrderProduceTransaction.getWorkOrderLineConsumeTransactions()) {
+
+            WorkOrderLine workOrderLine = workOrderLineConsumeTransaction.getWorkOrderLine();
+            // find the right bill of material line. there should be only one line matches
+            // with the work order line
+            List<BillOfMaterialLine> billOfMaterialLines =
+                    billOfMaterial.getBillOfMaterialLines().stream().filter(
+                        billOfMaterialLine -> billOfMaterialLineService.match(billOfMaterialLine, workOrderLine)
+                    ).collect(Collectors.toList());
+            if (billOfMaterialLines.size() == 0) {
+                throw WorkOrderException.raiseException("Can't find a right BOM to consume for this work order, no line defined for item " +
+                        workOrderLine.getItem().getName());
+            }
+            else if (billOfMaterialLines.size() > 1) {
+                throw WorkOrderException.raiseException("Can't find a right BOM to consume for this work order. multiple lines defined for item " +
+                        workOrderLine.getItem().getName());
+            }
+            BillOfMaterialLine billOfMaterialLine = billOfMaterialLines.get(0);
+            Long billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
+            Long consumingQuantity = billOfMaterialLineConsumeQuantity * totalProducedQuantity / billOfMaterial.getExpectedQuantity();
+            logger.debug("Start to check if we can consume {} of item {} by BOM {}, in order to create {} of item {}",
+                    consumingQuantity,
+                    workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName(),
+                    billOfMaterial.getNumber(),
+                    totalProducedQuantity,
+                    workOrderProduceTransaction.getWorkOrder().getItem().getName());
+
+            // make sure we have enough quantity delivered for consume
+
+            validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
+                    workOrderLineConsumeTransaction.getWorkOrderLine(),
+                    workOrderProduceTransaction.getProductionLine(),
+                    consumingQuantity
+            );
+
+        }
     }
 
-    private boolean validateWorkOrderLineConsumeTransaction(
+    private void validateWorkOrderLineConsumeTransaction(
             WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
             ProductionLine productionLine) {
 
+        // if we consume from the delivered inventory, make sure
+        // we have enough quantity being delivered
+        if (workOrderLineConsumeTransaction.getConsumedQuantity() > 0) {
+            validateWorkOrderLineConsumeTransactionByDeliveredQuantity(workOrderLineConsumeTransaction,
+                    productionLine);
+        }
+
+        if (!workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().isEmpty()) {
+
+            // the user is try to consume by non picked LPN, let's make sure the LPN is in
+            // right place and consume quantity not exceed the inventory's quantity
+            validateWorkOrderLineConsumeTransactionByNonPickedInventory(workOrderLineConsumeTransaction,
+                    productionLine);
+
+        }
+
+
+
+
+    }
+
+    private void validateWorkOrderLineConsumeTransactionByNonPickedInventory(
+            WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
+            ProductionLine productionLine) {
+        if (workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().isEmpty()) {
+            return;
+        }
+
+        Long locationId = productionLine.getInboundStageLocationId();
+        List<Inventory> inventories = inventoryServiceRestemplateClient.findInventoryByLocation(
+                productionLine.getWarehouseId(), locationId);
+        // only return the inventory without any pick work
+        // key: LPN
+        // value: quantity
+        // we will save the result into a map since we only care about the LPN and the quantity on it
+        Map<String, Long> lpnQuantityMap = new HashMap<>();
+        inventories.stream().filter(inventory -> Objects.isNull(inventory.getPickId()))
+                .forEach(inventory -> {
+                    String lpn = inventory.getLpn();
+                    Long quantity = lpnQuantityMap.getOrDefault(lpn, 0L);
+                    lpnQuantityMap.put(lpn, quantity + inventory.getQuantity());
+                });
+        // make sure each LPN being consumed is in the location
+        // and the consumed quantity doesn't exceed the LPN's quantity
+        for (WorkOrderLineConsumeLPNTransaction workOrderLineConsumeLPNTransaction
+                : workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions()) {
+
+            if (!lpnQuantityMap.containsKey(workOrderLineConsumeLPNTransaction.getLpn())) {
+
+                throw  WorkOrderException.raiseException(
+                        "Can't consume the quantity for work order line " +
+                                workOrderLineConsumeTransaction.getWorkOrderLine().getWorkOrder().getNumber() +
+                                " / " + workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName() +
+                                " from Production line " + productionLine.getName() +
+                                ". LPN  " + workOrderLineConsumeLPNTransaction.getLpn() + " doesn't exists");
+            }
+            if(workOrderLineConsumeLPNTransaction.getConsumedQuantity()
+                    > lpnQuantityMap.get(workOrderLineConsumeLPNTransaction.getLpn())) {
+
+                throw  WorkOrderException.raiseException(
+                        "Can't consume the quantity for work order line " +
+                                workOrderLineConsumeTransaction.getWorkOrderLine().getWorkOrder().getNumber() +
+                                " / " + workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName() +
+                                " from Production line " + productionLine.getName() +
+                                ". LPN's quantity " + lpnQuantityMap.get(workOrderLineConsumeLPNTransaction.getLpn()) +
+                                " is less than the required quantity " + workOrderLineConsumeLPNTransaction.getConsumedQuantity() );
+            }
+
+        }
+    }
+
+    private void validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
+            WorkOrderLine workOrderLine,
+            ProductionLine productionLine,
+            Long consumingQuantity) {
         Optional<ProductionLineDelivery> productionLineDelivery =
-                Optional.of(
+                Optional.ofNullable(
                         productionLineDeliveryService.getProductionLineDelivery(
                                 productionLine,
-                                workOrderLineConsumeTransaction.getWorkOrderLine()
+                                workOrderLine
                         )
                 );
         Long totalDeliveredQuantity = 0L;
@@ -407,30 +518,51 @@ public class WorkOrderProduceTransactionService  {
         }
         else {
             logger.debug(
-                    "Can't consume for work order line {} / {}" +
+                    "Can't consume for work order line  {}" +
                             " from Production line  {}. There's nothing delivered yet",
-                    workOrderLineConsumeTransaction.getWorkOrderLine().getWorkOrder().getNumber(),
-                    workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName(),
+
+                    workOrderLine.getItem().getName(),
                     productionLine.getName()
-                    );
+            );
+
 
             throw  WorkOrderException.raiseException(
                     "Can't consume the quantity for work order line " +
-                            workOrderLineConsumeTransaction.getWorkOrderLine().getWorkOrder().getNumber() +
-                            " / " + workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName() +
+                            workOrderLine.getItem().getName() +
                             " from Production line " + productionLine.getName() +
                             ". There's nothing delivered yet");
         }
-        logger.debug("Validate by quantity / For work order line  {} 's consume transaction, " +
-                " we have total deliver quantity {}, consumed quantity {}, consuming quantity {}",
 
-                workOrderLineConsumeTransaction.getWorkOrderLine().getNumber(),
+        logger.debug("Validate by quantity / For work order line  {} 's consume transaction, " +
+                        " we have total deliver quantity {}, consumed quantity {}, consuming quantity {}",
+
+                workOrderLine.getNumber(),
                 totalDeliveredQuantity,
                 totalConsumedQuantity,
-                workOrderLineConsumeTransaction.getConsumedQuantity());
-        return (totalDeliveredQuantity -totalConsumedQuantity)>= workOrderLineConsumeTransaction.getConsumedQuantity();
+                consumingQuantity);
+        if  (totalDeliveredQuantity - totalConsumedQuantity < consumingQuantity) {
+
+            throw  WorkOrderException.raiseException(
+                    "Can't consume the quantity for work order line " +
+                            workOrderLine.getWorkOrder().getNumber() +
+                            " / " + workOrderLine.getItem().getName() +
+                            " from Production line " + productionLine.getName() +
+                            ". Not enough quantity left. we can only consume quantity " + (totalDeliveredQuantity - totalConsumedQuantity));
+        }
 
     }
+    private void validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
+            WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
+            ProductionLine productionLine) {
+
+
+        validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
+                workOrderLineConsumeTransaction.getWorkOrderLine(),
+                productionLine,
+                workOrderLineConsumeTransaction.getConsumedQuantity()
+        );
+    }
+
     private boolean validateWorkOrderLineConsumeTransaction(
             WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
             List<Inventory> deliveredInventories) {
@@ -471,7 +603,7 @@ public class WorkOrderProduceTransactionService  {
                 if (workOrderLine.equals(workOrderLineConsumeTransaction.getWorkOrderLine())) {
 
                     workOrderLineService.consume(workOrderLine,
-                            workOrderLineConsumeTransaction.getConsumedQuantity(),
+                            workOrderLineConsumeTransaction,
                             workOrderProduceTransaction.getProductionLine());
                 }
             });
@@ -482,15 +614,26 @@ public class WorkOrderProduceTransactionService  {
                                               WorkOrderProduceTransaction workOrderProduceTransaction,
                                               Long totalProducedQuantity) {
 
-        BillOfMaterial billOfMaterial = billOfMaterialService.getMatchedBillOfMaterial(workOrderProduceTransaction.getWorkOrder());
+        logger.debug("start to consume work order line {} / {}",
+                workOrderLine.getNumber(),
+                workOrderLine.getItem().getName());
+        BillOfMaterial billOfMaterial = workOrderProduceTransaction.getConsumeByBom();
+        if (Objects.isNull(billOfMaterial) || Strings.isBlank(billOfMaterial.getNumber())) {
+            // if the user didn't specify a bom
+            // then find most suitable bom
+            logger.debug("bill of material is not setup in the transaction, let's find one ");
+            billOfMaterial = billOfMaterialService.getMatchedBillOfMaterial(workOrderProduceTransaction.getWorkOrder());
+        }
+
         if (Objects.isNull(billOfMaterial)) {
             throw WorkOrderException.raiseException("Can't consume the work order by bill of material as none is defined for this work order");
         }
 
+        BillOfMaterial finalBillOfMaterial = billOfMaterial;
         billOfMaterial.getBillOfMaterialLines().forEach(billOfMaterialLine -> {
             if(billOfMaterialLineService.match(billOfMaterialLine, workOrderLine)) {
                 Long billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
-                Long consumedQuantity = billOfMaterialLineConsumeQuantity * totalProducedQuantity /billOfMaterial.getExpectedQuantity();
+                Long consumedQuantity = billOfMaterialLineConsumeQuantity * totalProducedQuantity / finalBillOfMaterial.getExpectedQuantity();
 
                 workOrderLineService.consume(workOrderLine, consumedQuantity, workOrderProduceTransaction.getProductionLine());
             }
