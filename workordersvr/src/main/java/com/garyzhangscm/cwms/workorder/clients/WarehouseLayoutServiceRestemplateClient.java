@@ -94,7 +94,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "location")
+    @Cacheable(cacheNames = "location", unless="#result == null")
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -146,7 +146,7 @@ public class WarehouseLayoutServiceRestemplateClient {
             return locations[0];
         }
     }
-    @Cacheable(cacheNames = "warehouse")
+    @Cacheable(cacheNames = "warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

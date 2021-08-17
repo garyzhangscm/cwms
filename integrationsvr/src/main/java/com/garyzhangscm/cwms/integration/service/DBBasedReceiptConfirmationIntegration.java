@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,8 @@ public class DBBasedReceiptConfirmationIntegration {
 
     public List<DBBasedReceiptConfirmation> findAll(Long warehouseId, String warehouseName,
                                                     String number, Long clientId, String clientName,
-                                                    Long supplierId, String supplierName) {
+                                                    Long supplierId, String supplierName,
+                                                    LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
 
         return dbBasedReceiptConfirmationRepository.findAll(
                 (Root<DBBasedReceiptConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -58,6 +60,24 @@ public class DBBasedReceiptConfirmationIntegration {
                         predicates.add(criteriaBuilder.equal(root.get("supplierName"), supplierName));
                     }
 
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("insertTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("insertTime"), endTime));
+
+                    }
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("insertTime"), dateStartTime, dateEndTime));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

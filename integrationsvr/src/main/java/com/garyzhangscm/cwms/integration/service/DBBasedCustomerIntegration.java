@@ -13,9 +13,11 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,9 +30,41 @@ public class DBBasedCustomerIntegration {
     @Autowired
     DBBasedCustomerRepository dbBasedCustomerRepository;
 
-    public List<DBBasedCustomer> findAll() {
-        return dbBasedCustomerRepository.findAll();
+
+    public List<DBBasedCustomer> findAll(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+
+        return dbBasedCustomerRepository.findAll(
+                (Root<DBBasedCustomer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("insertTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("insertTime"), endTime));
+
+                    }
+                    logger.debug(">> Date is passed in {}", date);
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("insertTime"), dateStartTime, dateEndTime));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
+
     public DBBasedCustomer findById(Long id) {
         return dbBasedCustomerRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("customer data not found by id: " + id));

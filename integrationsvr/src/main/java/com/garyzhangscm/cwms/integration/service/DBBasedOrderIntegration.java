@@ -20,6 +20,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,9 +46,40 @@ public class DBBasedOrderIntegration {
     InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
-    public List<DBBasedOrder> findAll() {
-        return dbBasedOrderRepository.findAll();
+    public List<DBBasedOrder> findAll(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+
+        return dbBasedOrderRepository.findAll(
+                (Root<DBBasedOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("insertTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("insertTime"), endTime));
+
+                    }
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("insertTime"), dateStartTime, dateEndTime));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
+
+
     public IntegrationOrderData findById(Long id) {
         return dbBasedOrderRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("order data not found by id: " + id));

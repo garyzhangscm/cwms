@@ -104,12 +104,15 @@ public class WorkOrderServiceRestemplateClient {
 
     }
 
-    public WorkOrder registerPickCancelled(Long workOrderLineId, Long cancelledQuantity){
+    public WorkOrder registerPickCancelled(Long workOrderLineId,
+                                           Long cancelledQuantity,
+                                           Long destinationLocationId){
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}/pick-cancelled")
-                        .queryParam("cancelledQuantity", cancelledQuantity);
+                        .queryParam("cancelledQuantity", cancelledQuantity)
+                        .queryParam("destinationLocationId", destinationLocationId);
 
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper
                 = restTemplate.exchange(

@@ -1,9 +1,6 @@
 package com.garyzhangscm.cwms.integration.service;
 
-import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.integration.clients.KafkaSender;
-import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.*;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.*;
@@ -16,6 +13,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,11 +42,43 @@ public class DBBasedWorkOrderIntegration {
     CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
 
-    public List<DBBasedWorkOrder> findAll() {
-        return dbBasedWorkOrderRepository.findAll();
+    public List<DBBasedWorkOrder> findAll(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+
+        return dbBasedWorkOrderRepository.findAll(
+                (Root<DBBasedWorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("insertTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("insertTime"), endTime));
+
+                    }
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("insertTime"), dateStartTime, dateEndTime));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
+
     public IntegrationWorkOrderData findById(Long id) {
         return dbBasedWorkOrderRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("work order data not found by id: " + id));
@@ -102,6 +132,20 @@ public class DBBasedWorkOrderIntegration {
             WorkOrder workOrder = dbBasedWorkOrder.convertToWorkOrder();
 
             setupMissingField(workOrder, dbBasedWorkOrder);
+
+            // make sure this is a new work order
+            // or it exists but in a changable status
+            if (!validateExistingWorkOrder(workOrder)) {
+
+                dbBasedWorkOrder.setStatus(IntegrationStatus.ERROR);
+                dbBasedWorkOrder.setErrorMessage(
+                        "work order " + dbBasedWorkOrder.getNumber() +
+                                " already exists, and it's status indicate it is not changable"
+                );
+                dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
+                save(dbBasedWorkOrder);
+                return;
+            }
 
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Work Order:\n{}", workOrder);
@@ -168,6 +212,32 @@ public class DBBasedWorkOrderIntegration {
         }
     }
 
+    private boolean validateExistingWorkOrder(WorkOrder workOrder) {
+        logger.debug("Start to validate work order {} ", workOrder);
+        WorkOrder existingWorkOrder = workOrderServiceRestemplateClient.getWorkOrderByNumber(
+                workOrder.getWarehouseId(),
+                workOrder.getNumber()
+        );
+        if (Objects.nonNull(existingWorkOrder) && !existingWorkOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
+
+            logger.debug("work order {} exists and current status {} indicate the work order is not changable ",
+                    existingWorkOrder.getNumber(),
+                    existingWorkOrder.getStatus());
+            return false;
+        }
+        else if (Objects.nonNull(existingWorkOrder)) {
+
+            logger.debug("work order {} exists and current status {} indicate the work order is changable ",
+                    existingWorkOrder.getNumber(),
+                    existingWorkOrder.getStatus());
+        }
+        else {
+
+            logger.debug("work order {} doesn't exists",
+                    workOrder.getNumber());
+        }
+        return true;
+    }
 
 
     private void setupMissingField(WorkOrder workOrder, DBBasedWorkOrder dbBasedWorkOrder){

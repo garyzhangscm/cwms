@@ -24,6 +24,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
           .antMatchers("/login").permitAll()
           .antMatchers("/actuator").permitAll()
           .antMatchers("/assets/**").permitAll()
+                .antMatchers("/validate/**").permitAll()
           .antMatchers("/site-information/default").permitAll()
           .antMatchers("/mobile").permitAll()
           .antMatchers("/report-histories/download/**").permitAll()

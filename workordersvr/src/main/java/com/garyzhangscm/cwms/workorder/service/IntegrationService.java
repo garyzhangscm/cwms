@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 
 @Service
 public class IntegrationService {
@@ -36,6 +38,13 @@ public class IntegrationService {
     }
 
     public void process(WorkOrder workOrder) {
+        // let's see if we already have this work order in system
+        WorkOrder existingWorkOrder = workOrderService.findByNumber(
+                workOrder.getWarehouseId(), workOrder.getNumber(), false);
+        if (Objects.nonNull(existingWorkOrder) && !existingWorkOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
+            logger.debug("We are not allow the user to override an existing work order once it is not in PENDING STATUS");
+            return;
+        }
 
 
         workOrder.setProducedQuantity(0L);

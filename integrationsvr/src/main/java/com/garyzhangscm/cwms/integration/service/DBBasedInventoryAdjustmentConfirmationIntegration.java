@@ -5,6 +5,7 @@ import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedInventoryAdjustmentConfirmationRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,13 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class DBBasedInventoryAdjustmentConfirmationIntegration {
@@ -55,8 +59,38 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
     }
 
 
-    public List<DBBasedInventoryAdjustmentConfirmation> findAll() {
-        return dbBasedInventoryAdjustmentConfirmationRepository.findAll();
+    public List<DBBasedInventoryAdjustmentConfirmation> findAll(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+
+        return dbBasedInventoryAdjustmentConfirmationRepository.findAll(
+                (Root<DBBasedInventoryAdjustmentConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("insertTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("insertTime"), endTime));
+
+                    }
+                    logger.debug(">> Date is passed in {}", date);
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("insertTime"), dateStartTime, dateEndTime));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
     public DBBasedInventoryAdjustmentConfirmation findById(Long id) {
         return dbBasedInventoryAdjustmentConfirmationRepository.findById(id)

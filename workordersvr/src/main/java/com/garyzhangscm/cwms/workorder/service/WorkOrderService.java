@@ -421,6 +421,11 @@ public class WorkOrderService implements TestDataInitiableService {
     public WorkOrder allocateWorkOrder(Long workOrderId, List<ProductionLineAllocationRequest> productionLineAllocationRequests) {
 
 
+        // if the user didn't specify the production line
+        // then we will allocate the whole work order
+        if (productionLineAllocationRequests.size() == 0) {
+            allocateWorkOrder(workOrderId);
+        }
         productionLineAllocationRequests.forEach(
                 productionLineAllocationRequest -> {
                     if (Boolean.FALSE.equals(productionLineAllocationRequest.getAllocateByLine())) {

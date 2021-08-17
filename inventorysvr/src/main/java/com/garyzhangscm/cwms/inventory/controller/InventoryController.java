@@ -113,8 +113,12 @@ public class InventoryController {
                                                               @RequestParam Long warehouseId,
                                                               @RequestParam  Long quantity,
                                                               @RequestParam  Long locationId,
-                                                              @RequestParam(name = "inventoryId", required = false, defaultValue = "")  Long inventoryId) {
-        return inventoryService.consumeInventoriesForWorkOrderLine(id,warehouseId,  quantity, locationId, inventoryId);
+                                                              @RequestParam(name = "inventoryId", required = false, defaultValue = "")  Long inventoryId,
+                                                              @RequestParam(name = "lpn", required = false, defaultValue = "")  String lpn,
+                                                              @RequestParam(name = "nonPickedInventory", required = false, defaultValue = "")  Boolean nonPickedInventory) {
+        return inventoryService.consumeInventoriesForWorkOrderLine(
+                id,warehouseId,  quantity, locationId, inventoryId,
+                lpn, nonPickedInventory);
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}")

@@ -31,6 +31,36 @@ public class WorkOrderLineConsumeTransaction extends AuditibleEntity<String> {
     @Column(name = "consumed_quantity")
     private Long consumedQuantity;
 
+    // if we want to consume from the final good of another work order
+    // if we have this field setup, then we will automatically produce
+    // the quantity from other work order and consume it for this work order
+    // we will need to know the work order number, total quantity we would
+    // like the second work order to be produced and from which production line
+    // the quantity will be produced
+    @ManyToOne
+    @JoinColumn(name = "consume_from_work_order_id")
+    private WorkOrder consumeFromWorkOrder;
+
+    @Column(name = "consume_from_work_order_quantity")
+    private Long consumeFromWorkOrderQuantity;
+
+    @ManyToOne
+    @JoinColumn(name = "consume_from_work_order_production_line_id")
+    private ProductionLine consumeFromWorkOrderProductionLine;
+
+
+    // if we want to consume LPNs that are not explicitly picked
+    // for this work order
+
+    @OneToMany(
+            mappedBy = "workOrderLineConsumeTransaction",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    List<WorkOrderLineConsumeLPNTransaction> workOrderLineConsumeLPNTransactions = new ArrayList<>();
+
+
+
     public WorkOrderLineConsumeTransaction() {}
 
 
@@ -73,5 +103,37 @@ public class WorkOrderLineConsumeTransaction extends AuditibleEntity<String> {
 
     public void setConsumedQuantity(Long consumedQuantity) {
         this.consumedQuantity = consumedQuantity;
+    }
+
+    public WorkOrder getConsumeFromWorkOrder() {
+        return consumeFromWorkOrder;
+    }
+
+    public void setConsumeFromWorkOrder(WorkOrder consumeFromWorkOrder) {
+        this.consumeFromWorkOrder = consumeFromWorkOrder;
+    }
+
+    public Long getConsumeFromWorkOrderQuantity() {
+        return consumeFromWorkOrderQuantity;
+    }
+
+    public void setConsumeFromWorkOrderQuantity(Long consumeFromWorkOrderQuantity) {
+        this.consumeFromWorkOrderQuantity = consumeFromWorkOrderQuantity;
+    }
+
+    public ProductionLine getConsumeFromWorkOrderProductionLine() {
+        return consumeFromWorkOrderProductionLine;
+    }
+
+    public void setConsumeFromWorkOrderProductionLine(ProductionLine consumeFromWorkOrderProductionLine) {
+        this.consumeFromWorkOrderProductionLine = consumeFromWorkOrderProductionLine;
+    }
+
+    public List<WorkOrderLineConsumeLPNTransaction> getWorkOrderLineConsumeLPNTransactions() {
+        return workOrderLineConsumeLPNTransactions;
+    }
+
+    public void setWorkOrderLineConsumeLPNTransactions(List<WorkOrderLineConsumeLPNTransaction> workOrderLineConsumeLPNTransactions) {
+        this.workOrderLineConsumeLPNTransactions = workOrderLineConsumeLPNTransactions;
     }
 }

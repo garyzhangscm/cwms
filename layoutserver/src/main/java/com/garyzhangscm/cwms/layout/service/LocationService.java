@@ -780,4 +780,22 @@ public class LocationService implements TestDataInitiableService {
         locationRepository.deleteByWarehouseId(warehouse.getId());
 
     }
+
+    public Location removeRFLocation(Long warehouseId, String rfCode) {
+        logger.debug("will add RF location {} / {}",
+                warehouseId, rfCode);
+        Location location = findByName(rfCode, warehouseId);
+        if (Objects.nonNull(location)) {
+            logger.debug("RF location {} already exists, will remove it",
+                    location.getName());
+            delete(location);
+            return location;
+        }
+        else {
+
+            logger.debug("location {} doesn't exists, will return nothing",
+                    rfCode);
+            return null;
+        }
+    }
 }

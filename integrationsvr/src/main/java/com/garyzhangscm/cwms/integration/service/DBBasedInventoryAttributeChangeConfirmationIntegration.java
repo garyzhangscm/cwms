@@ -10,8 +10,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class DBBasedInventoryAttributeChangeConfirmationIntegration {
@@ -24,9 +31,41 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
     DBBasedInventoryAttributeChangeConfirmationRepository dbBasedInventoryAttributeChangeConfirmationRepository;
 
 
-    public List<DBBasedInventoryAttributeChangeConfirmation> findAll() {
-        return dbBasedInventoryAttributeChangeConfirmationRepository.findAll();
+
+    public List<DBBasedInventoryAttributeChangeConfirmation> findAll(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+
+        return dbBasedInventoryAttributeChangeConfirmationRepository.findAll(
+                (Root<DBBasedInventoryAttributeChangeConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("insertTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("insertTime"), endTime));
+
+                    }
+                    logger.debug(">> Date is passed in {}", date);
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("insertTime"), dateStartTime, dateEndTime));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
     }
+
     public DBBasedInventoryAttributeChangeConfirmation findById(Long id) {
         return dbBasedInventoryAttributeChangeConfirmationRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("client data not found by id: " + id));

@@ -180,6 +180,17 @@ public class ProductionLineAssignmentService   {
             assignWorkOrderToProductionLines(workOrder,productionLineAssignment);
 
         }
+        // if the work order is still in PENDING status, change it into work in process
+        //
+        logger.debug("Current work order's status {}", workOrder.getStatus());
+        if (workOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
+            logger.debug("change work order {}'s status from {} to {}",
+                    workOrder.getNumber(),
+                    workOrder.getStatus(),
+                    WorkOrderStatus.INPROCESS);
+            workOrder.setStatus(WorkOrderStatus.INPROCESS);
+            workOrderService.save(workOrder);
+        }
 
         return findAll(null, null, workOrderId);
 
@@ -238,6 +249,9 @@ public class ProductionLineAssignmentService   {
 
 
     public void assignWorkOrderToProductionLines(WorkOrder workOrder, ProductionLineAssignment productionLineAssignment) {
+        if (productionLineAssignment.getQuantity() == 0) {
+            return;
+        }
         productionLineAssignment.setWorkOrder(workOrder);
         if (productionLineAssignment.getLines().isEmpty()) {
             // if we haven't do so, let's split the work line quantity as well and
@@ -351,7 +365,7 @@ public class ProductionLineAssignmentService   {
                         workOrder.getWarehouseId(),
                         inventory.getQuantity(),
                         productionLine.getInboundStageLocationId(),
-                        inventory.getId()
+                        inventory.getId(), "", null
                 );
             }
             // OK, the delivered inventory is still in the  final result,
@@ -367,7 +381,7 @@ public class ProductionLineAssignmentService   {
                         workOrder.getWarehouseId(),
                         inventory.getQuantity() - existingRetunableMaterialMap.get(inventory.getId()),
                         productionLine.getInboundStageLocationId(),
-                        inventory.getId()
+                        inventory.getId(), "", null
                 );
             }
         }

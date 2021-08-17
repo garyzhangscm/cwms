@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -120,8 +122,10 @@ public class DBBasedIntegration implements Integration{
         dbBasedInventoryAdjustmentConfirmationIntegration.sendToHost();
     }
     @Override
-    public List<DBBasedClient> getClientData() {
-        return dbBasedClientIntegration.findAll();
+    public List<DBBasedClient> getClientData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedClientIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -141,8 +145,10 @@ public class DBBasedIntegration implements Integration{
     //
 
     @Override
-    public List<? extends IntegrationCustomerData> getCustomerData() {
-        return dbBasedCustomerIntegration.findAll();
+    public List<? extends IntegrationCustomerData> getCustomerData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedCustomerIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -159,8 +165,10 @@ public class DBBasedIntegration implements Integration{
     // Integration - Item
     //
     @Override
-    public List<? extends IntegrationItemData> getItemData() {
-        return dbBasedItemIntegration.findAll();
+    public List<? extends IntegrationItemData> getItemData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedItemIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -181,8 +189,10 @@ public class DBBasedIntegration implements Integration{
     // Integration - Item Family
     //
     @Override
-    public List<? extends IntegrationItemFamilyData> getItemFamilyData() {
-        return dbBasedItemFamilyIntegration.findAll();
+    public List<? extends IntegrationItemFamilyData> getItemFamilyData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedItemFamilyIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -199,8 +209,10 @@ public class DBBasedIntegration implements Integration{
     // Integration - Item Package Type
     //
     @Override
-    public List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData() {
-        return dbBasedItemPackageTypeIntegration.findAll();
+    public List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedItemPackageTypeIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -222,8 +234,10 @@ public class DBBasedIntegration implements Integration{
     // Integration - Item Unit Of Measure
     //
     @Override
-    public List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData() {
-        return dbBasedItemUnitOfMeasureIntegration.findAll();
+    public List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedItemUnitOfMeasureIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -240,8 +254,10 @@ public class DBBasedIntegration implements Integration{
     // Integration - Supplier
     //
     @Override
-    public List<? extends IntegrationSupplierData> getSupplierData() {
-        return dbBasedSupplierIntegration.findAll();
+    public List<? extends IntegrationSupplierData> getSupplierData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedSupplierIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -269,8 +285,10 @@ public class DBBasedIntegration implements Integration{
     //
     // Integration - Receipt and Receipt Line
     //
-    public List<? extends IntegrationReceiptData> getReceiptData() {
-        return dbBasedReceiptIntegration.findAll();
+    public List<? extends IntegrationReceiptData> getReceiptData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedReceiptIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
     public IntegrationReceiptData getReceiptData(Long id) {
         return dbBasedReceiptIntegration.findById(id);
@@ -284,8 +302,10 @@ public class DBBasedIntegration implements Integration{
     //
     // Integration - Order and Order Line
     //
-    public List<? extends IntegrationOrderData> getOrderData() {
-        return dbBasedOrderIntegration.findAll();
+    public List<? extends IntegrationOrderData> getOrderData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedOrderIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
     public IntegrationOrderData getOrderData(Long id) {
         return dbBasedOrderIntegration.findById(id);
@@ -299,8 +319,11 @@ public class DBBasedIntegration implements Integration{
     // Integration - Work Order and Work Order Line
     //
     @Override
-    public List<? extends IntegrationWorkOrderData> getWorkOrderData() {
-        return null;
+    public List<? extends IntegrationWorkOrderData> getWorkOrderData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedWorkOrderIntegration.findAll(
+                warehouseId, startTime, endTime, date
+        );
     }
 
     @Override
@@ -317,8 +340,11 @@ public class DBBasedIntegration implements Integration{
     // Integration - BOM and BOM line
     //
     @Override
-    public List<? extends IntegrationBillOfMaterialData> getBillOfMaterialData() {
-        return null;
+    public List<? extends IntegrationBillOfMaterialData> getBillOfMaterialData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedBillOfMaterialIntegration.findAll(
+                warehouseId, startTime, endTime, date
+        );
     }
 
     @Override
@@ -337,9 +363,10 @@ public class DBBasedIntegration implements Integration{
 
     // Order Confirmation Data
     public List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(Long warehouseId, String warehouseName,
-                                                                                                String number){
+                                                                                                String number, LocalDateTime startTime,
+                                                                                                LocalDateTime endTime, LocalDate date){
         return dbBasedOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
-                number);
+                number, startTime, endTime, date);
     }
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
         return dbBasedOrderConfirmationIntegration.findById(id);
@@ -349,9 +376,11 @@ public class DBBasedIntegration implements Integration{
     }
 
     @Override
-    public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(Long warehouseId, String warehouseName, String number) {
+    public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
+            Long warehouseId, String warehouseName, String number,
+            LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
         return dbBasedWorkOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
-                number);
+                number, startTime, endTime, date);
     }
 
     @Override
@@ -365,13 +394,13 @@ public class DBBasedIntegration implements Integration{
     }
 
     // Receipt Confirmation Data
-    public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(Long warehouseId, String warehouseName,
-                                                                                                    String number, Long clientId, String clientName,
-                                                                                                    Long supplierId, String supplierName){
+    public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(
+            Long warehouseId, String warehouseName, String number, Long clientId, String clientName,
+            Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date){
 
         return dbBasedReceiptConfirmationIntegration.findAll(warehouseId, warehouseName,
                 number, clientId, clientName,
-                supplierId, supplierName);
+                supplierId, supplierName, startTime, endTime, date);
     }
     public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
 
@@ -382,8 +411,13 @@ public class DBBasedIntegration implements Integration{
         return dbBasedReceiptConfirmationIntegration.sendIntegrationReceiptConfirmationData(receiptConfirmation);
     }
 
-    public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData() {
-        return dbBasedInventoryAdjustmentConfirmationIntegration.findAll();
+    public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData(
+
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date
+    ) {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.findAll(
+                warehouseId, startTime, endTime, date
+        );
     }
     public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.findById(id);
@@ -393,8 +427,10 @@ public class DBBasedIntegration implements Integration{
     }
 
     @Override
-    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData() {
-        return dbBasedInventoryAttributeChangeConfirmationIntegration.findAll();
+    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return dbBasedInventoryAttributeChangeConfirmationIntegration.findAll(
+                warehouseId, startTime, endTime, date);
     }
 
     @Override
@@ -408,7 +444,8 @@ public class DBBasedIntegration implements Integration{
     }
 
     @Override
-    public List<? extends IntegrationInventoryShippingConfirmationData> getInventoryShippingConfirmationData() {
+    public List<? extends IntegrationInventoryShippingConfirmationData> getInventoryShippingConfirmationData(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
         return null;
     }
 

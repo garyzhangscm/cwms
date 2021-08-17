@@ -170,6 +170,32 @@ public class RFService implements TestDataInitiableService{
     }
 
 
+    public Boolean validateRFCode(Long warehouseId, String rfCode) {
+        return Objects.nonNull(findByRFCode(warehouseId, rfCode));
+    }
 
+    public RF addRF(RF rf) {
+        RF newRF = saveOrUpdate(rf);
+        // let's check if we already have a location for this RF
+        // we will always assume there's only one RF location group
+        // as there's no reason to have 2 RF location groups by current
+        // infrastructure
+        layoutServiceRestemplateClient.createRFLocation(
+                rf.getWarehouseId(),
+                rf.getRfCode()
+        );
+        return newRF;
 
+    }
+
+    public void delete(Long id) {
+        RF rf = findById(id);
+        rfRepository.deleteById(id);
+
+        layoutServiceRestemplateClient.removeRFLocation(
+                rf.getWarehouseId(),
+                rf.getRfCode()
+        );
+
+    }
 }

@@ -2,6 +2,8 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -100,6 +102,17 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
         this.startTime = LocalDateTime.now();
         this.estimatedReservedTimespan = 0L;
 
+    }
+
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

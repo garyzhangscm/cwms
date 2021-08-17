@@ -258,7 +258,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public Double getSize() {
 
+        if (Objects.isNull(itemPackageType)) {
+            return 0.0;
+        }
+
         ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
+        if (Objects.isNull(stockItemUnitOfMeasure)) {
+            return 0.0;
+        }
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()

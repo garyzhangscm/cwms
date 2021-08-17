@@ -21,12 +21,14 @@ package com.garyzhangscm.cwms.workorder.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.Inventory;
 import com.garyzhangscm.cwms.workorder.model.InventoryStatus;
 import com.garyzhangscm.cwms.workorder.model.Item;
 import com.garyzhangscm.cwms.workorder.model.WorkOrder;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,7 +63,7 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Cacheable(cacheNames = "inventory")
+    @Cacheable(cacheNames = "inventory", unless="#result == null")
     public Inventory getInventoryById(Long id) {
 
         UriComponentsBuilder builder =
@@ -77,7 +81,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "item")
+    @Cacheable(cacheNames = "item", unless="#result == null")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -96,36 +100,43 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "item")
+    @Cacheable(cacheNames = "item", unless="#result == null")
     public Item getItemByName(Long warehouseId, String name) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/items")
-                        .queryParam("name", name)
-                        .queryParam("warehouseId", warehouseId);
+
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/items")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId);
 
 
-        // logger.debug("Start to get item: {} / {}", name, warehouseId);
-        ResponseBodyWrapper<List<Item>> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
+            // logger.debug("Start to get item: {} / {}", name, warehouseId);
+            ResponseBodyWrapper<List<Item>> responseBodyWrapper
+                    = restTemplate.exchange(
+                            builder.build(true).toUri(),
+                            HttpMethod.GET,
+                            null,
+                            new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
 
-        List<Item> items = responseBodyWrapper.getData();
-        // logger.debug(">> get {} item", items.size());
-        if (items.size() == 0) {
-            return null;
+            List<Item> items = responseBodyWrapper.getData();
+            // logger.debug(">> get {} item", items.size());
+            if (items.size() == 0) {
+                return null;
+            }
+            else {
+                return items.get(0);
+            }
         }
-        else {
-            return items.get(0);
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by name " + name);
         }
     }
 
 
-    @Cacheable(cacheNames = "inventoryStatus")
+    @Cacheable(cacheNames = "inventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -143,7 +154,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "inventoryStatus")
+    @Cacheable(cacheNames = "inventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -397,7 +408,8 @@ public class InventoryServiceRestemplateClient {
     }
     public List<Inventory> consumeMaterialForWorkOrderLine(Long workOrderLineId, Long warehouseId,
                                                            Long quantity, Long inboundLocationId,
-                                                           Long inventoryId) {
+                                                           Long inventoryId, String lpn,
+                                                           Boolean nonPickedInventory) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -407,6 +419,12 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("locationId", inboundLocationId);
         if (Objects.nonNull(inventoryId)) {
             builder = builder.queryParam("inventoryId", inventoryId);
+        }
+        if (Strings.isNotBlank(lpn)) {
+            builder = builder.queryParam("lpn", lpn);
+        }
+        if (Objects.nonNull(nonPickedInventory)) {
+            builder = builder.queryParam("nonPickedInventory", nonPickedInventory);
         }
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
