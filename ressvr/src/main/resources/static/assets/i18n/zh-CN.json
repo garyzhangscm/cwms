@@ -1307,5 +1307,18 @@
   "work-order.matched-bom": "BOM",
   "work-order.line.consumingByBomQuantity": "按BOM消耗数量",
   "work-order.line.consumingByLPNQuantity": "按LPN消耗数量",
-  "work-order.line.consumingByWorkOrderQuantity": "按其他工单消耗数量"
+  "work-order.line.consumingByWorkOrderQuantity": "按其他工单消耗数量",
+  "menu.main.util.sys-controlled-num": "自动生成的流水号",
+  "variable": "变量名",
+  "prefix": "前缀",
+  "postfix": "后缀",
+  "currentNumber": "当前流水号",
+  "nextNumber": "下一流水号",
+  "rollover": "是否重新开始",
+  "system-controlled-number": "自动生成的流水号",
+  "existing-customer": "现有客户",
+  "new-customer": "新客户",
+  "save-new-customer": "保存新客户",
+  "customer.name": "客户名称",
+  "production-line.enabled": "产线已启用"
 }

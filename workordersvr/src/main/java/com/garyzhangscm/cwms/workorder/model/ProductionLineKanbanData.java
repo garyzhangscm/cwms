@@ -25,6 +25,8 @@ public class ProductionLineKanbanData {
 
     private String shift;
 
+    private Boolean productionLineEnabled;
+
     public String getItemName() {
         return itemName;
     }
@@ -119,5 +121,13 @@ public class ProductionLineKanbanData {
 
     public void setProductionLineTotalActualPutawayOutput(Long productionLineTotalActualPutawayOutput) {
         this.productionLineTotalActualPutawayOutput = productionLineTotalActualPutawayOutput;
+    }
+
+    public Boolean getProductionLineEnabled() {
+        return productionLineEnabled;
+    }
+
+    public void setProductionLineEnabled(Boolean productionLineEnabled) {
+        this.productionLineEnabled = productionLineEnabled;
     }
 }
