@@ -151,6 +151,10 @@ public class ProductionLineKanbanService {
                         productionLineKanbanData.setShift(checkedInUser.getUsername());
                     }
 
+                    productionLineKanbanData.setProductionLineEnabled(
+                            productionLineAssignment.getProductionLine().getEnabled()
+                    );
+
                     productionLineKanbanDataList.add(productionLineKanbanData);
                 }
         );

@@ -1302,5 +1302,18 @@
   "work-order.matched-bom": "Matched BOM",
   "work-order.line.consumingByBomQuantity": "Consume By BOM Quantity",
   "work-order.line.consumingByLPNQuantity": "Consume By NON Picked Inventory Quantity",
-  "work-order.line.consumingByWorkOrderQuantity": "Consume By Other Work Order Quantity"
+  "work-order.line.consumingByWorkOrderQuantity": "Consume By Other Work Order Quantity",
+  "menu.main.util.sys-controlled-num": "System Controlled Number",
+  "variable": "Variable",
+  "prefix": "Prefix",
+  "postfix": "Postfix",
+  "currentNumber": "Current Number",
+  "nextNumber": "Next Number",
+  "rollover": "Rollover",
+  "system-controlled-number": "System Controlled Number",
+  "existing-customer": "Existing Customer",
+  "new-customer": "New Customer",
+  "save-new-customer": "Save the New Customer",
+  "customer.name": "Customer Name",
+  "production-line.enabled": "Production Line Enabled"
 }

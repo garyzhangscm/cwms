@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.common.exception.SystemControlledNumberException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.SystemControlledNumberRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -71,7 +72,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
 
     private void initSystemControlledNumberLocks() {
         logger.debug("Start to init system controller locks");
-        findAll( null)
+        findAll( null, "")
                 .stream()
                 .forEach(systemControlledNumber
                         -> {
@@ -88,14 +89,16 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("system controlled number not found by id: " + id));
     }
 
-    public List<SystemControlledNumber> findAll( Long warehouseId) {
+    public List<SystemControlledNumber> findAll( Long warehouseId,
+                                                 String variable) {
         return systemControlledNumberRepository.findAll(
                 (Root<SystemControlledNumber> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
-                    if (Objects.nonNull(warehouseId)) {
-                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    if (Strings.isNotBlank(variable)) {
+                        predicates.add(criteriaBuilder.equal(root.get("variable"), variable));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -133,12 +136,21 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         }
         return save(systemControlledNumber);
     }
+    @Transactional
+    public void delete(Long id) {
+        systemControlledNumberRepository.deleteById(id);
+    }
 
     public SystemControlledNumber getNextNumber(Long warehouseId, String variable) {
         logger.debug("Will lock by ");
         String key = warehouseId + "-" + variable;
         logger.debug(">> key: {} ", key);
         logger.debug(">> value: {}", systemControlledNumberLocks.get(key));
+        // in case we just added this number, we may need to add it to the
+        // map
+        if (Objects.isNull(systemControlledNumberLocks.get(key))) {
+            systemControlledNumberLocks.put(key, variable);
+        }
         synchronized (systemControlledNumberLocks.get(key)) {
             SystemControlledNumber systemControlledNumber = findByVariable(warehouseId, variable);
             // Check if we already reaches the maximum number allowed
@@ -231,4 +243,11 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
 
     }
 
+    public SystemControlledNumber addSystemControlledNumbers(SystemControlledNumber systemControlledNumber) {
+        return saveOrUpdate(systemControlledNumber);
+    }
+
+    public SystemControlledNumber changeSystemControlledNumbers(SystemControlledNumber systemControlledNumber) {
+        return saveOrUpdate(systemControlledNumber);
+    }
 }

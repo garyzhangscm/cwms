@@ -17,3 +17,4 @@ company,warehouse,variable,prefix,postfix,length,currentNumber,rollover
 20901,WMEC,bill-of-material,BOM,,10,0,true
 20901,WMEC,work-task,WORK,,10,0,true
 20901,WMEC,inventory-snapshot-batch-number,INVSNAP,,10,0,true
+20901,WMEC,outbound-order,ORD,,10,0,true

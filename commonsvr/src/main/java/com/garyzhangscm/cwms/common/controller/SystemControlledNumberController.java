@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.common.service.SystemControlledNumberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 
 @RestController
@@ -38,5 +39,38 @@ public class SystemControlledNumberController {
         return systemControlledNumberService.getNextNumber(warehouseId, variable);
 
     }
+
+
+    @RequestMapping(value="/system-controlled-numbers", method = RequestMethod.GET)
+    public List<SystemControlledNumber> getSystemControlledNumbers(@RequestParam Long warehouseId,
+                                                                   @RequestParam(name = "variable", required = false, defaultValue = "") String variable) {
+        return systemControlledNumberService.findAll(warehouseId, variable);
+    }
+
+    @RequestMapping(value="/system-controlled-numbers/{id}", method = RequestMethod.GET)
+    public SystemControlledNumber getSystemControlledNumber(@PathVariable Long id) {
+        return systemControlledNumberService.findById(id);
+
+    }
+
+    @RequestMapping(value="/system-controlled-numbers/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeSystemControlledNumber(@PathVariable Long id) {
+        systemControlledNumberService.delete(id);
+        return ResponseBodyWrapper.success("removed!");
+
+    }
+
+
+    @RequestMapping(value="/system-controlled-numbers", method = RequestMethod.PUT)
+    public SystemControlledNumber addSystemControlledNumbers(@RequestBody SystemControlledNumber systemControlledNumber) {
+        return systemControlledNumberService.addSystemControlledNumbers(systemControlledNumber);
+    }
+
+    @RequestMapping(value="/system-controlled-numbers/{id}", method = RequestMethod.POST)
+    public SystemControlledNumber changeSystemControlledNumbers(@PathVariable Long id,
+                                                             @RequestBody SystemControlledNumber systemControlledNumber) {
+        return systemControlledNumberService.changeSystemControlledNumbers(systemControlledNumber);
+    }
+
 
 }
