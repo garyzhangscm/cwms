@@ -590,10 +590,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
             // if we configure to consume the quantity right after deliver, then
             // consume the inventory
-            if (workOrderConfigurationService.getWorkOrderConfiguration(
-                    workOrderLine.getWorkOrder().getWarehouse().getCompanyId(),
-                    workOrderLine.getWorkOrder().getWarehouseId()
-            ).getMaterialConsumeTiming().equals(WorkOrderMaterialConsumeTiming.WHEN_DELIVER)) {
+            if (workOrderConfigurationService.getWorkOrderMaterialConsumeTiming(
+                    workOrderLine.getWorkOrder()).equals(WorkOrderMaterialConsumeTiming.WHEN_DELIVER)) {
                 logger.debug("# Configuration is setup to consume the inventory right after delivery, will consume the inventory");
                 consume(workOrderLine, quantityBeingDelivered, productionLineAssignment.getProductionLine());
             }

@@ -20,6 +20,7 @@ public class OutboundServerConfiguration extends ResourceServerConfigurerAdapter
                 .authorizeRequests()
                 .antMatchers("/app").permitAll()
                 .antMatchers("/actuator").permitAll()
+                .antMatchers("/probe/**").permitAll()
                 .anyRequest()
                 .authenticated();
     }

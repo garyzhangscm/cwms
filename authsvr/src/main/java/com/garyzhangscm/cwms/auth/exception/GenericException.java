@@ -36,6 +36,16 @@ public class GenericException extends RuntimeException {
             this.data.putAll(data);
         }
     }
+    @Override
+    public String getMessage() {
+        if(this.data.containsKey("error_message")) {
+            return super.getMessage() + ": " + this.data.get("error_message");
+        }
+        else {
+
+            return super.getMessage();
+        }
+    }
 
     protected GenericException(ExceptionCode exceptionCode, Map<String, Object> data, Throwable cause) {
         super(exceptionCode.getMessage(), cause);

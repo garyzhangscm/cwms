@@ -79,6 +79,7 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/site-information/default").permitAll()
+                .antMatchers("/probe/**").permitAll()
                 .anyRequest()
                 .authenticated();
     }

@@ -42,8 +42,10 @@ public class ItemController {
     public List<Item> findAllItems(@RequestParam Long warehouseId,
                                    @RequestParam(name="name", required = false, defaultValue = "") String name,
                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
-                                   @RequestParam(name="itemFamilyIds", required = false, defaultValue = "") String itemFamilyIds) {
-        return itemService.findAll(warehouseId, name, clientIds, itemFamilyIds);
+                                   @RequestParam(name="itemFamilyIds", required = false, defaultValue = "") String itemFamilyIds,
+                                   @RequestParam(name="itemIdList", required = false, defaultValue = "") String itemIdList,
+                                   @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+        return itemService.findAll(warehouseId, name, clientIds, itemFamilyIds, itemIdList, loadDetails);
     }
 
     @RequestMapping(value="/items/{id}", method = RequestMethod.GET)

@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 // =======      65000 ~ 69999  =========
 //
 public enum ExceptionCode {
+    SYSTEM_FATAL_ERROR(1, HttpStatus.REQUEST_TIMEOUT, "System Fatal Error"),
     RESOURCE_NOT_FOUND(65000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
     TEST_FAIL(65001, HttpStatus.NOT_FOUND, "Test fail");
 

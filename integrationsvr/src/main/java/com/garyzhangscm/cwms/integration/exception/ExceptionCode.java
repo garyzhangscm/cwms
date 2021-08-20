@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 // =======      30000 ~ 34999  =========
 //
 public enum ExceptionCode {
+    SYSTEM_FATAL_ERROR(1, HttpStatus.REQUEST_TIMEOUT, "System Fatal Error"),
     RESOURCE_NOT_FOUND(30000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
     REQUEST_VALIDATION_FAILED(30001, HttpStatus.BAD_REQUEST, "Validation Fail"),
     MISSING_INFORMATION(30002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information");

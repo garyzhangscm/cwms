@@ -112,6 +112,21 @@ public class WorkOrder extends AuditibleEntity<String>{
     @Column(name = "status")
     private WorkOrderStatus status;
 
+    @Column(name = "consume_by_bom_only")
+    private Boolean consumeByBomOnly;
+
+    @ManyToOne
+    @JoinColumn(name = "consume_by_bom_id")
+    private BillOfMaterial consumeByBom;
+
+    // whether we consume the material per transaction
+    // or once when the whole work order is closed.
+    // If we have value setup in the work order level, it will
+    // override the one we setup in the work order configuration
+    @Column(name = "material_consume_timing")
+    @Enumerated(EnumType.STRING)
+    private WorkOrderMaterialConsumeTiming materialConsumeTiming;
+
 
     // Some statistics numbers that we can show
     // in the frontend
@@ -345,5 +360,29 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setPoNumber(String poNumber) {
         this.poNumber = poNumber;
+    }
+
+    public WorkOrderMaterialConsumeTiming getMaterialConsumeTiming() {
+        return materialConsumeTiming;
+    }
+
+    public void setMaterialConsumeTiming(WorkOrderMaterialConsumeTiming materialConsumeTiming) {
+        this.materialConsumeTiming = materialConsumeTiming;
+    }
+
+    public Boolean getConsumeByBomOnly() {
+        return consumeByBomOnly;
+    }
+
+    public void setConsumeByBomOnly(Boolean consumeByBomOnly) {
+        this.consumeByBomOnly = consumeByBomOnly;
+    }
+
+    public BillOfMaterial getConsumeByBom() {
+        return consumeByBom;
+    }
+
+    public void setConsumeByBom(BillOfMaterial consumeByBom) {
+        this.consumeByBom = consumeByBom;
     }
 }

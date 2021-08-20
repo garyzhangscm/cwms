@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.auth.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.auth.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.auth.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.auth.exception.GenericException;
+import com.garyzhangscm.cwms.auth.exception.SystemFatalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
@@ -65,6 +66,10 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     @Override
     public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> converterType) {
         return true;
+    }
+    @ExceptionHandler(SystemFatalException.class)
+    public void systemFatalErrorHandler(SystemFatalException ex, HttpServletRequest request) {
+        throw ex;
     }
 
     @ExceptionHandler(GenericException.class)

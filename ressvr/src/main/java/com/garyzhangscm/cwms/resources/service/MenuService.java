@@ -41,7 +41,7 @@ import java.util.Objects;
 
 @Service
 public class MenuService  implements TestDataInitiableService{
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MenuService.class);
     @Autowired
     private MenuRepository menuRepository;
 

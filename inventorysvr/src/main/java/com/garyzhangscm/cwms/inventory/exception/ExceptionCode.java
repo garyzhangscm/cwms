@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 // =======      35000 ~ 39999  =========
 //
 public enum ExceptionCode {
+    SYSTEM_FATAL_ERROR(1, HttpStatus.REQUEST_TIMEOUT, "System Fatal Error"),
     RESOURCE_NOT_FOUND(35000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
     REQUEST_VALIDATION_FAILED(35001, HttpStatus.BAD_REQUEST, "Validation Fail"),
     CAN_NOT_ADD_INVENTORY_MISSING_INFORMATION(35002, HttpStatus.BAD_REQUEST, "Can't add inventory due to missing information"),

@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,6 +155,22 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
         return workOrderConfiguration;
 
 
+    }
+
+    public WorkOrderMaterialConsumeTiming getWorkOrderMaterialConsumeTiming(WorkOrder workOrder) {
+
+        // if we already have the configuration setup in the work order, then
+        // use the one from work order. otherwise, use the one from the configuration
+        logger.debug("Get work order material consume timing");
+        logger.debug("work order's material consume timing is setup to {}",
+                workOrder.getMaterialConsumeTiming());
+        if (Objects.nonNull(workOrder.getMaterialConsumeTiming())) {
+            return workOrder.getMaterialConsumeTiming();
+        }
+        return getWorkOrderConfiguration(
+                workOrder.getWarehouse().getCompanyId(),
+                workOrder.getWarehouseId()
+        ).getMaterialConsumeTiming();
     }
 
 

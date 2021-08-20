@@ -20,6 +20,7 @@ public class WorkOrderServerConfiguration extends ResourceServerConfigurerAdapte
                 .authorizeRequests()
                 .antMatchers("/app").permitAll()
                 .antMatchers("/actuator").permitAll()
+                .antMatchers("/probe/**").permitAll()
                 .anyRequest()
                 .authenticated();
     }

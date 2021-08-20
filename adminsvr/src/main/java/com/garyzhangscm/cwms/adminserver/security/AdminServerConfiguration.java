@@ -20,6 +20,7 @@ public class AdminServerConfiguration extends ResourceServerConfigurerAdapter {
         .authorizeRequests()
                 .antMatchers("/app").permitAll()
           .antMatchers("/actuator").permitAll()
+                .antMatchers("/probe/**").permitAll()
           .anyRequest()
           .authenticated();
     }

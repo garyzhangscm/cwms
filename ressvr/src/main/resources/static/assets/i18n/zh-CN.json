@@ -1320,5 +1320,10 @@
   "new-customer": "新客户",
   "save-new-customer": "保存新客户",
   "customer.name": "客户名称",
-  "production-line.enabled": "产线已启用"
+  "production-line.enabled": "产线已启用",
+  "work-order.consume-method": "物料消耗方式",
+  "work-order.change-consume-method": "修改物料消耗方式",
+  "work-order.consume-by-bom": "按BOM消耗",
+  "work-order.not-consume-by-bom": "不按BOM消耗",
+  "menu.mobile.inventory.inventoryLF": "库存L&F"
 }

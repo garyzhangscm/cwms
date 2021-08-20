@@ -68,6 +68,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,0xe622
 "Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,0xe622
 "Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,0xe63a
+"Inventory Lost And Found",menu.mobile.inventory.inventoryLF,inventory_lost_and_found,5,Mobile-Menu-Inventory,Mobile-Inventory-InventoryLF,0xe63a
 "Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,0xe63a
 "Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,0xe63a
 "Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,0xe63a

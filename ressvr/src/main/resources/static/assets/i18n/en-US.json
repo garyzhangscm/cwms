@@ -1315,5 +1315,10 @@
   "new-customer": "New Customer",
   "save-new-customer": "Save the New Customer",
   "customer.name": "Customer Name",
-  "production-line.enabled": "Production Line Enabled"
+  "production-line.enabled": "Production Line Enabled",
+  "work-order.consume-method": "Raw Material Consume Method",
+  "work-order.change-consume-method": "Change Raw Material Consume Method",
+  "work-order.consume-by-bom": "Consume By BOM",
+  "work-order.not-consume-by-bom": "Not Consume By BOM",
+  "menu.mobile.inventory.inventoryLF": "Lost and Found"
 }
