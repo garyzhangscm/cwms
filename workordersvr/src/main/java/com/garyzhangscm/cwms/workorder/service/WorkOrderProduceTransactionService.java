@@ -227,6 +227,7 @@ public class WorkOrderProduceTransactionService  {
 
         // get the latest information
         WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
+        workOrderProduceTransaction.setWorkOrder(workOrder);
 
         // make sure
         // 1. we are not over produce
@@ -343,12 +344,10 @@ public class WorkOrderProduceTransactionService  {
 
         // only validate the consume transaction
         // if we consume the material line per each produce transaction
-        if (workOrderConfigurationService.getWorkOrderConfiguration(
-                workOrderProduceTransaction.getWorkOrder().getWarehouse().getCompanyId(),
-                workOrderProduceTransaction.getWorkOrder().getWarehouseId()
-        ).getMaterialConsumeTiming().equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)) {
+        if (workOrderConfigurationService.getWorkOrderMaterialConsumeTiming(
+                workOrderProduceTransaction.getWorkOrder()).equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)) {
 
-            if(workOrderProduceTransaction.getConsumeByBomQuantity()) {
+            if(workOrderProduceTransaction.getWorkOrder().getConsumeByBomOnly() == true) {
                 validateWorkOrderLineConsumeTransactionByBom(workOrderProduceTransaction);
             }
             else {
@@ -368,12 +367,22 @@ public class WorkOrderProduceTransactionService  {
 
     private void validateWorkOrderLineConsumeTransactionByBom(
             WorkOrderProduceTransaction workOrderProduceTransaction) {
+        WorkOrder workOrder = workOrderProduceTransaction.getWorkOrder();
+        if (Objects.isNull(workOrder.getConsumeByBom())) {
+            throw WorkOrderException.raiseException("BOM is not setup in the work order");
+        }
 
+        if (!workOrderProduceTransaction.getConsumeByBomQuantity()) {
+            throw WorkOrderException.raiseException("The work order is setup to be consumed by BOM only");
+        }
+        // we allow the user to override the default BOM
+        // 1. if so we will use the override BOM
         BillOfMaterial billOfMaterial = workOrderProduceTransaction.getConsumeByBom();
         if (Objects.isNull(billOfMaterial)) {
             // if the user didn't specify a bom
             // then find most suitable bom
-            billOfMaterial = billOfMaterialService.getMatchedBillOfMaterial(workOrderProduceTransaction.getWorkOrder());
+            // billOfMaterial = billOfMaterialService.getMatchedBillOfMaterial(workOrderProduceTransaction.getWorkOrder());
+            billOfMaterial = workOrder.getConsumeByBom();
         }
 
 
@@ -580,14 +589,20 @@ public class WorkOrderProduceTransactionService  {
     public void consumeQuantity(WorkOrderLine workOrderLine, WorkOrderProduceTransaction workOrderProduceTransaction,
                                  Long totalProducedQuantity) {
         // only continue if we consume the quantity per transaction
+        /***
         WorkOrderConfiguration workOrderConfiguration =
                 workOrderConfigurationService.getWorkOrderConfiguration(
                         workOrderProduceTransaction.getWorkOrder().getWarehouse().getCompanyId(),
                         workOrderProduceTransaction.getWorkOrder().getWarehouseId()
                 );
+         **/
+        WorkOrderMaterialConsumeTiming workOrderMaterialConsumeTiming =
+                workOrderConfigurationService.getWorkOrderMaterialConsumeTiming(
+                        workOrderProduceTransaction.getWorkOrder()
+                );
         logger.debug("We configured to consume the work order line at {}",
-                workOrderConfiguration.getMaterialConsumeTiming());
-        if (!workOrderConfiguration.getMaterialConsumeTiming().equals(
+                workOrderMaterialConsumeTiming);
+        if (!workOrderMaterialConsumeTiming.equals(
                 WorkOrderMaterialConsumeTiming.BY_TRANSACTION)){
             logger.debug("So we won't consume the work order line during the produce transaction");
             return;

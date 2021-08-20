@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.resources;
 
 import com.garyzhangscm.cwms.resources.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.resources.exception.GenericException;
+import com.garyzhangscm.cwms.resources.exception.SystemFatalException;
 import com.garyzhangscm.cwms.resources.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,11 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     @Override
     public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> converterType) {
         return true;
+    }
+
+    @ExceptionHandler(SystemFatalException.class)
+    public void systemFatalErrorHandler(SystemFatalException ex, HttpServletRequest request) {
+        throw ex;
     }
 
     @ExceptionHandler(GenericException.class)

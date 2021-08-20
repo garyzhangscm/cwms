@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 // =======      25000 ~ 29999  =========
 //
 public enum ExceptionCode {
+    SYSTEM_FATAL_ERROR(1, HttpStatus.REQUEST_TIMEOUT, "System Fatal Error"),
     LOGIN_ERROR(10000, HttpStatus.BAD_REQUEST, "Login Error");
 
     private final int code;

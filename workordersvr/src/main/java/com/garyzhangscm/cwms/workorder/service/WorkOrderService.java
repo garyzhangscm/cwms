@@ -420,6 +420,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public WorkOrder allocateWorkOrder(Long workOrderId, List<ProductionLineAllocationRequest> productionLineAllocationRequests) {
 
+        validateWOrkOrderForAllocation(workOrderId);
 
         // if the user didn't specify the production line
         // then we will allocate the whole work order
@@ -454,6 +455,25 @@ public class WorkOrderService implements TestDataInitiableService {
         return findById(workOrderId);
 
 
+    }
+
+    /**
+     * Make sure we are good to allocate the work order
+     * @param workOrderId
+     */
+    private void validateWOrkOrderForAllocation(Long workOrderId) {
+        WorkOrder workOrder = findById(workOrderId);
+        if (Boolean.TRUE.equals(workOrder.getConsumeByBomOnly()) &&
+                Objects.isNull(workOrder.getConsumeByBom())) {
+            // the work order is setup to be consumed by BOM but
+            // there's no BOM setup for it
+            logger.error("The work order {} is setup to be consumed by BOM but there's no " +
+                    "BOM setup yet", workOrder.getNumber());
+            throw WorkOrderException.raiseException(
+                    "The work order " + workOrder.getNumber() + " is setup to be consumed by BOM" +
+                            "but there's no BOM setup yet"
+            );
+        }
     }
 
     private void allocateWorkOrderLine(Long workOrderLineId, Long productionLineId, Long allocatingQuantity) {
@@ -1062,5 +1082,39 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
         return workOrders;
+    }
+
+    public WorkOrder changeConsumeMethod(Long id, String materialConsumeTiming, Boolean consumeByBomFlag, Long consumeByBOMId) {
+
+        // make sure the values are correct
+        WorkOrder workOrder = findById(id);
+        WorkOrderMaterialConsumeTiming workOrderMaterialConsumeTiming =
+                WorkOrderMaterialConsumeTiming.valueOf(materialConsumeTiming);
+        if (!workOrderMaterialConsumeTiming.equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)) {
+            // we will only need to setup the BOM when we consume by transaction
+            logger.debug("The work order's consume timing will change to {}, no need to setup the BOM",
+                    materialConsumeTiming);
+            workOrder.setMaterialConsumeTiming(workOrderMaterialConsumeTiming);
+            workOrder.setConsumeByBomOnly(false);
+            workOrder.setConsumeByBom(null);
+            return saveOrUpdate(workOrder);
+        }
+        else if (Boolean.TRUE.equals(consumeByBomFlag)) {
+            // ok the user is setup the work order to consumed by BOM
+            BillOfMaterial billOfMaterial = billOfMaterialService.findById(consumeByBOMId);
+            if (Objects.isNull(billOfMaterial)) {
+                throw WorkOrderException.raiseException("Can't change the consume method as we can't find BOM by id " + consumeByBOMId);
+            }
+            workOrder.setMaterialConsumeTiming(workOrderMaterialConsumeTiming);
+            workOrder.setConsumeByBomOnly(true);
+            workOrder.setConsumeByBom(billOfMaterial);
+            return saveOrUpdate(workOrder);
+        }
+        else {
+            workOrder.setMaterialConsumeTiming(workOrderMaterialConsumeTiming);
+            workOrder.setConsumeByBomOnly(false);
+            workOrder.setConsumeByBom(null);
+            return saveOrUpdate(workOrder);
+        }
     }
 }

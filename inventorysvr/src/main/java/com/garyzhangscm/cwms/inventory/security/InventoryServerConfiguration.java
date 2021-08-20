@@ -23,6 +23,7 @@ public class InventoryServerConfiguration extends ResourceServerConfigurerAdapte
           .antMatchers("/actuator").permitAll()
                 .antMatchers("/upload/**").permitAll()
                 .antMatchers("/images/**").permitAll()
+                .antMatchers("/probe/**").permitAll()
           .anyRequest()
           .authenticated();
     }

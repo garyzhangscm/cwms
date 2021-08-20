@@ -107,7 +107,9 @@ public class ItemService implements TestDataInitiableService{
     public List<Item> findAll(Long warehouseId,
                               String name,
                               String clientIds,
-                              String itemFamilyIds) {
+                              String itemFamilyIds,
+                              String itemIdList,
+                              boolean loadDetails) {
 
         List<Item> items = itemRepository.findAll(
             (Root<Item> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -142,13 +144,21 @@ public class ItemService implements TestDataInitiableService{
                     predicates.add(criteriaBuilder.and(in));
                 }
 
+                if (StringUtils.isNotBlank(itemIdList)) {
+                    CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("id"));
+                    for(String id : itemIdList.split(",")) {
+                        in.value(Long.parseLong(id));
+                    }
+                    predicates.add(criteriaBuilder.and(in));
+                }
+
 
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
             }
         );
 
-        if (items.size() > 0) {
+        if (items.size() > 0 && loadDetails) {
             loadAttribute(items);
         }
         return items;

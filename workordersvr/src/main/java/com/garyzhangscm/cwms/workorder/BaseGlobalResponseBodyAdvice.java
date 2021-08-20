@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.workorder;
 
 import com.garyzhangscm.cwms.workorder.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
+import com.garyzhangscm.cwms.workorder.exception.SystemFatalException;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -62,6 +63,10 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         return true;
     }
 
+    @ExceptionHandler(SystemFatalException.class)
+    public void systemFatalErrorHandler(SystemFatalException ex, HttpServletRequest request) {
+        throw ex;
+    }
     @ExceptionHandler(GenericException.class)
     public ResponseBodyWrapper defaultErrorHandler(GenericException ex, HttpServletRequest request) {
         ex.printStackTrace();

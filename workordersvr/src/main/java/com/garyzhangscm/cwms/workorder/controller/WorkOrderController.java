@@ -51,8 +51,9 @@ public class WorkOrderController {
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                              @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId,
-                                             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery) {
-        return workOrderService.findAll(warehouseId, number, itemName, productionPlanId, genericQuery);
+                                             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
+                                             @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails) {
+        return workOrderService.findAll(warehouseId, number, itemName, productionPlanId, genericQuery, loadDetails);
     }
 
     @RequestMapping(value="/work-orders", method = RequestMethod.POST)
@@ -203,5 +204,15 @@ public class WorkOrderController {
         return workOrderService.getWorkOrdersWithOpenPick(warehouseId);
     }
 
+
+    @RequestMapping(value="/work-orders/{id}/consume-method", method = RequestMethod.POST)
+    public WorkOrder changeConsumeMethod(
+            @PathVariable Long id,
+            @RequestParam String materialConsumeTiming,
+            @RequestParam(name = "consumeByBomFlag", defaultValue = "", required = false) Boolean consumeByBomFlag,
+            @RequestParam(name = "consumeByBOMId", defaultValue = "", required = false) Long consumeByBOMId) {
+
+        return workOrderService.changeConsumeMethod(id, materialConsumeTiming, consumeByBomFlag, consumeByBOMId);
+    }
 
 }

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.layout;
 
 import com.garyzhangscm.cwms.layout.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.layout.exception.GenericException;
+import com.garyzhangscm.cwms.layout.exception.SystemFatalException;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -60,6 +61,11 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     @Override
     public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> converterType) {
         return true;
+    }
+
+    @ExceptionHandler(SystemFatalException.class)
+    public void systemFatalErrorHandler(SystemFatalException ex, HttpServletRequest request) {
+        throw ex;
     }
 
     @ExceptionHandler(GenericException.class)
