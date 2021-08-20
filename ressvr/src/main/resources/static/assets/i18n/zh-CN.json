@@ -1325,5 +1325,15 @@
   "work-order.change-consume-method": "修改物料消耗方式",
   "work-order.consume-by-bom": "按BOM消耗",
   "work-order.not-consume-by-bom": "不按BOM消耗",
-  "menu.mobile.inventory.inventoryLF": "库存L&F"
+  "menu.mobile.inventory.inventoryLF": "库存L&F",
+  "menu.mobile": "移动端",
+  "menu.mobile.inventory": "库存",
+  "menu.mobile.outbound": "出库",
+  "menu.mobile.inbound": "入库",
+  "menu.mobile.outbound.pick-by-tote": "按箱拣选",
+  "menu.mobile.outbound.pick-by-order": "按单拣选",
+  "menu.mobile.outbound.pick-by-list": "列表拣选",
+  "menu.mobile.inventory.inventory": "库存查询",
+  "menu.mobile.inventory.count": "盘点",
+  "menu.mobile.inbound.receive": "收货"
 }

@@ -62,10 +62,13 @@ public class MenuGroupService implements TestDataInitiableService{
     }
 
     public List<MenuGroup> findAll() {
-        return findAll(MenuType.WEB);
+        // return findAll(MenuType.WEB);
+        return menuGroupRepository.findAll();
     }
     public List<MenuGroup> findAll(MenuType menuType) {
-
+        if (Objects.isNull(menuType)) {
+            return findAll();
+        }
 
         return menuGroupRepository.findByType(menuType);
     }
@@ -117,13 +120,17 @@ public class MenuGroupService implements TestDataInitiableService{
 
     // Get all the accessible menu based upon the list of roles
     private List<MenuGroup> getAccessibleMenus(List<Role> roles) {
-        return getAccessibleMenus(roles, MenuType.WEB);
+        return getAccessibleMenus(roles, null);
     }
     private List<MenuGroup> getAccessibleMenus(List<Role> roles, MenuType menuType) {
 
         // Save the id of menus that are accessible from the list
         // of roles, to make it easy for checking
+
         Map<Long, Long> accessibleMenuIdMap = getAccessibleMenuIdMap(roles, menuType);
+        // logger.debug("We get following accessible menus for roles: \n {} \n {}",
+        //         roles, menuType);
+
 
         // Let's get all the menu groups and then loop one by one
         // to see if the list of roles has access to the menu
@@ -132,6 +139,7 @@ public class MenuGroupService implements TestDataInitiableService{
         // As long as there's one menu in the group left, we will
         // keep the menu group
         List<MenuGroup> menuGroups = findAll(menuType);
+        // logger.debug("We got menu Groups: {}", menuGroups);
         Iterator<MenuGroup> menuGroupIterator = menuGroups.iterator();
         while(menuGroupIterator.hasNext()) {
             MenuGroup menuGroup = menuGroupIterator.next();
@@ -142,14 +150,20 @@ public class MenuGroupService implements TestDataInitiableService{
                 while(menuIterator.hasNext()) {
                     Menu menu = menuIterator.next();
                     if (!accessibleMenuIdMap.containsKey(menu.getId())) {
+                        // logger.debug("accessible menu id map doesn't have the menu {} / {}, will remove it",
+                         //       menu.getId(), menu.getName());
                         menuIterator.remove();
                     }
                 }
                 if (menuSubGroup.getMenus().size() == 0) {
+                    // logger.debug("menuSubGroup {} / {} is empty, will remove it",
+                    //        menuSubGroup.getId(), menuSubGroup.getName());
                     menuSubGroupIterator.remove();
                 }
             }
             if (menuGroup.getMenuSubGroups().size() == 0) {
+                // logger.debug("menuGroup {} / {} is empty, will remove it",
+                 //       menuGroup.getId(), menuGroup.getName());
                 menuGroupIterator.remove();
             }
         }
@@ -161,7 +175,11 @@ public class MenuGroupService implements TestDataInitiableService{
         Map<Long, Long> accessibleMenuIdMap = new HashMap<>();
         roles.stream().forEach(role -> {
 
-            role.getMenus().stream().filter(menu -> menu.getMenuSubGroup().getMenuGroup().getType().equals(menuType))
+            role.getMenus().stream()
+                    // filter out the menu if the type passed in and the menu's type doesn't
+                    // match with the criteria
+                    .filter(menu -> Objects.isNull(menuType) ? true :
+                         menu.getMenuSubGroup().getMenuGroup().getType().equals(menuType))
                     .forEach(menu -> accessibleMenuIdMap.put(menu.getId(), menu.getId()));
                 }
         );

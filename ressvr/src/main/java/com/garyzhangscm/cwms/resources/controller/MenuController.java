@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.model.MenuGroup;
+import com.garyzhangscm.cwms.resources.model.MenuType;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +38,16 @@ public class MenuController {
     @RequestMapping(method = RequestMethod.GET)
     public List<MenuGroup> listAllMenus() {
         return menuGroupService.findAll();
+    }
+
+    @RequestMapping(value="/web", method = RequestMethod.GET)
+    public List<MenuGroup> listAllWebMenus() {
+        return menuGroupService.findAll(MenuType.WEB);
+    }
+
+    @RequestMapping(value="/mobile", method = RequestMethod.GET)
+    public List<MenuGroup> listAllMobileMenus() {
+        return menuGroupService.findAll(MenuType.MOBILE);
     }
 
 

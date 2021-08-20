@@ -208,7 +208,7 @@ public class UserService  implements TestDataInitiableService{
 
     public SiteInformation getMobileSiteInformation(Long companyId, String username) {
 
-        return getMobileSiteInformation(findByUsername(companyId, username));
+        return getSiteInformaiton(companyId, null, findByUsername(companyId, username), true);
     }
     public SiteInformation getMobileSiteInformation(User user) {
         return getSiteInformaiton(null, null, user, true);

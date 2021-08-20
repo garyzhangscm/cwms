@@ -1320,5 +1320,15 @@
   "work-order.change-consume-method": "Change Raw Material Consume Method",
   "work-order.consume-by-bom": "Consume By BOM",
   "work-order.not-consume-by-bom": "Not Consume By BOM",
-  "menu.mobile.inventory.inventoryLF": "Lost and Found"
+  "menu.mobile.inventory.inventoryLF": "Lost and Found",
+  "menu.mobile": "Mobile",
+  "menu.mobile.inventory": "Inventory",
+  "menu.mobile.outbound": "Outbound",
+  "menu.mobile.inbound": "Inbound",
+  "menu.mobile.outbound.pick-by-tote": "Pick By Tote",
+  "menu.mobile.outbound.pick-by-order": "Pick By Order",
+  "menu.mobile.outbound.pick-by-list": "Pick By List",
+  "menu.mobile.inventory.inventory": "Inventory",
+  "menu.mobile.inventory.count": "Count",
+  "menu.mobile.inbound.receive": "Receive"
 }
