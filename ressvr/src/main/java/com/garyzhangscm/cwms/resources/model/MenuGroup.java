@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.resources.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 import javax.persistence.*;
@@ -75,16 +77,12 @@ public class MenuGroup extends AuditibleEntity<String>  implements Comparable<Me
 
     @Override
     public String toString() {
-        return "MenuGroup{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", text='" + text + '\'' +
-                ", i18n='" + i18n + '\'' +
-                ", groupFlag=" + groupFlag +
-                ", hideInBreadcrumb=" + hideInBreadcrumb +
-                ", menuSubGroups=" + menuSubGroups +
-                ", sequence=" + sequence +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String getName() {
