@@ -16,6 +16,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
           .antMatchers("/login/**").permitAll()
           .antMatchers("/oauth/**").permitAll()
           .antMatchers("/actuator").permitAll()
+                .antMatchers("/probe/**").permitAll()
           .anyRequest()
           .authenticated();
     }
