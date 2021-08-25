@@ -24,10 +24,12 @@ import javax.persistence.Enumerated;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Item implements Serializable {
 
     private Long id;
+    private Long warehouseId;
 
     private String name;
     private String description;
@@ -56,7 +58,11 @@ public class Item implements Serializable {
         if (!(anotherItem instanceof Item)) {
             return false;
         }
-        return this.getName().equals(((Item)anotherItem).getName());
+        if (Objects.equals(getId(), ((Item) anotherItem).getId())) {
+            return true;
+        }
+        return this.getName().equals(((Item)anotherItem).getName()) &&
+                this.getWarehouseId().equals(((Item) anotherItem).getWarehouseId());
     }
     @Override
     public int hashCode() {
@@ -172,5 +178,13 @@ public class Item implements Serializable {
 
     public void setAllocationRoundUpStrategyValue(Double allocationRoundUpStrategyValue) {
         this.allocationRoundUpStrategyValue = allocationRoundUpStrategyValue;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 }
