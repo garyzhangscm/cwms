@@ -164,6 +164,13 @@
             <version>6.16.0</version>
         </dependency>
 
+        <!-- Tuple -->
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>

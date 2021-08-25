@@ -43,6 +43,7 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -994,4 +995,143 @@ public class OrderService implements TestDataInitiableService {
             return order;
         }
     }
+
+
+    public ReportHistory generatePackingListByOrder(Long orderId, String locale)
+            throws JsonProcessingException {
+
+        return generatePackingListByOrder(findById(orderId), locale);
+    }
+    public ReportHistory generatePackingListByOrder(Order order, String locale)
+            throws JsonProcessingException {
+
+        Long warehouseId = order.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupOrderPackingListParameters(
+                reportData, order
+        );
+        setupOrderPackingListData(
+                reportData, order
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.PACKING_SLIP, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupOrderPackingListParameters(
+            Report report, Order order) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("ship_date", LocalDateTime.now().toString());
+
+        report.addParameter("order_number",
+                order.getNumber());
+
+        // get the warehouse address as the ship from address
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                order.getWarehouseId()
+        );
+        if (Objects.nonNull(warehouse)) {
+            report.addParameter("ship_from_address_line1",
+                    warehouse.getAddressLine1());
+            report.addParameter("ship_from_address_city_state_zipcode",
+                    warehouse.getAddressCity() + ", " +
+                    warehouse.getAddressState() + " " +
+                    warehouse.getAddressPostcode());
+        }
+        else {
+            report.addParameter("ship_from_address_line1",
+                    "N/A");
+            report.addParameter("ship_from_address_city_state_zipcode",
+                    "N/A");
+        }
+
+        // get the ship to address
+        report.addParameter("ship_to_address_line1",
+                order.getShipToAddressLine1());
+        report.addParameter("ship_to_address_city_state_zipcode",
+                order.getShipToAddressCity() + ", " +
+                        order.getShipToAddressState() + " " +
+                        order.getShipToAddressPostcode());
+
+
+
+    }
+
+    private void setupOrderPackingListData(Report report, Order order) {
+
+        // set data to be all picks
+        List<PackingSlipData> packingSlipDataList = new ArrayList<>();
+        // get all the inventory that is picked but not shipped yet for the order and show the
+        // inventory information in the pack slip
+
+        List<Inventory> pickedInventories = inventoryServiceRestemplateClient.getPickedInventory(
+                order.getWarehouseId(), pickService.findByOrder(order)
+        );
+
+        // key: item name
+        // value: quantity
+        Map<String, Long> itemQuantityMap = new HashMap<>();
+
+        // key: item name
+        // value: lpn count
+        Map<String, Set<String>> itemLpnMap = new HashMap<>();
+
+        // key: item name
+        // value: item description
+        Map<String, String> itemDescriptionMap = new HashMap<>();
+
+
+        for (Inventory pickedInventory : pickedInventories) {
+            String itemName = pickedInventory.getItem().getName();
+
+            // total quantity per item
+            Long accumulatedQuantity = itemQuantityMap.getOrDefault(
+                    itemName, 0l
+            ) + pickedInventory.getQuantity();
+            itemQuantityMap.put(itemName, accumulatedQuantity);
+
+            // total LPN count per item
+            Set<String> lpnSet = itemLpnMap.getOrDefault(
+                    itemName, new HashSet<>()
+            );
+            lpnSet.add(pickedInventory.getLpn());
+            itemLpnMap.put(itemName, lpnSet);
+
+            // item name and description
+            itemDescriptionMap.putIfAbsent(
+                    itemName, pickedInventory.getItem().getDescription()
+            );
+        }
+        for (Map.Entry<String, String> entry : itemDescriptionMap.entrySet()) {
+            String itemName = entry.getKey();
+            String itemDescription = entry.getValue();
+            Long quantity = itemQuantityMap.getOrDefault(itemName, 0l);
+            Integer lpnCount = itemLpnMap.getOrDefault(itemName, new HashSet<>()).size();
+
+            packingSlipDataList.add(new PackingSlipData(itemName,
+                    itemDescription, quantity, lpnCount
+            ));
+        }
+
+        report.setData(packingSlipDataList);
+
+    }
+
+
 }

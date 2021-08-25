@@ -47,6 +47,8 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -79,6 +81,8 @@ public class InventoryService implements TestDataInitiableService{
     private InventoryAdjustmentRequestService inventoryAdjustmentRequestService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private InventoryConfigurationService inventoryConfigurationService;
 
 
     @Autowired
@@ -2179,5 +2183,70 @@ public class InventoryService implements TestDataInitiableService{
 
 
         reportData.setData(lpnReportDataList);
+    }
+
+    public void validateLPN(Long warehouseId, String lpn, boolean newInventory) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        // let's get the company ID and then get the lpn validation rule
+        if (!newInventory) {
+            // if we are validate the inventory against an existing inventory,
+            // let's make sure the inventory with the LPN exists in the 4 wall
+            validateExistingLPN(warehouse, lpn);
+        }
+        else {
+            // we will need to make sure the LPN doesn't exists yet and
+            // if we defined the validation rules, make sure the new LPN follow the rule
+            validateNonExistingLPN(warehouse, lpn);
+        }
+
+    }
+
+
+    /**
+     * Make sure the LPN is in the warehouse and four wall area
+     * @param warehouse
+     * @param lpn
+     */
+    private void validateExistingLPN(Warehouse warehouse, String lpn) {
+        // first, make sure the LPN exists in a four wall area
+        List<Inventory> inventories = findByLpn(warehouse.getId(), lpn);
+        if (inventories.size() == 0) {
+            throw InventoryException.raiseException("Can't find existing inventory by LPN " + lpn);
+        }
+        for (Inventory inventory : inventories) {
+            if (inventory.getLocation().getLocationGroup().getLocationGroupType().getFourWallInventory() == false) {
+                throw InventoryException.raiseException("LPN " + lpn + " is not in a four wall location");
+            }
+        }
+    }
+
+    /**
+     * Make sure the LPN is a new LPN(not in the system) and it follow the right pattern(if defined by inventory configuration)
+     * @param warehouse
+     * @param lpn
+     */
+    private void validateNonExistingLPN(Warehouse warehouse, String lpn) {
+        // first, make sure the LPN exists in a four wall area
+        List<Inventory> inventories = findByLpn(warehouse.getId(), lpn);
+        if (inventories.size() > 0) {
+            throw InventoryException.raiseException("LPN " + lpn + " already exists");
+        }
+        // see if we defined any rules to validate the LPN
+        InventoryConfiguration inventoryConfiguration = inventoryConfigurationService.getLPNValidationRule(
+                warehouse.getCompanyId(), warehouse.getId()
+        );
+        if (Objects.nonNull(inventoryConfiguration)) {
+            // ok we have some rule defined to validate the lpn
+            String lpnValidationRule = inventoryConfiguration.getStringValue();
+
+            Pattern pattern = Pattern.compile(lpnValidationRule, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(lpn);
+            boolean matchFound = matcher.find();
+            if(matchFound == false) {
+                throw InventoryException.raiseException("LPN " + lpn + " doesn't match with rule " + lpnValidationRule);
+            }
+        }
+
+
     }
 }
