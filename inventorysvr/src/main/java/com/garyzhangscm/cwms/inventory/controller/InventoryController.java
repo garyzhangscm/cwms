@@ -134,6 +134,21 @@ public class InventoryController {
                                     @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
         return inventoryService.removeInventory(id, documentNumber, comment);
     }
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/reverse-production/{id}")
+    public Inventory reverseProduction(@PathVariable Long id,
+                                         @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
+                                         @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
+        return inventoryService.reverseProduction(id, documentNumber, comment);
+    }
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/reverse-receiving/{id}")
+    public Inventory reverseReceiving(@PathVariable Long id,
+                                         @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
+                                         @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
+        return inventoryService.reverseReceiving(id, documentNumber, comment);
+    }
+
     // Adjust up the inventory from 0
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
     public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory,

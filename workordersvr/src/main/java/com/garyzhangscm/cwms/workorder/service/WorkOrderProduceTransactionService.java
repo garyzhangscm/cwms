@@ -234,10 +234,14 @@ public class WorkOrderProduceTransactionService  {
         // 2. we are not over consume
         validateWorkOrderProduceTransaction(workOrderProduceTransaction);
 
+
+        // save the transaction first
+        WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
+
         // total work order produced quantity
         Long totalProducedQuantity = 0L;
         for(WorkOrderProducedInventory workOrderProducedInventory :
-                workOrderProduceTransaction.getWorkOrderProducedInventories()) {
+                newWorkOrderProduceTransaction.getWorkOrderProducedInventories()) {
             // skip the record with incorrect value
             if (StringUtils.isBlank(workOrderProducedInventory.getLpn()) ||
                     Objects.isNull(workOrderProducedInventory.getInventoryStatus()) ||
@@ -247,7 +251,7 @@ public class WorkOrderProduceTransactionService  {
             }
             totalProducedQuantity += workOrderProducedInventory.getQuantity();
             // Let's create the inventory
-            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, workOrderProduceTransaction);
+            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction);
 
         }
         // Change the produced quantity of the work order
@@ -280,7 +284,6 @@ public class WorkOrderProduceTransactionService  {
                     );
                 }
         );
-        WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
 
         processWorkOrderKPI(newWorkOrderProduceTransaction, totalProducedQuantity);
 

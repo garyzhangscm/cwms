@@ -168,6 +168,12 @@ public class WorkOrderController {
         return workOrderService.modifyWorkOrderLines(id, workOrder);
     }
 
+    @RequestMapping(value="/work-orders/{id}/reserve-production", method = RequestMethod.POST)
+    public WorkOrder reverseProduction(@PathVariable Long id,
+                                       @RequestParam String lpn) {
+        return workOrderService.reverseProduction(id, lpn);
+    }
+
 
     @RequestMapping(value="/work-orders/{id}/unpick-inventory", method = RequestMethod.POST)
     public Inventory unpickInventory(@PathVariable Long id,

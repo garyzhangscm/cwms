@@ -1330,5 +1330,6 @@
   "menu.mobile.outbound.pick-by-list": "Pick By List",
   "menu.mobile.inventory.inventory": "Inventory",
   "menu.mobile.inventory.count": "Count",
-  "menu.mobile.inbound.receive": "Receive"
+  "menu.mobile.inbound.receive": "Receive",
+  "packing-slip": "Packing Slip"
 }

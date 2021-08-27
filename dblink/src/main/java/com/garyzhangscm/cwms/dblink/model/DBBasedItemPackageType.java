@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.dblink.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -97,6 +99,16 @@ public class DBBasedItemPackageType implements Serializable {
     private LocalDateTime lastUpdateTime;
     @Column(name = "error_message")
     private String errorMessage;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 
     public Long getId() {

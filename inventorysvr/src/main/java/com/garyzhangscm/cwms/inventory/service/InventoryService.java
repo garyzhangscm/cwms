@@ -832,6 +832,14 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
+    public Inventory reverseProduction(Long id, String documentNumber, String comment) {
+        Inventory inventory = findById(id);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_PRODUCTION, documentNumber, comment);
+    }
+    public Inventory reverseReceiving(Long id, String documentNumber, String comment) {
+        Inventory inventory = findById(id);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment);
+    }
     // To remove inventory, we won't actually remove the record.
     // Instead we move the inventory to a 'logical' location
     public Inventory removeInventory(Long id, String documentNumber, String comment) {

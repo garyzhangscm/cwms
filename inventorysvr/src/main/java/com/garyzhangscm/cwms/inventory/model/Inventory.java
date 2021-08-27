@@ -92,6 +92,9 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "work_order_by_product_id")
     private Long workOrderByProductId;
 
+    // the transaction id that created this inventory
+    @Column(name = "create_inventory_transaction_id")
+    private Long createInventoryTransactionId;
 
     @ManyToOne
     @JoinColumn(name="item_id")
@@ -395,5 +398,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setWorkOrder(WorkOrder workOrder) {
         this.workOrder = workOrder;
+    }
+
+    public Long getCreateInventoryTransactionId() {
+        return createInventoryTransactionId;
+    }
+
+    public void setCreateInventoryTransactionId(Long createInventoryTransactionId) {
+        this.createInventoryTransactionId = createInventoryTransactionId;
     }
 }

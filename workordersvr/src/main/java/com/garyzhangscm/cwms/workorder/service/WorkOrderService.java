@@ -1117,4 +1117,37 @@ public class WorkOrderService implements TestDataInitiableService {
             return saveOrUpdate(workOrder);
         }
     }
+
+    /**
+     * Reverse production, remove the inventory and return the quantity to the lines
+     * @param id
+     * @param lpn
+     * @return
+     */
+    public WorkOrder reverseProduction(Long id, String lpn) {
+        WorkOrder workOrder = findById(id);
+
+        List<Inventory> inventories = inventoryServiceRestemplateClient.findProducedInventoryByLPN(
+                workOrder.getWarehouseId(), workOrder.getId(),
+                lpn
+        );
+
+        // if we can find any inventory that matches with the work order and id,
+        // let's remove the inventory and return the quantity
+        Long totalQuantity = 0l;
+        for (Inventory inventory : inventories) {
+            totalQuantity += inventory.getQuantity();
+            inventoryServiceRestemplateClient.reverseProduction(inventory.getId());
+        }
+
+        // return the quantity back to work order
+        workOrder.setProducedQuantity(workOrder.getProducedQuantity() - totalQuantity);
+
+        // we will return the quantity back to work order line only if
+        // the inventory was produced by a transaction that marked as 'consume by bom'
+        // so that we know how much material we consumed in order to produce the inventory
+
+
+        return workOrder;
+    }
 }
