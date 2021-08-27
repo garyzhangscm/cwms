@@ -387,6 +387,8 @@ public class ReportService implements TestDataInitiableService{
 
 
         logger.debug("Report datasource loaded!");
+        // logger.debug("####   Report   Data  / 2  ######");
+        // logger.debug(reportData.toString());
 
         reportData.getParameters().put(
                 JRParameter.REPORT_LOCALE, reportLocale);

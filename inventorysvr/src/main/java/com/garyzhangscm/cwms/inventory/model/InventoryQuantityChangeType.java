@@ -11,6 +11,7 @@ public enum InventoryQuantityChangeType {
     INVENTORY_ADJUST(false),
     CYCLE_COUNT(false),
     AUDIT_COUNT(false),
+    REVERSE_PRODUCTION(true),
     UNKNOWN(false);
 
     private boolean noApprovalNeeded;

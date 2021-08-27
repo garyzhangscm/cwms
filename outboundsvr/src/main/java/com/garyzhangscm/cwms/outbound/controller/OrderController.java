@@ -126,12 +126,12 @@ public class OrderController {
         return orderService.generatePickReportByOrder(id, locale);
     }
 
-    @RequestMapping(value="/orders/{id}/picking-list-report", method = RequestMethod.POST)
+    @RequestMapping(value="/orders/{id}/packing-list-report", method = RequestMethod.POST)
     public ReportHistory generatePackingListReport(
             @PathVariable Long id,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
 
-        logger.debug("start print pick sheet for order with id: {}", id);
+        logger.debug("start print packing list for order with id: {}", id);
         return orderService.generatePackingListByOrder(id, locale);
     }
 

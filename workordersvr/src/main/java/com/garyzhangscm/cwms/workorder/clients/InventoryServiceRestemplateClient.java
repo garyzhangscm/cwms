@@ -179,6 +179,26 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
+    public List<Inventory> findInventoryByLPN(Long warehouseId, String lpn) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     public List<Inventory> findDeliveredInventory(Long warehouseId,
                                                   Long productionLocationId, String pickIds) {
 
@@ -236,6 +256,52 @@ public class InventoryServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+
+    }
+
+    public Inventory reverseProduction(Long inventoryId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/reverse-production/{id}");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(inventoryId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public List<Inventory> findProducedInventoryByLPN(Long warehouseId, Long workOrderId,
+                                                      String lpn) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("workOrderId", workOrderId)
+                        .queryParam("lpn", lpn);
+
+        logger.debug("Start to find produced inventory by work order id {}",
+                workOrderId);
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        logger.debug("Returned");
+        List<Inventory> inventories = responseBodyWrapper.getData();
+        logger.debug("got {} inventory record produced by work order",
+                inventories.size());
+        return inventories;
 
     }
     public List<Inventory> findProducedInventory(Long warehouseId, Long workOrderId) {

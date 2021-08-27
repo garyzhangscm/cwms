@@ -57,6 +57,9 @@ public class Inventory implements Serializable {
     private Long workOrderLineId;
     private Long workOrderByProductId;
 
+    // the transaction that create this inventory
+    private Long createInventoryTransactionId;
+
 
     private Long warehouseId;
     private Warehouse warehouse;
@@ -211,6 +214,14 @@ public class Inventory implements Serializable {
 
     public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
         this.inventoryMovements = inventoryMovements;
+    }
+
+    public Long getCreateInventoryTransactionId() {
+        return createInventoryTransactionId;
+    }
+
+    public void setCreateInventoryTransactionId(Long createInventoryTransactionId) {
+        this.createInventoryTransactionId = createInventoryTransactionId;
     }
 
     public Long getWorkOrderByProductId() {

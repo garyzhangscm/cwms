@@ -332,6 +332,11 @@ public class IntegrationDataController {
 
         logger.debug("Start to save dbBasedItemPackageType into database \n{}",
                 dbBasedItemPackageType);
+        dbBasedItemPackageType.getItemUnitOfMeasures().forEach(
+                dbBasedItemUnitOfMeasure -> dbBasedItemUnitOfMeasure.setItemPackageType(
+                        dbBasedItemPackageType
+                )
+        );
         integrationDataService.addIntegrationItemPackageTypeData(dbBasedItemPackageType);
         return ResponseBodyWrapper.success("success");
     }

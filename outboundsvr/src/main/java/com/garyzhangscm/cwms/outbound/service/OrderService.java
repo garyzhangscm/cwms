@@ -1018,8 +1018,8 @@ public class OrderService implements TestDataInitiableService {
 
         logger.debug("will call resource service to print the report with locale: {}",
                 locale);
-        // logger.debug("####   Report   Data  ######");
-        // logger.debug(reportData.toString());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
                         warehouseId, ReportType.PACKING_SLIP, reportData, locale
@@ -1080,9 +1080,14 @@ public class OrderService implements TestDataInitiableService {
         // get all the inventory that is picked but not shipped yet for the order and show the
         // inventory information in the pack slip
 
-        List<Inventory> pickedInventories = inventoryServiceRestemplateClient.getPickedInventory(
-                order.getWarehouseId(), pickService.findByOrder(order)
-        );
+        List<Inventory> pickedInventories = new ArrayList<>();
+        List<Pick> picks = pickService.findByOrder(order);
+        if (picks.size() > 0) {
+            pickedInventories
+                    = inventoryServiceRestemplateClient.getPickedInventory(
+                        order.getWarehouseId(), pickService.findByOrder(order)
+                    );
+        }
 
         // key: item name
         // value: quantity

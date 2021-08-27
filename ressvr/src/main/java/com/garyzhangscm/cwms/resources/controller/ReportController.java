@@ -89,6 +89,8 @@ public class ReportController {
                                         @RequestBody Report reportData,
                                         @RequestParam(name = "locale", defaultValue = "en", required = false) String locale) throws IOException, JRException {
 
+        // logger.debug("####   Report   Data  / 1  ######");
+        // logger.debug(reportData.toString());
         return reportService.generateReport(
                 warehouseId,
                 ReportType.valueOf(type),

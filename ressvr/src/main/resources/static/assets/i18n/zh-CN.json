@@ -1335,5 +1335,6 @@
   "menu.mobile.outbound.pick-by-list": "列表拣选",
   "menu.mobile.inventory.inventory": "库存查询",
   "menu.mobile.inventory.count": "盘点",
-  "menu.mobile.inbound.receive": "收货"
+  "menu.mobile.inbound.receive": "收货",
+  "packing-slip": "装箱单"
 }
