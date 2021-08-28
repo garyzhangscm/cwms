@@ -42,6 +42,8 @@ public class ProductionLineKanbanService {
 
     @Autowired
     private ProductionLineAssignmentService productionLineAssignmentService;
+    @Autowired
+    private WorkOrderReverseProductionInventoryService workOrderReverseProductionInventoryService;
 
 
 
@@ -105,6 +107,7 @@ public class ProductionLineKanbanService {
                             productionLineAssignment.getWorkOrder().getNumber(),
                             productionLineAssignment.getProductionLine().getName());
 
+
                     List<Inventory> unPutawayInventory
                             = inventoryServiceRestemplateClient.findInventoryByLocation(
                                     productionLineAssignment.getWorkOrder().getWarehouseId(),
@@ -163,6 +166,13 @@ public class ProductionLineKanbanService {
 
     }
 
+    private List<WorkOrderReverseProductionInventory> getReversedInventory(WorkOrderProduceTransaction workOrderProduceTransaction) {
+        return workOrderReverseProductionInventoryService.findAll(
+                workOrderProduceTransaction.getId(),
+                null, null
+        );
+    }
+
     /**
      * Get the unputaway inventory that is created on the previous day, based on the cutoff time
      * If NOW is before cutoff time, the it is from previous day's cutoff time to
@@ -211,21 +221,49 @@ public class ProductionLineKanbanService {
         logger.debug("Will get daily output from {} to {}",
                 dayStartDateTime, dayEndDateTime);
 
+
         // only return the transaction that between the start and end time
         // and get the total quantity of the produced inventory
-        return workOrderProduceTransactions.stream().filter(
+        List<WorkOrderProduceTransaction> dailyWorkOrderProduceTransactions =
+                  workOrderProduceTransactions.stream().filter(
+                        workOrderProduceTransaction -> {
+                            logger.debug("workOrderProduceTransaction.getCreatedTime(): {}",
+                                    workOrderProduceTransaction.getCreatedTime());
+                            logger.debug("!workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime): {}",
+                                    !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime));
+                            logger.debug("workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime): {}",
+                                    workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime));
+                            return !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime)
+                                    & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime);
+                        }
+                ).collect(Collectors.toList());
+
+        // loop through each transaction and get the produced inventory and ignore
+        // the reversed inventory
+        List<WorkOrderProducedInventory> workOrderProducedInventories = new ArrayList<>();
+        dailyWorkOrderProduceTransactions.forEach(
                 workOrderProduceTransaction -> {
-                    logger.debug("workOrderProduceTransaction.getCreatedTime(): {}",
-                            workOrderProduceTransaction.getCreatedTime());
-                    logger.debug("!workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime): {}",
-                            !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime));
-                    logger.debug("workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime): {}",
-                            workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime));
-                    return !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime)
-                            & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime);
+                    // get the reversed LPN for this transaction
+                    List<WorkOrderReverseProductionInventory> workOrderReverseProductionInventories =
+                            workOrderReverseProductionInventoryService.findAll(
+                                    workOrderProduceTransaction.getId(),
+                                    null, null
+                            );
+                    Set<String> workOrderReverseProductionInventorySet =
+                            workOrderReverseProductionInventories.stream().map(
+                                    WorkOrderReverseProductionInventory::getLpn
+                            ).collect(Collectors.toSet());
+                    // loop through the produced inventory and skip the reversed inventory
+                    workOrderProducedInventories.addAll(
+                            workOrderProduceTransaction.getWorkOrderProducedInventories()
+                                    .stream().filter(
+                                            workOrderProducedInventory -> !workOrderReverseProductionInventorySet.contains(workOrderProducedInventory.getLpn())
+                            ).collect(Collectors.toList())
+                    );
                 }
-        ).map(workOrderProduceTransaction -> workOrderProduceTransaction.getWorkOrderProducedInventories())
-                .flatMap(Collection::stream).collect(Collectors.toList());
+        );
+        return workOrderProducedInventories;
+
     }
     /**
      * Get the kanban's end time. If it is already after the cut off time, then the kanban
@@ -273,11 +311,35 @@ public class ProductionLineKanbanService {
     }
 
     private Long getTotalProducedQuantity(List<WorkOrderProduceTransaction>  workOrderProduceTransactions) {
-        Long totalProducedQuantity =
-                workOrderProduceTransactions.stream()
-                        .map(workOrderProduceTransaction -> workOrderProduceTransaction.getWorkOrderProducedInventories())
-                        .flatMap(Collection::stream).mapToLong(WorkOrderProducedInventory::getQuantity).sum();
-        return totalProducedQuantity;
+
+        // loop through each transaction and get the produced inventory and ignore
+        // the reversed inventory
+        List<WorkOrderProducedInventory> workOrderProducedInventories = new ArrayList<>();
+        workOrderProduceTransactions.forEach(
+                workOrderProduceTransaction -> {
+                    // get the reversed LPN for this transaction
+                    List<WorkOrderReverseProductionInventory> workOrderReverseProductionInventories =
+                            workOrderReverseProductionInventoryService.findAll(
+                                    workOrderProduceTransaction.getId(),
+                                    null, null
+                            );
+                    Set<String> workOrderReverseProductionInventorySet =
+                            workOrderReverseProductionInventories.stream().map(
+                                    WorkOrderReverseProductionInventory::getLpn
+                            ).collect(Collectors.toSet());
+                    // loop through the produced inventory and skip the reversed inventory
+                    workOrderProducedInventories.addAll(
+                            workOrderProduceTransaction.getWorkOrderProducedInventories()
+                                    .stream().filter(
+                                    workOrderProducedInventory -> !workOrderReverseProductionInventorySet.contains(workOrderProducedInventory.getLpn())
+                            ).collect(Collectors.toList())
+                    );
+                }
+        );
+
+        return workOrderProducedInventories.stream().mapToLong(WorkOrderProducedInventory::getQuantity).sum();
+
+
     }
 
 }

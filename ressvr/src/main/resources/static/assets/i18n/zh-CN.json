@@ -1336,5 +1336,7 @@
   "menu.mobile.inventory.inventory": "库存查询",
   "menu.mobile.inventory.count": "盘点",
   "menu.mobile.inbound.receive": "收货",
-  "packing-slip": "装箱单"
+  "packing-slip": "装箱单",
+  "reverseProduction": "冲消加工入库",
+  "menu.main.work-order.wo-produce-transaction": "生产事务"
 }

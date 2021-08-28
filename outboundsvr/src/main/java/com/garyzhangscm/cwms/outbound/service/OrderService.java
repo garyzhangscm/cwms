@@ -787,6 +787,7 @@ public class OrderService implements TestDataInitiableService {
         Set<Order> ordersWithOpenPickSet = unassignedOpenPick.stream()
                 .filter(pick -> Objects.nonNull(pick.getShipmentLine()))
                 .map(pick -> pick.getShipmentLine().getOrderLine().getOrder())
+                .filter(order -> !order.getStatus().equals(OrderStatus.COMPLETE))
                 .collect(Collectors.toSet());
 
         List<Order> ordersWithOpenPickList = new ArrayList<>(ordersWithOpenPickSet);
@@ -1075,8 +1076,12 @@ public class OrderService implements TestDataInitiableService {
 
     private void setupOrderPackingListData(Report report, Order order) {
 
+        long totalShippedQuantity = 0l;
+        int totalPalletCount = 0;
+
         // set data to be all picks
         List<PackingSlipData> packingSlipDataList = new ArrayList<>();
+
         // get all the inventory that is picked but not shipped yet for the order and show the
         // inventory information in the pack slip
 
@@ -1132,9 +1137,16 @@ public class OrderService implements TestDataInitiableService {
             packingSlipDataList.add(new PackingSlipData(itemName,
                     itemDescription, quantity, lpnCount
             ));
+            totalPalletCount += lpnCount;
+            totalShippedQuantity += quantity;
         }
 
         report.setData(packingSlipDataList);
+
+        report.addParameter("total_shipped_quantity",
+                totalShippedQuantity);
+        report.addParameter("total_pallet_count",
+                totalPalletCount);
 
     }
 

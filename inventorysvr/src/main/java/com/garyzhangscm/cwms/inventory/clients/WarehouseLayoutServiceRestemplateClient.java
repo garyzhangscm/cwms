@@ -449,6 +449,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location getLogicalLocationForAdjustInventory(InventoryQuantityChangeType inventoryQuantityChangeType, Long warehouseId) {
         switch (inventoryQuantityChangeType){
             case INVENTORY_ADJUST:
+            case REVERSE_PRODUCTION:
                 return getLocationForInventoryAdjustment(warehouseId);
             case AUDIT_COUNT:
                 return getLocationForAuditCount(warehouseId);

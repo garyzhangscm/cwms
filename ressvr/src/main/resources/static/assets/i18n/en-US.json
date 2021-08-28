@@ -1331,5 +1331,7 @@
   "menu.mobile.inventory.inventory": "Inventory",
   "menu.mobile.inventory.count": "Count",
   "menu.mobile.inbound.receive": "Receive",
-  "packing-slip": "Packing Slip"
+  "packing-slip": "Packing Slip",
+  "reverseProduction": "Reverse Production",
+  "menu.main.work-order.wo-produce-transaction": "Produce Transaction"
 }
