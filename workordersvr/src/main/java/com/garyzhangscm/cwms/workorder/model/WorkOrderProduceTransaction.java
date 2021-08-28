@@ -14,6 +14,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "work_order_produce_transaction")
@@ -52,6 +53,13 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    List<WorkOrderReverseProductionInventory> workOrderReverseProductionInventories = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "workOrderProduceTransaction",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     List<WorkOrderByProductProduceTransaction> workOrderByProductProduceTransactions = new ArrayList<>();
 
 
@@ -79,6 +87,19 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WorkOrderProduceTransaction that = (WorkOrderProduceTransaction) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     public Long getId() {
@@ -153,5 +174,17 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     public void setConsumeByBom(BillOfMaterial consumeByBom) {
         this.consumeByBom = consumeByBom;
+    }
+
+    public List<WorkOrderReverseProductionInventory> getWorkOrderReverseProductionInventories() {
+        return workOrderReverseProductionInventories;
+    }
+
+    public void setWorkOrderReverseProductionInventories(List<WorkOrderReverseProductionInventory> workOrderReverseProductionInventories) {
+        this.workOrderReverseProductionInventories = workOrderReverseProductionInventories;
+    }
+
+    public void addWorkOrderReverseProductionInventories(WorkOrderReverseProductionInventory workOrderReverseProductionInventory) {
+        this.workOrderReverseProductionInventories.add(workOrderReverseProductionInventory);
     }
 }

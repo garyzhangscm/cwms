@@ -834,6 +834,8 @@ public class InventoryService implements TestDataInitiableService{
 
     public Inventory reverseProduction(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
+        logger.debug("Start to reverse production of inventory with lpn {}",
+                inventory.getLpn());
         return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_PRODUCTION, documentNumber, comment);
     }
     public Inventory reverseReceiving(Long id, String documentNumber, String comment) {
@@ -882,6 +884,9 @@ public class InventoryService implements TestDataInitiableService{
                 break;
             case CONSUME_MATERIAL:
                 inventoryActivityType = InventoryActivityType.WORK_ORDER_CONSUME;
+                break;
+            case REVERSE_PRODUCTION:
+                inventoryActivityType = InventoryActivityType.RESERVE_PRODUCTION;
                 break;
             default:
                 inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;

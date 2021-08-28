@@ -64,6 +64,10 @@ public class WorkOrderService implements TestDataInitiableService {
     private ProductionLineService productionLineService;
     @Autowired
     private ProductionPlanLineService productionPlanLineService;
+    @Autowired
+    private WorkOrderProduceTransactionService workOrderProduceTransactionService;
+    @Autowired
+    private WorkOrderReverseProductionInventoryService workOrderReverseProductionInventoryService;
 
     @Autowired
     private WorkOrderInstructionService workOrderInstructionService;
@@ -1131,23 +1135,103 @@ public class WorkOrderService implements TestDataInitiableService {
                 workOrder.getWarehouseId(), workOrder.getId(),
                 lpn
         );
+        logger.debug("We found {} inventory to be reversed by LPN {}",
+                inventories.size(), lpn);
 
         // if we can find any inventory that matches with the work order and id,
         // let's remove the inventory and return the quantity
+
+        // key: work order produce transaction id
+        // value: work order produce transaction
+        // we will save the work order
+        Map<Long, WorkOrderProduceTransaction> inventoryProducedTransactionSet = new HashMap<>();
         Long totalQuantity = 0l;
         for (Inventory inventory : inventories) {
             totalQuantity += inventory.getQuantity();
+            logger.debug("will remove inventory with id {}, lpn {}, item {}, quantity {}",
+                    inventory.getId(),
+                    inventory.getLpn(),
+                    inventory.getItem().getName(),
+            inventory.getQuantity());
             inventoryServiceRestemplateClient.reverseProduction(inventory.getId());
+
+
+            // see if we can find transaction that created the inventory.
+            // if so, we may be able to return the quantity back to the
+            // work order line and adjust the quantity of the transaction
+            logger.debug("Inventory's work order: {}, transaction id {}",
+                    inventory.getWorkOrderId(), inventory.getCreateInventoryTransactionId());
+            if (Objects.nonNull(inventory.getWorkOrderId()) &&
+                    Objects.nonNull(inventory.getCreateInventoryTransactionId())) {
+                WorkOrderProduceTransaction workOrderProduceTransaction =
+                        workOrderProduceTransactionService.findById(inventory.getCreateInventoryTransactionId());
+                logger.debug("Found right work order produce transaction by id {} ? {}",
+                        inventory.getCreateInventoryTransactionId(),
+                        Objects.nonNull(workOrderProduceTransaction));
+                if (Objects.nonNull(workOrderProduceTransaction)) {
+                    logger.debug("Add a new reverse production transaction");
+                    workOrderReverseProductionInventoryService.save(new WorkOrderReverseProductionInventory(
+                            workOrderProduceTransaction, inventory.getLpn(), inventory.getQuantity()
+                    ));
+                    // we will put the quantity back
+                    logger.debug("will return the consumed quantity back, only if we can ");
+                    processReverseProductionQuantity(workOrderProduceTransaction, inventory.getQuantity());
+                }
+            }
         }
 
         // return the quantity back to work order
+        logger.debug("Deduct the produced quantity of the work order by {}",
+                totalQuantity);
         workOrder.setProducedQuantity(workOrder.getProducedQuantity() - totalQuantity);
+        save(workOrder);
+
 
         // we will return the quantity back to work order line only if
         // the inventory was produced by a transaction that marked as 'consume by bom'
         // so that we know how much material we consumed in order to produce the inventory
 
 
+
         return workOrder;
+    }
+
+    /**
+     * return the quantity back to work order line / production line / etc if necessary
+     * @param workOrderProduceTransaction
+     * @param quantity quantity of the inventory we are reverse
+     */
+    private void processReverseProductionQuantity(WorkOrderProduceTransaction workOrderProduceTransaction, Long quantity) {
+
+        // only continue if we consumed the quantity by BOM since this is the only way we
+        // can calcuate the exact quantity we consumed to produce this inventory
+        if (workOrderProduceTransaction.getConsumeByBomQuantity() &&
+                Objects.nonNull(workOrderProduceTransaction.getConsumeByBom())) {
+            logger.debug("We will calculate the quantity of each work order line we consumed to produce {} quantity of the final finish good",
+                    quantity);
+            logger.debug("Bom: {}", workOrderProduceTransaction.getConsumeByBom().getNumber());
+            BillOfMaterial matchedBOM = workOrderProduceTransaction.getConsumeByBom();
+            for (WorkOrderLine workOrderLine : workOrderProduceTransaction.getWorkOrder().getWorkOrderLines()) {
+                // get the matched bom line
+                Optional<BillOfMaterialLine> matchedBomLineOptional = matchedBOM.getBillOfMaterialLines().stream().filter(
+                        billOfMaterialLine -> workOrderLine.getItemId().equals(billOfMaterialLine.getItemId())
+                ).findFirst();
+                if (matchedBomLineOptional.isPresent()) {
+                    BillOfMaterialLine matchedBomLine = matchedBomLineOptional.get();
+                    // get the quantity we consumed
+                    Long consumedQuantity = quantity * matchedBomLine.getExpectedQuantity() / matchedBOM.getExpectedQuantity();
+                    logger.debug("Will return {} quantity back to work order {}, item {}",
+                            consumedQuantity, workOrderProduceTransaction.getWorkOrder().getNumber(),
+                            workOrderLine.getItem().getName());
+                    logger.debug("> the new consumed quantity will be {}",
+                            Math.max(workOrderLine.getConsumedQuantity() - consumedQuantity, 0));
+
+                    workOrderLine.setConsumedQuantity(Math.max(workOrderLine.getConsumedQuantity() - consumedQuantity, 0));
+                    workOrderLineService.save(workOrderLine);
+                }
+
+
+            }
+        }
     }
 }

@@ -135,7 +135,7 @@ public class InventoryController {
         return inventoryService.removeInventory(id, documentNumber, comment);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/reverse-production/{id}")
+    @RequestMapping(method=RequestMethod.POST, value="/reverse-production/{id}")
     public Inventory reverseProduction(@PathVariable Long id,
                                          @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
                                          @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {

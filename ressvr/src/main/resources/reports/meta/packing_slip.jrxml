@@ -9,6 +9,8 @@
 	<parameter name="ship_from_address_line1" class="java.lang.String"/>
 	<parameter name="ship_to_address_line1" class="java.lang.String"/>
 	<parameter name="order_number" class="java.lang.String"/>
+	<parameter name="total_shipped_quantity" class="java.lang.Long"/>
+	<parameter name="total_pallet_count" class="java.lang.Long"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -222,4 +224,36 @@
 			</textField>
 		</band>
 	</detail>
+	<pageFooter>
+		<band height="63">
+			<textField>
+				<reportElement x="10" y="21" width="100" height="20" uuid="5a166f2b-f80b-4026-88ba-06210921cccb"/>
+				<textElement>
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{total_shipped}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="40" width="100" height="20" uuid="677f5521-d0cd-4247-9236-fa3265435e76"/>
+				<textElement>
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{total_pallet}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="21" width="100" height="20" uuid="d456f8f7-e4d0-45d0-9812-d0813b7c6cef">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{total_shipped_quantity}]]></textFieldExpression>
+				<patternExpression><![CDATA[$P{total_shipped_quantity}]]></patternExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="40" width="100" height="20" uuid="a4ac5b03-9781-4f6f-9723-0d368eb7f5c5">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{total_shipped_quantity}]]></textFieldExpression>
+				<patternExpression><![CDATA[$P{total_pallet_count}]]></patternExpression>
+			</textField>
+		</band>
+	</pageFooter>
 </jasperReport>
