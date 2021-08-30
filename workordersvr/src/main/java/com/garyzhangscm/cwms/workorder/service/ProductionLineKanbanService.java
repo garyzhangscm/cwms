@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +28,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Service
@@ -62,14 +63,39 @@ public class ProductionLineKanbanService {
 
         // Get all the production line assignment and we will calculate
         // all the number
+        LocalDateTime currentLocalDateTime = LocalDateTime.now();
+        logger.debug("========> @ {} start to find all production line assignment",
+                currentLocalDateTime );
+
         List<ProductionLineAssignment> productionLineAssignments
                 = productionLineAssignmentService.findAll(productionLineId, productionLineIds, null);
+
+
+        logger.debug("====> after : {} millisecond(1/1000 second) @ {},we found all production line assignment",
+                ChronoUnit.MILLIS.between(
+                        currentLocalDateTime, LocalDateTime.now()),
+                LocalDateTime.now());
+
         return getProductionLineKanbanData(productionLineAssignments);
     }
     public List<ProductionLineKanbanData> getProductionLineKanbanData(List<ProductionLineAssignment> productionLineAssignments) {
         List<ProductionLineKanbanData> productionLineKanbanDataList = new ArrayList<>();
+
+        AtomicReference<LocalDateTime> currentLocalDateTime = new AtomicReference<>(LocalDateTime.now());
+        logger.debug("========> @ {} start to loop through {} production line assignment",
+                currentLocalDateTime, productionLineAssignments.size());
+
+        AtomicInteger i = new AtomicInteger();
+
         productionLineAssignments.forEach(
                 productionLineAssignment -> {
+
+                    i.getAndIncrement();
+                    currentLocalDateTime.set(LocalDateTime.now());
+                    LocalDateTime loopStartDateTime = LocalDateTime.now();
+                    logger.debug("========> @ {}, loop {} start",
+                            currentLocalDateTime, i);
+
                     ProductionLineKanbanData productionLineKanbanData = new ProductionLineKanbanData();
                     productionLineKanbanData.setProductionLineName(
                             productionLineAssignment.getProductionLine().getName()
@@ -77,11 +103,25 @@ public class ProductionLineKanbanService {
                     productionLineKanbanData.setWorkOrderNumber(
                             productionLineAssignment.getWorkOrder().getNumber()
                     );
+
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},we setup the production line name and work order number",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now());
+                    currentLocalDateTime.set(LocalDateTime.now());
+
                     productionLineKanbanData.setItemName(
                             inventoryServiceRestemplateClient.getItemById(
                                     productionLineAssignment.getWorkOrder().getItemId()
                             ).getName()
                     );
+
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},we setup the item name",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now());
+                    currentLocalDateTime.set(LocalDateTime.now());
+
                     productionLineKanbanData.setProductionLineModel(
                             productionLineAssignment.getProductionLine().getModel()
                     );
@@ -91,6 +131,12 @@ public class ProductionLineKanbanService {
                     productionLineKanbanData.setProductionLineTotalTargetOutput(
                             productionLineAssignment.getQuantity()
                     );
+
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},we setup model / target output / daily target output",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now());
+                    currentLocalDateTime.set(LocalDateTime.now());
 
                     // we will get the actual output and total actual output
                     // from the work order transactions
@@ -102,19 +148,37 @@ public class ProductionLineKanbanService {
                             false, false
                     );
 
-                    logger.debug("We found {} work order produce transaction for work order {} on line {}",
+
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},We found {} work order produce transaction for work order {} on line {}",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now(),
                             workOrderProduceTransactions.size(),
                             productionLineAssignment.getWorkOrder().getNumber(),
                             productionLineAssignment.getProductionLine().getName());
-
+                    currentLocalDateTime.set(LocalDateTime.now());
 
                     List<Inventory> unPutawayInventory
                             = inventoryServiceRestemplateClient.findInventoryByLocation(
                                     productionLineAssignment.getWorkOrder().getWarehouseId(),
                                     productionLineAssignment.getProductionLine().getOutboundStageLocationId()
                             );
+
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},We found {} unputaway inventory",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now(), unPutawayInventory.size());
+                    currentLocalDateTime.set(LocalDateTime.now());
+
                     List<Inventory> dailyUnputawayInventory =
                             getProductionLineDailyUnputawayInventory(unPutawayInventory, workOrderProduceTransactions);
+
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},We found {} daily unputaway inventory",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now(), dailyUnputawayInventory.size());
+                    currentLocalDateTime.set(LocalDateTime.now());
+
                     // get the quantity of the inventory that is not putaway yet, both total and daily
                     Long dailyUnPutawayInventoryQuantity = dailyUnputawayInventory.stream().mapToLong(
                             Inventory::getQuantity
@@ -146,6 +210,13 @@ public class ProductionLineKanbanService {
                             totalProducedQuantity - totalUnPutawayInventoryQuantity
                     );
 
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},We setup the all the output quantities",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now());
+                    currentLocalDateTime.set(LocalDateTime.now());
+
+
                     ProductionLineActivity checkedInUser
                             = productionLineService.getCheckedInUser(
                                 productionLineAssignment.getProductionLine());
@@ -154,11 +225,25 @@ public class ProductionLineKanbanService {
                         productionLineKanbanData.setShift(checkedInUser.getUsername());
                     }
 
+                    logger.debug("====> after : {} millisecond(1/1000 second) @ {},We setup the check in user",
+                            ChronoUnit.MILLIS.between(
+                                    currentLocalDateTime.get(), LocalDateTime.now()),
+                            LocalDateTime.now());
+                    currentLocalDateTime.set(LocalDateTime.now());
+
                     productionLineKanbanData.setProductionLineEnabled(
                             productionLineAssignment.getProductionLine().getEnabled()
                     );
 
                     productionLineKanbanDataList.add(productionLineKanbanData);
+
+                    logger.debug("======== {} : End of Loop {}, total cost {} ==========",
+
+                            LocalDateTime.now(),
+                            i.get(),
+                            ChronoUnit.MILLIS.between(
+                                    loopStartDateTime, LocalDateTime.now())
+                            );
                 }
         );
         Collections.sort(productionLineKanbanDataList, (o1, o2) -> o1.getProductionLineName().compareToIgnoreCase(o2.getProductionLineName()));

@@ -387,11 +387,12 @@ public class ReportService implements TestDataInitiableService{
 
 
         logger.debug("Report datasource loaded!");
-        // logger.debug("####   Report   Data  / 2  ######");
-        // logger.debug(reportData.toString());
 
         reportData.getParameters().put(
                 JRParameter.REPORT_LOCALE, reportLocale);
+
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
 
         // get custmoized resource boundle
         // it should be in the same folder as the report template folder

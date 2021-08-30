@@ -755,6 +755,25 @@ public class OrderService implements TestDataInitiableService {
         report.addParameter("totalLineCount", totalLineCount);
         report.addParameter("totalItemCount", totalItemCount);
         report.addParameter("totalQuantity", totalQuantity);
+
+
+        // we will assume we will only have one destination location for the
+        // entire order
+        List<Pick> picks = pickService.findByOrder(order);
+        if (picks.size() > 0) {
+
+            report.addParameter("destination_location", picks.get(0).getDestinationLocation().getName());
+
+            // we will assume that each pick may use one pallet for now
+            report.addParameter("total_pallet_count", picks.size());
+        }
+        else {
+            report.addParameter("destination_location", "");
+
+            // we will assume that each pick may use one pallet for now
+            report.addParameter("total_pallet_count", 0);
+
+        }
     }
 
     private void setupOrderPickReportData(Report report, Order order) {

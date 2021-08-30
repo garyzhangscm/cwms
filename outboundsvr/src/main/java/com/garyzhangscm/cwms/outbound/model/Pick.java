@@ -443,4 +443,17 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     public void setConfirmLpnFlag(boolean confirmLpnFlag) {
         this.confirmLpnFlag = confirmLpnFlag;
     }
+
+    // for pick sheet display only
+    public String getDefaultPickableStockUomName() {
+        if (Objects.isNull(item) ||
+                Objects.isNull(item.getDefaultItemPackageType()) ||
+                Objects.isNull(item.getDefaultItemPackageType().getStockItemUnitOfMeasures()) ||
+                Objects.isNull(item.getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure())) {
+            return "";
+        }
+        else {
+            return item.getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+        }
+    }
 }

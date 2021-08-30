@@ -1,5 +1,5 @@
 company,warehouse,type,description,fileName,orientation
-, ,ORDER_PICK_SHEET,Order Pick Sheet,order_pick_sheet,LANDSCAPE
+, ,ORDER_PICK_SHEET,Order Pick Sheet,ecotech_order_pick_sheet,PORTRAIT
 , ,RECEIVING_DOCUMENT,Receiving Document,receiving_document,LANDSCAPE
 , ,PUTAWAY_DOCUMENT,Putaway Document,putaway_document,LANDSCAPE
 , ,CYCLE_COUNT_SHEET,Cycle Count Sheet,cycle_count_sheet,LANDSCAPE

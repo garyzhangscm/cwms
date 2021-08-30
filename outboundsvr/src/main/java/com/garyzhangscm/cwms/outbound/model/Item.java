@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Item implements Serializable {
 
@@ -186,5 +187,21 @@ public class Item implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public ItemPackageType getDefaultItemPackageType() {
+        if (itemPackageTypes.size() == 0) {
+            return null;
+        }
+        // see if we have any item package types that marked as default
+        Optional<ItemPackageType> defaultItemPackageType = itemPackageTypes.stream().filter(
+                itemPackageType -> Boolean.TRUE.equals(itemPackageType.getDefaultFlag())
+        ).findFirst();
+        if (defaultItemPackageType.isPresent()) {
+            return defaultItemPackageType.get();
+        }
+        // we can't find any default item package type defined for this item
+        // let's return the first one we find in the list
+        return itemPackageTypes.get(0);
     }
 }
