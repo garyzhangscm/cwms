@@ -38,6 +38,8 @@ public class ItemPackageType implements Serializable {
 
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 
+    private Boolean defaultFlag;
+
     public Long getId() {
         return id;
     }
@@ -122,5 +124,13 @@ public class ItemPackageType implements Serializable {
             }
         }
         return stockItemUnitOfMeasure;
+    }
+
+    public Boolean getDefaultFlag() {
+        return defaultFlag;
+    }
+
+    public void setDefaultFlag(Boolean defaultFlag) {
+        this.defaultFlag = defaultFlag;
     }
 }
