@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.dblink.service;
 
 import com.garyzhangscm.cwms.dblink.model.DBBasedInventoryAdjustmentConfirmation;
+import com.garyzhangscm.cwms.dblink.model.DBBasedOrderConfirmation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,8 @@ public class RecordCopyService {
 
     @Autowired
     private DBBasedInventoryAdjustmentConfirmationIntegration dbBasedInventoryAdjustmentConfirmationIntegration;
+    @Autowired
+    private DBBasedOrderConfirmationIntegration dbBasedOrderConfirmationIntegration;
 
     @Scheduled(fixedDelay = 1000)
     public void copyRecord() {
@@ -45,6 +48,12 @@ public class RecordCopyService {
     public DBBasedInventoryAdjustmentConfirmation saveIntegration(DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.save(
                 dbBasedInventoryAdjustmentConfirmation
+        );
+    }
+
+    public DBBasedOrderConfirmation saveIntegration(DBBasedOrderConfirmation dbBasedOrderConfirmation) {
+        return dbBasedOrderConfirmationIntegration.save(
+                dbBasedOrderConfirmation
         );
     }
 }

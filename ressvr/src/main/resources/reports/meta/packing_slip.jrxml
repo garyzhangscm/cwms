@@ -265,31 +265,37 @@
 	<pageFooter>
 		<band height="63">
 			<textField>
-				<reportElement x="10" y="21" width="100" height="20" uuid="5a166f2b-f80b-4026-88ba-06210921cccb"/>
+				<reportElement x="22" y="14" width="100" height="20" uuid="5a166f2b-f80b-4026-88ba-06210921cccb"/>
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total_shipped}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="10" y="40" width="100" height="20" uuid="677f5521-d0cd-4247-9236-fa3265435e76"/>
+				<reportElement x="22" y="33" width="100" height="20" uuid="677f5521-d0cd-4247-9236-fa3265435e76"/>
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total_pallet}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="110" y="21" width="160" height="20" uuid="d456f8f7-e4d0-45d0-9812-d0813b7c6cef">
+				<reportElement x="122" y="14" width="160" height="20" uuid="d456f8f7-e4d0-45d0-9812-d0813b7c6cef">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textFieldExpression><![CDATA[$P{total_shipped_quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="110" y="40" width="160" height="20" uuid="a4ac5b03-9781-4f6f-9723-0d368eb7f5c5">
+				<reportElement x="122" y="33" width="160" height="20" uuid="a4ac5b03-9781-4f6f-9723-0d368eb7f5c5">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textFieldExpression><![CDATA[$P{total_pallet_count}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="10" y="1" width="601" height="1" uuid="62eb487e-c659-4612-9938-89225367f921">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</pageFooter>
 </jasperReport>
