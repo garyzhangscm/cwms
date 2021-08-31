@@ -272,8 +272,10 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     sortedLPNQuantites.put(entry.getKey(), entry.getValue());
                 }
 
+                Iterator<Map.Entry<String, Long>> sortedLPNQuantityIterator = sortedLPNQuantites.entrySet().iterator();
+
                 while (allocatibleQuantity > 0 && totalQuantityToBeAllocated > 0
-                        && sortedLPNQuantites.size() > 0)
+                        && sortedLPNQuantityIterator.hasNext())
                 {
                     // we will always generate one pick work for each LPN. in some scenario
                     // we think LPN stands for pallet and there's no way to pick more than one
@@ -281,18 +283,25 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     // on the LPN quantity. If the user is able to pick 2 pallet(or 2 LPN) in one
                     // travel, then we can either use pick list to group the picks, or just
                     // confirm 2 or more picks before deposit
-                    Map.Entry<String, Long> quantityOnLpn = sortedLPNQuantitesList.get(0);
+                    Map.Entry<String, Long> quantityOnLpn = sortedLPNQuantityIterator.next();
+                    logger.debug("start to allocate from lpn {}, quantity {}",
+                            quantityOnLpn.getKey(), quantityOnLpn.getValue());
                     Long allocatedQuantity = Math.min(quantityOnLpn.getValue(), allocatibleQuantity);
                     String allocatedLpn = quantityOnLpn.getKey();
+
+                    logger.debug("will allocate from lpn {}, original quantity {}, allocated quantity",
+                            quantityOnLpn.getKey(), quantityOnLpn.getValue(),
+                            allocatedQuantity);
 
                     Pick pick = tryCreatePickForUOMAllocation(allocationRequest, inventorySummary, allocatedQuantity, smallestPickableUnitOfMeasure);
                     picks.add(pick);
                     allocatibleQuantity -= allocatedQuantity;
                     totalQuantityToBeAllocated -= allocatedQuantity;
-                    logger.debug("We are able to allocate {} from LPN {}, after this LPN, we still need to allocate {}, there's still quantity {} left in this inventory summary",
+                    logger.debug("We are able to allocate {} from LPN {}, after this LPN, we still need to allocate {}, " +
+                            " there's still quantity {} left in this inventory summary",
                             allocatedQuantity, allocatedLpn, totalQuantityToBeAllocated,
                             allocatibleQuantity, inventorySummary.getLocation().getName());
-                    sortedLPNQuantites.remove(allocatedLpn);
+                    sortedLPNQuantityIterator.remove();
                 }
 
 
