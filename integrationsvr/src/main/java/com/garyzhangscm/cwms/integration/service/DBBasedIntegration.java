@@ -120,6 +120,10 @@ public class DBBasedIntegration implements Integration{
 
         logger.debug("#1 Customer data");
         dbBasedInventoryAdjustmentConfirmationIntegration.sendToHost();
+
+
+        logger.debug("#2 order confirmation");
+        dbBasedOrderConfirmationIntegration.sendToHost();
     }
     @Override
     public List<DBBasedClient> getClientData(

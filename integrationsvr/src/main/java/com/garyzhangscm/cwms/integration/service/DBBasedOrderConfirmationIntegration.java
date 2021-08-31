@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.integration.service;
 
+import com.garyzhangscm.cwms.integration.clients.HostRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
@@ -9,6 +10,10 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -30,7 +35,29 @@ public class DBBasedOrderConfirmationIntegration {
     KafkaSender kafkaSender;
     @Autowired
     DBBasedOrderConfirmationRepository dbBasedOrderConfirmationRepository;
+    @Autowired
+    HostRestemplateClient hostRestemplateClient;
 
+    @Value("${integration.record.process.limit:100}")
+    int recordLimit;
+
+    private List<DBBasedOrderConfirmation> findPendingIntegration() {
+        Pageable limit = PageRequest.of(0,recordLimit);
+
+        Page<DBBasedOrderConfirmation> dbBasedOrderConfirmations
+                = dbBasedOrderConfirmationRepository.findAll(
+                (Root<DBBasedOrderConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                },
+                limit
+        );
+        return dbBasedOrderConfirmations.getContent();
+    }
 
     public List<DBBasedOrderConfirmation> findAll(Long warehouseId, String warehouseName,
                                                   String number,
@@ -84,8 +111,6 @@ public class DBBasedOrderConfirmationIntegration {
 
     public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
 
-
-        // Convert inventoryAdjustmentConfirmation to integration data
         DBBasedOrderConfirmation dbBasedOrderConfirmation =
                 getDBBasedOrderConfirmation(orderConfirmation);
 
@@ -95,5 +120,37 @@ public class DBBasedOrderConfirmationIntegration {
 
     private DBBasedOrderConfirmation getDBBasedOrderConfirmation(OrderConfirmation orderConfirmation) {
         return new DBBasedOrderConfirmation(orderConfirmation);
+    }
+
+
+    public void sendToHost() {
+        List<DBBasedOrderConfirmation> dbBasedOrderConfirmations =
+                findPendingIntegration();
+        logger.debug("# find " +  dbBasedOrderConfirmations.size() + " dbBasedOrderConfirmations");
+
+        dbBasedOrderConfirmations.forEach(
+                dbBasedOrderConfirmation -> {
+                    String result = "";
+                    String errorMessage = "";
+                    try {
+                        result = hostRestemplateClient.sendIntegrationData("order-confirmation", dbBasedOrderConfirmation);
+                        logger.debug("# get result " + result);
+                    }
+                    catch (Exception ex) {
+                        ex.printStackTrace();
+                        result = "false";
+                        errorMessage = ex.getMessage();
+                    }
+                    if (result.equalsIgnoreCase("success")) {
+                        dbBasedOrderConfirmation.setStatus(IntegrationStatus.COMPLETED);
+                    }
+                    else {
+                        dbBasedOrderConfirmation.setStatus(IntegrationStatus.ERROR);
+                        dbBasedOrderConfirmation.setErrorMessage(errorMessage);
+                    }
+                    save(dbBasedOrderConfirmation);
+                }
+        );
+
     }
 }
