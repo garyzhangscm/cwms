@@ -28,42 +28,43 @@
 		<groupExpression><![CDATA[$F{number}]]></groupExpression>
 	</group>
 	<pageHeader>
-		<band height="160" splitType="Stretch">
+		<band height="185" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
-				<reportElement x="0" y="94" width="280" height="20" uuid="7a07d70d-0772-4b49-8a3a-e5b68f8009aa"/>
+				<reportElement x="0" y="124" width="280" height="20" uuid="7a07d70d-0772-4b49-8a3a-e5b68f8009aa"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$P{order_number}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="0" width="100" height="20" uuid="84e4cfd6-f38d-4ce0-a94a-5d826337b490"/>
+				<reportElement x="0" y="45" width="100" height="20" uuid="84e4cfd6-f38d-4ce0-a94a-5d826337b490"/>
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{order.number}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="0" y="20" width="280" height="70" uuid="364e53ed-1b4d-40bf-9a88-57af9b4410e3">
+				<reportElement x="0" y="65" width="280" height="55" uuid="364e53ed-1b4d-40bf-9a88-57af9b4410e3">
 					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="true" checksumRequired="false" barHeight="50">
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false" barHeight="50">
 					<jr:codeExpression><![CDATA[$P{order_number}]]></jr:codeExpression>
 				</jr:barbecue>
 			</componentElement>
 			<textField>
-				<reportElement x="0" y="130" width="100" height="20" uuid="da5e7af4-f9ce-41af-bb62-b41acd1602e1"/>
+				<reportElement x="0" y="160" width="100" height="20" uuid="da5e7af4-f9ce-41af-bb62-b41acd1602e1"/>
 				<textElement>
 					<font fontName="SimSun"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{totalPalletCount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="100" y="130" width="180" height="20" uuid="199a5bb5-94e9-4a14-afbf-261ce9235fef"/>
+				<reportElement x="100" y="160" width="180" height="20" uuid="199a5bb5-94e9-4a14-afbf-261ce9235fef"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$P{total_pallet_count}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="290" y="0" width="170" height="20" uuid="a5220643-00d3-443d-b074-395105c854f7">
+				<reportElement x="290" y="45" width="170" height="20" uuid="a5220643-00d3-443d-b074-395105c854f7">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -72,17 +73,28 @@
 				<textFieldExpression><![CDATA[$R{destinationLocation}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="290" y="20" width="280" height="70" uuid="6c61c449-83fe-45a0-bc2b-9d274eac7355">
+				<reportElement x="290" y="65" width="280" height="55" uuid="6c61c449-83fe-45a0-bc2b-9d274eac7355">
 					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="true" checksumRequired="false" barHeight="50">
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false" barHeight="50">
 					<jr:codeExpression><![CDATA[$P{destination_location}]]></jr:codeExpression>
 				</jr:barbecue>
 			</componentElement>
 			<textField>
-				<reportElement x="290" y="94" width="280" height="20" uuid="3aa9d794-c018-493b-b5d3-09338b641fd4"/>
+				<reportElement x="290" y="124" width="280" height="20" uuid="3aa9d794-c018-493b-b5d3-09338b641fd4"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$P{destination_location}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="2" width="240" height="40" uuid="a92d8d79-8a80-4625-a839-fb50ee77387d">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="SimSun" size="29" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{order_pick_sheet}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

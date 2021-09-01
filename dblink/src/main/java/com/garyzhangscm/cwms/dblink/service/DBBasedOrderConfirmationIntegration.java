@@ -24,6 +24,11 @@ public class DBBasedOrderConfirmationIntegration {
     private DBBasedOrderConfirmationRepository dbBasedOrderConfirmationRepository;
 
     public DBBasedOrderConfirmation save(DBBasedOrderConfirmation dbBasedOrderConfirmation) {
+        dbBasedOrderConfirmation.getOrderLines().forEach(
+                dbBasedOrderLineConfirmation -> dbBasedOrderLineConfirmation.setOrder(
+                        dbBasedOrderConfirmation
+                )
+        );
         return dbBasedOrderConfirmationRepository.save(dbBasedOrderConfirmation);
     }
 

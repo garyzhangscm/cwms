@@ -60,6 +60,9 @@ public class DBBasedOrderConfirmation implements Serializable {
     private List<DBBasedOrderLineConfirmation> orderLines = new ArrayList<>();
 
 
+    @Column(name = "status")
+    private String status = "R";
+
     @Column(name = "insert_time")
     private LocalDateTime insertTime;
     @Column(name = "last_update_date")
@@ -140,5 +143,13 @@ public class DBBasedOrderConfirmation implements Serializable {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

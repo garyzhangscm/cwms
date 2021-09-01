@@ -44,6 +44,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1057,7 +1058,9 @@ public class OrderService implements TestDataInitiableService {
         // set the parameters to be the meta data of
         // the order
 
-        report.addParameter("ship_date", LocalDateTime.now().toString());
+        report.addParameter("ship_date", LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss")
+        ));
 
         report.addParameter("order_number",
                 order.getNumber());
@@ -1109,7 +1112,8 @@ public class OrderService implements TestDataInitiableService {
         if (picks.size() > 0) {
             pickedInventories
                     = inventoryServiceRestemplateClient.getPickedInventory(
-                        order.getWarehouseId(), pickService.findByOrder(order)
+                        order.getWarehouseId(), pickService.findByOrder(order),
+                    true
                     );
         }
 

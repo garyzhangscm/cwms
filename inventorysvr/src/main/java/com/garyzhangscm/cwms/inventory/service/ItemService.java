@@ -505,7 +505,7 @@ public class ItemService implements TestDataInitiableService{
                 findAll(item.getWarehouseId(), item.getName(), null,
                         null,null,null,null,null,
                         null,null,null,null,
-                        null,null,null,null, null,null,false)
+                        null,null,null,null, null,null,null,false)
                 .size() > 0) {
             logger.debug("There's inventory attached to this item  {}  , can't remove it",
                     item.getName());
