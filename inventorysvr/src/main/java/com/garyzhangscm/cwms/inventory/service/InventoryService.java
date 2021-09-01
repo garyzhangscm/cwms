@@ -148,12 +148,13 @@ public class InventoryService implements TestDataInitiableService{
                                    String pickIds,
                                    String lpn,
                                    String inventoryIds,
-                                   Boolean notPutawayInventoryOnly) {
+                                   Boolean notPutawayInventoryOnly,
+                                   Boolean includeVirturalInventory) {
         return findAll(warehouseId, itemName, itemPackageTypeName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId, receiptId, workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn,
-                inventoryIds, notPutawayInventoryOnly,
+                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 true);
     }
 
@@ -176,6 +177,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String lpn,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
+                                   Boolean includeVirturalInventory,
                                    boolean includeDetails) {
 
         LocalDateTime currentLocalDateTime = LocalDateTime.now();
@@ -304,13 +306,23 @@ public class InventoryService implements TestDataInitiableService{
                     }
 
                     // Only return actual inventory
+                    if(!Boolean.TRUE.equals(includeVirturalInventory)) {
+                        predicates.add(criteriaBuilder.equal(root.get("virtual"), false));
+                    }
 
-                    predicates.add(criteriaBuilder.equal(root.get("virtual"), false));
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
+        inventories.sort((inventory1, inventory2) -> {
+            if(inventory1.getLocationId().equals(inventory2.getLocationId())) {
+                return inventory1.getLpn().compareToIgnoreCase(inventory2.getLpn());
+            }
+            else {
+                return inventory1.getLocationId().compareTo(inventory2.getLocationId());
+            }
+        });
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we found {} record",
                  ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
@@ -1885,7 +1897,7 @@ public class InventoryService implements TestDataInitiableService{
                         pickIds,
                         null,
                         null,
-                        null
+                        null, null
                 );
                 // Let's remove those inventories
                 pickedInventories.forEach(inventory -> removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL));
@@ -1930,7 +1942,7 @@ public class InventoryService implements TestDataInitiableService{
                     null,
                     lpn,
                     null,
-                    null
+                    null, null
             );
             // we will only return the inventory without any pick attached to it
             return inventories.stream().filter(inventory -> Objects.isNull(inventory.getPickId())).collect(Collectors.toList());
@@ -1962,7 +1974,7 @@ public class InventoryService implements TestDataInitiableService{
                         pickIds,
                         null,
                         null,
-                        null
+                        null, null
                 );
             }
             return pickedInventories;

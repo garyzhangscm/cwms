@@ -56,12 +56,14 @@ public class InventoryController {
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+                                              @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn, inventoryIds, notPutawayInventoryOnly,
+                includeVirturalInventory,
                 includeDetails);
     }
     @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
@@ -82,12 +84,13 @@ public class InventoryController {
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
                                  @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
-                                 @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly) {
+                                 @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+                                              @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory) {
         return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, inventoryIds, notPutawayInventoryOnly).size();
+                pickIds, lpn, inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, false).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
