@@ -1039,8 +1039,8 @@ public class OrderService implements TestDataInitiableService {
 
         logger.debug("will call resource service to print the report with locale: {}",
                 locale);
-        logger.debug("####   Report   Data  ######");
-        logger.debug(reportData.toString());
+        //logger.debug("####   Report   Data  ######");
+        //logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
                         warehouseId, ReportType.PACKING_SLIP, reportData, locale
@@ -1170,6 +1170,225 @@ public class OrderService implements TestDataInitiableService {
                 totalShippedQuantity);
         report.addParameter("total_pallet_count",
                 totalPalletCount);
+
+    }
+
+
+
+
+    public ReportHistory generateBillOfLadingByOrder(Long orderId, String locale)
+            throws JsonProcessingException {
+
+        return generateBillOfLadingByOrder(findById(orderId), locale);
+    }
+    public ReportHistory generateBillOfLadingByOrder(Order order, String locale)
+            throws JsonProcessingException {
+
+        Long warehouseId = order.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupOrderBillOfLadingParameters(
+                reportData, order
+        );
+        setupOrderBillOfLadingData(
+                reportData, order
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.BILL_OF_LADING, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupOrderBillOfLadingParameters(
+            Report report, Order order) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("ship_date", LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss")
+        ));
+
+        report.addParameter("order_number",
+                order.getNumber());
+
+        // get the warehouse address as the ship from address
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                order.getWarehouseId()
+        );
+        if (Objects.nonNull(warehouse)) {
+            report.addParameter("ship_from_name",
+                    warehouse.getName());
+            report.addParameter("ship_from_address_line1",
+                    warehouse.getAddressLine1());
+            report.addParameter("ship_from_address_city_state_zipcode",
+                    warehouse.getAddressCity() + ", " +
+                            warehouse.getAddressState() + " " +
+                            warehouse.getAddressPostcode());
+        }
+        else {
+            report.addParameter("ship_from_name",
+                    "N/A");
+            report.addParameter("ship_from_address_line1",
+                    "N/A");
+            report.addParameter("ship_from_address_city_state_zipcode",
+                    "N/A");
+        }
+
+        // if we can get the customer's name, then display it
+        // otherwise, get the first name and last name from
+        // the ship to address
+        if (Objects.nonNull(order.getShipToCustomer())) {
+
+            report.addParameter("ship_to_name",
+                    order.getShipToCustomer().getName());
+        }
+        else if (Objects.nonNull(order.getShipToCustomerId())) {
+            Customer customer = commonServiceRestemplateClient.getCustomerById(
+                    order.getShipToCustomerId()
+            );
+            if (Objects.nonNull(customer)) {
+                report.addParameter("ship_to_name",
+                        order.getShipToCustomer().getName());
+            }
+            else {
+                report.addParameter("ship_to_name", "");
+            }
+        }
+        else {
+
+            report.addParameter("ship_to_name",
+                    order.getShipToContactorFirstname() + " " +
+                              order.getShipToContactorLastname());
+        }
+
+        // get the ship to address
+        report.addParameter("ship_to_address_line1",
+                order.getShipToAddressLine1());
+        report.addParameter("ship_to_address_city_state_zipcode",
+                order.getShipToAddressCity() + ", " +
+                        order.getShipToAddressState() + " " +
+                        order.getShipToAddressPostcode());
+
+
+
+    }
+
+    private void setupOrderBillOfLadingData(Report report, Order order) {
+
+        long totalShippedQuantity = 0l;
+        int totalPalletCount = 0;
+
+        // set data to be all picks
+        List<BillOfLadingData> billOfLadingDataList = new ArrayList<>();
+
+        // get all the inventory that is picked but not shipped yet for the order and show the
+        // inventory information in the pack slip
+
+        List<Inventory> pickedInventories = new ArrayList<>();
+        List<Pick> picks = pickService.findByOrder(order);
+        if (picks.size() > 0) {
+            pickedInventories
+                    = inventoryServiceRestemplateClient.getPickedInventory(
+                    order.getWarehouseId(), pickService.findByOrder(order),
+                    true
+            );
+        }
+
+        // key: item name
+        // value: quantity
+        Map<String, Long> itemQuantityMap = new HashMap<>();
+
+        // key: item name
+        // value: lpn count
+        Map<String, Set<String>> itemLpnMap = new HashMap<>();
+
+        // key: item name
+        // value: item description
+        Map<String, String> itemDescriptionMap = new HashMap<>();
+
+        // key: item name
+        // value: stock uom's name
+        Map<String, String> itemStockUOMMap = new HashMap<>();
+
+        // key: item name
+        // value: item family name
+        Map<String, String> itemFamilyNameMap = new HashMap<>();
+
+
+        for (Inventory pickedInventory : pickedInventories) {
+            String itemName = pickedInventory.getItem().getName();
+            logger.debug("item name: {}", pickedInventory.getItem().getName());
+            logger.debug("item default package type: {}",
+                    pickedInventory.getItem().getDefaultItemPackageType().getName());
+            logger.debug("item default package type's item uom: {}",
+                    pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getId());
+            logger.debug("item default package type's item stock uom: {}",
+                    pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName());
+            String stockUOMName = pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+
+            String itemFamilyName = "N/A";
+            if (Objects.nonNull(pickedInventory.getItem().getItemFamily())) {
+                itemFamilyName =
+                        pickedInventory.getItem().getItemFamily().getName();
+            }
+
+            // total quantity per item
+            Long accumulatedQuantity = itemQuantityMap.getOrDefault(
+                    itemName, 0l
+            ) + pickedInventory.getQuantity();
+            itemQuantityMap.put(itemName, accumulatedQuantity);
+
+            // total LPN count per item
+            Set<String> lpnSet = itemLpnMap.getOrDefault(
+                    itemName, new HashSet<>()
+            );
+            lpnSet.add(pickedInventory.getLpn());
+            itemLpnMap.put(itemName, lpnSet);
+
+            // item name and description
+            itemStockUOMMap.putIfAbsent(
+                    itemName, stockUOMName
+            );
+
+
+            itemFamilyNameMap.putIfAbsent(
+                    itemName, pickedInventory.getItem().getDescription()
+            );
+
+            itemDescriptionMap.putIfAbsent(
+                    itemName, itemFamilyName
+            );
+        }
+        for (Map.Entry<String, String> entry : itemDescriptionMap.entrySet()) {
+            String itemName = entry.getKey();
+            String itemDescription = entry.getValue();
+            Long quantity = itemQuantityMap.getOrDefault(itemName, 0l);
+            Integer lpnCount = itemLpnMap.getOrDefault(itemName, new HashSet<>()).size();
+            String stockUOMName = itemStockUOMMap.getOrDefault(itemName, "N/A");
+            String itemFamilyName = itemFamilyNameMap.getOrDefault(itemName, "N/A");
+            String comment = String.valueOf(quantity / lpnCount) + " " + stockUOMName + "/PL";
+
+
+            billOfLadingDataList.add(new BillOfLadingData(itemName,
+                    itemDescription, quantity, lpnCount,stockUOMName, itemFamilyName,
+                    comment
+            ));
+        }
+
+        report.setData(billOfLadingDataList);
+
 
     }
 

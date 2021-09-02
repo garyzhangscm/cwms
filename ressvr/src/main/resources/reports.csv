@@ -8,3 +8,4 @@ company,warehouse,type,description,fileName,orientation
 , ,WORK_ORDER_PICK_SHEET,Work Order Pick Sheet,work_order_pick_sheet,LANDSCAPE
 , ,PRODUCTION_LINE_ASSIGNMENT_REPORT,Production Line Assignment Report,ecotech_production_line_assignment_report,PORTRAIT
 , ,PACKING_SLIP,Packing Slip,packing_slip,PORTRAIT
+, ,BILL_OF_LADING,bill_of_lading,bill_of_lading,PORTRAIT

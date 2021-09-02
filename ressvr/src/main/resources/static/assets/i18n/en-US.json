@@ -1333,5 +1333,8 @@
   "menu.mobile.inbound.receive": "Receive",
   "packing-slip": "Packing Slip",
   "reverseProduction": "Reverse Production",
-  "menu.main.work-order.wo-produce-transaction": "Produce Transaction"
+  "menu.main.work-order.wo-produce-transaction": "Produce Transaction",
+  "REPORT-TYPE-PRODUCTION_LINE_ASSIGNMENT_REPORT": "Production Line Assignment Report",
+  "REPORT-TYPE-BILL_OF_LADING": "Bill Of Lading",
+  "bill-of-lading": "Bill Of Lading"
 }

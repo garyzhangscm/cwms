@@ -1338,5 +1338,8 @@
   "menu.mobile.inbound.receive": "收货",
   "packing-slip": "装箱单",
   "reverseProduction": "冲消加工入库",
-  "menu.main.work-order.wo-produce-transaction": "生产事务"
+  "menu.main.work-order.wo-produce-transaction": "生产事务",
+  "REPORT-TYPE-PRODUCTION_LINE_ASSIGNMENT_REPORT": "产线分配报表",
+  "REPORT-TYPE-BILL_OF_LADING": "提单",
+  "bill-of-lading": "提单"
 }
