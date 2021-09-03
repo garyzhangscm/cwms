@@ -11,7 +11,7 @@ text,i18n,icon,shortcutRoot,sequence,link,badge,menuGroup,name
 "WorkTask",menu.main.work-task,anticon-user,,9,,,Main-Menu,Main-Menu-WorkTask
 "Report",menu.main.report,anticon-printer,,10,,,Main-Menu,Main-Menu-Report
 "Util",menu.main.util,anticon-tool,,11,,,Main-Menu,Main-Menu-Util
-"Inbound",menu.mobile.inbound,0xe8d1,,1,,,Mobile-Menu,Mobile-Menu-Inbound
-"Outbound",menu.mobile.outbound,0xeaa8,,2,,,Mobile-Menu,Mobile-Menu-Outbound
-"Inventory",menu.mobile.inventory,0xe63a,,3,,,Mobile-Menu,Mobile-Menu-Inventory
-"WorkOrder",menu.mobile.work-order,0xe63a,,4,,,Mobile-Menu,Mobile-Menu-WorkOrder
+"Inbound",menu.mobile.inbound,menu_inbound.png,,1,,,Mobile-Menu,Mobile-Menu-Inbound
+"Outbound",menu.mobile.outbound,menu_outbound.jpg,,2,,,Mobile-Menu,Mobile-Menu-Outbound
+"Inventory",menu.mobile.inventory,menu_inventory.png,,3,,,Mobile-Menu,Mobile-Menu-Inventory
+"WorkOrder",menu.mobile.work-order,menu_workorder.png,,4,,,Mobile-Menu,Mobile-Menu-WorkOrder

@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.resources.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.exception.ReportAccessPermissionException;
 import com.garyzhangscm.cwms.resources.exception.ReportFileMissingException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
@@ -36,6 +37,10 @@ public class ReportService implements TestDataInitiableService{
 
     @Value("${report.template.folder}")
     private String reportTemplateFolder;
+
+    @Value("${report.customizedTemplate.folder}")
+    private String reportCustomizedTemplateFolder;
+
     // WHen the user upload a customized report
     // template, we will save it  in a temporary folder
     // The file will be moved to the final folder
@@ -154,23 +159,28 @@ public class ReportService implements TestDataInitiableService{
         // check if we already have a customized report
         // 1. warehouse customized report
         // 2. company custmoized report
-        Report warehouseReport = reportRepository.findByWarehouseIdAndType(
-                warehouseId, type
-        );
-        if (Objects.nonNull(warehouseReport)) {
-            if (includeDetails) {
-                loadDetail(warehouseReport);
+        if (Objects.nonNull(warehouseId)) {
+
+            Report warehouseReport = reportRepository.findByWarehouseIdAndType(
+                    warehouseId, type
+            );
+            if (Objects.nonNull(warehouseReport)) {
+                if (includeDetails) {
+                    loadDetail(warehouseReport);
+                }
+                return warehouseReport;
             }
-            return warehouseReport;
         }
-        Report companyReport = reportRepository.findByCompanyIdAndType(
+        if (Objects.nonNull(companyId)) {
+            Report companyReport = reportRepository.findByCompanyIdAndType(
                     companyId, type
             );
-        if (Objects.nonNull(companyReport)) {
-            if (includeDetails) {
-                loadDetail(companyReport);
+            if (Objects.nonNull(companyReport)) {
+                if (includeDetails) {
+                    loadDetail(companyReport);
+                }
+                return companyReport;
             }
-            return companyReport;
         }
 
         // we don't have any customized version, let's
@@ -686,6 +696,14 @@ public class ReportService implements TestDataInitiableService{
         copyUploadedPropertiesFiles(warehouseId, username, companySpecific,
                 warehouseSpecific, report);
 
+
+        if (companySpecific || warehouseSpecific) {
+            copyUploadedCustomizedTemplateFile(warehouseId, username, companySpecific,
+                    warehouseSpecific, report);
+            copyUploadedCustomizedPropertiesFiles(warehouseId, username, companySpecific,
+                    warehouseSpecific, report);
+        }
+
         // clear the company id and warehouse id if
         // the report is not specific to any company or warehouse
         if (!companySpecific) {
@@ -694,6 +712,14 @@ public class ReportService implements TestDataInitiableService{
         if (!warehouseSpecific) {
             report.setWarehouseId(null);
         }
+
+        // remove the postfix of the file
+        if (report.getFileName().endsWith(".jrxml")) {
+            report.setFileName(
+                    report.getFileName().substring(0, report.getFileName().length() - 6)
+            );
+        }
+
         return saveOrUpdate(report);
 
     }
@@ -725,7 +751,39 @@ public class ReportService implements TestDataInitiableService{
             fileService.copyFile(sourcePropertiesFilePath, destinationPropertiesFilePath);
 
             // remote the original file
-            new File(sourcePropertiesFilePath).deleteOnExit();
+            // new File(sourcePropertiesFilePath).deleteOnExit();
+        }
+
+    }
+
+    private void copyUploadedCustomizedPropertiesFiles(Long warehouseId, String username,
+                                             Boolean companySpecific, Boolean warehouseSpecific, Report report) throws IOException {
+
+        // we will always assume that the properties files has the same name
+        // as the template file
+
+        logger.debug("Start to copy properties file");
+        String filenameWithoutExtension = report.getFileName().replaceFirst("[.][^.]+$", "");
+
+        // get all properties files that start with same name and ends with .properties
+        File dir = new File(getTemporaryReportTemplateFilePath(warehouseId, username));
+
+
+        FileFilter fileFilter = new WildcardFileFilter(filenameWithoutExtension + "*.properties");
+        File[] files = dir.listFiles(fileFilter);
+        logger.debug("get {} properties files under folder {}",
+                files.length, dir.getAbsolutePath());
+        for (int i = 0; i < files.length; i++) {
+            String sourcePropertiesFilePath = getTemporaryReportTemplateFilePath(warehouseId, username)
+                    + files[i].getName();
+
+            String destinationPropertiesFilePath = getReportCustomizedTemplateFile(companySpecific, warehouseSpecific, report)
+                    + files[i].getName();
+            logger.debug("Copy template file from {} to {}", sourcePropertiesFilePath, destinationPropertiesFilePath);
+            fileService.copyFile(sourcePropertiesFilePath, destinationPropertiesFilePath);
+
+            // remote the original file
+            // new File(sourcePropertiesFilePath).deleteOnExit();
         }
 
     }
@@ -745,7 +803,25 @@ public class ReportService implements TestDataInitiableService{
         fileService.copyFile(sourceTemplateFilePath, destinationTemplateFilePath);
 
         // remote the original file
-        new File(sourceTemplateFilePath).deleteOnExit();
+        // new File(sourceTemplateFilePath).deleteOnExit();
+
+    }
+    private void copyUploadedCustomizedTemplateFile(Long warehouseId, String username,
+                                          Boolean companySpecific, Boolean warehouseSpecific, Report report) throws IOException {
+        logger.debug("Start to copy template file");
+        // Copy the file from temporary folder into template folder
+        String sourceTemplateFilePath = getTemporaryReportTemplateFilePath(warehouseId, username)
+                + report.getFileName();
+
+        String destinationTemplateFilePath = getReportCustomizedTemplateFile(companySpecific, warehouseSpecific, report)
+                + report.getFileName();
+
+        logger.debug("Copy template file from {} to {}", sourceTemplateFilePath, destinationTemplateFilePath);
+
+        fileService.copyFile(sourceTemplateFilePath, destinationTemplateFilePath);
+
+        // remote the original file
+        // new File(sourceTemplateFilePath).deleteOnExit();
 
     }
 
@@ -780,5 +856,41 @@ public class ReportService implements TestDataInitiableService{
         }
 
         return filepath;
+    }
+    private String getReportCustomizedTemplateFile(Boolean companySpecific, Boolean warehouseSpecific, Report report) {
+
+        String filepath;
+        if (!reportCustomizedTemplateFolder.endsWith("/")) {
+            filepath = reportCustomizedTemplateFolder + "/";
+        }
+        else  {
+
+            filepath = reportCustomizedTemplateFolder;
+        }
+        if (companySpecific || warehouseSpecific) {
+            filepath += report.getCompanyId() + "/";
+        }
+        if (warehouseSpecific) {
+            filepath += report.getWarehouseId() + "/";
+        }
+
+        return filepath;
+    }
+
+    public void delete(Long id) {
+        reportRepository.deleteById(id);
+    }
+
+
+    public void removeReport(Long id) {
+        // we will not allow the user to remove
+        // the default report
+        Report report = findById(id);
+        if (Objects.isNull(report.getCompanyId()) &&
+                Objects.isNull(report.getWarehouseId())) {
+            throw ReportAccessPermissionException.raiseException("Can't remove standard report, please override with your own report template");
+        }
+
+        delete(id);
     }
 }
