@@ -77,6 +77,13 @@ public class ReportController {
         return reportService.changeReport(report);
     }
 
+    @RequestMapping(value="/reports/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeReport(@PathVariable Long id) {
+         reportService.removeReport(id);
+         return ResponseBodyWrapper.success("report id " + id + " is removed");
+    }
+
+
 
     @RequestMapping(value="/reports/{id}", method = RequestMethod.GET)
     public Report findReport(@PathVariable Long id) {

@@ -72,6 +72,9 @@ public class MyApplicationRunner implements ApplicationRunner {
     private String reportResultFolder;
     @Value("${report.template.resourceFolder}")
     private String reportTemplateResourceFolder;
+    @Value("${report.customizedTemplate.folder}")
+    private String reportCustomizedTemplateFolder;
+
 
 
     @Override
@@ -96,9 +99,26 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         copyReportFiles();
 
+        copyCustomizedReportFiles();
+
 
 
     }
+
+    private void copyCustomizedReportFiles() {
+
+        // copy the customized report
+
+        try {
+            logger.debug("start to copy from {} into {}",
+                    reportCustomizedTemplateFolder, reportTemplateFolder);
+            fileService.copyDirectory(reportCustomizedTemplateFolder, reportTemplateFolder);
+        } catch (IOException e) {
+            logger.debug("Error while copy customized report files");
+            e.printStackTrace();
+        }
+    }
+
     private void createReportFolders() {
 
         // create folder for report template

@@ -45,6 +45,10 @@ public class MenuGroup extends AuditibleEntity<String>  implements Comparable<Me
     @Column(name = "name")
     private String  name;
 
+
+    @Column(name = "image")
+    private String  image;
+
     @Column(name = "text")
     private String  text;
 
@@ -160,5 +164,13 @@ public class MenuGroup extends AuditibleEntity<String>  implements Comparable<Me
 
     public void setType(MenuType type) {
         this.type = type;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
