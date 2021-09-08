@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.ReportType;
 import com.garyzhangscm.cwms.resources.service.ReportHistoryService;
 import net.sf.jasperreports.engine.json.expression.filter.FilterExpression;
 import org.apache.logging.log4j.util.Strings;
@@ -65,12 +66,13 @@ public class PrintingServiceRestemplateClient  {
 
 
     }
-    public void sendPrintingRequest(File file, String printer, int copies) {
-
+    public void sendPrintingRequest(File file, ReportType reportType, String printer, int copies) {
         logger.debug("Start to send file {} to printing server: {}, copies: {}",
                 file.getName(), PRINTING_SERVER_URL, copies);
 
-        String url = PRINTING_SERVER_URL + "/printing/pdf?copies=" + copies;
+        String url = PRINTING_SERVER_URL + "/printing/" +
+                (reportType.isLabel() ? "label" : "pdf") +
+                "?copies=" + copies;
         // if printer is specified, add printer to the parameters
         if (Strings.isNotBlank(printer)) {
             url +="&printer=" + printer;
@@ -95,7 +97,8 @@ public class PrintingServiceRestemplateClient  {
                 response.getStatusCodeValue(),
                 response.getBody());
 
-
     }
+
+
 
 }
