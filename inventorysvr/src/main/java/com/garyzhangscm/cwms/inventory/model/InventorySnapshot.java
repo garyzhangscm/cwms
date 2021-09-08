@@ -57,6 +57,13 @@ public class InventorySnapshot extends AuditibleEntity<String> implements Serial
     @Column(name = "complete_time")
     private LocalDateTime completeTime;
 
+    // allow the user to generate an excel file
+    // for the inventory snapshot. We will save
+    // the file in the server so the user can download
+    // any time after that.
+    @Column(name = "file_name")
+    private String fileName;
+
 
     @Transient
     private Warehouse warehouse;
@@ -160,5 +167,13 @@ public class InventorySnapshot extends AuditibleEntity<String> implements Serial
 
     public void setCompleteTime(LocalDateTime completeTime) {
         this.completeTime = completeTime;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

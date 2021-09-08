@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -97,21 +99,15 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     @Enumerated(EnumType.STRING)
     private ShipmentLineStatus status = ShipmentLineStatus.PENDING;
 
+
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append("number: ").append(number).append(",")
-                .append("shipment number: ").append(shipment.getNumber()).append(",")
-                .append("wave number: ").append(wave.getNumber()).append(",")
-                .append("order: ").append(orderLine.getOrder().getNumber()).append(",")
-                .append("orderLine: ").append(orderLine).append(",")
-                .append("quantity: ").append(quantity).append(",")
-                .append("openQuantity: ").append(openQuantity).append(",")
-                .append("inprocessQuantity: ").append(inprocessQuantity).append(",")
-                .append("shippedQuantity: ").append(shippedQuantity).append("}")
-                .toString();
-
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

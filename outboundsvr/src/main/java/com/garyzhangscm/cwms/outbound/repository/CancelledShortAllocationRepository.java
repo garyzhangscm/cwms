@@ -20,10 +20,14 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 
 import com.garyzhangscm.cwms.outbound.model.CancelledShortAllocation;
+import com.garyzhangscm.cwms.outbound.model.ShipmentLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CancelledShortAllocationRepository extends JpaRepository<CancelledShortAllocation, Long>, JpaSpecificationExecutor<CancelledShortAllocation> {
+
+
+    long deleteByShipmentLine(ShipmentLine shipmentLine);
 }

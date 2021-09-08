@@ -61,6 +61,14 @@ public class OrderController {
         return orderService.findById(id);
     }
 
+
+    @RequestMapping(value="/orders/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeOrder(@PathVariable Long id) {
+
+         orderService.removeOrder(id);
+         return ResponseBodyWrapper.success("Success");
+    }
+
     @RequestMapping(value="/orders/{id}", method = RequestMethod.PUT)
     public Order changeOrder(@RequestBody Order order){
         return orderService.save(order);
@@ -101,12 +109,6 @@ public class OrderController {
     public Order dispatchOrder(@PathVariable Long id,
                                @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return orderService.dispatch(id, ignoreUnfinishedPicks);
-    }
-
-
-    @RequestMapping(value="/orders", method = RequestMethod.DELETE)
-    public void removeOrders(@RequestParam(name = "order_ids", required = false, defaultValue = "") String orderIds) {
-        orderService.delete(orderIds);
     }
 
 

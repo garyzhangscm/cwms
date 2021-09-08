@@ -229,5 +229,12 @@ public class CancelledPickService {
 
 
 
+    @Transactional
+    public void removeCancelledPicks(Shipment shipment) {
+
+        shipment.getShipmentLines().forEach(
+                shipmentLine -> cancelledPickRepository.deleteByShipmentLine(shipmentLine)
+        );
+    }
 
 }

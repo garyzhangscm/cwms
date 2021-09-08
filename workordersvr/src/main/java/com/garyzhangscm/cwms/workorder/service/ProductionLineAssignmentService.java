@@ -440,6 +440,32 @@ public class ProductionLineAssignmentService   {
 
     }
 
+
+    public ReportHistory generateProductionLineAssignmentLabel(
+            Long productionLineAssignmentId, String locale) throws JsonProcessingException {
+        ProductionLineAssignment productionLineAssignment =
+                findById(productionLineAssignmentId);
+
+        Report reportData = new Report();
+        setupProductionLineAssignmentLabelData(
+                reportData, productionLineAssignment
+        );
+        logger.debug("will call resource service to print the label with locale: {}",
+                locale);
+        logger.debug("####   Production Line Assignment Label   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        productionLineAssignment.getWorkOrder().getWarehouseId(),
+                        ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL,
+                        reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
     public ReportHistory generateProductionLineAssignmentReport(
             Long productionLineAssignmentId, String locale) throws JsonProcessingException {
         ProductionLineAssignment productionLineAssignment =
@@ -509,6 +535,15 @@ public class ProductionLineAssignmentService   {
 
 
         reportData.setData(Collections.singleton(productionLineAssignmentReportData));
+    }
+
+    private void setupProductionLineAssignmentLabelData(
+            Report reportData, ProductionLineAssignment productionLineAssignment) {
+
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("lpn", "LPN-TEST-001");
+        reportData.setParameters(parameters);
     }
 
 

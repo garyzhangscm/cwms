@@ -10,3 +10,4 @@ company,warehouse,type,description,fileName,orientation
 , ,PACKING_SLIP,Packing Slip,packing_slip,PORTRAIT
 , ,BILL_OF_LADING,bill_of_lading,bill_of_lading,PORTRAIT
 , ,LPN_LABEL,lpn label,lpn,PORTRAIT
+, ,PRODUCTION_LINE_ASSIGNMENT_LABEL,Production Line Assignment Label,ecotech_production_line_assignment_label.prn,PORTRAIT

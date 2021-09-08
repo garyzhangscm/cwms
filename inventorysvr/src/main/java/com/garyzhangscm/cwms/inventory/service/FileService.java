@@ -103,4 +103,15 @@ public class FileService {
         MappingIterator<T> mappingIterator = mapper.readerFor(tClass).with(schema).readValues(csvInputStream);
         return mappingIterator.readAll();
     }
+
+    public void createCSVFiles(String directory, String fileName, String header, List<String> rows ) throws FileNotFoundException {
+
+        File csvOutputFile = new File(directory + "/" + fileName);
+        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
+            // write the header
+            pw.println(header);
+            // write the details
+            rows.stream().forEach(pw::println);
+        }
+    }
 }

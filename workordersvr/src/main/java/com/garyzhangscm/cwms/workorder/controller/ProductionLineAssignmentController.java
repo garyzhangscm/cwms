@@ -81,6 +81,16 @@ public class ProductionLineAssignmentController {
     }
 
 
+    @RequestMapping(value="/production-line-assignments/{id}/label", method = RequestMethod.POST)
+    public ReportHistory generateProductionLineAssignmentLabel(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+    ) throws JsonProcessingException {
+
+        return productionLineAssignmentService.generateProductionLineAssignmentLabel(id, locale);
+    }
+
+
 
 
 
