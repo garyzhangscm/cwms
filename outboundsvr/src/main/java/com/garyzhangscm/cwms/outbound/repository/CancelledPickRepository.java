@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 import com.garyzhangscm.cwms.outbound.model.CancelledPick;
 import com.garyzhangscm.cwms.outbound.model.Pick;
+import com.garyzhangscm.cwms.outbound.model.ShipmentLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -30,4 +31,6 @@ import java.util.List;
 
 @Repository
 public interface CancelledPickRepository extends JpaRepository<CancelledPick, Long>, JpaSpecificationExecutor<CancelledPick> {
+
+    long deleteByShipmentLine(ShipmentLine shipmentLine);
 }

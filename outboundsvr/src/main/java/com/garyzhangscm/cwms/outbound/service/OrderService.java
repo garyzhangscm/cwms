@@ -61,6 +61,8 @@ public class OrderService implements TestDataInitiableService {
 
     @Autowired
     private PickService pickService;
+    @Autowired
+    private ShortAllocationService shortAllocationService;
 
     @Autowired
     private ShipmentService shipmentService;
@@ -122,6 +124,7 @@ public class OrderService implements TestDataInitiableService {
         if (orders.size() > 0 && loadDetails) {
             loadOrderAttribute(orders);
         }
+        orders.sort((o1, o2) -> o2.getCreatedTime().compareTo(o1.getCreatedTime()));
         return orders;
 
     }
@@ -930,15 +933,17 @@ public class OrderService implements TestDataInitiableService {
                 .mapToLong(Long::longValue).sum();
     }
 
+    public Order changeAssignedStageLocations(Long id, Long locationGroupId, Long locationId) {
+        return changeAssignedStageLocations(findById(id), locationGroupId, locationId);
+    }
     /**
      * Change the assigned staging location
-     * @param id
      * @param locationGroupId
      * @param locationId
      * @return
      */
-    public Order changeAssignedStageLocations(Long id, Long locationGroupId, Long locationId) {
-        Order order = findById(id);
+    @Transactional
+    public Order changeAssignedStageLocations(Order order, Long locationGroupId, Long locationId) {
         logger.debug("changeAssignedStageLocations: order: {}, original assignment {} / {}, new assignment {} / {}",
                 order.getNumber(),
                 order.getStageLocationGroupId(), order.getStageLocationId(),
@@ -1217,7 +1222,7 @@ public class OrderService implements TestDataInitiableService {
         // the order
 
         report.addParameter("ship_date", LocalDateTime.now().format(
-                DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss")
+                DateTimeFormatter.ofPattern("MM/dd/yyyy")
         ));
 
         report.addParameter("order_number",
@@ -1364,11 +1369,11 @@ public class OrderService implements TestDataInitiableService {
 
 
             itemFamilyNameMap.putIfAbsent(
-                    itemName, pickedInventory.getItem().getDescription()
+                    itemName, itemFamilyName
             );
 
             itemDescriptionMap.putIfAbsent(
-                    itemName, itemFamilyName
+                    itemName,  pickedInventory.getItem().getDescription()
             );
         }
         for (Map.Entry<String, String> entry : itemDescriptionMap.entrySet()) {
@@ -1385,12 +1390,51 @@ public class OrderService implements TestDataInitiableService {
                     itemDescription, quantity, lpnCount,stockUOMName, itemFamilyName,
                     comment
             ));
+
+            totalPalletCount += lpnCount;
+            totalShippedQuantity += quantity;
         }
 
         report.setData(billOfLadingDataList);
 
+        report.addParameter("total_shipped_quantity",
+                totalShippedQuantity);
+        report.addParameter("total_pallet_count",
+                totalPalletCount);
 
     }
 
 
+    @Transactional
+    public void removeOrder(Long id) {
+
+        Order order = findById(id);
+        // make sure we don't have any pick / short allocation
+        if (pickService.findByOrder(order).size() > 0) {
+            throw OrderOperationException.raiseException("Can't remove order while it has open picks");
+        }
+        if (shortAllocationService.findByOrder(order).size() > 0){
+            throw OrderOperationException.raiseException("Can't remove order while it has open short allocations");
+        }
+
+        // if the order reserves any stage locations, release them
+        changeAssignedStageLocations(order, null, null);
+
+
+        // if we have shipment related to this order, remove the shipment as well
+        Set<Long> shipmentIds = new HashSet<>();
+        for (OrderLine orderLine : order.getOrderLines()) {
+            orderLine.getShipmentLines().forEach(
+                    shipmentLine -> shipmentIds.add(shipmentLine.getShipment().getId())
+            );
+        }
+        logger.debug("We already have {} shipment assigned to this order", shipmentIds.size());
+        for (Long shipmentId : shipmentIds) {
+            shipmentService.removeShipment(shipmentId);
+        }
+
+
+        // remove the order
+        delete(order);
+    }
 }

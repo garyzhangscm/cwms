@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,7 +91,7 @@ public class ShortAllocationService {
     public List<ShortAllocation> findAll(boolean loadDetails) {
         return findAll(null, null,
                 null, null, null,
-                null, null, null, loadDetails);
+                null, null, null, false, loadDetails);
     }
 
     public List<ShortAllocation> findAll() {
@@ -100,7 +101,8 @@ public class ShortAllocationService {
     public List<ShortAllocation> findAll(Long warehouseId,
                                          Long workOrderLineId, String workOrderLineIds,
                                          String itemNumber, Long orderId,  Long workOrderId,
-                                         Long shipmentId, Long waveId, boolean loadDetails) {
+                                         Long shipmentId, Long waveId, Boolean includeCancelledShortAllocation,
+                                         boolean loadDetails) {
 
 
         List<ShortAllocation> shortAllocations =  shortAllocationRepository.findAll(
@@ -150,6 +152,10 @@ public class ShortAllocationService {
                         Join<ShipmentLine, Wave> joinWave = joinShipmentLine.join("wave", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
                     }
+                    if (!Boolean.TRUE.equals(includeCancelledShortAllocation)) {
+                        // by default, we will skip the cancelled short allocation
+                        predicates.add(criteriaBuilder.notEqual(root.get("status"), ShortAllocationStatus.CANCELLED));
+                    }
 
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -163,12 +169,29 @@ public class ShortAllocationService {
         return shortAllocations;
     }
 
+
+
     public List<ShortAllocation> findAll(Long warehouseId,
                                          Long workOrderLineId, String workOrderLineIds,
-                                         String itemNumber, Long orderId,  Long workOrderId, Long shipmentId, Long waveId) {
+                                         String itemNumber, Long orderId,
+                                         Long workOrderId, Long shipmentId, Long waveId,
+                                         Boolean includeCancelledShortAllocation) {
         return findAll(warehouseId, workOrderLineId, workOrderLineIds,
-                itemNumber, orderId,  workOrderId, shipmentId, waveId, true);
+                itemNumber, orderId,  workOrderId,
+                shipmentId, waveId, includeCancelledShortAllocation,
+                true);
     }
+
+    public List<ShortAllocation> findByOrder(Order order) {
+        return findAll(order.getWarehouseId(), null, null,
+                null, order.getId(),  null, null, null, null);
+    }
+
+    public List<ShortAllocation> findByShipment(Shipment shipment) {
+        return findAll(shipment.getWarehouseId(), null, null,
+                null, null,  null, shipment.getId(), null, null);
+    }
+
 
     public void loadAttribute(List<ShortAllocation> shortAllocations) {
         for (ShortAllocation shortAllocation : shortAllocations) {
@@ -499,5 +522,23 @@ public class ShortAllocationService {
         logger.debug("# after reset short allocation id {} @ {}, its status is {}",
                 shortAllocation.getId(), LocalDateTime.now(), shortAllocation.getStatus());
 
+    }
+
+
+    /**
+     * Remove the cancelled short allocation. Note if the short allocation is active, then
+     * we will need to cancel it first,
+     * @param shipment
+     */
+    @Transactional
+    public void removeCancelledShortAllocations(Shipment shipment) {
+        List<ShortAllocation> shortAllocations = findByShipment(shipment);
+        if (shortAllocations.size() > 0) {
+            shortAllocations.stream().filter(
+                    shortAllocation -> shortAllocation.getStatus().equals(ShortAllocationStatus.CANCELLED)
+            ).forEach(
+                    shortAllocation -> delete(shortAllocation)
+            );
+        }
     }
 }

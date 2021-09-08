@@ -14,14 +14,9 @@ public class CancelledShortAllocation  extends AuditibleEntity<String> implement
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cancelled_allocation_id")
+    @Column(name = "cancelled_short_allocation_id")
     @JsonProperty(value="id")
     private Long id;
-
-    @OneToOne
-    @JoinColumn(name = "shipment_line_id")
-    @JsonIgnore
-    private ShipmentLine shipmentLine;
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -35,6 +30,14 @@ public class CancelledShortAllocation  extends AuditibleEntity<String> implement
     @Transient
     private Item item;
 
+
+    @OneToOne
+    @JoinColumn(name = "shipment_line_id")
+    @JsonIgnore
+    private ShipmentLine shipmentLine;
+
+    @Column(name = "work_order_line_id")
+    private Long workOrderLineId;
 
     @Column(name = "quantity")
     private Long quantity;
@@ -57,9 +60,6 @@ public class CancelledShortAllocation  extends AuditibleEntity<String> implement
     @Column(name = "status")
     private ShortAllocationStatus status;
 
-
-    @Column(name = "work_order_line_id")
-    private Long workOrderLineId;
 
 
     @Column(name = "cancelled_quantity")

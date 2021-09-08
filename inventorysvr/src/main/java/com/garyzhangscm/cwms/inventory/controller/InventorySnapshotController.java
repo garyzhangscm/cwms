@@ -23,11 +23,19 @@ import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import com.garyzhangscm.cwms.inventory.service.InventorySnapshotService;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,4 +67,36 @@ public class InventorySnapshotController {
         return inventorySnapshotService.generateInventorySnapshot(warehouseId);
     }
 
+
+    @RequestMapping(value="/inventory_snapshot/{batchNumber}/files", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> generateInventorySnapshotFiles(
+            @RequestParam Long warehouseId, @PathVariable String batchNumber) throws FileNotFoundException {
+        return ResponseBodyWrapper.success(inventorySnapshotService.generateInventorySnapshotFiles(warehouseId, batchNumber));
+    }
+
+    @RequestMapping(value="/inventory_snapshot/{batchNumber}/files", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> deleteInventorySnapshotFiles(
+            @RequestParam Long warehouseId, @PathVariable String batchNumber) throws FileNotFoundException {
+        inventorySnapshotService.deleteInventorySnapshotFiles(warehouseId, batchNumber);
+        return ResponseBodyWrapper.success("success");
+    }
+
+
+    @RequestMapping(value="/inventory_snapshot/{batchNumber}/files/download", method = RequestMethod.GET)
+    public ResponseEntity<Resource> downloadInventorySnapshotFiles(
+            @RequestParam Long warehouseId, @PathVariable String batchNumber)
+            throws FileNotFoundException {
+
+
+        File inventorySnapshotFile = inventorySnapshotService.getInvenorySnapshotFile(
+                warehouseId, batchNumber
+        );
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(inventorySnapshotFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + inventorySnapshotFile.getName())
+                .contentLength(inventorySnapshotFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
 }

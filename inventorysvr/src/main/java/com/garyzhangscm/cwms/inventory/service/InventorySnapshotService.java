@@ -43,6 +43,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -85,6 +86,10 @@ public class InventorySnapshotService  {
     @Autowired
     @Qualifier("oauth2ClientContext")
     OAuth2ClientContext oauth2ClientContext;
+
+
+    @Value("${inventory.snapshot.folder}")
+    private String inventorySnapshotFolder;
 
 
     public InventorySnapshot findById(Long id) {
@@ -416,4 +421,86 @@ public class InventorySnapshotService  {
 
     }
 
+    /**
+     * Generarte CSV file for the inventory snapshot
+     * @param warehouseId
+     * @param batchNumber
+     * @return
+     */
+    public String generateInventorySnapshotFiles(Long warehouseId, String batchNumber) throws FileNotFoundException {
+        // Let's get the details and save it into a CSV file
+        List<InventorySnapshotDetail> inventorySnapshotDetails = findAllInventorySnapshotDetails(warehouseId, batchNumber);
+
+        String csvFileName = getInventorySnapshotFileName(batchNumber);
+
+        logger.debug("Start to save {} record into file {} for inventory snapshot batch {}",
+                inventorySnapshotDetails.size(),
+                csvFileName,
+                batchNumber
+        );
+
+        String header = "batch,item,item description,item package type,inventory status,location group type,quantity";
+
+        StringBuilder stringBuilder;
+        List<String> rows = new ArrayList<>();
+        for (InventorySnapshotDetail inventorySnapshotDetail : inventorySnapshotDetails) {
+            stringBuilder = new StringBuilder();
+            stringBuilder.append(batchNumber).append(",")
+                    .append("\"").append(inventorySnapshotDetail.getItem().getName()).append("\"").append(",")
+                    .append("\"").append(inventorySnapshotDetail.getItem().getDescription()).append("\"").append(",")
+                    .append("\"").append(inventorySnapshotDetail.getItemPackageType().getName()).append("\"").append(",")
+                    .append("\"").append(inventorySnapshotDetail.getInventoryStatus().getName()).append("\"").append(",")
+                    .append("\"").append(inventorySnapshotDetail.getLocationGroupTypeName()).append("\"").append(",")
+                    .append(inventorySnapshotDetail.getQuantity());
+            rows.add(stringBuilder.toString());
+        }
+
+        fileService.createCSVFiles(inventorySnapshotFolder, csvFileName, header, rows);
+
+        // save the file name
+        InventorySnapshot inventorySnapshot = findByBatchNumber(warehouseId, batchNumber);
+        inventorySnapshot.setFileName(csvFileName);
+        save(inventorySnapshot);
+        return csvFileName;
+
+    }
+
+    public String getFileName(Long warehouseId, String batchNumber) {
+        InventorySnapshot inventorySnapshot = findByBatchNumber(warehouseId, batchNumber);
+        return inventorySnapshot.getFileName();
+    }
+
+    public String getFileAbsolutePath(Long warehouseId, String batchNumber) {
+        return inventorySnapshotFolder + "/" + getFileName(warehouseId, batchNumber);
+    }
+
+    public File getInvenorySnapshotFile(Long warehouseId, String batchNumber) {
+        String fileUrl = getFileAbsolutePath(warehouseId, batchNumber);
+
+        return new File(fileUrl);
+    }
+
+
+
+    private String getInventorySnapshotFileName(String batchNumber) {
+
+        String inventorySnapshotFilePostfix =
+                String.format("%04d", (int)(Math.random()*1000));
+
+        return batchNumber + "_" + System.currentTimeMillis() + "_" + inventorySnapshotFilePostfix
+                    + ".csv";
+    }
+
+    public void deleteInventorySnapshotFiles(Long warehouseId, String batchNumber) {
+        String fileUrl = getFileAbsolutePath(warehouseId, batchNumber);
+
+        File file = new  File(fileUrl);
+        file.deleteOnExit();
+
+        InventorySnapshot inventorySnapshot = findByBatchNumber(warehouseId, batchNumber);
+        inventorySnapshot.setFileName("");
+
+        saveOrUpdate(inventorySnapshot);
+
+    }
 }

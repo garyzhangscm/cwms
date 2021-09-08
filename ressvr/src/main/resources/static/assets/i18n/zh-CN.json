@@ -1341,5 +1341,8 @@
   "menu.main.work-order.wo-produce-transaction": "生产事务",
   "REPORT-TYPE-PRODUCTION_LINE_ASSIGNMENT_REPORT": "产线分配报表",
   "REPORT-TYPE-BILL_OF_LADING": "提单",
-  "bill-of-lading": "提单"
+  "bill-of-lading": "提单",
+  "production-line-assignment-report": "报表",
+  "production-line-assignment-label": "标签",
+  "generate-inventory-snapshot-file": "生成文件"
 }

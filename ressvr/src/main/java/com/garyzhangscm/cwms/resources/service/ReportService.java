@@ -408,7 +408,7 @@ public class ReportService implements TestDataInitiableService{
         String labelContent = labelTemplate;
         for(Map.Entry<String, Object> parameter : parameters.entrySet()) {
             String parameterName = parameter.getKey();
-            String value = parameter.getKey().toString();
+            String value = parameter.getValue().toString();
 
             // see if we have the parameters in the template
             logger.debug("start to replace variable {}, with value {}",
@@ -422,9 +422,9 @@ public class ReportService implements TestDataInitiableService{
     }
 
     private String loadLabelFile(String fileName) throws IOException {
-        String fullFilePath = reportTemplateFolder + "\\" + fileName;
+        String fullFilePath = reportTemplateFolder + "/" + fileName;
         // check if the file exists
-        logger.debug("Load lable template from {}", fullFilePath);
+        logger.debug("Load label template from {}", fullFilePath);
 
         Path path = Path.of(fullFilePath);
 

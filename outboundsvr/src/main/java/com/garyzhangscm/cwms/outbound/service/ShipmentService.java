@@ -69,6 +69,12 @@ public class ShipmentService {
     @Autowired
     private PickService pickService;
     @Autowired
+    private CancelledPickService cancelledPickService;
+    @Autowired
+    private CancelledShortAllocationService cancelledShortAllocationService;
+    @Autowired
+    private ShortAllocationService shortAllocationService;
+    @Autowired
     private KafkaSender kafkaSender;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
@@ -920,7 +926,29 @@ public class ShipmentService {
 
     public void completeShipmentByTrailer(Shipment shipment, Order order) {}
 
+    @Transactional
+    public void removeShipment(Long shipmentId) {
+        removeShipment(findById(shipmentId));
+    }
+
+    @Transactional
+    public void removeShipment(Shipment shipment) {
+
+        // make sure we don't have any pick / short allocation
+        if (pickService.findByShipment(shipment).size() > 0) {
+            throw OrderOperationException.raiseException("Can't remove shipment while it has open picks");
+        }
+        if (shortAllocationService.findByShipment(shipment).size() > 0){
+            throw OrderOperationException.raiseException("Can't remove shipment while it has open short allocations");
+        }
+
+        // remove all the cancelled pick first
+        cancelledPickService.removeCancelledPicks(shipment);
+
+        shortAllocationService.removeCancelledShortAllocations(shipment);
+        cancelledShortAllocationService.removeCancelledShortAllocations(shipment);
 
 
-
+        delete(shipment);
+    }
 }
