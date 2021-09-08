@@ -269,7 +269,7 @@ public class ReportHistoryService {
                 companyId, warehouseId, type, findPrinterBy, printerName, printer);
         logger.debug("and will printer copies: {} ", copies );
 
-        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, printer, copies);
+        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer, copies);
 
         // we will send the printing request to the remote printing service
 

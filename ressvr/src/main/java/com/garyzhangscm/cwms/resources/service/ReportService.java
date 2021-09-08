@@ -27,6 +27,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 @Service
@@ -339,19 +340,98 @@ public class ReportService implements TestDataInitiableService{
         Warehouse warehouse
                 = layoutServiceRestemplateClient.getWarehouseById(warehouseId);
         if (Objects.nonNull(warehouse)) {
-            return generateReport(
-                    warehouse.getCompany().getId(),
-                    warehouseId,
-                    type,
-                    reportData,
-                    locale
-            );
+            if (type.isLabel()) {
+                // generate label(only support zebra
+                return generateLabel(
+                        warehouse.getCompany().getId(),
+                        warehouseId,
+                        type,
+                        reportData,
+                        locale);
+            }
+            else {
+
+                // generate report
+                return generateReport(
+                        warehouse.getCompany().getId(),
+                        warehouseId,
+                        type,
+                        reportData,
+                        locale);
+            }
         }
         else {
             return null;
         }
 
     }
+
+    private ReportHistory generateLabel(Long companyId, Long warehouseId, ReportType type,
+                                        Report reportData, String locale) throws IOException {
+
+        // Meta data without any content
+        Report reportMetaData = findByType(companyId, warehouseId, type);
+
+        if (Objects.isNull(reportMetaData)) {
+            throw ReportFileMissingException.raiseException(
+                    "Can't find report template for company /" + companyId +
+                            ",  warehouse / " + warehouseId +
+                            ", type / " + type);
+        }
+
+
+        logger.debug("Find report meta data by company: {}, warehouse: {}, type: {}",
+                companyId, warehouseId, type);
+        logger.debug(reportMetaData.toString());
+
+
+        logger.debug("Start to get label file");
+        String labelTemplate = loadLabelFile(reportMetaData.getFileName());
+
+        String labelContent = processLabel(labelTemplate, reportData.getParameters());
+
+        // save the result to local file
+        String reportResultFileName = writeResultFile(reportMetaData, labelContent);
+
+
+        // save the history information
+        return saveReportHistory(reportMetaData, reportResultFileName, warehouseId);
+    }
+
+    /**
+     * Generate label from the template and the parameters
+     * @param labelTemplate
+     * @param parameters
+     * @return
+     */
+    private String processLabel(String labelTemplate, Map<String, Object> parameters) {
+        String labelContent = labelTemplate;
+        for(Map.Entry<String, Object> parameter : parameters.entrySet()) {
+            String parameterName = parameter.getKey();
+            String value = parameter.getKey().toString();
+
+            // see if we have the parameters in the template
+            logger.debug("start to replace variable {}, with value {}",
+                    parameterName, value);
+            logger.debug("label template before replace: {}", labelContent);
+            labelContent = labelContent.replaceAll("\\$" + parameterName + "\\$", value);
+            logger.debug("label template after replace: {}", labelContent);
+        }
+        return labelContent;
+
+    }
+
+    private String loadLabelFile(String fileName) throws IOException {
+        String fullFilePath = reportTemplateFolder + "\\" + fileName;
+        // check if the file exists
+        logger.debug("Load lable template from {}", fullFilePath);
+
+        Path path = Path.of(fullFilePath);
+
+        return Files.readString(path);
+
+    }
+
     public ReportHistory generateReport(Long companyId,
                                  Long warehouseId,
                                  ReportType type,
@@ -478,6 +558,14 @@ public class ReportService implements TestDataInitiableService{
 
     }
 
+    /**
+     * Generate the report result (normally PDF) and save it locally. So we can print
+     * or view the file later now
+     * @param reportMetaData report meta data, we will get the file name from here
+     * @param jasperPrint Jasper print object that contains the report's content
+     * @return
+     * @throws JRException
+     */
     private String writeResultFile(Report reportMetaData, JasperPrint jasperPrint)
             throws JRException {
         String reportFileName =
@@ -507,6 +595,40 @@ public class ReportService implements TestDataInitiableService{
 
     }
 
+    /**
+     * Write result file for label. Now we only support zebra printer so the
+     * label content will be in the format of zpl
+     * @param reportMetaData label meta data, we will use this determine the file name
+     * @param labelContent label's content
+     * @return
+     */
+    private String writeResultFile(Report reportMetaData, String labelContent) throws IOException {
+        String reportFileName =
+                getReportResultFileName(reportMetaData);
+        String reportResultAbsoluteFileName =
+                getReportResultFolder(reportMetaData)
+                        + reportFileName;
+
+        File reportResultFile = new File(reportResultAbsoluteFileName);
+
+        // remove the file if it already exists
+        reportResultFile.deleteOnExit();
+        if (!reportResultFile.getParentFile().exists()) {
+            reportResultFile.getParentFile().mkdirs();
+        }
+
+        logger.debug("start to write label into {} !",
+                reportResultAbsoluteFileName);
+
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(reportResultAbsoluteFileName));
+        writer.write(labelContent);
+
+        writer.close();
+
+        return reportFileName;
+
+    }
     private String getReportResultFolder(Report report) {
 
         String folder = reportResultFolder;
@@ -558,8 +680,18 @@ public class ReportService implements TestDataInitiableService{
         String reportResultFilePostfix =
                 String.format("%04d", (int)(Math.random()*1000));
 
-        return report.getType() + "_" + System.currentTimeMillis() + "_" + reportResultFilePostfix
-                + ".PDF";
+        // for label, we will save the result into lbl file
+        // otherwise, we will save the result into pdf file
+        if (report.getType().isLabel()) {
+
+            return report.getType() + "_" + System.currentTimeMillis() + "_" + reportResultFilePostfix
+                    + ".lbl";
+        }
+        else {
+
+            return report.getType() + "_" + System.currentTimeMillis() + "_" + reportResultFilePostfix
+                    + ".PDF";
+        }
 
     }
 
