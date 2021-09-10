@@ -19,12 +19,20 @@
 package com.garyzhangscm.cwms.adminserver.clients;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.adminserver.model.User;
+import com.garyzhangscm.cwms.adminserver.model.wms.LocationGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -47,6 +55,11 @@ public class ResourceServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     // private OAuth2RestOperations restTemplate;
     RestTemplate restTemplate;
+
+    @Autowired
+    @Qualifier("getObjMapper")
+    private ObjectMapper objectMapper;
+
 
     public void initData(String warehouseName) {
 
@@ -112,5 +125,52 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
+    public Boolean validateSystemAdminUser(String username) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/users/is-system-admin")
+                        .queryParam("username", username);
+
+        ResponseBodyWrapper<Boolean> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Boolean>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public User createUser(User user) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/users");
+
+        ResponseBodyWrapper<User> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.PUT,
+                getHttpEntity(objectMapper.writeValueAsString(user)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<User>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+
+    }
+
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
+    }
+
 
 }

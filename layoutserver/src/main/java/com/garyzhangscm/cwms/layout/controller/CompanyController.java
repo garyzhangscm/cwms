@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
+import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.Company;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
@@ -63,6 +64,20 @@ public class CompanyController {
     }
 
 
+
+    @RequestMapping(value="/companies", method = RequestMethod.POST)
+    public Company addCompany(@RequestBody Company company) {
+
+        return companyService.addCompany(company);
+    }
+
+    @RequestMapping(value="/companies/code/next", method = RequestMethod.GET)
+    public ResponseBodyWrapper<String> getNextCompanyCode() {
+
+        String nextCompanyCode =  companyService.getNextCompanyCode();
+        logger.debug("next compay Code is {}", nextCompanyCode);
+        return ResponseBodyWrapper.success(nextCompanyCode);
+    }
 
 
 }

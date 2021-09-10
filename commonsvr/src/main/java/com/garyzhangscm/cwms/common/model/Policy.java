@@ -38,7 +38,7 @@ public class Policy extends AuditibleEntity<String> {
     @Transient
     private Warehouse warehouse;
 
-    @Column(name = "policy_key", unique = true)
+    @Column(name = "policy_key")
     private String key;
     @Column(name = "policy_value")
     private String value;

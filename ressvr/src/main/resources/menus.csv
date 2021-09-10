@@ -57,6 +57,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "System Configuration",menu.main.util.system-config,/util/system-configuration,5,Main-Menu-Util,Util-SystemConfiguration,
 "RF",menu.main.util.rf,/util/rf,6,Main-Menu-Util,Util-RF,
 "System Controlled Number",menu.main.util.sys-controlled-num,/util/system-controlled-number,7,Main-Menu-Util,Util-SysControlledNum,
+"Data Initial",menu.main.util.data-initial,/util/data-init,8,Main-Menu-Util,Util-DataInitial,
 "Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,
 "Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,
 "Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,

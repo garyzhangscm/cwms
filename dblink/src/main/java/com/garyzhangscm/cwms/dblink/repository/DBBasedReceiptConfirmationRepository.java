@@ -16,20 +16,18 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.layout.repository;
+package com.garyzhangscm.cwms.dblink.repository;
 
 
-import com.garyzhangscm.cwms.layout.model.Company;
+import com.garyzhangscm.cwms.dblink.model.DBBasedOrderConfirmation;
+import com.garyzhangscm.cwms.dblink.model.DBBasedReceiptConfirmation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
-    Company findByCode(String code);
+public interface DBBasedReceiptConfirmationRepository
+        extends JpaRepository<DBBasedReceiptConfirmation, Long>, JpaSpecificationExecutor<DBBasedReceiptConfirmation> {
 
-    @Query("select max(c.code) from Company c")
-    String getMaxCompanyCode();
 
 }

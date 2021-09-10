@@ -109,4 +109,10 @@ public class UserController {
 
         return ResponseBodyWrapper.success(userService.validateNewUsername(companyId, warehouseId, username));
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/users/is-system-admin")
+    public Boolean validateSystemAdminUser(@RequestParam String username)  {
+
+        return  userService.validateSystemAdminUser(username);
+    }
 }

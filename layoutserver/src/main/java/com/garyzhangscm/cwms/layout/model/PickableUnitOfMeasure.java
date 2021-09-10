@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.layout.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
@@ -23,6 +24,7 @@ public class PickableUnitOfMeasure extends AuditibleEntity<String>{
 
     @ManyToOne
     @JoinColumn(name="location_group_id")
+    @JsonIgnore
     private LocationGroup locationGroup;
 
     public Long getId() {

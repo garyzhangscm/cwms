@@ -74,6 +74,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
 
     @ExceptionHandler(GenericException.class)
     public ResponseBodyWrapper defaultErrorHandler(GenericException ex, HttpServletRequest request) {
+        ex.printStackTrace();
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         return new ResponseBodyWrapper(
                 ex.getExceptionCode().getCode(),
@@ -89,6 +90,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     @ExceptionHandler(RuntimeException.class)
     public ResponseBodyWrapper RuntimeExceptionErrorHandler(RuntimeException ex, HttpServletRequest request) {
 
+        ex.printStackTrace();
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         logger.debug("Runtime Exception: {}", ex.getMessage());
         return new ResponseBodyWrapper(
@@ -99,6 +101,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
     public ResponseBodyWrapper ExceptionErrorHandler(Exception ex, HttpServletRequest request) {
 
 
+        ex.printStackTrace();
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex, request.getRequestURI());
         logger.debug("Exception: {}", ex.getMessage());
         return new ResponseBodyWrapper(

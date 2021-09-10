@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.integration.service;
 
+import com.garyzhangscm.cwms.integration.clients.HostRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
@@ -9,6 +10,10 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
@@ -27,7 +32,29 @@ public class DBBasedReceiptConfirmationIntegration {
     KafkaSender kafkaSender;
     @Autowired
     DBBasedReceiptConfirmationRepository dbBasedReceiptConfirmationRepository;
+    @Autowired
+    HostRestemplateClient hostRestemplateClient;
 
+    @Value("${integration.record.process.limit:100}")
+    int recordLimit;
+
+    private List<DBBasedReceiptConfirmation> findPendingIntegration() {
+        Pageable limit = PageRequest.of(0,recordLimit);
+
+        Page<DBBasedReceiptConfirmation> dbBasedReceiptConfirmations
+                = dbBasedReceiptConfirmationRepository.findAll(
+                (Root<DBBasedReceiptConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                },
+                limit
+        );
+        return dbBasedReceiptConfirmations.getContent();
+    }
 
     public List<DBBasedReceiptConfirmation> findAll(Long warehouseId, String warehouseName,
                                                     String number, Long clientId, String clientName,
@@ -105,5 +132,41 @@ public class DBBasedReceiptConfirmationIntegration {
 
     private DBBasedReceiptConfirmation getDBBasedReceiptConfirmation(ReceiptConfirmation receiptConfirmation) {
         return new DBBasedReceiptConfirmation(receiptConfirmation);
+    }
+
+
+
+    /**
+     * Send to host's API endpoint, in case host's db is in a different network
+     */
+    public void sendToHost() {
+        List<DBBasedReceiptConfirmation> dbBasedReceiptConfirmations =
+                findPendingIntegration();
+        logger.debug("# find " +  dbBasedReceiptConfirmations.size() + " dbBasedReceiptConfirmations");
+
+        dbBasedReceiptConfirmations.forEach(
+                dbBasedReceiptConfirmation -> {
+                    String result = "";
+                    String errorMessage = "";
+                    try {
+                        result = hostRestemplateClient.sendIntegrationData("receipt-confirmation", dbBasedReceiptConfirmation);
+                        logger.debug("# get result " + result);
+                    }
+                    catch (Exception ex) {
+                        ex.printStackTrace();
+                        result = "false";
+                        errorMessage = ex.getMessage();
+                    }
+                    if (result.equalsIgnoreCase("success")) {
+                        dbBasedReceiptConfirmation.setStatus(IntegrationStatus.COMPLETED);
+                    }
+                    else {
+                        dbBasedReceiptConfirmation.setStatus(IntegrationStatus.ERROR);
+                        dbBasedReceiptConfirmation.setErrorMessage(errorMessage);
+                    }
+                    save(dbBasedReceiptConfirmation);
+                }
+        );
+
     }
 }

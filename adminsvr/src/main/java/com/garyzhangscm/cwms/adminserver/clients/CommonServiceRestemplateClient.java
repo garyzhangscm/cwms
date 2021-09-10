@@ -17,13 +17,19 @@
  */
 
 package com.garyzhangscm.cwms.adminserver.clients;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -40,6 +46,11 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     // private OAuth2RestOperations restTemplate;
     RestTemplate restTemplate;
+
+    @Autowired
+    @Qualifier("getObjMapper")
+    private ObjectMapper objectMapper;
+
 
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
@@ -232,6 +243,26 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+
+    public UnitOfMeasure createUnitOfMeasure(UnitOfMeasure unitOfMeasure) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/unit-of-measures");
+
+        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(unitOfMeasure)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
     public String getNextNumber(String variable) {
 
         UriComponentsBuilder builder =
@@ -250,5 +281,14 @@ public class CommonServiceRestemplateClient {
 
     public String getNextLpn() {
         return getNextNumber("lpn");
+    }
+
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
     }
 }

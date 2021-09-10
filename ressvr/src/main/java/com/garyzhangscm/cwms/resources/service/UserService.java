@@ -93,6 +93,11 @@ public class UserService  implements TestDataInitiableService{
     }
     public User findByUsername(Long companyId, String username, boolean loadAttribute) {
         User user =  userRepository.findByCompanyIdAndUsername(companyId, username);
+        if (Objects.isNull(user)) {
+            // in case the user is a system admin, the company id will be -1 for
+            // this user, to indicate that the user doesn't belong to any company
+            user = userRepository.findByCompanyIdAndUsername(-1l, username);
+        }
         logger.debug("we find user by company id {}, username {}? {}",
                 companyId, username, user != null );
         if (user != null && loadAttribute) {
@@ -202,6 +207,9 @@ public class UserService  implements TestDataInitiableService{
         User user = findByUsername(companyId, username);
         logger.debug("we find user? {} by username {}, companeId: {}",
                 user != null, username, companyId);
+        if (Objects.isNull(user)) {
+            throw UserOperationException.raiseException("Can't find user by username " + username);
+        }
         return getSiteInformaiton(companyId, warehouseId, user);
 
     }
@@ -505,4 +513,10 @@ public class UserService  implements TestDataInitiableService{
         return saveOrUpdate(newUser);
     }
 
+    public Boolean validateSystemAdminUser(String username) {
+        // by default, system admin will not belong to any company. So
+        // its company id will be -1
+        User user = findByUsername(-1l, username);
+        return Objects.nonNull(user);
+    }
 }

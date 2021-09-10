@@ -123,6 +123,9 @@ public class DBBasedOrderConfirmationIntegration {
     }
 
 
+    /**
+     * Send to host's API endpoint, in case host's db is in a different network
+     */
     public void sendToHost() {
         List<DBBasedOrderConfirmation> dbBasedOrderConfirmations =
                 findPendingIntegration();

@@ -428,6 +428,9 @@ public class LocationGroupService implements TestDataInitiableService {
         if(locationGroup.getTrackingVolume() == false) {
             locationGroup.setVolumeTrackingPolicy(null);
         }
+        locationGroup.getPickableUnitOfMeasures().forEach(
+                pickableUnitOfMeasure -> pickableUnitOfMeasure.setLocationGroup(locationGroup)
+        );
         return save(locationGroup);
     }
 
