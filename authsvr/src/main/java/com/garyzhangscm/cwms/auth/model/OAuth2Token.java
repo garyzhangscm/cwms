@@ -75,4 +75,5 @@ public class OAuth2Token {
     public void setScope(String scope) {
         this.scope = scope;
     }
+
 }

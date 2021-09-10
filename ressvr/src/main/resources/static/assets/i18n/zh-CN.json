@@ -1348,5 +1348,9 @@
   "menu.main.util.data-initial": "数据初始化",
   "data-initial-request.admin-username": "Admin用户",
   "data-initial-request.request-username": "申请者",
-  "company.code": "公司代码"
+  "company.code": "公司代码",
+  "page.modal.change-password.header.title": "修改密码",
+  "password-not-match": "密码不一致",
+  "password-is-empty": "密码不能为空",
+  "password.confirm": "确认密码"
 }

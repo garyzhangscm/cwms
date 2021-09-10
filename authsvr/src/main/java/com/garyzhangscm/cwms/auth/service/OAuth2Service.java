@@ -68,7 +68,7 @@ public class OAuth2Service {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(formData, headers);
 
-            ResponseEntity<OAuth2Token> responseObj = restTemplate.postForEntity(oauth2URL, request, OAuth2Token.class);
-            return responseObj.getBody();
+        ResponseEntity<OAuth2Token> responseObj = restTemplate.postForEntity(oauth2URL, request, OAuth2Token.class);
+        return responseObj.getBody();
     }
 }

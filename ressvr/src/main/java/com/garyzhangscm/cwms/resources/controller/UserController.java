@@ -78,6 +78,15 @@ public class UserController {
         return ResponseBodyWrapper.success("success");
     }
 
+
+    @RequestMapping(value="/users/{id}/password", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> changePassword(@PathVariable Long id,
+                                            @RequestParam String newPassword) {
+
+        userService.changePassword(id, newPassword);
+        return ResponseBodyWrapper.success("success");
+    }
+
     @RequestMapping(value="/users/disable", method = RequestMethod.POST)
     public List<User> disableUsers(@RequestParam String userIds) {
 
