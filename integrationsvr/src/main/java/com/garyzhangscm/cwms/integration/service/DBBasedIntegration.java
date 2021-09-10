@@ -124,6 +124,10 @@ public class DBBasedIntegration implements Integration{
 
         logger.debug("#2 order confirmation");
         dbBasedOrderConfirmationIntegration.sendToHost();
+
+
+        logger.debug("#3 receipt confirmation");
+        dbBasedReceiptConfirmationIntegration.sendToHost();
     }
     @Override
     public List<DBBasedClient> getClientData(

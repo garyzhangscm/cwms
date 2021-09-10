@@ -19,6 +19,8 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Objects;
+
 
 @Configuration
 public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
@@ -48,6 +50,12 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     }
 
 
+    /**
+     * setup the OAUTH2 server to validate the user's login against the user_auth
+     * table. The username passed in will be COMPANY_ID#USERNAME
+     * @param auth
+     * @throws Exception
+     */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(
@@ -66,7 +74,16 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                         }
                         logger.debug(">>> Will find user by company ID {}, username {}", companyId, actualUsername);
                         UserDetails userDetails = userRepository.findByCompanyIdAndUsername(companyId,  actualUsername);
-                        System.out.println("uscder details: \n" +
+                        // if we can't find the user from a specific company, there's still a good chance that the
+                        // user is an system admin, which doesn't belong to any company. Then the company ID will be -1
+                        if (Objects.isNull(userDetails)) {
+
+                            logger.debug(">>> Can't find user by company ID {}, username {}, " +
+                                    " will check if the user is a system admin(company code = -1",
+                                    companyId, actualUsername);
+                            userDetails = userRepository.findByCompanyIdAndUsername(-1l, actualUsername);
+                        }
+                        logger.debug("user details: \n" +
                                 " >> username: " + userDetails.getUsername() +
                                 " >> password: " + userDetails.getPassword());
                         return userDetails;

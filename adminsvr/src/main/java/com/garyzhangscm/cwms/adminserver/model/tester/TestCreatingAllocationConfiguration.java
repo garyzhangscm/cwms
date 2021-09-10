@@ -119,7 +119,7 @@ public class TestCreatingAllocationConfiguration extends TestScenario{
             }
 
             PickableUnitOfMeasure pickableUnitOfMeasure =
-                    new PickableUnitOfMeasure(warehouse, unitOfMeasure.getId(), allocationConfiguration);
+                    new PickableUnitOfMeasure(warehouse.getId(), unitOfMeasure.getId());
 
             try {
                 outbuondServiceRestemplateClient.addPickableUnitOfMeasure(allocationConfiguration,

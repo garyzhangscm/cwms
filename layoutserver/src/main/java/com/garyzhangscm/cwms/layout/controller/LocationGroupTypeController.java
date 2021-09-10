@@ -49,4 +49,8 @@ public class LocationGroupTypeController {
     }
 
 
+    @RequestMapping(method=RequestMethod.GET, value="/locationgrouptypes/storage-locations")
+    public List<LocationGroupType> getStorageLocationTypes() {
+        return locationGroupTypeService.getStorageLocationGroupTypes();
+    }
 }

@@ -76,7 +76,11 @@ public class UserService {
     }
 
     public User findByUsername(Long companyId, String username){
-        return userRepository.findByCompanyIdAndUsername(companyId, username);
+        User user =  userRepository.findByCompanyIdAndUsername(companyId, username);
+        if (Objects.isNull(user)) {
+            user = userRepository.findByCompanyIdAndUsername(-1l, username);
+        }
+        return user;
     }
 
     @Transactional

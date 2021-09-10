@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.dblink.controller;
 import com.garyzhangscm.cwms.dblink.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.dblink.model.DBBasedInventoryAdjustmentConfirmation;
 import com.garyzhangscm.cwms.dblink.model.DBBasedOrderConfirmation;
+import com.garyzhangscm.cwms.dblink.model.DBBasedReceiptConfirmation;
 import com.garyzhangscm.cwms.dblink.service.RecordCopyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,16 @@ public class IntegrationDataController {
         logger.debug("Get order confirmation \n {}",
                 dbBasedOrderConfirmation);
         recordCopyService.saveIntegration(dbBasedOrderConfirmation);
+        return ResponseBodyWrapper.success("success");
+    }
+
+    @RequestMapping(value="/receipt-confirmation", method = RequestMethod.PUT)
+    public ResponseBodyWrapper addReceiptConfirmationData(
+            @RequestBody DBBasedReceiptConfirmation dbBasedReceiptConfirmation) {
+
+        logger.debug("Get receipt confirmation \n {}",
+                dbBasedReceiptConfirmation);
+        recordCopyService.saveIntegration(dbBasedReceiptConfirmation);
         return ResponseBodyWrapper.success("success");
     }
 }

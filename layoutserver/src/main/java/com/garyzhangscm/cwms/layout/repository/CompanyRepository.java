@@ -22,10 +22,14 @@ package com.garyzhangscm.cwms.layout.repository;
 import com.garyzhangscm.cwms.layout.model.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
     Company findByCode(String code);
+
+    @Query("select max(c.code) from Company c")
+    String getMaxCompanyCode();
 
 }

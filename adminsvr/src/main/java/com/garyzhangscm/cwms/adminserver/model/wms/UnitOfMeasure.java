@@ -28,9 +28,17 @@ public class UnitOfMeasure implements Serializable {
 
     private Long id;
 
+    private Long warehouseId;
     private String name;
     private String description;
 
+    public UnitOfMeasure(){}
+
+    public UnitOfMeasure(Long warehouseId, String name, String description) {
+        this.warehouseId = warehouseId;
+        this.name = name;
+        this.description = description;
+    }
 
 
     public Long getId() {
@@ -57,5 +65,11 @@ public class UnitOfMeasure implements Serializable {
         this.description = description;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
 
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
 }

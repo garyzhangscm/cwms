@@ -168,4 +168,18 @@ public class CompanyService implements TestDataInitiableService{
         }
     }
 
+    public Company addCompany(Company company) {
+        return saveOrUpdate(company);
+    }
+
+
+    public String getNextCompanyCode() {
+        // we will always assume the company code is in format of a number
+        String maxCompanyCode = companyRepository.getMaxCompanyCode();
+        if (StringUtils.isBlank(maxCompanyCode)) {
+            return "10000";
+        }
+        return String.valueOf(Integer.parseInt(maxCompanyCode) + 1);
+
+    }
 }

@@ -15,24 +15,12 @@ public class PickableUnitOfMeasure implements Serializable {
 
     private Warehouse warehouse;
 
-    @JsonIgnore
-    private AllocationConfiguration allocationConfiguration;
 
     public PickableUnitOfMeasure() {}
 
-    public PickableUnitOfMeasure(Warehouse warehouse,
-                                 Long unitOfMeasureId, AllocationConfiguration allocationConfiguration) {
-        this.unitOfMeasureId = unitOfMeasureId;
-        this.allocationConfiguration = allocationConfiguration;
-
-        this.warehouse = warehouse;
-        this.warehouseId = warehouse.getId();
-    }
-
     public PickableUnitOfMeasure(Long warehouseId,
-                                 Long unitOfMeasureId, AllocationConfiguration allocationConfiguration) {
+                                 Long unitOfMeasureId ) {
         this.unitOfMeasureId = unitOfMeasureId;
-        this.allocationConfiguration = allocationConfiguration;
         this.warehouseId = warehouseId;
     }
 
@@ -62,13 +50,6 @@ public class PickableUnitOfMeasure implements Serializable {
         this.unitOfMeasureId = unitOfMeasureId;
     }
 
-    public AllocationConfiguration getAllocationConfiguration() {
-        return allocationConfiguration;
-    }
-
-    public void setAllocationConfiguration(AllocationConfiguration allocationConfiguration) {
-        this.allocationConfiguration = allocationConfiguration;
-    }
 
     public Long getWarehouseId() {
         return warehouseId;

@@ -38,7 +38,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class WarehouseLayoutServiceRestemplateClient {
@@ -54,25 +57,6 @@ public class WarehouseLayoutServiceRestemplateClient {
     private ObjectMapper objectMapper;
 
 
-    private <T> T createEntity(String subUrl, T entity) throws JsonProcessingException {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/" + subUrl);
-
-        logger.debug("Start to create entity by {}",
-                builder.toUriString());
-        ResponseBodyWrapper<T> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.POST,
-                getHttpEntity(objectMapper.writeValueAsString(entity)),
-                new ParameterizedTypeReference<ResponseBodyWrapper<T>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
 
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
@@ -531,6 +515,105 @@ public class WarehouseLayoutServiceRestemplateClient {
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Company createCompany(Company company) throws JsonProcessingException {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies");
+
+        ResponseBodyWrapper<Company> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(company)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public Warehouse createWarehouse(Long companyId, Warehouse warehouse) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyId", companyId.toString());
+
+        ResponseBodyWrapper<Warehouse> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(warehouse)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+
+    }
+
+
+
+    public List<LocationGroupType> getStorageLocationTypes() {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locationgrouptypes/storage-locations");
+
+        ResponseBodyWrapper<List<LocationGroupType>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<LocationGroupType>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+
+    }
+
+    private <T> T createEntity(String subUrl, T entity, Map<String, String> parameters ) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/" + subUrl);
+        for (Map.Entry<String, String> parameter : parameters.entrySet()) {
+            builder = builder.queryParam(parameter.getKey(), parameter.getValue());
+        }
+
+        logger.debug("Start to create entity by {}",
+                builder.toUriString());
+        ResponseBodyWrapper<T> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(entity)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<T>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public String getNextCompanyCode() {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies/code/next");
+
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }

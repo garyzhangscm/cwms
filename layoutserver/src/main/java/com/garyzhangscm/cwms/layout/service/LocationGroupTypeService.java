@@ -94,6 +94,10 @@ public class LocationGroupTypeService implements TestDataInitiableService {
         return findAll("", null).stream().filter(locationGroupType -> locationGroupType.getRf() == true).collect(Collectors.toList());
     }
 
+    public List<LocationGroupType> getStorageLocationGroupTypes() {
+        return findAll("", null).stream().filter(locationGroupType -> locationGroupType.getStorage() == true).collect(Collectors.toList());
+    }
+
 
     public LocationGroupType findByName(String name){
         return locationGroupTypeRepository.findByName(name);

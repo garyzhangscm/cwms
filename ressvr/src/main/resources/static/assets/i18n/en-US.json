@@ -1339,5 +1339,9 @@
   "bill-of-lading": "Bill Of Lading",
   "production-line-assignment-report": "Assignment Report",
   "production-line-assignment-label": "Assignment Label",
-  "generate-inventory-snapshot-file": "Generate File"
+  "generate-inventory-snapshot-file": "Generate File",
+  "menu.main.util.data-initial": "Data Initial",
+  "data-initial-request.admin-username": "Admin User",
+  "data-initial-request.request-username": "Request User",
+  "company.code": "Company Code"
 }

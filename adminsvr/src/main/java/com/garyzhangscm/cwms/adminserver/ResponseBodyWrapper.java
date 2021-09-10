@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.adminserver;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ResponseBodyWrapper<T> {
     private int result;
     private String message;
@@ -39,6 +42,16 @@ public class ResponseBodyWrapper<T> {
     }
     public static ResponseBodyWrapper success(String body) {
         return new ResponseBodyWrapper<String>(0,  "", body);
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

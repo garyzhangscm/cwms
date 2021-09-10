@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LocationGroup {
 
     private Long id;
@@ -33,12 +36,16 @@ public class LocationGroup {
     private Boolean pickable;
     private Boolean storable;
     private Boolean countable;
+    private Boolean adjustable;
     private Boolean allowCartonization ;
     private Boolean trackingVolume;
+
 
     private LocationVolumeTrackingPolicy volumeTrackingPolicy;
 
     private InventoryConsolidationStrategy inventoryConsolidationStrategy = InventoryConsolidationStrategy.NONE;
+
+    private List<PickableUnitOfMeasure> pickableUnitOfMeasures = new ArrayList<>();
 
     public LocationGroup() {}
     public LocationGroup(Warehouse warehouse, LocationGroupType locationGroupType, String name, String description) {
@@ -55,8 +62,11 @@ public class LocationGroup {
         this.pickable = true;
         this.storable = true;
         this.countable = true;
+        this.adjustable = true;
         this.allowCartonization = true;
         this.trackingVolume = true;
+
+
         this.volumeTrackingPolicy = LocationVolumeTrackingPolicy.BY_VOLUME;
         this.inventoryConsolidationStrategy = inventoryConsolidationStrategy;
     }
@@ -155,5 +165,25 @@ public class LocationGroup {
 
     public void setInventoryConsolidationStrategy(InventoryConsolidationStrategy inventoryConsolidationStrategy) {
         this.inventoryConsolidationStrategy = inventoryConsolidationStrategy;
+    }
+
+    public Boolean getAdjustable() {
+        return adjustable;
+    }
+
+    public void setAdjustable(Boolean adjustable) {
+        this.adjustable = adjustable;
+    }
+
+    public List<PickableUnitOfMeasure> getPickableUnitOfMeasures() {
+        return pickableUnitOfMeasures;
+    }
+
+    public void setPickableUnitOfMeasures(List<PickableUnitOfMeasure> pickableUnitOfMeasures) {
+        this.pickableUnitOfMeasures = pickableUnitOfMeasures;
+    }
+
+    public void addPickableUnitOfMeasure(PickableUnitOfMeasure pickableUnitOfMeasure) {
+        this.pickableUnitOfMeasures.add(pickableUnitOfMeasure);
     }
 }

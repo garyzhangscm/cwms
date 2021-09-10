@@ -1,8 +1,28 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.adminserver.model.wms.Role;
+
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User {
+    private Long companyId;
+
+    private String username;
+    private String firstname;
+    private String lastname;
+    private Boolean isSystemAdmin = false;
+
+    private Boolean isAdmin = false;
+    private Boolean changePasswordAtNextLogon = false;
+    private String password;
+    private boolean enabled;
+    private boolean locked;
+    private List<Role> roles = new ArrayList<>();
+
     private String token;
     private String refreshToken;
     private String name;
@@ -11,18 +31,46 @@ public class User {
     private Timestamp time;
     private int refreshIn;
 
+    public User(){}
+
+    public User(Long companyId,
+                String username,
+                String firstname,
+                String lastname,
+                Boolean isAdmin,
+                String password,
+                String name,
+                String email) {
+
+        this.companyId = companyId;
+        this.username = username;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.isSystemAdmin = false;
+        this.isAdmin = isAdmin;
+        this.changePasswordAtNextLogon = false;
+        this.password = password;
+        this.enabled = true;
+        this.locked = false;
+        this.roles = new ArrayList<>();
+
+        this.token = "";
+        this.refreshToken = "";
+        this.name = name;
+        this.email = email;
+
+    }
+
     @Override
     public String toString() {
-        return "User{" +
-                "token='" + token + '\'' +
-                ", refreshToken='" + refreshToken + '\'' +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", id=" + id +
-                ", time=" + time +
-                ", refreshIn=" + refreshIn +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
 
     public String getToken() {
         return token;
@@ -77,5 +125,93 @@ public class User {
 
     public void setRefreshIn(int refreshIn) {
         this.refreshIn = refreshIn;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public Boolean getSystemAdmin() {
+        return isSystemAdmin;
+    }
+
+    public void setSystemAdmin(Boolean systemAdmin) {
+        isSystemAdmin = systemAdmin;
+    }
+
+    public Boolean getAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        isAdmin = admin;
+    }
+
+    public Boolean getChangePasswordAtNextLogon() {
+        return changePasswordAtNextLogon;
+    }
+
+    public void setChangePasswordAtNextLogon(Boolean changePasswordAtNextLogon) {
+        this.changePasswordAtNextLogon = changePasswordAtNextLogon;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 }

@@ -46,6 +46,15 @@ public class User extends AuditibleEntity<String>  {
     private String firstname;
     @Column(name = "last_name")
     private String lastname;
+
+
+    // system admin. the admin will have full access
+    // to any company and warehouse in the system
+    @Column(name = "is_system_admin")
+    private Boolean isSystemAdmin = false;
+
+    // Company admin, who will have full access to
+    // specific company
     @Column(name = "is_admin")
     private Boolean isAdmin = false;
 
@@ -246,5 +255,13 @@ public class User extends AuditibleEntity<String>  {
 
     public void setWorkingTeams(List<WorkingTeam> workingTeams) {
         this.workingTeams = workingTeams;
+    }
+
+    public Boolean getSystemAdmin() {
+        return isSystemAdmin;
+    }
+
+    public void setSystemAdmin(Boolean systemAdmin) {
+        isSystemAdmin = systemAdmin;
     }
 }

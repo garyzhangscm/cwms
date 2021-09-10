@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.integration.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,9 @@ import java.time.LocalDateTime;
 public class IntegrationProcessingJob {
 
     private static final Logger logger = LoggerFactory.getLogger(IntegrationProcessingJob.class);
+
+    @Value("${host.api.enabled:true}")
+    Boolean hostAPIEnabled;
 
     @Autowired
     private Integration integration;
@@ -27,7 +31,13 @@ public class IntegrationProcessingJob {
     public void processOutboundIntegration() {
 
         logger.debug("# process outbound integration data @ {}", LocalDateTime.now());
-        integration.send();
+        if (Boolean.TRUE.equals(hostAPIEnabled)) {
+
+            integration.send();
+        }
+        else {
+            logger.debug("Host API Endpoint is not enabled");
+        }
     }
 
 
