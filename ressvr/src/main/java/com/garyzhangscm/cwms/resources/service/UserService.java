@@ -519,4 +519,11 @@ public class UserService  implements TestDataInitiableService{
         User user = findByUsername(-1l, username);
         return Objects.nonNull(user);
     }
+
+    public void changePassword(Long id, String newPassword) {
+        User user = findById(id);
+        user.setPassword(newPassword);
+        user.setChangePasswordAtNextLogon(false);
+        changeUser(user);
+    }
 }

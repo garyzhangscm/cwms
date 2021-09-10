@@ -1343,5 +1343,9 @@
   "menu.main.util.data-initial": "Data Initial",
   "data-initial-request.admin-username": "Admin User",
   "data-initial-request.request-username": "Request User",
-  "company.code": "Company Code"
+  "company.code": "Company Code",
+  "page.modal.change-password.header.title": "Change Password",
+  "password-not-match": "Password doesn't Match",
+  "password-is-empty": "Password is Empty",
+  "password.confirm": "Confirm Password"
 }

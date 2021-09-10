@@ -30,7 +30,8 @@ public class OAuth2TokenWrapper {
     private int refreshIn;
 
 
-    public OAuth2TokenWrapper(String token, String name, String email, Long id, Long time, int refreshIn, String refreshToken) {
+    public OAuth2TokenWrapper(String token, String name, String email, Long id, Long time,
+                              int refreshIn, String refreshToken) {
         this.token = token;
         this.refreshToken = refreshToken;
         this.name = name;
@@ -104,4 +105,5 @@ public class OAuth2TokenWrapper {
     public void setRefreshIn(int refreshIn) {
         this.refreshIn = refreshIn;
     }
+
 }
