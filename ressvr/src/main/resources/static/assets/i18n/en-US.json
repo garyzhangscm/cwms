@@ -1347,5 +1347,7 @@
   "page.modal.change-password.header.title": "Change Password",
   "password-not-match": "Password doesn't Match",
   "password-is-empty": "Password is Empty",
-  "password.confirm": "Confirm Password"
+  "password.confirm": "Confirm Password",
+  "menu.account.change-password": "Change Password",
+  "password-changed": "Password Changed"
 }

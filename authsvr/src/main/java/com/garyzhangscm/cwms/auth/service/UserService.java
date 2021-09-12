@@ -56,7 +56,12 @@ public class UserService {
                 List<Predicate> predicates = new ArrayList<Predicate>();
 
                 if (Objects.nonNull(companyId)) {
-                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
+
+                    // company id may be a actual company id, or -1 for global user/system admin
+                    CriteriaBuilder.In<Long> inCompanyIds = criteriaBuilder.in(root.get("companyId"));
+                    inCompanyIds.value(companyId);
+                    inCompanyIds.value(-1l);
+                    predicates.add(criteriaBuilder.and(inCompanyIds));
 
                 }
 
