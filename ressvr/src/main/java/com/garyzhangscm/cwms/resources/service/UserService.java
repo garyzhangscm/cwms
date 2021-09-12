@@ -127,7 +127,11 @@ public class UserService  implements TestDataInitiableService{
                 (Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
+                    // company id may be a actual company id, or -1 for global user/system admin
+                    CriteriaBuilder.In<Long> inCompanyIds = criteriaBuilder.in(root.get("companyId"));
+                    inCompanyIds.value(companyId);
+                    inCompanyIds.value(-1l);
+                    predicates.add(criteriaBuilder.and(inCompanyIds));
 
                     if (!StringUtils.isBlank(username)) {
                         predicates.add(criteriaBuilder.equal(root.get("username"), username));

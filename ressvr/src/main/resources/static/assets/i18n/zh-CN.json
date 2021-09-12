@@ -1352,5 +1352,7 @@
   "page.modal.change-password.header.title": "修改密码",
   "password-not-match": "密码不一致",
   "password-is-empty": "密码不能为空",
-  "password.confirm": "确认密码"
+  "password.confirm": "确认密码",
+  "menu.account.change-password": "修改密码",
+  "password-changed": "密码修改成功"
 }
