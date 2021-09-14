@@ -49,6 +49,7 @@ public class WorkOrderConfigurationController {
         return workOrderConfigurationService.getWorkOrderConfiguration(companyId, warehouseId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-order-configuration", method = RequestMethod.POST)
     public WorkOrderConfiguration changeWorkOrderConfiguration(@RequestBody WorkOrderConfiguration workOrderConfiguration) {
         return workOrderConfigurationService.saveOrUpdate(workOrderConfiguration);

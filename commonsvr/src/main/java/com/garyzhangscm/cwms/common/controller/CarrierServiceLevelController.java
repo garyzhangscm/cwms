@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.CarrierServiceLevel;
 import com.garyzhangscm.cwms.common.service.CarrierServiceLevelService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +42,13 @@ public class CarrierServiceLevelController {
         return carrierServiceLevelService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/carrier-service-levels", method = RequestMethod.POST)
     public CarrierServiceLevel addCarrierServiceLevel(@RequestBody CarrierServiceLevel carrierServiceLevel) {
         return carrierServiceLevelService.save(carrierServiceLevel);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/carrier-service-levels/{id}", method = RequestMethod.PUT)
     public CarrierServiceLevel changeCarrierServiceLevel(@PathVariable Long id, @RequestBody CarrierServiceLevel carrierServiceLevel) {
         if (carrierServiceLevel.getId() != null && carrierServiceLevel.getId() != id) {
@@ -55,6 +58,7 @@ public class CarrierServiceLevelController {
         return carrierServiceLevelService.save(carrierServiceLevel);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/carrier-service-levels")
     public void deleteCarrierServiceLevels(@RequestParam(name = "carrierServiceLevelIds", required = false, defaultValue = "") String carrierServiceLevelIds) {
         carrierServiceLevelService.delete(carrierServiceLevelIds);

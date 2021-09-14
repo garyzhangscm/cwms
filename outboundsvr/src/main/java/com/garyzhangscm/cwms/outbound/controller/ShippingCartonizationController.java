@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.PackingResult;
 import com.garyzhangscm.cwms.outbound.model.ShippingCartonization;
 import com.garyzhangscm.cwms.outbound.service.ShippingCartonizationService;
@@ -32,6 +33,7 @@ public class ShippingCartonizationController {
     @Autowired
     ShippingCartonizationService shippingCartonizationService;
 
+    @BillableEndpoint
     @RequestMapping(value="/shipping-cartonization", method = RequestMethod.POST)
     public ShippingCartonization pack(@RequestParam Long warehouseId,
                                       @RequestParam String inventoryId,

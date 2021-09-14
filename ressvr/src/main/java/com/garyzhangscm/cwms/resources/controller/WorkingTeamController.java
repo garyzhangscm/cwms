@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.MenuGroup;
 import com.garyzhangscm.cwms.resources.model.Role;
 import com.garyzhangscm.cwms.resources.model.WorkingTeam;
@@ -43,6 +44,7 @@ public class WorkingTeamController {
         return workingTeamService.findAll(companyId, name, enabled);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/working-teams", method = RequestMethod.PUT)
     public WorkingTeam addWorkingTeam(@RequestBody WorkingTeam workingTeam) {
         return workingTeamService.addWorkingTeam(workingTeam);
@@ -54,10 +56,13 @@ public class WorkingTeamController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/working-teams/{id}/disable", method = RequestMethod.POST)
     public WorkingTeam disableWorkingTeam(@PathVariable Long id) {
         return workingTeamService.disableWorkingTeam(id);
     }
+
+    @BillableEndpoint
     @RequestMapping(value="/working-teams/{id}/enable", method = RequestMethod.POST)
     public WorkingTeam enableWorkingTeam(@PathVariable Long id) {
         return workingTeamService.enableWorkingTeam(id);
@@ -66,6 +71,7 @@ public class WorkingTeamController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/working-teams/{id}/users", method = RequestMethod.POST)
     public ResponseBodyWrapper processUsers(@PathVariable Long id,
                                         @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedUserIds,

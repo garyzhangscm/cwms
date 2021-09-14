@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderCompleteTransaction;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderCompleteTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class WorkOrderCompleteTransactionController {
      * @param locationId production line outbound location id
      * @return
      */
+    @BillableEndpoint
     @RequestMapping(value="/work-order-complete-transactions", method = RequestMethod.POST)
     public WorkOrderCompleteTransaction addWorkOrderCompleteTransaction(
             @RequestBody WorkOrderCompleteTransaction workOrderCompleteTransaction,

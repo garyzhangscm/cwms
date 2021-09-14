@@ -19,10 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
-import com.garyzhangscm.cwms.workorder.model.Inventory;
-import com.garyzhangscm.cwms.workorder.model.WorkOrder;
-import com.garyzhangscm.cwms.workorder.model.WorkOrderKPI;
-import com.garyzhangscm.cwms.workorder.model.WorkOrderLine;
+import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderKPIService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
@@ -46,6 +43,7 @@ public class WorkOrderKPIController {
         return workOrderKPIService.findAll(warehouseId, workOrderNumber, username, workingTeamName, genericQuery);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-order-kpis", method = RequestMethod.POST)
     public WorkOrderKPI addWorkOrderKPI(@RequestBody WorkOrderKPI workOrderKPI) {
         return workOrderKPIService.save(workOrderKPI);
@@ -56,11 +54,14 @@ public class WorkOrderKPIController {
     public WorkOrderKPI findWorkOrderKPI(@PathVariable Long id) {
         return workOrderKPIService.findById(id);
     }
+
+    @BillableEndpoint
     @RequestMapping(value="/work-order-kpis/{id}", method = RequestMethod.DELETE)
     public void removeWorkOrderKPI(@PathVariable Long id) {
          workOrderKPIService.delete(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-order-kpis/{id}", method = RequestMethod.PUT)
     public WorkOrderKPI changeWorkOrderKPI(@RequestBody WorkOrderKPI workOrderKPI){
         return workOrderKPIService.save(workOrderKPI);

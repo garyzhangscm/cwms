@@ -43,6 +43,7 @@ public class ProductionPlanController {
         return productionPlanService.findAll(warehouseId, number, itemName, genericMatch);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-plans", method = RequestMethod.POST)
     public ProductionPlan addProductionPlan(@RequestBody ProductionPlan productionPlan) {
         return productionPlanService.addProductionPlan(productionPlan);
@@ -54,12 +55,14 @@ public class ProductionPlanController {
         return productionPlanService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-plans/{id}", method = RequestMethod.PUT)
     public ProductionPlan changeProductionPlan(@RequestBody ProductionPlan productionPlan){
         return productionPlanService.save(productionPlan);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-plans/validate-new-number", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateNewNumber(@RequestParam Long warehouseId,
                                                          @RequestParam String number) {

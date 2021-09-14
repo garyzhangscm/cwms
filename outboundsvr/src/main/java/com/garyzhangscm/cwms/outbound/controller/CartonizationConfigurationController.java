@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.CartonizationConfiguration;
 import com.garyzhangscm.cwms.outbound.service.CartonizationConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class CartonizationConfigurationController {
         return cartonizationConfigurationService.findAll(warehouseId,clientIds, pickType, enabled, sequence);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/cartonization-configuration", method = RequestMethod.POST)
     public CartonizationConfiguration addCartonizationConfiguration(@RequestBody CartonizationConfiguration cartonizationConfiguration) {
         return cartonizationConfigurationService.save(cartonizationConfiguration);
@@ -51,6 +53,7 @@ public class CartonizationConfigurationController {
         return cartonizationConfigurationService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/cartonization-configuration/{id}", method = RequestMethod.PUT)
     public CartonizationConfiguration changeCartonizationConfiguration(@RequestBody CartonizationConfiguration cartonizationConfiguration){
         return cartonizationConfigurationService.save(cartonizationConfiguration);

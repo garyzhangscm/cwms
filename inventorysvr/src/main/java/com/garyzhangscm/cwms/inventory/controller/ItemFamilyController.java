@@ -18,9 +18,13 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.garyzhangscm.cwms.inventory.BillableEndpointAspect;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.ItemFamily;
 import com.garyzhangscm.cwms.inventory.service.ItemFamilyService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +32,17 @@ import java.util.List;
 
 @RestController
 public class ItemFamilyController {
+
+    private static Logger logger = LoggerFactory
+            .getLogger(ItemFamilyController.class);
     @Autowired
     ItemFamilyService itemFamilyService;
 
     @RequestMapping(value="/item-families", method = RequestMethod.GET)
     public List<ItemFamily> findAllItemFaimlies(@RequestParam Long warehouseId,
                                                 @RequestParam(name="name", required = false, defaultValue = "") String name) {
+        logger.debug("Start to call findAllItemFaimlies with parameters warehouse id: {}, name: {}",
+                warehouseId, name);
         return itemFamilyService.findAll(warehouseId, name);
     }
 
@@ -42,11 +51,13 @@ public class ItemFamilyController {
         return itemFamilyService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/item-family", method = RequestMethod.POST)
     public ItemFamily createItemFamily(@RequestBody ItemFamily itemFamily) {
         return itemFamilyService.save(itemFamily);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/item-family/{id}")
     public ItemFamily changeItemFamily(@PathVariable long id,
                                        @RequestBody ItemFamily itemFamily) {
@@ -57,7 +68,7 @@ public class ItemFamilyController {
         return itemFamilyService.save(itemFamily);
     }
 
-
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/item-family")
     public void removeItemFamilies(@RequestParam(name = "item_family_ids", required = false, defaultValue = "") String itemFamilyIds) {
         itemFamilyService.removeItemFamilies(itemFamilyIds);

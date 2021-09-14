@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.ReportHistory;
 import com.garyzhangscm.cwms.resources.model.ReportPrinterConfiguration;
 import com.garyzhangscm.cwms.resources.service.ReportHistoryService;
@@ -68,6 +69,7 @@ public class ReportPrinterConfigurationController {
         return reportPrinterConfigurationService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/report-printer-configuration/{id}", method = RequestMethod.DELETE)
     public ResponseBodyWrapper<String> removeReportPrinterConfiguration(@PathVariable Long id) {
 
@@ -78,6 +80,7 @@ public class ReportPrinterConfigurationController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/report-printer-configuration", method = RequestMethod.PUT)
     public ReportPrinterConfiguration addReportPrinterConfiguration(
             @RequestBody ReportPrinterConfiguration reportPrinterConfiguration
@@ -92,6 +95,7 @@ public class ReportPrinterConfigurationController {
         return printingServiceRestemplateClient.getPrinters();
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/report-printer-configuration/{id}", method = RequestMethod.POST)
     public ReportPrinterConfiguration changeReportPrinterConfiguration(@PathVariable Long id,
                                                                        @RequestBody ReportPrinterConfiguration reportPrinterConfiguration) {

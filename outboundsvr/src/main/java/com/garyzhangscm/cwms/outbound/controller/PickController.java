@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import com.garyzhangscm.cwms.outbound.service.PickService;
 import org.apache.commons.lang.StringUtils;
@@ -67,21 +68,25 @@ public class PickController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/picks", method = RequestMethod.POST)
     public Pick addPick(@RequestBody Pick pick) {
         return pickService.save(pick);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/picks/{id}", method = RequestMethod.PUT)
     public Pick changePick(@RequestBody Pick pick){
         return pickService.save(pick);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
     public Pick cancelPick(@PathVariable Long id){
         return pickService.cancelPick(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/picks/{id}/unpick", method = RequestMethod.POST)
     public Pick unpick(@PathVariable Long id,
                        @RequestParam Long unpickQuantity){
@@ -89,12 +94,14 @@ public class PickController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/picks", method = RequestMethod.DELETE)
     public List<Pick> cancelPicks(@RequestParam(name = "pick_ids") String pickIds) {
         return pickService.cancelPicks(pickIds);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/picks/{id}/confirm", method = RequestMethod.POST)
     public Pick confirmPick(@PathVariable Long id,
                             @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,

@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.workorder.clients;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.workorder.model.BillableRequest;
 import com.garyzhangscm.cwms.workorder.model.ChangeWorkOrderLineDeliveryQuantityRequest;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderConfirmation;
 import org.slf4j.Logger;
@@ -43,6 +44,18 @@ public class KafkaSender {
     public void send(ChangeWorkOrderLineDeliveryQuantityRequest changeWorkOrderLineDeliveryQuantityRequest) {
         try {
             send("WORK_ORDER_LINE_DELIVERY_QUANTITY_CHANGE", objectMapper.writeValueAsString(changeWorkOrderLineDeliveryQuantityRequest));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
+
+    public void send(BillableRequest billableRequest) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("BILLABLE_REQUEST", objectMapper.writeValueAsString(billableRequest));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

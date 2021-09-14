@@ -21,10 +21,7 @@ package com.garyzhangscm.cwms.inbound.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
-import com.garyzhangscm.cwms.inbound.model.Inventory;
-import com.garyzhangscm.cwms.inbound.model.Receipt;
-import com.garyzhangscm.cwms.inbound.model.ReceiptLine;
-import com.garyzhangscm.cwms.inbound.model.ReportHistory;
+import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.ReceiptLineService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +45,7 @@ public class ReceiptController {
         return receiptService.findAll(warehouseId, number, receiptStatusList);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts", method = RequestMethod.POST)
     public Receipt addReceipts(@RequestBody Receipt receipt) {
         return receiptService.save(receipt);
@@ -59,17 +57,20 @@ public class ReceiptController {
         return receiptService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{id}", method = RequestMethod.PUT)
     public Receipt changeReceipt(@PathVariable Long id,
                                  @RequestBody Receipt receipt){
         return receiptService.changeReceipt(id, receipt);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/complete", method = RequestMethod.POST)
     public Receipt completeReceipt(@PathVariable Long id){
         return receiptService.completeReceipt(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts", method = RequestMethod.DELETE)
     public void removeReceipts(@RequestParam(name = "receipt_ids", required = false, defaultValue = "") String receiptIds) {
         receiptService.delete(receiptIds);
@@ -81,6 +82,7 @@ public class ReceiptController {
         return ResponseBodyWrapper.success(receiptService.getNextReceiptLineNumber(id));
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/lines", method = RequestMethod.POST)
     public ReceiptLine addReceiptLine(@PathVariable Long id,
                                       @RequestBody ReceiptLine receiptLine) {
@@ -94,6 +96,7 @@ public class ReceiptController {
      * @param inventory inventory to be received
      * @return
      */
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/receive", method = RequestMethod.POST)
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,
@@ -101,6 +104,7 @@ public class ReceiptController {
             return receiptLineService.receive(receiptId, receiptLineId, inventory);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/reverse", method = RequestMethod.POST)
     public ReceiptLine reverseReceivedInventory(@PathVariable Long receiptId,
                                      @PathVariable Long receiptLineId,
@@ -108,6 +112,7 @@ public class ReceiptController {
         return receiptLineService.reverseReceivedInventory(receiptId, receiptLineId, quantity);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/check-in", method = RequestMethod.PUT)
     public Receipt checkInReceipt(@PathVariable Long id){
 
@@ -119,12 +124,14 @@ public class ReceiptController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts/lines", method = RequestMethod.DELETE)
     public void removeReceiptLine(@RequestParam String receiptLineIds) {
         receiptLineService.delete(receiptLineIds);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/receiving-document", method = RequestMethod.POST)
     public ReportHistory generateReceivingDocument(
             @PathVariable Long id,
@@ -133,7 +140,7 @@ public class ReceiptController {
         return receiptService.generateReceivingDocument(id, locale);
     }
 
-
+    @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/putaway-document", method = RequestMethod.POST)
     public ReportHistory generatePutawayDocument(
             @PathVariable Long id,

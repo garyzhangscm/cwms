@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -45,11 +46,13 @@ public class SupplierController {
         return supplierService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/suppliers", method = RequestMethod.POST)
     public Supplier addSupplier(@RequestBody Supplier supplier) {
         return supplierService.save(supplier);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/suppliers/{id}", method = RequestMethod.PUT)
     public Supplier changeSupplier(@PathVariable Long id, @RequestBody Supplier supplier) {
         if (supplier.getId() != null && supplier.getId() != id) {
@@ -60,6 +63,7 @@ public class SupplierController {
         return supplierService.save(supplier);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/suppliers")
     public void deleteSuppliers(@RequestParam(name = "supplierIds", required = false, defaultValue = "") String supplierIds) {
         supplierService.delete(supplierIds);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.garyzhangscm.cwms.outbound.usercontext.UserContextInterceptor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -82,7 +84,12 @@ public class OutboundServerApplication {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
 
 		List<ClientHttpRequestInterceptor> interceptorList = new ArrayList<>();
-		restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+
+		// restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+		restTemplate.setInterceptors(
+				Arrays.asList(new ClientHttpRequestInterceptor[]{
+						new JsonMimeInterceptor(),  new UserContextInterceptor()}));
+
 		customizer.customize(restTemplate);
 		return restTemplate;
 	}

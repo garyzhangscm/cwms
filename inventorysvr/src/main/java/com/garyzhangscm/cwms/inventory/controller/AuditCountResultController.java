@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.model.AuditCountResult;
+import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.CycleCountResult;
 import com.garyzhangscm.cwms.inventory.service.AuditCountResultService;
 import com.garyzhangscm.cwms.inventory.service.CycleCountResultService;
@@ -51,6 +52,7 @@ public class AuditCountResultController {
         return auditCountResultService.getEmptyAuditCountResults(batchId, locationId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value = "/audit-count-result/{batchId}/{locationId}/confirm", method = RequestMethod.POST)
     public List<AuditCountResult> confirmAuditCountResults(@PathVariable String batchId,
                                                            @PathVariable Long locationId,

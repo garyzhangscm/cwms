@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.InventorySnapshot;
 import com.garyzhangscm.cwms.inventory.model.InventorySnapshotConfiguration;
 import com.garyzhangscm.cwms.inventory.model.InventorySnapshotDetail;
@@ -43,6 +44,7 @@ public class InventorySnapshotConfigurationController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory_snapshot_configuration", method = RequestMethod.POST)
     public InventorySnapshotConfiguration findAllInventorySnapshotConfiguration(
             @RequestBody InventorySnapshotConfiguration inventorySnapshotConfiguration) {

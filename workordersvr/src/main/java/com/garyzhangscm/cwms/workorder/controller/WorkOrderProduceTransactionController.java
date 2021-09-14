@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.WorkOrder;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderProduceTransaction;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
@@ -46,6 +47,7 @@ public class WorkOrderProduceTransactionController {
         return workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber,productionLineId,  genericQuery);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-order-produce-transactions", method = RequestMethod.POST)
     public WorkOrderProduceTransaction addWorkOrderProduceTransaction(
             @RequestBody WorkOrderProduceTransaction workOrderProduceTransaction) {

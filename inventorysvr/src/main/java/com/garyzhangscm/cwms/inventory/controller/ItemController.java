@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemService;
@@ -53,11 +54,13 @@ public class ItemController {
         return itemService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/items/{id}", method = RequestMethod.DELETE)
     public Item deleteItem(@PathVariable Long id) {
         return itemService.deleteItem(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items/{id}/images/upload")
     public Item uploadItemImages(@PathVariable Long id,
                                            @RequestParam("file") MultipartFile file) throws IOException {

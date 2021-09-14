@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.zuulsvr.filters;
 
 import com.netflix.zuul.context.RequestContext;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -60,7 +61,9 @@ public class FilterUtils {
 
     private String getAuthToken(String bearerAuthToken) {
         // The token will be passed in as Bearer xxxxx-xxxxx-xxxx-xxxx
-        if (!bearerAuthToken.startsWith("Bearer")) {
+
+        if (Strings.isBlank(bearerAuthToken) ||
+                !bearerAuthToken.startsWith("Bearer")) {
             return "";
         }
         String[] tokenValues = bearerAuthToken.split(" ");

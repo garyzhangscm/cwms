@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.ProductionPlan;
 import com.garyzhangscm.cwms.workorder.model.ProductionPlanLine;
 import com.garyzhangscm.cwms.workorder.model.WorkOrder;
@@ -43,6 +44,7 @@ public class ProductionPlanLineController {
         return productionPlanLineService.findAll(warehouseId, productionPlannumber, itemName, genericMatch);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-plans/lines", method = RequestMethod.POST)
     public ProductionPlanLine addProductionPlanLine(@RequestBody ProductionPlanLine productionPlanLine) {
         return productionPlanLineService.addProductionPlanLine(productionPlanLine);
@@ -54,6 +56,7 @@ public class ProductionPlanLineController {
         return productionPlanLineService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-plan/lines/{id}", method = RequestMethod.PUT)
     public ProductionPlanLine changeProductionPlanLine(@RequestBody ProductionPlanLine productionPlanLine){
         return productionPlanLineService.save(productionPlanLine);
@@ -61,6 +64,7 @@ public class ProductionPlanLineController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-plan/lines/{id}/create-work-order", method = RequestMethod.POST)
     public WorkOrder createWorkOrderFromProductionPlan(@PathVariable Long id,
                                             @RequestParam String workOrderNumber,

@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.auth.controller;
 
+import com.garyzhangscm.cwms.auth.model.BillableEndpoint;
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ public class UserController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method =  RequestMethod.POST)
     public User changeUser(@RequestBody User user) {
         return userService.saveOrUpdate(user);

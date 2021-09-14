@@ -105,12 +105,14 @@ public class InventoryController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/inventories/consume", method = RequestMethod.POST)
     public List<Inventory> consumeInventoriesForWorkOrderLines(@RequestParam Long warehouseId,
                                             @RequestParam String workOrderLineIds) {
         return inventoryService.consumeInventoriesForWorkOrderLines(warehouseId, workOrderLineIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/inventories/consume/workOrderLine/{id}", method = RequestMethod.POST)
     public List<Inventory> consumeInventoriesForWorkOrderLine(@PathVariable Long id,
                                                               @RequestParam Long warehouseId,
@@ -124,12 +126,14 @@ public class InventoryController {
                 lpn, nonPickedInventory);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}")
     public void removeInventory(@PathVariable Long id) {
         inventoryService.delete(id);
     }
 
 
+    @BillableEndpoint
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-adj/{id}")
     public Inventory adjustDownInventory(@PathVariable Long id,
@@ -138,6 +142,7 @@ public class InventoryController {
         return inventoryService.removeInventory(id, documentNumber, comment);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/reverse-production/{id}")
     public Inventory reverseProduction(@PathVariable Long id,
                                          @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
@@ -145,6 +150,7 @@ public class InventoryController {
         return inventoryService.reverseProduction(id, documentNumber, comment);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/reverse-receiving/{id}")
     public Inventory reverseReceiving(@PathVariable Long id,
                                          @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
@@ -152,6 +158,7 @@ public class InventoryController {
         return inventoryService.reverseReceiving(id, documentNumber, comment);
     }
 
+    @BillableEndpoint
     // Adjust up the inventory from 0
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
     public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory,
@@ -161,6 +168,7 @@ public class InventoryController {
         logger.debug("Start to create inventory \n{}", inventory.getLpn());
         return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
     }
+    @BillableEndpoint
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/receive")
     public Inventory addInventoryByReceiving(@RequestBody Inventory inventory,
@@ -196,7 +204,7 @@ public class InventoryController {
         return inventoryService.findById(id);
     }
 
-
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/inventory/{id}")
     public Inventory changeInventory(@PathVariable long id,
                                      @RequestBody Inventory inventory) {
@@ -207,6 +215,7 @@ public class InventoryController {
         return inventoryService.changeInventory(id, inventory);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/adjust-quantity")
     public Inventory adjustInventoryQuantity(@PathVariable long id,
                                              @RequestParam Long newQuantity,
@@ -216,12 +225,14 @@ public class InventoryController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/movements")
     public Inventory setupMovementPath(@PathVariable long id,
                                        @RequestBody List<InventoryMovement> inventoryMovements) {
 
         return inventoryService.setupMovementPath(id, inventoryMovements);
     }
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}/movements")
     public Inventory clearMovementPath(@PathVariable long id) {
 
@@ -230,6 +241,7 @@ public class InventoryController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/move")
     public Inventory moveInventory(@PathVariable long id,
                                    @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
@@ -251,6 +263,7 @@ public class InventoryController {
      * @param newQuantity
      * @return
      */
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/split")
     public List<Inventory> splitInventory(@PathVariable long id,
                                           @RequestParam(name = "newLpn", required = false, defaultValue = "")  String newLpn,
@@ -260,6 +273,7 @@ public class InventoryController {
         return inventoryService.splitInventory(id, newLpn, newQuantity);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/mark-lpn-allocated")
     public List<Inventory> markLPNAllocated(@RequestParam Long warehouseId,
                                             @RequestParam String lpn,
@@ -269,6 +283,7 @@ public class InventoryController {
         return inventoryService.markLPNAllocated(warehouseId, lpn, allocatedByPickId);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/release-lpn-allocated")
     public List<Inventory> releaseLPNAllocated(@RequestParam Long warehouseId,
                                                @RequestParam String lpn,
@@ -278,6 +293,7 @@ public class InventoryController {
         return inventoryService.releaseLPNAllocated(warehouseId, lpn, allocatedByPickId);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/unpick")
     public Inventory unpick(@PathVariable long id,
                             @RequestParam Long warehouseId,
@@ -290,12 +306,14 @@ public class InventoryController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}/reverse-receiving")
     public Inventory reverseReceivedInventory(@PathVariable long id) {
 
         return inventoryService.reverseReceivedInventory(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventories/validate-new-lpn")
     public ResponseBodyWrapper<String> validateNewLPN(@RequestParam Long warehouseId,
                                                       @RequestParam String lpn)  {
@@ -305,6 +323,7 @@ public class InventoryController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/inventories/{warehouseId}/{lpn}/lpn-label/ecotech", method = RequestMethod.POST)
     public ReportHistory generateEcotechLPNLabel(
             @PathVariable Long warehouseId,

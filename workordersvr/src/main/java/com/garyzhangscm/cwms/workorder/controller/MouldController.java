@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.Mould;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.MouldService;
@@ -44,6 +45,7 @@ public class MouldController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/moulds", method = RequestMethod.POST)
     public Mould addMoulds(@RequestBody Mould mould) {
         return mouldService.addMould(mould);
@@ -56,12 +58,14 @@ public class MouldController {
         return mouldService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/moulds/{id}", method = RequestMethod.PUT)
     public Mould changeMould(@PathVariable Long id,
                                                @RequestBody Mould mould){
         return mouldService.changeMould(id, mould);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/moulds/{id}", method = RequestMethod.DELETE)
     public void removeMould(@PathVariable Long id) {
         mouldService.delete(id);

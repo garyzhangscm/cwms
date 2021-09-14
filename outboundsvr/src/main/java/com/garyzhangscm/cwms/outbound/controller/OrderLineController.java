@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 
@@ -53,12 +54,14 @@ public class OrderLineController {
      * @param productionPlanLineQuantity production plan line quantity
      * @return
      */
+    @BillableEndpoint
     @RequestMapping(value="/orders/lines/{id}/production-plan-line/register", method = RequestMethod.POST)
     public OrderLine registerProductionPlanLine(@PathVariable Long id,
                                           @RequestParam Long productionPlanLineQuantity) {
         return orderLineService.registerProductionPlanLine(id, productionPlanLineQuantity);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/lines/{id}/production-plan/produced", method = RequestMethod.POST)
     public OrderLine registerProductionPlanProduced(@PathVariable Long id,
                                             @RequestParam Long producedQuantity) {

@@ -18,10 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.OrderLine;
-import com.garyzhangscm.cwms.outbound.model.Shipment;
-import com.garyzhangscm.cwms.outbound.model.Wave;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
 import com.garyzhangscm.cwms.outbound.service.WaveService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +42,13 @@ public class WaveController {
         return waveService.findWaveCandidate(warehouseId, orderNumber, customerName);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/waves", method = RequestMethod.POST)
     public Wave addWave(@RequestBody Wave wave) {
         return waveService.save(wave);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/waves/plan", method = RequestMethod.POST)
     public Wave planWave(@RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
                          @RequestParam Long warehouseId,
@@ -57,6 +56,7 @@ public class WaveController {
         return waveService.planWave(warehouseId, waveNumber, orderLineIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/waves/{id}/allocate", method = RequestMethod.POST)
     public Wave allocateWave(@PathVariable Long id) {
         return waveService.allocateWave(id);
@@ -67,11 +67,13 @@ public class WaveController {
         return waveService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/waves/{id}", method = RequestMethod.PUT)
     public Wave changeWave(@RequestBody Wave wave){
         return waveService.save(wave);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/waves", method = RequestMethod.DELETE)
     public void removeWaves(@RequestParam(name = "wave_ids", required = false, defaultValue = "") String waveIds) {
         waveService.delete(waveIds);

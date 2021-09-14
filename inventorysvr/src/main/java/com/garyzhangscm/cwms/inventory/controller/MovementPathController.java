@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.controller;
 
 
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.Location;
 import com.garyzhangscm.cwms.inventory.model.MovementPath;
@@ -62,10 +63,14 @@ public class MovementPathController {
     public MovementPath findById(@PathVariable Long id) {
         return movementPathService.findById(id);
     }
+
+    @BillableEndpoint
     @RequestMapping(value="/movement-path", method = RequestMethod.POST)
     public MovementPath createMovementPath(@RequestBody MovementPath movementPath) {
         return movementPathService.save(movementPath);
     }
+
+    @BillableEndpoint
     @RequestMapping(value="/movement-path/{id}", method = RequestMethod.PUT)
     public MovementPath changeMovementPath(@PathVariable Long id,
                                            @RequestBody MovementPath movementPath) {
@@ -77,17 +82,20 @@ public class MovementPathController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/movement-path/{id}")
     public void removeMovementPath(@PathVariable Long id) {
         movementPathService.delete(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/movement-path?movement_path_ids")
     public void removeMovementPath(@RequestParam(name="movementPathIds") String movementPathIds) {
         movementPathService.removeMovementPaths(movementPathIds);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/movement-path/reserve")
     public List<Location> reserveHopLocations(@RequestParam(name="fromLocationId") Long fromLocationId,
                                               @RequestParam(name="toLocationId") Long toLocationId,

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.layout.controller;
 
 
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
 import com.garyzhangscm.cwms.layout.model.InventoryConsolidationStrategy;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
@@ -58,10 +59,13 @@ public class LocationGroupController {
         return locationGroupService.findById(id).getInventoryConsolidationStrategy();
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locationgroups")
     public LocationGroup addLocationGroups(@RequestBody LocationGroup locationGroup) {
         return locationGroupService.addLocationGroups(locationGroup);
     }
+
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}")
     public LocationGroup changeLocationGroups(@PathVariable long id,
                                               @RequestBody LocationGroup locationGroup) {
@@ -73,11 +77,13 @@ public class LocationGroupController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups/{id}")
     public void removeLocationGroup(@PathVariable long id) {
         locationGroupService.removeLocationGroup(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups")
     public void removeLocationGroups(@RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds) {
         locationGroupService.delete(locationGroupIds);
@@ -85,6 +91,7 @@ public class LocationGroupController {
 
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reservedCode") String reservedCode,

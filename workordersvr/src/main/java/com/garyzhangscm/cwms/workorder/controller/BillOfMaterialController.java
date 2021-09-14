@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +53,7 @@ public class BillOfMaterialController {
         return billOfMaterialService.findMatchedBillOfMaterialByItemName(warehouseId, itemName);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.POST)
     public BillOfMaterial addBillOfMaterials(@RequestBody BillOfMaterial billOfMaterial) {
         return billOfMaterialService.addBillOfMaterials(billOfMaterial);
@@ -63,17 +65,20 @@ public class BillOfMaterialController {
         return billOfMaterialService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/bill-of-materials/{id}", method = RequestMethod.PUT)
     public BillOfMaterial changeBillOfMaterial(@PathVariable Long id,
                                                @RequestBody BillOfMaterial billOfMaterial){
         return billOfMaterialService.changeBillOfMaterial(id, billOfMaterial);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.DELETE)
     public void removeBillOfMaterials(@RequestParam(name = "billOfMaterialIds", required = false, defaultValue = "") String billOfMaterialIds) {
         billOfMaterialService.delete(billOfMaterialIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/bill-of-materials/validate-new-number", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateNewBOMNumber(@RequestParam Long warehouseId,
                                                             @RequestParam String number) {

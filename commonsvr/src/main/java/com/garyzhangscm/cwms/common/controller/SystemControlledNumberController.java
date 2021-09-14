@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 
 import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.SystemControlledNumber;
 import com.garyzhangscm.cwms.common.service.SystemControlledNumberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ public class SystemControlledNumberController {
 
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/system-controlled-numbers/{id}", method = RequestMethod.DELETE)
     public ResponseBodyWrapper<String> removeSystemControlledNumber(@PathVariable Long id) {
         systemControlledNumberService.delete(id);
@@ -61,11 +63,13 @@ public class SystemControlledNumberController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/system-controlled-numbers", method = RequestMethod.PUT)
     public SystemControlledNumber addSystemControlledNumbers(@RequestBody SystemControlledNumber systemControlledNumber) {
         return systemControlledNumberService.addSystemControlledNumbers(systemControlledNumber);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/system-controlled-numbers/{id}", method = RequestMethod.POST)
     public SystemControlledNumber changeSystemControlledNumbers(@PathVariable Long id,
                                                              @RequestBody SystemControlledNumber systemControlledNumber) {

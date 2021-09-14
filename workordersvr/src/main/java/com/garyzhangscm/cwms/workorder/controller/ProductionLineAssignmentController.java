@@ -43,6 +43,7 @@ public class ProductionLineAssignmentController {
         return productionLineAssignmentService.findAll(productionLineId, productionLineIds, workOrderId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-assignments", method = RequestMethod.POST)
     public List<ProductionLineAssignment> assignWorkOrderToProductionLines(
             @RequestParam Long workOrderId,
@@ -60,6 +61,7 @@ public class ProductionLineAssignmentController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-assignments/deassign", method = RequestMethod.POST)
     public ProductionLineAssignment deassignWorkOrderToProductionLines(
             @RequestParam Long workOrderId,
@@ -71,6 +73,7 @@ public class ProductionLineAssignmentController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-assignments/{id}/report", method = RequestMethod.POST)
     public ReportHistory generateProductionLineAssignmentReport(
             @PathVariable Long id,
@@ -81,6 +84,7 @@ public class ProductionLineAssignmentController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-assignments/{id}/label", method = RequestMethod.POST)
     public ReportHistory generateProductionLineAssignmentLabel(
             @PathVariable Long id,

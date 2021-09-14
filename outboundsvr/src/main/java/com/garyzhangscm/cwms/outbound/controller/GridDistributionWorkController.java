@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.GridDistributionWork;
 import com.garyzhangscm.cwms.outbound.service.GridDistributionWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ public class GridDistributionWorkController {
         return gridDistributionWorkService.getGridDistributionWork(warehouseId, locationGroupId, id, gridLocationConfigurationId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/grid-distribution-work/confirm", method = RequestMethod.POST)
     public void confirmGridDistributionWork(@RequestParam Long warehouseId,
                                             @RequestParam String id,

@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.inventory.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.model.CycleCountRequest;
-import com.garyzhangscm.cwms.inventory.model.CycleCountRequestType;
-import com.garyzhangscm.cwms.inventory.model.CycleCountResult;
-import com.garyzhangscm.cwms.inventory.model.ReportHistory;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.CycleCountRequestService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +38,7 @@ public class CycleCountRequestController {
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
 
+    @BillableEndpoint
     @RequestMapping(value = "/cycle-count-requests", method = RequestMethod.POST)
     public List<CycleCountRequest> generateCycleCountRequests(
             @RequestParam Long warehouseId,
@@ -90,6 +88,7 @@ public class CycleCountRequestController {
                 warehouseId, batchId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value = "/cycle-count-request/confirm",
             method = RequestMethod.POST)
     public List<CycleCountResult> confirmCycleCountRequests(@RequestParam("cycleCountRequestIds") String cycleCountRequestIds){
@@ -97,6 +96,7 @@ public class CycleCountRequestController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(
             value = "/cycle-count-request/{cycleCountRequestId}/confirm",
             method = RequestMethod.POST)
@@ -105,12 +105,14 @@ public class CycleCountRequestController {
         return cycleCountRequestService.saveCycleCountResults(cycleCountRequestId, cycleCountResults);
     }
 
+    @BillableEndpoint
     @RequestMapping(value = "/cycle-count-request/cancel",
             method = RequestMethod.POST)
     public List<CycleCountRequest> cancelCycleCountRequests(@RequestParam("cycleCountRequestIds") String cycleCountRequestIds){
         return cycleCountRequestService.cancelCycleCountRequests(cycleCountRequestIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(value = "/cycle-count-request/reopen",
             method = RequestMethod.POST)
     public List<CycleCountRequest> reopenCycleCountRequests(@RequestParam("cycleCountRequestIds") String cycleCountRequestIds){
@@ -133,6 +135,7 @@ public class CycleCountRequestController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/cycle-count-request/{warehouseId}/{batchId}/cycle-count-sheet",
             method = RequestMethod.POST)
     public ReportHistory generateCycleCountSheetByBatch(

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 
 import com.garyzhangscm.cwms.outbound.model.AllocationResult;
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.WorkOrder;
 import com.garyzhangscm.cwms.outbound.model.WorkOrderLine;
 import com.garyzhangscm.cwms.outbound.service.AllocationConfigurationService;
@@ -39,6 +40,7 @@ public class AllocationController {
     @Autowired
     private AllocationService allocationService;
 
+    @BillableEndpoint
     @RequestMapping(value="/allocation/work-order", method = RequestMethod.POST)
     public AllocationResult allocateWorkOrder(
             @RequestBody WorkOrder workOrder,
@@ -51,6 +53,7 @@ public class AllocationController {
         return allocationService.allocate(workOrder, productionId, allocatingWorkOrderQuantity);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/allocation/work-order-line", method = RequestMethod.POST)
     public AllocationResult allocateWorkOrderLine(
             @RequestBody WorkOrderLine workOrderLine,

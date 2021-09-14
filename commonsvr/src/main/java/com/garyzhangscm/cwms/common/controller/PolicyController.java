@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.common.controller;
 import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Policy;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -42,6 +43,7 @@ public class PolicyController {
             return policyService.findAll(warehouseId, key);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/policies", method = RequestMethod.POST)
     public Policy addPolicy(@RequestBody Policy policy) {
         return policyService.saveOrUpdate(policy);
@@ -52,6 +54,7 @@ public class PolicyController {
         return policyService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/policies/{id}", method = RequestMethod.PUT)
     public Policy changePolicy(@PathVariable Long id,
                              @RequestBody Policy policy) {
@@ -63,6 +66,7 @@ public class PolicyController {
         return policyService.saveOrUpdate(policy);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/policies/{id}", method = RequestMethod.DELETE)
     public Policy removePolicy(@PathVariable Long id) {
         Policy policy = policyService.findById(id);
@@ -70,6 +74,7 @@ public class PolicyController {
         return policy;
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/policies", method = RequestMethod.DELETE)
     public ResponseBodyWrapper<String> removePolicy(@RequestParam Long warehouseId,
                                             @RequestParam(name="key", required = false, value = "") String key) {
