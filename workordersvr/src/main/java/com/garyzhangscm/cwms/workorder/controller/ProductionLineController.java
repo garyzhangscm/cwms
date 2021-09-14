@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 
 
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.ProductionLine;
 
 import com.garyzhangscm.cwms.workorder.service.ProductionLineService;
@@ -50,6 +51,7 @@ public class ProductionLineController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-lines", method = RequestMethod.POST)
     public ProductionLine addProductionLine(@RequestBody ProductionLine productionLine) {
         return productionLineService.addProductionLine(productionLine);
@@ -61,6 +63,7 @@ public class ProductionLineController {
         return productionLineService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-lines/{id}", method = RequestMethod.DELETE)
     public ProductionLine removeProductionLine(@PathVariable Long id) {
 
@@ -69,16 +72,19 @@ public class ProductionLineController {
         return productionLine;
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-lines/{id}", method = RequestMethod.PUT)
     public ProductionLine changeProductionLine(@RequestBody ProductionLine productionLine){
         return productionLineService.changeProductionLine(productionLine);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-lines", method = RequestMethod.DELETE)
     public void removeProductionLines(@RequestParam(name = "productionLineIds", required = false, defaultValue = "") String productionLineIds) {
         productionLineService.delete(productionLineIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-lines/{id}/disable", method = RequestMethod.POST)
     public ProductionLine disableProductionLine(@PathVariable Long id,
                                       @RequestParam boolean disabled) {

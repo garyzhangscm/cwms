@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.model.BillableRequest;
 import com.garyzhangscm.cwms.outbound.model.OrderActivity;
 import com.garyzhangscm.cwms.outbound.model.OrderConfirmation;
 import com.garyzhangscm.cwms.outbound.model.WarehouseTransferReceipt;
@@ -53,6 +54,16 @@ public class KafkaSender {
     public void send(WarehouseTransferReceipt warehouseTransferReceipt) {
         try {
             send("WAREHOUSE_TRANSFER_RECEIPT", objectMapper.writeValueAsString(warehouseTransferReceipt));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+    public void send(BillableRequest billableRequest) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("BILLABLE_REQUEST", objectMapper.writeValueAsString(billableRequest));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

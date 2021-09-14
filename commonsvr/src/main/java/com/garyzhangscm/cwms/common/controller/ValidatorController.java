@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 
 import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.SystemControlledNumber;
 import com.garyzhangscm.cwms.common.model.ValidatorType;
 import com.garyzhangscm.cwms.common.service.SystemControlledNumberService;
@@ -33,6 +34,7 @@ public class ValidatorController {
     @Autowired
     ValidateService validateService;
 
+    @BillableEndpoint
     @RequestMapping(value="/validator/validate-new-number/{variable}/{value}", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateNewNumber(@PathVariable String variable,
                                                          @PathVariable String value,
@@ -44,6 +46,8 @@ public class ValidatorController {
                         ValidatorType.VALIDATE_VALUE_NON_EXISTS, value));
 
     }
+
+    @BillableEndpoint
     @RequestMapping(value="/validator/validate-existing-number/{variable}/{value}", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateExistingNumber(@PathVariable String variable,
                                                          @PathVariable String value,

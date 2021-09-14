@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.Mould;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineCapacity;
 import com.garyzhangscm.cwms.workorder.service.MouldService;
@@ -44,6 +45,7 @@ public class ProductionLineCapacityController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-capacities", method = RequestMethod.PUT)
     public ProductionLineCapacity addProductionLineCapacity(@RequestBody ProductionLineCapacity productionLineCapacity) {
         return productionLineCapacityService.addProductionCapacity(productionLineCapacity);
@@ -56,12 +58,14 @@ public class ProductionLineCapacityController {
         return productionLineCapacityService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-capacities/{id}", method = RequestMethod.POST)
     public ProductionLineCapacity changeProductionLineCapacity(@PathVariable Long id,
                                                @RequestBody ProductionLineCapacity productionLineCapacity){
         return productionLineCapacityService.changeProductionCapacity(id, productionLineCapacity);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-capacities/{id}", method = RequestMethod.DELETE)
     public void removeProductionLineCapacity(@PathVariable Long id) {
         productionLineCapacityService.delete(id);

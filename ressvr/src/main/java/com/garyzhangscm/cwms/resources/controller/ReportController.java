@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.Report;
 
 import com.garyzhangscm.cwms.resources.model.ReportHistory;
@@ -61,6 +62,7 @@ public class ReportController {
         return reportService.findAll(companyId, warehouseId, type);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/reports", method = RequestMethod.PUT)
     public Report addReport(@RequestParam Long warehouseId,
                             @RequestParam String username,
@@ -71,12 +73,14 @@ public class ReportController {
         return reportService.addReport(warehouseId, username, companySpecific, warehouseSpecific, report);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/reports/{id}", method = RequestMethod.POST)
     public Report changeReport(@PathVariable Long id,
                            @RequestBody Report report) {
         return reportService.changeReport(report);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/reports/{id}", method = RequestMethod.DELETE)
     public ResponseBodyWrapper<String> removeReport(@PathVariable Long id) {
          reportService.removeReport(id);
@@ -90,6 +94,7 @@ public class ReportController {
         return reportService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/reports/{warehouseId}/{type}", method = RequestMethod.POST)
     public ReportHistory generateReport(@PathVariable Long warehouseId,
                                         @PathVariable String type,
@@ -105,6 +110,7 @@ public class ReportController {
                 locale);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/reports/templates/upload/{warehouseId}")
     public ResponseBodyWrapper uploadReportTemplate(
             @PathVariable Long warehouseId,

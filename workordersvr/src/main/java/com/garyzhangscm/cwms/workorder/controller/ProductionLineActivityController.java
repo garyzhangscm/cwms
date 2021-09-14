@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
+import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineActivity;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.ProductionLineActivityService;
@@ -52,6 +53,7 @@ public class ProductionLineActivityController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-activities", method = RequestMethod.POST)
     public ProductionLineActivity addProductionLineActivity(@RequestBody ProductionLineActivity productionLineActivity) {
         return productionLineActivityService.addProductionLineActivity(productionLineActivity);
@@ -64,6 +66,7 @@ public class ProductionLineActivityController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-activities/check_in", method = RequestMethod.POST)
     public ProductionLineActivity productionLineCheckIn(
             @RequestParam Long warehouseId,
@@ -77,6 +80,7 @@ public class ProductionLineActivityController {
         );
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/production-line-activities/check_out", method = RequestMethod.POST)
     public ProductionLineActivity productionLineCheckOut(
             @RequestParam Long warehouseId,

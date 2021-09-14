@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Customer;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.service.CustomerService;
@@ -45,11 +46,14 @@ public class CustomerController {
         return customerService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/customers", method = RequestMethod.POST)
     public Customer addCustomer(@RequestBody Customer customer) {
         return customerService.save(customer);
     }
 
+
+    @BillableEndpoint
     @RequestMapping(value="/customers/{id}", method = RequestMethod.PUT)
     public Customer changeCustomer(@PathVariable Long id, @RequestBody Customer customer) {
         if (customer.getId() != null && customer.getId() != id) {
@@ -59,6 +63,7 @@ public class CustomerController {
         return customerService.save(customer);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/customers")
     public void deleteCustomers(@RequestParam(name = "customerIds", required = false, defaultValue = "") String customerIds) {
         customerService.delete(customerIds);

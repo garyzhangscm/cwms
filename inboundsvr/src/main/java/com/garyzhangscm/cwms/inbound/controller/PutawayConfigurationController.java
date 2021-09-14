@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.inbound.controller;
 
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
-import com.garyzhangscm.cwms.inbound.model.Inventory;
-import com.garyzhangscm.cwms.inbound.model.PutawayConfiguration;
-import com.garyzhangscm.cwms.inbound.model.Receipt;
-import com.garyzhangscm.cwms.inbound.model.ReceiptLine;
+import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.PutawayConfigurationService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptLineService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptService;
@@ -48,6 +45,7 @@ public class PutawayConfigurationController {
         return putawayConfigurationService.findAll(warehouseId, sequence, itemName, itemFamilyName, inventoryStatusId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/putaway-configuration", method = RequestMethod.POST)
     public PutawayConfiguration addPutawayConfiguration(@RequestBody PutawayConfiguration putawayConfiguration) {
         return putawayConfigurationService.save(putawayConfiguration);
@@ -59,23 +57,27 @@ public class PutawayConfigurationController {
         return putawayConfigurationService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/putaway-configuration/{id}", method = RequestMethod.PUT)
     public PutawayConfiguration changePutawayConfiguration(@RequestBody PutawayConfiguration putawayConfiguration){
         return putawayConfigurationService.save(putawayConfiguration);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/putaway-configuration", method = RequestMethod.DELETE)
     public void removeReceipts(@RequestParam(name = "putaway_configuration_ids", required = false, defaultValue = "") String putawayConfigurationIds) {
         putawayConfigurationService.delete(putawayConfigurationIds);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/putaway-configuration/allocate-location", method = RequestMethod.POST)
     public Inventory allocateLocation(@RequestBody Inventory inventory) {
             Inventory allocatedInventory = putawayConfigurationService.allocateLocation(inventory);
             return allocatedInventory;
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/putaway-configuration/reallocate-location", method = RequestMethod.POST)
     public Inventory reallocateLocation(@RequestBody Inventory inventory) {
         Inventory allocatedInventory = putawayConfigurationService.reallocateLocation(inventory);

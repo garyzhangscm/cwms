@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.layout.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.layout.exception.GenericException;
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.WarehouseService;
 import org.apache.commons.lang.StringUtils;
@@ -53,12 +54,14 @@ public class WarehouseController {
         return warehouseService.findAll(companyId, companyCode, name);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/warehouses", method=RequestMethod.POST)
     public Warehouse addWarehouses(@RequestParam Long companyId,
                                    @RequestBody Warehouse warehouse) throws JsonProcessingException {
         return warehouseService.addWarehouses(companyId, warehouse);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.PUT)
     public Warehouse changeWarehouse(@PathVariable long id, @RequestBody Warehouse warehouse) {
         if (warehouse.getId() != null && warehouse.getId() != id) {
@@ -68,6 +71,7 @@ public class WarehouseController {
         return warehouseService.changeWarehouse(id, warehouse);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.DELETE)
     public Warehouse removeWarehouses(@PathVariable long id) {
         Warehouse removedWarehouse = warehouseService.removeWarehouses(id);

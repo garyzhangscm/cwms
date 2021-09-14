@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +44,15 @@ public class ClientController {
         return clientService.findById(id);
     }
 
+
+    @BillableEndpoint
     @RequestMapping(value="/clients", method = RequestMethod.POST)
     public Client addClient(@RequestBody Client client) {
         return clientService.save(client);
     }
 
+
+    @BillableEndpoint
     @RequestMapping(value="/clients/{id}", method = RequestMethod.PUT)
     public Client changeClient(@PathVariable Long id, @RequestBody Client client) {
         if (client.getId() != null && client.getId() != id) {
@@ -57,6 +62,7 @@ public class ClientController {
         return clientService.save(client);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/clients")
     public void deleteClients(@RequestParam(name = "clientIds", required = false, defaultValue = "") String clientIds) {
         clientService.delete(clientIds);

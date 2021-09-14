@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.garyzhangscm.cwms.integration.usercontext.UserContextInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -12,6 +13,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -19,11 +22,13 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @SpringBootApplication
 @EnableScheduling
 @EnableResourceServer
+@EnableJpaAuditing
 public class IntegrationServerApplication {
 
     public static void main(String[] args) {
@@ -58,7 +63,12 @@ public class IntegrationServerApplication {
                                                  OAuth2ProtectedResourceDetails details) {
         OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(details, oauth2ClientContext);
         // Interceptor to add accept = JSON to the http header
-        oAuth2RestTemplate.setInterceptors(Collections.singletonList(new RequestInterceptor()));
+
+        // oAuth2RestTemplate.setInterceptors(Collections.singletonList(new RequestInterceptor()));
+        oAuth2RestTemplate.setInterceptors(
+                Arrays.asList(new ClientHttpRequestInterceptor[]{
+                        new RequestInterceptor(),  new UserContextInterceptor()}));
+
         return oAuth2RestTemplate;
     }
 

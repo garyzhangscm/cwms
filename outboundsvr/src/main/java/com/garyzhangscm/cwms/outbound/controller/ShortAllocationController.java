@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.ShortAllocation;
 
 import com.garyzhangscm.cwms.outbound.service.ShortAllocationService;
@@ -53,22 +54,26 @@ public class ShortAllocationController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/shortAllocations", method = RequestMethod.POST)
     public ShortAllocation addShortAllocation(@RequestBody ShortAllocation shortAllocation) {
         return shortAllocationService.save(shortAllocation);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shortAllocations/{id}", method = RequestMethod.PUT)
     public ShortAllocation changeShortAllocation(@RequestBody ShortAllocation shortAllocation){
         return shortAllocationService.save(shortAllocation);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shortAllocations/{id}/allocate", method = RequestMethod.POST)
     public ShortAllocation allocateShortAllocation(@PathVariable Long id){
         return shortAllocationService.allocateShortAllocation(id);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/shortAllocations", method = RequestMethod.DELETE)
     public List<ShortAllocation> cancelShortAllocations(@RequestParam(name = "shortAllocation_ids") String shortAllocationIds) {
         return shortAllocationService.cancelShortAllocations(shortAllocationIds);

@@ -50,4 +50,16 @@ public class KafkaSender {
             send("SYSTEM_ERROR", ex.getMessage());
         }
     }
+
+
+    public void send(BillableRequest billableRequest) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("BILLABLE_REQUEST", mapper.writeValueAsString(billableRequest));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
 }

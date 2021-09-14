@@ -19,10 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.garyzhangscm.cwms.inventory.model.AuditCountRequest;
-import com.garyzhangscm.cwms.inventory.model.AuditCountResult;
-import com.garyzhangscm.cwms.inventory.model.CycleCountRequest;
-import com.garyzhangscm.cwms.inventory.model.ReportHistory;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.AuditCountRequestService;
 import com.garyzhangscm.cwms.inventory.service.AuditCountResultService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +45,7 @@ public class AuditCountRequestController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(
             value="/audit-count-request/{warehouseId}/{batchId}/audit-count-sheet",
             method = RequestMethod.POST)

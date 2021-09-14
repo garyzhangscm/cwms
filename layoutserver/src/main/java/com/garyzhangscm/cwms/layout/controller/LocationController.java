@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.layout.controller;
 
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.service.FileService;
 import com.garyzhangscm.cwms.layout.service.LocationService;
@@ -64,6 +65,7 @@ public class LocationController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/upload")
     public ResponseBodyWrapper uploadLocations(@RequestParam("file") MultipartFile file) throws IOException {
 
@@ -141,6 +143,7 @@ public class LocationController {
         return locationService.getDockLocations(warehouseId, emptyDockOnly);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/order-locations/{orderNumber}")
     public Location findOrderLocation(@RequestParam Long warehouseId,
                                       @PathVariable String orderNumber) {
@@ -148,16 +151,20 @@ public class LocationController {
         return locationService.createOrderLocation(warehouseId, orderNumber);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/dispatch-trailer")
     public Location dispatchTrailerFromDock(@PathVariable Long id){
         return locationService.moveTrailerFromDock(id);
     }
+
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/check-in-trailer")
     public Location checkInTrailerAtDock(@PathVariable Long id,
                                          @RequestParam Long trailerId){
         return locationService.checkInTrailerAtDock(id, trailerId);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locations")
     public ResponseBodyWrapper removeLocations(@RequestParam Long warehouseId,
                                                @RequestParam String locationIds) {
@@ -175,6 +182,7 @@ public class LocationController {
      * @param inventorySize
      * @return
      */
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}")
     public Location updateLocation(@PathVariable Long id,
                                    @RequestParam(name = "enabled", defaultValue = "", required = false) Boolean enabled,
@@ -201,18 +209,21 @@ public class LocationController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}")
     public Location changeLocation(@RequestBody Location location) {
 
         return locationService.saveOrUpdate(location);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations")
     public Location addLocation(@RequestBody Location location) {
 
         return locationService.saveOrUpdate(location);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/rf")
     public Location addRFLocation(@RequestParam Long warehouseId,
                                   @RequestParam String rfCode) {
@@ -220,6 +231,7 @@ public class LocationController {
         return locationService.addRFLocation(warehouseId, rfCode);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locations/rf")
     public Location removeRFLocation(@RequestParam Long warehouseId,
                                   @RequestParam String rfCode) {
@@ -228,6 +240,7 @@ public class LocationController {
     }
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserve")
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reservedCode") String reservedCode) {
@@ -244,6 +257,7 @@ public class LocationController {
      * @param reservedCode reserve code
      * @return all locations that used to have this reserve code
      */
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/unreserve")
     public List<Location> unreserveLocation(@RequestParam Long warehouseId,
                                             @RequestParam(name = "reservedCode", required = false, defaultValue = "") String reservedCode,
@@ -257,6 +271,7 @@ public class LocationController {
     }
 
     // Reserve a location. This is normally to reserve hop locations for certain inventory
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserveWithVolume")
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reservedCode") String reservedCode,
@@ -272,6 +287,7 @@ public class LocationController {
 
     // Allocate a final destination for a inventory and update the pending volume of the
     // location
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/allocate")
     public Location allocateLocation(@PathVariable Long id,
                                      @RequestParam(name = "inventorySize") Double inventorySize) {
@@ -281,6 +297,7 @@ public class LocationController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/pending-volume")
     public Location changePendingVolume(@PathVariable Long id,
                                         @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedPendingVolume,
@@ -291,6 +308,7 @@ public class LocationController {
         return locationService.changePendingVolume(id, reducedPendingVolume, increasedPendingVolume);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/volume")
     public Location changeVolume(@PathVariable Long id,
                                  @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedVolume,
@@ -303,6 +321,7 @@ public class LocationController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/lock")
     public Location processLocationLock(@PathVariable Long id,
                                  @RequestParam Boolean locked) {
@@ -310,6 +329,7 @@ public class LocationController {
         return locationService.processLocationLock(id, locked);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/container/{containerName}")
     public Location getOrCreateContainerLocation(@PathVariable String containerName,
                                         @RequestParam Long warehouseId) {

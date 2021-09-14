@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.service.PickMovementService;
 
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ public class PickMovementController {
     @Autowired
     PickMovementService pickMovementService;
 
+    @BillableEndpoint
     @RequestMapping(value="/pick-movement/refresh", method = RequestMethod.POST)
     public void refreshPickMovement( @RequestParam Long pickId,
                                      @RequestParam Long destinationLocationId,

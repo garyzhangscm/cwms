@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.inbound.clients;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.inbound.model.BillableRequest;
 import com.garyzhangscm.cwms.inbound.model.ReceiptConfirmation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,4 +49,14 @@ public class KafkaSender {
         }
     }
 
+    public void send(BillableRequest billableRequest) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("BILLABLE_REQUEST", objectMapper.writeValueAsString(billableRequest));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
 }

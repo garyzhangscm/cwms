@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.EmergencyReplenishmentConfiguration;
 import com.garyzhangscm.cwms.outbound.service.EmergencyReplenishmentConfigurationService;
 import com.garyzhangscm.cwms.outbound.service.IntegrationService;
@@ -55,6 +56,7 @@ public class EmergencyReplenishmentConfigurationController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/emergency-replenishment-configuration", method = RequestMethod.POST)
     public EmergencyReplenishmentConfiguration addAllocationConfiguration(@RequestBody EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration) {
 

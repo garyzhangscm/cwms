@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.ReasonCode;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -53,11 +54,13 @@ public class ReasonCodeController {
         return reasonCodeService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/reason-codes", method = RequestMethod.POST)
     public ReasonCode addReasonCode(@RequestBody ReasonCode reasonCode) {
         return reasonCodeService.save(reasonCode);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/reason-codes/{id}", method = RequestMethod.PUT)
     public ReasonCode changeReasonCode(@PathVariable Long id, @RequestBody ReasonCode reasonCode) {
         if (reasonCode.getId() != null && reasonCode.getId() != id) {
@@ -67,6 +70,7 @@ public class ReasonCodeController {
         return reasonCodeService.save(reasonCode);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/reason-codes")
     public void deleteReasonCodes(@RequestParam(name = "client_ids", required = false, defaultValue = "") String reasonCodeIds) {
         reasonCodeService.delete(reasonCodeIds);

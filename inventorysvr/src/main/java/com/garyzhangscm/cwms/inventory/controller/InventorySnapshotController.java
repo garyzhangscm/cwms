@@ -61,6 +61,7 @@ public class InventorySnapshotController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory_snapshot", method = RequestMethod.POST)
     public InventorySnapshot generateInventorySnapshot(
             @RequestParam Long warehouseId) {
@@ -68,12 +69,14 @@ public class InventorySnapshotController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory_snapshot/{batchNumber}/files", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> generateInventorySnapshotFiles(
             @RequestParam Long warehouseId, @PathVariable String batchNumber) throws FileNotFoundException {
         return ResponseBodyWrapper.success(inventorySnapshotService.generateInventorySnapshotFiles(warehouseId, batchNumber));
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory_snapshot/{batchNumber}/files", method = RequestMethod.DELETE)
     public ResponseBodyWrapper<String> deleteInventorySnapshotFiles(
             @RequestParam Long warehouseId, @PathVariable String batchNumber) throws FileNotFoundException {

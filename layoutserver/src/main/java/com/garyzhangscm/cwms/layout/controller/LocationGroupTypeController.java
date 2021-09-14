@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.layout.controller;
 
+import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
 import com.garyzhangscm.cwms.layout.model.LocationGroupType;
 import com.garyzhangscm.cwms.layout.service.LocationGroupTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ public class LocationGroupTypeController {
         return locationGroupTypeService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locationgrouptypes")
     public LocationGroupType listLocationGroupTypes(@RequestBody LocationGroupType locationGroupType) {
         return locationGroupTypeService.saveOrUpdate(locationGroupType);

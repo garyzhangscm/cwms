@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.User;
 import com.garyzhangscm.cwms.resources.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ public class UserController {
         return userService.findAll(companyId, username, rolename, workingTeamName,  firstname, lastname, enabled, locked);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/users/validate-url", method = RequestMethod.POST)
     public Boolean validateURLAccess(@RequestParam Long companyId,
                                      @RequestBody String url) {
@@ -56,12 +58,14 @@ public class UserController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/users", method = RequestMethod.PUT)
     public User addUser(@RequestBody User user) {
         return userService.addUser(user);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/users/{id}", method = RequestMethod.POST)
     public User changeUser(@PathVariable Long id,
                            @RequestBody User user) {
@@ -69,6 +73,7 @@ public class UserController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/users/{id}/roles", method = RequestMethod.POST)
     public ResponseBodyWrapper processRoles(@PathVariable Long id,
                                             @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedRoleIds,
@@ -79,6 +84,7 @@ public class UserController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/users/{id}/password", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> changePassword(@PathVariable Long id,
                                             @RequestParam String newPassword) {
@@ -87,11 +93,13 @@ public class UserController {
         return ResponseBodyWrapper.success("success");
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/users/disable", method = RequestMethod.POST)
     public List<User> disableUsers(@RequestParam String userIds) {
 
         return userService.disableUsers(userIds);
     }
+    @BillableEndpoint
     @RequestMapping(value="/users/enable", method = RequestMethod.POST)
     public List<User> enableUsers(@RequestParam String userIds) {
 
@@ -99,11 +107,13 @@ public class UserController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/users/lock", method = RequestMethod.POST)
     public List<User> lockUsers(@RequestParam String userIds) {
 
         return userService.lockUsers(userIds);
     }
+    @BillableEndpoint
     @RequestMapping(value="/users/unlock", method = RequestMethod.POST)
     public List<User> unlockUsers(@RequestParam String userIds) {
 
@@ -111,6 +121,7 @@ public class UserController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/users/validate-new-username")
     public ResponseBodyWrapper<String> validateNewUsername(@RequestParam Long companyId,
                                                            @RequestParam Long warehouseId,

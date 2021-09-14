@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentRequest;
 import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentThreshold;
 import com.garyzhangscm.cwms.inventory.service.InventoryAdjustmentRequestService;
@@ -56,11 +57,13 @@ public class InventoryAdjustmentThresholdController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory-adjustment-thresholds", method = RequestMethod.PUT)
     public InventoryAdjustmentThreshold addInventoryAdjustmentThreshold( @RequestBody InventoryAdjustmentThreshold inventoryAdjustmentThreshold) {
         return inventoryAdjustmentThresholdService.addInventoryAdjustmentThreshold(inventoryAdjustmentThreshold);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory-adjustment-thresholds/{id}", method = RequestMethod.POST)
     public InventoryAdjustmentThreshold changeInventoryAdjustmentThreshold(@PathVariable Long id,
                                                                            @RequestBody InventoryAdjustmentThreshold inventoryAdjustmentThreshold) {
@@ -72,6 +75,7 @@ public class InventoryAdjustmentThresholdController {
         return inventoryAdjustmentThresholdService.changeInventoryAdjustmentThreshold(inventoryAdjustmentThreshold);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory-adjustment-thresholds/{id}", method = RequestMethod.DELETE)
     public void removeInventoryAdjustmentThreshold(@PathVariable Long id) {
         inventoryAdjustmentThresholdService.removeInventoryAdjustmentThreshold(id);

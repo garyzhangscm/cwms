@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Stop;
 import com.garyzhangscm.cwms.outbound.model.Trailer;
 import com.garyzhangscm.cwms.outbound.service.StopService;
@@ -37,6 +38,7 @@ public class StopController {
         return stopService.findAll();
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/stops", method = RequestMethod.POST)
     public Stop addStop(@RequestBody Stop stop) {
         return stopService.save(stop);
@@ -48,11 +50,13 @@ public class StopController {
         return stopService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/stops/{id}", method = RequestMethod.PUT)
     public Stop changeStop(@RequestBody Stop stop){
         return stopService.save(stop);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/stops", method = RequestMethod.DELETE)
     public void removeStops(@RequestParam(name = "stop_ids", required = false, defaultValue = "") String stopIds) {
         stopService.delete(stopIds);

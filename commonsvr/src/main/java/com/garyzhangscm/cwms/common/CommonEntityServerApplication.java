@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.garyzhangscm.cwms.common.usercontext.UserContextInterceptor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,6 +16,7 @@ import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -23,6 +25,7 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +37,7 @@ import java.util.List;
 @RefreshScope
 @EnableResourceServer
 @EnableCaching
+@EnableJpaAuditing
 public class CommonEntityServerApplication {
 
 	public static void main(String[] args) {
@@ -60,8 +64,10 @@ public class CommonEntityServerApplication {
 												   @Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext) {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
 
-		List<ClientHttpRequestInterceptor> interceptorList = new ArrayList<>();
-		restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+		// restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+		restTemplate.setInterceptors(
+				Arrays.asList(new ClientHttpRequestInterceptor[]{
+						new JsonMimeInterceptor(),  new UserContextInterceptor()}));
 		customizer.customize(restTemplate);
 		return restTemplate;
 	}

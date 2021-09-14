@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.GridConfiguration;
 
 import com.garyzhangscm.cwms.outbound.service.GridConfigurationService;
@@ -38,6 +39,7 @@ public class GridConfigurationController {
         return gridConfigurationService.findAll(warehouseId, locationGroupId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/grid-configuration", method = RequestMethod.POST)
     public GridConfiguration addGridConfiguration(@RequestParam Long warehouseId,
                             @RequestBody GridConfiguration gridConfiguration) {
@@ -50,6 +52,7 @@ public class GridConfigurationController {
         return gridConfigurationService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/grid-configuration/{id}", method = RequestMethod.PUT)
     public GridConfiguration changeGridConfiguration(@RequestBody GridConfiguration gridConfiguration){
         return gridConfigurationService.save(gridConfiguration);

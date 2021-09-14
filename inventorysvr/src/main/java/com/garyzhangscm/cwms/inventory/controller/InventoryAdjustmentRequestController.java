@@ -52,6 +52,7 @@ public class InventoryAdjustmentRequestController {
         return inventoryAdjustmentRequestService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/inventory-adjustment-requests/{id}/process", method = RequestMethod.POST)
     public InventoryAdjustmentRequest processInventoryAdjustmentRequest(@PathVariable Long id,
                                                                         @RequestParam Boolean approved,

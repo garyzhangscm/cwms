@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Carton;
 import com.garyzhangscm.cwms.outbound.model.Stop;
 import com.garyzhangscm.cwms.outbound.service.CartonService;
@@ -41,6 +42,7 @@ public class CartonController {
         return cartonService.findAll(warehouseId, name, enabled, pickingCartonFlag, shippingCartonFlag);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/cartons", method = RequestMethod.POST)
     public Carton addCarton(@RequestParam Long warehouseId,
                             @RequestBody Carton carton) {
@@ -53,6 +55,7 @@ public class CartonController {
         return cartonService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/cartons/{id}", method = RequestMethod.PUT)
     public Carton changeCarton(@RequestBody Carton carton){
         return cartonService.save(carton);

@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
@@ -43,6 +44,7 @@ public class ShipmentController {
         return shipmentService.findAll(warehouseId, number, orderNumber, stopId, trailerId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments", method = RequestMethod.POST)
     public Shipment addShipments(@RequestBody Shipment shipment) {
         return shipmentService.save(shipment);
@@ -54,11 +56,13 @@ public class ShipmentController {
         return shipmentService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments/{id}", method = RequestMethod.PUT)
     public Shipment changeShipment(@RequestBody Shipment shipment){
         return shipmentService.save(shipment);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments", method = RequestMethod.DELETE)
     public void removeShipments(@RequestParam(name = "shipment_ids", required = false, defaultValue = "") String shipmentIds) {
         shipmentService.delete(shipmentIds);
@@ -66,35 +70,41 @@ public class ShipmentController {
 
     // Plan a list of order lines into shipments. One order per shipment.
     // We will pick / ship based upon shipments.
+    @BillableEndpoint
     @RequestMapping(value="/shipments/plan",  method = RequestMethod.POST)
     public List<Shipment> planShipmetns(@RequestParam Long warehouseId, @RequestBody List<OrderLine> orderLines){
         return shipmentService.planShipments(warehouseId, orderLines);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments/{id}/complete", method = RequestMethod.PUT)
     public Shipment completeShipment(@PathVariable Long id){
 
         return shipmentService.autoCompleteShipment(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments/{id}/stage", method = RequestMethod.POST)
     public Shipment stageShipment(@PathVariable Long id,
                             @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return shipmentService.stage(id, ignoreUnfinishedPicks);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments/{id}/load", method = RequestMethod.POST)
     public Shipment loadShipment(@PathVariable Long id,
                            @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return shipmentService.load(id, ignoreUnfinishedPicks);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments/{id}/dispatch", method = RequestMethod.POST)
     public Shipment dispatchShipment(@PathVariable Long id,
                                @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return shipmentService.dispatch(id, ignoreUnfinishedPicks);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/shipments/{id}/allocate", method = RequestMethod.PUT)
     public Shipment allocateShipment(@PathVariable Long id){
 

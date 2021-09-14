@@ -35,10 +35,9 @@ public class TrackingFilter extends ZuulFilter {
     private static final int      FILTER_ORDER =  2;
     private static final boolean  SHOULD_FILTER=true;
 
-    /****
     @Autowired
     FilterUtils filterUtils;
-***/
+
     @Autowired
     Tracer tracer;
     @Override
@@ -56,7 +55,6 @@ public class TrackingFilter extends ZuulFilter {
     }
 
 
-    /*****
     private boolean isCorrelationIdPresent(){
         if (filterUtils.getCorrelationId() != null){
             return true;
@@ -67,21 +65,18 @@ public class TrackingFilter extends ZuulFilter {
     private String generateCorrelationId(){
         return java.util.UUID.randomUUID().toString();
     }
-     ****/
 
     public Object run() {
 
-        /****
-         * We will use sleuth, which will automatically generate a unique id for
-         * all the call in the same transaction, instead of this customized solution
         if (!isCorrelationIdPresent()) {
             filterUtils.setCorrelationId(generateCorrelationId());
         }
 
-        logger.debug(">>Auth Token: " + filterUtils.getAuthToken());
-        ***/
-        RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.getResponse().addHeader("cwms-current-trace-id", tracer.currentSpan().context().traceIdString());
+        // logger.debug(">>Auth Token: " + filterUtils.getAuthToken());
+        // RequestContext ctx = RequestContext.getCurrentContext();
+        // String traceId = tracer.currentSpan().context().traceIdString();
+        // logger.debug("add trace id: {}", traceId);
+        // ctx.getResponse().addHeader("cwms-current-trace-id", traceId);
         return null;
     }
 }

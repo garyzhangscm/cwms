@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.UnitOfMeasure;
 import com.garyzhangscm.cwms.common.service.ClientService;
@@ -53,11 +54,13 @@ public class UnitOfMeasureController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/unit-of-measures", method = RequestMethod.POST)
     public UnitOfMeasure addUnitOfMeasure(@RequestBody UnitOfMeasure unitOfMeasure) {
         return unitOfMeasureService.save(unitOfMeasure);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/unit-of-measures/{id}", method = RequestMethod.PUT)
     public UnitOfMeasure changeUnitOfMeasure(@PathVariable Long id, @RequestBody UnitOfMeasure unitOfMeasure) {
         if (unitOfMeasure.getId() != null && unitOfMeasure.getId() != id) {
@@ -67,6 +70,7 @@ public class UnitOfMeasureController {
         return unitOfMeasureService.save(unitOfMeasure);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/unit-of-measures")
     public void removeUnitOfMeasures(@RequestParam(name = "unitOfMeasureIds", required = false, defaultValue = "") String unitOfMeasureIds) {
         unitOfMeasureService.delete(unitOfMeasureIds);

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Carrier;
 import com.garyzhangscm.cwms.common.model.WorkTask;
 import com.garyzhangscm.cwms.common.service.CarrierService;
@@ -54,6 +55,7 @@ public class WorkTaskController {
                 currentUserName, completeUserName, workTaskIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks", method = RequestMethod.DELETE)
     public List<WorkTask> removeAllWorkTasks(@RequestParam Long warehouseId,
                                            @RequestParam(name = "number", required = false, defaultValue = "") String number,
@@ -79,16 +81,21 @@ public class WorkTaskController {
     public WorkTask findWorkTask(@PathVariable Long id) {
         return workTaskService.findById(id);
     }
+
+
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks/{id}", method = RequestMethod.DELETE)
     public WorkTask removeWorkTask(@PathVariable Long id) {
         return workTaskService.removeWorkTask(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks", method = RequestMethod.POST)
     public WorkTask addWorkTask(@RequestBody WorkTask workTask) {
         return workTaskService.addWorkTask(workTask);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks/{id}", method = RequestMethod.PUT)
     public WorkTask changeWorkTask(@PathVariable Long id, @RequestBody WorkTask workTask) {
         if (workTask.getId() != null && workTask.getId() != id) {
@@ -98,6 +105,7 @@ public class WorkTaskController {
         return workTaskService.changeWorkTask(workTask);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks/assignment", method = RequestMethod.POST)
     public List<WorkTask> assignWorkTasks(@RequestParam String workTaskIds,
                                          @RequestParam(name = "username", required = false, defaultValue = "") String username,
@@ -106,6 +114,7 @@ public class WorkTaskController {
         return workTaskService.assignWorkTasks(workTaskIds, username, rolename, workingTeamName);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks/deassignment", method = RequestMethod.POST)
     public List<WorkTask> deassignWorkTasks(@RequestParam String workTaskIds) {
         return workTaskService.deassignWorkTasks(workTaskIds);

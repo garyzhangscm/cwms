@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.RF;
 import com.garyzhangscm.cwms.resources.model.User;
 import com.garyzhangscm.cwms.resources.service.RFService;
@@ -53,11 +54,13 @@ public class RFController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/rfs", method = RequestMethod.PUT)
     public RF addRF(@RequestBody RF rf) {
         return rfService.addRF(rf);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/rfs/{id}", method = RequestMethod.DELETE)
     public Boolean removeRF(@PathVariable Long id) {
         rfService.delete(id);

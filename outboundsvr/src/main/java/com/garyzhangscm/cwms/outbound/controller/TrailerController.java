@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Location;
 import com.garyzhangscm.cwms.outbound.model.Trailer;
 import com.garyzhangscm.cwms.outbound.service.TrailerService;
@@ -37,6 +38,7 @@ public class TrailerController {
         return trailerService.findAll(number);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/trailers", method = RequestMethod.POST)
     public Trailer addTrailer(@RequestBody Trailer trailer) {
         return trailerService.save(trailer);
@@ -48,23 +50,27 @@ public class TrailerController {
         return trailerService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/trailers/{id}", method = RequestMethod.PUT)
     public Trailer changeTrailer(@RequestBody Trailer trailer){
         return trailerService.save(trailer);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/trailers", method = RequestMethod.DELETE)
     public void removeTrailers(@RequestParam(name = "trailer_ids", required = false, defaultValue = "") String trailerIds) {
         trailerService.delete(trailerIds);
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/trailers/{id}/checkin", method = RequestMethod.POST)
     public Trailer checkinTrailer(@PathVariable Long id,
                                   @RequestBody Location dockLocation) {
         return trailerService.checkInTrailer(id, dockLocation);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/trailers/{id}/dispatch", method = RequestMethod.POST)
     public Trailer checkinTrailer(@PathVariable Long id) {
         return trailerService.dispatchTrailer(id);

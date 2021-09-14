@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.ReportHistory;
@@ -50,6 +51,7 @@ public class OrderController {
         return orderService.findAll(warehouseId, number);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders", method = RequestMethod.POST)
     public Order addOrders(@RequestBody Order order) {
         return orderService.addOrders(order);
@@ -62,6 +64,7 @@ public class OrderController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}", method = RequestMethod.DELETE)
     public ResponseBodyWrapper<String> removeOrder(@PathVariable Long id) {
 
@@ -69,17 +72,20 @@ public class OrderController {
          return ResponseBodyWrapper.success("Success");
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}", method = RequestMethod.PUT)
     public Order changeOrder(@RequestBody Order order){
         return orderService.save(order);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/allocate", method = RequestMethod.POST)
     public Order allocateOrder(@PathVariable Long id){
 
         return orderService.allocate(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/change-stage-loctions", method = RequestMethod.POST)
     public Order changeAssignedStageLocations(@PathVariable Long id,
                                       @RequestParam(name = "locationGroupId", required = false, defaultValue = "") Long locationGroupId,
@@ -88,23 +94,27 @@ public class OrderController {
         return orderService.changeAssignedStageLocations(id, locationGroupId, locationId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/complete", method = RequestMethod.POST)
     public Order completeOrder(@PathVariable Long id){
         return orderService.completeOrder(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/stage", method = RequestMethod.POST)
     public Order stageOrder(@PathVariable Long id,
                             @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return orderService.stage(id, ignoreUnfinishedPicks);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/load", method = RequestMethod.POST)
     public Order loadOrder(@PathVariable Long id,
                            @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return orderService.load(id, ignoreUnfinishedPicks);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/dispatch", method = RequestMethod.POST)
     public Order dispatchOrder(@PathVariable Long id,
                                @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
@@ -118,7 +128,7 @@ public class OrderController {
     }
 
 
-
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/pick-report", method = RequestMethod.POST)
     public ReportHistory generateOrderPickReport(
             @PathVariable Long id,
@@ -128,6 +138,7 @@ public class OrderController {
         return orderService.generatePickReportByOrder(id, locale);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/packing-list-report", method = RequestMethod.POST)
     public ReportHistory generatePackingListReport(
             @PathVariable Long id,
@@ -137,6 +148,7 @@ public class OrderController {
         return orderService.generatePackingListByOrder(id, locale);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/bill-of-lading-report", method = RequestMethod.POST)
     public ReportHistory generateBillOfLadingReport(
             @PathVariable Long id,

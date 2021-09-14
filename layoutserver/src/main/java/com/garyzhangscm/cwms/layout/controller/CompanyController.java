@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.layout.controller;
 
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
 import com.garyzhangscm.cwms.layout.model.Company;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.CompanyService;
@@ -65,6 +66,7 @@ public class CompanyController {
 
 
 
+    @BillableEndpoint
     @RequestMapping(value="/companies", method = RequestMethod.POST)
     public Company addCompany(@RequestBody Company company) {
 

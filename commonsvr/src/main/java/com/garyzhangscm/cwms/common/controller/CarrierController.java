@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Carrier;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.service.CarrierService;
@@ -45,11 +46,13 @@ public class CarrierController {
         return carrierService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/carriers", method = RequestMethod.POST)
     public Carrier addCarrier(@RequestBody Carrier carrier) {
         return carrierService.save(carrier);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/carriers/{id}", method = RequestMethod.PUT)
     public Carrier changeCarrier(@PathVariable Long id, @RequestBody Carrier carrier) {
         if (carrier.getId() != null && carrier.getId() != id) {
@@ -59,6 +62,7 @@ public class CarrierController {
         return carrierService.save(carrier);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/carriers")
     public void deleteCarriers(@RequestParam(name = "carrier_ids", required = false, defaultValue = "") String carrierIds) {
         carrierService.delete(carrierIds);

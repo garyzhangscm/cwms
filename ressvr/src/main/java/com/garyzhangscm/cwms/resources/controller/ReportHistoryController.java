@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.Report;
 import com.garyzhangscm.cwms.resources.model.ReportHistory;
 import com.garyzhangscm.cwms.resources.service.ReportHistoryService;
@@ -98,6 +99,7 @@ public class ReportHistoryController {
                 .body(resource);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/report-histories/print/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.POST)
     public ResponseBodyWrapper<String>  printReport(@PathVariable String filename,
                                                     @PathVariable String type,

@@ -87,6 +87,11 @@
 			<artifactId>spring-security-rsa</artifactId>
 		</dependency>
 
+		<!-- Kafka -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
 
 		<!-- Support serialize / deserialize LocalDateTime-->
 		<dependency>

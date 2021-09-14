@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.SystemConfiguration;
 import com.garyzhangscm.cwms.resources.model.User;
 import com.garyzhangscm.cwms.resources.service.SystemConfigurationService;
@@ -42,6 +43,7 @@ public class SystemConfigurationController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/system-configuration", method = RequestMethod.POST)
     public SystemConfiguration changeSystemConfiguration(
             @RequestBody SystemConfiguration systemConfiguration ) {

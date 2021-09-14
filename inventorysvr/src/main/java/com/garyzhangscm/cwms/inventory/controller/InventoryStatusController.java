@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.InventoryStatus;
 import com.garyzhangscm.cwms.inventory.service.InventoryStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class InventoryStatusController {
         return inventoryStatusService.save(inventoryStatus);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-status/{id}")
     public InventoryStatus changeInventoryStatus(@PathVariable long id,
                                        @RequestBody InventoryStatus inventoryStatus) {
@@ -58,6 +60,7 @@ public class InventoryStatusController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-status")
     public void removeInventoryStatuses(@RequestParam(name = "item_family_ids", required = false, defaultValue = "") String inventoryStatusIds) {
         inventoryStatusService.delete(inventoryStatusIds);

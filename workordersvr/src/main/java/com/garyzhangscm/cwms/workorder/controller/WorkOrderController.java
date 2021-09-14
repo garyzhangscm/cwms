@@ -56,6 +56,7 @@ public class WorkOrderController {
         return workOrderService.findAll(warehouseId, number, itemName, productionPlanId, genericQuery, loadDetails);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders", method = RequestMethod.POST)
     public WorkOrder addWorkOrder(@RequestBody WorkOrder workOrder) {
         return workOrderService.save(workOrder);
@@ -67,16 +68,19 @@ public class WorkOrderController {
         return workOrderService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}", method = RequestMethod.PUT)
     public WorkOrder changeWorkOrder(@RequestBody WorkOrder workOrder){
         return workOrderService.save(workOrder);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders", method = RequestMethod.DELETE)
     public void removeWorkOrders(@RequestParam(name = "workOrderIds", required = false, defaultValue = "") String workOrderIds) {
         workOrderService.delete(workOrderIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/create-from-bom", method = RequestMethod.POST)
     public WorkOrder createWorkOrderFromBOM(@RequestParam Long billOfMaterialId,
                                             @RequestParam String workOrderNumber,
@@ -86,6 +90,7 @@ public class WorkOrderController {
                 workOrderNumber, expectedQuantity, productionLineId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/allocate", method = RequestMethod.POST)
     public WorkOrder allocateWorkOrder(@PathVariable Long id,
                                        @RequestBody List<ProductionLineAllocationRequest> productionLineAllocationRequests) {
@@ -94,6 +99,7 @@ public class WorkOrderController {
         return workOrderService.allocateWorkOrder(id, productionLineAllocationRequests);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/short-allocation-cancelled", method = RequestMethod.POST)
     public void registerShortAllocationCancelled(@PathVariable Long id,
                                            @RequestParam Long cancelledQuantity) {
@@ -105,6 +111,7 @@ public class WorkOrderController {
         return workOrderLineService.findById(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/inventory-being-delivered", method = RequestMethod.POST)
     public WorkOrderLine changeDeliveredQuantity(@PathVariable Long id,
                                                  @RequestParam Long quantityBeingDelivered,
@@ -112,6 +119,7 @@ public class WorkOrderController {
         return workOrderLineService.changeDeliveredQuantity(id, quantityBeingDelivered, deliveredLocationId);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/pick-cancelled", method = RequestMethod.POST)
     public void registerPickCancelled(@PathVariable Long id,
                                       @RequestParam Long cancelledQuantity,
@@ -162,19 +170,21 @@ public class WorkOrderController {
         return workOrderService.getReturnedInventory(id);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/modify-lines", method = RequestMethod.POST)
     public WorkOrder modifyWorkOrderLines(@PathVariable Long id,
                                           @RequestBody WorkOrder workOrder) {
         return workOrderService.modifyWorkOrderLines(id, workOrder);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/reserve-production", method = RequestMethod.POST)
     public WorkOrder reverseProduction(@PathVariable Long id,
                                        @RequestParam String lpn) {
         return workOrderService.reverseProduction(id, lpn);
     }
 
-
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/unpick-inventory", method = RequestMethod.POST)
     public Inventory unpickInventory(@PathVariable Long id,
                                            @RequestParam Long inventoryId,
@@ -189,12 +199,14 @@ public class WorkOrderController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/validate-new-number", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateNewNumber(@RequestParam Long warehouseId,
                                                          @RequestParam String number) {
         return ResponseBodyWrapper.success(workOrderService.validateNewNumber(warehouseId, number));
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/pick-report", method = RequestMethod.POST)
     public ReportHistory generateOrderPickReport(
             @PathVariable Long id,
@@ -211,6 +223,7 @@ public class WorkOrderController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/consume-method", method = RequestMethod.POST)
     public WorkOrder changeConsumeMethod(
             @PathVariable Long id,

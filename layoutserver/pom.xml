@@ -89,6 +89,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Kafka -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+
+
+
 		<!-- decrypt for message from config server-->
 		<dependency>
 			<groupId>org.springframework.security</groupId>

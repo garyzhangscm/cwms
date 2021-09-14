@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.garyzhangscm.cwms.resources.service.InitTestDataService;
+import com.garyzhangscm.cwms.resources.usercontext.UserContextInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -19,6 +20,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -30,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,6 +46,7 @@ import java.util.List;
 // @EnableEurekaClient
 @EnableResourceServer
 @EnableOAuth2Client
+@EnableJpaAuditing
 public class ResourceServerApplication {
 
 
@@ -71,7 +75,10 @@ public class ResourceServerApplication {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
 
 
-		restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+		// restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+		restTemplate.setInterceptors(
+				Arrays.asList(new ClientHttpRequestInterceptor[]{
+						new JsonMimeInterceptor(),  new UserContextInterceptor()}));
 
 		customizer.customize(restTemplate);
 		return restTemplate;

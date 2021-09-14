@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.MenuGroup;
 import com.garyzhangscm.cwms.resources.model.Role;
 import com.garyzhangscm.cwms.resources.model.User;
@@ -46,6 +47,7 @@ public class RoleController {
         return roleService.findAll(companyId, name, enabled);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/roles", method = RequestMethod.PUT)
     public Role addRole(@RequestBody Role role) {
         return roleService.addRole(role);
@@ -57,10 +59,13 @@ public class RoleController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/roles/{id}/disable", method = RequestMethod.POST)
     public Role disableRole(@PathVariable Long id) {
         return roleService.disableRole(id);
     }
+
+    @BillableEndpoint
     @RequestMapping(value="/roles/{id}/enable", method = RequestMethod.POST)
     public Role enableRole(@PathVariable Long id) {
         return roleService.enableRole(id);
@@ -73,6 +78,7 @@ public class RoleController {
         return menuGroupService.getAccessibleMenus(roleService.findById(id));
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/roles/{id}/menus", method = RequestMethod.POST)
     public ResponseBodyWrapper processMenus(@PathVariable Long id,
                                         @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedMenuIds,
@@ -82,6 +88,7 @@ public class RoleController {
         return ResponseBodyWrapper.success("success");
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/roles/{id}/users", method = RequestMethod.POST)
     public ResponseBodyWrapper processUsers(@PathVariable Long id,
                                             @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedUserIds,

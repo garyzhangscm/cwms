@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 
 import com.garyzhangscm.cwms.outbound.model.AllocationConfigurationPickableUnitOfMeasure;
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.service.PickableUnitOfMeasureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +43,7 @@ public class PickableUnitOfMeasureController {
     }
 
 
+    @BillableEndpoint
     @RequestMapping(value="/pickable-unit-of-measures", method = RequestMethod.POST)
     public AllocationConfigurationPickableUnitOfMeasure addPickableUnitOfMeasure(@RequestBody AllocationConfigurationPickableUnitOfMeasure allocationConfigurationPickableUnitOfMeasure) {
         return pickableUnitOfMeasureService.save(allocationConfigurationPickableUnitOfMeasure);
