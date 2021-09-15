@@ -43,8 +43,6 @@ public class AuditCountRequestController {
         return auditCountRequestService.findById(id);
     }
 
-
-
     @BillableEndpoint
     @RequestMapping(
             value="/audit-count-request/{warehouseId}/{batchId}/audit-count-sheet",

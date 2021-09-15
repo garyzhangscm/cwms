@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.auth.service;
 
+import com.garyzhangscm.cwms.auth.clients.KafkaSender;
 import com.garyzhangscm.cwms.auth.model.User;
+import com.garyzhangscm.cwms.auth.model.UserLoginEvent;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -42,6 +44,9 @@ public class UserService {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private KafkaSender kafkaSender;
+
 
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
@@ -124,5 +129,25 @@ public class UserService {
 
     public String getCurrentUserName() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    /**
+     * Record the event that a certain user login to some company / warehouse
+     * @param companyId
+     * @param loginWarehouseId
+     * @param username
+     */
+    public void recordLoginEvent(Long companyId, Long loginWarehouseId,
+                                 String username, String token) {
+
+        logger.debug("Start to record login event for user: {}, token: {}, company id: {}, warehouse id: {}",
+                username, token, companyId, loginWarehouseId);
+        UserLoginEvent userLoginEvent = new UserLoginEvent(
+                companyId, loginWarehouseId,
+                username, token
+        );
+
+        kafkaSender.send(userLoginEvent);
+
     }
 }

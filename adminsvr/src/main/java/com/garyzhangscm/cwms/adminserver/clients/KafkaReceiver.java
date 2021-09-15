@@ -28,13 +28,13 @@ public class KafkaReceiver {
 
 
     @KafkaListener(topics = {"BILLABLE_REQUEST"})
-    public void processBillableRequest(@Payload String itemFamilyJsonRepresent)  {
-        logger.info("# received billable request : {}", itemFamilyJsonRepresent);
+    public void processBillableRequest(@Payload String billableRequestJsonRepresent)  {
+        logger.info("# received billable request : {}", billableRequestJsonRepresent);
         try {
-            BillableRequest billableRequest = objectMapper.readValue(itemFamilyJsonRepresent, BillableRequest.class);
+            BillableRequest billableRequest = objectMapper.readValue(billableRequestJsonRepresent, BillableRequest.class);
             logger.info("BillableRequest: {}", billableRequest);
 
-            billableRequestService.save(billableRequest);
+            billableRequestService.createBillableRequest(billableRequest);
 
         }
         catch (JsonProcessingException ex) {

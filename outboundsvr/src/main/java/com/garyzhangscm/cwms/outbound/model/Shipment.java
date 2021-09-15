@@ -25,6 +25,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -74,6 +75,9 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
 
     @Column(name = "ship_to_customer_id")
     private Long shipToCustomerId;
+
+    @Column(name = "complete_time")
+    private LocalDateTime completeTime;
 
     @Transient
     private Customer shipToCustomer;
@@ -180,6 +184,13 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
         this.number = number;
     }
 
+    public LocalDateTime getCompleteTime() {
+        return completeTime;
+    }
+
+    public void setCompleteTime(LocalDateTime completeTime) {
+        this.completeTime = completeTime;
+    }
 
     public List<ShipmentLine> getShipmentLines() {
         return shipmentLines;

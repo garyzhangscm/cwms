@@ -70,6 +70,8 @@ public class LoginController {
         try {
             OAuth2Token oAuth2Token = oAuth2Service.getOAuth2Token(user.getCompanyId(), user.getUsername(), user.getPassword());
             oAuth2Token.setUser(userService.findByUsername(user.getCompanyId(), user.getUsername()));
+            userService.recordLoginEvent(user.getCompanyId(), user.getLoginWarehouseId(),
+                    user.getUsername(), oAuth2Token.getAccess_token());
             return LoginResponseWrapper.of(0, "", OAuth2TokenWrapper.of(oAuth2Token));
         }
         catch(HttpClientErrorException.Unauthorized unauthorizedException) {

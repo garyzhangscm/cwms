@@ -24,20 +24,20 @@ import com.garyzhangscm.cwms.adminserver.clients.ResourceServiceRestemplateClien
 import com.garyzhangscm.cwms.adminserver.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.exception.SystemFatalException;
-import com.garyzhangscm.cwms.adminserver.model.BillableRequest;
-import com.garyzhangscm.cwms.adminserver.model.DataInitialRequest;
-import com.garyzhangscm.cwms.adminserver.model.DataInitialRequestStatus;
-import com.garyzhangscm.cwms.adminserver.model.User;
+import com.garyzhangscm.cwms.adminserver.model.*;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import com.garyzhangscm.cwms.adminserver.repository.BillableRequestRepository;
 import com.garyzhangscm.cwms.adminserver.repository.DataInitialRequestRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -48,26 +48,81 @@ public class BillableRequestService {
     @Autowired
     private BillableRequestRepository billableRequestRepository;
 
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+
     public BillableRequest findById(Long id ) {
+        return findById(id, true);
+    }
+
+    public BillableRequest findById(Long id, boolean loadDetails) {
         BillableRequest billableRequest = billableRequestRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("billable request not found by id: " + id));
+        if (loadDetails) {
+            loadAttribute(billableRequest);
+        }
         return billableRequest;
     }
 
-    public List<BillableRequest> findAll(Long companyId,
-                              Long warehouseId) {
 
-        return billableRequestRepository.findAll(
+
+    public List<BillableRequest> findAll(Long companyId,
+                                         Long warehouseId,
+                                         LocalDateTime startTime,
+                                         LocalDateTime endTime,
+                                         LocalDate date
+    ) {
+
+        return findAll(
+                companyId,
+                warehouseId,
+                startTime,
+                endTime,
+                date,
+                true
+        );
+    }
+
+    public List<BillableRequest> findAll(Long companyId,
+                                         Long warehouseId,
+                                         LocalDateTime startTime,
+                                         LocalDateTime endTime,
+                                         LocalDate date,
+                                         boolean loadDetails
+                                         ) {
+
+        List<BillableRequest> billableRequests =
+                billableRequestRepository.findAll(
                 (Root<BillableRequest> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    if (Objects.isNull(companyId)) {
+                    if (Objects.nonNull(companyId)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
                     }
-                    if (Objects.isNull(warehouseId)) {
+                    if (Objects.nonNull(warehouseId)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("createdTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("createdTime"), endTime));
+
+                    }
+
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("createdTime"), dateStartTime, dateEndTime));
+
                     }
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -75,10 +130,129 @@ public class BillableRequestService {
                 }
         );
 
+        if (billableRequests.size() > 0 && loadDetails) {
+            loadAttribute(billableRequests);
+        }
+        return billableRequests;
+
     }
 
+    private void loadAttribute(List<BillableRequest> billableRequests) {
+        billableRequests.forEach(
+                billableRequest -> loadAttribute(billableRequest)
+        );
+    }
+
+    private void loadAttribute(BillableRequest billableRequest) {
+        if (Objects.nonNull(billableRequest.getCompanyId())) {
+
+            billableRequest.setCompany(
+                    resourceServiceRestemplateClient.getCompanyById(
+                            billableRequest.getCompanyId()
+                    )
+            );
+        }
+
+        if (Objects.nonNull(billableRequest.getWarehouseId())) {
+
+            billableRequest.setWarehouse(
+                    resourceServiceRestemplateClient.getWarehouseById(
+                            billableRequest.getWarehouseId()
+                    )
+            );
+        }
+    }
     public BillableRequest save(BillableRequest billableRequest) {
         return billableRequestRepository.save(billableRequest);
     }
 
+    public Collection<BillableRequestSummaryByCompany> getBillableRequestSummaryByCompany(Long companyId,
+                                                                                   LocalDateTime startTime,
+                                                                                   LocalDateTime endTime,
+                                                                                          LocalDate date) {
+        List<BillableRequest> billableRequests = findAll(companyId, null, startTime, endTime, date);
+
+        Set<String> transactionIdSet = new HashSet<>();
+
+        // key: service number
+        // value: totalWebAPIEndpointCall
+        Map<String, Long> totalWebAPIEndpointCallCountMap = new HashMap<>();
+
+        // key: service number
+        // value: totalTransaction
+        Map<String, Long> totalTransactionCountMap = new HashMap<>();
+
+        // key: service number
+        // value: overallCost
+        Map<String, Double> overallCostMap = new HashMap<>();
+
+        // key: service number
+        // value: overallCost
+        Map<String, BillableRequestSummaryByCompany> billableRequestSummaryByCompanyMap = new HashMap<>();
+
+        billableRequests.stream().forEach(
+                billableRequest -> {
+                    String serviceName = billableRequest.getServiceName();
+                    Long totalWebAPIEndpointCallCount
+                            = totalWebAPIEndpointCallCountMap.getOrDefault(serviceName, 0l) +
+                                1;
+                    totalWebAPIEndpointCallCountMap.put(serviceName, totalWebAPIEndpointCallCount);
+
+                    // only contains this transaction when it is not count yet
+                    // we may have multiple web call in multiple services for the same transaction
+                    // which we may not want to over charge our customer
+                    if (!transactionIdSet.contains(billableRequest.getTransactionId())) {
+
+
+                        Long totalTransactionCount
+                                = totalTransactionCountMap.getOrDefault(serviceName, 0l) + 1;
+                        totalTransactionCountMap.put(serviceName, totalTransactionCount);
+
+                        Double overallCost = overallCostMap.getOrDefault(serviceName, 0.0) +
+                                billableRequest.getRate();
+                        overallCostMap.put(serviceName, overallCost);
+
+                        transactionIdSet.add(billableRequest.getTransactionId());
+                    }
+                }
+        );
+
+        for(Map.Entry<String, Long> totalWebAPIEndpointCallCountEntry: totalWebAPIEndpointCallCountMap.entrySet()) {
+            String serviceName = totalWebAPIEndpointCallCountEntry.getKey();
+            Long totalWebAPIEndpointCallCount = totalWebAPIEndpointCallCountEntry.getValue();
+
+            Long totalTransactionCount
+                    = totalTransactionCountMap.getOrDefault(serviceName, 0l);
+            Double overallCost = overallCostMap.getOrDefault(serviceName, 0.0);
+
+            BillableRequestSummaryByCompany billableRequestSummaryByCompany = new BillableRequestSummaryByCompany(
+                    companyId,
+                    serviceName, totalWebAPIEndpointCallCount, totalTransactionCount,
+                    overallCost
+            );
+            billableRequestSummaryByCompanyMap.put(serviceName, billableRequestSummaryByCompany);
+        }
+
+        return billableRequestSummaryByCompanyMap.values();
+
+    }
+
+    public void createBillableRequest(BillableRequest billableRequest) {
+
+        logger.debug("Start to create billable request for ");
+        logger.debug("=========   Billable   Request  =====");
+        logger.debug(billableRequest.toString());
+
+        if (Strings.isNotBlank(billableRequest.getUsername())){
+            User user = resourceServiceRestemplateClient.getUserByUsernameAndToken(
+                    billableRequest.getUsername(),
+                    billableRequest.getToken()
+            );
+            if (Objects.nonNull(user)) {
+                billableRequest.setCompanyId(user.getLastLoginCompanyId());
+                billableRequest.setWarehouseId(user.getLastLoginWarehouseId());
+            }
+        }
+        save(billableRequest);
+    }
 }
