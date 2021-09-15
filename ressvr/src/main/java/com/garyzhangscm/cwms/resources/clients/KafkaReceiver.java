@@ -1,9 +1,9 @@
-package com.garyzhangscm.cwms.adminserver.clients;
+package com.garyzhangscm.cwms.resources.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.adminserver.model.BillableRequest;
-import com.garyzhangscm.cwms.adminserver.service.BillableRequestService;
+import com.garyzhangscm.cwms.resources.model.UserLoginEvent;
+import com.garyzhangscm.cwms.resources.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 
@@ -24,17 +22,17 @@ public class KafkaReceiver {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private BillableRequestService billableRequestService;
+    private UserService userService;
 
 
-    @KafkaListener(topics = {"BILLABLE_REQUEST"})
-    public void processBillableRequest(@Payload String billableRequestJsonRepresent)  {
-        logger.info("# received billable request : {}", billableRequestJsonRepresent);
+    @KafkaListener(topics = {"USER_LOGIN"})
+    public void processUserLoginEvent(@Payload String userLoginEventJsonRepresent)  {
+        logger.info("# received user login event : {}", userLoginEventJsonRepresent);
         try {
-            BillableRequest billableRequest = objectMapper.readValue(billableRequestJsonRepresent, BillableRequest.class);
-            logger.info("BillableRequest: {}", billableRequest);
+            UserLoginEvent userLoginEvent = objectMapper.readValue(userLoginEventJsonRepresent, UserLoginEvent.class);
+            logger.info("userLoginEvent: {}", userLoginEvent);
 
-            billableRequestService.createBillableRequest(billableRequest);
+            userService.recordLoginEvent(userLoginEvent);
 
         }
         catch (JsonProcessingException ex) {

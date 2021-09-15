@@ -61,6 +61,15 @@ public class User extends AuditibleEntity<String>  {
     @Column(name = "change_password_at_next_logon")
     private Boolean changePasswordAtNextLogon = false;
 
+
+    @Column(name = "last_login_company_id")
+    private Long lastLoginCompanyId;
+    @Column(name = "last_login_warehouse_id")
+    private Long lastLoginWarehouseId;
+    @Column(name = "last_login_token")
+    private String lastLoginToken;
+
+
     @Transient
     private String email;
 
@@ -210,6 +219,22 @@ public class User extends AuditibleEntity<String>  {
 
     public String getName() {return username;}
 
+    public Long getLastLoginCompanyId() {
+        return lastLoginCompanyId;
+    }
+
+    public void setLastLoginCompanyId(Long lastLoginCompanyId) {
+        this.lastLoginCompanyId = lastLoginCompanyId;
+    }
+
+    public Long getLastLoginWarehouseId() {
+        return lastLoginWarehouseId;
+    }
+
+    public void setLastLoginWarehouseId(Long lastLoginWarehouseId) {
+        this.lastLoginWarehouseId = lastLoginWarehouseId;
+    }
+
     public Boolean getChangePasswordAtNextLogon() {
         return changePasswordAtNextLogon;
     }
@@ -263,5 +288,13 @@ public class User extends AuditibleEntity<String>  {
 
     public void setSystemAdmin(Boolean systemAdmin) {
         isSystemAdmin = systemAdmin;
+    }
+
+    public String getLastLoginToken() {
+        return lastLoginToken;
+    }
+
+    public void setLastLoginToken(String lastLoginToken) {
+        this.lastLoginToken = lastLoginToken;
     }
 }

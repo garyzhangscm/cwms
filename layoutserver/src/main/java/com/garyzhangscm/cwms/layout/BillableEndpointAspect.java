@@ -63,6 +63,11 @@ public class BillableEndpointAspect {
         }
          **/
 
+        String authorization = httpServletRequest.getHeader("Authorization");
+
+        if (authorization.startsWith("Bearer")) {
+            authorization = authorization.substring(7).trim();
+        }
         BillableRequest billableRequest = new BillableRequest(
                 parametersMap.containsKey("companyId") ? Long.parseLong(parametersMap.get("companyId")) : null,
                 parametersMap.containsKey("warehouseId") ? Long.parseLong(parametersMap.get("warehouseId")) : null,
@@ -73,7 +78,8 @@ public class BillableEndpointAspect {
                 requestBody, // request body
                 userService.getCurrentUserName(),
                 httpServletRequest.getHeader("gzcwms-correlation-id"),
-                1.0
+                1.0,
+                authorization
         );
         // logger.debug("  ===============  Billble Request   ===========");
         // logger.debug(billableRequest.toString());

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Billable web request call
  *
  */
-public class BillableRequest  {
+public class BillableRequest {
 
 
     private Long companyId;
@@ -25,6 +25,7 @@ public class BillableRequest  {
     private String requestBody;
 
     private String username;
+    private String token;
 
     // when a request will be fulfilled by
     // multiple web api call, then we may
@@ -45,7 +46,8 @@ public class BillableRequest  {
                            String requestBody,
                            String username,
                            String transactionId,
-                           Double rate) {
+                           Double rate,
+                           String token) {
         this.companyId = companyId;
         this.warehouseId = warehouseId;
         this.serviceName = serviceName;
@@ -56,6 +58,7 @@ public class BillableRequest  {
         this.username = username;
         this.transactionId = transactionId;
         this.rate = rate;
+        this.token = token;
     }
 
     @Override
@@ -146,5 +149,13 @@ public class BillableRequest  {
 
     public void setRate(Double rate) {
         this.rate = rate;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

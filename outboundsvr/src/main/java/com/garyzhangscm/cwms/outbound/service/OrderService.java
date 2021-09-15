@@ -688,6 +688,7 @@ public class OrderService implements TestDataInitiableService {
                         shipmentService.completeShipment(shipment, order));
 
         order.setStatus(OrderStatus.COMPLETE);
+        order.setCompleteTime(LocalDateTime.now());
 
 
         logger.debug("Start to send order confirmation after the order {} is marked as completed",

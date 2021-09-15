@@ -41,8 +41,23 @@ public class UserController {
                                    @RequestParam(name="firstname", required = false, defaultValue = "") String firstname,
                                    @RequestParam(name="lastname", required = false, defaultValue = "") String lastname,
                                    @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled,
-                                   @RequestParam(name="locked", required = false, defaultValue = "") Boolean locked) {
-        return userService.findAll(companyId, username, rolename, workingTeamName,  firstname, lastname, enabled, locked);
+                                   @RequestParam(name="locked", required = false, defaultValue = "") Boolean locked,
+                                   @RequestParam(name="token", required = false, defaultValue = "") String token) {
+        return userService.findAll(companyId, username, rolename, workingTeamName,  firstname, lastname, enabled, locked,
+                token);
+    }
+
+    /**
+     * Find by username and token. We assume the token should be unique so we can identify
+     * the identical user by token
+     * @param username
+     * @param token
+     * @return
+     */
+    @RequestMapping(value="/users-by-token", method = RequestMethod.GET)
+    public User findUserByToken(@RequestParam String username,
+                                @RequestParam String token) {
+        return userService.findUserByToken( username, token);
     }
 
     @BillableEndpoint
@@ -135,4 +150,7 @@ public class UserController {
 
         return  userService.validateSystemAdminUser(username);
     }
+
+
+
 }

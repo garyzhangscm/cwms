@@ -40,6 +40,9 @@ public class User implements UserDetails {
     @Column(name = "company_id")
     private Long companyId;
 
+    @Transient
+    private Long loginWarehouseId;
+
     @Column(name = "username")
     private String username;
     @Column(name = "password")
@@ -131,4 +134,11 @@ public class User implements UserDetails {
         this.locked = locked;
     }
 
+    public Long getLoginWarehouseId() {
+        return loginWarehouseId;
+    }
+
+    public void setLoginWarehouseId(Long loginWarehouseId) {
+        this.loginWarehouseId = loginWarehouseId;
+    }
 }

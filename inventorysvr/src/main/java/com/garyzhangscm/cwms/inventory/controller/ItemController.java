@@ -70,19 +70,19 @@ public class ItemController {
     }
 
 
-
-
-
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/items")
     public void removeItems(@RequestParam(name = "item_ids", required = false, defaultValue = "") String itemIds) {
         itemService.delete(itemIds);
     }
 
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items")
     public Item addItem(@RequestBody Item item) {
         return itemService.addItem(item);
     }
 
+    @BillableEndpoint
     @RequestMapping(value="/items/{id}", method = RequestMethod.PUT)
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
 

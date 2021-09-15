@@ -1349,5 +1349,19 @@
   "password-is-empty": "Password is Empty",
   "password.confirm": "Confirm Password",
   "menu.account.change-password": "Change Password",
-  "password-changed": "Password Changed"
+  "password-changed": "Password Changed",
+  "menu.main.util.billable-request": "Billable Request",
+  "serviceName": "Service Name",
+  "webAPIEndpoint": "API Endpoint",
+  "requestMethod" : "Request Method",
+  "parameters" : "Parameters",
+  "Username" : "Username",
+  "transactionId": "Transaction ID",
+  "rate": "Rate",
+  "billable-request.daily-summary": "Daily Summary",
+  "billable-request.monthly-summary": "Monthly Summary",
+  "billable-request.yearly-summary": "Yearly Summary",
+  "totalWebAPIEndpoint": "Total Web API Call",
+  "totalTransaction": "Total Transactions",
+  "totalCost": "Total Cost"
 }

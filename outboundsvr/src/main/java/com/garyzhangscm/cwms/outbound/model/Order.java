@@ -21,9 +21,11 @@ package com.garyzhangscm.cwms.outbound.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,6 +122,10 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "bill_to_address_postcode")
     private String billToAddressPostcode;
 
+
+    @Column(name = "complete_time")
+    private LocalDateTime completeTime;
+
     @Column(name = "carrier_id")
     private Long carrierId;
 
@@ -206,6 +212,14 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public LocalDateTime getCompleteTime() {
+        return completeTime;
+    }
+
+    public void setCompleteTime(LocalDateTime completeTime) {
+        this.completeTime = completeTime;
     }
 
     public Long getId() {

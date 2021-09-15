@@ -23,11 +23,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.User;
+import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.LocationGroup;
+import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -162,6 +165,89 @@ public class ResourceServiceRestemplateClient {
 
 
     }
+
+    @Cacheable(cacheNames = "company")
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies/{id}");
+
+        ResponseBodyWrapper<Company> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public User getUserByUsername(Long companyId, String username) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/users")
+                        .queryParam("username", username)
+                        .queryParam("companyId", companyId);
+
+        ResponseBodyWrapper<List<User>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
+
+        List<User> users = responseBodyWrapper.getData();
+
+        if (users.size() != 1) {
+            return null;
+        }
+        else {
+            return users.get(0);
+        }
+
+    }
+
+    public User getUserByUsernameAndToken(String username, String token) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/users-by-token")
+                        .queryParam("username", username)
+                        .queryParam("token", token);
+
+        ResponseBodyWrapper<User> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<User>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+
+    }
+
+    @Cacheable(cacheNames = "warehouse")
+    public Warehouse getWarehouseById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses/{id}");
+
+        ResponseBodyWrapper<Warehouse> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
 
 
     private HttpEntity<String> getHttpEntity(String requestBody) {

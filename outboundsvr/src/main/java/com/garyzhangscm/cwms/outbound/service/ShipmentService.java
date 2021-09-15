@@ -36,6 +36,7 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -363,6 +364,9 @@ public class ShipmentService {
     // Get a list of inventory that is picked for the shipment
     public List<Inventory> getPickedInventory(Shipment shipment) {
         List<Pick> picks = pickService.getPicksByShipment(shipment.getId());
+        if (picks.size() == 0) {
+            return new ArrayList<>();
+        }
         return inventoryServiceRestemplateClient.getPickedInventory(shipment.getWarehouseId(), picks);
 
     }
@@ -731,6 +735,11 @@ public class ShipmentService {
     }
 
     public void completeShipment(Shipment shipment, Order order) {
+        if (!validateShipmentReadyForComplete(shipment)) {
+            throw ShippingException.raiseException("Shipment for order " + order.getNumber() +
+                    " is not ready for complete yet" +
+                    " please check if there's open pick and short allocation");
+        }
         if (Objects.isNull(shipment.getStop())) {
             completeShipmentByOrder(shipment, order);
         }
@@ -762,6 +771,28 @@ public class ShipmentService {
             generateReceipt(shipment, order);
         }
 
+    }
+
+    /**
+     * Check if we are ready to complete a shipment when
+     * there's no open pick / short allocation
+     * @param shipment
+     * @return
+     */
+    private boolean validateShipmentReadyForComplete(Shipment shipment) {
+        List<Pick> picks = pickService.getPicksByShipment(shipment.getId());
+        if (picks.stream()
+                .anyMatch(pick -> pick.getPickedQuantity() < pick.getQuantity())) {
+            return false;
+        }
+
+        List<ShortAllocation> shortAllocations
+                = shortAllocationService.findByShipment(shipment);
+        if (!shortAllocations.isEmpty()) {
+            return false;
+        }
+
+        return true;
     }
 
     private void generateReceipt(Shipment shipment, Order order) {
@@ -907,6 +938,7 @@ public class ShipmentService {
         });
 
         shipment.setStatus(ShipmentStatus.DISPATCHED);
+        shipment.setCompleteTime(LocalDateTime.now());
         save(shipment);
         // after we complete the shipment, release all the locations
         // that reserved by the shipment

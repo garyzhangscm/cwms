@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.model.wms.Role;
 
+import javax.persistence.Column;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,11 @@ public class User {
     private Long id;
     private Timestamp time;
     private int refreshIn;
+
+
+    private Long lastLoginCompanyId;
+    private Long lastLoginWarehouseId;
+    private String lastLoginToken;
 
     public User(){}
 
@@ -153,6 +159,30 @@ public class User {
 
     public String getLastname() {
         return lastname;
+    }
+
+    public Long getLastLoginCompanyId() {
+        return lastLoginCompanyId;
+    }
+
+    public void setLastLoginCompanyId(Long lastLoginCompanyId) {
+        this.lastLoginCompanyId = lastLoginCompanyId;
+    }
+
+    public Long getLastLoginWarehouseId() {
+        return lastLoginWarehouseId;
+    }
+
+    public void setLastLoginWarehouseId(Long lastLoginWarehouseId) {
+        this.lastLoginWarehouseId = lastLoginWarehouseId;
+    }
+
+    public String getLastLoginToken() {
+        return lastLoginToken;
+    }
+
+    public void setLastLoginToken(String lastLoginToken) {
+        this.lastLoginToken = lastLoginToken;
     }
 
     public void setLastname(String lastname) {

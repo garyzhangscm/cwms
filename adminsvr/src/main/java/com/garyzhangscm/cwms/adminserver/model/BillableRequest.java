@@ -2,6 +2,8 @@ package com.garyzhangscm.cwms.adminserver.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.adminserver.model.wms.Company;
+import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -25,8 +27,14 @@ public class BillableRequest extends AuditibleEntity<String>{
     @Column(name = "company_id")
     private Long companyId;
 
+    @Transient
+    private Company company;
+
     @Column(name = "warehouse_id")
     private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
     @Column(name = "service_name")
     private String serviceName;
@@ -46,6 +54,9 @@ public class BillableRequest extends AuditibleEntity<String>{
 
     @Column(name = "username")
     private String username;
+
+    @Column(name = "token")
+    private String token;
 
     // when a request will be fulfilled by
     // multiple web api call, then we may
@@ -69,6 +80,21 @@ public class BillableRequest extends AuditibleEntity<String>{
     }
 
 
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 
     public Long getId() {
         return id;
@@ -152,6 +178,14 @@ public class BillableRequest extends AuditibleEntity<String>{
 
     public String getRequestMethod() {
         return requestMethod;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public void setRequestMethod(String requestMethod) {

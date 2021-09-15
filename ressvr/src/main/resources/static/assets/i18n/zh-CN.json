@@ -1354,5 +1354,19 @@
   "password-is-empty": "密码不能为空",
   "password.confirm": "确认密码",
   "menu.account.change-password": "修改密码",
-  "password-changed": "密码修改成功"
+  "password-changed": "密码修改成功",
+  "menu.main.util.billable-request": "付费点击",
+  "serviceName": "服务名称",
+  "webAPIEndpoint": "API端点",
+  "requestMethod" : "请求方法",
+  "parameters" : "参数",
+  "Username" : "用户",
+  "transactionId": "事务id",
+  "rate": "Rate",
+  "billable-request.daily-summary": "日总计",
+  "billable-request.monthly-summary": "月总计",
+  "billable-request.yearly-summary": "年总计",
+  "totalWebAPIEndpoint": "终端调用数量",
+  "totalTransaction": "事务数量",
+  "totalCost": "总费用"
 }
