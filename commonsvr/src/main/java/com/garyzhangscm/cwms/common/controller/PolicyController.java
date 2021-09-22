@@ -28,6 +28,9 @@ import com.garyzhangscm.cwms.common.service.ClientService;
 import com.garyzhangscm.cwms.common.service.PolicyService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,6 +48,11 @@ public class PolicyController {
 
     @BillableEndpoint
     @RequestMapping(value="/policies", method = RequestMethod.POST)
+    @Caching(
+        evict = {
+            @CacheEvict(cacheNames = "inbound_policy", allEntries = true),
+        }
+    )
     public Policy addPolicy(@RequestBody Policy policy) {
         return policyService.saveOrUpdate(policy);
     }
@@ -56,6 +64,11 @@ public class PolicyController {
 
     @BillableEndpoint
     @RequestMapping(value="/policies/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "inbound_policy", allEntries = true),
+            }
+    )
     public Policy changePolicy(@PathVariable Long id,
                              @RequestBody Policy policy) {
         if (policy.getId() != null && policy.getId() != id) {
@@ -68,6 +81,7 @@ public class PolicyController {
 
     @BillableEndpoint
     @RequestMapping(value="/policies/{id}", method = RequestMethod.DELETE)
+    @CacheEvict(value = "policy", key = "{#result.warehouseId, #result.key}")
     public Policy removePolicy(@PathVariable Long id) {
         Policy policy = policyService.findById(id);
         policyService.delete(id);
@@ -76,6 +90,7 @@ public class PolicyController {
 
     @BillableEndpoint
     @RequestMapping(value="/policies", method = RequestMethod.DELETE)
+    @CacheEvict(value = "policy", key = "{#warehouseId, #key}")
     public ResponseBodyWrapper<String> removePolicy(@RequestParam Long warehouseId,
                                             @RequestParam(name="key", required = false, value = "") String key) {
         policyService.removePolicy(warehouseId, key);

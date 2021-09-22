@@ -45,7 +45,8 @@ public class WorkOrderServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    @Cacheable(cacheNames = "workOrder")
+
+    @Cacheable(cacheNames = "inventory_workorder", unless="#result == null")
     public WorkOrder getWorkOrderById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

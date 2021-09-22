@@ -66,7 +66,6 @@ public class LocationGroupService implements TestDataInitiableService {
     @Value("${fileupload.test-data.location-groups:location_groups}")
     String testDataFile;
 
-    @Cacheable
     public LocationGroup findById(Long id) {
         return locationGroupRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("location group not found by id: " + id));

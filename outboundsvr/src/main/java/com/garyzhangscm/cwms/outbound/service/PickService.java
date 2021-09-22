@@ -265,7 +265,14 @@ public class PickService {
             pick.setSourceLocation(warehouseLayoutServiceRestemplateClient.getLocationById(pick.getSourceLocationId()));
         }
         if (pick.getDestinationLocationId() != null && pick.getDestinationLocation() == null) {
-            pick.setDestinationLocation(warehouseLayoutServiceRestemplateClient.getLocationById(pick.getDestinationLocationId()));
+            logger.debug("pick {}'s destination location id is {}, will get location from it",
+                    pick.getNumber(),
+                    pick.getDestinationLocationId());
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationById(pick.getDestinationLocationId());
+            logger.debug("get location {} from id {}",
+                    location.getName(),
+                    pick.getDestinationLocationId());
+            pick.setDestinationLocation(location);
         }
 
         // Load the item and inventory status information for each lines

@@ -23,6 +23,9 @@ import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.InventoryStatus;
 import com.garyzhangscm.cwms.inventory.service.InventoryStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,12 +47,24 @@ public class InventoryStatusController {
     }
 
     @RequestMapping(value="/inventory-status", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_inventoryStatus", allEntries = true),
+            }
+    )
     public InventoryStatus createInventoryStatus(@RequestBody InventoryStatus inventoryStatus) {
         return inventoryStatusService.save(inventoryStatus);
     }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-status/{id}")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_inventoryStatus", allEntries = true),
+            }
+    )
     public InventoryStatus changeInventoryStatus(@PathVariable long id,
                                        @RequestBody InventoryStatus inventoryStatus) {
         if (inventoryStatus.getId() != null && inventoryStatus.getId() != id) {
@@ -62,7 +77,7 @@ public class InventoryStatusController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-status")
-    public void removeInventoryStatuses(@RequestParam(name = "item_family_ids", required = false, defaultValue = "") String inventoryStatusIds) {
+    public void removeInventoryStatuses(@RequestParam(name = "inventory-status-ids", required = false, defaultValue = "") String inventoryStatusIds) {
         inventoryStatusService.delete(inventoryStatusIds);
     }
 

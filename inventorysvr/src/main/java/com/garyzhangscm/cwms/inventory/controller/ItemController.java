@@ -24,6 +24,9 @@ import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,12 +59,19 @@ public class ItemController {
 
     @BillableEndpoint
     @RequestMapping(value="/items/{id}", method = RequestMethod.DELETE)
+    @CacheEvict(cacheNames = "item", key = "#id")
     public Item deleteItem(@PathVariable Long id) {
         return itemService.deleteItem(id);
     }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items/{id}/images/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_item", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_item", allEntries = true),
+            }
+    )
     public Item uploadItemImages(@PathVariable Long id,
                                            @RequestParam("file") MultipartFile file) throws IOException {
 
@@ -78,12 +88,24 @@ public class ItemController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_item", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_item", allEntries = true),
+            }
+    )
     public Item addItem(@RequestBody Item item) {
         return itemService.addItem(item);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/items/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_item", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_item", allEntries = true),
+            }
+    )
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
 
         return itemService.changeItem(id, item);

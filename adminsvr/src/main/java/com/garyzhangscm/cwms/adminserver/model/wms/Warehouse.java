@@ -19,7 +19,11 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import java.io.Serializable;
+
 
 public class Warehouse implements Serializable {
     private Long id;

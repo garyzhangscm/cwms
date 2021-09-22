@@ -46,7 +46,6 @@ public class InboundServiceRestemplateClient {
     OAuth2RestOperations restTemplate;
 
 
-    @Cacheable
     public Receipt getReceiptById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

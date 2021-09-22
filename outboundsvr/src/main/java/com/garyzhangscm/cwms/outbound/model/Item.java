@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -45,6 +48,8 @@ public class Item implements Serializable {
 
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
 
+    private ItemPackageType defaultItemPackageType;
+
     private double unitCost;
 
     private Boolean allowAllocationByLPN;
@@ -65,24 +70,21 @@ public class Item implements Serializable {
         return this.getName().equals(((Item)anotherItem).getName()) &&
                 this.getWarehouseId().equals(((Item) anotherItem).getWarehouseId());
     }
-    @Override
-    public int hashCode() {
-        return this.getName().hashCode();
-    }
 
     @Override
     public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", clientId=" + clientId +
-                ", client=" + client +
-                ", itemFamily=" + itemFamily +
-                ", allowCartonization=" + allowCartonization +
-                ", itemPackageTypes=" + itemPackageTypes +
-                ", unitCost=" + unitCost +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return this.getName().hashCode();
     }
 
     public Long getId() {
@@ -193,6 +195,9 @@ public class Item implements Serializable {
         if (itemPackageTypes.size() == 0) {
             return null;
         }
+        if (Objects.nonNull(defaultItemPackageType)) {
+            return defaultItemPackageType;
+        }
         // see if we have any item package types that marked as default
         Optional<ItemPackageType> defaultItemPackageType = itemPackageTypes.stream().filter(
                 itemPackageType -> Boolean.TRUE.equals(itemPackageType.getDefaultFlag())
@@ -203,5 +208,9 @@ public class Item implements Serializable {
         // we can't find any default item package type defined for this item
         // let's return the first one we find in the list
         return itemPackageTypes.get(0);
+    }
+
+    public void setDefaultItemPackageType(ItemPackageType defaultItemPackageType) {
+        this.defaultItemPackageType = defaultItemPackageType;
     }
 }

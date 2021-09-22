@@ -111,9 +111,6 @@ public class PickController {
                             @RequestParam(name="containerId", required = false, defaultValue = "") String containerId,
                             @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
         logger.debug("======        Start to confirm pick   ========");
-        logger.debug("==============");
-        logger.debug("==============");
-        logger.debug("==============");
         logger.debug("=> quantity: {}", quantity);
         logger.debug("=> nextLocationId: {}", nextLocationId);
         logger.debug("=> nextLocationName: {}", nextLocationName);

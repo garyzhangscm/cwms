@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.domain.Specification;
@@ -201,6 +202,7 @@ public class ItemService implements TestDataInitiableService{
     public Item save(Item item) {
         return itemRepository.save(item);
     }
+
 
     public Item saveOrUpdate(Item item) {
         if (item.getId() == null && findByName(item.getWarehouseId(), item.getName()) != null) {

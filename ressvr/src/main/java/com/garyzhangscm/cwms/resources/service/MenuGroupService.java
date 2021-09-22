@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.MenuGroupRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ public class MenuGroupService implements TestDataInitiableService{
 
     @Autowired
     private MenuService menuService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private FileService fileService;
@@ -93,6 +97,35 @@ public class MenuGroupService implements TestDataInitiableService{
     }
 
 
+    /**
+     * Get accessible menu by certain user
+     * @param companyId
+     * @param username
+     * @return
+     */
+    public List<MenuGroup> getAccessibleMenus(Long companyId, String username) {
+        if(Strings.isBlank(username)) {
+            username = userService.getCurrentUserName();
+
+        }
+        User user = userService.findByUsername(companyId, username);
+        List<MenuGroup> menuGroups = new ArrayList<>();
+        // get the accessible menu from all menu types
+        for (MenuType menuType : MenuType.values()) {
+            menuGroups.addAll(
+                    getAccessibleMenus(user, menuType)
+            );
+        }
+        return menuGroups;
+    }
+    public List<MenuGroup> getAccessibleMenus(Long companyId, String username, MenuType menuType) {
+        if(Strings.isBlank(username)) {
+            username = userService.getCurrentUserName();
+
+        }
+        User user = userService.findByUsername(companyId, username);
+        return getAccessibleMenus(user, menuType);
+    }
     public List<MenuGroup> getAccessibleMenus(User user, MenuType menuType) {
         List<MenuGroup> menuGroups;
         logger.debug("User {} is admin? {}", user.getUsername(), user.getAdmin());

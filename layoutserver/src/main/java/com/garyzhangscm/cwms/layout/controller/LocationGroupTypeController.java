@@ -22,6 +22,9 @@ import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
 import com.garyzhangscm.cwms.layout.model.LocationGroupType;
 import com.garyzhangscm.cwms.layout.service.LocationGroupTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,7 +49,12 @@ public class LocationGroupTypeController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locationgrouptypes")
-    public LocationGroupType listLocationGroupTypes(@RequestBody LocationGroupType locationGroupType) {
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "outbound_locationGroupType", allEntries = true),
+            }
+    )
+    public LocationGroupType addLocationGroupTypes(@RequestBody LocationGroupType locationGroupType) {
         return locationGroupTypeService.saveOrUpdate(locationGroupType);
     }
 

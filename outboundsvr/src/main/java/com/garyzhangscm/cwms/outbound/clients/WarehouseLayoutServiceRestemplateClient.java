@@ -49,7 +49,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
-    @Cacheable(cacheNames = "company")
+    @Cacheable(cacheNames = "outbound_company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -67,7 +67,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "location")
+    @Cacheable(cacheNames = "outbound_location", unless="#result == null")
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
@@ -94,7 +94,6 @@ public class WarehouseLayoutServiceRestemplateClient {
      * @param containerName Container Name
      * @return
      */
-    @Cacheable(cacheNames = "container")
     public Location getLocationByContainerId(Long warehouseId, String containerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -138,7 +137,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "location")
+    @Cacheable(cacheNames = "outbound_location", unless="#result == null")
     public Location getLocationByName(String companyCode, String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(companyCode, warehouseName);
         if (warehouse == null) {
@@ -147,7 +146,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return getLocationByName(warehouse.getId(), name);
     }
 
-    @Cacheable(cacheNames = "location")
+    @Cacheable(cacheNames = "outbound_location", unless="#result == null")
     public Location getLocationByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -197,7 +196,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "warehouse")
+    @Cacheable(cacheNames = "outbound_warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -215,7 +214,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "warehouse")
+    @Cacheable(cacheNames = "outbound_warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -245,7 +244,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "locationGroup")
+    @Cacheable(cacheNames = "outbound_locationGroup", unless="#result == null")
     public LocationGroup getLocationGroupById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -262,7 +261,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "locationGroup")
+    @Cacheable(cacheNames = "outbound_locationGroup", unless="#result == null")
     public LocationGroup getLocationGroupByName(String companyCode,
                                                 String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(companyCode, warehouseName);
@@ -297,7 +296,7 @@ public class WarehouseLayoutServiceRestemplateClient {
             return locationGroups[0];
         }
     }
-    @Cacheable(cacheNames = "locationGroupType")
+    @Cacheable(cacheNames = "outbound_locationGroupType", unless="#result == null")
     public LocationGroupType getLocationGroupTypeById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -316,7 +315,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "locationGroupType")
+    @Cacheable(cacheNames = "outbound_locationGroupType", unless="#result == null")
     public LocationGroupType getLocationGroupTypeByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

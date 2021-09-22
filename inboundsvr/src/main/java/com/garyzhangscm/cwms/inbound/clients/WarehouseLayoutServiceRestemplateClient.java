@@ -122,7 +122,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    @Cacheable
+    @Cacheable(cacheNames = "inbound_warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
 
         UriComponentsBuilder builder =
@@ -143,7 +143,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable
+    @Cacheable(cacheNames = "inbound_warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

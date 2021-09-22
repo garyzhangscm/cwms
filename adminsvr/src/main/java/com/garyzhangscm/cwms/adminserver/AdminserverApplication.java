@@ -10,15 +10,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.*;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -26,6 +29,7 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.util.Collections;
 
 @SpringBootApplication
@@ -102,5 +106,43 @@ public class AdminserverApplication {
         restTemplate.setInterceptors(Collections.singletonList(requestInterceptor));
         return restTemplate;
     }
+
+    // setup the configuration for redis cache
+
+    /****
+     *
+     * @return
+     */
+    @Bean
+    public RedisCacheConfiguration cacheConfiguration() {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(5))
+                .disableCachingNullValues()
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+    }
+/*
+    @Bean
+    public RedisCacheConfiguration redisCacheConfiguration(){
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        // RedisSerializer<Object> serializer = new JdkSerializationRedisSerializer(getClass().getClassLoader());
+
+        RedisCacheConfiguration configuration = RedisCacheConfiguration.defaultCacheConfig();
+        configuration = configuration.serializeValuesWith(
+                RedisSerializationContext.SerializationPair
+                        .fromSerializer(jackson2JsonRedisSerializer)).entryTtl(Duration.ofMinutes(5));
+        return configuration;
+    }
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        //初始化一个RedisCacheWriter
+        RedisCacheWriter redisCacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory);
+
+        //设置CacheManager的值序列化方式为 fastJsonRedisSerializer,但其实RedisCacheConfiguration默认使用StringRedisSerializer序列化key，
+        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        RedisSerializationContext.SerializationPair<Object> pair =
+                RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer);
+        RedisCacheConfiguration defaultCacheConfig=RedisCacheConfiguration.defaultCacheConfig().serializeValuesWith(pair);
+        return new RedisCacheManager(redisCacheWriter, defaultCacheConfig);
+    }*/
 
 }

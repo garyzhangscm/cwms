@@ -17,6 +17,9 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -24,6 +27,7 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -82,4 +86,17 @@ public class InboundServerApplication {
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
+	// setup the configuration for redis cache
+
+	/****
+	 *
+	 * @return
+	 */
+	@Bean
+	public RedisCacheConfiguration cacheConfiguration() {
+		return RedisCacheConfiguration.defaultCacheConfig()
+				.entryTtl(Duration.ofMinutes(5))
+				.disableCachingNullValues()
+				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+	}
 }

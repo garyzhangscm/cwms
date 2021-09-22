@@ -60,6 +60,17 @@
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
+        <!-- redis cache -->
+        <!--
+-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
         <!-- since we are using K8S now, we will not use eureka
           for service discovery any more
     <dependency>

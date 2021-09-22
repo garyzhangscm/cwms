@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.resources.service.MenuGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -36,18 +37,21 @@ public class MenuController {
     MenuGroupService menuGroupService;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<MenuGroup> listAllMenus() {
-        return menuGroupService.findAll();
+    public List<MenuGroup> listAllMenus(@RequestParam Long companyId,
+                                        @RequestParam(name = "username", required = false, defaultValue = "") String username) {
+        return menuGroupService.getAccessibleMenus(companyId, username);
     }
 
     @RequestMapping(value="/web", method = RequestMethod.GET)
-    public List<MenuGroup> listAllWebMenus() {
-        return menuGroupService.findAll(MenuType.WEB);
+    public List<MenuGroup> listAllWebMenus(@RequestParam Long companyId,
+                                           @RequestParam(name = "username", required = false, defaultValue = "") String username) {
+        return menuGroupService.getAccessibleMenus(companyId, username, MenuType.WEB);
     }
 
     @RequestMapping(value="/mobile", method = RequestMethod.GET)
-    public List<MenuGroup> listAllMobileMenus() {
-        return menuGroupService.findAll(MenuType.MOBILE);
+    public List<MenuGroup> listAllMobileMenus(@RequestParam Long companyId,
+                                              @RequestParam(name = "username", required = false, defaultValue = "") String username) {
+        return menuGroupService.getAccessibleMenus(companyId, username, MenuType.MOBILE);
     }
 
 

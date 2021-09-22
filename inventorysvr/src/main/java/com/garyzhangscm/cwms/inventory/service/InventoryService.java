@@ -461,6 +461,9 @@ public class InventoryService implements TestDataInitiableService{
 
         currentLocalDateTime = LocalDateTime.now();
 
+        logger.debug("Start to refresh location {}'s volume",
+                inventory.getLocationId());
+
         warehouseLayoutServiceRestemplateClient.resetLocation(inventory.getLocationId());
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we reset the location {}",
@@ -515,7 +518,7 @@ public class InventoryService implements TestDataInitiableService{
         }
     }
 
-     public void loadInventoryAttribute(Inventory inventory) {
+    public void loadInventoryAttribute(Inventory inventory) {
 
      LocalDateTime currentLocalDateTime = LocalDateTime.now();
      logger.debug("========> @ {} start to load inventory details for lpn {}",
@@ -1062,7 +1065,7 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("After consolidation, we still have {} movement path on the inventory {}",
                 consolidatedInventory.getInventoryMovements().size(), consolidatedInventory.getLpn());
         logger.debug("6. destination {} has {} inventory",
-                destination.getName(), findByLocationId(destination.getId()).size());
+                destination.getName(), findByLocationId(destination.getId(), false).size());
         // check if we will need to remove the original inventory
 
         // logger.debug(">> after consolidation, the original inventory is \n>> {}", inventory);
@@ -1078,7 +1081,7 @@ public class InventoryService implements TestDataInitiableService{
             delete(inventory);
         }
         logger.debug("7. destination {} has {} inventory",
-                destination.getName(), findByLocationId(destination.getId()).size());
+                destination.getName(), findByLocationId(destination.getId(), false).size());
         /***
         logger.debug("Location {}'s  consolidate LPN policy: ",
                 destination.getName(), destination.getLocationGroup().getConsolidateLpn());
@@ -1307,6 +1310,7 @@ public class InventoryService implements TestDataInitiableService{
         }
         inventory.setPickId(pickId);
         Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
+        // logger.debug("Get pick by id {} \n {}", pickId, pick);
         inventory.setPick(pick);
         inventory.getInventoryMovements().clear();
         logger.debug("Start to build movement path for picked inventory {}",
@@ -1316,7 +1320,7 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("Inventory's current location: {} / {}, pick's destination location: {} / {}",
                 inventory.getLocation().getName(),
                 inventory.getLocationId(),
-                pick.getDestinationLocation().getName(),
+                Objects.isNull(pick.getDestinationLocation()) ? "" : pick.getDestinationLocation().getName(),
                 pick.getDestinationLocationId());
         if (!inventory.getLocationId().equals(pick.getDestinationLocationId())) {
 
