@@ -27,6 +27,9 @@ import com.garyzhangscm.cwms.common.service.ClientService;
 import com.garyzhangscm.cwms.common.service.UnitOfMeasureService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -56,12 +59,24 @@ public class UnitOfMeasureController {
 
     @BillableEndpoint
     @RequestMapping(value="/unit-of-measures", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "inventory_unitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "workorder_unitOfMeasure", allEntries = true),
+            }
+    )
     public UnitOfMeasure addUnitOfMeasure(@RequestBody UnitOfMeasure unitOfMeasure) {
         return unitOfMeasureService.save(unitOfMeasure);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/unit-of-measures/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "inventory_unitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "workorder_unitOfMeasure", allEntries = true),
+            }
+    )
     public UnitOfMeasure changeUnitOfMeasure(@PathVariable Long id, @RequestBody UnitOfMeasure unitOfMeasure) {
         if (unitOfMeasure.getId() != null && unitOfMeasure.getId() != id) {
             throw RequestValidationFailException.raiseException(

@@ -129,7 +129,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable
+    @Cacheable(cacheNames = "inbound_policy", unless="#result == null")
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ItemPackageType implements Serializable {
 
@@ -41,6 +42,8 @@ public class ItemPackageType implements Serializable {
     private Item item;
 
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
+
+    private ItemUnitOfMeasure stockItemUnitOfMeasures;
 
     @Override
     public String toString() {
@@ -130,6 +133,11 @@ public class ItemPackageType implements Serializable {
             return null;
         }
 
+        if (Objects.nonNull(stockItemUnitOfMeasures)) {
+            return stockItemUnitOfMeasures;
+        }
+
+
         ItemUnitOfMeasure stockItemUnitOfMeasure = itemUnitOfMeasures.get(0);
         for (ItemUnitOfMeasure itemUnitOfMeasure : itemUnitOfMeasures) {
             if (itemUnitOfMeasure.getQuantity() < stockItemUnitOfMeasure.getQuantity()) {
@@ -137,5 +145,9 @@ public class ItemPackageType implements Serializable {
             }
         }
         return stockItemUnitOfMeasure;
+    }
+
+    public void setStockItemUnitOfMeasures(ItemUnitOfMeasure stockItemUnitOfMeasures) {
+        this.stockItemUnitOfMeasures = stockItemUnitOfMeasures;
     }
 }

@@ -18,7 +18,11 @@
 
 package com.garyzhangscm.cwms.adminserver.clients;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.garyzhangscm.cwms.adminserver.LoginResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.LoginCredential;
 import com.garyzhangscm.cwms.adminserver.model.User;
@@ -45,9 +49,13 @@ public class AuthServiceRestemplateClient {
 
     private User currentLoginUser;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
+    // @Autowired
+    // private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new ParameterNamesModule())
+            .registerModule(new Jdk8Module())
+            .registerModule(new JavaTimeModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     // User a new rest template for login. The global auto-wirable
     // rest template will try to add an user token to the http header
@@ -55,9 +63,9 @@ public class AuthServiceRestemplateClient {
     // if the user has not login in yet, then it will call login()
     // to login a specific user for the integration, which will make
     // the call a infinite recursive call.
-    @Autowired
-    @Qualifier("noTokenRestTemplate")
-    RestTemplate restTemplate;
+    // @Autowired
+    // @Qualifier("noTokenRestTemplate")
+    RestTemplate restTemplate = new RestTemplate();;
 
 
     public User login() throws IOException {

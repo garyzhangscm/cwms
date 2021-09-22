@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.User;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
-import com.garyzhangscm.cwms.adminserver.model.wms.LocationGroup;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,7 +165,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "company")
+    @Cacheable(cacheNames = "admin_company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -230,7 +229,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "warehouse")
+    @Cacheable(cacheNames = "admin_warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

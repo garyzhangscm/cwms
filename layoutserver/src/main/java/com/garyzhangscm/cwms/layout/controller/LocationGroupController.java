@@ -28,6 +28,9 @@ import com.garyzhangscm.cwms.layout.service.LocationGroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,12 +64,22 @@ public class LocationGroupController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locationgroups")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "outbound_locationGroup", allEntries = true),
+            }
+    )
     public LocationGroup addLocationGroups(@RequestBody LocationGroup locationGroup) {
         return locationGroupService.addLocationGroups(locationGroup);
     }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "outbound_locationGroup", allEntries = true),
+            }
+    )
     public LocationGroup changeLocationGroups(@PathVariable long id,
                                               @RequestBody LocationGroup locationGroup) {
         if (locationGroup.getId() != null && locationGroup.getId() != id) {
@@ -79,6 +92,7 @@ public class LocationGroupController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups/{id}")
+    @CacheEvict(cacheNames = "locationGroup")
     public void removeLocationGroup(@PathVariable long id) {
         locationGroupService.removeLocationGroup(id);
     }
@@ -93,6 +107,13 @@ public class LocationGroupController {
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}/reserve")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_location", allEntries = true),
+                    @CacheEvict(cacheNames = "inventory_location", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_location", allEntries = true),
+            }
+    )
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reservedCode") String reservedCode,
                                     @RequestParam(name = "pendingSize") Double pendingSize,

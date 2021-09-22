@@ -63,7 +63,6 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Cacheable(cacheNames = "inventory", unless="#result == null")
     public Inventory getInventoryById(Long id) {
 
         UriComponentsBuilder builder =
@@ -81,7 +80,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "item", unless="#result == null")
+    @Cacheable(cacheNames = "workorder_item", unless="#result == null")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -100,7 +99,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "item", unless="#result == null")
+    @Cacheable(cacheNames = "workorder_item", unless="#result == null")
     public Item getItemByName(Long warehouseId, String name) {
 
         try {
@@ -136,7 +135,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "inventoryStatus", unless="#result == null")
+    @Cacheable(cacheNames = "workorder_inventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -154,7 +153,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "inventoryStatus", unless="#result == null")
+    @Cacheable(cacheNames = "workorder_inventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

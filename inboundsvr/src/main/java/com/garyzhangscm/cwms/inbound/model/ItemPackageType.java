@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inbound.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ItemPackageType implements Serializable {
 
@@ -37,6 +38,8 @@ public class ItemPackageType implements Serializable {
     private Item item;
 
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
+
+    private ItemUnitOfMeasure stockItemUnitOfMeasures;
 
     public Long getId() {
         return id;
@@ -114,6 +117,10 @@ public class ItemPackageType implements Serializable {
         if (itemUnitOfMeasures.size() == 0) {
             return null;
         }
+        if (Objects.nonNull(stockItemUnitOfMeasures)) {
+            return stockItemUnitOfMeasures;
+        }
+
 
         ItemUnitOfMeasure stockItemUnitOfMeasure = itemUnitOfMeasures.get(0);
         for (ItemUnitOfMeasure itemUnitOfMeasure : itemUnitOfMeasures) {
@@ -122,5 +129,9 @@ public class ItemPackageType implements Serializable {
             }
         }
         return stockItemUnitOfMeasure;
+    }
+
+    public void setStockItemUnitOfMeasures(ItemUnitOfMeasure stockItemUnitOfMeasures) {
+        this.stockItemUnitOfMeasures = stockItemUnitOfMeasures;
     }
 }

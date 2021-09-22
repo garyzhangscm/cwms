@@ -83,8 +83,8 @@ public class InventoryController {
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
-                                 @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
-                                 @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+                                             @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                             @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory) {
         return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
@@ -101,6 +101,8 @@ public class InventoryController {
     @RequestMapping(value="/inventories/pickable", method = RequestMethod.GET)
     public List<Inventory> findPickableInventories(@RequestParam Long itemId,
                                                    @RequestParam Long inventoryStatusId) {
+                                                 //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
+        // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
         return inventoryService.findPickableInventories(itemId, inventoryStatusId);
     }
 

@@ -26,6 +26,9 @@ import com.garyzhangscm.cwms.layout.service.LocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -211,6 +214,13 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_location", allEntries = true),
+                    @CacheEvict(cacheNames = "inventory_location", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_location", allEntries = true),
+            }
+    )
     public Location changeLocation(@RequestBody Location location) {
 
         return locationService.saveOrUpdate(location);

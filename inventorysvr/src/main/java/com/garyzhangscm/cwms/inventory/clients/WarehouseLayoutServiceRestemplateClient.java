@@ -69,7 +69,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "location")
+    @Cacheable(cacheNames = "inventory_location", unless="#result == null")
     public Location getLocationById(Long id) {
         logger.debug("Will get location by id {}", id);
         UriComponentsBuilder builder =
@@ -334,6 +334,14 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
     private Location resetLocationVolume(Long locationId) {
+
+        Location location = getLocationById(locationId);
+        logger.debug("See if we will need to recalculate the location {} 's volume {}",
+                location.getName(), location.getLocationGroup().getTrackingVolume());
+        if (!location.getLocationGroup().getTrackingVolume()) {
+            return location;
+        }
+
         List<Inventory> inventories = inventoryService.findByLocationId(locationId);
         Long totalQuantity = 0L;
         Double totalSize = 0.0;

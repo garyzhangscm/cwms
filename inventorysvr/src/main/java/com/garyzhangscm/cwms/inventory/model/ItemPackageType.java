@@ -80,7 +80,7 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
 
 
     @Column(name = "default_flag")
-    private Boolean defaultFlag;
+    private Boolean defaultFlag = false;
 
     @Transient
     private Warehouse warehouse;

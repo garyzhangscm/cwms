@@ -43,8 +43,6 @@ public class OutbuondServiceRestemplateClient {
     OAuth2RestOperations restTemplate;
 
 
-
-    @Cacheable(cacheNames = "pick")
     public Pick getPickById(Long id) {
 
         UriComponentsBuilder builder =

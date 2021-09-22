@@ -64,7 +64,7 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    @Cacheable(cacheNames = "item")
+    @Cacheable(cacheNames = "outbound_item", unless="#result == null")
     public Item getItemById(Long id) {
 
 
@@ -160,7 +160,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "inventory-status")
+    @Cacheable(cacheNames = "outbound_inventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -207,6 +207,7 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories/pickable")
+                        .queryParam("includeDetails", false)
                         .queryParam("itemId", itemId)
                         .queryParam("inventoryStatusId", inventoryStatusId);
 
@@ -348,7 +349,6 @@ public class InventoryServiceRestemplateClient {
         return getPickMovementPath(pick.getWarehouseId(), pick.getSourceLocation(), pick.getDestinationLocation());
     }
 
-    @Cacheable(cacheNames = "movement-path")
     public List<MovementPath> getPickMovementPath(Long warehouseId, Location sourceLocation, Location destinationLocation) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

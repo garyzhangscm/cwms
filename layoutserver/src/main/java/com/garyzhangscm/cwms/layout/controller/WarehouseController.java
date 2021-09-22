@@ -28,6 +28,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -56,6 +59,15 @@ public class WarehouseController {
 
     @BillableEndpoint
     @RequestMapping(value="/warehouses", method=RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "admin_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "workorder_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "common_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "inbound_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_warehouse", allEntries = true),
+            }
+    )
     public Warehouse addWarehouses(@RequestParam Long companyId,
                                    @RequestBody Warehouse warehouse) throws JsonProcessingException {
         return warehouseService.addWarehouses(companyId, warehouse);
@@ -63,6 +75,15 @@ public class WarehouseController {
 
     @BillableEndpoint
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "admin_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "workorder_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "common_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "inbound_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_warehouse", allEntries = true),
+            }
+    )
     public Warehouse changeWarehouse(@PathVariable long id, @RequestBody Warehouse warehouse) {
         if (warehouse.getId() != null && warehouse.getId() != id) {
             throw RequestValidationFailException.raiseException(
@@ -73,6 +94,7 @@ public class WarehouseController {
 
     @BillableEndpoint
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.DELETE)
+    @CacheEvict(cacheNames = "warehouse", key = "#id")
     public Warehouse removeWarehouses(@PathVariable long id) {
         Warehouse removedWarehouse = warehouseService.removeWarehouses(id);
         return removedWarehouse;
