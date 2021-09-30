@@ -50,6 +50,13 @@ public interface LocationGroupRepository extends JpaRepository<LocationGroup, Lo
     @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.shippedOrder = true and lg.warehouse.id = :warehouseId" )
     List<LocationGroup> getShippedOrderLocationGroup(Long warehouseId);
 
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.shippingStage = true and lg.warehouse.id = :warehouseId" )
+    List<LocationGroup> getShippingStageLocationGroup(Long warehouseId);
+
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.storage = true and lg.warehouse.id = :warehouseId" )
+    List<LocationGroup> getStorageLocationGroups(Long warehouseId);
+
+
 
     @Modifying
     @Query( "delete from LocationGroup lg where lg.warehouse.id = :warehouseId" )

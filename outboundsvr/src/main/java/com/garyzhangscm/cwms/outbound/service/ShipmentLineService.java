@@ -194,6 +194,7 @@ public class ShipmentLineService {
     }
 
 
+    @Transactional
     public AllocationResult allocateShipmentLine(ShipmentLine shipmentLine) {
         logger.debug("Start to allocate shipment line: {} / {}", shipmentLine.getId(), shipmentLine.getNumber());
         if (!isAllocatable(shipmentLine) || shipmentLine.getOpenQuantity() <= 0) {
@@ -217,9 +218,15 @@ public class ShipmentLineService {
 
         // Change the shipment's status to 'In Process'
         if (!shipmentLine.getShipment().getStatus().equals(ShipmentStatus.INPROCESS)) {
+            logger.debug("Will need to save the shipment {} to in process",
+                    shipmentLine.getShipment().getNumber());
             shipmentLine.getShipment().setStatus(ShipmentStatus.INPROCESS);
             shipmentService.save(shipmentLine.getShipment());
         }
+        logger.debug("get allocation result for the shipment line {} / {}",
+                shipmentLine.getShipment().getNumber(),
+                shipmentLine.getNumber());
+        logger.debug(allocationResult.toString());
         return allocationResult;
     }
 

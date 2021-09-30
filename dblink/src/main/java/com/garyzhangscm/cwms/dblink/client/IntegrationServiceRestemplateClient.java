@@ -62,7 +62,7 @@ public class IntegrationServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         // .scheme("http").host("server.example.invalid").port(32262)
-                        .path("/api/integration/integration-data/" + subUrl);
+                        .path("/api/integration/integration-data/dblink/" + subUrl);
 
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(

@@ -279,6 +279,25 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData().getNextNumber();
     }
 
+
+    public SystemControlledNumber addSystemControlledNumbers(SystemControlledNumber systemControlledNumber) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/system-controlled-numbers");
+
+        ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.PUT,
+                getHttpEntity(objectMapper.writeValueAsString(systemControlledNumber)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
     public String getNextLpn() {
         return getNextNumber("lpn");
     }

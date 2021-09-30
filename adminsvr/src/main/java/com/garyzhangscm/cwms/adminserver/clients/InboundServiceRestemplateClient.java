@@ -204,7 +204,24 @@ public class InboundServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public PutawayConfiguration addPutawayConfiguration(
+            PutawayConfiguration putawayConfiguration
+    ) throws JsonProcessingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inbound/putaway-configuration");
 
+        ResponseBodyWrapper<PutawayConfiguration> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.PUT,
+                getHttpEntity(objectMapper.writeValueAsString(putawayConfiguration)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<PutawayConfiguration>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

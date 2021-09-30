@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -188,6 +190,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         return allocationResult.getPicks().stream().map(Pick::getQuantity).mapToLong(Long::longValue).sum();
     }
 
+    @Transactional(dontRollbackOn = GenericException.class)
     private List<Pick> tryAllocateByUnitOfMeasure(AllocationRequest allocationRequest, long openQuantity,
                                                   List<InventorySummary> inventorySummaries,
                                                   List<Pick> existingPicks,
@@ -289,7 +292,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     Long allocatedQuantity = Math.min(quantityOnLpn.getValue(), allocatibleQuantity);
                     String allocatedLpn = quantityOnLpn.getKey();
 
-                    logger.debug("will allocate from lpn {}, original quantity {}, allocated quantity",
+                    logger.debug("will allocate from lpn {}, original quantity {}, allocated quantity {}",
                             quantityOnLpn.getKey(), quantityOnLpn.getValue(),
                             allocatedQuantity);
 
@@ -310,6 +313,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             catch (GenericException ex) {
                 // in case we can't generate the pick from this location, let's
                 // continue and try next location
+                logger.debug("Get error {} during allocation, we will ignore", ex.getMessage());
+                ex.printStackTrace();
                 continue;
             }
 
@@ -323,6 +328,18 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         return picks;
     }
 
+    /**
+     * Create picks based on UOM, note we will ignore the exception here and won't rollback
+     * any DB transaction. The exception will be handled in the up stream and we will either
+     * try the next location, or generate a short allocation, in both case we will update the
+     * changes to the order and shipment
+     * @param allocationRequest allocation request
+     * @param inventorySummary inventory summary
+     * @param allocatibleQuantity allocatible quantity
+     * @param smallestPickableUnitOfMeasure smallest pickable unit of measure
+     * @return
+     */
+    @Transactional(dontRollbackOn = GenericException.class)
     private Pick tryCreatePickForUOMAllocation(AllocationRequest allocationRequest, InventorySummary inventorySummary,
                                                long allocatibleQuantity, ItemUnitOfMeasure smallestPickableUnitOfMeasure) {
         if (allocationRequest.getShipmentLines().size() > 0) {

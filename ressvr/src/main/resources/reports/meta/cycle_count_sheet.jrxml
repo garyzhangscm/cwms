@@ -77,8 +77,8 @@
 				</jr:barbecue>
 			</componentElement>
 			<textField>
-				<reportElement x="351" y="0" width="100" height="30" uuid="69906431-9fdc-4ad2-bd2f-c371e0a84b70"/>
-				<textElement>
+				<reportElement x="210" y="0" width="320" height="30" uuid="69906431-9fdc-4ad2-bd2f-c371e0a84b70"/>
+				<textElement textAlignment="Center">
 					<font fontName="SimSun" size="20"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{cycle_count_sheet}]]></textFieldExpression>

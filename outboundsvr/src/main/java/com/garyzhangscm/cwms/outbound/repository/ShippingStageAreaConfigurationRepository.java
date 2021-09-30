@@ -28,5 +28,5 @@ import org.springframework.stereotype.Repository;
 public interface ShippingStageAreaConfigurationRepository extends JpaRepository<ShippingStageAreaConfiguration, Long>, JpaSpecificationExecutor<ShippingStageAreaConfiguration> {
 
 
-    ShippingStageAreaConfiguration findBySequence(int sequence);
+    ShippingStageAreaConfiguration findByWarehouseIdAndSequence(Long warehouseId, int sequence);
 }

@@ -437,4 +437,18 @@ public class LocationGroupService implements TestDataInitiableService {
     public void removeLocationGroups(Warehouse warehouse) {
         locationGroupRepository.deleteByWarehouseId(warehouse.getId());
     }
+
+    public LocationGroup getShippingStageLocationGroup(Long warehouseId) {
+        List<LocationGroup> locationGroups = locationGroupRepository.getShippingStageLocationGroup(warehouseId);
+        if (locationGroups.size() > 0) {
+            return locationGroups.get(0);
+        }
+        else {
+            return null;
+        }
+    }
+
+    public List<LocationGroup> getStorageLocationGroup(Long warehouseId) {
+        return locationGroupRepository.getStorageLocationGroups(warehouseId);
+    }
 }

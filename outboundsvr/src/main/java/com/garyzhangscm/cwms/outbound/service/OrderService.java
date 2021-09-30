@@ -124,7 +124,15 @@ public class OrderService implements TestDataInitiableService {
         if (orders.size() > 0 && loadDetails) {
             loadOrderAttribute(orders);
         }
-        orders.sort((o1, o2) -> o2.getCreatedTime().compareTo(o1.getCreatedTime()));
+        orders.sort((o1, o2) -> {
+            if (Objects.isNull(o1.getCreatedTime())) {
+                return -1;
+            }
+            else if (Objects.isNull(o2.getCreatedTime())) {
+                return 1;
+            }
+            return o2.getCreatedTime().compareTo(o1.getCreatedTime());
+        });
         return orders;
 
     }

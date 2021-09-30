@@ -36,6 +36,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,13 +78,14 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         return shippingStageAreaConfiguration;
     }
 
-    public ShippingStageAreaConfiguration findBySequence(int sequence) {
-        return findBySequence(sequence, true);
+    public ShippingStageAreaConfiguration findBySequence(Long warehouseId, int sequence) {
+        return findBySequence(warehouseId, sequence, true);
     }
 
 
-    public ShippingStageAreaConfiguration findBySequence(int sequence, boolean loadDetails) {
-        ShippingStageAreaConfiguration shippingStageAreaConfiguration = shippingStageAreaConfigurationRepository.findBySequence(sequence);
+    public ShippingStageAreaConfiguration findBySequence(Long warehouseId,int sequence, boolean loadDetails) {
+        ShippingStageAreaConfiguration shippingStageAreaConfiguration
+                = shippingStageAreaConfigurationRepository.findByWarehouseIdAndSequence(warehouseId, sequence);
         if (shippingStageAreaConfiguration != null && loadDetails) {
             loadAttribute(shippingStageAreaConfiguration);
         }
@@ -92,8 +97,22 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     }
 
 
-    public List<ShippingStageAreaConfiguration> findAll(boolean loadDetails) {
-        List<ShippingStageAreaConfiguration> shippingStageAreaConfigurations = shippingStageAreaConfigurationRepository.findAll();
+    public List<ShippingStageAreaConfiguration> findAll(Long warehouseId, boolean loadDetails) {
+
+
+        List<ShippingStageAreaConfiguration> shippingStageAreaConfigurations =
+            shippingStageAreaConfigurationRepository.findAll(
+                (Root<ShippingStageAreaConfiguration> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+
 
         if (shippingStageAreaConfigurations.size() > 0 && loadDetails) {
             loadAttribute(shippingStageAreaConfigurations);
@@ -101,8 +120,8 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         return shippingStageAreaConfigurations;
     }
 
-    public List<ShippingStageAreaConfiguration> findAll() {
-        return findAll(true);
+    public List<ShippingStageAreaConfiguration> findAll(Long warehouseId) {
+        return findAll(warehouseId, true);
     }
 
     private void loadAttribute(ShippingStageAreaConfiguration shippingStageAreaConfiguration) {
@@ -124,8 +143,17 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     }
 
     public ShippingStageAreaConfiguration saveOrUpdate(ShippingStageAreaConfiguration shippingStageAreaConfiguration) {
-        if (shippingStageAreaConfiguration.getId() == null && findBySequence(shippingStageAreaConfiguration.getSequence()) != null) {
-            shippingStageAreaConfiguration.setId(findBySequence(shippingStageAreaConfiguration.getSequence()).getId());
+        if (shippingStageAreaConfiguration.getId() == null
+                && findBySequence(
+                    shippingStageAreaConfiguration.getWarehouseId(),
+                    shippingStageAreaConfiguration.getSequence(),
+                    false) != null) {
+            shippingStageAreaConfiguration.setId(
+                    findBySequence(
+                            shippingStageAreaConfiguration.getWarehouseId(),
+                            shippingStageAreaConfiguration.getSequence(),
+                            false
+                    ).getId());
         }
         return save(shippingStageAreaConfiguration);
     }
@@ -238,8 +266,9 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
 
     }
     public ShippingStageAreaConfiguration getShippingStageArea(Pick pick, Long stagingLocationGroupId) {
-        logger.debug("=====   Get ship stage area from pick / {} ======", stagingLocationGroupId);
-        List<ShippingStageAreaConfiguration> shippingStageAreaConfigurations = findAll();
+        logger.debug("=====   Get ship stage area from pick / {} from warehouse ======",
+                stagingLocationGroupId, pick.getWarehouseId());
+        List<ShippingStageAreaConfiguration> shippingStageAreaConfigurations = findAll(pick.getWarehouseId());
         logger.debug(">> We have {} ship stage area configurations", shippingStageAreaConfigurations.size());
         for (ShippingStageAreaConfiguration shippingStageAreaConfiguration : shippingStageAreaConfigurations) {
             // Check if the pick match with the configuration, if so,
@@ -258,7 +287,7 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     }
     public ShippingStageAreaConfiguration getShippingStageArea(Pick pick) {
         logger.debug("=====   Get ship stage area from pick ======");
-        List<ShippingStageAreaConfiguration> shippingStageAreaConfigurations = findAll();
+        List<ShippingStageAreaConfiguration> shippingStageAreaConfigurations = findAll(pick.getWarehouseId());
         logger.debug(">> We have {} ship stage area configurations", shippingStageAreaConfigurations.size());
         if (shippingStageAreaConfigurations.size() == 0) {
             throw ShippingException.raiseException("no ship stage area configuration defined!");
@@ -283,6 +312,11 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     }
 
 
+    public ShippingStageAreaConfiguration addShippingStageAreaConfiguration(ShippingStageAreaConfiguration shippingStageAreaConfiguration) {
+        return saveOrUpdate(shippingStageAreaConfiguration);
+    }
 
-
+    public ShippingStageAreaConfiguration changeShippingStageAreaConfiguration(ShippingStageAreaConfiguration shippingStageAreaConfiguration) {
+        return saveOrUpdate(shippingStageAreaConfiguration);
+    }
 }

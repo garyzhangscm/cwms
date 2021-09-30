@@ -74,6 +74,7 @@ public interface Integration {
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationSupplierData getSupplierData(Long id);
     IntegrationSupplierData addIntegrationSupplierData(Supplier supplier);
+    IntegrationSupplierData addIntegrationSupplierData(DBBasedSupplier dbBasedSupplier);
 
 
     // Integration - Work order

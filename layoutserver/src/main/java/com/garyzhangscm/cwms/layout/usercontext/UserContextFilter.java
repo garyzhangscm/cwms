@@ -25,6 +25,8 @@ public class UserContextFilter implements Filter {
                 httpServletRequest.getHeader(UserContext.AUTH_TOKEN));
         UserContextHolder.getContext().setOrgId(
                 httpServletRequest.getHeader(UserContext.ORG_ID));
+        UserContextHolder.getContext().setRfCode(
+                httpServletRequest.getHeader(UserContext.RF_CODE));
         filterChain.doFilter(httpServletRequest, servletResponse);
     }
 

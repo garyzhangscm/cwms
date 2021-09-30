@@ -39,8 +39,9 @@ public class ProductionLineAssignmentController {
     public List<ProductionLineAssignment> findAllProductionLineAssignment(
                 @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
                 @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
-                @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds) {
-        return productionLineAssignmentService.findAll(productionLineId, productionLineIds, workOrderId);
+                @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds,
+                @RequestParam(name="productionLineNames", required = false, defaultValue = "") String productionLineNames) {
+        return productionLineAssignmentService.findAll(productionLineId, productionLineIds, workOrderId, productionLineNames);
     }
 
     @BillableEndpoint

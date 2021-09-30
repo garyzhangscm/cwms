@@ -129,6 +129,11 @@ public class IntegrationDataService {
         return integration.addIntegrationSupplierData(supplier);
     }
 
+    public IntegrationSupplierData addIntegrationSupplierData(DBBasedSupplier dbBasedSupplier) {
+        return integration.addIntegrationSupplierData(dbBasedSupplier);
+    }
+
+
     // Integration - Work order
     public IntegrationWorkOrderData addIntegrationWorkOrderData(IntegrationWorkOrderData workOrderData) {
         return integration.addIntegrationWorkOrderData(workOrderData);

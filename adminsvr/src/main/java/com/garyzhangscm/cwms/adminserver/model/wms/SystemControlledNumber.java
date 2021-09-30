@@ -18,12 +18,65 @@
 
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import javax.persistence.Column;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 public class SystemControlledNumber implements Serializable {
 
+    private Long id;
+
+    private Long warehouseId;
+
+
+    private String variable;
+
+    private String prefix;
+
+    private String postfix;
+
+    private Integer length;
+
+    private Integer currentNumber;
+
+    private Boolean rollover;
 
     private String nextNumber;
+
+    public SystemControlledNumber(){}
+    public SystemControlledNumber(
+            Long warehouseId, String variable, String prefix,
+            String postfix, Integer length, Integer currentNumber,
+            Boolean rollover ) {
+        this.warehouseId = warehouseId;
+        this.variable = variable;
+        this.prefix = prefix;
+        this.postfix = postfix;
+        this.length = length;
+        this.currentNumber = currentNumber;
+        this.rollover = rollover;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getNextNumber() {
         return nextNumber;
@@ -31,5 +84,61 @@ public class SystemControlledNumber implements Serializable {
 
     public void setNextNumber(String nextNumber) {
         this.nextNumber = nextNumber;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public String getVariable() {
+        return variable;
+    }
+
+    public void setVariable(String variable) {
+        this.variable = variable;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public String getPostfix() {
+        return postfix;
+    }
+
+    public void setPostfix(String postfix) {
+        this.postfix = postfix;
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public void setLength(Integer length) {
+        this.length = length;
+    }
+
+    public Integer getCurrentNumber() {
+        return currentNumber;
+    }
+
+    public void setCurrentNumber(Integer currentNumber) {
+        this.currentNumber = currentNumber;
+    }
+
+    public Boolean getRollover() {
+        return rollover;
+    }
+
+    public void setRollover(Boolean rollover) {
+        this.rollover = rollover;
     }
 }

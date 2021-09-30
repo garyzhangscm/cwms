@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "inventory")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties({"hibernateLazyInitializer"})
 public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(Inventory.class);
@@ -301,6 +303,9 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     }
 
     public List<InventoryMovement> getInventoryMovements() {
+        if (Objects.isNull(inventoryMovements)) {
+            inventoryMovements = new ArrayList<>();
+        }
         return inventoryMovements;
     }
 

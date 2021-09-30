@@ -1081,7 +1081,7 @@
   "ERROR-NEW-PRODUCTION-PLAN-NUMBER-VALUE_ALREADY_EXISTS": "The Production Plan Number Already Exists",
   "ERROR-NEW-PRODUCTION-PLAN-NUMBER-REQUIRED": "The Production Plan Number is Required",
   "------------------": "2020.09.23",
-  "receipt.reverseInventory": "reverse received inventory",
+  "receipt.reverseInventory": "Reverse Received Inventory",
   "ERROR-NEW-LPN-VALUE_ALREADY_EXISTS": "This LPN already exists",
   "ERROR-NEW-LPN-REQUIRED": "LPN is required",
   "ERROR-NEW-ITEM-UOM-QUANTITY-INVALID_QUANTITY": "Invalid Quantity",

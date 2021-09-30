@@ -91,7 +91,8 @@ public class ProductionLineAssignmentService   {
 
     public List<ProductionLineAssignment> findAll(Long productionLineId,
                                                   String productionLineIds,
-                                                  Long workOrderId ) {
+                                                  Long workOrderId,
+                                                  String productionLineNames) {
         return productionLineAssignmentRepository.findAll(
                         (Root<ProductionLineAssignment> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                             List<Predicate> predicates = new ArrayList<Predicate>();
@@ -108,6 +109,15 @@ public class ProductionLineAssignmentService   {
                                     inProductionLineIds.value(Long.parseLong(id));
                                 }
                                 predicates.add(criteriaBuilder.and(inProductionLineIds));
+
+                            }
+                            else if (Strings.isNotBlank(productionLineNames)) {
+                                Join<ProductionLineAssignment, ProductionLine> joinProductionLine = root.join("productionLine", JoinType.INNER);
+                                CriteriaBuilder.In<String> inProductionLineNames = criteriaBuilder.in(joinProductionLine.get("name"));
+                                for(String name : productionLineNames.split(",")) {
+                                    inProductionLineNames.value(name);
+                                }
+                                predicates.add(criteriaBuilder.and(inProductionLineNames));
 
                             }
 
@@ -163,7 +173,7 @@ public class ProductionLineAssignmentService   {
 
     public void removeProductionLineAssignmentForWorkOrder(Long workOrderId) {
         List<ProductionLineAssignment> productionLineAssignments = findAll(
-                null, null, workOrderId
+                null, null, workOrderId, null
         );
         productionLineAssignments.forEach(productionLineAssignment -> {
             delete(productionLineAssignment);
@@ -192,7 +202,7 @@ public class ProductionLineAssignmentService   {
             workOrderService.save(workOrder);
         }
 
-        return findAll(null, null, workOrderId);
+        return findAll(null, null, workOrderId, null);
 
     }
     public List<ProductionLineAssignment> assignWorkOrderToProductionLines(Long workOrderId, String productionLineIds, String quantities) {
@@ -227,7 +237,7 @@ public class ProductionLineAssignmentService   {
 
         }
 
-        return findAll(null, null, workOrderId);
+        return findAll(null, null, workOrderId, null);
     }
 
 
@@ -293,7 +303,7 @@ public class ProductionLineAssignmentService   {
 
     public List<WorkOrder> getAssignedWorkOrderByProductionLine(Long productionLineId) {
         List<ProductionLineAssignment> productionLineAssignments =
-                findAll(productionLineId, null, null);
+                findAll(productionLineId, null, null, null);
 
         return productionLineAssignments.stream().map(
                 productionLineAssignment -> productionLineAssignment.getWorkOrder()

@@ -19,9 +19,12 @@
 package com.garyzhangscm.cwms.layout.clients;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.model.InventoryStatus;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
+import com.garyzhangscm.cwms.layout.model.ShippingStageAreaConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +94,34 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+
+    public InventoryStatus addInventoryStatus(
+            InventoryStatus inventoryStatus
+    ) throws JsonProcessingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory-status");
+
+        ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.PUT,
+                getHttpEntity(objectMapper.writeValueAsString(inventoryStatus)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<InventoryStatus>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
+    }
 
 
 }

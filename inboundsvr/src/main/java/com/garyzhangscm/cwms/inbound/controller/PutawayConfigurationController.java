@@ -46,7 +46,7 @@ public class PutawayConfigurationController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/putaway-configuration", method = RequestMethod.POST)
+    @RequestMapping(value="/putaway-configuration", method = RequestMethod.PUT)
     public PutawayConfiguration addPutawayConfiguration(@RequestBody PutawayConfiguration putawayConfiguration) {
         return putawayConfigurationService.save(putawayConfiguration);
     }
@@ -58,7 +58,7 @@ public class PutawayConfigurationController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/putaway-configuration/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/putaway-configuration/{id}", method = RequestMethod.POST)
     public PutawayConfiguration changePutawayConfiguration(@RequestBody PutawayConfiguration putawayConfiguration){
         return putawayConfigurationService.save(putawayConfiguration);
     }

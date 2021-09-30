@@ -17,6 +17,9 @@ public class RecordCopyService {
     private static final Logger logger = LoggerFactory.getLogger(RecordCopyService.class);
 
     @Autowired
+    private DBBasedSupplierService dbBasedSupplierService;
+
+    @Autowired
     private DBBasedWorkOrderService dbBasedWorkOrderService;
 
     @Autowired
@@ -45,6 +48,10 @@ public class RecordCopyService {
 
         logger.debug("@{}, Start to process item package type data", LocalDateTime.now());
         dbBasedItemPackageTypeService.sendIntegrationData();
+
+
+        logger.debug("@{}, Start to process supplier data", LocalDateTime.now());
+        dbBasedSupplierService.sendIntegrationData();
 
     }
 

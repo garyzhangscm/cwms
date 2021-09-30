@@ -240,7 +240,6 @@ public class ReceiptLineService implements TestDataInitiableService{
         // Validate if we can receive the inventory
         // 1. over receiving?
         // 3. unexpected item number?
-        logger.debug("Will receive inventory\n {}", inventory);
         validateReceiving(receipt, receiptLine, inventory);
 
         if (inventory.getLocation() == null) {
@@ -249,18 +248,24 @@ public class ReceiptLineService implements TestDataInitiableService{
                             receipt.getWarehouseId(), receipt.getNumber());
             inventory.setLocationId(location.getId());
             inventory.setLocation(location);
-            inventory.setVirtual(false);
         }
+        /**
         else {
             inventory.setVirtual(inventory.getLocation().getLocationGroup().getLocationGroupType().getVirtual());
         }
+         **/
+
+        // inventory should be always actual after it is received
+        inventory.setVirtual(false);
         // Everytime when we check in a receipt, we will create a location with the same name so that
         // we can receive inventory on this receipt
         inventory.setReceiptId(receiptId);
         inventory.setReceiptLineId(receiptLineId);
         inventory.setWarehouseId(receipt.getWarehouseId());
 
-        Inventory newInventory = inventoryServiceRestemplateClient.receiveInventory(inventory);
+        logger.debug("Will receive inventory\n {}", inventory);
+        Inventory newInventory =
+                inventoryServiceRestemplateClient.receiveInventory(inventory, receipt.getNumber());
         // Note here when we receive, the inventory may already consolidate with existing inventory
         // in the location and the newInventory may represent the inventory after consolidated.
         // so we need to calculate the received quantity on the line based off the original
@@ -277,10 +282,7 @@ public class ReceiptLineService implements TestDataInitiableService{
     // 3. unexpected item number?
     private void validateReceiving(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {
         // unexpected item number?
-        logger.debug("receiptLine== null?: {}", receiptLine == null);
-        logger.debug("receiptLine.getItemId()== null?: {}", receiptLine.getItemId() == null);
-        logger.debug("inventory == null?: {}", inventory == null);
-        logger.debug("inventory.getItem()== null?: {}", inventory.getItem() == null);
+
         if (!receipt.getAllowUnexpectedItem() &&
              !receiptLine.getItemId().equals(
                      inventory.getItem().getId())) {

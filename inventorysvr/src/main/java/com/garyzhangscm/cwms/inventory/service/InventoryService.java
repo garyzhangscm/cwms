@@ -185,6 +185,9 @@ public class InventoryService implements TestDataInitiableService{
         List<Inventory> inventories =  inventoryRepository.findAll(
                 (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
                     if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (StringUtils.isNotBlank(itemName)) {
@@ -1601,6 +1604,7 @@ public class InventoryService implements TestDataInitiableService{
         // then move the inventory to the final location
         inventory.setLocation(location);
         inventory.setLocationId(location.getId());
+
         inventory.setVirtual(warehouseLayoutServiceRestemplateClient.isVirtualLocation(location));
 
         inventory = saveOrUpdate(inventory);

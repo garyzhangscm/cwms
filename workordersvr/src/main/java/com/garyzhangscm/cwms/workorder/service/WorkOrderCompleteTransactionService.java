@@ -179,7 +179,7 @@ public class WorkOrderCompleteTransactionService {
         if (Objects.isNull(locationId)) {
             // the user didn't specify any location, choose any production
             List<ProductionLineAssignment> productionLineAssignments =
-                    productionLineAssignmentService.findAll(null, null, workOrderCompleteTransaction.getWorkOrder().getId());
+                    productionLineAssignmentService.findAll(null, null, workOrderCompleteTransaction.getWorkOrder().getId(), null);
             logger.debug("We get {} production line assignment for work order {} when closing this work order",
                     productionLineAssignments.size(), workOrderCompleteTransaction.getWorkOrder().getNumber());
             logger.debug("We will choose the first production line to complete the work order and receive returned material");
