@@ -16,17 +16,16 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.outbound.repository;
+package com.garyzhangscm.cwms.dblink.repository;
 
 
-import com.garyzhangscm.cwms.outbound.model.ShippingStageAreaConfiguration;
+import com.garyzhangscm.cwms.dblink.model.DBBasedSupplier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ShippingStageAreaConfigurationRepository extends JpaRepository<ShippingStageAreaConfiguration, Long>, JpaSpecificationExecutor<ShippingStageAreaConfiguration> {
+public interface DBBasedSupplierRepository extends JpaRepository<DBBasedSupplier, Long>, JpaSpecificationExecutor<DBBasedSupplier> {
 
 
-    ShippingStageAreaConfiguration findByWarehouseIdAndSequence(Long warehouseId, int sequence);
 }

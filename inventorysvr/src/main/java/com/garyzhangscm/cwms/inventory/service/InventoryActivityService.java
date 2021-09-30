@@ -37,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import java.time.LocalDate;
@@ -65,6 +66,9 @@ public class InventoryActivityService{
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
+
+    @Autowired
+    HttpServletRequest httpServletRequest;
 
     @Autowired
     private KafkaSender kafkaSender;
@@ -305,7 +309,8 @@ public class InventoryActivityService{
                 getTransactionGroupId(inventory.getWarehouseId()),
                 activityDateTime, username,
                 valueType, fromValue, toValue,
-                documentNumber, comment
+                documentNumber, comment,
+                getRFCode()
         );
 
         logger.debug("Will send the activity record to kafka");
@@ -362,6 +367,10 @@ public class InventoryActivityService{
 
     private String getNextTransactionId(Long warehouseId) {
         return commonServiceRestemplateClient.getNextInventoryActivityTransactionId(warehouseId);
+    }
+
+    private String getRFCode() {
+        return httpServletRequest.getHeader("rfCode") ;
     }
 
 

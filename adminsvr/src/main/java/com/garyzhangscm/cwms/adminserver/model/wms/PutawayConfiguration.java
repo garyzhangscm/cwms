@@ -68,6 +68,24 @@ public class PutawayConfiguration {
 
     private List<PutawayConfigurationStrategy> putawayConfigurationStrategies = new ArrayList<>();
 
+    public PutawayConfiguration(){}
+
+    public PutawayConfiguration(Integer sequence, Long warehouseId,
+                                Long itemId, Long itemFamilyId,
+                                Long inventoryStatusId, Long locationId,
+                                Long locationGroupId, Long locationGroupTypeId, String strategies) {
+        this.sequence = sequence;
+        this.warehouseId = warehouseId;
+        this.itemId = itemId;
+        this.itemFamilyId = itemFamilyId;
+        this.inventoryStatusId = inventoryStatusId;
+        this.locationId = locationId;
+        this.locationGroupId = locationGroupId;
+        this.locationGroupTypeId = locationGroupTypeId;
+        this.strategies = strategies;
+    }
+
+
     public static PutawayConfiguration byItemFamilyAndLocationGroup(
                             int sequence, Warehouse warehouse,
                             ItemFamily itemFamily, LocationGroup locationGroup,
@@ -87,7 +105,6 @@ public class PutawayConfiguration {
         }
         return putawayConfiguration;
     }
-
     @Override
     public String toString() {
         try {

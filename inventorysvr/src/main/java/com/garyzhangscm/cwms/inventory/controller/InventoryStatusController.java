@@ -46,7 +46,7 @@ public class InventoryStatusController {
         return inventoryStatusService.findById(id);
     }
 
-    @RequestMapping(value="/inventory-status", method = RequestMethod.POST)
+    @RequestMapping(value="/inventory-status", method = RequestMethod.PUT)
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),
@@ -58,7 +58,7 @@ public class InventoryStatusController {
     }
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.PUT, value="/inventory-status/{id}")
+    @RequestMapping(method=RequestMethod.POST, value="/inventory-status/{id}")
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),

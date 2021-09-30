@@ -278,6 +278,11 @@ public class DBBasedIntegration implements Integration{
         return dbBasedSupplierIntegration.addIntegrationSupplierData(new DBBasedSupplier(supplier));
     }
 
+    @Override
+    public IntegrationSupplierData addIntegrationSupplierData(DBBasedSupplier dbBasedSupplier) {
+        return dbBasedSupplierIntegration.addIntegrationSupplierData(dbBasedSupplier);
+    }
+
 
     @Override
     public IntegrationWorkOrderData addIntegrationWorkOrderData(IntegrationWorkOrderData workOrderData) {

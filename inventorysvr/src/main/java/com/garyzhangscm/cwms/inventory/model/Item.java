@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -31,6 +32,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "item")
+@JsonIgnoreProperties({"hibernateLazyInitializer"})
 public class Item extends AuditibleEntity<String> implements Serializable {
 
     @Id

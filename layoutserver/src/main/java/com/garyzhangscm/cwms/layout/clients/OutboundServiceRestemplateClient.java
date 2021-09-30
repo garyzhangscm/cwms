@@ -16,65 +16,63 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.dblink.client;
+package com.garyzhangscm.cwms.layout.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.dblink.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.model.Policy;
+import com.garyzhangscm.cwms.layout.model.ShippingStageAreaConfiguration;
+import com.garyzhangscm.cwms.layout.model.Warehouse;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 
 @Component
-public class IntegrationServiceRestemplateClient {
+public class OutboundServiceRestemplateClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(IntegrationServiceRestemplateClient.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(OutboundServiceRestemplateClient.class);
 
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    RestTemplate restTemplate;
-    /***
-    @Value("${integration.host.ip}")
-    private String hostIP;
-    @Value("${integration.host.port}")
-    private String hostPort;
-**/
+    // OAuth2RestTemplate restTemplate;
+    private OAuth2RestOperations restTemplate;
 
-    public <T> String sendIntegrationData(String subUrl, T data) throws JsonProcessingException {
 
+    public ShippingStageAreaConfiguration addShippingStageAreaConfiguration(
+            ShippingStageAreaConfiguration shippingStageAreaConfiguration
+    ) throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        // .scheme("http").host("10.0.10.37").port(32262)
-                        .path("/api/integration/integration-data/dblink/" + subUrl);
+                        .path("/api/outbound/shipping-stage-area-configuration");
 
-        ResponseBodyWrapper<String> responseBodyWrapper
+        ResponseBodyWrapper<ShippingStageAreaConfiguration> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
                 HttpMethod.PUT,
-                getHttpEntity(objectMapper.writeValueAsString(data)),
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+                getHttpEntity(objectMapper.writeValueAsString(shippingStageAreaConfiguration)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<ShippingStageAreaConfiguration>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+
     }
-
-
 
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
@@ -84,5 +82,7 @@ public class IntegrationServiceRestemplateClient {
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }
+
+
 
 }

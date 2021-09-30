@@ -222,10 +222,20 @@ public class IntegrationDataController {
     }
 
     @RequestMapping(value="/suppliers", method = RequestMethod.PUT)
-    public IntegrationSupplierData addIntegrationClientData(@RequestBody Supplier supplier) {
+    public IntegrationSupplierData addIntegrationSupplierData(@RequestBody Supplier supplier) {
 
         return integrationDataService.addIntegrationSupplierData(supplier);
     }
+
+    @RequestMapping(value="/dblink/suppliers", method = RequestMethod.PUT)
+    public ResponseBodyWrapper copyIntegrationSupplierData(@RequestBody DBBasedSupplier dbBasedSupplier) {
+
+        integrationDataService.addIntegrationSupplierData(dbBasedSupplier);
+
+
+        return ResponseBodyWrapper.success("success");
+    }
+
 
     //
     // Order Related
@@ -302,7 +312,7 @@ public class IntegrationDataController {
         return integrationDataService.getIntegrationOrderConfirmationData(id);
     }
 
-    @RequestMapping(value="/work-order", method = RequestMethod.PUT)
+    @RequestMapping(value="/dblink/work-order", method = RequestMethod.PUT)
     public ResponseBodyWrapper saveIntegrationWorkOrderData(
             @RequestBody DBBasedWorkOrder dbBasedWorkOrder
     ){
@@ -314,7 +324,7 @@ public class IntegrationDataController {
     }
 
 
-    @RequestMapping(value="/item", method = RequestMethod.PUT)
+    @RequestMapping(value="/dblink/item", method = RequestMethod.PUT)
     public ResponseBodyWrapper saveIntegrationItemData(
             @RequestBody DBBasedItem dbBasedItem
     ){
@@ -325,7 +335,7 @@ public class IntegrationDataController {
         return ResponseBodyWrapper.success("success");
     }
 
-    @RequestMapping(value="/item-package-type", method = RequestMethod.PUT)
+    @RequestMapping(value="/dblink/item-package-type", method = RequestMethod.PUT)
     public ResponseBodyWrapper saveIntegrationItemPackageTypeData(
             @RequestBody DBBasedItemPackageType dbBasedItemPackageType
     ){

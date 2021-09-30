@@ -21,6 +21,9 @@ package com.garyzhangscm.cwms.layout.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.layout.clients.InboundServiceRestemplateClient;
+import com.garyzhangscm.cwms.layout.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.layout.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.WarehouseRepository;
@@ -30,20 +33,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.Column;
 import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class WarehouseService implements TestDataInitiableService {
@@ -62,6 +62,12 @@ public class WarehouseService implements TestDataInitiableService {
     private CompanyService companyService;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
     @Autowired
     private FileService fileService;
 
@@ -236,6 +242,7 @@ public class WarehouseService implements TestDataInitiableService {
 
         // we will need to setup all the default configuration /
         // location group and locations
+
         setupDefaultLocationGroupAndLocation(newWarehouse);
         setupDefaultConfiguration(newWarehouse);
 
@@ -285,7 +292,7 @@ public class WarehouseService implements TestDataInitiableService {
                 InventoryConsolidationStrategy.NONE,false,false);
 
         // Shipping Stage Locations
-        for(int i = 0; i < 20; i++) {
+        for(int i = 1; i <= 20; i++) {
             String locationName = "SSTG00" + String.format("%02d", i);
             setupSampleLocation(newWarehouse, locationGroup, locationName, "401",
                     999.0, 999.0, 999.0,
@@ -433,6 +440,9 @@ public class WarehouseService implements TestDataInitiableService {
                 "Shipped_Order",
                 false, false, false,false,null,
                 InventoryConsolidationStrategy.NONE,false,false);
+
+        // storage locations
+
     }
 
     private Location setupSampleLocation(Warehouse warehouse, LocationGroup locationGroup, String locationName,
@@ -453,6 +463,8 @@ public class WarehouseService implements TestDataInitiableService {
         location.setCapacity(capacity);
         location.setFillPercentage(fillPercentage);
         location.setEnabled(enabled);
+        location.setPendingVolume(0.0);
+        location.setCurrentVolume(0.0);
         return locationService.save(location);
 
     }
@@ -484,6 +496,119 @@ public class WarehouseService implements TestDataInitiableService {
     }
 
     private void setupDefaultConfiguration(Warehouse newWarehouse) throws JsonProcessingException {
+        setupDefaultPoliciesForNewWarehouse(newWarehouse);
+
+        setupDefaultShippingStageAreaConfigurationForNewWarehouse(newWarehouse);
+
+        setupDefaultInventoryStatusForNewWarehouse(newWarehouse);
+
+        // setupDefaultPutawayConfigurationForNewWarehouse(newWarehouse, inventoryStatusList);
+    }
+
+    /**
+    private void setupDefaultPutawayConfigurationForNewWarehouse(
+            Warehouse newWarehouse, List<InventoryStatus> inventoryStatusList) {
+        // we will setup default putaway configuration so everything will
+        // go into the storage areas
+        logger.debug("Start setup putaway configuration");
+
+        List<LocationGroup> storageLocationGroups
+                = locationGroupService.getStorageLocationGroup(newWarehouse.getId());
+        logger.debug("Find {} storage location groups, from warehouse id {}",
+                storageLocationGroups.size(), newWarehouse.getId());
+        int sequence = 1;
+        // setup the putaway configuration for available inventory only
+        InventoryStatus availableInventoryStatus = null;
+        for (InventoryStatus inventoryStatus : inventoryStatusList) {
+            if (inventoryStatus.getName().equals("AVAL")) {
+                availableInventoryStatus = inventoryStatus;
+                break;
+            }
+        }
+        logger.debug("find available inventory status : {}",
+                Objects.nonNull(availableInventoryStatus));
+
+        // we don't have the available inventory status defined. we will do nothing
+        if (Objects.isNull(availableInventoryStatus)) {
+            return;
+        }
+
+        for(LocationGroup locationGroup : storageLocationGroups) {
+            PutawayConfiguration putawayConfiguration =
+                    new PutawayConfiguration(
+                            sequence,
+                            newWarehouse.getId(),
+                            null, // criteria: item
+                            null, // criteria: item family
+                            availableInventoryStatus.getId(),
+                            null, // destination： location
+                            locationGroup.getId() , // destination: location group
+                            null , // destination:  location group type
+                            PutawayConfigurationStrategy.EMPTY_LOCATIONS.toString()
+                    );
+
+            try {
+                logger.debug("Will save putaway configuration: /n {}", putawayConfiguration);
+                inboundServiceRestemplateClient.addPutawayConfiguration(putawayConfiguration);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+*/
+    private List<InventoryStatus> setupDefaultInventoryStatusForNewWarehouse(Warehouse newWarehouse) {
+
+        List<InventoryStatus> inventoryStatusList = new ArrayList<>();
+        InventoryStatus available = new InventoryStatus(
+                "AVAL", "Available",
+                newWarehouse.getId(), newWarehouse
+        );
+        InventoryStatus damaged = new InventoryStatus(
+                "DMG", "Damaged",
+                newWarehouse.getId(), newWarehouse
+        );
+        try {
+            inventoryStatusList.add(
+                    inventoryServiceRestemplateClient.addInventoryStatus(available));
+            inventoryStatusList.add(
+                    inventoryServiceRestemplateClient.addInventoryStatus(damaged));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return inventoryStatusList;
+
+    }
+
+    /**
+     * Setup default shipping stage area configuration. This is normally called when we initial
+     * a new warehouse with some default data
+     * @param newWarehouse
+     */
+    private void setupDefaultShippingStageAreaConfigurationForNewWarehouse(Warehouse newWarehouse) {
+
+        LocationGroup shippingLocationGroup = locationGroupService.getShippingStageLocationGroup(newWarehouse.getId());
+        if (Objects.nonNull(shippingLocationGroup)) {
+
+            ShippingStageAreaConfiguration shippingStageAreaConfiguration =
+                    new ShippingStageAreaConfiguration(
+                            1,
+                            newWarehouse.getId(),
+                            newWarehouse,
+                            shippingLocationGroup.getId(),
+                            shippingLocationGroup,
+                            ShippingStageLocationReserveStrategy.BY_SHIPMENT
+                            );
+            try {
+                outboundServiceRestemplateClient.addShippingStageAreaConfiguration(shippingStageAreaConfiguration);
+            } catch (JsonProcessingException e) {
+                // ignore any exception
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void setupDefaultPoliciesForNewWarehouse(Warehouse newWarehouse) throws JsonProcessingException {
 
         Policy policy = setupPolicy(newWarehouse,
                 "LOCATION-DEFAULT-REMOVED-INVENTORY-LOCATION","REMOVE_INV","Location to Save Removed Inventory");

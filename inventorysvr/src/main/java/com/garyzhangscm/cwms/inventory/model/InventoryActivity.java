@@ -131,6 +131,10 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
     @Column(name = "username")
     private String username;
 
+    @Column(name = "rf_code")
+    private String rfCode;
+
+
     /**
      * value type: which attribute is changed for the inventory.
      *     for example: location / inventory attribute / inventory status
@@ -163,7 +167,8 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
                              String transactionGroupId,
                              LocalDateTime activityDateTime, String username,
                              String valueType, String fromValue, String toValue,
-                             String documentNumber, String comment) {
+                             String documentNumber, String comment,
+                             String rfCode) {
         setLpn(inventory.getLpn());
         setTransactionId(transactionId);
         setTransactionGroupId(transactionGroupId);
@@ -179,6 +184,7 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
         setInventoryStatus(inventory.getInventoryStatus());
         setWarehouseId(inventory.getWarehouseId());
         setWarehouse(inventory.getWarehouse());
+        this.rfCode = rfCode;
 
         this.inventoryActivityType = inventoryActivityType;
         this.activityDateTime = activityDateTime;
@@ -278,6 +284,14 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    public String getRfCode() {
+        return rfCode;
+    }
+
+    public void setRfCode(String rfCode) {
+        this.rfCode = rfCode;
     }
 
     public Boolean getVirtual() {

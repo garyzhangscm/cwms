@@ -599,7 +599,7 @@ public class PickService {
 
         return processPick(pick);
     }
-    @Transactional
+    @Transactional(dontRollbackOn = GenericException.class)
     public Pick generatePick(InventorySummary inventorySummary,
                              ShipmentLine shipmentLine, long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure) {
@@ -1081,6 +1081,9 @@ public class PickService {
 
         logger.debug(" Will pick {} from the inventory", quantityToBePicked);
         boolean pickWholeInventory = quantityToBePicked.equals(inventory.getQuantity());
+        logger.debug(" Will pick whole inventory from LPN {} ? {}",
+                inventory.getLpn(),
+                pickWholeInventory);
 
         // If we are not to pick the whole inventory, we will split the original inventory
         // into 2 LPN and only move the right LPN for the pick
@@ -1094,6 +1097,8 @@ public class PickService {
             if (StringUtils.isBlank(newLpn)) {
                 newLpn = commonServiceRestemplateClient.getNextNumber(pick.getWarehouseId(), "lpn");
             }
+            logger.debug("start to split inventory lpn {} into new lpn {} for the pick",
+                    inventory.getLpn(), newLpn);
             List<Inventory> inventories = inventoryServiceRestemplateClient.split(inventory, newLpn, quantityToBePicked);
             if (inventories.size() != 2) {
                 throw PickingException.raiseException("Inventory split for pick error! Inventory is not split into 2");

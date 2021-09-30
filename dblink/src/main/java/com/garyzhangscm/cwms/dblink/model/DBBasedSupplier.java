@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.integration.model;
+package com.garyzhangscm.cwms.dblink.model;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
@@ -29,16 +29,15 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "integration_supplier")
-public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
+@Table(name = "FTI_MES_I_SUPPLIER")
+public class DBBasedSupplier implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_supplier_id")
+    @Column(name = "vendor_id")
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "party_number")
     private String name;
 
     @Column(name = "company_id")
@@ -53,43 +52,25 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
-    @Column(name = "description")
+    @Column(name = "vendor_name")
     private String description;
 
-
-    @Column(name = "contactor_firstname")
-    private String contactorFirstname;
-    @Column(name = "contactor_lastname")
-    private String contactorLastname;
-
-    @Column(name = "address_country")
+    @Column(name = "country")
     private String addressCountry;
-    @Column(name = "address_state")
+    @Column(name = "state")
     private String addressState;
-    @Column(name = "address_county")
+    @Column(name = "county")
     private String addressCounty;
-    @Column(name = "address_city")
+    @Column(name = "city")
     private String addressCity;
-    @Column(name = "address_district")
-    private String addressDistrict;
     @Column(name = "address_line1")
     private String addressLine1;
     @Column(name = "address_line2")
     private String addressLine2;
-    @Column(name = "address_postcode")
+    @Column(name = "address_line3")
+    private String addressLine3;
+    @Column(name = "zip")
     private String addressPostcode;
-
-
-    @Column(name = "user_defined_field_1")
-    private String userDefinedField1;
-    @Column(name = "user_defined_field_2")
-    private String userDefinedField2;
-    @Column(name = "user_defined_field_3")
-    private String userDefinedField3;
-    @Column(name = "user_defined_field_4")
-    private String userDefinedField4;
-    @Column(name = "user_defined_field_5")
-    private String userDefinedField5;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -101,23 +82,8 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
     @Column(name = "error_message")
     private String errorMessage;
 
-    public Supplier convertToSupplier() {
-
-        Supplier supplier = new Supplier();
-        BeanUtils.copyProperties(this, supplier);
-        return supplier;
-    }
-
 
     public DBBasedSupplier() {}
-    public DBBasedSupplier(Supplier supplier) {
-
-        BeanUtils.copyProperties(supplier, this);
-
-        setStatus(IntegrationStatus.PENDING);
-        setInsertTime(LocalDateTime.now());
-    }
-
     @Override
     public String toString() {
         try {
@@ -129,48 +95,12 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
     }
 
 
-    @Override
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
-    }
-
-    @Override
-    public String getCompanyCode() {
-        return companyCode;
-    }
-
-    @Override
-    public Long getWarehouseId() {
-        return null;
-    }
-
-    @Override
-    public String getWarehouseName() {
-        return null;
-    }
-
-    public void setCompanyCode(String companyCode) {
-        this.companyCode = companyCode;
-    }
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
-    }
-
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
     }
 
     public String getName() {
@@ -181,28 +111,36 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public Long getCompanyId() {
+        return companyId;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
-    public String getContactorFirstname() {
-        return contactorFirstname;
+    public String getCompanyCode() {
+        return companyCode;
     }
 
-    public void setContactorFirstname(String contactorFirstname) {
-        this.contactorFirstname = contactorFirstname;
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
-    public String getContactorLastname() {
-        return contactorLastname;
+    public String getWarehouseName() {
+        return warehouseName;
     }
 
-    public void setContactorLastname(String contactorLastname) {
-        this.contactorLastname = contactorLastname;
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public String getAddressCountry() {
@@ -213,16 +151,16 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
         this.addressCountry = addressCountry;
     }
 
-    public String getAddressCounty() {
-        return addressCounty;
-    }
-
     public String getAddressState() {
         return addressState;
     }
 
     public void setAddressState(String addressState) {
         this.addressState = addressState;
+    }
+
+    public String getAddressCounty() {
+        return addressCounty;
     }
 
     public void setAddressCounty(String addressCounty) {
@@ -237,14 +175,6 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
         this.addressCity = addressCity;
     }
 
-    public String getAddressDistrict() {
-        return addressDistrict;
-    }
-
-    public void setAddressDistrict(String addressDistrict) {
-        this.addressDistrict = addressDistrict;
-    }
-
     public String getAddressLine1() {
         return addressLine1;
     }
@@ -257,8 +187,25 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
         return addressLine2;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
     public void setAddressLine2(String addressLine2) {
         this.addressLine2 = addressLine2;
+    }
+
+    public String getAddressLine3() {
+        return addressLine3;
+    }
+
+    public void setAddressLine3(String addressLine3) {
+        this.addressLine3 = addressLine3;
     }
 
     public String getAddressPostcode() {
@@ -299,45 +246,5 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
-    }
-
-    public String getUserDefinedField1() {
-        return userDefinedField1;
-    }
-
-    public void setUserDefinedField1(String userDefinedField1) {
-        this.userDefinedField1 = userDefinedField1;
-    }
-
-    public String getUserDefinedField2() {
-        return userDefinedField2;
-    }
-
-    public void setUserDefinedField2(String userDefinedField2) {
-        this.userDefinedField2 = userDefinedField2;
-    }
-
-    public String getUserDefinedField3() {
-        return userDefinedField3;
-    }
-
-    public void setUserDefinedField3(String userDefinedField3) {
-        this.userDefinedField3 = userDefinedField3;
-    }
-
-    public String getUserDefinedField4() {
-        return userDefinedField4;
-    }
-
-    public void setUserDefinedField4(String userDefinedField4) {
-        this.userDefinedField4 = userDefinedField4;
-    }
-
-    public String getUserDefinedField5() {
-        return userDefinedField5;
-    }
-
-    public void setUserDefinedField5(String userDefinedField5) {
-        this.userDefinedField5 = userDefinedField5;
     }
 }

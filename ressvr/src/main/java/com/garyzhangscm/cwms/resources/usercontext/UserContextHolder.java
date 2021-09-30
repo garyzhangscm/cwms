@@ -7,10 +7,10 @@ public class UserContextHolder {
             new ThreadLocal<>();
 
     public static final UserContext getContext(){
-        UserContext context = userContext. get();
+        UserContext context = userContext.get();
         if (context == null) {
             context = createEmptyContext();
-            userContext. set(context);
+            userContext.set(context);
         }
         return userContext.get();
     }

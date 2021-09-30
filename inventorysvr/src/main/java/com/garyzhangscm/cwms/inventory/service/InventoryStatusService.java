@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -60,18 +61,24 @@ public class InventoryStatusService implements TestDataInitiableService{
 
 
     public List<InventoryStatus> findAll(Long warehouseId, String name) {
-        if (StringUtils.isBlank(name)) {
-            return inventoryStatusRepository.findAll();
-        }
-        else {
-            InventoryStatus inventoryStatus = findByName(warehouseId, name);
-            if (inventoryStatus == null) {
-                return new ArrayList<>();
-            }
-            else {
-                return Arrays.asList(new InventoryStatus[]{inventoryStatus});
-            }
-        }
+
+        return inventoryStatusRepository.findAll(
+                (Root<InventoryStatus> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
     }
 
 

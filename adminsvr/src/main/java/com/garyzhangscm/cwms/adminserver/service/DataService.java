@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.adminserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.adminserver.clients.ResourceServiceRestemplateClient;
-import com.garyzhangscm.cwms.adminserver.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.adminserver.clients.*;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.exception.SystemFatalException;
 import com.garyzhangscm.cwms.adminserver.model.DataInitialRequest;
@@ -53,6 +51,10 @@ public class DataService {
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
 
     @Autowired
     private DataInitialRequestRepository dataInitialRequestRepository;
@@ -102,6 +104,8 @@ public class DataService {
                 
                 Warehouse warehouse = initiateWarehouse(company, warehouseName);
 
+                initiateSystemControllerNumber(warehouse);
+
                 List<UnitOfMeasure> unitOfMeasures = initiateUnitOfMeasure(warehouse);
                 // start to create sample location group and locations in this warehouse
                 initiateStorageLocations(warehouse, unitOfMeasures);
@@ -120,6 +124,87 @@ public class DataService {
                 dataInitialRequestMap.remove(dataInitialRequestId);
             }
         }).start();
+
+    }
+
+    private void initiateSystemControllerNumber(Warehouse warehouse) throws JsonProcessingException {
+        // initial system controlled number
+        // # variable / prefix / length / current number / rollover
+        // 1. cycle-count-batch-id / CB / 10 / 0 / true
+        // 2. lpn / L / 10 / 0 / true
+        // 3. receipt-number / RECPT / 10 / 0 / true
+        // 4. shipment-number / SHIP / 10 / 0 / true
+        // 5. shipment-line-number / SL / 10 / 0 / true
+        // 6. wave-number / WAV / 10 / 0 / true
+        // 7. pick-number / PICK / 10 / 0 / true
+        // 8. work-order-number / WO / 10 / 0 / true
+        // 9. cancelled-pick-number / CPK / 10 / 0 / true
+        // 10. inventory-activity-transaction-id / INVACT / 10 / 0 / true
+        // 11. inventory-activity-transaction-group-id / INVACTGRP / 10 / 0 / true
+        // 12. list-pick / LPICK / 10 / 0 / true
+        // 13. cartonization-number / CTN / 10 / 0 / true
+        // 14. shipping-cartonization-number / SCTN	 / 10 / 0 / true
+        // 15. production-plan / PRP / 10 / 0 / true
+        // 16. bill-of-material / BOM / 10 / 0 / true
+        // 17. work-task / WORK / 10 / 0 / true
+        // 18. inventory-snapshot-batch-number / INVSNAP / 10 / 0 / true
+        // 19. order-number / CT / 10 / 0 / false
+
+
+        SystemControlledNumber[] systemControlledNumbers = new SystemControlledNumber[]{
+                new SystemControlledNumber(warehouse.getId(), "cycle-count-batch-id",
+                        "CB", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "lpn",
+                        "L", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "receipt-number",
+                        "RECPT", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "shipment-number",
+                        "SHIP", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "shipment-line-number",
+                        "SL", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "wave-number",
+                        "WAV", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "pick-number",
+                        "PICK", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "work-order-number",
+                        "WO", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "cancelled-pick-number",
+                        "CPK", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "inventory-activity-transaction-id",
+                        "INVACT", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "inventory-activity-transaction-group-id",
+                        "INVACTGRP", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "list-pick",
+                        "LPICK", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "cartonization-number",
+                        "CTN", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "shipping-cartonization-number",
+                        "SCTN", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "production-plan",
+                        "PRP", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "bill-of-material",
+                        "BOM", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "work-task",
+                        "WORK", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "inventory-snapshot-batch-number",
+                        "INVSNAP", "", 10, 0, true),
+                new SystemControlledNumber(warehouse.getId(), "order-number",
+                        "ORDER", "", 10, 0, true)
+        };
+        for (SystemControlledNumber systemControlledNumber : systemControlledNumbers) {
+            logger.debug("Start to init system controlled number: {}",
+                    systemControlledNumber);
+            SystemControlledNumber newSystemControlledNumber =
+                    commonServiceRestemplateClient.addSystemControlledNumbers(
+                            systemControlledNumber
+                    );
+
+            logger.debug("system controller number {} initialed with id {}",
+                    newSystemControlledNumber.getVariable(),
+                    newSystemControlledNumber.getId());
+
+        }
+
 
     }
 
@@ -186,13 +271,55 @@ public class DataService {
         LocationGroup storageLocationGroup = initiateLocationGroup(
                 warehouse, storageLocationGroupType, locationGroupName, unitOfMeasures);
 
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < 30; i++) {
             String locationName = locationGroupName + String.format("%03d", (i + 1));
             initiateLocation(warehouse, storageLocationGroup, locationName, (i + 1));
         }
+        initiatePutawayConfiguration(warehouse, storageLocationGroup);
 
 
 
+    }
+
+    private void initiatePutawayConfiguration(
+            Warehouse warehouse, LocationGroup storageLocationGroup) {
+        // we will setup default putaway configuration so everything will
+        // go into the storage areas
+        logger.debug("Start setup putaway configuration");
+
+        InventoryStatus availableInventoryStatus =
+                inventoryServiceRestemplateClient.getInventoryStatusByName(
+                        warehouse.getId(),
+                        "AVAL"
+                );
+
+        logger.debug("find available inventory status : {}",
+                Objects.nonNull(availableInventoryStatus));
+
+        // we don't have the available inventory status defined. we will do nothing
+        if (Objects.isNull(availableInventoryStatus)) {
+            return;
+        }
+
+        PutawayConfiguration putawayConfiguration =
+                    new PutawayConfiguration(
+                            1,
+                            warehouse.getId(),
+                            null, // criteria: item
+                            null, // criteria: item family
+                            availableInventoryStatus.getId(),
+                            null, // destination： location
+                            storageLocationGroup.getId() , // destination: location group
+                            null , // destination:  location group type
+                            PutawayConfigurationStrategy.EMPTY_LOCATIONS.toString()
+                    );
+
+        try {
+            logger.debug("Will save putaway configuration: \n {}", putawayConfiguration);
+            inboundServiceRestemplateClient.addPutawayConfiguration(putawayConfiguration);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initiateLocation(Warehouse warehouse,

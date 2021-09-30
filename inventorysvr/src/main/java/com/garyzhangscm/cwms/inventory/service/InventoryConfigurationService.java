@@ -99,7 +99,7 @@ public class InventoryConfigurationService {
         }
 
         // get the configuration at global level
-        return inventoryConfigurationRepository.findByType(type);
+        return inventoryConfigurationRepository.findDefaultConfigurationByType(type);
     }
     public InventoryConfiguration findByCompanyIdAndWarehouseNameAndType(Long companyId, String warehouseName,
                                                                   InventoryConfigurationType type) {

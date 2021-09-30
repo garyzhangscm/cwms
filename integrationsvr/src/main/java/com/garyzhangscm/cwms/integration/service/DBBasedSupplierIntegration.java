@@ -5,6 +5,7 @@ import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedClientRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedSupplierRepository;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,41 @@ public class DBBasedSupplierIntegration {
 
     public IntegrationSupplierData addIntegrationSupplierData(DBBasedSupplier dbBasedSupplier) {
 
+        setupMissingField(dbBasedSupplier);
         return dbBasedSupplierRepository.save(dbBasedSupplier);
+    }
+
+    private void setupMissingField(DBBasedSupplier dbBasedSupplier) {
+        if (Strings.isBlank(dbBasedSupplier.getDescription())) {
+            dbBasedSupplier.setDescription(dbBasedSupplier.getName());
+        }
+
+        if (Strings.isBlank(dbBasedSupplier.getContactorFirstname())) {
+            dbBasedSupplier.setContactorFirstname("----");
+        }
+
+        if (Strings.isBlank(dbBasedSupplier.getContactorLastname())) {
+            dbBasedSupplier.setContactorLastname("----");
+        }
+
+        if (Strings.isBlank(dbBasedSupplier.getAddressCountry())) {
+            dbBasedSupplier.setAddressCountry("----");
+        }
+        if (Strings.isBlank(dbBasedSupplier.getAddressState())) {
+            dbBasedSupplier.setAddressState("----");
+        }
+        if (Strings.isBlank(dbBasedSupplier.getAddressCounty())) {
+            dbBasedSupplier.setAddressCounty("----");
+        }
+        if (Strings.isBlank(dbBasedSupplier.getAddressCity())) {
+            dbBasedSupplier.setAddressCity("----");
+        }
+        if (Strings.isBlank(dbBasedSupplier.getAddressLine1())) {
+            dbBasedSupplier.setAddressLine1("----");
+        }
+        if (Strings.isBlank(dbBasedSupplier.getAddressPostcode())) {
+            dbBasedSupplier.setAddressPostcode("----");
+        }
     }
 
 

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 
+import javax.persistence.Column;
 import java.io.Serializable;
 
 
@@ -27,6 +28,8 @@ public class Supplier implements Serializable {
 
     private Long id;
 
+
+    private Long warehouseId;
 
     private String name;
 
@@ -43,6 +46,12 @@ public class Supplier implements Serializable {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+
+    private String userDefinedField1;
+    private String userDefinedField2;
+    private String userDefinedField3;
+    private String userDefinedField4;
+    private String userDefinedField5;
 
     public Long getId() {
         return id;
@@ -146,5 +155,53 @@ public class Supplier implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public String getUserDefinedField1() {
+        return userDefinedField1;
+    }
+
+    public void setUserDefinedField1(String userDefinedField1) {
+        this.userDefinedField1 = userDefinedField1;
+    }
+
+    public String getUserDefinedField2() {
+        return userDefinedField2;
+    }
+
+    public void setUserDefinedField2(String userDefinedField2) {
+        this.userDefinedField2 = userDefinedField2;
+    }
+
+    public String getUserDefinedField3() {
+        return userDefinedField3;
+    }
+
+    public void setUserDefinedField3(String userDefinedField3) {
+        this.userDefinedField3 = userDefinedField3;
+    }
+
+    public String getUserDefinedField4() {
+        return userDefinedField4;
+    }
+
+    public void setUserDefinedField4(String userDefinedField4) {
+        this.userDefinedField4 = userDefinedField4;
+    }
+
+    public String getUserDefinedField5() {
+        return userDefinedField5;
+    }
+
+    public void setUserDefinedField5(String userDefinedField5) {
+        this.userDefinedField5 = userDefinedField5;
     }
 }

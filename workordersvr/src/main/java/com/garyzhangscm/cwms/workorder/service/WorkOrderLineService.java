@@ -345,7 +345,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
         // if the work order is alraedy assigned to some production, let's reset the prodution line assignment as well
         WorkOrder workOrder = workOrderLine.getWorkOrder();
         List<ProductionLineAssignment> productionLineAssignments =
-                productionLineAssignmentService.findAll(null,"", workOrder.getId());
+                productionLineAssignmentService.findAll(null,"", workOrder.getId(), null);
         // loop through all production line assignment until we find the one match with the pick's destination location id
         // which should be the production line's in staging location
         long workOrderLineId = workOrderLine.getId();

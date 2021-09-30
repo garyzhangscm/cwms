@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -202,6 +203,10 @@ public class InventoryServiceRestemplateClient {
     }
 
     public Inventory receiveInventory(Inventory inventory) {
+        return receiveInventory(inventory, "");
+
+    }
+    public Inventory receiveInventory(Inventory inventory, String documentNumber) {
 
         // Convert the inventory to JSON and send to the inventory service
 
@@ -210,6 +215,9 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/receive");
+        if (Strings.isNotBlank(documentNumber)) {
+            builder = builder.queryParam("documentNumber", documentNumber);
+        }
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = null;

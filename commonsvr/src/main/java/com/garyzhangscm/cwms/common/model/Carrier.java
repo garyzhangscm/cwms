@@ -52,6 +52,17 @@ public class Carrier extends AuditibleEntity<String> {
     private String addressPostcode;
 
 
+    @Column(name = "user_defined_field_1")
+    private String userDefinedField1;
+    @Column(name = "user_defined_field_2")
+    private String userDefinedField2;
+    @Column(name = "user_defined_field_3")
+    private String userDefinedField3;
+    @Column(name = "user_defined_field_4")
+    private String userDefinedField4;
+    @Column(name = "user_defined_field_5")
+    private String userDefinedField5;
+
     @OneToMany(
             mappedBy = "carrier",
             orphanRemoval = true,
@@ -186,5 +197,45 @@ public class Carrier extends AuditibleEntity<String> {
 
     public void setCarrierServiceLevels(List<CarrierServiceLevel> carrierServiceLevels) {
         this.carrierServiceLevels = carrierServiceLevels;
+    }
+
+    public String getUserDefinedField1() {
+        return userDefinedField1;
+    }
+
+    public void setUserDefinedField1(String userDefinedField1) {
+        this.userDefinedField1 = userDefinedField1;
+    }
+
+    public String getUserDefinedField2() {
+        return userDefinedField2;
+    }
+
+    public void setUserDefinedField2(String userDefinedField2) {
+        this.userDefinedField2 = userDefinedField2;
+    }
+
+    public String getUserDefinedField3() {
+        return userDefinedField3;
+    }
+
+    public void setUserDefinedField3(String userDefinedField3) {
+        this.userDefinedField3 = userDefinedField3;
+    }
+
+    public String getUserDefinedField4() {
+        return userDefinedField4;
+    }
+
+    public void setUserDefinedField4(String userDefinedField4) {
+        this.userDefinedField4 = userDefinedField4;
+    }
+
+    public String getUserDefinedField5() {
+        return userDefinedField5;
+    }
+
+    public void setUserDefinedField5(String userDefinedField5) {
+        this.userDefinedField5 = userDefinedField5;
     }
 }

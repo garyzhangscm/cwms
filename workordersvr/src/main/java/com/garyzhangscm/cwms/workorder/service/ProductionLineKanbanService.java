@@ -59,7 +59,8 @@ public class ProductionLineKanbanService {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     public List<ProductionLineKanbanData> getProductionLineKanbanData(Long productionLineId,
-                                                                      String productionLineIds) {
+                                                                      String productionLineIds,
+                                                                      String productionLineNames) {
 
         // Get all the production line assignment and we will calculate
         // all the number
@@ -68,7 +69,7 @@ public class ProductionLineKanbanService {
                 currentLocalDateTime );
 
         List<ProductionLineAssignment> productionLineAssignments
-                = productionLineAssignmentService.findAll(productionLineId, productionLineIds, null);
+                = productionLineAssignmentService.findAll(productionLineId, productionLineIds, null, productionLineNames);
 
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {},we found all production line assignment",
