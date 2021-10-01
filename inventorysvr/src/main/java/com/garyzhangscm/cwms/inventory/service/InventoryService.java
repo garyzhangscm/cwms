@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +61,9 @@ public class InventoryService implements TestDataInitiableService{
 
     @Autowired
     private InventoryRepository inventoryRepository;
+
+    @Autowired
+    HttpServletRequest httpServletRequest;
 
     @Autowired
     private ItemService itemService;

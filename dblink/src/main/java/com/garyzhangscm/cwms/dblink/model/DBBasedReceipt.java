@@ -19,26 +19,24 @@
 package com.garyzhangscm.cwms.dblink.model;
 
 
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
-@Table(name = "FTI_MES_I_PO_RECEIVE_H")
-public class DBBasedReceiptConfirmation implements Serializable {
+@Table(name = "FTI_MES_I_PO_HEADER")
+public class DBBasedReceipt implements Serializable{
 
 
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "receipt_confirmation_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "po_header_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -46,10 +44,20 @@ public class DBBasedReceiptConfirmation implements Serializable {
     private String number;
 
 
-    @Column(name = "supplier_id")
-    private Long supplierId;
+    @Column(name = "company_id")
+    private Long companyId;
 
-    @Column(name = "supplier_name")
+    @Column(name = "company_code")
+    private String companyCode;
+
+    @Column(name = "warehouse_name")
+    private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+
+    @Column(name = "vendor_number")
     private String supplierName;
 
     @OneToMany(
@@ -58,7 +66,7 @@ public class DBBasedReceiptConfirmation implements Serializable {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<DBBasedReceiptLineConfirmation> receiptLines = new ArrayList<>();
+    private List<DBBasedReceiptLine> receiptLines = new ArrayList<>();
 
 
     @Column(name = "status")
@@ -70,17 +78,6 @@ public class DBBasedReceiptConfirmation implements Serializable {
     private LocalDateTime lastUpdateTime;
     @Column(name = "error_message")
     private String errorMessage;
-
-    @Override
-    public String toString() {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
 
     public Long getId() {
         return id;
@@ -98,12 +95,36 @@ public class DBBasedReceiptConfirmation implements Serializable {
         this.number = number;
     }
 
-    public Long getSupplierId() {
-        return supplierId;
+    public Long getCompanyId() {
+        return companyId;
     }
 
-    public void setSupplierId(Long supplierId) {
-        this.supplierId = supplierId;
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public String getSupplierName() {
@@ -114,11 +135,11 @@ public class DBBasedReceiptConfirmation implements Serializable {
         this.supplierName = supplierName;
     }
 
-    public List<DBBasedReceiptLineConfirmation> getReceiptLines() {
+    public List<DBBasedReceiptLine> getReceiptLines() {
         return receiptLines;
     }
 
-    public void setReceiptLines(List<DBBasedReceiptLineConfirmation> receiptLines) {
+    public void setReceiptLines(List<DBBasedReceiptLine> receiptLines) {
         this.receiptLines = receiptLines;
     }
 

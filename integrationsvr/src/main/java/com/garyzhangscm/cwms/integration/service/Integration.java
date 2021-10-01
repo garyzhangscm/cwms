@@ -88,6 +88,7 @@ public interface Integration {
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationReceiptData getReceiptData(Long id);
     IntegrationReceiptData addReceiptData(Receipt receipt);
+    IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt);
 
     //
     // Integration - Order and Order Line

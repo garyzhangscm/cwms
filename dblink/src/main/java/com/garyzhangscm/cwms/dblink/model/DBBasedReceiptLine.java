@@ -18,11 +18,10 @@
 
 package com.garyzhangscm.cwms.dblink.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -30,47 +29,56 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "FTI_MES_I_PO_RECEIVE")
-public class DBBasedReceiptLineConfirmation implements Serializable {
+@Table(name = "FTI_MES_I_PO_LINE")
+public class DBBasedReceiptLine implements Serializable {
 
 
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "line_confirmation_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "po_line_id")
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "trx_date")
-    private LocalDateTime transactionDate;
 
-    @Column(name = "item_id")
-    private String itemId;
+
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
+
+    @Column(name = "warehouse_name")
+    private String warehouseName;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
 
     @Column(name = "item_name")
     private String itemName;
 
-    @Column(name = "received_qty")
-    private Long receivedQuantity;
 
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
 
 
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receipt_confirmation_id")
-    private DBBasedReceiptConfirmation receipt;
+    @JoinColumn(name = "po_header_id")
+    private DBBasedReceipt receipt;
+
 
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "date_insert")
+    @Column(name = "insert_time")
     private LocalDateTime insertTime;
+    @Column(name = "last_update_time")
+    private LocalDateTime lastUpdateTime;
     @Column(name = "error_message")
     private String errorMessage;
-
-
 
     @Override
     public String toString() {
@@ -82,6 +90,7 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
         return null;
     }
 
+
     public Long getId() {
         return id;
     }
@@ -90,20 +99,36 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
         this.id = id;
     }
 
-    public LocalDateTime getTransactionDate() {
-        return transactionDate;
+    public Long getCompanyId() {
+        return companyId;
     }
 
-    public void setTransactionDate(LocalDateTime transactionDate) {
-        this.transactionDate = transactionDate;
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
-    public String getItemId() {
-        return itemId;
+    public String getCompanyCode() {
+        return companyCode;
     }
 
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public String getItemName() {
@@ -114,14 +139,6 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
         this.itemName = itemName;
     }
 
-    public Long getReceivedQuantity() {
-        return receivedQuantity;
-    }
-
-    public void setReceivedQuantity(Long receivedQuantity) {
-        this.receivedQuantity = receivedQuantity;
-    }
-
     public Long getExpectedQuantity() {
         return expectedQuantity;
     }
@@ -130,11 +147,11 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
         this.expectedQuantity = expectedQuantity;
     }
 
-    public DBBasedReceiptConfirmation getReceipt() {
+    public DBBasedReceipt getReceipt() {
         return receipt;
     }
 
-    public void setReceipt(DBBasedReceiptConfirmation receipt) {
+    public void setReceipt(DBBasedReceipt receipt) {
         this.receipt = receipt;
     }
 
@@ -152,6 +169,14 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
 
     public void setInsertTime(LocalDateTime insertTime) {
         this.insertTime = insertTime;
+    }
+
+    public LocalDateTime getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 
     public String getErrorMessage() {

@@ -70,6 +70,8 @@ public class PrintingServiceRestemplateClient  {
         logger.debug("Start to send file {} to printing server: {}, copies: {}",
                 file.getName(), PRINTING_SERVER_URL, copies);
 
+        logger.debug("Report type {} is label? {}",
+                reportType, reportType.isLabel());
         String url = PRINTING_SERVER_URL + "/printing/" +
                 (reportType.isLabel() ? "label" : "pdf") +
                 "?copies=" + copies;

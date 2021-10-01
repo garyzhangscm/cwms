@@ -105,6 +105,7 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
 
         Supplier supplier = new Supplier();
         BeanUtils.copyProperties(this, supplier);
+        supplier.setId(null);
         return supplier;
     }
 
@@ -129,6 +130,7 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
     }
 
 
+
     @Override
     public Long getCompanyId() {
         return companyId;
@@ -145,12 +147,12 @@ public class DBBasedSupplier implements Serializable, IntegrationSupplierData {
 
     @Override
     public Long getWarehouseId() {
-        return null;
+        return warehouseId;
     }
 
     @Override
     public String getWarehouseName() {
-        return null;
+        return warehouseName;
     }
 
     public void setCompanyCode(String companyCode) {

@@ -1363,5 +1363,14 @@
   "billable-request.yearly-summary": "Yearly Summary",
   "totalWebAPIEndpoint": "Total Web API Call",
   "totalTransaction": "Total Transactions",
-  "totalCost": "Total Cost"
+  "totalCost": "Total Cost",
+  "pre-print-lpn-label": "Print LPN Label",
+  "start-lpn": "Start LPN",
+  "action-not-support": "Action Not Support",
+  "label-count": "Label Count",
+  "menu.main.inbound.qc-configuration": "QC Config",
+  "qc-configuration.by-quantity": "QC By Quantity",
+  "qc-configuration.by-percentage": "QC By Percentage",
+  "warehouseSpecific": "Warehouse Specific",
+  "inbound-qc-configuration": "Inbound QC Configuration"
 }

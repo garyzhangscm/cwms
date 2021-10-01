@@ -1234,4 +1234,50 @@ public class WorkOrderService implements TestDataInitiableService {
             }
         }
     }
+
+    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity, String locale) throws JsonProcessingException {
+
+        return generatePrePrintLPNLabel(findById(id), lpnNumber, lpnQuantity, locale);
+    }
+
+    public ReportHistory generatePrePrintLPNLabel(WorkOrder workOrder, String lpnNumber, Long lpnQuantity, String locale)
+            throws JsonProcessingException {
+
+        Long warehouseId = workOrder.getWarehouseId();
+
+
+        Report reportData = new Report();
+        // setup the parameters for the label;
+        // for label, we don't need the actual data.
+        setupPrePrintLPNLabelParameters(
+                reportData, workOrder, lpnNumber, lpnQuantity
+        );
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupPrePrintLPNLabelParameters(
+            Report report, WorkOrder workOrder, String lpnNumber, Long lpnQuantity) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("lpn", lpnNumber);
+        report.addParameter("item_name", workOrder.getItem().getName());
+        report.addParameter("work_order_number", workOrder.getNumber());
+        report.addParameter("quantity", lpnQuantity);
+
+
+    }
 }

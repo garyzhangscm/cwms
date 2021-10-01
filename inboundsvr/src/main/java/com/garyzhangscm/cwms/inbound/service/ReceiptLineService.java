@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ReceiptLineService implements TestDataInitiableService{
@@ -50,6 +51,8 @@ public class ReceiptLineService implements TestDataInitiableService{
 
     @Autowired
     private ReceiptService receiptService;
+    @Autowired
+    private InboundQCConfigurationService inboundQCConfigurationService;
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -124,6 +127,14 @@ public class ReceiptLineService implements TestDataInitiableService{
                 findByNaturalKey(receiptLine.getWarehouseId(), receiptLine.getReceipt().getId(), receiptLine.getNumber()) != null) {
             receiptLine.setId(
                     findByNaturalKey(receiptLine.getWarehouseId(),receiptLine.getReceipt().getId(), receiptLine.getNumber()).getId());
+        }
+        if (Objects.isNull(receiptLine.getId())) {
+            // we are creating a new receipt line,
+            // let's setup the qc quantity
+            setupQCQuantity(
+                    receiptLine.getReceipt(),
+                    receiptLine
+            );
         }
         return save(receiptLine);
     }
@@ -327,5 +338,58 @@ public class ReceiptLineService implements TestDataInitiableService{
         receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() - quantity);
 
         return saveOrUpdate(receiptLine);
+    }
+
+    /**
+     * Setup qc quantity based on
+     * 1. supplier
+     * 2. item
+     * 3. warehouse
+     * 4. company
+     * from most specific to most generic
+     * @param receiptLine
+     */
+    public void setupQCQuantity(Receipt receipt, ReceiptLine receiptLine) {
+
+        logger.debug("Start to setup qc quantity for receipt line {} / {}",
+                receipt.getNumber(), receiptLine.getNumber());
+        Warehouse warehouse = receipt.getWarehouse();
+        if (Objects.isNull(warehouse)) {
+            warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                    receipt.getWarehouseId()
+            );
+        }
+        if (Objects.isNull(warehouse)) {
+            // we should not arrive here！
+            logger.debug("Can't get the QC configuration as we can't get the warehouse" +
+                    "information from the receipt");
+            logger.debug("=======   Receipt ======= \n {}",
+                    receipt);
+        }
+        InboundQCConfiguration inboundQCConfiguration =
+                inboundQCConfigurationService.getBestMatchedInboundQCConfiguration(
+                        receipt.getSupplierId(),
+                        receiptLine.getItemId(),
+                        receipt.getWarehouseId(),
+                        warehouse.getCompany().getId()
+                );
+        if (Objects.isNull(inboundQCConfiguration)) {
+            logger.debug("No inbound qc configuration is defined for the receipt line {} / {}",
+                    receipt.getNumber(), receiptLine.getNumber());
+            logger.debug("supplier: {} / {}, item {} / {}, warehouse {} / {}, company {} / {}",
+                    receipt.getSupplierId(),
+                    Objects.isNull(receipt.getSupplier()) ? "" : receipt.getSupplier().getName(),
+                    receiptLine.getItemId(),
+                    Objects.isNull(receiptLine.getItem()) ? "" : receiptLine.getItem().getName(),
+                    warehouse.getId(),
+                    warehouse.getName(),
+                    Objects.isNull(warehouse.getCompany()) ? "" : warehouse.getCompany().getId(),
+                    Objects.isNull(warehouse.getCompany()) ? "" : warehouse.getCompany().getName());
+            return;
+        }
+        // setup the qc quantity and percentage based on the configuration
+        receiptLine.setQcQuantity(inboundQCConfiguration.getQcQuantityPerReceipt());
+        receiptLine.setQcPercentage(inboundQCConfiguration.getQcPercentage());
+
     }
 }

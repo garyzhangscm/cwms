@@ -113,10 +113,12 @@ public class InventoryActivityService{
                                            String beginDateTime,
                                            String endDateTime,
                                            String date,
-                                           String username) {
+                                           String username,
+                                           String rfCode) {
         return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationGroupId, receiptId, pickIds, lpn,
-                inventoryActivityType, beginDateTime, endDateTime, date, username,true);
+                inventoryActivityType, beginDateTime, endDateTime, date, username,
+                rfCode, true);
     }
 
 
@@ -136,6 +138,7 @@ public class InventoryActivityService{
                                            String endDateTime,
                                            String date,
                                            String username,
+                                           String rfCode,
                                            boolean includeDetails) {
         List<InventoryActivity> inventoryActivities =  inventoryActivityRepository.findAll(
                 (Root<InventoryActivity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -226,6 +229,11 @@ public class InventoryActivityService{
 
                     }
 
+                    if (!StringUtils.isBlank(rfCode)) {
+                        predicates.add(criteriaBuilder.equal(root.get("rfCode"), rfCode));
+
+                    }
+
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
@@ -303,6 +311,7 @@ public class InventoryActivityService{
                                       String valueType, String fromValue, String toValue,
                                       String documentNumber, String comment) {
         logger.debug("Start to construct the inventory activities");
+
         InventoryActivity inventoryActivity = new InventoryActivity(
                 inventory, inventoryActivityType,
                 getNextTransactionId(inventory.getWarehouseId()),
