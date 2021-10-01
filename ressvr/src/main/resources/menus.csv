@@ -23,6 +23,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Inventory Snapshot",menu.main.inventory.snapshot,/inventory/snapshot,14,Main-Menu-Inventory,Inventory-Snapshot,
 "Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt,
 "Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,2,Main-Menu-Inbound,Inbound-PutawayConfig,
+"QC Configuration",menu.main.inbound.qc-configuration,/inbound/inbound-qc-configuration,2,Main-Menu-Inbound,Inbound-QCConfig,
 "Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order,
 "Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment,
 "Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,

@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 
 @Service
 public class DBBasedReceiptConfirmationIntegration {
@@ -20,10 +22,14 @@ public class DBBasedReceiptConfirmationIntegration {
     private DBBasedReceiptConfirmationRepository dbBasedReceiptConfirmationRepository;
 
     public DBBasedReceiptConfirmation save(DBBasedReceiptConfirmation dbBasedReceiptConfirmation) {
+
         dbBasedReceiptConfirmation.getReceiptLines().forEach(
-                dbBasedReceiptLineConfirmation -> dbBasedReceiptLineConfirmation.setReceipt(
-                        dbBasedReceiptConfirmation
-                )
+                dbBasedReceiptLineConfirmation -> {
+                    dbBasedReceiptLineConfirmation.setReceipt(
+                            dbBasedReceiptConfirmation
+                    );
+                    dbBasedReceiptLineConfirmation.setTransactionDate(LocalDateTime.now());
+                }
         );
         return dbBasedReceiptConfirmationRepository.save(dbBasedReceiptConfirmation);
     }

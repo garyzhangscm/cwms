@@ -30,58 +30,43 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "integration_receipt_line_confirmation")
+@Table(name = "FTI_MES_I_PO_RECEIVE")
 public class DBBasedReceiptLineConfirmation implements Serializable {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_receipt_line_confirmation_id")
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "line_confirmation_id")
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "number")
-    private String number;
-
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
-
-    @Column(name = "warehouse_name")
-    private String warehouseName;
+    @Column(name = "trx_date")
+    private LocalDateTime transactionDate;
 
     @Column(name = "item_id")
-    private Long itemId;
+    private String itemId;
 
     @Column(name = "item_name")
     private String itemName;
 
+    @Column(name = "received_qty")
+    private Long receivedQuantity;
 
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
 
 
-    @Column(name = "received_quantity")
-    private Long receivedQuantity;
-
-
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "integration_receipt_confirmation_id")
+    @JoinColumn(name = "receipt_confirmation_id")
     private DBBasedReceiptConfirmation receipt;
-
-    @Column(name = "over_receiving_quantity")
-    private Long overReceivingQuantity;
-    @Column(name = "over_receiving_percent")
-    private Double overReceivingPercent;
 
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
+    @Column(name = "date_insert")
     private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -105,35 +90,19 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
         this.id = id;
     }
 
-    public String getNumber() {
-        return number;
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
     }
 
-    public void setNumber(String number) {
-        this.number = number;
+    public void setTransactionDate(LocalDateTime transactionDate) {
+        this.transactionDate = transactionDate;
     }
 
-    public Long getWarehouseId() {
-        return warehouseId;
-    }
-
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
-    }
-
-    public String getWarehouseName() {
-        return warehouseName;
-    }
-
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
-    }
-
-    public Long getItemId() {
+    public String getItemId() {
         return itemId;
     }
 
-    public void setItemId(Long itemId) {
+    public void setItemId(String itemId) {
         this.itemId = itemId;
     }
 
@@ -145,14 +114,6 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
         this.itemName = itemName;
     }
 
-    public Long getExpectedQuantity() {
-        return expectedQuantity;
-    }
-
-    public void setExpectedQuantity(Long expectedQuantity) {
-        this.expectedQuantity = expectedQuantity;
-    }
-
     public Long getReceivedQuantity() {
         return receivedQuantity;
     }
@@ -161,28 +122,20 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
         this.receivedQuantity = receivedQuantity;
     }
 
+    public Long getExpectedQuantity() {
+        return expectedQuantity;
+    }
+
+    public void setExpectedQuantity(Long expectedQuantity) {
+        this.expectedQuantity = expectedQuantity;
+    }
+
     public DBBasedReceiptConfirmation getReceipt() {
         return receipt;
     }
 
     public void setReceipt(DBBasedReceiptConfirmation receipt) {
         this.receipt = receipt;
-    }
-
-    public Long getOverReceivingQuantity() {
-        return overReceivingQuantity;
-    }
-
-    public void setOverReceivingQuantity(Long overReceivingQuantity) {
-        this.overReceivingQuantity = overReceivingQuantity;
-    }
-
-    public Double getOverReceivingPercent() {
-        return overReceivingPercent;
-    }
-
-    public void setOverReceivingPercent(Double overReceivingPercent) {
-        this.overReceivingPercent = overReceivingPercent;
     }
 
     public IntegrationStatus getStatus() {
@@ -199,14 +152,6 @@ public class DBBasedReceiptLineConfirmation implements Serializable {
 
     public void setInsertTime(LocalDateTime insertTime) {
         this.insertTime = insertTime;
-    }
-
-    public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
     }
 
     public String getErrorMessage() {

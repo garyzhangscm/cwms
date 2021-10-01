@@ -158,6 +158,9 @@ public class IntegrationDataService {
     public IntegrationReceiptData addReceiptData(Receipt receipt) {
         return integration.addReceiptData(receipt);
     }
+    public IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt) {
+        return integration.addReceiptData(dbBasedReceipt);
+    }
 
     //
     // Integration - Order and Order Line

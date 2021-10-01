@@ -191,6 +191,13 @@ public class ReceiptService implements TestDataInitiableService{
         if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),receipt.getNumber()) != null) {
             receipt.setId(findByNumber(receipt.getWarehouseId(),receipt.getNumber()).getId());
         }
+        if (Objects.isNull(receipt.getId())) {
+            // we are creating a new receipt, let's setup the QC quantity
+            // for each line
+            receipt.getReceiptLines().forEach(
+                    receiptLine -> receiptLineService.setupQCQuantity(receipt, receiptLine)
+            );
+        }
         return save(receipt, loadAttribute);
     }
 

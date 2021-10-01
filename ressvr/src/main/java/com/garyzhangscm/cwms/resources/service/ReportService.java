@@ -388,6 +388,8 @@ public class ReportService implements TestDataInitiableService{
         logger.debug("Start to get label file");
         String labelTemplate = loadLabelFile(reportMetaData.getFileName());
 
+        // for labels, we will use the parameters to fill the content.
+        // the data part of the report object is only used for jasper report's detail segment
         String labelContent = processLabel(labelTemplate, reportData.getParameters());
 
         // save the result to local file

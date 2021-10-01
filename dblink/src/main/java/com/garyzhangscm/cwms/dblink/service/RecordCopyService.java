@@ -23,6 +23,9 @@ public class RecordCopyService {
     private DBBasedWorkOrderService dbBasedWorkOrderService;
 
     @Autowired
+    private DBBasedReceiptService dbBasedReceiptService;
+
+    @Autowired
     private DBBasedItemService dbBasedItemService;
     @Autowired
     private DBBasedItemPackageTypeService dbBasedItemPackageTypeService;
@@ -41,6 +44,10 @@ public class RecordCopyService {
 
         logger.debug("@{}, Start to process work order data", LocalDateTime.now());
         dbBasedWorkOrderService.sendIntegrationData();
+
+        logger.debug("@{}, Start to process receipt data", LocalDateTime.now());
+        dbBasedReceiptService.sendIntegrationData();
+
 
         logger.debug("@{}, Start to process item data", LocalDateTime.now());
         dbBasedItemService.sendIntegrationData();

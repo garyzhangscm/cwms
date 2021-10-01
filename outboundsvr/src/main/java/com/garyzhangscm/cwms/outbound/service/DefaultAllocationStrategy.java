@@ -897,7 +897,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
      */
     protected List<InventorySummary> sort(List<InventorySummary> inventorySummaries) {
 
-        // by default, we do nothing
+        // by default, we will return the inventory with biggest quantity first
+        Collections.sort(inventorySummaries, (o1, o2) -> o2.getQuantity().compareTo(o1.getQuantity()));
         return inventorySummaries;
 
     }

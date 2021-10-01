@@ -234,4 +234,17 @@ public class WorkOrderController {
         return workOrderService.changeConsumeMethod(id, materialConsumeTiming, consumeByBomFlag, consumeByBOMId);
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/{id}/pre-print-lpn-label", method = RequestMethod.POST)
+    public ReportHistory generatePrePrintLPNLabel(
+            @PathVariable Long id,
+            @RequestParam String lpn,
+            @RequestParam Long quantity,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+            ) throws JsonProcessingException {
+
+        logger.debug("start generate pre-printed lpn label with id: {}", id);
+        return workOrderService.generatePrePrintLPNLabel(id, lpn, quantity, locale);
+    }
 }

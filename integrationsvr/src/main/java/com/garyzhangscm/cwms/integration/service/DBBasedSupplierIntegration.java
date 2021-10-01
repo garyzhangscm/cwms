@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedClientRepository;
@@ -31,6 +32,8 @@ public class DBBasedSupplierIntegration {
     KafkaSender kafkaSender;
     @Autowired
     DBBasedSupplierRepository dbBasedSupplierRepository;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
     public List<DBBasedSupplier> findAll(
@@ -140,7 +143,10 @@ public class DBBasedSupplierIntegration {
         try {
 
             Supplier supplier = dbBasedSupplier.convertToSupplier();
+            setupMissingField(supplier, dbBasedSupplier);
+
             logger.debug(">> will process Supplier :\n{}", supplier);
+
 
             kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER, supplier);
 
@@ -156,7 +162,33 @@ public class DBBasedSupplierIntegration {
             dbBasedSupplier.setErrorMessage(ex.getMessage());
         }
         dbBasedSupplier.setLastUpdateTime(LocalDateTime.now());
-        dbBasedSupplier = save(dbBasedSupplier);
+        save(dbBasedSupplier);
+
+    }
+
+    private void setupMissingField(Supplier supplier, DBBasedSupplier dbBasedSupplier){
+
+        Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                dbBasedSupplier.getCompanyId(),
+                dbBasedSupplier.getCompanyCode(),
+                dbBasedSupplier.getWarehouseId(),
+                dbBasedSupplier.getWarehouseName()
+        );
+
+        if (Objects.isNull(warehouseId)) {
+            throw ResourceNotFoundException.raiseException("Can't find warehouse id by " +
+                    "company id: " + dbBasedSupplier.getCompanyId() +
+                    "company code: " + dbBasedSupplier.getCompanyCode() +
+                    "warehouse id: " + dbBasedSupplier.getWarehouseId() +
+                    "warehouse name: " + dbBasedSupplier.getWarehouseName());
+        }
+
+
+        supplier.setWarehouseId(warehouseId);
+
+
+
+
 
     }
 }

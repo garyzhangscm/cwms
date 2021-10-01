@@ -230,6 +230,7 @@ public class IntegrationDataController {
     @RequestMapping(value="/dblink/suppliers", method = RequestMethod.PUT)
     public ResponseBodyWrapper copyIntegrationSupplierData(@RequestBody DBBasedSupplier dbBasedSupplier) {
 
+        dbBasedSupplier.setId(null);
         integrationDataService.addIntegrationSupplierData(dbBasedSupplier);
 
 
@@ -288,6 +289,16 @@ public class IntegrationDataController {
 
         logger.debug("Start to add receipt: \n{}", receipt);
         return integrationDataService.addReceiptData(receipt);
+    }
+
+    @RequestMapping(value="/dblink/receipt", method = RequestMethod.PUT)
+    public ResponseBodyWrapper addIntegrationReceiptData(
+            @RequestBody DBBasedReceipt dbBasedReceipt
+    ){
+        logger.debug("Start to save dbbased receipt into database \n{}",
+                dbBasedReceipt);
+        integrationDataService.addReceiptData(dbBasedReceipt);
+        return ResponseBodyWrapper.success("success");
     }
 
     //

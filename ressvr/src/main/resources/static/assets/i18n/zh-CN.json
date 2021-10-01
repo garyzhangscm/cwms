@@ -1368,5 +1368,14 @@
   "billable-request.yearly-summary": "年总计",
   "totalWebAPIEndpoint": "终端调用数量",
   "totalTransaction": "事务数量",
-  "totalCost": "总费用"
+  "totalCost": "总费用",
+  "pre-print-lpn-label": "打印LPN标签",
+  "start-lpn": "起始LPN",
+  "action-not-support": "不支持当前操作",
+  "label-count": "标签数量",
+  "menu.main.inbound.qc-configuration": "质检配置",
+  "qc-configuration.by-quantity": "按数量质检",
+  "qc-configuration.by-percentage": "按比例质检",
+  "warehouseSpecific": "仓库专用",
+  "inbound-qc-configuration": "入库质检配置"
 }

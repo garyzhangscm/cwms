@@ -66,6 +66,12 @@ public class ReceiptLine {
     @Column(name = "over_receiving_percent")
     private Double overReceivingPercent = 0.0;
 
+    @Column(name = "qc_quantity")
+    private Long qcQuantity;
+
+    @Column(name = "qc_percentage")
+    private Double qcPercentage;
+
     public Long getId() {
         return id;
     }
@@ -152,5 +158,21 @@ public class ReceiptLine {
 
     public void setOverReceivingPercent(Double overReceivingPercent) {
         this.overReceivingPercent = overReceivingPercent;
+    }
+
+    public Long getQcQuantity() {
+        return qcQuantity;
+    }
+
+    public void setQcQuantity(Long qcQuantity) {
+        this.qcQuantity = qcQuantity;
+    }
+
+    public Double getQcPercentage() {
+        return qcPercentage;
+    }
+
+    public void setQcPercentage(Double qcPercentage) {
+        this.qcPercentage = qcPercentage;
     }
 }

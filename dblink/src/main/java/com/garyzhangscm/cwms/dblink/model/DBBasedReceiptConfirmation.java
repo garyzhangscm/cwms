@@ -32,31 +32,19 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "integration_receipt_confirmation")
+@Table(name = "FTI_MES_I_PO_RECEIVE_H")
 public class DBBasedReceiptConfirmation implements Serializable {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_receipt_confirmation_id")
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "receipt_confirmation_id")
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "number")
+    @Column(name = "po_number")
     private String number;
 
-
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
-
-    @Column(name = "warehouse_name")
-    private String warehouseName;
-
-    @Column(name = "client_id")
-    private Long clientId;
-
-    @Column(name = "client_name")
-    private String clientName;
 
     @Column(name = "supplier_id")
     private Long supplierId;
@@ -73,10 +61,6 @@ public class DBBasedReceiptConfirmation implements Serializable {
     private List<DBBasedReceiptLineConfirmation> receiptLines = new ArrayList<>();
 
 
-    @Column(name = "allow_unexpected_item")
-    private Boolean allowUnexpectedItem;
-
-
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -86,6 +70,16 @@ public class DBBasedReceiptConfirmation implements Serializable {
     private LocalDateTime lastUpdateTime;
     @Column(name = "error_message")
     private String errorMessage;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 
     public Long getId() {
@@ -102,38 +96,6 @@ public class DBBasedReceiptConfirmation implements Serializable {
 
     public void setNumber(String number) {
         this.number = number;
-    }
-
-    public Long getWarehouseId() {
-        return warehouseId;
-    }
-
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
-    }
-
-    public String getWarehouseName() {
-        return warehouseName;
-    }
-
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
-    }
-
-    public Long getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
-    }
-
-    public String getClientName() {
-        return clientName;
-    }
-
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
     }
 
     public Long getSupplierId() {
@@ -158,14 +120,6 @@ public class DBBasedReceiptConfirmation implements Serializable {
 
     public void setReceiptLines(List<DBBasedReceiptLineConfirmation> receiptLines) {
         this.receiptLines = receiptLines;
-    }
-
-    public Boolean getAllowUnexpectedItem() {
-        return allowUnexpectedItem;
-    }
-
-    public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
-        this.allowUnexpectedItem = allowUnexpectedItem;
     }
 
     public IntegrationStatus getStatus() {

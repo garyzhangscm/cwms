@@ -311,6 +311,11 @@ public class DBBasedIntegration implements Integration{
         return dbBasedReceiptIntegration.addIntegrationReceiptData(new DBBasedReceipt(receipt));
 
     }
+    public IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt) {
+
+        return dbBasedReceiptIntegration.addIntegrationReceiptData(dbBasedReceipt);
+
+    }
 
     //
     // Integration - Order and Order Line

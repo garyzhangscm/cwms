@@ -11,6 +11,7 @@ import com.garyzhangscm.cwms.integration.repository.DBBasedOrderLineRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedOrderRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedReceiptLineRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedReceiptRepository;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,30 @@ public class DBBasedReceiptIntegration {
 
 
     public IntegrationReceiptData addIntegrationReceiptData(DBBasedReceipt dbBasedReceipt) {
+        int index = 0;
+
+        if (Objects.isNull(dbBasedReceipt.getAllowUnexpectedItem())) {
+            dbBasedReceipt.setAllowUnexpectedItem(false);
+        }
+        for (DBBasedReceiptLine dbBasedReceiptLine : dbBasedReceipt.getReceiptLines()) {
+
+            dbBasedReceiptLine.setReceipt(dbBasedReceipt);
+            dbBasedReceiptLine.setId(null);
+            if (Strings.isBlank(dbBasedReceiptLine.getNumber())) {
+                dbBasedReceiptLine.setNumber(index + "");
+            }
+            index++;
+
+            if (Objects.isNull(dbBasedReceiptLine.getOverReceivingQuantity())) {
+                dbBasedReceiptLine.setOverReceivingQuantity(0l);
+            }
+            if (Objects.isNull(dbBasedReceiptLine.getOverReceivingPercent())) {
+                dbBasedReceiptLine.setOverReceivingPercent(0.0);
+            }
+
+        }
+        dbBasedReceipt.setId(null);
+
         return dbBasedReceiptRepository.save(dbBasedReceipt);
     }
 
@@ -173,7 +198,16 @@ public class DBBasedReceiptIntegration {
 
     private void setupMissingField(Receipt receipt, DBBasedReceipt dbBasedReceipt){
 
+        if (Objects.isNull(receipt.getSupplierId()) &&
+               Objects.nonNull(dbBasedReceipt.getSupplierName())) {
+            receipt.setSupplierId(
 
+                    commonServiceRestemplateClient.getSupplierByName(
+                            receipt.getWarehouseId(),
+                            dbBasedReceipt.getSupplierName()
+                    ).getId()
+            );
+        }
 
         receipt.getReceiptLines().forEach(receiptLine -> {
             // Get the matched receipt line and setup the missing field
@@ -187,6 +221,7 @@ public class DBBasedReceiptIntegration {
             });
 
         });
+
 
     }
 
