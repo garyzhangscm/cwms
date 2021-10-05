@@ -71,6 +71,16 @@ public class InboundQCConfiguration extends AuditibleEntity<String>{
     @Column(name = "qc_percentage")
     private Double qcPercentage;
 
+    @Column(name = "from_inventory_status_id")
+    private Long fromInventoryStatusId;
+    @Transient
+    private InventoryStatus fromInventoryStatus;
+
+    @Column(name = "to_inventory_status_id")
+    private Long toInventoryStatusId;
+    @Transient
+    private InventoryStatus toInventoryStatus;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -79,13 +89,14 @@ public class InboundQCConfiguration extends AuditibleEntity<String>{
         return Objects.equals(id, that.id) ||
                 (Objects.equals(supplierId, that.supplierId)
                         && Objects.equals(itemId, that.itemId)
+                        && Objects.equals(fromInventoryStatusId, that.fromInventoryStatusId)
                         && Objects.equals(warehouseId, that.warehouseId)
                         && Objects.equals(companyId, that.companyId));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, supplierId, itemId, warehouseId, companyId);
+        return Objects.hash(id, supplierId, itemId, fromInventoryStatusId,  warehouseId, companyId);
     }
 
     @Override
@@ -185,5 +196,37 @@ public class InboundQCConfiguration extends AuditibleEntity<String>{
 
     public void setCompany(Company company) {
         this.company = company;
+    }
+
+    public Long getFromInventoryStatusId() {
+        return fromInventoryStatusId;
+    }
+
+    public void setFromInventoryStatusId(Long fromInventoryStatusId) {
+        this.fromInventoryStatusId = fromInventoryStatusId;
+    }
+
+    public InventoryStatus getFromInventoryStatus() {
+        return fromInventoryStatus;
+    }
+
+    public void setFromInventoryStatus(InventoryStatus fromInventoryStatus) {
+        this.fromInventoryStatus = fromInventoryStatus;
+    }
+
+    public Long getToInventoryStatusId() {
+        return toInventoryStatusId;
+    }
+
+    public void setToInventoryStatusId(Long toInventoryStatusId) {
+        this.toInventoryStatusId = toInventoryStatusId;
+    }
+
+    public InventoryStatus getToInventoryStatus() {
+        return toInventoryStatus;
+    }
+
+    public void setToInventoryStatus(InventoryStatus toInventoryStatus) {
+        this.toInventoryStatus = toInventoryStatus;
     }
 }

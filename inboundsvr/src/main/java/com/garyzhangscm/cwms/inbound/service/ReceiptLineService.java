@@ -233,7 +233,7 @@ public class ReceiptLineService implements TestDataInitiableService{
         if (receiptLine.getItemId() == null && receiptLine.getItem() != null) {
             receiptLine.setItemId(receiptLine.getItem().getId());
         }
-        return save(receiptLine);
+        return saveOrUpdate(receiptLine);
     }
 
     @Transactional
@@ -252,6 +252,27 @@ public class ReceiptLineService implements TestDataInitiableService{
         // 1. over receiving?
         // 3. unexpected item number?
         validateReceiving(receipt, receiptLine, inventory);
+        boolean qcRequired = checkQCRequired(receipt, receiptLine, inventory);
+        logger.debug("inventory {} received from receipt line {} / {} needs QC? {}",
+                inventory.getLpn(), receipt.getNumber(), receiptLine.getNumber(),
+                qcRequired);
+        if (qcRequired == true) {
+
+            // qc is required, let's get the destination inventory status for QC
+            // anc change the inventory automatically
+            InboundQCConfiguration bestMatchedInboundQCConfiguration
+                    = getBestMatchedInboundQCConfiguration(
+                            receipt, receiptLine, inventory
+                    );
+            InventoryStatus toInventoryStatus =
+                    bestMatchedInboundQCConfiguration.getToInventoryStatus();
+            if (Objects.isNull(toInventoryStatus)) {
+                toInventoryStatus = inventoryServiceRestemplateClient.getInventoryStatusById(
+                        bestMatchedInboundQCConfiguration.getToInventoryStatusId()
+                );
+            }
+            inventory.setInventoryStatus(toInventoryStatus);
+        }
 
         if (inventory.getLocation() == null) {
             Location location =
@@ -282,10 +303,66 @@ public class ReceiptLineService implements TestDataInitiableService{
         // so we need to calculate the received quantity on the line based off the original
         // inventory structure
         receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() + inventory.getQuantity());
+        if (qcRequired) {
+            receiptLine.setQcQuantityRequested(
+                    receiptLine.getQcQuantityRequested() +  inventory.getQuantity()
+            );
+        }
         save(receiptLine);
         receipt.setReceiptStatus(ReceiptStatus.RECEIVING);
         receiptService.saveOrUpdate(receipt);
+
+        newInventory.setQcRequired(qcRequired);
         return newInventory;
+    }
+
+    private boolean checkQCRequired(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {
+
+        Long qcQuantityNeeded =
+                receiptLine.getQcQuantity() > 0 ?
+                        receiptLine.getQcQuantity() :
+                        (long)(receiptLine.getExpectedQuantity() * receiptLine.getQcPercentage());
+        logger.debug("Receipt line {} / {}, qc quantity needed? {}, qc quantity requested: {}",
+                receipt.getNumber(), receiptLine.getNumber(),
+                qcQuantityNeeded, receiptLine.getQcQuantityRequested());
+        if (receiptLine.getQcQuantityRequested() > qcQuantityNeeded) {
+            return false;
+        }
+
+        return Objects.nonNull(
+                getBestMatchedInboundQCConfiguration(
+                        receipt, receiptLine, inventory
+                )
+        );
+
+    }
+
+    private InboundQCConfiguration getBestMatchedInboundQCConfiguration(
+            Receipt receipt, ReceiptLine receiptLine, Inventory inventory
+    ) {
+
+        Warehouse warehouse = receipt.getWarehouse();
+        if (Objects.isNull(warehouse)) {
+            warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                    receipt.getWarehouseId()
+            );
+        }
+        if (Objects.isNull(warehouse)) {
+            // we should not arrive here！
+            logger.debug("Can't get the QC configuration as we can't get the warehouse" +
+                    "information from the receipt");
+            logger.debug("=======   Receipt ======= \n {}",
+                    receipt);
+        }
+        return
+                inboundQCConfigurationService.getBestMatchedInboundQCConfiguration(
+                        receipt.getSupplierId(),
+                        receiptLine.getItemId(),
+                        inventory.getInventoryStatus().getId(),
+                        receipt.getWarehouseId(),
+                        warehouse.getCompany().getId()
+                );
+
     }
 
     // validate whether we can receive inventory against this receipt line
