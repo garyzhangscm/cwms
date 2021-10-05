@@ -42,6 +42,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @CacheConfig(cacheNames = "warehouse_layout")
@@ -352,9 +353,15 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
     public Location allocateLocation(Location location, Inventory inventory) {
+        // if the location is not volume tracking, do nothing
+        if (Objects.isNull(location.getLocationGroup()) ||
+                Objects.isNull(location.getLocationGroup().getVolumeTrackingPolicy())
+        ) {
+            return location;
+        }
         Double inventorySize = 0.0;
         if (location.getLocationGroup().getVolumeTrackingPolicy().equals(
-                LocationVolumeTrackingPolicy.BY_EACH
+                    LocationVolumeTrackingPolicy.BY_EACH
         )) {
             inventorySize = inventory.getQuantity() * 1.0;
         }

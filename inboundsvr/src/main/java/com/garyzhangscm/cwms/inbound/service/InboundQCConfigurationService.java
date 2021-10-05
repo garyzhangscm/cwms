@@ -43,6 +43,7 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class InboundQCConfigurationService {
@@ -78,11 +79,14 @@ public class InboundQCConfigurationService {
     }
     public List<InboundQCConfiguration> findAll(Long supplierId,
                                                 Long itemId,
+                                                Long fromInventoryStatusId,
                                                 Long warehouseId, Long companyId) {
-        return findAll(supplierId, itemId, warehouseId, companyId, true);
+        return findAll(supplierId, itemId, fromInventoryStatusId,
+                warehouseId, companyId, true);
     }
     public List<InboundQCConfiguration> findAll(Long supplierId,
                                                 Long itemId,
+                                                Long fromInventoryStatusId,
                                                 Long warehouseId,
                                                 Long companyId,
                                                 boolean includeDetails) {
@@ -99,10 +103,16 @@ public class InboundQCConfigurationService {
 
                     }
 
+                    if (Objects.nonNull(fromInventoryStatusId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("fromInventoryStatusId"), fromInventoryStatusId));
+
+                    }
+
                     if (Objects.nonNull(itemId)) {
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
 
                     }
+
                     if (Objects.nonNull(warehouseId)) {
                         predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
@@ -154,6 +164,20 @@ public class InboundQCConfigurationService {
 
         }
 
+        if (inboundQCConfiguration.getFromInventoryStatusId() != null && inboundQCConfiguration.getFromInventoryStatus() == null) {
+            inboundQCConfiguration.setFromInventoryStatus(
+                    inventoryServiceRestemplateClient.getInventoryStatusById(
+                            inboundQCConfiguration.getFromInventoryStatusId()));
+
+        }
+
+        if (inboundQCConfiguration.getToInventoryStatusId() != null && inboundQCConfiguration.getToInventoryStatus() == null) {
+            inboundQCConfiguration.setToInventoryStatus(
+                    inventoryServiceRestemplateClient.getInventoryStatusById(
+                            inboundQCConfiguration.getToInventoryStatusId()));
+
+        }
+
     }
 
     @Transactional
@@ -167,6 +191,7 @@ public class InboundQCConfigurationService {
         List<InboundQCConfiguration> inboundQCConfigurations = findAll(
                 inboundQCConfiguration.getSupplierId(),
                 inboundQCConfiguration.getItemId(),
+                inboundQCConfiguration.getFromInventoryStatusId(),
                 inboundQCConfiguration.getWarehouseId(),
                 inboundQCConfiguration.getCompanyId(),
                 false
@@ -196,51 +221,157 @@ public class InboundQCConfigurationService {
     }
 
     public InboundQCConfiguration getBestMatchedInboundQCConfiguration(Long supplierId,
+                                                                       Long itemId,
+                                                                       Long warehouseId,
+                                                                       Long companyId) {
+        return getBestMatchedInboundQCConfiguration(
+                supplierId, itemId, null, warehouseId, companyId
+        );
+
+    }
+    public InboundQCConfiguration getBestMatchedInboundQCConfiguration(Long supplierId,
                                                      Long itemId,
+                                                     Long fromInventoryStatusId,
                                                      Long warehouseId,
                                                      Long companyId) {
-        List<InboundQCConfiguration> matchedInboundQCConfiguration =
-                findAll(null, null, null, companyId, false);
+        List<InboundQCConfiguration> allInboundQCConfiguration =
+                findAll(null, null, null,
+                        null, companyId, true);
 
-        if (matchedInboundQCConfiguration.size() == 0) {
+        if (allInboundQCConfiguration.size() == 0) {
+            logger.debug("Can't find any inbound QC configuration. Suppose we don't need QC");
             return null;
         }
         // we will get the best matched qc configuration based on the priority
-        // 1. supplier
-        // 2. item
-        // 3. warehouse id
-        // 4. company id
-        Map<String, InboundQCConfiguration> inboundQCConfigurationMap =
-                new HashMap<>();
-        matchedInboundQCConfiguration.forEach(
-                inboundQCConfiguration -> {
-                    if (Objects.nonNull(inboundQCConfiguration.getSupplierId())) {
-                        inboundQCConfigurationMap.put("supplier", inboundQCConfiguration);
-                    }
-                    else if (Objects.nonNull(inboundQCConfiguration.getItemId())) {
-                        inboundQCConfigurationMap.put("item", inboundQCConfiguration);
-                    }
-                    else if (Objects.nonNull(inboundQCConfiguration.getWarehouseId())) {
-                        inboundQCConfigurationMap.put("warehouse", inboundQCConfiguration);
-                    }
-                    else if (Objects.nonNull(inboundQCConfiguration.getCompanyId())) {
-                        inboundQCConfigurationMap.put("company", inboundQCConfiguration);
-                    }
-                }
+        // 1. supplier + item
+        // 2. supplier
+        // 3. item
+        // 4. warehouse id
+        // 5. company id
+        List<InboundQCConfiguration> matchedInboundQCConfiguration =
+            allInboundQCConfiguration.stream().filter(
+                        inboundQCConfiguration -> isMatch(
+                                inboundQCConfiguration,
+                                supplierId, itemId, fromInventoryStatusId,
+                                warehouseId, companyId
+                        )
+                ).collect(Collectors.toList());
+
+        if (matchedInboundQCConfiguration.size() == 0) {
+            logger.debug("Can't find any inbound qc configuration matched with " +
+                    "supplierId: {},itemId: {}, fromInventoryStatusId: {}, " +
+                    "warehouseId: {}, companyId: {}",
+                    supplierId, itemId, fromInventoryStatusId,
+                    warehouseId, companyId);
+            return null;
+        }
+        InboundQCConfiguration bestInboundQCConfiguration = matchedInboundQCConfiguration.get(0);
+        for (InboundQCConfiguration inboundQCConfiguration : matchedInboundQCConfiguration) {
+            logger.debug("inboundQCConfiguration {}'s priority: {}",
+                    inboundQCConfiguration.getId(),
+                    getPriority(inboundQCConfiguration));
+            logger.debug("current bestInboundQCConfiguration {}'s priority: {}",
+                    bestInboundQCConfiguration.getId(),
+                    getPriority(bestInboundQCConfiguration));
+            logger.debug("comparePriority(inboundQCConfiguration, bestInboundQCConfiguration): {}",
+                    comparePriority(inboundQCConfiguration, bestInboundQCConfiguration) );
+            if (comparePriority(inboundQCConfiguration, bestInboundQCConfiguration) > 0) {
+                bestInboundQCConfiguration = inboundQCConfiguration;
+            }
+        }
+        logger.debug("bestInboundQCConfiguration: {} for supplier: {}， item {}, warehouse {}",
+                bestInboundQCConfiguration.getId(),
+                supplierId,
+                itemId,
+                warehouseId);
+        return bestInboundQCConfiguration;
+    }
+
+    /**
+     * Return 1 if the first one has high priority. Return 0 if both have the same priority
+     * return -1 if the last one has high priority
+     * Priority number is based off
+     * 1. supplier + item
+     * 2. supplier
+     * 3. item
+     * 4. warehouse id
+     * 5. company id
+     * low number means high priority
+     * @param firstInboundQCConfiguration
+     * @param secondInboundQCConfiguration
+     * @return
+     */
+    private int comparePriority(InboundQCConfiguration firstInboundQCConfiguration, InboundQCConfiguration secondInboundQCConfiguration) {
+        return getPriority(secondInboundQCConfiguration).compareTo(
+                getPriority(firstInboundQCConfiguration)
         );
-        if (inboundQCConfigurationMap.containsKey("supplier")) {
-            return inboundQCConfigurationMap.get("supplier");
+
+    }
+
+    /**
+     * Get the priority of the configuration based off
+     * 1. supplier + item
+     * 2. supplier
+     * 3. item
+     * 4. warehouse id
+     * 5. company id
+     * @param inboundQCConfiguration
+     * @return
+     */
+    private Integer getPriority(InboundQCConfiguration inboundQCConfiguration) {
+        if (Objects.nonNull(inboundQCConfiguration.getSupplierId()) &&
+                Objects.nonNull(inboundQCConfiguration.getItemId())) {
+            return 1;
         }
-        else if (inboundQCConfigurationMap.containsKey("item")) {
-            return inboundQCConfigurationMap.get("item");
+        if (Objects.nonNull(inboundQCConfiguration.getSupplierId())) {
+            return 2;
         }
-        else if (inboundQCConfigurationMap.containsKey("warehouse")) {
-            return inboundQCConfigurationMap.get("warehouse");
+        if (Objects.nonNull(inboundQCConfiguration.getItemId())) {
+            return 3;
+
         }
-        else if (inboundQCConfigurationMap.containsKey("company")) {
-            return inboundQCConfigurationMap.get("company");
+        if (Objects.nonNull(inboundQCConfiguration.getWarehouseId())) {
+            return 4;
         }
-        return null;
+        return 5;
+    }
+
+    private boolean isMatch(InboundQCConfiguration inboundQCConfiguration,
+                    Long supplierId,
+                    Long itemId,
+                    Long fromInventoryStatusId,
+                    Long warehouseId,
+                    Long companyId) {
+        if (Objects.nonNull(inboundQCConfiguration.getCompanyId()) &&
+                !inboundQCConfiguration.getCompanyId().equals(companyId)) {
+            return false;
+        }
+
+
+        if (Objects.nonNull(inboundQCConfiguration.getWarehouseId()) &&
+                !inboundQCConfiguration.getWarehouseId().equals(warehouseId)) {
+            return false;
+        }
+
+        if (Objects.nonNull(inboundQCConfiguration.getItemId()) &&
+                !inboundQCConfiguration.getItemId().equals(itemId)) {
+            return false;
+        }
+
+        if (Objects.nonNull(inboundQCConfiguration.getSupplierId()) &&
+                !inboundQCConfiguration.getSupplierId().equals(supplierId)
+                ) {
+            return false;
+        }
+
+        // from inventory status is optional
+        if (Objects.nonNull(fromInventoryStatusId) &&
+                Objects.nonNull(inboundQCConfiguration.getFromInventoryStatusId()) &&
+                !inboundQCConfiguration.getFromInventoryStatusId().equals(fromInventoryStatusId)
+        ) {
+            return false;
+        }
+        return true;
     }
 
     public InboundQCConfiguration addInboundQCConfiguration(

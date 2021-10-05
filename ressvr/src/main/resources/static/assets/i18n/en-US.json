@@ -1372,5 +1372,8 @@
   "qc-configuration.by-quantity": "QC By Quantity",
   "qc-configuration.by-percentage": "QC By Percentage",
   "warehouseSpecific": "Warehouse Specific",
-  "inbound-qc-configuration": "Inbound QC Configuration"
+  "inbound-qc-configuration": "Inbound QC Configuration",
+  "from-inventory-status": "From Inventory Status",
+  "to-inventory-status": "To Inventory Status",
+  "INVENTORY-STATUS-QCF": "QC Fail"
 }

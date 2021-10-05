@@ -335,7 +335,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
             Location location  = findSuitableLocation(putawayConfiguration, inventory, skipLocationList);
             if (location != null) {
 
-                logger.debug("Step 2 RESULT!!! - WE FOUND A LOCATION: {} " + location.getName());
+                logger.debug("Step 2 RESULT!!! - WE FOUND A LOCATION: {} " , location.getName());
                 return location;
             }
         }

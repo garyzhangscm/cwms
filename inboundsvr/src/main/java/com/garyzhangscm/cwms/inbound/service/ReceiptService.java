@@ -358,9 +358,14 @@ public class ReceiptService implements TestDataInitiableService{
 
         Receipt receipt = findById(receiptId);
 
-        return inventoryServiceRestemplateClient
+        List<Inventory> receivedInventory =  inventoryServiceRestemplateClient
                 .findInventoryByReceipt(receipt.getWarehouseId(), receiptId,
                         null, null);
+
+        receivedInventory.sort((inventory1, inventory2) ->
+                inventory1.getLpn().compareToIgnoreCase(inventory2.getLpn())
+         );
+        return receivedInventory;
     }
 
     public List<Inventory> findInventoryByReceipt(Long receiptId,
