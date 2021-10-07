@@ -205,6 +205,33 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+
+    public List<LocationGroup> getQCLocationGroups(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locationgroups/qc")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<LocationGroup>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<LocationGroup>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<Location> getQCLocations(Long warehouseId) {
+        List<LocationGroup> qcLocationGroups = getQCLocationGroups(warehouseId);
+        String locationGroupIds = qcLocationGroups.stream().map(
+                qcLocationGroup -> qcLocationGroup.getId()
+            ).map(id -> id.toString() )
+             .collect( Collectors.joining( "," ) );
+        return getLocationByLocationGroups(warehouseId, locationGroupIds);
+    }
+
     public List<Location> getLocationByLocationGroups(Long warehouseId, String locationGroupIds) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

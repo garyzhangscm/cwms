@@ -39,6 +39,7 @@ public class InventoryController {
 
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
     public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
+                                              @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                               @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
@@ -58,7 +59,7 @@ public class InventoryController {
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
-        return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName, clientIds,
+        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
@@ -69,7 +70,8 @@ public class InventoryController {
     @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
     public int getInventoryCount(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                 @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
+                                             @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+                                             @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
@@ -83,10 +85,10 @@ public class InventoryController {
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
-                                             @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
-                                             @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+                                              @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                              @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory) {
-        return inventoryService.findAll(warehouseId, itemName, itemPackageTypeName,  clientIds,
+        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
@@ -335,6 +337,23 @@ public class InventoryController {
         logger.debug("start print lpn with warehouse and LPN: {} / {}",
                 warehouseId, lpn);
         return inventoryService.generateEcotechLPNLabel(warehouseId, lpn, locale);
+    }
+
+
+    @RequestMapping(value="/inventories/qc-required", method = RequestMethod.GET)
+    public List<Inventory> getQCRequiredInventory(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId,
+            @RequestParam(name = "locationName", defaultValue = "", required = false) String locationName,
+            @RequestParam(name = "locationGroupId", defaultValue = "", required = false) Long locationGroupId,
+            @RequestParam(name = "locationGroupIds", defaultValue = "", required = false) String locationGroupIds,
+            @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId,
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
+
+        return inventoryService.getQCRequiredInventory(warehouseId,
+                locationId, locationName, locationGroupId,
+                locationGroupIds,
+                itemId, itemName);
     }
 
 }

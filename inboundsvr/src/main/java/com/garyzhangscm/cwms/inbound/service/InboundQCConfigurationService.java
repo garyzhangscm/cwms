@@ -78,13 +78,15 @@ public class InboundQCConfigurationService {
         return inboundQCConfiguration;
     }
     public List<InboundQCConfiguration> findAll(Long supplierId,
+                                                Long itemFamilyId,
                                                 Long itemId,
                                                 Long fromInventoryStatusId,
                                                 Long warehouseId, Long companyId) {
-        return findAll(supplierId, itemId, fromInventoryStatusId,
+        return findAll(supplierId, itemFamilyId, itemId, fromInventoryStatusId,
                 warehouseId, companyId, true);
     }
     public List<InboundQCConfiguration> findAll(Long supplierId,
+                                                Long itemFamilyId,
                                                 Long itemId,
                                                 Long fromInventoryStatusId,
                                                 Long warehouseId,
@@ -108,6 +110,10 @@ public class InboundQCConfigurationService {
 
                     }
 
+                    if (Objects.nonNull(itemFamilyId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("itemFamilyId"), itemFamilyId));
+
+                    }
                     if (Objects.nonNull(itemId)) {
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
 
@@ -143,6 +149,12 @@ public class InboundQCConfigurationService {
             inboundQCConfiguration.setSupplier(
                     commonServiceRestemplateClient.getSupplierById(
                             inboundQCConfiguration.getSupplierId()));
+
+        }
+        if (inboundQCConfiguration.getItemFamilyId() != null && inboundQCConfiguration.getItemFamily() == null) {
+            inboundQCConfiguration.setItemFamily(
+                    inventoryServiceRestemplateClient.getItemFamilyById(
+                            inboundQCConfiguration.getItemFamilyId()));
 
         }
         if (inboundQCConfiguration.getItemId() != null && inboundQCConfiguration.getItem() == null) {
@@ -190,6 +202,7 @@ public class InboundQCConfigurationService {
 
         List<InboundQCConfiguration> inboundQCConfigurations = findAll(
                 inboundQCConfiguration.getSupplierId(),
+                inboundQCConfiguration.getItemFamilyId(),
                 inboundQCConfiguration.getItemId(),
                 inboundQCConfiguration.getFromInventoryStatusId(),
                 inboundQCConfiguration.getWarehouseId(),
@@ -221,21 +234,24 @@ public class InboundQCConfigurationService {
     }
 
     public InboundQCConfiguration getBestMatchedInboundQCConfiguration(Long supplierId,
+                                                                       Long itemFamilyId,
                                                                        Long itemId,
                                                                        Long warehouseId,
                                                                        Long companyId) {
         return getBestMatchedInboundQCConfiguration(
-                supplierId, itemId, null, warehouseId, companyId
+                supplierId, itemFamilyId, itemId,  null, warehouseId, companyId
         );
 
     }
-    public InboundQCConfiguration getBestMatchedInboundQCConfiguration(Long supplierId,
+    public InboundQCConfiguration getBestMatchedInboundQCConfiguration(
+                                                     Long supplierId,
+                                                     Long itemFamilyId,
                                                      Long itemId,
                                                      Long fromInventoryStatusId,
                                                      Long warehouseId,
                                                      Long companyId) {
         List<InboundQCConfiguration> allInboundQCConfiguration =
-                findAll(null, null, null,
+                findAll(null, null, null, null,
                         null, companyId, true);
 
         if (allInboundQCConfiguration.size() == 0) {
@@ -252,16 +268,16 @@ public class InboundQCConfigurationService {
             allInboundQCConfiguration.stream().filter(
                         inboundQCConfiguration -> isMatch(
                                 inboundQCConfiguration,
-                                supplierId, itemId, fromInventoryStatusId,
+                                supplierId, itemFamilyId, itemId, fromInventoryStatusId,
                                 warehouseId, companyId
                         )
                 ).collect(Collectors.toList());
 
         if (matchedInboundQCConfiguration.size() == 0) {
             logger.debug("Can't find any inbound qc configuration matched with " +
-                    "supplierId: {},itemId: {}, fromInventoryStatusId: {}, " +
+                    "supplierId: {},itemFamilyId: {},itemId: {}, fromInventoryStatusId: {}, " +
                     "warehouseId: {}, companyId: {}",
-                    supplierId, itemId, fromInventoryStatusId,
+                    supplierId, itemFamilyId,  itemId, fromInventoryStatusId,
                     warehouseId, companyId);
             return null;
         }
@@ -311,10 +327,12 @@ public class InboundQCConfigurationService {
     /**
      * Get the priority of the configuration based off
      * 1. supplier + item
-     * 2. supplier
-     * 3. item
-     * 4. warehouse id
-     * 5. company id
+     * 2. supplier + item family
+     * 3. supplier
+     * 4. item
+     * 5. item family
+     * 6. warehouse id
+     * 7. company id
      * @param inboundQCConfiguration
      * @return
      */
@@ -323,21 +341,30 @@ public class InboundQCConfigurationService {
                 Objects.nonNull(inboundQCConfiguration.getItemId())) {
             return 1;
         }
-        if (Objects.nonNull(inboundQCConfiguration.getSupplierId())) {
+        if (Objects.nonNull(inboundQCConfiguration.getSupplierId()) &&
+                Objects.nonNull(inboundQCConfiguration.getItemFamilyId())) {
             return 2;
         }
-        if (Objects.nonNull(inboundQCConfiguration.getItemId())) {
+        if (Objects.nonNull(inboundQCConfiguration.getSupplierId())) {
             return 3;
+        }
+        if (Objects.nonNull(inboundQCConfiguration.getItemId())) {
+            return 4;
+
+        }
+        if (Objects.nonNull(inboundQCConfiguration.getItemFamilyId())) {
+            return 5;
 
         }
         if (Objects.nonNull(inboundQCConfiguration.getWarehouseId())) {
-            return 4;
+            return 6;
         }
         return 5;
     }
 
     private boolean isMatch(InboundQCConfiguration inboundQCConfiguration,
                     Long supplierId,
+                    Long itemFamilyId,
                     Long itemId,
                     Long fromInventoryStatusId,
                     Long warehouseId,
@@ -353,6 +380,10 @@ public class InboundQCConfigurationService {
             return false;
         }
 
+        if (Objects.nonNull(inboundQCConfiguration.getItemFamilyId()) &&
+                !inboundQCConfiguration.getItemFamilyId().equals(itemFamilyId)) {
+            return false;
+        }
         if (Objects.nonNull(inboundQCConfiguration.getItemId()) &&
                 !inboundQCConfiguration.getItemId().equals(itemId)) {
             return false;

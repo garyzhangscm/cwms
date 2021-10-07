@@ -52,6 +52,14 @@ public class LocationGroupController {
                 warehouseId, locationGroupTypes, name);
         return locationGroupService.findAll(warehouseId, locationGroupTypes, locationGroups, name);
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/locationgroups/qc")
+    public List<LocationGroup> getQCLocationGroups(@RequestParam Long warehouseId) {
+        logger.debug("Will list qc location groups by  warehouseId {} ",
+                warehouseId );
+        return locationGroupService.getQCLocationGroups(warehouseId);
+    }
+
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups/{id}")
     public LocationGroup getLocationGroup(@PathVariable long id) {
         return locationGroupService.findById(id);

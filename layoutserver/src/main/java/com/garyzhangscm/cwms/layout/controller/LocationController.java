@@ -169,6 +169,11 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locations")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "outbound_locationGroup", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper removeLocations(@RequestParam Long warehouseId,
                                                @RequestParam String locationIds) {
 
@@ -187,6 +192,13 @@ public class LocationController {
      */
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "workorder_location", allEntries = true),
+                    @CacheEvict(cacheNames = "inventory_location", allEntries = true),
+                    @CacheEvict(cacheNames = "outbound_location", allEntries = true),
+            }
+    )
     public Location updateLocation(@PathVariable Long id,
                                    @RequestParam(name = "enabled", defaultValue = "", required = false) Boolean enabled,
                                    @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,

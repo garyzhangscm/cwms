@@ -272,6 +272,8 @@ public class ReceiptLineService implements TestDataInitiableService{
                 );
             }
             inventory.setInventoryStatus(toInventoryStatus);
+            inventory.setInboundQCRequired(true);
+
         }
 
         if (inventory.getLocation() == null) {
@@ -312,7 +314,7 @@ public class ReceiptLineService implements TestDataInitiableService{
         receipt.setReceiptStatus(ReceiptStatus.RECEIVING);
         receiptService.saveOrUpdate(receipt);
 
-        newInventory.setQcRequired(qcRequired);
+        newInventory.setInboundQCRequired(qcRequired);
         return newInventory;
     }
 
@@ -325,7 +327,7 @@ public class ReceiptLineService implements TestDataInitiableService{
         logger.debug("Receipt line {} / {}, qc quantity needed? {}, qc quantity requested: {}",
                 receipt.getNumber(), receiptLine.getNumber(),
                 qcQuantityNeeded, receiptLine.getQcQuantityRequested());
-        if (receiptLine.getQcQuantityRequested() > qcQuantityNeeded) {
+        if (receiptLine.getQcQuantityRequested() >= qcQuantityNeeded) {
             return false;
         }
 
@@ -443,9 +445,11 @@ public class ReceiptLineService implements TestDataInitiableService{
             logger.debug("=======   Receipt ======= \n {}",
                     receipt);
         }
+        Item item = inventoryServiceRestemplateClient.getItemById(receiptLine.getItemId());
         InboundQCConfiguration inboundQCConfiguration =
                 inboundQCConfigurationService.getBestMatchedInboundQCConfiguration(
                         receipt.getSupplierId(),
+                        Objects.isNull(item.getItemFamily()) ? null : item.getItemFamily().getId(),
                         receiptLine.getItemId(),
                         receipt.getWarehouseId(),
                         warehouse.getCompany().getId()

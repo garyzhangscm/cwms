@@ -81,6 +81,8 @@ public class LocationGroupType extends AuditibleEntity<String>{
     private Boolean container;
     @Column(name = "packing_stations")
     private Boolean packingStation;
+    @Column(name = "qc_area")
+    private Boolean qcArea;
 
     @Override
     public String toString() {
@@ -258,5 +260,13 @@ public class LocationGroupType extends AuditibleEntity<String>{
 
     public void setShippedOrder(Boolean shippedOrder) {
         this.shippedOrder = shippedOrder;
+    }
+
+    public Boolean getQcArea() {
+        return qcArea;
+    }
+
+    public void setQcArea(Boolean qcArea) {
+        this.qcArea = qcArea;
     }
 }

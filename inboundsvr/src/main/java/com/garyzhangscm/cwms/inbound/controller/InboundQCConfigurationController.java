@@ -37,11 +37,12 @@ public class InboundQCConfigurationController {
     public List<InboundQCConfiguration> findAllInboundQCConfiguration(
             @RequestParam Long companyId,
             @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
+            @RequestParam(name="itemFamilyId", required = false, defaultValue = "") Long itemFamilyId,
             @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
             @RequestParam(name="fromInventoryStatusId", required = false, defaultValue = "") Long fromInventoryStatusId,
             @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId
             ) {
-        return inboundQCConfigurationService.findAll(supplierId, itemId, fromInventoryStatusId, warehouseId, companyId);
+        return inboundQCConfigurationService.findAll(supplierId, itemFamilyId,  itemId, fromInventoryStatusId, warehouseId, companyId);
     }
 
     @BillableEndpoint
