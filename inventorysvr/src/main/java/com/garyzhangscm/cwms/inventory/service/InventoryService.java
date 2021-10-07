@@ -87,6 +87,8 @@ public class InventoryService implements TestDataInitiableService{
     private UserService userService;
     @Autowired
     private InventoryConfigurationService inventoryConfigurationService;
+    @Autowired
+    private QCRuleConfigurationService qcRuleConfigurationService;
 
 
     @Autowired
@@ -99,6 +101,8 @@ public class InventoryService implements TestDataInitiableService{
     private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
     @Autowired
     private InboundServiceRestemplateClient inboundServiceRestemplateClient;
+    @Autowired
+    private QCInspectionRequestService qcInspectionRequestService;
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
@@ -136,6 +140,7 @@ public class InventoryService implements TestDataInitiableService{
         return inventories;
     }
     public List<Inventory> findAll(Long warehouseId,
+                                   Long itemId,
                                    String itemName,
                                    String itemPackageTypeName,
                                    String clientIds,
@@ -154,8 +159,10 @@ public class InventoryService implements TestDataInitiableService{
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory) {
-        return findAll(warehouseId, itemName, itemPackageTypeName, clientIds, itemFamilyIds, inventoryStatusId,
-                locationName, locationId, locationIds, locationGroupId, receiptId, workOrderId, workOrderLineIds,
+        return findAll(warehouseId, itemId,
+                itemName, itemPackageTypeName, clientIds, itemFamilyIds, inventoryStatusId,
+                locationName, locationId, locationIds, locationGroupId,
+                receiptId, workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
@@ -164,6 +171,7 @@ public class InventoryService implements TestDataInitiableService{
 
 
     public List<Inventory> findAll(Long warehouseId,
+                                   Long itemId,
                                    String itemName,
                                    String itemPackageTypeName,
                                    String clientIds,
@@ -192,6 +200,11 @@ public class InventoryService implements TestDataInitiableService{
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
+                    if (Objects.nonNull(itemId)) {
+                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinItem.get("id"), itemId));
+
+                    }
                     if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (StringUtils.isNotBlank(itemName)) {
@@ -1610,6 +1623,9 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setLocationId(location.getId());
 
         inventory.setVirtual(warehouseLayoutServiceRestemplateClient.isVirtualLocation(location));
+        logger.debug("inventory {} needs QC? {}",
+                inventory.getLpn(), inventory.getInboundQCRequired());
+
 
         inventory = saveOrUpdate(inventory);
 
@@ -1645,6 +1661,12 @@ public class InventoryService implements TestDataInitiableService{
                 0L, inventory.getQuantity(),
                 documentNumber, comment);
 
+        // if the inventory needs QC, then setup the QC items based on QC Rule
+        if (inventory.getInboundQCRequired()) {
+            logger.debug("The inventory {} needs QC", inventory.getLpn());
+            setupQCInspectionRequest(inventory);
+        }
+
         return moveInventory(inventory, destinationLocation);
 
 
@@ -1665,6 +1687,12 @@ public class InventoryService implements TestDataInitiableService{
         }
         return save(consolidatedInventory);
         *********/
+    }
+
+    private void setupQCInspectionRequest(Inventory inventory) {
+        logger.debug("Start to generate QC inspection request for inventory {} / {}",
+                inventory.getId(), inventory.getLpn());
+        qcInspectionRequestService.generateInboundQCInspectionRequest(inventory);
     }
 
 
@@ -1906,6 +1934,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
+                        null,
                         pickIds,
                         null,
                         null,
@@ -1944,6 +1973,7 @@ public class InventoryService implements TestDataInitiableService{
                     null,
                     null,
                     null,
+                    null,
                     inboundLocationId,
                     null,
                     null,
@@ -1970,6 +2000,7 @@ public class InventoryService implements TestDataInitiableService{
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
                 pickedInventories = findAll(
                         warehouseId,
+                        null,
                         null,
                         null,
                         null,
@@ -2285,5 +2316,44 @@ public class InventoryService implements TestDataInitiableService{
         }
 
 
+    }
+
+    public List<Inventory> getQCRequiredInventory(Long warehouseId, Long locationId,
+                                                  String locationName,
+                                                  Long locationGroupId, String locationGroupIds,
+                                                  Long itemId, String itemName) {
+        // we will only return inventory in qc locations
+        List<Location> qcLocations = warehouseLayoutServiceRestemplateClient.getQCLocations(warehouseId);
+        if (qcLocations.size() == 0) {
+            return new ArrayList<>();
+        }
+
+        String locationIds = qcLocations.stream().map(
+                qcLocation -> qcLocation.getId()
+        ).map(id -> id.toString() )
+                .collect( Collectors.joining( "," ) );
+
+        logger.debug("We will only return invenotry from locations: \n {}",
+                locationIds);
+        return findAll(warehouseId,
+                itemId,
+                itemName,
+                null,
+                null,
+                null,
+                null,
+                locationName,
+                locationId,
+                locationIds,
+                locationGroupId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 }

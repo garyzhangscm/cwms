@@ -47,6 +47,13 @@ public class InboundQCConfiguration extends AuditibleEntity<String>{
     @Transient
     private Supplier supplier;
 
+
+    @Column(name = "item_family_id")
+    private Long itemFamilyId;
+    @Transient
+    private ItemFamily itemFamily;
+
+
     @Column(name = "item_id")
     private Long itemId;
     @Transient
@@ -89,6 +96,7 @@ public class InboundQCConfiguration extends AuditibleEntity<String>{
         return Objects.equals(id, that.id) ||
                 (Objects.equals(supplierId, that.supplierId)
                         && Objects.equals(itemId, that.itemId)
+                        && Objects.equals(itemFamilyId, that.itemFamilyId)
                         && Objects.equals(fromInventoryStatusId, that.fromInventoryStatusId)
                         && Objects.equals(warehouseId, that.warehouseId)
                         && Objects.equals(companyId, that.companyId));
@@ -180,6 +188,22 @@ public class InboundQCConfiguration extends AuditibleEntity<String>{
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public Long getItemFamilyId() {
+        return itemFamilyId;
+    }
+
+    public void setItemFamilyId(Long itemFamilyId) {
+        this.itemFamilyId = itemFamilyId;
+    }
+
+    public ItemFamily getItemFamily() {
+        return itemFamily;
+    }
+
+    public void setItemFamily(ItemFamily itemFamily) {
+        this.itemFamily = itemFamily;
     }
 
     public Warehouse getWarehouse() {

@@ -125,6 +125,10 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "locked_for_adjust")
     private Boolean lockedForAdjust = false;
 
+
+    @Column(name = "inbound_qc_required")
+    private Boolean inboundQCRequired = false;
+
     @OneToMany(
             mappedBy = "inventory",
             cascade = CascadeType.REMOVE,
@@ -411,5 +415,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setCreateInventoryTransactionId(Long createInventoryTransactionId) {
         this.createInventoryTransactionId = createInventoryTransactionId;
+    }
+
+    public Boolean getInboundQCRequired() {
+        return inboundQCRequired;
+    }
+
+    public void setInboundQCRequired(Boolean inboundQCRequired) {
+        this.inboundQCRequired = inboundQCRequired;
     }
 }

@@ -61,7 +61,8 @@ public class Inventory implements Serializable {
     private Long warehouseId;
     private Warehouse warehouse;
 
-    private Boolean qcRequired = false;
+    private Boolean inboundQCRequired = false;
+
 
 
     public Double getSize() {
@@ -217,11 +218,11 @@ public class Inventory implements Serializable {
         this.receiptLineId = receiptLineId;
     }
 
-    public Boolean getQcRequired() {
-        return qcRequired;
+    public Boolean getInboundQCRequired() {
+        return inboundQCRequired;
     }
 
-    public void setQcRequired(Boolean qcRequired) {
-        this.qcRequired = qcRequired;
+    public void setInboundQCRequired(Boolean inboundQCRequired) {
+        this.inboundQCRequired = inboundQCRequired;
     }
 }

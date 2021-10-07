@@ -226,7 +226,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         // Check if we have inventory that is using this item package type
 
         if (inventoryService.
-                findAll(item.getWarehouseId(), item.getName(), itemPackageType.getName(),
+                findAll(item.getWarehouseId(), null, item.getName(), itemPackageType.getName(),
                 null,null,null,null,null,
                 null,null,null,null,
                 null,null,null,null,null,null, null, false)

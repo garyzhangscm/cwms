@@ -1380,5 +1380,22 @@
   "inbound-qc-configuration": "入库质检配置",
   "from-inventory-status": "源库存状态",
   "to-inventory-status": "目标库存状态",
-  "INVENTORY-STATUS-QCF": "QC失败"
+  "INVENTORY-STATUS-QCF": "QC失败",
+  "menu.main.qc": "QC质检",
+  "menu.main.qc.qc-rule": "质检规则",
+  "menu.main.qc.qc-rule-configuration": "质检配置维护",
+  "menu.main.qc.qc-inspection": "质检操作",
+  "menu.main.qc.qc-rule-maintenance": "质检规则维护",
+  "qcRule.checkPoint": "检查事项",
+  "qcRule.qcRuleItemType": "结果类型",
+  "qcRule.qcRuleItemComparator": "符号",
+  "qcRule.expectedValue": "预期值",
+  "QC-RULE-ITEM-TYPE-YESNO": "是/否",
+  "QC-RULE-ITEM-TYPE-NUMBER": "数字",
+  "QC-RULE-ITEM-TYPE-STRING": "文字",
+  "qc-rule.item": "质检项目",
+  "menu.main.qc.qc-rule-configuration": "质检规则配置",
+  "steps.assign-qc-rule": "分配QC规则",
+  "qc-required": "需要质检",
+  "qc-inspection": "质检"
 }
