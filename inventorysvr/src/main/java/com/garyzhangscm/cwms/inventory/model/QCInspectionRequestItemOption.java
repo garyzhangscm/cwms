@@ -28,24 +28,22 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "qc_inspection_request_item")
-public class QCInspectionRequestItem extends AuditibleEntity<String> implements Serializable {
+@Table(name = "qc_inspection_request_item_option")
+public class QCInspectionRequestItemOption extends AuditibleEntity<String> implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(QCInspectionRequestItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(QCInspectionRequestItemOption.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "qc_inspection_request_item_id")
+    @Column(name = "qc_inspection_request_item_option_id")
     @JsonProperty(value="id")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="qc_rule_id")
-    private QCRule qcRule;
+    @JoinColumn(name="qc_rule_item_id")
+    private QCRuleItem qcRuleItem;
 
     @Column(name = "qc_inspection_result")
     @Enumerated(EnumType.STRING)
@@ -53,17 +51,9 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
 
 
     @ManyToOne
-    @JoinColumn(name = "qc_inspection_request_id")
+    @JoinColumn(name = "qc_inspection_request_item_id")
     @JsonIgnore
-    private QCInspectionRequest qcInspectionRequest;
-
-
-    @OneToMany(
-            mappedBy = "qcInspectionRequestItem",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    List<QCInspectionRequestItemOption> qcInspectionRequestItemOptions = new ArrayList<>();
+    private QCInspectionRequestItem qcInspectionRequestItem;
 
     @Override
     public String toString() {
@@ -75,6 +65,7 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
         return null;
     }
 
+
     public Long getId() {
         return id;
     }
@@ -83,12 +74,12 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
         this.id = id;
     }
 
-    public QCRule getQcRule() {
-        return qcRule;
+    public QCRuleItem getQcRuleItem() {
+        return qcRuleItem;
     }
 
-    public void setQcRule(QCRule qcRule) {
-        this.qcRule = qcRule;
+    public void setQcRuleItem(QCRuleItem qcRuleItem) {
+        this.qcRuleItem = qcRuleItem;
     }
 
     public QCInspectionResult getQcInspectionResult() {
@@ -99,23 +90,11 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
         this.qcInspectionResult = qcInspectionResult;
     }
 
-    public QCInspectionRequest getQcInspectionRequest() {
-        return qcInspectionRequest;
+    public QCInspectionRequestItem getQcInspectionRequestItem() {
+        return qcInspectionRequestItem;
     }
 
-    public void setQcInspectionRequest(QCInspectionRequest qcInspectionRequest) {
-        this.qcInspectionRequest = qcInspectionRequest;
-    }
-
-    public List<QCInspectionRequestItemOption> getQcInspectionRequestItemOptions() {
-        return qcInspectionRequestItemOptions;
-    }
-
-    public void setQcInspectionRequestItemOptions(List<QCInspectionRequestItemOption> qcInspectionRequestItemOptions) {
-        this.qcInspectionRequestItemOptions = qcInspectionRequestItemOptions;
-    }
-
-    public void addQcInspectionRequestItemOption(QCInspectionRequestItemOption qcInspectionRequestItemOption) {
-        this.qcInspectionRequestItemOptions.add(qcInspectionRequestItemOption);
+    public void setQcInspectionRequestItem(QCInspectionRequestItem qcInspectionRequestItem) {
+        this.qcInspectionRequestItem = qcInspectionRequestItem;
     }
 }

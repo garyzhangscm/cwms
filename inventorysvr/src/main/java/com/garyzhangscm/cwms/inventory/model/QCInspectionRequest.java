@@ -48,7 +48,11 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
+    @Column(name = "number")
+    private String number;
 
     @ManyToOne
     @JoinColumn(name="inventory_id")
@@ -82,6 +86,22 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public Long getId() {

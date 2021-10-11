@@ -470,6 +470,9 @@ public class InventoryService implements TestDataInitiableService{
 
     public Inventory save(Inventory inventory) {
         LocalDateTime currentLocalDateTime = LocalDateTime.now();
+        if (Objects.isNull(inventory.getInboundQCRequired())) {
+            inventory.setInboundQCRequired(false);
+        }
 
         Inventory savedInventory = inventoryRepository.save(inventory);
 

@@ -532,7 +532,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return unreserveLocation(warehouseId, locationId, "",null);
 
     }
-    public List<Location> unreserveLocation(Long warehouseId, Long locationId, String reserveCode, Boolean clearReservedVolume) {
+    public List<Location> unreserveLocation(Long warehouseId, Long locationId, String reservedCode, Boolean clearReservedVolume) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -542,8 +542,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         if (Objects.nonNull(locationId)) {
             builder = builder.queryParam("locationId", locationId);
         }
-        if (Strings.isNotBlank(reserveCode)) {
-            builder = builder.queryParam("reserveCode", reserveCode);
+        if (Strings.isNotBlank(reservedCode)) {
+            builder = builder.queryParam("reservedCode", reservedCode);
         }
         if (Objects.nonNull(clearReservedVolume)) {
             builder = builder.queryParam("clearReservedVolume", clearReservedVolume);

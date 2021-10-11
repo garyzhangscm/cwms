@@ -65,8 +65,15 @@ public class PutawayConfigurationController {
 
     @BillableEndpoint
     @RequestMapping(value="/putaway-configuration", method = RequestMethod.DELETE)
-    public void removeReceipts(@RequestParam(name = "putaway_configuration_ids", required = false, defaultValue = "") String putawayConfigurationIds) {
+    public void removePutawayConfigurations(@RequestParam(name = "putaway_configuration_ids", required = false, defaultValue = "") String putawayConfigurationIds) {
         putawayConfigurationService.delete(putawayConfigurationIds);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/putaway-configuration/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removePutawayConfiguration(@PathVariable Long id) {
+        putawayConfigurationService.delete(id);
+        return ResponseBodyWrapper.success("putaway configuration with id " + id + " is removed");
     }
 
 

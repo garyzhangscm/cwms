@@ -386,7 +386,7 @@ public class ReportService implements TestDataInitiableService{
 
 
         logger.debug("Start to get label file");
-        String labelTemplate = loadLabelFile(reportMetaData.getFileName());
+        String labelTemplate = loadLabelFile(reportMetaData);
 
         // for labels, we will use the parameters to fill the content.
         // the data part of the report object is only used for jasper report's detail segment
@@ -423,8 +423,11 @@ public class ReportService implements TestDataInitiableService{
 
     }
 
-    private String loadLabelFile(String fileName) throws IOException {
-        String fullFilePath = reportTemplateFolder + "/" + fileName;
+    private String loadLabelFile(Report report) throws IOException {
+
+        String folder = getReportFolder(report);
+        String fileName = report.getFileName();
+        String fullFilePath = folder + "/" + fileName;
         // check if the file exists
         logger.debug("Load label template from {}", fullFilePath);
 

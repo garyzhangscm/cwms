@@ -275,6 +275,10 @@ public class ReceiptLineService implements TestDataInitiableService{
             inventory.setInboundQCRequired(true);
 
         }
+        else {
+
+            inventory.setInboundQCRequired(false);
+        }
 
         if (inventory.getLocation() == null) {
             Location location =
