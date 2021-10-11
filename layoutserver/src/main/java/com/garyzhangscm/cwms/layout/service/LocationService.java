@@ -724,6 +724,9 @@ public class LocationService implements TestDataInitiableService {
         else {
             locations = findByReserveCode(warehouseId, reservedCode);
         }
+        if (locations.size() == 0) {
+            return locations;
+        }
 
 
         return locations.stream().map(location -> {
@@ -737,6 +740,10 @@ public class LocationService implements TestDataInitiableService {
 
     private List<Location> findByReserveCode(Long warehouseId, String reservedCode) {
 
+        // reserved code should not be empty
+        if (Strings.isBlank(reservedCode)) {
+            return new ArrayList<>();
+        }
         return findAll(warehouseId,null,
                 null,
                 null,

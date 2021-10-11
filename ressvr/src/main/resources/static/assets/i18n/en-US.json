@@ -1398,5 +1398,11 @@
   "menu.main.qc.qc-rule-configuration": "QC Rule Configuration",
   "steps.assign-qc-rule": "Assign QC Rule",
   "qc-required": "QC Required",
-  "qc-inspection": "Inspection"
+  "qc-inspection": "Inspection",
+  "qc-result": "QC Result",
+  "menu.main.qc.qc-configuration": "QC Configuration",
+  "qc-pass-inventory-status": "Inventory Status for QC Pass",
+  "qc-fail-inventory-status": "Inventory Status for QC Fail",
+  "menu.main.qc.qc-result": "QC Result",
+  "qc-inspection-time": "QC Time"
 }

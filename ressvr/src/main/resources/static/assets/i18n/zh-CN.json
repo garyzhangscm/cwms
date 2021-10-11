@@ -1397,5 +1397,11 @@
   "menu.main.qc.qc-rule-configuration": "质检规则配置",
   "steps.assign-qc-rule": "分配QC规则",
   "qc-required": "需要质检",
-  "qc-inspection": "质检"
+  "qc-inspection": "质检",
+  "qc-result": "质检结果",
+  "menu.main.qc.qc-configuration": "质检配置",
+  "qc-pass-inventory-status": "质检通过时库存状态",
+  "qc-fail-inventory-status": "质检失败时库存状态",
+  "menu.main.qc.qc-result": "质检结果",
+  "qc-inspection-time": "质检时间"
 }

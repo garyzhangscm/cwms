@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "qc_inspection_request_item")
@@ -54,6 +56,14 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
     @JoinColumn(name = "qc_inspection_request_id")
     @JsonIgnore
     private QCInspectionRequest qcInspectionRequest;
+
+
+    @OneToMany(
+            mappedBy = "qcInspectionRequestItem",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    List<QCInspectionRequestItemOption> qcInspectionRequestItemOptions = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -95,5 +105,17 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
 
     public void setQcInspectionRequest(QCInspectionRequest qcInspectionRequest) {
         this.qcInspectionRequest = qcInspectionRequest;
+    }
+
+    public List<QCInspectionRequestItemOption> getQcInspectionRequestItemOptions() {
+        return qcInspectionRequestItemOptions;
+    }
+
+    public void setQcInspectionRequestItemOptions(List<QCInspectionRequestItemOption> qcInspectionRequestItemOptions) {
+        this.qcInspectionRequestItemOptions = qcInspectionRequestItemOptions;
+    }
+
+    public void addQcInspectionRequestItemOption(QCInspectionRequestItemOption qcInspectionRequestItemOption) {
+        this.qcInspectionRequestItemOptions.add(qcInspectionRequestItemOption);
     }
 }

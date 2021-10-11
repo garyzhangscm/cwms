@@ -268,7 +268,7 @@ public class LocationController {
                                     @RequestParam(name = "reservedCode") String reservedCode) {
 
 
-        logger.debug(">>> Start to handle unreserveLocation request with id: {}, reservedCode: {}",
+        logger.debug(">>> Start to handle reserveLocation request with id: {}, reservedCode: {}",
                 id, reservedCode);
         return locationService.reserveLocation(id, reservedCode);
     }

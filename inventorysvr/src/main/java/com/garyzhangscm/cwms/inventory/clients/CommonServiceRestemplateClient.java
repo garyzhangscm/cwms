@@ -285,4 +285,9 @@ public class CommonServiceRestemplateClient {
         }
 
     }
+
+    public String getNextQCInspectionRequest(Long warehouseId) {
+
+        return getNextNumber(warehouseId, "qc-inspection-request");
+    }
 }
