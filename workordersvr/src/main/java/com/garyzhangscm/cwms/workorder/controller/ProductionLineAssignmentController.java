@@ -44,6 +44,12 @@ public class ProductionLineAssignmentController {
         return productionLineAssignmentService.findAll(productionLineId, productionLineIds, workOrderId, productionLineNames);
     }
 
+
+    @RequestMapping(value="/production-line-assignment/{id}", method = RequestMethod.GET)
+    public ProductionLineAssignment getProductionLineAssignment(@PathVariable Long id) {
+        return productionLineAssignmentService.findById(id);
+    }
+
     @BillableEndpoint
     @RequestMapping(value="/production-line-assignments", method = RequestMethod.POST)
     public List<ProductionLineAssignment> assignWorkOrderToProductionLines(

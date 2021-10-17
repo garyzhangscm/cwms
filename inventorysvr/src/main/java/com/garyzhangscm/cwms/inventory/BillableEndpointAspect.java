@@ -4,6 +4,7 @@ import com.garyzhangscm.cwms.inventory.clients.KafkaSender;
 import com.garyzhangscm.cwms.inventory.model.BillableRequest;
 import com.garyzhangscm.cwms.inventory.service.UserService;
 import com.google.common.collect.Maps;
+import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Aspect // indicate the component is used for aspect
@@ -76,12 +78,39 @@ public class BillableEndpointAspect   {
 
         String authorization = httpServletRequest.getHeader("Authorization");
 
+        Long companyId = null;
+        try {
+            companyId =
+                    parametersMap.containsKey("companyId") ?
+                            Long.parseLong(parametersMap.get("companyId")) :
+                            (Objects.isNull(httpServletRequest.getHeader("companyId")) ||
+                                    Strings.isBlank(httpServletRequest.getHeader("companyId"))) ?
+                                    null : Long.parseLong(httpServletRequest.getHeader("companyId"));
+        }
+        catch (Exception ex) {
+            logger.debug("error while get company id for billable request: {}",
+                    ex.getMessage());
+
+        }
+        Long warehouseId = null;
+        try {
+            warehouseId = parametersMap.containsKey("warehouseId") ?
+                        Long.parseLong(parametersMap.get("warehouseId")) :
+                        (Objects.isNull(httpServletRequest.getHeader("warehouseId")) ||
+                            Strings.isBlank(httpServletRequest.getHeader("warehouseId"))) ?
+                            null : Long.parseLong(httpServletRequest.getHeader("warehouseId"));
+        }
+        catch (Exception ex) {
+            logger.debug("error while get warehouse id for billable request: {}",
+                    ex.getMessage());
+
+        }
         if (authorization.startsWith("Bearer")) {
             authorization = authorization.substring(7).trim();
         }
         BillableRequest billableRequest = new BillableRequest(
-                parametersMap.containsKey("companyId") ? Long.parseLong(parametersMap.get("companyId")) : null,
-                parametersMap.containsKey("warehouseId") ? Long.parseLong(parametersMap.get("warehouseId")) : null,
+                companyId,
+                warehouseId,
                 "inventory_service", //serviceName
                 httpServletRequest.getRequestURI(), //webAPIEndpoint
                 httpServletRequest.getMethod(), // method

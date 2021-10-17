@@ -70,7 +70,7 @@ public class QCRuleConfiguration extends AuditibleEntity<String> implements Seri
     private Supplier supplier;
 
 
-    @ManyToMany(targetEntity = QCRule.class, cascade = CascadeType.ALL)
+    @ManyToMany(targetEntity = QCRule.class, cascade = CascadeType.PERSIST)
     @JoinTable(name = "qc_rule_configuration_rule",
             //joinColumns,当前对象在中间表中的外键
             joinColumns = {@JoinColumn(name = "qc_rule_configuration_id", referencedColumnName = "qc_rule_configuration_id")},

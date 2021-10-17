@@ -1666,7 +1666,7 @@ public class InventoryService implements TestDataInitiableService{
 
         // if the inventory needs QC, then setup the QC items based on QC Rule
         if (inventory.getInboundQCRequired()) {
-            logger.debug("The inventory {} needs QC", inventory.getLpn());
+            logger.debug("The inventory {} needs QC,  ", inventory.getLpn() );
             setupQCInspectionRequest(inventory);
         }
 
@@ -1695,6 +1695,10 @@ public class InventoryService implements TestDataInitiableService{
     private void setupQCInspectionRequest(Inventory inventory) {
         logger.debug("Start to generate QC inspection request for inventory {} / {}",
                 inventory.getId(), inventory.getLpn());
+
+        // let's setup the item family and inventory status first, just in case
+        // we may need to compare
+
         qcInspectionRequestService.generateInboundQCInspectionRequest(inventory);
     }
 
@@ -2358,5 +2362,7 @@ public class InventoryService implements TestDataInitiableService{
                 null,
                 null,
                 null);
+
+
     }
 }

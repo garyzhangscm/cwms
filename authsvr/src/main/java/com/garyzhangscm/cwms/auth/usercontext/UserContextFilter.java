@@ -27,6 +27,13 @@ public class UserContextFilter implements Filter {
                 httpServletRequest.getHeader(UserContext.ORG_ID));
         UserContextHolder.getContext().setRfCode(
                 httpServletRequest.getHeader(UserContext.RF_CODE));
+
+        UserContextHolder.getContext().setCompanyId(
+                httpServletRequest.getHeader(UserContext.COMPANY_ID));
+
+        UserContextHolder.getContext().setWarehouseId(
+                httpServletRequest.getHeader(UserContext.WAREHOUSE_ID));
+
         filterChain.doFilter(httpServletRequest, servletResponse);
     }
 

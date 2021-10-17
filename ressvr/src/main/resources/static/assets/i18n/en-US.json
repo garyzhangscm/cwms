@@ -1404,5 +1404,12 @@
   "qc-pass-inventory-status": "Inventory Status for QC Pass",
   "qc-fail-inventory-status": "Inventory Status for QC Fail",
   "menu.main.qc.qc-result": "QC Result",
-  "qc-inspection-time": "QC Time"
+  "qc-inspection-time": "QC Time",
+  "REPORT-TYPE-LPN_LABEL": "LPN Label",
+  "REPORT-TYPE-PRODUCTION_LINE_ASSIGNMENT_LABEL": "Production Line Assignment Label",
+  "work-order.qc-sample": "QC Sample",
+  "work-order.qc-sample-maintenance": "QC Sample Maintenance",
+  "menu.mobile.work-order.qc": "QC",
+  "menu.main.work-order.qc-result": "QC Result",
+  "work-order.qc-sample.number": "QC Sample Number"
 }

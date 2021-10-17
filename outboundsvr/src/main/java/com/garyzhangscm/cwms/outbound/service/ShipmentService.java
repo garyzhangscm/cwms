@@ -918,7 +918,7 @@ public class ShipmentService {
             ShipmentLine shipmentLine = pickService.findById(inventory.getPickId()).getShipmentLine();
 
             logger.debug("Start to move inventory {} onto order {} ",
-                    inventory.getLpn(), location);
+                    inventory.getLpn(), location.getName());
             try {
                 inventory = inventoryServiceRestemplateClient.moveInventory(inventory, location);
             } catch (IOException e) {

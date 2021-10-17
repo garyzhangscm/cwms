@@ -9,12 +9,16 @@ public class UserContext {
     public static final String USER_ID = "gzcwms-user-id";
     public static final String ORG_ID = "gzcwms-org-id";
     public static final String RF_CODE = "rfCode";
+    public static final String COMPANY_ID = "companyId";
+    public static final String WAREHOUSE_ID = "warehouseId";
 
     private String correlationId = new String();
     private String authToken = new String();
     private String userId = new String();
     private String orgId = new String();
     private String rfCode = new String();
+    private String companyId = new String();
+    private String warehouseId = new String();
 
     public String getCorrelationId() {
         return correlationId;
@@ -54,5 +58,21 @@ public class UserContext {
 
     public void setRfCode(String rfCode) {
         this.rfCode = rfCode;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(String warehouseId) {
+        this.warehouseId = warehouseId;
     }
 }

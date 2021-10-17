@@ -22,6 +22,19 @@ kubectl rollout restart -n staging deployment/layoutservice
 kubectl rollout restart -n staging deployment/resourceservice
 kubectl rollout restart -n staging deployment/workorderservice
 
+
+kubectl rollout restart -n prod deployment/adminservice
+kubectl rollout restart -n prod deployment/authserver
+kubectl rollout restart -n prod deployment/commonservice
+kubectl rollout restart -n prod deployment/inboundservice
+kubectl rollout restart -n prod deployment/integrationservice
+kubectl rollout restart -n prod deployment/inventoryservice
+kubectl rollout restart -n prod deployment/layoutservice
+kubectl rollout restart -n prod deployment/outboundservice
+kubectl rollout restart -n prod deployment/resourceservice
+kubectl rollout restart -n prod deployment/workorderservice
+
+
 docker push garyzhangscm/cwms-zuulsvr:latest
 
 docker push garyzhangscm/cwms-confsvr:latest
@@ -58,10 +71,10 @@ docker tag garyzhangscm/cwms-auth:latest   garyzhangscm/cwms-auth:v1.0
 docker tag garyzhangscm/cwms-commonserver:latest   garyzhangscm/cwms-commonserver:v1.0
 docker tag garyzhangscm/cwms-inboundserver:latest garyzhangscm/cwms-inboundserver:v1.0
 docker tag garyzhangscm/cwms-integrationserver:latest   garyzhangscm/cwms-integrationserver:v1.0
-docker tag garyzhangscm/cwms-outboundserver:latest garyzhangscm/cwms-outboundserver:v1.0
 docker tag garyzhangscm/cwms-inventoryserver:latest   garyzhangscm/cwms-inventoryserver:v1.0
-docker tag garyzhangscm/cwms-ressvr:latest   garyzhangscm/cwms-ressvr:v1.0
 docker tag garyzhangscm/cwms-layoutserver:latest  garyzhangscm/cwms-layoutserver:v1.0
+docker tag garyzhangscm/cwms-outboundserver:latest garyzhangscm/cwms-outboundserver:v1.0
+docker tag garyzhangscm/cwms-ressvr:latest   garyzhangscm/cwms-ressvr:v1.0
 docker tag garyzhangscm/cwms-workorderserver:latest  garyzhangscm/cwms-workorderserver:v1.0
 
 
