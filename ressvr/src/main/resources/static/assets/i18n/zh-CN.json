@@ -1403,5 +1403,12 @@
   "qc-pass-inventory-status": "质检通过时库存状态",
   "qc-fail-inventory-status": "质检失败时库存状态",
   "menu.main.qc.qc-result": "质检结果",
-  "qc-inspection-time": "质检时间"
+  "qc-inspection-time": "质检时间",
+  "REPORT-TYPE-LPN_LABEL": "LPN 标签",
+  "REPORT-TYPE-PRODUCTION_LINE_ASSIGNMENT_LABEL": "产线分配标签",
+  "work-order.qc-sample": "质检样品",
+  "work-order.qc-sample-maintenance": "质检样品维护",
+  "menu.mobile.work-order.qc": "质检",
+  "menu.main.work-order.qc-result": "质检结果",
+  "work-order.qc-sample.number": "质检样品号"
 }

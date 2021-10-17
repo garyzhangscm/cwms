@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
@@ -152,6 +153,8 @@ public class WorkOrderService implements TestDataInitiableService {
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
+                ,
+                Sort.by(Sort.Direction.DESC, "number")
         );
 
         if (workOrders.size() > 0 && loadDetails) {
@@ -1274,9 +1277,17 @@ public class WorkOrderService implements TestDataInitiableService {
         // the order
 
         report.addParameter("lpn", lpnNumber);
+        report.addParameter("item_family", Objects.nonNull(workOrder.getItem().getItemFamily()) ?
+                workOrder.getItem().getItemFamily().getDescription() : "");
         report.addParameter("item_name", workOrder.getItem().getName());
         report.addParameter("work_order_number", workOrder.getNumber());
-        report.addParameter("quantity", lpnQuantity);
+        if (Objects.nonNull(lpnQuantity)) {
+            report.addParameter("quantity", lpnQuantity);
+
+        }
+        else {
+            // the user doesn't specify hte lpn quantity, let's
+        }
 
 
     }

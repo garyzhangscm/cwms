@@ -51,6 +51,8 @@ public class QCInspectionRequestService {
     @Autowired
     private InventoryService inventoryService;
     @Autowired
+    private ItemService itemService;
+    @Autowired
     private UserService userService;
 
     @Autowired
@@ -131,6 +133,13 @@ public class QCInspectionRequestService {
 
 
     public void generateInboundQCInspectionRequest(Inventory inventory) {
+        // setup all the necessary fields in case we will need to get
+        // the matched qc rule configuration from the inventory attribute
+        inventory.setItem(
+                itemService.findById(
+                        inventory.getItem().getId()
+                )
+        );
         if (inventory.getInboundQCRequired() == false) {
             logger.debug("inventory {} / {} doens't need QC",
                     inventory.getId(), inventory.getLpn());

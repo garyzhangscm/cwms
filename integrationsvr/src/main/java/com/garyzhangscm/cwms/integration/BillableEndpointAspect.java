@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.integration;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.model.BillableRequest;
 import com.garyzhangscm.cwms.integration.service.UserService;
+import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Aspect // indicate the component is used for aspect
@@ -68,9 +70,36 @@ public class BillableEndpointAspect {
         if (authorization.startsWith("Bearer")) {
             authorization = authorization.substring(7).trim();
         }
+        Long companyId = null;
+        try {
+            companyId =
+                    parametersMap.containsKey("companyId") ?
+                            Long.parseLong(parametersMap.get("companyId")) :
+                            (Objects.isNull(httpServletRequest.getHeader("companyId")) ||
+                                    Strings.isBlank(httpServletRequest.getHeader("companyId"))) ?
+                                    null : Long.parseLong(httpServletRequest.getHeader("companyId"));
+        }
+        catch (Exception ex) {
+            logger.debug("error while get company id for billable request: {}",
+                    ex.getMessage());
+
+        }
+        Long warehouseId = null;
+        try {
+            warehouseId = parametersMap.containsKey("warehouseId") ?
+                    Long.parseLong(parametersMap.get("warehouseId")) :
+                    (Objects.isNull(httpServletRequest.getHeader("warehouseId")) ||
+                            Strings.isBlank(httpServletRequest.getHeader("warehouseId"))) ?
+                            null : Long.parseLong(httpServletRequest.getHeader("warehouseId"));
+        }
+        catch (Exception ex) {
+            logger.debug("error while get warehouse id for billable request: {}",
+                    ex.getMessage());
+
+        }
         BillableRequest billableRequest = new BillableRequest(
-                parametersMap.containsKey("companyId") ? Long.parseLong(parametersMap.get("companyId")) : null,
-                parametersMap.containsKey("warehouseId") ? Long.parseLong(parametersMap.get("warehouseId")) : null,
+                companyId,
+                warehouseId,
                 "integration_service", //serviceName
                 httpServletRequest.getRequestURI(), //webAPIEndpoint
                 httpServletRequest.getMethod(), // method

@@ -528,6 +528,11 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    public List<Location> releaseLocations(Long warehouseId, Order order) {
+        return unreserveLocation(warehouseId, null, order.getNumber(),null);
+
+    }
+
     public List<Location> unreserveLocation(Long warehouseId, Long locationId) {
         return unreserveLocation(warehouseId, locationId, "",null);
 

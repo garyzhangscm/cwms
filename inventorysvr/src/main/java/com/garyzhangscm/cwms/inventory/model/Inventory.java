@@ -137,6 +137,8 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     )
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
+
+
     public Inventory split(String newLpn, Long newQuantity) {
         Inventory inventory = new Inventory();
         if (StringUtils.isBlank(newLpn)) {
@@ -424,4 +426,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     public void setInboundQCRequired(Boolean inboundQCRequired) {
         this.inboundQCRequired = inboundQCRequired;
     }
+
+
+
 }

@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -81,12 +82,25 @@ public class ProductionLineAssignmentService   {
 
 
 
-    public ProductionLineAssignment findById(Long id ) {
+    public ProductionLineAssignment findById(Long id) {
+        return findById(id, true);
+    }
+    public ProductionLineAssignment findById(Long id, boolean loadDetail ) {
         ProductionLineAssignment productionLineAssignment = productionLineAssignmentRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("production line assignment not found by id: " + id));
+        if (loadDetail) {
+            loadAttribute(productionLineAssignment);
+        }
         return productionLineAssignment;
     }
 
+    private void loadAttribute(ProductionLineAssignment productionLineAssignment) {
+        if (Objects.nonNull(productionLineAssignment.getWorkOrder())) {
+            productionLineAssignment.setWorkOrderId(
+                    productionLineAssignment.getWorkOrder().getId()
+            );
+        }
+    }
 
 
     public List<ProductionLineAssignment> findAll(Long productionLineId,

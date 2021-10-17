@@ -51,6 +51,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Production Kanban",menu.dashboard.production-kanban,/work-order/production-kanban,6,Main-Menu-WorkOrder,Production-Kanban,
 "Mould",menu.main.work-order.mould,/work-order/mould,7,Main-Menu-WorkOrder,Mould,
 "Work Order Configuration",menu.main.work-order.work-order-config,/work-order/work-order-configuration,8,Main-Menu-WorkOrder,Work-Order-Config,
+"Work Order QC Result",menu.main.work-order.qc-result,/work-order/qc-inspection-result,9,Main-Menu-WorkOrder,Work-Order-QC-Result,
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,
@@ -69,16 +70,17 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,
 "Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,
 "Report Printer Configuration",menu.main.report.report-printer-configuration,/report/report-printer-configuration,3,Main-Menu-Report,Report-Report-PRINTER-CONFIGURATION,
-"Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,0xe63a
-"Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,0xe63a
-"Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,0xe63a
-"Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,0xe63a
-"Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,0xe63a
-"Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,0xe622
-"Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,0xe622
-"Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,0xe63a
-"Inventory Lost And Found",menu.mobile.inventory.inventoryLF,inventory_lost_and_found,5,Mobile-Menu-Inventory,Mobile-Inventory-InventoryLF,0xe63a
-"Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,0xe63a
-"Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,0xe63a
-"Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,0xe63a
-"Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,0xe63a
+"Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,menu_inbound_receive.png
+"Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,menu_outbound_pick_order.png
+"Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,menu_outbound_pick_list.png
+"Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,menu_outbound_pick_tote.png
+"Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,menu_inventory.png
+"Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,menu_inventory_count.png
+"Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,menu_inventory_audit.png
+"Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,menu_inventory_putaway.png
+"Inventory Lost And Found",menu.mobile.inventory.inventoryLF,inventory_lost_and_found,5,Mobile-Menu-Inventory,Mobile-Inventory-InventoryLF,menu_inventory_lf.png
+"Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,menu_workorder_pick.png
+"Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,menu_workorder_produce.png
+"Work Order QC",menu.mobile.work-order.qc,work_order_qc,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC,menu_work_order_qc.png
+"Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,menu_workorder_checkin.png
+"Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,5,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,menu_workorder_checkout.png

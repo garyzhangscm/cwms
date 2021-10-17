@@ -132,7 +132,18 @@ public class QCRuleConfigurationService {
 
 
     public QCRuleConfiguration save(QCRuleConfiguration qcRuleConfiguration) {
+
+        if (Objects.isNull(qcRuleConfiguration.getSequence())) {
+            qcRuleConfiguration.setSequence(
+                    getNextSequence()
+            );
+        }
         return qcRuleConfigurationRepository.save(qcRuleConfiguration);
+    }
+
+    private Long getNextSequence() {
+        Long biggestSequence = qcRuleConfigurationRepository.getBiggestSequence();
+        return Objects.isNull(biggestSequence) ? 1l : biggestSequence;
     }
 
 
@@ -207,6 +218,8 @@ public class QCRuleConfigurationService {
     }
     public QCRuleConfiguration findBestMatchedQCRuleConfiguration(Supplier supplier, Inventory inventory) {
 
+        // logger.debug("Start to find the all matched qc rule configuration for inventory \n{}",
+        //         inventory);
         List<QCRuleConfiguration> matchedQCRuleConfigurations =
                 findAllMatchedQCRuleConfiguration(supplier, inventory);
 
@@ -238,8 +251,21 @@ public class QCRuleConfigurationService {
 
     private boolean isMatch(QCRuleConfiguration qcRuleConfiguration, Supplier supplier, Inventory inventory) {
 
+        logger.debug("start to check if qc rule configuration id {} matches with supplier {} / {}, inventory {} / {}",
+                qcRuleConfiguration.getId(),
+                Objects.isNull(supplier) ? "N/A" : supplier.getId(),
+                Objects.isNull(supplier) ? "N/A" : supplier.getName(),
+                inventory.getId(),
+                inventory.getLpn());
+        // logger.debug("========      Inventory ===========\n {}", inventory);
+        // logger.debug("========      Supplier ===========\n {}", supplier);
         if (Objects.nonNull(qcRuleConfiguration.getWarehouseId()) &&
                 !qcRuleConfiguration.getWarehouseId().equals(inventory.getWarehouseId())) {
+            logger.debug("qc rule configuration id {} has warehouse id defined {}, " +
+                    " which doesn't match with the warehouse id passed in: {}",
+                    qcRuleConfiguration.getId(),
+                    qcRuleConfiguration.getWarehouseId(),
+                    inventory.getWarehouseId());
             return false;
         }
 
@@ -247,25 +273,50 @@ public class QCRuleConfigurationService {
         if (Objects.nonNull(qcRuleConfiguration.getSupplierId()) &&
                 (
                     Objects.isNull(supplier) ||
-                       !qcRuleConfiguration.getSupplierId().equals(supplier.getId())
+                       !Objects.equals(qcRuleConfiguration.getSupplierId(), supplier.getId())
                 )) {
+            logger.debug("qc rule configuration id {} has supplier id defined {}, " +
+                            " which doesn't match with the supplier id passed in: {}",
+                    qcRuleConfiguration.getId(),
+                    qcRuleConfiguration.getWarehouseId(),
+                    Objects.isNull(supplier)? "N/A" : supplier.getId());
             return false;
         }
 
         if (Objects.nonNull(qcRuleConfiguration.getItem()) &&
-                !qcRuleConfiguration.getItem().getId().equals(inventory.getItem().getId())) {
+                !Objects.equals(qcRuleConfiguration.getItem(), inventory.getItem())) {
+            logger.debug("qc rule configuration id {} has item id defined {}, " +
+                            " which doesn't match with the item id passed in: {}",
+                    qcRuleConfiguration.getId(),
+                    qcRuleConfiguration.getItem().getId(),
+                    inventory.getItem().getId());
             return false;
         }
 
         if (Objects.nonNull(qcRuleConfiguration.getItemFamily()) &&
-                !qcRuleConfiguration.getItemFamily().getId().equals(inventory.getItem().getItemFamily().getId())) {
+                !Objects.equals(qcRuleConfiguration.getItemFamily(), inventory.getItem().getItemFamily())) {
+            logger.debug("qc rule configuration id {} has item family id defined {}, " +
+                            " which doesn't match with the item family id passed in: {}",
+                    qcRuleConfiguration.getId(),
+                    qcRuleConfiguration.getItemFamily().getId(),
+                    Objects.isNull(inventory.getItem().getItemFamily()) ?
+                            "N/A" : inventory.getItem().getItemFamily().getId());
             return false;
         }
 
         if (Objects.nonNull(qcRuleConfiguration.getInventoryStatus()) &&
-                !qcRuleConfiguration.getInventoryStatus().getId().equals(inventory.getInventoryStatus().getId())) {
+                !Objects.equals(qcRuleConfiguration.getInventoryStatus(), inventory.getInventoryStatus())) {
+            logger.debug("qc rule configuration id {} has inventory status id defined {}, " +
+                            " which doesn't match with the inventory status id passed in: {}",
+                    qcRuleConfiguration.getId(),
+                    qcRuleConfiguration.getInventoryStatus().getId(),
+                    Objects.isNull(inventory.getInventoryStatus()) ?
+                        "N/A" : inventory.getInventoryStatus().getId());
             return false;
         }
+
+        logger.debug("qc rule configuration id {} matches with the supplier and inventory, ",
+                qcRuleConfiguration.getId());
         return true;
     }
 

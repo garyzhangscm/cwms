@@ -327,9 +327,10 @@ public class ReceiptLineService implements TestDataInitiableService{
         Long qcQuantityNeeded =
                 receiptLine.getQcQuantity() > 0 ?
                         receiptLine.getQcQuantity() :
-                        (long)(receiptLine.getExpectedQuantity() * receiptLine.getQcPercentage());
-        logger.debug("Receipt line {} / {}, qc quantity needed? {}, qc quantity requested: {}",
+                        (long)(receiptLine.getExpectedQuantity() * receiptLine.getQcPercentage() / 100);
+        logger.debug("Receipt line {} / {}, receipt line qc: {} / {}, qc quantity needed? {}, qc quantity requested: {}",
                 receipt.getNumber(), receiptLine.getNumber(),
+                receiptLine.getQcQuantity(), receiptLine.getQcPercentage(),
                 qcQuantityNeeded, receiptLine.getQcQuantityRequested());
         if (receiptLine.getQcQuantityRequested() >= qcQuantityNeeded) {
             return false;
@@ -363,6 +364,8 @@ public class ReceiptLineService implements TestDataInitiableService{
         return
                 inboundQCConfigurationService.getBestMatchedInboundQCConfiguration(
                         receipt.getSupplierId(),
+                        Objects.isNull(receiptLine.getItem().getItemFamily()) ? null :
+                                receiptLine.getItem().getItemFamily().getId(),
                         receiptLine.getItemId(),
                         inventory.getInventoryStatus().getId(),
                         receipt.getWarehouseId(),

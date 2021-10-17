@@ -699,13 +699,21 @@ public class OrderService implements TestDataInitiableService {
         order.setCompleteTime(LocalDateTime.now());
 
 
+
         logger.debug("Start to send order confirmation after the order {} is marked as completed",
                 order.getNumber());
         sendOrderConfirmationIntegration(order);
 
 
+        // release the location that is reserved by order
+
+        warehouseLayoutServiceRestemplateClient.releaseLocations(order.getWarehouseId(), order);
+        order.setStageLocationId(null);
+        order.setStageLocationGroupId(null);
+
 
         return saveOrUpdate(order);
+
     }
 
     private void sendOrderConfirmationIntegration(Order order) {

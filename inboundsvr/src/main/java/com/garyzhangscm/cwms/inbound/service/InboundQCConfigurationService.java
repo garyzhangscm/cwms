@@ -238,6 +238,9 @@ public class InboundQCConfigurationService {
                                                                        Long itemId,
                                                                        Long warehouseId,
                                                                        Long companyId) {
+        logger.debug("start to get best matched inbound qc configuration with " +
+                "\n supplier id: {}, item family id: {}, item id: {}, warehouse id: {}, company id: {}",
+                supplierId, itemFamilyId, itemId, warehouseId, companyId);
         return getBestMatchedInboundQCConfiguration(
                 supplierId, itemFamilyId, itemId,  null, warehouseId, companyId
         );
@@ -250,6 +253,9 @@ public class InboundQCConfigurationService {
                                                      Long fromInventoryStatusId,
                                                      Long warehouseId,
                                                      Long companyId) {
+        logger.debug("start to get best matched inbound qc configuration with " +
+                        "\n supplier id: {}, item family id: {}, item id: {}, from inventory status id: {}, warehouse id: {}, company id: {}",
+                supplierId, itemFamilyId, itemId, fromInventoryStatusId, warehouseId, companyId);
         List<InboundQCConfiguration> allInboundQCConfiguration =
                 findAll(null, null, null, null,
                         null, companyId, true);
@@ -371,27 +377,42 @@ public class InboundQCConfigurationService {
                     Long companyId) {
         if (Objects.nonNull(inboundQCConfiguration.getCompanyId()) &&
                 !inboundQCConfiguration.getCompanyId().equals(companyId)) {
+            logger.debug("company id in the qc configuration is {}, company id being compared is {}, mis match",
+                    inboundQCConfiguration.getCompanyId(),
+                    companyId);
             return false;
         }
 
 
         if (Objects.nonNull(inboundQCConfiguration.getWarehouseId()) &&
                 !inboundQCConfiguration.getWarehouseId().equals(warehouseId)) {
+            logger.debug("warehouse id in the qc configuration is {}, warehouse id being compared is {}, mis match",
+                    inboundQCConfiguration.getWarehouseId(),
+                    warehouseId);
             return false;
         }
 
         if (Objects.nonNull(inboundQCConfiguration.getItemFamilyId()) &&
                 !inboundQCConfiguration.getItemFamilyId().equals(itemFamilyId)) {
+            logger.debug("item family id in the qc configuration is {}, item family id being compared is {}, mis match",
+                    inboundQCConfiguration.getItemFamilyId(),
+                    itemFamilyId);
             return false;
         }
         if (Objects.nonNull(inboundQCConfiguration.getItemId()) &&
                 !inboundQCConfiguration.getItemId().equals(itemId)) {
+            logger.debug("item id in the qc configuration is {}, item id being compared is {}, mis match",
+                    inboundQCConfiguration.getItemId(),
+                    itemId);
             return false;
         }
 
         if (Objects.nonNull(inboundQCConfiguration.getSupplierId()) &&
                 !inboundQCConfiguration.getSupplierId().equals(supplierId)
                 ) {
+            logger.debug("supplier id in the qc configuration is {}, supplier id being compared is {}, mis match",
+                    inboundQCConfiguration.getSupplierId(),
+                    supplierId);
             return false;
         }
 
@@ -400,8 +421,19 @@ public class InboundQCConfigurationService {
                 Objects.nonNull(inboundQCConfiguration.getFromInventoryStatusId()) &&
                 !inboundQCConfiguration.getFromInventoryStatusId().equals(fromInventoryStatusId)
         ) {
+
+            logger.debug("from inventory id in the qc configuration is {}, from inventory id being compared is {}, mis match",
+                    inboundQCConfiguration.getFromInventoryStatusId(),
+                    fromInventoryStatusId);
             return false;
         }
+
+        logger.debug("qc configuration id {} matches with " +
+                        "supplierId: {},itemFamilyId: {},itemId: {}, fromInventoryStatusId: {}, " +
+                        "warehouseId: {}, companyId: {}",
+                inboundQCConfiguration.getId(),
+                supplierId, itemFamilyId,  itemId, fromInventoryStatusId,
+                warehouseId, companyId);
         return true;
     }
 
