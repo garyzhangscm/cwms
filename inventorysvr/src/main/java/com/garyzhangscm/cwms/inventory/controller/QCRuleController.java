@@ -41,8 +41,9 @@ public class QCRuleController {
 
     @RequestMapping(value="/qc-rules", method = RequestMethod.GET)
     public List<QCRule> findAllQCRules(@RequestParam Long warehouseId,
-                                       @RequestParam(name="name", required = false, defaultValue = "") String name) {
-        return qcRuleService.findAll(warehouseId, name);
+                                       @RequestParam(name="name", required = false, defaultValue = "") String name,
+                                       @RequestParam(name="ruleIds", required = false, defaultValue = "") String ruleIds) {
+        return qcRuleService.findAll(warehouseId, name, ruleIds);
     }
 
     @RequestMapping(value="/qc-rules/{id}", method = RequestMethod.GET)

@@ -1411,5 +1411,8 @@
   "work-order.qc-sample-maintenance": "QC Sample Maintenance",
   "menu.mobile.work-order.qc": "QC",
   "menu.main.work-order.qc-result": "QC Result",
-  "work-order.qc-sample.number": "QC Sample Number"
+  "work-order.qc-sample.number": "QC Sample Number",
+  "menu.main.work-order.qc-rule-config": "QC Rule Config",
+  "qc-rule-configuration": "QC Rule Config",
+  "qc-rule": "QC Rule"
 }

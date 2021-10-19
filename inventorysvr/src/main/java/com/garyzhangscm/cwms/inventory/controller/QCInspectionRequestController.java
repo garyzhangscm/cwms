@@ -39,15 +39,17 @@ public class QCInspectionRequestController {
             @RequestParam Long warehouseId,
             @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
             @RequestParam(name="inventoryIds", required = false, defaultValue = "") String inventoryIds,
-            @RequestParam(name="lpn", required = false, defaultValue = "") String lpn ) {
-        return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, null);
+            @RequestParam(name="lpn", required = false, defaultValue = "") String lpn ,
+            @RequestParam(name="workOrderQCSampleNumber", required = false, defaultValue = "") String workOrderQCSampleNumber) {
+        return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, workOrderQCSampleNumber, null);
     }
 
     @RequestMapping(value="/qc-inspection-requests/result", method = RequestMethod.GET)
     public List<QCInspectionRequest> findAllQCInspectionRequestResults(
             @RequestParam Long warehouseId,
-            @RequestParam(name="lpn", required = false, defaultValue = "") String lpn ) {
-        return qcInspectionRequestService.findAllQCInspectionRequestResults(warehouseId, lpn);
+            @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+            @RequestParam(name="workOrderQCSampleNumber", required = false, defaultValue = "") String workOrderQCSampleNumber ) {
+        return qcInspectionRequestService.findAllQCInspectionRequestResults(warehouseId, lpn, workOrderQCSampleNumber);
     }
 
 
@@ -62,7 +64,17 @@ public class QCInspectionRequestController {
     @RequestMapping(value="/qc-inspection-requests", method = RequestMethod.POST)
     public List<QCInspectionRequest> savePendingQCInspectionRequest(
             @RequestParam Long warehouseId,
-            @RequestBody List<QCInspectionRequest> qcInspectionRequests) {
-        return qcInspectionRequestService.savePendingQCInspectionRequest(warehouseId, qcInspectionRequests);
+            @RequestBody List<QCInspectionRequest> qcInspectionRequests,
+            @RequestParam(name="rfCode", required = false, defaultValue = "") String rfCode) {
+        return qcInspectionRequestService.savePendingQCInspectionRequest(warehouseId, qcInspectionRequests, rfCode);
+    }
+
+
+    @RequestMapping(value="/qc-inspection-requests/work-order", method = RequestMethod.PUT)
+    public QCInspectionRequest requestWorkOrderQCInspectionRequest(
+            @RequestParam Long warehouseId,
+            @RequestParam Long workOrderQCSampleId,
+            @RequestParam String ruleIds) {
+        return qcInspectionRequestService.generateWorkOrderQCInspectionRequest(warehouseId, workOrderQCSampleId, ruleIds);
     }
 }

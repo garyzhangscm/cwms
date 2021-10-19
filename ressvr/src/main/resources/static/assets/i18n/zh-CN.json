@@ -1410,5 +1410,8 @@
   "work-order.qc-sample-maintenance": "质检样品维护",
   "menu.mobile.work-order.qc": "质检",
   "menu.main.work-order.qc-result": "质检结果",
-  "work-order.qc-sample.number": "质检样品号"
+  "work-order.qc-sample.number": "质检样品号",
+  "menu.main.work-order.qc-rule-config": "质检规则配置",
+  "qc-rule-configuration": "质检规则配置",
+  "qc-rule": "质检规则"
 }
