@@ -19,10 +19,15 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
@@ -54,9 +59,17 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     @Column(name = "number")
     private String number;
 
+    // only if the qc is for inventory
     @ManyToOne
     @JoinColumn(name="inventory_id")
     private Inventory inventory;
+
+    // only if the qc is for work order
+    @Column(name="work_order_qc_sample_id")
+    private Long workOrderQCSampleId;
+
+    @Transient
+    private WorkOrderQCSample workOrderQCSample;
 
 
     @Column(name = "qc_inspection_result")
@@ -67,7 +80,13 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     private String qcUsername;
 
     @Column(name = "qc_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime qcTime;
+
+    @Column(name = "qc_rf_code")
+    private String rfCode;
 
 
     @OneToMany(
@@ -128,6 +147,14 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
         this.qcInspectionResult = qcInspectionResult;
     }
 
+    public String getRfCode() {
+        return rfCode;
+    }
+
+    public void setRfCode(String rfCode) {
+        this.rfCode = rfCode;
+    }
+
     public String getQcUsername() {
         return qcUsername;
     }
@@ -155,5 +182,21 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
 
     public void addQcInspectionRequestItem(QCInspectionRequestItem qcInspectionRequestItem) {
         this.qcInspectionRequestItems.add(qcInspectionRequestItem);
+    }
+
+    public Long getWorkOrderQCSampleId() {
+        return workOrderQCSampleId;
+    }
+
+    public void setWorkOrderQCSampleId(Long workOrderQCSampleId) {
+        this.workOrderQCSampleId = workOrderQCSampleId;
+    }
+
+    public WorkOrderQCSample getWorkOrderQCSample() {
+        return workOrderQCSample;
+    }
+
+    public void setWorkOrderQCSample(WorkOrderQCSample workOrderQCSample) {
+        this.workOrderQCSample = workOrderQCSample;
     }
 }

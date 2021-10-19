@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.WorkOrderServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.QCInspectionRequestRepository;
@@ -29,6 +30,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
@@ -61,11 +63,22 @@ public class QCInspectionRequestService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InboundServiceRestemplateClient inboundServiceRestemplateClient;
+    @Autowired
+    private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
 
+    public QCInspectionRequest findById(Long id, boolean loadDetails) {
+        QCInspectionRequest qcInspectionRequest =
+                qcInspectionRequestRepository.findById(id)
+                    .orElseThrow(() -> ResourceNotFoundException.raiseException("QC inspection request not found by id: " + id));
+        if (loadDetails) {
+            loadAttributes(qcInspectionRequest);
+        }
+        return  qcInspectionRequest;
+
+    }
     public QCInspectionRequest findById(Long id ) {
-        return qcInspectionRequestRepository.findById(id)
-                     .orElseThrow(() -> ResourceNotFoundException.raiseException("QC inspection request not found by id: " + id));
+        return findById(id, true);
 
     }
 
@@ -73,9 +86,21 @@ public class QCInspectionRequestService {
                                              Long inventoryId,
                                              String inventoryIds,
                                              String lpn,
-                                             QCInspectionResult qcInspectionResult) {
+                                             String workOrderQCSampleNumber,
+                                             QCInspectionResult qcInspectionResult){
+        return findAll(warehouseId, inventoryId, inventoryIds,
+                lpn, workOrderQCSampleNumber, qcInspectionResult, true);
+    }
+    public List<QCInspectionRequest> findAll(Long warehouseId,
+                                             Long inventoryId,
+                                             String inventoryIds,
+                                             String lpn,
+                                             String workOrderQCSampleNumber,
+                                             QCInspectionResult qcInspectionResult,
+                                             boolean loadDetails) {
 
-        return qcInspectionRequestRepository.findAll(
+        List<QCInspectionRequest> qcInspectionRequests =
+                qcInspectionRequestRepository.findAll(
             (Root<QCInspectionRequest> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -108,15 +133,53 @@ public class QCInspectionRequestService {
 
                     predicates.add(criteriaBuilder.equal(joinInventory.get("lpn"), lpn));
                 }
+
+                if (Strings.isNotBlank(workOrderQCSampleNumber)) {
+                    WorkOrderQCSample workOrderQCSample = workOrderServiceRestemplateClient.getWorkOrderQCSampleByNumber(
+                            warehouseId, workOrderQCSampleNumber
+                    );
+                    if (Objects.nonNull(workOrderQCSample)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("workOrderQCSampleId"), workOrderQCSample.getId()));
+                    }
+                    else  {
+
+                        // we can't find the work order sample by the number, let's return nothing
+                        predicates.add(criteriaBuilder.equal(root.get("workOrderQCSampleId"), -1l));
+                    }
+                }
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
             }
         );
 
+        if (qcInspectionRequests.size() > 0 && loadDetails) {
+            loadAttributes(qcInspectionRequests);
+        }
+
+        return qcInspectionRequests;
+
 
 
     }
 
+    private void loadAttributes(List<QCInspectionRequest> qcInspectionRequests) {
+        qcInspectionRequests.forEach(
+                qcInspectionRequest -> loadAttributes(qcInspectionRequest)
+        );
+
+    }
+    private void loadAttributes(QCInspectionRequest qcInspectionRequest) {
+
+        if (Objects.nonNull(qcInspectionRequest.getWorkOrderQCSampleId()) &&
+                Objects.isNull(qcInspectionRequest.getWorkOrderQCSample())) {
+            qcInspectionRequest.setWorkOrderQCSample(
+                    workOrderServiceRestemplateClient.getWorkOrderQCSampleById(
+                            qcInspectionRequest.getWorkOrderQCSampleId()
+                    )
+            );
+        }
+    }
 
 
     public QCInspectionRequest save(QCInspectionRequest qcInspectionRequest) {
@@ -160,7 +223,7 @@ public class QCInspectionRequestService {
             logger.debug("We found a qc rule configuration for this inventory {} / {}",
                     inventory.getId(), inventory.getLpn());
             // assign each rule into this inventory
-             save(setupQCInspectionRequest(inventory, qcRuleConfiguration));
+             save(setupInboundQCInspectionRequest(inventory, qcRuleConfiguration));
         }
         else {
 
@@ -169,7 +232,7 @@ public class QCInspectionRequestService {
         }
     }
 
-    private QCInspectionRequest setupQCInspectionRequest(Inventory inventory, QCRuleConfiguration qcRuleConfiguration) {
+    private QCInspectionRequest setupInboundQCInspectionRequest(Inventory inventory, QCRuleConfiguration qcRuleConfiguration) {
         QCInspectionRequest qcInspectionRequest = new QCInspectionRequest();
         qcInspectionRequest.setInventory(inventory);
         qcInspectionRequest.setWarehouseId(inventory.getWarehouseId());
@@ -210,16 +273,20 @@ public class QCInspectionRequestService {
                 inventoryId,
                 inventoryIds,
                 null,
+                null,
                 QCInspectionResult.PENDING
         );
     }
 
-    public List<QCInspectionRequest> savePendingQCInspectionRequest(Long warehouseId, List<QCInspectionRequest> qcInspectionRequests) {
+    public List<QCInspectionRequest> savePendingQCInspectionRequest(Long warehouseId,
+                                                                    List<QCInspectionRequest> qcInspectionRequests,
+                                                                    String rfCode) {
         List<QCInspectionRequest> newQCInspectionRequests = new ArrayList<>();
         qcInspectionRequests.forEach(
                 qcInspectionRequest -> {
                     qcInspectionRequest.setQcTime(LocalDateTime.now());
                     qcInspectionRequest.setQcUsername(userService.getCurrentUserName());
+                    qcInspectionRequest.setRfCode(rfCode);
 
                     // setup the connection for the parent / child relationship
                     // when we get the data from the client with json format,
@@ -252,32 +319,41 @@ public class QCInspectionRequestService {
     private void changeInventoryStatus(List<QCInspectionRequest> qcInspectionRequests) {
         qcInspectionRequests.forEach(
                 qcInspectionRequest -> {
-                    Inventory inventory = qcInspectionRequest.getInventory();
-                    if (qcInspectionRequest.getQcInspectionResult().equals(QCInspectionResult.FAIL) &&
-                            Objects.nonNull(getInventoryStatusForQCFail(inventory.getWarehouseId()))) {
-                        inventory.setInventoryStatus(
-                                getInventoryStatusForQCFail(inventory.getWarehouseId())
-                        );
-                        inventory.setInboundQCRequired(false);
-                        logger.debug("The qc result for inventory {} / {} is Fail, let's set the status to {}",
-                                inventory.getId(), inventory.getLpn(),
-                                inventory.getInventoryStatus().getName());
-                        inventoryService.saveOrUpdate(inventory);
-                    }
-                    else if (qcInspectionRequest.getQcInspectionResult().equals(QCInspectionResult.PASS) &&
-                                Objects.nonNull(getInventoryStatusForQCPass(inventory.getWarehouseId()))) {
-                        inventory.setInventoryStatus(
-                                getInventoryStatusForQCPass(inventory.getWarehouseId())
-                        );
-                        inventory.setInboundQCRequired(false);
-                        logger.debug("The qc result for inventory {} / {} is Pass, let's set the status to {}",
-                                inventory.getId(), inventory.getLpn(),
-                                inventory.getInventoryStatus().getName());
-                        inventoryService.saveOrUpdate(inventory);
-                    }
 
+                    changeInventoryStatus(qcInspectionRequest);
                 }
         );
+    }
+
+    private void changeInventoryStatus(QCInspectionRequest qcInspectionRequest) {
+        Inventory inventory = qcInspectionRequest.getInventory();
+        if (Objects.isNull(inventory)) {
+            // the result is not for inventory, it may be for work order
+            return;
+        }
+        if (qcInspectionRequest.getQcInspectionResult().equals(QCInspectionResult.FAIL) &&
+                Objects.nonNull(getInventoryStatusForQCFail(inventory.getWarehouseId()))) {
+            inventory.setInventoryStatus(
+                    getInventoryStatusForQCFail(inventory.getWarehouseId())
+            );
+            inventory.setInboundQCRequired(false);
+            logger.debug("The qc result for inventory {} / {} is Fail, let's set the status to {}",
+                    inventory.getId(), inventory.getLpn(),
+                    inventory.getInventoryStatus().getName());
+            inventoryService.saveOrUpdate(inventory);
+        }
+        else if (qcInspectionRequest.getQcInspectionResult().equals(QCInspectionResult.PASS) &&
+                Objects.nonNull(getInventoryStatusForQCPass(inventory.getWarehouseId()))) {
+            inventory.setInventoryStatus(
+                    getInventoryStatusForQCPass(inventory.getWarehouseId())
+            );
+            inventory.setInboundQCRequired(false);
+            logger.debug("The qc result for inventory {} / {} is Pass, let's set the status to {}",
+                    inventory.getId(), inventory.getLpn(),
+                    inventory.getInventoryStatus().getName());
+            inventoryService.saveOrUpdate(inventory);
+        }
+
     }
 
     private InventoryStatus getInventoryStatusForQCPass(Long warehouseId) {
@@ -289,16 +365,54 @@ public class QCInspectionRequestService {
 
     }
 
-    public List<QCInspectionRequest> findAllQCInspectionRequestResults(Long warehouseId, String lpn) {
+    public List<QCInspectionRequest> findAllQCInspectionRequestResults(Long warehouseId,
+                                                                       String lpn,
+                                                                       String workOrderQCSampleNumber) {
         List<QCInspectionRequest> passedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, QCInspectionResult.PASS);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.PASS);
         List<QCInspectionRequest> failedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, QCInspectionResult.FAIL);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.FAIL);
 
         // return both passed qc inspection and failed qc inspection
         passedQCInspectionRequest.addAll(failedQCInspectionRequest);
 
         return passedQCInspectionRequest;
 
+    }
+
+    /**
+     * Generate qc inspection request for work order
+     * @param warehouseId
+     * @param ruleIds
+     * @return
+     */
+    public QCInspectionRequest generateWorkOrderQCInspectionRequest(Long warehouseId, Long workOrderQCSampleId,
+                                                                   String ruleIds) {
+        QCInspectionRequest qcInspectionRequest = new QCInspectionRequest();
+        qcInspectionRequest.setWorkOrderQCSampleId(workOrderQCSampleId);
+        qcInspectionRequest.setWarehouseId(warehouseId);
+        qcInspectionRequest.setQcInspectionResult(QCInspectionResult.PENDING);
+        qcInspectionRequest.setNumber(getNextQCInspectionRequest(warehouseId));
+
+
+        qcRuleService.findAll(warehouseId, null, ruleIds).forEach(
+                qcRule -> {
+                    QCInspectionRequestItem qcInspectionRequestItem = new QCInspectionRequestItem();
+                    qcInspectionRequestItem.setQcInspectionRequest(qcInspectionRequest);
+                    qcInspectionRequestItem.setQcInspectionResult(QCInspectionResult.PENDING);
+                    qcInspectionRequestItem.setQcRule(qcRule);
+                    qcRule.getQcRuleItems().forEach(
+                            qcRuleItem -> {
+                                QCInspectionRequestItemOption qcInspectionRequestItemOption = new QCInspectionRequestItemOption();
+                                qcInspectionRequestItemOption.setQcRuleItem(qcRuleItem);
+                                qcInspectionRequestItemOption.setQcInspectionRequestItem(qcInspectionRequestItem);
+                                qcInspectionRequestItemOption.setQcInspectionResult(QCInspectionResult.PENDING);
+                                qcInspectionRequestItem.addQcInspectionRequestItemOption(qcInspectionRequestItemOption);
+                            }
+                    );
+                    qcInspectionRequest.addQcInspectionRequestItem(qcInspectionRequestItem);
+                }
+        );
+        return save(qcInspectionRequest);
     }
 }

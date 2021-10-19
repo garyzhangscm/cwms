@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.Company;
 import com.garyzhangscm.cwms.inventory.model.WorkOrder;
 import com.garyzhangscm.cwms.inventory.model.WorkOrderLine;
+import com.garyzhangscm.cwms.inventory.model.WorkOrderQCSample;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,51 @@ public class WorkOrderServiceRestemplateClient {
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
+    @Cacheable(cacheNames = "inventory_workorder_qcsample", unless="#result == null")
+    public WorkOrderQCSample getWorkOrderQCSampleByNumber(Long warehouseId,
+                                                          String number) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/qc-samples")
+                .queryParam("warehouseId", warehouseId)
+                .queryParam("number", number);
+
+        ResponseBodyWrapper<List<WorkOrderQCSample>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<WorkOrderQCSample>>>() {}).getBody();
+
+        List<WorkOrderQCSample> workOrderQCSamples =
+                responseBodyWrapper.getData();
+        if (workOrderQCSamples.size() != 1) {
+            return null;
+        }
+        return workOrderQCSamples.get(0);
+
+    }
+
+    @Cacheable(cacheNames = "inventory_workorder_qcsample", unless="#result == null")
+    public WorkOrderQCSample getWorkOrderQCSampleById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/qc-samples/{id}");
+
+        ResponseBodyWrapper<WorkOrderQCSample> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderQCSample>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 

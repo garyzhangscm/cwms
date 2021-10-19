@@ -23,10 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
-import com.garyzhangscm.cwms.workorder.model.Inventory;
-import com.garyzhangscm.cwms.workorder.model.InventoryStatus;
-import com.garyzhangscm.cwms.workorder.model.Item;
-import com.garyzhangscm.cwms.workorder.model.WorkOrder;
+import com.garyzhangscm.cwms.workorder.model.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -80,6 +77,25 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
+    public QCRule getQCRuleById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/qc-rules/{id}");
+
+        ResponseBodyWrapper<QCRule> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<QCRule>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     @Cacheable(cacheNames = "workorder_item", unless="#result == null")
     public Item getItemById(Long id) {
 

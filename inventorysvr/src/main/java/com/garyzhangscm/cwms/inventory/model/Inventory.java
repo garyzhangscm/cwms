@@ -230,7 +230,9 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setLocation(Location location) {
         this.location = location;
-        if (location.getId() != null) {
+        if (Objects.nonNull(location) &&
+                Objects.nonNull(location.getId()) &&
+                Objects.isNull(getLocationId())) {
             setLocationId(location.getId());
         }
     }

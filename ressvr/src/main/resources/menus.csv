@@ -51,7 +51,8 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Production Kanban",menu.dashboard.production-kanban,/work-order/production-kanban,6,Main-Menu-WorkOrder,Production-Kanban,
 "Mould",menu.main.work-order.mould,/work-order/mould,7,Main-Menu-WorkOrder,Mould,
 "Work Order Configuration",menu.main.work-order.work-order-config,/work-order/work-order-configuration,8,Main-Menu-WorkOrder,Work-Order-Config,
-"Work Order QC Result",menu.main.work-order.qc-result,/work-order/qc-inspection-result,9,Main-Menu-WorkOrder,Work-Order-QC-Result,
+"Work Order QC Rule Configuration",menu.main.work-order.qc-rule-config,/work-order/qc-rule-configuration,9,Main-Menu-WorkOrder,Work-Order-QC-Rule-Config,
+"Work Order QC Result",menu.main.work-order.qc-result,/work-order/qc-inspection-result,10,Main-Menu-WorkOrder,Work-Order-QC-Result,
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,
@@ -79,6 +80,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,menu_inventory_audit.png
 "Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,menu_inventory_putaway.png
 "Inventory Lost And Found",menu.mobile.inventory.inventoryLF,inventory_lost_and_found,5,Mobile-Menu-Inventory,Mobile-Inventory-InventoryLF,menu_inventory_lf.png
+"Inventory QC",menu.mobile.inventory.qc,inventory_qc,4,Mobile-Menu-Inventory,Mobile-Inventory-QC,menu_inventory_qc.png
 "Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,menu_workorder_pick.png
 "Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,menu_workorder_produce.png
 "Work Order QC",menu.mobile.work-order.qc,work_order_qc,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC,menu_work_order_qc.png

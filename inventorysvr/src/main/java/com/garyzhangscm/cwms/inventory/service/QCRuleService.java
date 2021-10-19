@@ -63,7 +63,8 @@ public class QCRuleService{
 
 
     public List<QCRule> findAll(Long warehouseId,
-                              String name ) {
+                                String name,
+                                String ruleIds) {
 
         return qcRuleRepository.findAll(
             (Root<QCRule> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -78,6 +79,14 @@ public class QCRuleService{
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
                     }
+                }
+                if (StringUtils.isNotBlank(ruleIds)) {
+
+                    CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("id"));
+                    Arrays.stream(ruleIds.split(","))
+                            .map(Long::parseLong).forEach(ruleId -> inClause.value(ruleId));
+                    predicates.add(inClause);
+
                 }
 
 
@@ -104,7 +113,7 @@ public class QCRuleService{
     }
 
     private QCRule findByName(Long warehouseId, String name) {
-        List<QCRule> qcRules = findAll(warehouseId, name);
+        List<QCRule> qcRules = findAll(warehouseId, name, null);
         if (qcRules.size() == 1) {
             return qcRules.get(0);
         }
