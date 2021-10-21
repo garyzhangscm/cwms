@@ -29,6 +29,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportService implements TestDataInitiableService{
@@ -388,9 +389,11 @@ public class ReportService implements TestDataInitiableService{
         logger.debug("Start to get label file");
         String labelTemplate = loadLabelFile(reportMetaData);
 
-        // for labels, we will use the parameters to fill the content.
-        // the data part of the report object is only used for jasper report's detail segment
-        String labelContent = processLabel(labelTemplate, reportData.getParameters());
+        // for labels, we will use either parameters or data to fill the label template
+        // if we have data filled in, then we will use the data to print multiple lables
+        // into one file, otherwise, we will use the paramters to print only one label
+        String labelContent =  processLabel(labelTemplate, reportData);
+        logger.debug("will generate label file by content \n {}", labelContent);
 
         // save the result to local file
         String reportResultFileName = writeResultFile(reportMetaData, labelContent);
@@ -399,6 +402,28 @@ public class ReportService implements TestDataInitiableService{
         // save the history information
         return saveReportHistory(reportMetaData, reportResultFileName, warehouseId);
     }
+    /**
+     * Generate label from the template
+     * if we have data, then we will generate multiple labels from the data, otherwise,
+     * we will generate one label from the parameter
+     * @param labelTemplate
+     * @param report
+     * @return
+     */
+    private String processLabel(String labelTemplate, Report report) {
+         if (report.getData().size() == 0) {
+             logger.debug("Will get the label content out of parameters");
+             return processLabel(labelTemplate, report.getParameters());
+         }
+
+        logger.debug("Will get the label content out of data");
+         return report.getData()
+                 .stream()
+                 .map(labelParameters -> processLabel(labelTemplate, (Map<String, Object>)labelParameters))
+                 .collect(Collectors.joining());
+
+    }
+
 
     /**
      * Generate label from the template and the parameters
@@ -422,6 +447,7 @@ public class ReportService implements TestDataInitiableService{
         return labelContent;
 
     }
+
 
     private String loadLabelFile(Report report) throws IOException {
 

@@ -240,11 +240,27 @@ public class WorkOrderController {
     public ReportHistory generatePrePrintLPNLabel(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam Long quantity,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
+            @RequestParam(name = "productionLineName", defaultValue = "", required = false) String productionLineName,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale
             ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return workOrderService.generatePrePrintLPNLabel(id, lpn, quantity, locale);
+        return workOrderService.generatePrePrintLPNLabel(id, lpn, quantity, productionLineName, locale);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/{id}/pre-print-lpn-label/batch", method = RequestMethod.POST)
+    public ReportHistory generatePrePrintLPNLabelInBatch(
+            @PathVariable Long id,
+            @RequestParam String lpn,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
+            @RequestParam(name = "productionLineName", defaultValue = "", required = false) String productionLineName,
+            @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+    ) throws JsonProcessingException {
+
+        logger.debug("start generate pre-printed lpn label with id: {}", id);
+        return workOrderService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, productionLineName, locale);
     }
 }

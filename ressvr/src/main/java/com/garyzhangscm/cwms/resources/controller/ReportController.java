@@ -110,6 +110,7 @@ public class ReportController {
                 locale);
     }
 
+
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/reports/templates/upload/{warehouseId}")
     public ResponseBodyWrapper uploadReportTemplate(

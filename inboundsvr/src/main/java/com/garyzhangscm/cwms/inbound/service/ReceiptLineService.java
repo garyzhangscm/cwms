@@ -112,6 +112,11 @@ public class ReceiptLineService implements TestDataInitiableService{
             receiptLine.setItem(inventoryServiceRestemplateClient.getItemById(receiptLine.getItemId()));
 
         }
+        // load the receipt number
+        if (Objects.nonNull(receiptLine.getReceipt())) {
+            receiptLine.setReceiptNumber(receiptLine.getReceipt().getNumber());
+            receiptLine.setReceiptId(receiptLine.getReceipt().getId());
+        }
 
     }
 

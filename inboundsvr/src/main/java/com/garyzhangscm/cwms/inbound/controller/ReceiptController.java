@@ -24,6 +24,8 @@ import com.garyzhangscm.cwms.inbound.exception.GenericException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.ReceiptLineService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +34,7 @@ import java.util.List;
 
 @RestController
 public class ReceiptController {
+    private static final Logger logger = LoggerFactory.getLogger(ReceiptController.class);
     @Autowired
     ReceiptService receiptService;
     @Autowired
@@ -55,6 +58,11 @@ public class ReceiptController {
     @RequestMapping(value="/receipts/{id}", method = RequestMethod.GET)
     public Receipt findReceipt(@PathVariable Long id) {
         return receiptService.findById(id);
+    }
+
+    @RequestMapping(value="/receipts/receipt-lines/{id}", method = RequestMethod.GET)
+    public ReceiptLine findReceiptLine(@PathVariable Long id) {
+        return receiptLineService.findById(id);
     }
 
     @BillableEndpoint
@@ -149,5 +157,33 @@ public class ReceiptController {
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
 
         return receiptService.generatePutawayDocument(id, locale, inventoryIds, notPutawayInventoryOnly);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/receipt-lines/{id}/pre-print-lpn-label", method = RequestMethod.POST)
+    public ReportHistory generatePrePrintLPNLabel(
+            @PathVariable Long id,
+            @RequestParam String lpn,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+    ) throws JsonProcessingException {
+
+        logger.debug("start generate pre-printed lpn label with id: {}", id);
+        return receiptService.generatePrePrintLPNLabel(id, lpn, quantity, locale);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/receipt-lines/{id}/pre-print-lpn-label/batch", method = RequestMethod.POST)
+    public ReportHistory generatePrePrintLPNLabelInBatch(
+            @PathVariable Long id,
+            @RequestParam String lpn,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
+            @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+    ) throws JsonProcessingException {
+
+        logger.debug("start generate pre-printed lpn label with id: {}", id);
+        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, locale);
     }
 }

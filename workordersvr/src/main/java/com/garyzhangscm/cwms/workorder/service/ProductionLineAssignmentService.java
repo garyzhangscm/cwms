@@ -99,6 +99,9 @@ public class ProductionLineAssignmentService   {
             productionLineAssignment.setWorkOrderId(
                     productionLineAssignment.getWorkOrder().getId()
             );
+            productionLineAssignment.setWorkOrderNumber(
+                    productionLineAssignment.getWorkOrder().getNumber()
+            );
         }
     }
 

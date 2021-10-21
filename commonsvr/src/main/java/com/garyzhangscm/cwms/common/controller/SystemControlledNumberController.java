@@ -41,6 +41,15 @@ public class SystemControlledNumberController {
 
     }
 
+    @RequestMapping(value="/system-controlled-number/{variable}/batch/next", method = RequestMethod.GET)
+    public List<SystemControlledNumber> getNextNumbers(@RequestParam Long warehouseId,
+                                                       @RequestParam Integer batch,
+                                                       @PathVariable String variable) {
+        return systemControlledNumberService.getNextNumbers(warehouseId, variable, batch);
+
+    }
+
+
 
     @RequestMapping(value="/system-controlled-numbers", method = RequestMethod.GET)
     public List<SystemControlledNumber> getSystemControlledNumbers(@RequestParam Long warehouseId,

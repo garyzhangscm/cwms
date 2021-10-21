@@ -1413,5 +1413,6 @@
   "work-order.qc-sample.number": "质检样品号",
   "menu.main.work-order.qc-rule-config": "质检规则配置",
   "qc-rule-configuration": "质检规则配置",
-  "qc-rule": "质检规则"
+  "qc-rule": "质检规则",
+  "user-specify-lpn": "用户指定LPN"
 }
