@@ -61,6 +61,11 @@ public class ReceiptLine {
     @JoinColumn(name = "receipt_id")
     private Receipt receipt;
 
+    @Transient
+    private Long receiptId;
+    @Transient
+    private String receiptNumber;
+
     @Column(name = "over_receiving_quantity")
     private Long overReceivingQuantity = 0L;
     @Column(name = "over_receiving_percent")
@@ -185,5 +190,21 @@ public class ReceiptLine {
 
     public void setQcQuantityRequested(Long qcQuantityRequested) {
         this.qcQuantityRequested = qcQuantityRequested;
+    }
+
+    public Long getReceiptId() {
+        return receiptId;
+    }
+
+    public void setReceiptId(Long receiptId) {
+        this.receiptId = receiptId;
+    }
+
+    public String getReceiptNumber() {
+        return receiptNumber;
+    }
+
+    public void setReceiptNumber(String receiptNumber) {
+        this.receiptNumber = receiptNumber;
     }
 }

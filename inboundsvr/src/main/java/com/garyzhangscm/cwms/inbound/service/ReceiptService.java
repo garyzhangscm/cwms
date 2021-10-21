@@ -45,8 +45,12 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -601,7 +605,7 @@ public class ReceiptService implements TestDataInitiableService{
             receipt.setNumber(warehouseTransferReceipt.getReceiptNumber());
         }
         else {
-            receipt.setNumber(getNextReceiptNumber());
+            receipt.setNumber( getNextReceiptNumber(warehouseTransferReceipt.getDestinationWarehouseId()));
         }
 
         receipt.setWarehouseId(warehouseTransferReceipt.getDestinationWarehouseId());
@@ -640,7 +644,200 @@ public class ReceiptService implements TestDataInitiableService{
 
     }
 
-    public String getNextReceiptNumber() {
-        return commonServiceRestemplateClient.getNextNumber("receipt-number");
+    public String getNextReceiptNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "receipt-number");
+    }
+
+    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity, String locale)
+            throws JsonProcessingException {
+        return generatePrePrintLPNLabel(receiptLineService.findById(id), lpnNumber, lpnQuantity, locale);
+    }
+
+    public ReportHistory generatePrePrintLPNLabel(ReceiptLine receiptLine, String lpnNumber, Long lpnQuantity, String locale)
+            throws JsonProcessingException {
+        Long warehouseId = receiptLine.getWarehouseId();
+
+        Report reportData = new Report();
+        // setup the parameters for the label;
+        // for label, we don't need the actual data.
+        setupPrePrintLPNLabelParameters(
+                reportData, receiptLine, lpnNumber, lpnQuantity
+        );
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+    private void setupPrePrintLPNLabelParameters(
+            Report report, ReceiptLine receiptLine, String lpnNumber,
+            Long lpnQuantity) {
+
+        Map<String, Object> lpnLabelContent =   getLPNLabelContent(
+                receiptLine, lpnNumber, lpnQuantity
+        );
+        for(Map.Entry<String, Object> entry : lpnLabelContent.entrySet()) {
+
+            report.addParameter(entry.getKey(), entry.getValue());
+        }
+
+
+
+    }
+
+    private Map<String, Object> getLPNLabelContent(ReceiptLine receiptLine, String lpnNumber,
+                                                   Long lpnQuantity) {
+
+        Map<String, Object> lpnLabelContent = new HashMap<>();
+        lpnLabelContent.put("lpn", lpnNumber);
+        lpnLabelContent.put("item_family", Objects.nonNull(receiptLine.getItem().getItemFamily()) ?
+                receiptLine.getItem().getItemFamily().getDescription() : "");
+        lpnLabelContent.put("item_name", receiptLine.getItem().getName());
+        lpnLabelContent.put("receipt_number", receiptLine.getReceipt().getNumber());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
+        lpnLabelContent.put("check_in_date", LocalDateTime.now().format(formatter));
+
+
+        lpnLabelContent.put("supplier",
+                Objects.nonNull(receiptLine.getReceipt()) &&
+                        Objects.nonNull(receiptLine.getReceipt().getSupplier()) ?
+                        receiptLine.getReceipt().getSupplier().getDescription() : "");
+
+        if (Objects.nonNull(lpnQuantity)) {
+            logger.debug("LPN Quantity is passed in: {}", lpnQuantity);
+            lpnLabelContent.put("quantity", lpnQuantity);
+
+        }
+        else if (receiptLine.getItem().getItemPackageTypes().size() > 0){
+            logger.debug("LPN Quantity is not passed in, let's get from the UOM");
+            // the user doesn't specify hte lpn quantity, let's get from the item's default package type
+            ItemPackageType itemPackageType = receiptLine.getItem().getItemPackageTypes().get(0);
+            // get the biggest item uom
+            if (itemPackageType.getItemUnitOfMeasures().size() > 0) {
+
+                Long lpnQuantityFromItemUOM
+                        = itemPackageType.getItemUnitOfMeasures().stream().mapToLong(ItemUnitOfMeasure::getQuantity).max().orElse(0l);
+
+                logger.debug("LPN Quantity is setup to {}, according to item {}, package type {}",
+                        lpnQuantityFromItemUOM, receiptLine.getItem().getName(),
+                        itemPackageType.getName());
+                lpnLabelContent.put("quantity", lpnQuantityFromItemUOM);
+            }
+            else  {
+
+                logger.debug("item {} , package type {} have no UOM defined yet",
+                        receiptLine.getItem().getName(), itemPackageType.getName());
+                lpnLabelContent.put("quantity", 0);
+            }
+        }
+        else {
+
+            logger.debug("item {} have no item package type defined yet", receiptLine.getItem().getName());
+            lpnLabelContent.put("quantity", 0);
+        }
+        return lpnLabelContent;
+
+    }
+    /**
+     * Generate multiple labels in a batch, one for each lpn
+     * @param id
+     * @param lpn
+     * @param lpnQuantity
+     * @param count
+     * @param locale
+     * @return
+     */
+    public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long lpnQuantity, Integer count, String locale) throws JsonProcessingException {
+        return generatePrePrintLPNLabelInBatch(
+                receiptLineService.findById(id),
+                lpn, lpnQuantity, count, locale
+        );
+    }
+
+    public ReportHistory generatePrePrintLPNLabelInBatch(ReceiptLine receiptLine, String lpn, Long lpnQuantity, Integer count, String locale) throws JsonProcessingException {
+
+        Long warehouseId = receiptLine.getWarehouseId();
+        List<String> lpnNumbers;
+        if (Strings.isNotBlank(lpn)) {
+            // if the user specify the start lpn, then generate lpns based on this
+            lpnNumbers = getNextLPNNumbers(lpn, count);
+        }
+        else {
+            lpnNumbers = commonServiceRestemplateClient.getNextNumberInBatch(warehouseId, "receiving-lpn-number", count);
+        }
+        logger.debug("we will print labels for lpn : {}", lpnNumbers);
+        if (lpnNumbers.size() > 0) {
+
+
+            Report reportData = new Report();
+            // setup the parameters for the label;
+            // for label, we don't need the actual data.
+            setupPrePrintLPNLabelData(
+                    reportData, receiptLine, lpnNumbers, lpnQuantity
+            );
+            logger.debug("will call resource service to print the report with locale: {}",
+                    locale);
+            logger.debug("####   Report   Data  ######");
+            logger.debug(reportData.toString());
+            ReportHistory reportHistory =
+                    resourceServiceRestemplateClient.generateReport(
+                            warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale
+                    );
+
+
+            logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+            return reportHistory;
+        }
+        throw ReceiptOperationException.raiseException("Can't get lpn numbers");
+    }
+
+    private void setupPrePrintLPNLabelData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers, Long lpnQuantity) {
+
+        List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+        lpnNumbers.forEach(
+                lpnNumber -> {
+
+                    Map<String, Object> lpnLabelContent =   getLPNLabelContent(
+                            receiptLine, lpnNumber, lpnQuantity
+                    );
+                    lpnLabelContents.add(lpnLabelContent);
+                }
+        );
+        reportData.setData(lpnLabelContents);
+
+    }
+
+    private List<String> getNextLPNNumbers(String lpn, Integer count) {
+
+
+        // num[0] will be 21
+
+        List<String> lpnNumbers = new ArrayList<>();
+        logger.debug("start to get next batch of lpn number from user input lpn {}", lpn);
+        Pattern prefixLetterPattern =  Pattern.compile("[a-zA-Z]+");
+        Matcher matcher = prefixLetterPattern.matcher(lpn);
+        if (matcher.find()) {
+            logger.debug("we found the prefix letters");
+            String prefixLetters = matcher.group();
+            logger.debug("> {}", prefixLetters);
+            Long startNumber = Long.parseLong(lpn.replace(prefixLetters, ""));
+            logger.debug("> and the startNumber is {}", startNumber);
+
+            for(int i = 0; i<count ; i++) {
+                lpnNumbers.add(
+                        prefixLetters + (i + startNumber)
+                );
+            }
+        }
+        return lpnNumbers;
     }
 }

@@ -144,13 +144,25 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         systemControlledNumberRepository.deleteById(id);
     }
 
+    public List<SystemControlledNumber> getNextNumbers(Long warehouseId, String variable, Integer batch) {
+        List<SystemControlledNumber> systemControlledNumbers = new ArrayList<>();
+        for(int i = 0; i < batch; i++) {
+            systemControlledNumbers.add(getNextNumber(
+                    warehouseId, variable
+            ));
+        }
+        return systemControlledNumbers;
+
+    }
     public SystemControlledNumber getNextNumber(Long warehouseId, String variable) {
+
         logger.debug("Will lock by ");
         String key = warehouseId + "-" + variable;
         logger.debug(">> key: {} ", key);
         logger.debug(">> value: {}", systemControlledNumberLocks.get(key));
         // in case we just added this number, we may need to add it to the
         // map
+
         if (Objects.isNull(systemControlledNumberLocks.get(key))) {
             systemControlledNumberLocks.put(key, variable);
         }

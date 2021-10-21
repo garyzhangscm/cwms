@@ -1414,5 +1414,6 @@
   "work-order.qc-sample.number": "QC Sample Number",
   "menu.main.work-order.qc-rule-config": "QC Rule Config",
   "qc-rule-configuration": "QC Rule Config",
-  "qc-rule": "QC Rule"
+  "qc-rule": "QC Rule",
+  "user-specify-lpn": "User Specify LPN"
 }

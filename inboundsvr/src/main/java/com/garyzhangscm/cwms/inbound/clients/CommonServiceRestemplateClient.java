@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @CacheConfig(cacheNames = "common")
@@ -155,12 +156,13 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    public String getNextNumber(String variable) {
+    public String getNextNumber(Long warehouseId, String variable) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/system-controlled-number/{variable}/next");
+                        .path("/api/common/system-controlled-number/{variable}/next")
+                        .queryParam("warehouseId", warehouseId);
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(variable).toUriString(),
@@ -170,6 +172,25 @@ public class CommonServiceRestemplateClient {
 
 
         return responseBodyWrapper.getData().getNextNumber();
+    }
+
+    public List<String> getNextNumberInBatch(Long warehouseId, String variable, int batch) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/system-controlled-number/{variable}/batch/next")
+                .queryParam("batch", batch)
+                .queryParam("warehouseId", warehouseId);
+        ResponseBodyWrapper<List<SystemControlledNumber>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(variable).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<SystemControlledNumber>>>() {}).getBody();
+
+
+        return responseBodyWrapper.getData().stream().map(systemControlledNumber -> systemControlledNumber.getNextNumber()).collect(Collectors.toList());
     }
 
 }

@@ -39,6 +39,9 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     @Transient
     private Long workOrderId;
+    @Transient
+    private String workOrderNumber;
+
 
     @OneToMany(
             mappedBy = "productionLineAssignment",
@@ -221,5 +224,13 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void addLine(ProductionLineAssignmentLine productionLineAssignmentLine) {
         this.lines.add(productionLineAssignmentLine);
+    }
+
+    public String getWorkOrderNumber() {
+        return workOrderNumber;
+    }
+
+    public void setWorkOrderNumber(String workOrderNumber) {
+        this.workOrderNumber = workOrderNumber;
     }
 }

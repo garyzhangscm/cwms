@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
-import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
-import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.clients.*;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
@@ -44,7 +41,11 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,6 +88,8 @@ public class WorkOrderService implements TestDataInitiableService {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private FileService fileService;
     @Autowired
@@ -1238,12 +1241,16 @@ public class WorkOrderService implements TestDataInitiableService {
         }
     }
 
-    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity, String locale) throws JsonProcessingException {
+    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity,
+                                                  String productionLineName,
+                                                  String locale) throws JsonProcessingException {
 
-        return generatePrePrintLPNLabel(findById(id), lpnNumber, lpnQuantity, locale);
+        return generatePrePrintLPNLabel(findById(id), lpnNumber, lpnQuantity, productionLineName, locale);
     }
 
-    public ReportHistory generatePrePrintLPNLabel(WorkOrder workOrder, String lpnNumber, Long lpnQuantity, String locale)
+    public ReportHistory generatePrePrintLPNLabel(WorkOrder workOrder, String lpnNumber, Long lpnQuantity,
+                                                  String productionLineName,
+                                                  String locale)
             throws JsonProcessingException {
 
         Long warehouseId = workOrder.getWarehouseId();
@@ -1253,7 +1260,7 @@ public class WorkOrderService implements TestDataInitiableService {
         // setup the parameters for the label;
         // for label, we don't need the actual data.
         setupPrePrintLPNLabelParameters(
-                reportData, workOrder, lpnNumber, lpnQuantity
+                reportData, workOrder, lpnNumber, lpnQuantity, productionLineName
         );
         logger.debug("will call resource service to print the report with locale: {}",
                 locale);
@@ -1271,24 +1278,170 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     private void setupPrePrintLPNLabelParameters(
-            Report report, WorkOrder workOrder, String lpnNumber, Long lpnQuantity) {
+            Report report, WorkOrder workOrder, String lpnNumber,
+            Long lpnQuantity, String productionLineName) {
 
         // set the parameters to be the meta data of
         // the order
 
-        report.addParameter("lpn", lpnNumber);
-        report.addParameter("item_family", Objects.nonNull(workOrder.getItem().getItemFamily()) ?
-                workOrder.getItem().getItemFamily().getDescription() : "");
-        report.addParameter("item_name", workOrder.getItem().getName());
-        report.addParameter("work_order_number", workOrder.getNumber());
-        if (Objects.nonNull(lpnQuantity)) {
-            report.addParameter("quantity", lpnQuantity);
+        Map<String, Object> lpnLabelContent =   getLPNLabelContent(
+                workOrder, lpnNumber, lpnQuantity, productionLineName
+        );
+        for(Map.Entry<String, Object> entry : lpnLabelContent.entrySet()) {
 
+            report.addParameter(entry.getKey(), entry.getValue());
+        }
+
+
+    }
+
+
+    private Map<String, Object> getLPNLabelContent( WorkOrder workOrder, String lpnNumber,
+                                                    Long lpnQuantity, String productionLineName) {
+
+        Map<String, Object> lpnLabelContent = new HashMap<>();
+
+        lpnLabelContent.put("lpn", lpnNumber);
+        lpnLabelContent.put("item_family", Objects.nonNull(workOrder.getItem().getItemFamily()) ?
+                workOrder.getItem().getItemFamily().getDescription() : "");
+        lpnLabelContent.put("item_name", workOrder.getItem().getName());
+        lpnLabelContent.put("work_order_number", workOrder.getNumber());
+        lpnLabelContent.put("production_line_name", productionLineName);
+        if (Objects.nonNull(lpnQuantity)) {
+            logger.debug("LPN Quantity is passed in: {}", lpnQuantity);
+            lpnLabelContent.put("quantity", lpnQuantity);
+
+        }
+        else if (workOrder.getItem().getItemPackageTypes().size() > 0){
+            logger.debug("LPN Quantity is not passed in, let's get from the UOM");
+            // the user doesn't specify hte lpn quantity, let's get from the item's default package type
+            ItemPackageType itemPackageType = workOrder.getItem().getItemPackageTypes().get(0);
+            // get the biggest item uom
+            if (itemPackageType.getItemUnitOfMeasures().size() > 0) {
+
+                Long lpnQuantityFromItemUOM
+                        = itemPackageType.getItemUnitOfMeasures().stream().mapToLong(ItemUnitOfMeasure::getQuantity).max().orElse(0l);
+
+                logger.debug("LPN Quantity is setup to {}, according to item {}, package type {}",
+                        lpnQuantityFromItemUOM, workOrder.getItem().getName(),
+                        itemPackageType.getName());
+                lpnLabelContent.put("quantity", lpnQuantityFromItemUOM);
+            }
+            else  {
+
+                logger.debug("item {} , package type {} have no UOM defined yet",
+                        workOrder.getItem().getName(), itemPackageType.getName());
+                lpnLabelContent.put("quantity", 0);
+            }
         }
         else {
-            // the user doesn't specify hte lpn quantity, let's
+
+            logger.debug("item {} have no item package type defined yet", workOrder.getItem().getName());
+            lpnLabelContent.put("quantity", 0);
         }
 
 
+        return lpnLabelContent;
+
+    }
+
+    /**
+     * Generate multiple labels in a batch, one for each lpn
+     * @param id
+     * @param lpnNumber
+     * @param lpnQuantity
+     * @param count
+     * @param locale
+     * @return
+     */
+    public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpnNumber,
+                                                         Long lpnQuantity, Integer count,
+                                                         String productionLineName, String locale) throws JsonProcessingException {
+        return generatePrePrintLPNLabelInBatch(
+                findById(id),
+                lpnNumber, lpnQuantity, count, productionLineName, locale
+        );
+    }
+
+    public ReportHistory generatePrePrintLPNLabelInBatch(WorkOrder workOrder, String lpnNumber, Long lpnQuantity,
+                                                         Integer count,
+                                                         String productionLineName,
+                                                         String locale) throws JsonProcessingException {
+
+        Long warehouseId = workOrder.getWarehouseId();
+        List<String> lpnNumbers;
+        if (Strings.isNotBlank(lpnNumber)) {
+            // if the user specify the start lpn, then generate lpns based on this
+            lpnNumbers = getNextLPNNumbers(lpnNumber, count);
+        }
+        else {
+            lpnNumbers = commonServiceRestemplateClient.getNextNumberInBatch(warehouseId, "receiving-lpn-number", count);
+        }
+        logger.debug("we will print labels for lpn : {}", lpnNumbers);
+        if (lpnNumbers.size() > 0) {
+
+
+            Report reportData = new Report();
+            // setup the parameters for the label;
+            // for label, we don't need the actual data.
+            setupPrePrintLPNLabelData(
+                    reportData, workOrder, lpnNumbers, lpnQuantity, productionLineName
+            );
+            logger.debug("will call resource service to print the report with locale: {}",
+                    locale);
+            logger.debug("####   Report   Data  ######");
+            logger.debug(reportData.toString());
+            ReportHistory reportHistory =
+                    resourceServiceRestemplateClient.generateReport(
+                            warehouseId, ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL, reportData, locale
+                    );
+
+
+            logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+            return reportHistory;
+        }
+        throw WorkOrderException.raiseException("Can't get lpn numbers");
+    }
+
+    private void setupPrePrintLPNLabelData(Report reportData, WorkOrder workOrder, List<String> lpnNumbers,
+                                           Long lpnQuantity, String productionLineName) {
+
+        List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+        lpnNumbers.forEach(
+                lpnNumber -> {
+
+                    Map<String, Object> lpnLabelContent =   getLPNLabelContent(
+                            workOrder, lpnNumber, lpnQuantity, productionLineName
+                    );
+                    lpnLabelContents.add(lpnLabelContent);
+                }
+        );
+        reportData.setData(lpnLabelContents);
+
+    }
+
+    private List<String> getNextLPNNumbers(String lpn, Integer count) {
+
+
+        // num[0] will be 21
+
+        List<String> lpnNumbers = new ArrayList<>();
+        logger.debug("start to get next batch of lpn number from user input lpn {}", lpn);
+        Pattern prefixLetterPattern =  Pattern.compile("[a-zA-Z]+");
+        Matcher matcher = prefixLetterPattern.matcher(lpn);
+        if (matcher.find()) {
+            logger.debug("we found the prefix letters");
+            String prefixLetters = matcher.group();
+            logger.debug("> {}", prefixLetters);
+            Long startNumber = Long.parseLong(lpn.replace(prefixLetters, ""));
+            logger.debug("> and the startNumber is {}", startNumber);
+
+            for(int i = 0; i<count ; i++) {
+                lpnNumbers.add(
+                        prefixLetters + (i + startNumber)
+                );
+            }
+        }
+        return lpnNumbers;
     }
 }

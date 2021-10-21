@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CommonServiceRestemplateClient {
@@ -110,6 +111,25 @@ public class CommonServiceRestemplateClient {
         else {
             return unitOfMeasures.get(0);
         }
+    }
+
+    public List<String> getNextNumberInBatch(Long warehouseId, String variable, int batch) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/system-controlled-number/{variable}/batch/next")
+                        .queryParam("batch", batch)
+                        .queryParam("warehouseId", warehouseId);
+        ResponseBodyWrapper<List<SystemControlledNumber>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(variable).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<SystemControlledNumber>>>() {}).getBody();
+
+
+        return responseBodyWrapper.getData().stream().map(systemControlledNumber -> systemControlledNumber.getNextNumber()).collect(Collectors.toList());
     }
 
 }
