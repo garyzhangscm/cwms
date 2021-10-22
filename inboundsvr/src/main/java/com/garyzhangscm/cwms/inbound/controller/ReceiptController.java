@@ -44,8 +44,9 @@ public class ReceiptController {
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
     public List<Receipt> findAllReceipts(@RequestParam Long warehouseId,
                                          @RequestParam(name="number", required = false, defaultValue = "") String number,
-                                         @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList) {
-        return receiptService.findAll(warehouseId, number, receiptStatusList);
+                                         @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList,
+                                         @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+        return receiptService.findAll(warehouseId, number, receiptStatusList, loadDetails);
     }
 
     @BillableEndpoint
@@ -180,10 +181,11 @@ public class ReceiptController {
             @RequestParam String lpn,
             @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
+            @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, locale);
+        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, locale);
     }
 }

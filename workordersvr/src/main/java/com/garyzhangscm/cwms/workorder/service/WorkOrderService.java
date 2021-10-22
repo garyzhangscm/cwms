@@ -1356,15 +1356,17 @@ public class WorkOrderService implements TestDataInitiableService {
      */
     public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpnNumber,
                                                          Long lpnQuantity, Integer count,
+                                                         Integer copies,
                                                          String productionLineName, String locale) throws JsonProcessingException {
         return generatePrePrintLPNLabelInBatch(
                 findById(id),
-                lpnNumber, lpnQuantity, count, productionLineName, locale
+                lpnNumber, lpnQuantity, count, copies, productionLineName, locale
         );
     }
 
     public ReportHistory generatePrePrintLPNLabelInBatch(WorkOrder workOrder, String lpnNumber, Long lpnQuantity,
                                                          Integer count,
+                                                         Integer copies,
                                                          String productionLineName,
                                                          String locale) throws JsonProcessingException {
 
@@ -1375,7 +1377,7 @@ public class WorkOrderService implements TestDataInitiableService {
             lpnNumbers = getNextLPNNumbers(lpnNumber, count);
         }
         else {
-            lpnNumbers = commonServiceRestemplateClient.getNextNumberInBatch(warehouseId, "receiving-lpn-number", count);
+            lpnNumbers = commonServiceRestemplateClient.getNextNumberInBatch(warehouseId, "work-order-lpn-number", count);
         }
         logger.debug("we will print labels for lpn : {}", lpnNumbers);
         if (lpnNumbers.size() > 0) {
@@ -1385,7 +1387,7 @@ public class WorkOrderService implements TestDataInitiableService {
             // setup the parameters for the label;
             // for label, we don't need the actual data.
             setupPrePrintLPNLabelData(
-                    reportData, workOrder, lpnNumbers, lpnQuantity, productionLineName
+                    reportData, workOrder, lpnNumbers, lpnQuantity, productionLineName, copies
             );
             logger.debug("will call resource service to print the report with locale: {}",
                     locale);
@@ -1404,7 +1406,7 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     private void setupPrePrintLPNLabelData(Report reportData, WorkOrder workOrder, List<String> lpnNumbers,
-                                           Long lpnQuantity, String productionLineName) {
+                                           Long lpnQuantity, String productionLineName, Integer copies) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
         lpnNumbers.forEach(
@@ -1413,7 +1415,9 @@ public class WorkOrderService implements TestDataInitiableService {
                     Map<String, Object> lpnLabelContent =   getLPNLabelContent(
                             workOrder, lpnNumber, lpnQuantity, productionLineName
                     );
-                    lpnLabelContents.add(lpnLabelContent);
+                    for (int i = 0; i < copies; i++) {
+                        lpnLabelContents.add(lpnLabelContent);
+                    }
                 }
         );
         reportData.setData(lpnLabelContents);
@@ -1437,8 +1441,10 @@ public class WorkOrderService implements TestDataInitiableService {
             logger.debug("> and the startNumber is {}", startNumber);
 
             for(int i = 0; i<count ; i++) {
+                // padding leading 0 to the number
+                String numberPattern = "%0" + (lpn.length() - prefixLetters.length())+ "d";
                 lpnNumbers.add(
-                        prefixLetters + (i + startNumber)
+                        prefixLetters + String.format(numberPattern, (i + startNumber))
                 );
             }
         }

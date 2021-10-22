@@ -61,6 +61,7 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Cacheable(cacheNames = "inbound_item", unless="#result == null")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =

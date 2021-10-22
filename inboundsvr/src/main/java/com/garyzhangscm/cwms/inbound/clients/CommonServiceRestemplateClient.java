@@ -47,6 +47,7 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Cacheable(cacheNames = "inbound_client", unless="#result == null")
     public Client getClientById(Long id) {
 
         UriComponentsBuilder builder =
@@ -88,6 +89,7 @@ public class CommonServiceRestemplateClient {
             return clients.get(0);
         }
     }
+    @Cacheable(cacheNames = "inbound_supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {
 
         UriComponentsBuilder builder =
@@ -182,15 +184,15 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/system-controlled-number/{variable}/batch/next")
                 .queryParam("batch", batch)
                 .queryParam("warehouseId", warehouseId);
-        ResponseBodyWrapper<List<SystemControlledNumber>> responseBodyWrapper
+        ResponseBodyWrapper<List<String>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(variable).toUriString(),
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<SystemControlledNumber>>>() {}).getBody();
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<String>>>() {}).getBody();
 
 
-        return responseBodyWrapper.getData().stream().map(systemControlledNumber -> systemControlledNumber.getNextNumber()).collect(Collectors.toList());
+        return responseBodyWrapper.getData();
     }
 
 }

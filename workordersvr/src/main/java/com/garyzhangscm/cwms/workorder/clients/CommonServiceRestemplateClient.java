@@ -121,15 +121,15 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/system-controlled-number/{variable}/batch/next")
                         .queryParam("batch", batch)
                         .queryParam("warehouseId", warehouseId);
-        ResponseBodyWrapper<List<SystemControlledNumber>> responseBodyWrapper
+        ResponseBodyWrapper<List<String>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(variable).toUriString(),
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<SystemControlledNumber>>>() {}).getBody();
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<String>>>() {}).getBody();
 
 
-        return responseBodyWrapper.getData().stream().map(systemControlledNumber -> systemControlledNumber.getNextNumber()).collect(Collectors.toList());
+        return responseBodyWrapper.getData();
     }
 
 }

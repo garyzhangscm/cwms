@@ -257,10 +257,11 @@ public class WorkOrderController {
             @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
             @RequestParam(name = "productionLineName", defaultValue = "", required = false) String productionLineName,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
+            @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return workOrderService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, productionLineName, locale);
+        return workOrderService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, productionLineName, locale);
     }
 }
