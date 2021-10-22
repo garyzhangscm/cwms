@@ -121,7 +121,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     public SystemControlledNumber save(SystemControlledNumber systemControlledNumber, boolean initSystemControlledNumberLocks) {
 
         systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
-        SystemControlledNumber newSystemControlledNumber = systemControlledNumberRepository.save(systemControlledNumber);
+        SystemControlledNumber newSystemControlledNumber = systemControlledNumberRepository.saveAndFlush(systemControlledNumber);
         if (initSystemControlledNumberLocks) {
             initSystemControlledNumberLocks();
         }
@@ -144,13 +144,22 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         systemControlledNumberRepository.deleteById(id);
     }
 
-    public List<SystemControlledNumber> getNextNumbers(Long warehouseId, String variable, Integer batch) {
-        List<SystemControlledNumber> systemControlledNumbers = new ArrayList<>();
+    public List<String> getNextNumbers(Long warehouseId, String variable, Integer batch) {
+        List<String> systemControlledNumbers = new ArrayList<>();
         for(int i = 0; i < batch; i++) {
-            systemControlledNumbers.add(getNextNumber(
-                    warehouseId, variable
-            ));
+            SystemControlledNumber systemControlledNumber =
+                    getNextNumber(
+                            warehouseId, variable
+                    );
+            logger.debug("{} / {}, get next number for {}",
+                    i, batch, variable);
+            logger.debug(">> {}", systemControlledNumber.getNextNumber());
+
+            systemControlledNumbers.add(systemControlledNumber.getNextNumber());
         }
+        logger.debug("Get next batch of {}, quantity {}",
+                variable, batch);
+        logger.debug(systemControlledNumbers.toString());
         return systemControlledNumbers;
 
     }
@@ -168,6 +177,8 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         }
         synchronized (systemControlledNumberLocks.get(key)) {
             SystemControlledNumber systemControlledNumber = findByVariable(warehouseId, variable);
+            logger.debug("{}'s current number is {}", systemControlledNumber.getVariable(),
+                    systemControlledNumber.getCurrentNumber());
             // Check if we already reaches the maximum number allowed
             int maxNumber = (int)Math.pow(10, systemControlledNumber.getLength());
             int nextNumber = systemControlledNumber.getCurrentNumber() + 1;
@@ -180,6 +191,8 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                 nextNumber = 0;
             }
 
+            logger.debug("{}'s next number is {}", systemControlledNumber.getVariable(),
+                    nextNumber);
             systemControlledNumber.setCurrentNumber(nextNumber);
 
             systemControlledNumber = save(systemControlledNumber, false);

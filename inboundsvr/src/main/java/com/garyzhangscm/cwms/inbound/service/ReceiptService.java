@@ -756,14 +756,16 @@ public class ReceiptService implements TestDataInitiableService{
      * @param locale
      * @return
      */
-    public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long lpnQuantity, Integer count, String locale) throws JsonProcessingException {
+    public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long lpnQuantity, Integer count,
+                                                         Integer copies, String locale) throws JsonProcessingException {
         return generatePrePrintLPNLabelInBatch(
                 receiptLineService.findById(id),
-                lpn, lpnQuantity, count, locale
+                lpn, lpnQuantity, count, copies, locale
         );
     }
 
-    public ReportHistory generatePrePrintLPNLabelInBatch(ReceiptLine receiptLine, String lpn, Long lpnQuantity, Integer count, String locale) throws JsonProcessingException {
+    public ReportHistory generatePrePrintLPNLabelInBatch(ReceiptLine receiptLine, String lpn, Long lpnQuantity, Integer count,
+                                                         Integer copies, String locale) throws JsonProcessingException {
 
         Long warehouseId = receiptLine.getWarehouseId();
         List<String> lpnNumbers;
@@ -782,7 +784,7 @@ public class ReceiptService implements TestDataInitiableService{
             // setup the parameters for the label;
             // for label, we don't need the actual data.
             setupPrePrintLPNLabelData(
-                    reportData, receiptLine, lpnNumbers, lpnQuantity
+                    reportData, receiptLine, lpnNumbers, lpnQuantity, copies
             );
             logger.debug("will call resource service to print the report with locale: {}",
                     locale);
@@ -800,7 +802,8 @@ public class ReceiptService implements TestDataInitiableService{
         throw ReceiptOperationException.raiseException("Can't get lpn numbers");
     }
 
-    private void setupPrePrintLPNLabelData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers, Long lpnQuantity) {
+    private void setupPrePrintLPNLabelData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
+                                           Long lpnQuantity, Integer copies) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
         lpnNumbers.forEach(
@@ -809,7 +812,10 @@ public class ReceiptService implements TestDataInitiableService{
                     Map<String, Object> lpnLabelContent =   getLPNLabelContent(
                             receiptLine, lpnNumber, lpnQuantity
                     );
-                    lpnLabelContents.add(lpnLabelContent);
+                    for (int i = 0; i < copies; i++) {
+
+                        lpnLabelContents.add(lpnLabelContent);
+                    }
                 }
         );
         reportData.setData(lpnLabelContents);
@@ -833,8 +839,10 @@ public class ReceiptService implements TestDataInitiableService{
             logger.debug("> and the startNumber is {}", startNumber);
 
             for(int i = 0; i<count ; i++) {
+                // padding leading 0 to the number
+                String numberPattern = "%0" + (lpn.length() - prefixLetters.length())+ "d";
                 lpnNumbers.add(
-                        prefixLetters + (i + startNumber)
+                        prefixLetters + String.format(numberPattern, (i + startNumber))
                 );
             }
         }

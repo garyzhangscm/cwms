@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Transient;
@@ -118,21 +119,14 @@ public class OrderService implements TestDataInitiableService {
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
-                }
+                },
+                Sort.by(Sort.Direction.DESC, "createdTime")
         );
 
         if (orders.size() > 0 && loadDetails) {
             loadOrderAttribute(orders);
         }
-        orders.sort((o1, o2) -> {
-            if (Objects.isNull(o1.getCreatedTime())) {
-                return -1;
-            }
-            else if (Objects.isNull(o2.getCreatedTime())) {
-                return 1;
-            }
-            return o2.getCreatedTime().compareTo(o1.getCreatedTime());
-        });
+
         return orders;
 
     }
