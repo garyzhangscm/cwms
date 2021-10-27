@@ -1414,5 +1414,17 @@
   "menu.main.work-order.qc-rule-config": "质检规则配置",
   "qc-rule-configuration": "质检规则配置",
   "qc-rule": "质检规则",
-  "user-specify-lpn": "用户指定LPN"
+  "user-specify-lpn": "用户指定LPN",
+  "inventory.configuration": "库存配置",
+  "lpn-validation-rule": "LPN验证策略",
+  "menu.main.work-order.labor": "工单员工",
+  "menu.main.work-order.labor-activity": "员工记录",
+  "work-order.labor.status": "状态",
+  "work-order.labor.check-in-time": "上工时间",
+  "work-order.labor.check-out-time": "下工时间",
+  "work-order.labor.activity-type": "记录类型",
+  "original-value": "原值",
+  "new-value": "新值",
+  "work-order.labor.activity-time": "记录时间",
+  "work-order.labor.activity-username": "记录者"
 }

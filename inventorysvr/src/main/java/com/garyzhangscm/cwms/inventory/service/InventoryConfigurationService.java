@@ -29,18 +29,19 @@ import com.garyzhangscm.cwms.inventory.model.InventoryConfigurationType;
 import com.garyzhangscm.cwms.inventory.model.Warehouse;
 import com.garyzhangscm.cwms.inventory.repository.InventoryConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class InventoryConfigurationService {
@@ -56,24 +57,41 @@ public class InventoryConfigurationService {
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("inventory configuration  not found by id: " + id));
     }
 
-    public List<InventoryConfiguration> findAll() {
+    public List<InventoryConfiguration> findAll(Long companyId,
+                                                Long warehouseId,
+                                                String type) {
 
-        return inventoryConfigurationRepository.findAll();
+        if (Strings.isNotBlank(type)) {
+            return Collections.singletonList(findByCompanyAndWarehouseAndType(companyId, warehouseId,
+                    InventoryConfigurationType.valueOf(type)));
+        }
+
+        // Type is not passed in, we will get one for each type
+        return Arrays.stream(InventoryConfigurationType.values()).map(
+                inventoryConfigurationType -> findByCompanyAndWarehouseAndType(
+                        companyId, warehouseId, inventoryConfigurationType
+                )
+        ).collect(Collectors.toList());
+
+
     }
     public InventoryConfiguration save(InventoryConfiguration inventoryConfiguration) {
         return inventoryConfigurationRepository.save(inventoryConfiguration);
     }
     public InventoryConfiguration saveOrUpdate(InventoryConfiguration inventoryConfiguration) {
-        if (Objects.nonNull(findByCompanyAndWarehouseAndType(
-                inventoryConfiguration.getCompanyId(), inventoryConfiguration.getWarehouseId(),
-                        inventoryConfiguration.getType()))) {
+
+        InventoryConfiguration existingInventoryConfiguration =
+                findByCompanyAndWarehouseAndType(inventoryConfiguration.getCompanyId(),
+                        inventoryConfiguration.getWarehouseId(), inventoryConfiguration.getType());
+
+        // if we have an exact match, then change it
+        if (Objects.equals(existingInventoryConfiguration.getCompanyId(), inventoryConfiguration.getCompanyId()) &&
+                Objects.equals(existingInventoryConfiguration.getWarehouseId(), inventoryConfiguration.getWarehouseId())) {
             inventoryConfiguration.setId(
-                    findByCompanyAndWarehouseAndType(
-                            inventoryConfiguration.getCompanyId(), inventoryConfiguration.getWarehouseId(),
-                            inventoryConfiguration.getType()
-                    ).getId()
+                    existingInventoryConfiguration.getId()
             );
         }
+
         return inventoryConfigurationRepository.save(inventoryConfiguration);
     }
     public InventoryConfiguration findByCompanyAndWarehouseAndType(Long companyId, Long warehouseId,
@@ -127,6 +145,19 @@ public class InventoryConfigurationService {
     }
 
 
+    public List<InventoryConfiguration> saveInventoryConfiguration(Long companyId,
+                                                                   Long warehouseId,
+                                                                   List<InventoryConfiguration> inventoryConfigurations) {
+        return inventoryConfigurations.stream()
+                .map(inventoryConfiguration -> saveInventoryConfiguration(companyId, warehouseId, inventoryConfiguration)).collect(Collectors.toList());
+    }
 
+    public InventoryConfiguration saveInventoryConfiguration(Long companyId,
+                                                             Long warehouseId,
+                                                             InventoryConfiguration inventoryConfiguration) {
 
+        inventoryConfiguration.setCompanyId(companyId);
+        inventoryConfiguration.setWarehouseId(warehouseId);
+        return saveOrUpdate(inventoryConfiguration);
+    }
 }

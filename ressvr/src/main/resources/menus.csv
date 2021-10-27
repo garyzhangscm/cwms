@@ -52,6 +52,8 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Mould",menu.main.work-order.mould,/work-order/mould,7,Main-Menu-WorkOrder,Mould,
 "Work Order Configuration",menu.main.work-order.work-order-config,/work-order/work-order-configuration,8,Main-Menu-WorkOrder,Work-Order-Config,
 "Work Order QC Rule Configuration",menu.main.work-order.qc-rule-config,/work-order/qc-rule-configuration,9,Main-Menu-WorkOrder,Work-Order-QC-Rule-Config,
+"Work Order Labor",menu.main.work-order.labor,/work-order/labor,10,Main-Menu-WorkOrder,Work-Order-Labor,
+"Work Order Labor Activity",menu.main.work-order.labor-activity,/work-order/labor-activity,11,Main-Menu-WorkOrder,Work-Order-LaborActivity,
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,

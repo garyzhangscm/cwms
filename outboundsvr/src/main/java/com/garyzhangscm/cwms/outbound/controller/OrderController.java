@@ -49,6 +49,7 @@ public class OrderController {
     public List<Order> findAllOrders(@RequestParam Long warehouseId,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
                                      @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+        logger.debug("Start to find order by number {}", number);
         return orderService.findAll(warehouseId, number, loadDetails);
     }
 
