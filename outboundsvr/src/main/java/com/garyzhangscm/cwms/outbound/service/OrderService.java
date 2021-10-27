@@ -91,6 +91,8 @@ public class OrderService implements TestDataInitiableService {
         if (loadDetails) {
             loadOrderAttribute(order);
         }
+
+        // calculateStatisticQuantities(order);
         return order;
     }
 
@@ -101,9 +103,7 @@ public class OrderService implements TestDataInitiableService {
 
     public List<Order> findAll(Long warehouseId,
                                String number,
-                               boolean loadDetails) {
-
-
+                               Boolean loadDetails) {
 
         List<Order> orders =  orderRepository.findAll(
                 (Root<Order> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -112,10 +112,13 @@ public class OrderService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(number)) {
-                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
-
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
                     }
-
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -126,6 +129,9 @@ public class OrderService implements TestDataInitiableService {
         if (orders.size() > 0 && loadDetails) {
             loadOrderAttribute(orders);
         }
+
+
+        // calculateStatisticQuantities(orders);
 
         return orders;
 
@@ -228,6 +234,9 @@ public class OrderService implements TestDataInitiableService {
 
     }
 
+    private void calculateStatisticQuantities(List<Order> orders) {
+        orders.forEach(order -> calculateStatisticQuantities(order));
+    }
     private void calculateStatisticQuantities(Order order) {
         order.setTotalLineCount(order.getOrderLines().size());
 
@@ -254,7 +263,12 @@ public class OrderService implements TestDataInitiableService {
         // pending allocation quantity are those open quantity
         // from shipment line
         List<ShipmentLine> shipmentLines = shipmentLineService.findByOrder(order);
+        logger.debug("We find {} shipment line for this order {}",
+                shipmentLines.size(), order.getNumber());
         for(ShipmentLine shipmentLine : shipmentLines) {
+            logger.debug("Add shipment line {}'s open quantity {} to the total pending allocation quantity {}",
+                    shipmentLine.getNumber(), shipmentLine.getOpenQuantity(),
+                    totalPendingAllocationQuantity);
             totalPendingAllocationQuantity += shipmentLine.getOpenQuantity();
         }
 

@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -216,6 +217,33 @@ public class WorkOrderQCSampleService   {
         logger.debug("File saved, path: {}",
                 savedFile.getAbsolutePath());
         return file.getOriginalFilename();
+
+    }
+
+    @Transactional
+    public void removeQCSamples(ProductionLineAssignment productionLineAssignment) {
+        // let's see if we have any qc samples for this production line assignment
+        List<WorkOrderQCSample> workOrderQCSamples = findAll(
+                productionLineAssignment.getWorkOrder().getWarehouseId(),
+                null,
+                productionLineAssignment.getId(),
+        false);
+        workOrderQCSamples.forEach(
+                workOrderQCSample -> removeQCSample(workOrderQCSample)
+        );
+    }
+
+    @Transactional
+    private void removeQCSample(WorkOrderQCSample workOrderQCSample) {
+        // remove all files
+
+        String filePath = getWorkOrderQCSampleImageFolder(workOrderQCSample.getProductionLineAssignment().getId());
+        logger.debug("start to remove qc samples from folder {}",
+                filePath);
+        fileService.deleteDirectory(new File(filePath));
+
+        // remove the qc sample record
+        delete(workOrderQCSample);
 
     }
 }

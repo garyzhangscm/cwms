@@ -427,35 +427,43 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    public List<Inventory> getInventoryForPick(Pick pick) {
+    public List<Inventory> getInventoryForPick(Pick pick)   {
         return getInventoryForPick(pick, "");
     }
-    public List<Inventory> getInventoryForPick(Pick pick, String lpn) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/inventories")
-                        .queryParam("itemName", pick.getItem().getName())
-                        .queryParam("location", pick.getSourceLocation().getName())
-                        .queryParam("warehouseId", pick.getWarehouseId());
-        if (Strings.isNotBlank(lpn)) {
-            builder.queryParam("lpn", lpn);
+    public List<Inventory> getInventoryForPick(Pick pick, String lpn)   {
+        try {
+
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/inventories")
+                            .queryParam("itemName",  URLEncoder.encode(pick.getItem().getName(), "UTF-8") )
+                            .queryParam("location", URLEncoder.encode(pick.getSourceLocation().getName(), "UTF-8") )
+                            .queryParam("warehouseId", pick.getWarehouseId());
+            if (Strings.isNotBlank(lpn)) {
+                builder.queryParam("lpn", lpn);
+            }
+
+            // If this is a allocated by LPN, then only pick the specific LPN
+            if (StringUtils.isNotBlank(pick.getLpn())) {
+                builder = builder.queryParam("lpn", pick.getLpn());
+            }
+
+
+            ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+            return responseBodyWrapper.getData();
         }
-
-        // If this is a allocated by LPN, then only pick the specific LPN
-        if (StringUtils.isNotBlank(pick.getLpn())) {
-            builder = builder.queryParam("lpn", pick.getLpn());
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the inventory by item name " + pick.getItem().getName() + ", "
+                    + " location: " + pick.getSourceLocation().getName() + ", warehouse id: " + pick.getWarehouseId());
         }
-
-
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
 
     }
 

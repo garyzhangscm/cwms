@@ -1016,6 +1016,16 @@ public class PickService {
             List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
             logger.debug(" Get {} valid inventory for pick {}",
                     pickableInventories.size(), pick.getNumber());
+            if (pickableInventories.size() == 0) {
+                throw PickingException.raiseException("There's no inventory available from location " +
+                        (Objects.isNull(pick.getSourceLocation()) ?
+                                warehouseLayoutServiceRestemplateClient.getLocationById(pick.getSourceLocationId()).getName() :
+                                pick.getSourceLocation().getName()) +
+                        ", for item " +
+                        (Objects.isNull(pick.getItem()) ?
+                                inventoryServiceRestemplateClient.getItemById(pick.getItemId()) :
+                                pick.getItem().getName()));
+            }
             // pickableInventories.stream().forEach(System.out::print);
             logger.debug(" start to pick with quantity {}",quantityToBePicked);
             Iterator<Inventory> inventoryIterator = pickableInventories.iterator();

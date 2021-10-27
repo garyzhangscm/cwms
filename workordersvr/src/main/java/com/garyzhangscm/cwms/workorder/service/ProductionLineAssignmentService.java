@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
@@ -61,7 +62,8 @@ public class ProductionLineAssignmentService   {
 
     @Autowired
     private ProductionLineAssignmentLineRepository productionLineAssignmentLineRepository;
-
+    @Autowired
+    private WorkOrderQCSampleService workOrderQCSampleService;
 
     @Autowired
     private ProductionLineDeliveryService productionLineDeliveryService;
@@ -414,12 +416,14 @@ public class ProductionLineAssignmentService   {
         }
 
     }
+
+    @Transactional
     public ProductionLineAssignment deassignWorkOrderToProductionLines(
             Long workOrderId, Long productionLineId, List<Inventory> returnableMaterial) {
 
         logger.debug("Start to deassign work order {} from production line {}",
                 workOrderId, productionLineId);
-        WorkOrder workOrder = workOrderService.findById(workOrderId);
+        WorkOrder workOrder = workOrderService.findById(workOrderId, false);
         ProductionLineAssignment productionLineAssignment =
                 workOrder.getProductionLineAssignments().stream().filter(
                         existingProductionLineAssignment -> existingProductionLineAssignment.getProductionLine().getId().equals(productionLineId)
@@ -432,6 +436,10 @@ public class ProductionLineAssignmentService   {
         logger.debug("We found the production line assigned! work order: {}, production line {}",
                 productionLineAssignment.getWorkOrder().getNumber(),
                 productionLineAssignment.getProductionLine().getName());
+
+        // remove the qc sample, if there's any
+        workOrderQCSampleService.removeQCSamples(productionLineAssignment);
+
         // remove the produdction line assignment
         delete(productionLineAssignment);
         logger.debug("production line assignment removed, let's start to process the material");

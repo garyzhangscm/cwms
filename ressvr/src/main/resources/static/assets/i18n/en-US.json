@@ -1415,5 +1415,17 @@
   "menu.main.work-order.qc-rule-config": "QC Rule Config",
   "qc-rule-configuration": "QC Rule Config",
   "qc-rule": "QC Rule",
-  "user-specify-lpn": "User Specify LPN"
+  "user-specify-lpn": "User Specify LPN",
+  "inventory.configuration": "Inventory Configuration",
+  "lpn-validation-rule": "LPN Validation Rule",
+  "menu.main.work-order.labor": "Labor",
+  "menu.main.work-order.labor-activity": "Labor Activities",
+  "work-order.labor.status": "Status",
+  "work-order.labor.check-in-time": "Check In Time",
+  "work-order.labor.check-out-time": "Check Out Time",
+  "work-order.labor.activity-type": "Activity Type",
+  "original-value": "Original Value",
+  "new-value": "New Value",
+  "work-order.labor.activity-time": "Activity Time",
+  "work-order.labor.activity-username": "Activity Username"
 }

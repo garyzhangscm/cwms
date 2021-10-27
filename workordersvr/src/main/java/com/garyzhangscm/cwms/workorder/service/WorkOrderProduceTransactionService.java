@@ -208,22 +208,7 @@ public class WorkOrderProduceTransactionService  {
     public WorkOrderProduceTransaction startNewTransaction(
             WorkOrderProduceTransaction workOrderProduceTransaction) {
 
-        // setup the location for later use
-        if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getInboundStageLocation())) {
-            workOrderProduceTransaction.getProductionLine().setInboundStageLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            workOrderProduceTransaction.getProductionLine().getInboundStageLocationId()
-                    )
-            );
-        }
-
-        if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getOutboundStageLocation())) {
-            workOrderProduceTransaction.getProductionLine().setOutboundStageLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            workOrderProduceTransaction.getProductionLine().getOutboundStageLocationId()
-                    )
-            );
-        }
+        setupNewWorkOrderProduceTransactionData(workOrderProduceTransaction);
 
         // get the latest information
         WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
@@ -289,6 +274,44 @@ public class WorkOrderProduceTransactionService  {
 
 
         return newWorkOrderProduceTransaction;
+
+    }
+
+    private void setupNewWorkOrderProduceTransactionData(WorkOrderProduceTransaction workOrderProduceTransaction) {
+
+        // setup the location for later use
+        if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getInboundStageLocation())) {
+            workOrderProduceTransaction.getProductionLine().setInboundStageLocation(
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            workOrderProduceTransaction.getProductionLine().getInboundStageLocationId()
+                    )
+            );
+        }
+
+        if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getOutboundStageLocation())) {
+            workOrderProduceTransaction.getProductionLine().setOutboundStageLocation(
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            workOrderProduceTransaction.getProductionLine().getOutboundStageLocationId()
+                    )
+            );
+        }
+
+        // trim for the data
+        workOrderProduceTransaction.getWorkOrderProducedInventories().forEach(
+                workOrderProducedInventory -> workOrderProducedInventory.setLpn(
+                        workOrderProducedInventory.getLpn().trim()
+                )
+        );
+        workOrderProduceTransaction.getWorkOrderReverseProductionInventories().forEach(
+                workOrderReverseProductionInventory -> workOrderReverseProductionInventory.setLpn(
+                        workOrderReverseProductionInventory.getLpn().trim()
+                )
+        );
+        workOrderProduceTransaction.getWorkOrderByProductProduceTransactions().forEach(
+                workOrderByProductProduceTransaction -> workOrderByProductProduceTransaction.setLpn(
+                        workOrderByProductProduceTransaction.getLpn().trim()
+                )
+        );
 
     }
 
