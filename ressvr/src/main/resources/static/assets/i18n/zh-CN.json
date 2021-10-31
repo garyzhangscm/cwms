@@ -1426,5 +1426,6 @@
   "original-value": "原值",
   "new-value": "新值",
   "work-order.labor.activity-time": "记录时间",
-  "work-order.labor.activity-username": "记录者"
+  "work-order.labor.activity-username": "记录者",
+  "new-temp-user": "新增临时用户"
 }

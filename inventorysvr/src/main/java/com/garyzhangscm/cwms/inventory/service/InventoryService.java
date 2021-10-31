@@ -422,20 +422,48 @@ public class InventoryService implements TestDataInitiableService{
                                                    Long inventoryStatusId,
                                                    boolean includeDetails) {
 
-        List<Inventory> inventories =  inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId);
+        List<Inventory> pickableInventories
+                =  inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId)
+                        .stream()
+                .filter(this::isInventoryPickable)
+                .map(inventory -> {
+                    // setup the location so we can filter the inventory by pickable location only
+                    if (Objects.nonNull(inventory.getLocationId()) &&
+                            Objects.isNull(inventory.getLocation())) {
+                        inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
+                    }
+                    return inventory;
+                }).filter(this::isLocationPickable)
+                .collect(Collectors.toList());
 
-        if (includeDetails && inventories.size() > 0) {
-            loadInventoryAttribute(inventories);
+        if (includeDetails && pickableInventories.size() > 0) {
+            loadInventoryAttribute(pickableInventories);
         }
 
-        // Make sure the location is pickable
-
-        return inventories.stream().filter(this::isInventoryPickable).collect(Collectors.toList());
+        // only return inventory in the pickable location;
+        return pickableInventories;
     }
 
+    /**
+     * CHeck if the inventory is pickable
+     * 1. it is not picked
+     * 2. it is not already allocated
+     * 3. it is not virutal
+     * 4. it is not qc required
+     * 5. it is not locked for adjust
+     * @param inventory
+     * @return
+     */
+    private boolean isInventoryPickable(Inventory inventory) {
+        return Objects.isNull(inventory.getPickId()) &&
+                Objects.isNull(inventory.getAllocatedByPickId()) &&
+                !Boolean.TRUE.equals(inventory.getVirtual()) &&
+                !Boolean.TRUE.equals(inventory.getInboundQCRequired()) &&
+                !Boolean.TRUE.equals(inventory.getLockedForAdjust());
+    }
 
     // CHeck if the inventory is in a pickable location
-    private boolean isInventoryPickable(Inventory inventory) {
+    private boolean isLocationPickable(Inventory inventory) {
         return inventory.getLocation().getEnabled() == true &&
                 inventory.getLocation().getLocationGroup().getPickable() == true &&
                 inventory.getLocation().getLocationGroup().getLocationGroupType().getFourWallInventory() == true;

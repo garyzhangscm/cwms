@@ -53,21 +53,26 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         List<Pick> existingPicks = pickService.getOpenPicksByItemId(item.getId());
 
-        List<Inventory> pickableInventory
-                = inventoryServiceRestemplateClient.getPickableInventory(
-                item.getId(), inventoryStatus.getId());
-
-        List<InventorySummary> inventorySummaries = sort(inventorySummaryService.getInventorySummaryForAllocation(pickableInventory));
-
-
         // Let's get all the pickable inventory and existing picks to the trace file
         logger.debug("We have {} existing picks against this item", existingPicks.size());
+
         existingPicks.stream().forEach(pick -> {
             logger.debug("pick # {}, source location: {}, destination location: {}, quantity: {}, picked quantity: {}",
                     pick.getNumber(), pick.getSourceLocation().getName(),
                     pick.getDestinationLocation().getName(),
                     pick.getQuantity(), pick.getPickedQuantity());
         });
+
+        List<Inventory> pickableInventory
+                = inventoryServiceRestemplateClient.getPickableInventory(
+                item.getId(), inventoryStatus.getId());
+
+        // Let's get all the pickable inventory and existing picks to the trace file
+        logger.debug("We have {} pickable inventory of this item", pickableInventory.size());
+
+        List<InventorySummary> inventorySummaries = sort(inventorySummaryService.getInventorySummaryForAllocation(pickableInventory));
+
+
 
         logger.debug("We have inventory snapshot for allocation:");
         inventorySummaries.stream().forEach(inventorySummary -> {

@@ -1427,5 +1427,6 @@
   "original-value": "Original Value",
   "new-value": "New Value",
   "work-order.labor.activity-time": "Activity Time",
-  "work-order.labor.activity-username": "Activity Username"
+  "work-order.labor.activity-username": "Activity Username",
+  "new-temp-user": "Add Temp User"
 }

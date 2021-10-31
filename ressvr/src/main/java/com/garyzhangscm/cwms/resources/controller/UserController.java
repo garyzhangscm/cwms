@@ -151,6 +151,15 @@ public class UserController {
         return  userService.validateSystemAdminUser(username);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/user/new-temp-user", method = RequestMethod.POST)
+    public User addTempUser(@RequestParam Long companyId,
+                            @RequestParam String username,
+                            @RequestParam String firstname,
+                            @RequestParam String lastname) {
+        return userService.addTempUser(companyId, username, firstname, lastname);
+    }
+
 
 
 }

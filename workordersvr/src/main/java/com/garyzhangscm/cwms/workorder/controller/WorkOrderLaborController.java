@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
-import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
-import com.garyzhangscm.cwms.workorder.model.Mould;
-import com.garyzhangscm.cwms.workorder.model.WorkOrderLabor;
+import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.service.MouldService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderLaborService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +38,19 @@ public class WorkOrderLaborController {
                                               @RequestParam(name="workOrderLaborStatus", required = false, defaultValue = "") String workOrderLaborStatus,
                                               @RequestParam(name="username", required = false, defaultValue = "") String username) {
         return workOrderLaborService.findAll(warehouseId, productionLineId, workOrderLaborStatus, username);
+    }
+
+
+    @RequestMapping(value="/labor/checked_in_production_lines", method = RequestMethod.GET)
+    public List<ProductionLine> findAllCheckedInProductionLines(@RequestParam Long warehouseId,
+                                                                @RequestParam String username) {
+        return workOrderLaborService.findAllCheckedInProductionLines(warehouseId, username);
+    }
+
+    @RequestMapping(value="/labor/checked_in_users", method = RequestMethod.GET)
+    public List<User> findAllCheckedInUsers(@RequestParam Long warehouseId,
+                                                @RequestParam Long productionLineId) {
+        return workOrderLaborService.findAllCheckedInUsers(warehouseId, productionLineId);
     }
 
 

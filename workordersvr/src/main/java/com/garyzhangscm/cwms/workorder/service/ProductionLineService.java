@@ -474,4 +474,27 @@ public class ProductionLineService implements TestDataInitiableService {
 
         }
     }
+
+    public List<ProductionLine> findAllAssignedProductionLines(Long warehouseId) {
+        return  findAllAssignedProductionLines(warehouseId, true);
+    }
+    public List<ProductionLine> findAllAssignedProductionLines(Long warehouseId, boolean loadDetails) {
+
+        List<ProductionLine> productionLines
+                = productionLineRepository.findByWarehouseId(warehouseId);
+        logger.debug("We have {} production lines for warehouse id {}",
+                productionLines.size(), warehouseId);
+        productionLines =
+                productionLines.stream()
+                        .filter(productionLine ->  productionLine.getProductionLineAssignments().size() > 0
+                        )
+                        .collect(Collectors.toList());
+
+        logger.debug("We have {} ASSIGNED production lines for warehouse id {}",
+                productionLines.size(), warehouseId);
+        if (productionLines.size() > 0 && loadDetails) {
+            loadAttribute(productionLines);
+        }
+        return productionLines;
+    }
 }
