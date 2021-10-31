@@ -1,11 +1,16 @@
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -21,6 +26,15 @@ public class AllocationService {
     private PickService pickService;
     @Autowired
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
+    @Autowired
+    private UserService userService;
+
+
+    @Autowired
+    KafkaSender kafkaSender;
+    @Autowired
+    @Qualifier("oauth2ClientContext")
+    OAuth2ClientContext oauth2ClientContext;
 
 
     /**
@@ -41,6 +55,19 @@ public class AllocationService {
      */
     public AllocationResult allocate(ShipmentLine shipmentLine, AllocationStrategyType allocationStrategyType){
         AllocationRequest allocationRequest = new AllocationRequest(shipmentLine);
+
+
+        // save the allocate request to Kafka so that we will allocate later
+
+        /**
+            logger.debug("Start to save allocation request to Kafka");
+            ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+            userService.addUserServletRequestAttribute(oauth2ClientContext.getAccessToken().getValue(), servletRequestAttributes);
+            kafkaSender.send("ALLOCATION_REQUEST", oauth2ClientContext.getAccessToken(), allocationRequest);
+
+            logger.debug("Allocation request saved!");
+        */
+
         // If we specify the allocation strategy type, then override the one
         // from the shipment line(order line)
 

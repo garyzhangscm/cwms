@@ -551,4 +551,22 @@ public class UserService  implements TestDataInitiableService{
         return userRepository.findByUsernameAndLastLoginToken(username, token);
 
     }
+
+    public User addTempUser(Long companyId, String username, String firstname, String lastname) {
+        // make user the user is not exists yet
+        if (Objects.nonNull(findByUsername(companyId, username))) {
+            throw UserOperationException.raiseException("The user " + username + " already exists");
+        }
+        User user = new User();
+        user.setCompanyId(companyId);
+        user.setUsername(username.trim());
+        user.setPassword(username);
+        // create a new user but lock it so it won't be able to login anywhere
+        user.setEnabled(true);
+        user.setLocked(true);
+        user.setAdmin(false);
+        user.setFirstname(firstname);
+        user.setLastname(lastname);
+        return addUser(user);
+    }
 }

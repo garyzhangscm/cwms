@@ -226,7 +226,7 @@ public class ShipmentLineService {
         logger.debug("get allocation result for the shipment line {} / {}",
                 shipmentLine.getShipment().getNumber(),
                 shipmentLine.getNumber());
-        logger.debug(allocationResult.toString());
+        // logger.debug(allocationResult.toString());
         return allocationResult;
     }
 

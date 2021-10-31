@@ -78,8 +78,6 @@ public class OutboundServerApplication {
 		return new CustomRestTemplateCustomizer();
 	}
 
-
-
 	@Bean
 	@LoadBalanced
 	public OAuth2RestOperations oauth2RestTemplate(CustomRestTemplateCustomizer customizer,

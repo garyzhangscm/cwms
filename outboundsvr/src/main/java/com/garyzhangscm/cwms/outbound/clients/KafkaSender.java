@@ -32,6 +32,23 @@ public class KafkaSender {
         kafkaTemplate.send(topic, message);
     }
 
+    private void send(String topic, String key, String message) {
+
+        logger.debug("====> Start to send to kafka: {} / {} / {}"
+                ,topic, key, message);
+        kafkaTemplate.send(topic, key, message);
+    }
+
+
+    public <K, V> void send(String topic, K key, V value) {
+        try {
+            send(topic, objectMapper.writeValueAsString(key), objectMapper.writeValueAsString(value));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
     public void send(OrderActivity orderActivity) {
         try {
             send(orderActivity.getOrderActivityType().toString(), objectMapper.writeValueAsString(orderActivity));

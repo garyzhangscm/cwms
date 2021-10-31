@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ProductionLineException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
@@ -42,6 +43,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -52,6 +54,10 @@ public class WorkOrderLaborService  {
     private WorkOrderLaborRepository workOrderLaborRepository;
     @Autowired
     private WorkOrderLaborActivityHistoryService workOrderLaborActivityHistoryService;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Autowired
     private ProductionLineService productionLineService;
@@ -244,5 +250,22 @@ public class WorkOrderLaborService  {
                 workOrderLabor.getWarehouseId(), workOrderLabor, originalValue, currentUsername
         );
         return workOrderLabor;
+    }
+
+    public List<ProductionLine> findAllCheckedInProductionLines(Long warehouseId, String username) {
+        return findAll(warehouseId, null, WorkOrderLaborStatus.CHECK_IN.toString(), username)
+                .stream().map(WorkOrderLabor::getProductionLine).collect(Collectors.toList());
+    }
+
+    public List<User> findAllCheckedInUsers(Long warehouseId, Long productionLineId) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        return findAll(warehouseId, productionLineId, WorkOrderLaborStatus.CHECK_IN.toString(), null)
+                .stream().map(WorkOrderLabor::getUsername)
+                .map(username ->
+                    resourceServiceRestemplateClient.getUserByUsername(
+
+                            warehouse.getCompanyId(), username
+                    )
+         ).collect(Collectors.toList());
     }
 }

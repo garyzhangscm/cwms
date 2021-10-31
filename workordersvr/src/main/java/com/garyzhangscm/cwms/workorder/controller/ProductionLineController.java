@@ -50,6 +50,13 @@ public class ProductionLineController {
         return productionLineService.findAllAvailableProductionLines(warehouseId, itemId);
     }
 
+    @RequestMapping(value="/production-line/assigned", method = RequestMethod.GET)
+    public List<ProductionLine> findAllAssignedProductionLines(
+            @RequestParam Long warehouseId ,
+            @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails) {
+        return productionLineService.findAllAssignedProductionLines(warehouseId, loadDetails);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/production-lines", method = RequestMethod.POST)
