@@ -132,8 +132,16 @@ public class InventoryController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}")
-    public void removeInventory(@PathVariable Long id) {
-        inventoryService.delete(id);
+    public Inventory removeInventory(@PathVariable Long id) {
+
+        return inventoryService.removeInventory(id, "", "");
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.DELETE, value="/inventory")
+    public List<Inventory> removeInventories(@RequestParam String inventoryIds) {
+
+        return inventoryService.removeInventores(inventoryIds);
     }
 
 
