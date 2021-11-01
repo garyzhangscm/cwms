@@ -2393,4 +2393,12 @@ public class InventoryService implements TestDataInitiableService{
 
 
     }
+
+    public List<Inventory> removeInventores(String inventoryIds) {
+
+        return Arrays.stream(inventoryIds.split(",")).map(
+                id -> Long.parseLong(id)
+        ).map(id -> removeInventory(id, "", "")).collect(Collectors.toList());
+
+    }
 }

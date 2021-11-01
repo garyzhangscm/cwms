@@ -1031,13 +1031,20 @@ public class PickService {
             Iterator<Inventory> inventoryIterator = pickableInventories.iterator();
             while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
                 Inventory inventory = inventoryIterator.next();
-                logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
-                        inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
-                Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
-                logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
-                quantityToBePicked -= pickedQuantity;
-                totalQuantityPicked += pickedQuantity;
-                logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
+                if(match(inventory, pick)) {
+                    logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
+                            inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
+                    Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
+                    logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
+                    quantityToBePicked -= pickedQuantity;
+                    totalQuantityPicked += pickedQuantity;
+                    logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
+                }
+                else {
+                    logger.debug("inventory {} doesn't match with pick {}",
+                            inventory.getLpn(), pick.getNumber());
+                }
+
             }
             logger.debug("==> after the pick confirm, the destination location {} 's volume is {}",
                     warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
