@@ -1428,5 +1428,10 @@
   "new-value": "New Value",
   "work-order.labor.activity-time": "Activity Time",
   "work-order.labor.activity-username": "Activity Username",
-  "new-temp-user": "Add Temp User"
+  "new-temp-user": "Add Temp User",
+  "menu.main.inventory.allocation-summary": "Allocation Summary",
+  "total-quantity": "Total Quantity",
+  "allocated-quantity": "Allocated Quantity",
+  "available-quantity": "Available Quantity",
+  "REPORT-TYPE-RECEIVING_LPN_LABEL": "Receiving LPN Label"
 }

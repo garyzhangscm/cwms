@@ -61,6 +61,32 @@ public class OutbuondServiceRestemplateClient {
 
     }
 
+    public List<Pick> getOpenPicksBySourceLocationIdAndItemId(Long warehouseId,
+                                                              Long sourceLocationId, Long itemId,
+                                                              Long inventoryStatusId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/picks")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("sourceLocationId", sourceLocationId)
+                        .queryParam("itemId", itemId)
+                        .queryParam("inventoryStatusId", inventoryStatusId)
+                        .queryParam("loadDetails", false)
+                        .queryParam("openPickOnly", true);
+
+        ResponseBodyWrapper<List<Pick>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     public Pick unpick(Long pickId, Long unpickQuantity) {
 
         UriComponentsBuilder builder =

@@ -845,10 +845,29 @@ public class ReportService implements TestDataInitiableService{
         if (Objects.nonNull(warehouseId)) {
             fileUrl += "/" + warehouseId;
         }
-        fileUrl += "/" + fileName;
 
-        logger.debug("Will return {} to the client",
-                fileUrl);
+        // file name needs to be either ends with jrxml / jasper for report
+        // or prn for label
+        fileUrl += "/" + fileName;
+        if (fileUrl.endsWith(".prn") || fileUrl.endsWith(".jrxml") ||
+            fileUrl.endsWith("jasper")) {
+
+            logger.debug("Will return {} to the client",
+                    fileUrl);
+            return new File(fileUrl);
+        }
+        else if (Files.exists(Path.of(fileUrl + ".prn"))) {
+
+            return new File(fileUrl + ".prn");
+        }
+        else if (Files.exists(Path.of(fileUrl + ".jrxml"))) {
+
+            return new File(fileUrl + ".jrxml");
+        }
+        else if (Files.exists(Path.of(fileUrl + ".jasper"))) {
+
+            return new File(fileUrl + ".jasper");
+        }
         return new File(fileUrl);
     }
 

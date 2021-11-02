@@ -1427,5 +1427,10 @@
   "new-value": "新值",
   "work-order.labor.activity-time": "记录时间",
   "work-order.labor.activity-username": "记录者",
-  "new-temp-user": "新增临时用户"
+  "new-temp-user": "新增临时用户",
+  "menu.main.inventory.allocation-summary": "分配情况",
+  "total-quantity": "总数量",
+  "allocated-quantity": "已分配数量",
+  "available-quantity": "可用数量",
+  "REPORT-TYPE-RECEIVING_LPN_LABEL": "入库LPN标签"
 }

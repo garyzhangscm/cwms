@@ -52,6 +52,8 @@ public class PickController {
                                    @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                    @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId,
                                    @RequestParam(name="containerId", required = false, defaultValue = "") String containerId,
+                                   @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
+                                   @RequestParam(name="openPickOnly", required = false, defaultValue = "false") Boolean openPickOnly,
             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
 
         logger.debug("Start to find pick by: {}", listId);
@@ -60,7 +62,7 @@ public class PickController {
         }
         return pickService.findAll(number, orderId, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
-                shortAllocationId, loadDetails);
+                shortAllocationId, openPickOnly, inventoryStatusId, loadDetails);
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)
     public Pick findPick(@PathVariable Long id) {
