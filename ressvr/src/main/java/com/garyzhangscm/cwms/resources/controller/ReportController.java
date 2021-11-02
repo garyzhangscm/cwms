@@ -148,12 +148,13 @@ public class ReportController {
             @RequestParam(name = "warehouseId", defaultValue = "", required = false) Long warehouseId) throws FileNotFoundException {
 
 
+
         File reportTemplateFile = reportService.getReportTemplate(companyId, warehouseId , fileName);
 
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(reportTemplateFile));
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;fileName=" + fileName)
+                .header("Content-Disposition", "attachment;fileName=" + reportTemplateFile.getName())
                 .contentLength(reportTemplateFile.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);

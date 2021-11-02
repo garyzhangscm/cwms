@@ -127,6 +127,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         }
         // Let's see how many we have allocated
         openQuantity = totalQuantity - getTotalPickQuantity(allocationResult);
+        logger.debug("After allocate by LPN without round up, we still need {} of item {}",
+                openQuantity, item.getName());
         if(openQuantity <= 0) {
             // OK, we allocated enough quantity, let's return
             return allocationResult;
@@ -141,6 +143,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         // Let's see how many we have allocated
         openQuantity = totalQuantity - getTotalPickQuantity(allocationResult);
+        logger.debug("After allocate by UOM without round up, we still need {} of item {}",
+                openQuantity, item.getName());
         if(openQuantity <= 0) {
             // OK, we allocated enough quantity, let's return
             return allocationResult;
@@ -153,6 +157,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         // or whole UOM quantity (only if allowed)
         //
         if (allocationRoundUpStrategy.isRoundUpAllowed()) {
+            logger.debug("Round up is allowed for the item {}, we will try allocating by rounding up",
+                    item.getName());
             if (allocationByLPN) {
                 // try allocating by LPN, without round up first
                 allocationResult.addPicks(tryAllocateByLPN(allocationRequest, openQuantity, inventorySummaries, existingPicks,
@@ -160,6 +166,9 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             }
             // Let's see how many we have allocated
             openQuantity = totalQuantity - getTotalPickQuantity(allocationResult);
+
+            logger.debug("After allocate by lpn with round up, we still need {} of item {}",
+                    openQuantity, item.getName());
             if(openQuantity <= 0) {
                 // OK, we allocated enough quantity, let's return
                 return allocationResult;
@@ -173,6 +182,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             // Let's see how many we have allocated
             openQuantity = totalQuantity - getTotalPickQuantity(allocationResult);
+            logger.debug("After allocate by UOM with round up, we still need {} of item {}",
+                    openQuantity, item.getName());
             if(openQuantity <= 0) {
                 // OK, we allocated enough quantity, let's return
                 return allocationResult;
@@ -183,6 +194,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         Long shortQuantity = totalQuantity - getTotalPickQuantity(allocationResult);
         if (shortQuantity > 0) {
 
+            logger.debug("We are still short {} of item {}",
+                    shortQuantity, item.getName());
             allocationResult.addShortAllocation(generateShortAllocation(allocationRequest, item, shortQuantity));
         }
         return allocationResult;
@@ -927,6 +940,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
      */
     private ShortAllocation generateShortAllocation(AllocationRequest allocationRequest, Item item, Long quantity) {
 
+        logger.debug("Start to generate short allocation for item {}, quantity {}",
+                item.getName(), quantity);
         // For now we will only support allocate one line by one line
         // either shipment line or work order line
         if (allocationRequest.getShipmentLines().size() > 0) {
