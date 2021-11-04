@@ -18,11 +18,20 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -93,6 +102,29 @@ public class User extends AuditibleEntity<String>  {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "working_team_id"))
     private List<WorkingTeam> workingTeams = new ArrayList<>();
+
+
+
+    @ManyToOne
+    @JoinColumn(name="department_id")
+    private Department department;
+
+    @Column(name = "position")
+    private String position;
+
+    @Column(name = "on_board_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime onBoardTime;
+
+
+    @Column(name = "worker_type")
+    @Enumerated(EnumType.STRING)
+    private WorkerType workerType;
+
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -273,6 +305,13 @@ public class User extends AuditibleEntity<String>  {
         }
     }
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 
     public List<WorkingTeam> getWorkingTeams() {
         return workingTeams;
@@ -296,5 +335,29 @@ public class User extends AuditibleEntity<String>  {
 
     public void setLastLoginToken(String lastLoginToken) {
         this.lastLoginToken = lastLoginToken;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public LocalDateTime getOnBoardTime() {
+        return onBoardTime;
+    }
+
+    public void setOnBoardTime(LocalDateTime onBoardTime) {
+        this.onBoardTime = onBoardTime;
+    }
+
+    public WorkerType getWorkerType() {
+        return workerType;
+    }
+
+    public void setWorkerType(WorkerType workerType) {
+        this.workerType = workerType;
     }
 }

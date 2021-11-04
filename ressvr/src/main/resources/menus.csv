@@ -4,6 +4,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User,
 "Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role,
 "WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam,
+"Department",menu.main.auth.department,/auth/department,4,Main-Menu-Auth,Auth-Department,
 "Warehouse",menu.main.layout.warehouse,/warehouse-layout/warehouse,1,Main-Menu-Layout,Layout-warehouse,
 "LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group,
 "WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location,

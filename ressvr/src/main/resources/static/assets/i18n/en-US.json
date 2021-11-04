@@ -1433,5 +1433,14 @@
   "total-quantity": "Total Quantity",
   "allocated-quantity": "Allocated Quantity",
   "available-quantity": "Available Quantity",
-  "REPORT-TYPE-RECEIVING_LPN_LABEL": "Receiving LPN Label"
+  "REPORT-TYPE-RECEIVING_LPN_LABEL": "Receiving LPN Label",
+  "department": "Department",
+  "user.on-board-time": "On Board Time",
+  "user.position":"Position",
+  "worker-type": "Worker Type",
+  "menu.main.auth.department": "Department",
+  "menu.main.auth.department-maintenance": "Department Maintenance",
+  "WORKER-TYPE-IN_HOUSE": "In House",
+  "WORKER-TYPE-TEMP": "Temporary",
+  "WORKER-TYPE-SEASONAL": "Seasonal"
 }
