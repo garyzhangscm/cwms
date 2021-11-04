@@ -1432,5 +1432,14 @@
   "total-quantity": "总数量",
   "allocated-quantity": "已分配数量",
   "available-quantity": "可用数量",
-  "REPORT-TYPE-RECEIVING_LPN_LABEL": "入库LPN标签"
+  "REPORT-TYPE-RECEIVING_LPN_LABEL": "入库LPN标签",
+  "department": "部门",
+  "user.on-board-time": "入职时间",
+  "user.position":"职位",
+  "worker-type": "工作类型",
+  "menu.main.auth.department": "部门",
+  "menu.main.auth.department-maintenance": "部门维护",
+  "WORKER-TYPE-IN_HOUSE": "自顾员工",
+  "WORKER-TYPE-TEMP": "临时工",
+  "WORKER-TYPE-SEASONAL": "季节工"
 }
