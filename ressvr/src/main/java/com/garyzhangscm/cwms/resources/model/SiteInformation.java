@@ -27,6 +27,8 @@ public class SiteInformation {
 
     private User user;
 
+    private RFAppVersion rfAppVersion;
+
     @JsonProperty("menu")
     private List<MenuGroup> menuGroups = new ArrayList<>();
 
@@ -117,5 +119,13 @@ public class SiteInformation {
 
     public void setServerSidePrinting(Boolean serverSidePrinting) {
         this.serverSidePrinting = serverSidePrinting;
+    }
+
+    public RFAppVersion getRfAppVersion() {
+        return rfAppVersion;
+    }
+
+    public void setRfAppVersion(RFAppVersion rfAppVersion) {
+        this.rfAppVersion = rfAppVersion;
     }
 }

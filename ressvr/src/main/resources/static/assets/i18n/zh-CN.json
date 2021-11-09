@@ -1441,5 +1441,11 @@
   "menu.main.auth.department-maintenance": "部门维护",
   "WORKER-TYPE-IN_HOUSE": "自顾员工",
   "WORKER-TYPE-TEMP": "临时工",
-  "WORKER-TYPE-SEASONAL": "季节工"
+  "WORKER-TYPE-SEASONAL": "季节工",
+  "menu.main.util.rf-app-version": "RF客户端版本",
+  "rf.app.version-number": "版本号",
+  "file-name": "文件名称",
+  "rf.app.is-latest-version": "最新版本",
+  "rf.app.release-note": "更新日志",
+  "rf.app.release-date": "更新时间"
 }
