@@ -1,6 +1,8 @@
 package com.garyzhangscm.cwms.resources.controller;
 
+import com.garyzhangscm.cwms.resources.model.RFAppVersion;
 import com.garyzhangscm.cwms.resources.model.SiteInformation;
+import com.garyzhangscm.cwms.resources.service.RFAppVersionService;
 import com.garyzhangscm.cwms.resources.service.RFService;
 import com.garyzhangscm.cwms.resources.service.SiteInformationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,16 +17,17 @@ public class MobileController {
 
     @Autowired
     private SiteInformationService siteInformationService;
-    @Autowired
-    private RFService rfService;
 
 
 
     @RequestMapping(value = "/mobile", method = RequestMethod.GET)
     public SiteInformation getMobileInformation() {
         // return ApplicationInformation.getApplicationInformation();
-        return siteInformationService.getDefaultSiteInformation();
+        SiteInformation siteInformation =  siteInformationService.getDefaultSiteInformation();
+        return siteInformation;
     }
+
+
 
 
 }

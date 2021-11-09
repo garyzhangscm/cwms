@@ -1442,5 +1442,11 @@
   "menu.main.auth.department-maintenance": "Department Maintenance",
   "WORKER-TYPE-IN_HOUSE": "In House",
   "WORKER-TYPE-TEMP": "Temporary",
-  "WORKER-TYPE-SEASONAL": "Seasonal"
+  "WORKER-TYPE-SEASONAL": "Seasonal",
+  "menu.main.util.rf-app-version": "RF Version",
+  "rf.app.version-number": "Version Number",
+  "file-name": "File Name",
+  "rf.app.is-latest-version": "Is Latest Version",
+  "rf.app.release-note": "Release Note",
+  "rf.app.release-date": "Release Date"
 }
