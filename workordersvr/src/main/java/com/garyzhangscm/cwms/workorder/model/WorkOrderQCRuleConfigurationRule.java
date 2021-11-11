@@ -25,6 +25,8 @@ public class WorkOrderQCRuleConfigurationRule extends AuditibleEntity<String>{
     private QCRule qcRule;
 
 
+
+
     @ManyToOne
     @JoinColumn(name="work_order_qc_rule_configuration_id")
     @JsonIgnore

@@ -75,7 +75,8 @@ public class RoleController {
     @RequestMapping(value="/roles/{id}/menus", method = RequestMethod.GET)
     public List<MenuGroup> getAccessibleMenus(@PathVariable Long id) {
 
-        return menuGroupService.getAccessibleMenus(roleService.findById(id));
+        Role role = roleService.findById(id);
+        return menuGroupService.getAccessibleMenus(role.getCompanyId(), role);
     }
 
     @BillableEndpoint

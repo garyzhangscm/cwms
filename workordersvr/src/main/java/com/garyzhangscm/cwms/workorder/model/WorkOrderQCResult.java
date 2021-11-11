@@ -43,6 +43,10 @@ public class WorkOrderQCResult extends AuditibleEntity<String>{
     private LocalDateTime qcTime;
 
 
+    // how many actual product we qc this time
+    @Column(name = "qc_quantity")
+    private Integer qcQuantity;
+
     public Long getId() {
         return id;
     }
@@ -105,5 +109,13 @@ public class WorkOrderQCResult extends AuditibleEntity<String>{
 
     public void setQcRFCode(String qcRFCode) {
         this.qcRFCode = qcRFCode;
+    }
+
+    public Integer getQcQuantity() {
+        return qcQuantity;
+    }
+
+    public void setQcQuantity(Integer qcQuantity) {
+        this.qcQuantity = qcQuantity;
     }
 }

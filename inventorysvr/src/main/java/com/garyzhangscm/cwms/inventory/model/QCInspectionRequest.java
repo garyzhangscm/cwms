@@ -67,6 +67,8 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     // only if the qc is for work order
     @Column(name="work_order_qc_sample_id")
     private Long workOrderQCSampleId;
+    @Column(name="qc_quantity")
+    private Long qcQuantity = 0l;
 
     @Transient
     private WorkOrderQCSample workOrderQCSample;
@@ -198,5 +200,13 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
 
     public void setWorkOrderQCSample(WorkOrderQCSample workOrderQCSample) {
         this.workOrderQCSample = workOrderQCSample;
+    }
+
+    public Long getQcQuantity() {
+        return qcQuantity;
+    }
+
+    public void setQcQuantity(Long qcQuantity) {
+        this.qcQuantity = qcQuantity;
     }
 }

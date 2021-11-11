@@ -240,7 +240,7 @@ public class UserService  implements TestDataInitiableService{
         siteInformation.setUser(user);
 
         MenuType menuType = mobile ?  MenuType.MOBILE : MenuType.WEB;
-        List<MenuGroup> menuGroups = menuGroupService.getAccessibleMenus(user, menuType);
+        List<MenuGroup> menuGroups = menuGroupService.getAccessibleMenus(companyId, user, menuType);
         logger.debug("We find {} menus for the user {}",
                 menuGroups == null ? 0 : menuGroups.size(), user.getUsername());
         siteInformation.setMenuGroups(menuGroups);

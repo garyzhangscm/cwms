@@ -139,12 +139,17 @@ public class RFAppVersionService {
             rfAppVersion.setLatestVersion(false);
         }
 
-        RFAppVersion newRFAppVersion =  saveOrUpdate(rfAppVersion);
+        String destinationFilePath =
+                getAPKFolder(rfAppVersion.getCompanyId()) +
+                        rfAppVersion.getVersionNumber() + "/" + rfAppVersion.getFileName();
         fileService.copyFile(
-                getAPKTempFolder(newRFAppVersion.getCompanyId()) + newRFAppVersion.getFileName(),
-                getAPKFolder(newRFAppVersion.getCompanyId()) +
-                        newRFAppVersion.getVersionNumber() + "/" + rfAppVersion.getFileName()
+                getAPKTempFolder(rfAppVersion.getCompanyId()) + rfAppVersion.getFileName(),
+                destinationFilePath
         );
+        // get the file size
+        File file = new File(destinationFilePath);
+        rfAppVersion.setFileSize(file.length());
+        RFAppVersion newRFAppVersion =  saveOrUpdate(rfAppVersion);
         return newRFAppVersion;
 
     }

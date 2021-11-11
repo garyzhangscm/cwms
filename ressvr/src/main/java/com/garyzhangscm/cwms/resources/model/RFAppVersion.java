@@ -45,6 +45,10 @@ public class RFAppVersion extends AuditibleEntity<String>  {
     @Column(name = "file_name")
     private String fileName;
 
+    // used to show the progress when downloading the file
+    @Column(name = "file_size")
+    private Long fileSize;
+
     @Column(name = "is_latest_version")
     private Boolean isLatestVersion;
 
@@ -117,5 +121,13 @@ public class RFAppVersion extends AuditibleEntity<String>  {
 
     public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 }

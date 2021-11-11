@@ -1447,5 +1447,7 @@
   "file-name": "文件名称",
   "rf.app.is-latest-version": "最新版本",
   "rf.app.release-note": "更新日志",
-  "rf.app.release-date": "更新时间"
+  "rf.app.release-date": "更新时间",
+  "menu.main.util.company": "公司",
+  "qc-quantity": "QC 数量"
 }

@@ -387,10 +387,11 @@ public class QCInspectionRequestService {
      * @return
      */
     public QCInspectionRequest generateWorkOrderQCInspectionRequest(Long warehouseId, Long workOrderQCSampleId,
-                                                                   String ruleIds) {
+                                                                   String ruleIds, Long qcQuantity) {
         QCInspectionRequest qcInspectionRequest = new QCInspectionRequest();
         qcInspectionRequest.setWorkOrderQCSampleId(workOrderQCSampleId);
         qcInspectionRequest.setWarehouseId(warehouseId);
+        qcInspectionRequest.setQcQuantity(qcQuantity);
         qcInspectionRequest.setQcInspectionResult(QCInspectionResult.PENDING);
         qcInspectionRequest.setNumber(getNextQCInspectionRequest(warehouseId));
 

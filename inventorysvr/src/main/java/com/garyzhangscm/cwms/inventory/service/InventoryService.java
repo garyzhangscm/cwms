@@ -279,6 +279,7 @@ public class InventoryService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.and(inLocationIds));
                     }
 
+
                     if (StringUtils.isNotBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
 

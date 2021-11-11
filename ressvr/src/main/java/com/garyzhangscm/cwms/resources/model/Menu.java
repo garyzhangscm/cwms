@@ -55,6 +55,11 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
     @Column(name = "icon")
     private String icon;
 
+
+    @Column(name = "enabled")
+    private Boolean enabled;
+
+
     @ManyToOne
     @JoinColumn(name = "menu_sub_group_id")
     @JsonIgnore
@@ -150,5 +155,13 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
 
     public void setMenuSubGroup(MenuSubGroup menuSubGroup) {
         this.menuSubGroup = menuSubGroup;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }
