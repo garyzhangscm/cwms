@@ -74,7 +74,8 @@ public class QCInspectionRequestController {
     public QCInspectionRequest requestWorkOrderQCInspectionRequest(
             @RequestParam Long warehouseId,
             @RequestParam Long workOrderQCSampleId,
+            @RequestParam(name="qcQuantity", required = false, defaultValue = "0") Long qcQuantity,
             @RequestParam String ruleIds) {
-        return qcInspectionRequestService.generateWorkOrderQCInspectionRequest(warehouseId, workOrderQCSampleId, ruleIds);
+        return qcInspectionRequestService.generateWorkOrderQCInspectionRequest(warehouseId, workOrderQCSampleId, ruleIds, qcQuantity);
     }
 }

@@ -38,6 +38,11 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
     )
     List<WorkOrderQCRuleConfigurationRule> workOrderQCRuleConfigurationRules = new ArrayList<>();
 
+
+    // how many actual product we will need to qc
+    @Column(name = "qc_quantity")
+    private Long qcQuantity = 0l;
+
     public Long getId() {
         return id;
     }
@@ -76,5 +81,13 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
 
     public void setWorkOrderQCRuleConfigurationRules(List<WorkOrderQCRuleConfigurationRule> workOrderQCRuleConfigurationRules) {
         this.workOrderQCRuleConfigurationRules = workOrderQCRuleConfigurationRules;
+    }
+
+    public Long getQcQuantity() {
+        return qcQuantity;
+    }
+
+    public void setQcQuantity(Long qcQuantity) {
+        this.qcQuantity = qcQuantity;
     }
 }

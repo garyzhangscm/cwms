@@ -1448,5 +1448,7 @@
   "file-name": "File Name",
   "rf.app.is-latest-version": "Is Latest Version",
   "rf.app.release-note": "Release Note",
-  "rf.app.release-date": "Release Date"
+  "rf.app.release-date": "Release Date",
+  "menu.main.util.company": "Company",
+  "qc-quantity": "QC Quantity"
 }

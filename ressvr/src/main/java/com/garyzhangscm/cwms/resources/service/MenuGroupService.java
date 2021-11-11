@@ -44,6 +44,8 @@ public class MenuGroupService implements TestDataInitiableService{
     private MenuGroupRepository menuGroupRepository;
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private CompanyMenuService companyMenuService;
 
     @Autowired
     private MenuService menuService;
@@ -113,7 +115,7 @@ public class MenuGroupService implements TestDataInitiableService{
         // get the accessible menu from all menu types
         for (MenuType menuType : MenuType.values()) {
             menuGroups.addAll(
-                    getAccessibleMenus(user, menuType)
+                    getAccessibleMenus(companyId, user, menuType)
             );
         }
         return menuGroups;
@@ -124,9 +126,9 @@ public class MenuGroupService implements TestDataInitiableService{
 
         }
         User user = userService.findByUsername(companyId, username);
-        return getAccessibleMenus(user, menuType);
+        return getAccessibleMenus(companyId, user, menuType);
     }
-    public List<MenuGroup> getAccessibleMenus(User user, MenuType menuType) {
+    public List<MenuGroup> getAccessibleMenus(Long companyId, User user, MenuType menuType) {
         List<MenuGroup> menuGroups;
         logger.debug("User {} is admin? {}", user.getUsername(), user.getAdmin());
         if (user.getAdmin()) {
@@ -134,16 +136,16 @@ public class MenuGroupService implements TestDataInitiableService{
             menuGroups = findAll(menuType);
         }
         else {
-            menuGroups = getAccessibleMenus(user.getRoles(), menuType);
+            menuGroups = getAccessibleMenus(companyId, user.getRoles(), menuType);
         }
         menuGroups.sort(Comparator.comparing(MenuGroup::getSequence));
 
         return menuGroups;
     }
 
-    public List<MenuGroup> getAccessibleMenus(Role role) {
+    public List<MenuGroup> getAccessibleMenus(Long companyId, Role role) {
 
-        List<MenuGroup> menuGroups = getAccessibleMenus(
+        List<MenuGroup> menuGroups = getAccessibleMenus(companyId,
                 Collections.singletonList(role)
         );;
         menuGroups.sort(Comparator.comparing(MenuGroup::getSequence));
@@ -152,15 +154,15 @@ public class MenuGroupService implements TestDataInitiableService{
     }
 
     // Get all the accessible menu based upon the list of roles
-    private List<MenuGroup> getAccessibleMenus(List<Role> roles) {
-        return getAccessibleMenus(roles, null);
+    private List<MenuGroup> getAccessibleMenus(Long companyId,List<Role> roles) {
+        return getAccessibleMenus(companyId, roles, null);
     }
-    private List<MenuGroup> getAccessibleMenus(List<Role> roles, MenuType menuType) {
+    private List<MenuGroup> getAccessibleMenus(Long companyId, List<Role> roles, MenuType menuType) {
 
         // Save the id of menus that are accessible from the list
         // of roles, to make it easy for checking
 
-        Map<Long, Long> accessibleMenuIdMap = getAccessibleMenuIdMap(roles, menuType);
+        Map<Long, Long> accessibleMenuIdMap = getAccessibleMenuIdMap(companyId, roles, menuType);
         // logger.debug("We get following accessible menus for roles: \n {} \n {}",
         //         roles, menuType);
 
@@ -204,11 +206,24 @@ public class MenuGroupService implements TestDataInitiableService{
 
     }
 
-    private Map<Long, Long> getAccessibleMenuIdMap(List<Role> roles, MenuType menuType) {
+    private Map<Long, Long> getAccessibleMenuIdMap(Long companyId, List<Role> roles, MenuType menuType) {
         Map<Long, Long> accessibleMenuIdMap = new HashMap<>();
+        // see if we have defined the restriction of the menus for the company. If we haven't
+        // then it means the company have access to all menu.
+        List<CompanyMenu> companyMenus = companyMenuService.findAll(companyId);
+        // save the menu id into the hashmap so it will be faster to find out
+        // which menu has been assigned to the company
+        Map<Long, Long> companyMenuMap = new HashMap<>();
+        companyMenus.forEach(
+                companyMenu -> companyMenuMap.put(companyMenu.getMenu().getId(), 1l)
+        );
+
         roles.stream().forEach(role -> {
 
             role.getMenus().stream()
+                    // skip the disabled menu first
+                    .filter(menu -> !Boolean.FALSE.equals(menu.getEnabled()))
+                    .filter(menu -> companyMenuMap.isEmpty() || companyMenuMap.containsKey(menu.getId()))
                     // filter out the menu if the type passed in and the menu's type doesn't
                     // match with the criteria
                     .filter(menu -> Objects.isNull(menuType) ? true :

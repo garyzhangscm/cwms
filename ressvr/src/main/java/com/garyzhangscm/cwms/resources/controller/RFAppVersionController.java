@@ -113,7 +113,7 @@ public class RFAppVersionController {
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(apkFile));
 
-        logger.debug("get apk file {}, file length {}",
+        logger.debug("get apk file {}, file length is {}",
                 apkFile.getName(), apkFile.length());
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment;fileName=" + apkFile.getName())

@@ -61,7 +61,7 @@ public class InventoryController {
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
-                locationId, locationIds, locationGroupId, receiptId, workOrderId,
+                locationId, locationIds, locationGroupId,  receiptId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn, inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory,
