@@ -113,6 +113,21 @@ public class ReceiptController {
             return receiptLineService.receive(receiptId, receiptLineId, inventory);
     }
 
+    /***
+     * Receive multiple LPNs with the same quantity
+     * @param receiptId
+     * @param receiptLineId
+     * @param inventoryList
+     * @return
+     */
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/receive-multiple-lpns", method = RequestMethod.POST)
+    public List<Inventory> receive(@PathVariable Long receiptId,
+                             @PathVariable Long receiptLineId,
+                             @RequestBody List<Inventory> inventoryList) {
+        return receiptLineService.receive(receiptId, receiptLineId, inventoryList);
+    }
+
     @BillableEndpoint
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/reverse", method = RequestMethod.POST)
     public ReceiptLine reverseReceivedInventory(@PathVariable Long receiptId,

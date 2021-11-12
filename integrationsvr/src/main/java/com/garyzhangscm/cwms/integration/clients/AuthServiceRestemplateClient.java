@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -50,6 +51,14 @@ public class AuthServiceRestemplateClient {
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
+
+
+    @Value("${integration.login.username}")
+    private String integrationUsername;
+
+    @Value("${integration.login.password}")
+    private String integrationPassword;
+
     // private ObjectMapper mapper = new ObjectMapper();
 
     // User a new rest template for login. The global auto-wirable
@@ -64,7 +73,7 @@ public class AuthServiceRestemplateClient {
 
 
     public User login() throws IOException {
-        LoginCredential loginCredential = new LoginCredential(1L, "GZHANG", "GZHANG");
+        LoginCredential loginCredential = new LoginCredential(-1L, integrationUsername, integrationPassword);
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/auth/login?")

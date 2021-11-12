@@ -208,7 +208,13 @@ public class InventoryService implements TestDataInitiableService{
                     if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (StringUtils.isNotBlank(itemName)) {
-                            predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
+
+                                if (itemName.contains("%")) {
+                                    predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName));
+                                }
+                                else {
+                                    predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
+                                }
                         }
 
                         if (StringUtils.isNotBlank(clientIds)) {
@@ -313,7 +319,15 @@ public class InventoryService implements TestDataInitiableService{
 
                     }
                     if (StringUtils.isNotBlank(lpn)) {
-                        predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
+
+                        logger.debug("lpn {} , lpn.contains(%) ? {}",
+                                lpn, lpn.contains("%"));
+                        if (lpn.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("lpn"), lpn));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
+                        }
 
                     }
 

@@ -249,7 +249,8 @@ public class ShortAllocationService {
         }
 
 
-        return cancelShortAllocation(shortAllocation, shortAllocation.getQuantity() - shortAllocation.getDeliveredQuantity());
+        // return cancelShortAllocation(shortAllocation, shortAllocation.getQuantity() - shortAllocation.getDeliveredQuantity());
+        return cancelShortAllocation(shortAllocation, shortAllocation.getQuantity());
     }
 
     public ShortAllocation cancelShortAllocation(ShortAllocation shortAllocation, Long cancelledQuantity) {

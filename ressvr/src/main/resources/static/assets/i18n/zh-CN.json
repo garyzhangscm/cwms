@@ -1449,5 +1449,8 @@
   "rf.app.release-note": "更新日志",
   "rf.app.release-date": "更新时间",
   "menu.main.util.company": "公司",
-  "qc-quantity": "QC 数量"
+  "qc-quantity": "QC 数量",
+  "unit-of-measure.default-for-inbound-receiving": "入库默认收货单位",
+  "unit-of-measure.default-for-workorder-receiving": "完工入库默认收货单位",
+  "unit-of-measure.tracking_lpn": "跟踪lpn"
 }

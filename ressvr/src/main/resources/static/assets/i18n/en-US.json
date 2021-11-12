@@ -1450,5 +1450,8 @@
   "rf.app.release-note": "Release Note",
   "rf.app.release-date": "Release Date",
   "menu.main.util.company": "Company",
-  "qc-quantity": "QC Quantity"
+  "qc-quantity": "QC Quantity",
+  "unit-of-measure.default-for-inbound-receiving": "Default for Inbound Receiving",
+  "unit-of-measure.default-for-workorder-receiving": "Default for Work Order Receiving",
+  "unit-of-measure.tracking_lpn": "Tracking LPN"
 }

@@ -19,9 +19,8 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ItemPackageType implements Serializable {
 
@@ -39,8 +38,87 @@ public class ItemPackageType implements Serializable {
 
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 
-    private ItemUnitOfMeasure stockItemUnitOfMeasures;
+    private ItemUnitOfMeasure defaultInboundReceivingUOM;
 
+    private ItemUnitOfMeasure defaultWorkOrderReceivingUOM;
+
+    private ItemUnitOfMeasure trackingLpnUOM;
+
+    private ItemUnitOfMeasure stockItemUnitOfMeasure;
+
+    public void setDefaultInboundReceivingUOM(ItemUnitOfMeasure defaultInboundReceivingUOM) {
+        this.defaultInboundReceivingUOM = defaultInboundReceivingUOM;
+    }
+
+    public void setDefaultWorkOrderReceivingUOM(ItemUnitOfMeasure defaultWorkOrderReceivingUOM) {
+        this.defaultWorkOrderReceivingUOM = defaultWorkOrderReceivingUOM;
+    }
+
+    public ItemUnitOfMeasure getTrackingLpnUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        if (Objects.nonNull(trackingLpnUOM)) {
+            return trackingLpnUOM;
+        }
+
+        // let's find the smallest uom marked as tracking UOM
+        List<ItemUnitOfMeasure> trackingLPNUoms = itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getTrackingLpn())
+        ).collect(Collectors.toList());
+        if (trackingLPNUoms.size() == 0) {
+            return null;
+        }
+        Collections.sort(trackingLPNUoms, (Comparator.comparing(ItemUnitOfMeasure::getQuantity)));
+
+        return trackingLPNUoms.get(0);
+    }
+
+    public void setTrackingLpnUOM(ItemUnitOfMeasure trackingLpnUOM) {
+        this.trackingLpnUOM = trackingLpnUOM;
+    }
+
+    public ItemUnitOfMeasure getDefaultInboundReceivingUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        if (Objects.nonNull(defaultInboundReceivingUOM)) {
+            return defaultInboundReceivingUOM;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForInboundReceiving())
+        ).findFirst().orElse(getStockItemUnitOfMeasure());
+    }
+    public ItemUnitOfMeasure getDefaultWorkOrderReceivingUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        if (Objects.nonNull(defaultWorkOrderReceivingUOM)) {
+            return defaultWorkOrderReceivingUOM;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForWorkOrderReceiving())
+        ).findFirst().orElse(getStockItemUnitOfMeasure());
+    }
+
+    public ItemUnitOfMeasure getStockItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        if (Objects.nonNull(stockItemUnitOfMeasure)) {
+            return stockItemUnitOfMeasure;
+        }
+
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemUnitOfMeasures.get(0);
+        for (ItemUnitOfMeasure itemUnitOfMeasure : itemUnitOfMeasures) {
+            if (itemUnitOfMeasure.getQuantity() < stockItemUnitOfMeasure.getQuantity()) {
+                stockItemUnitOfMeasure = itemUnitOfMeasure;
+            }
+        }
+        return stockItemUnitOfMeasure;
+    }
     public Long getId() {
         return id;
     }
@@ -113,25 +191,8 @@ public class ItemPackageType implements Serializable {
         this.itemUnitOfMeasures = itemUnitOfMeasures;
     }
 
-    public ItemUnitOfMeasure getStockItemUnitOfMeasures() {
-        if (itemUnitOfMeasures.size() == 0) {
-            return null;
-        }
-        if (Objects.nonNull(stockItemUnitOfMeasures)) {
-            return stockItemUnitOfMeasures;
-        }
 
-
-        ItemUnitOfMeasure stockItemUnitOfMeasure = itemUnitOfMeasures.get(0);
-        for (ItemUnitOfMeasure itemUnitOfMeasure : itemUnitOfMeasures) {
-            if (itemUnitOfMeasure.getQuantity() < stockItemUnitOfMeasure.getQuantity()) {
-                stockItemUnitOfMeasure = itemUnitOfMeasure;
-            }
-        }
-        return stockItemUnitOfMeasure;
-    }
-
-    public void setStockItemUnitOfMeasures(ItemUnitOfMeasure stockItemUnitOfMeasures) {
-        this.stockItemUnitOfMeasures = stockItemUnitOfMeasures;
+    public void setStockItemUnitOfMeasure(ItemUnitOfMeasure stockItemUnitOfMeasure) {
+        this.stockItemUnitOfMeasure = stockItemUnitOfMeasure;
     }
 }
