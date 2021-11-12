@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ReceiptLineService implements TestDataInitiableService{
@@ -241,6 +242,14 @@ public class ReceiptLineService implements TestDataInitiableService{
         return saveOrUpdate(receiptLine);
     }
 
+    @Transactional
+    public List<Inventory> receive(Long receiptId, Long receiptLineId,
+                             List<Inventory> inventoryList){
+
+
+        return inventoryList.stream().map(
+                inventory -> receive(receiptId, receiptLineId, inventory)).collect(Collectors.toList());
+    }
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
                              Inventory inventory){

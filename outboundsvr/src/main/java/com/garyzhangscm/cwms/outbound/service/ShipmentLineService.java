@@ -244,7 +244,12 @@ public class ShipmentLineService {
     @Transactional
     public void registerPickCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
         logger.debug("registerPickCancelled: shipment line: {}, cancelledQuantity: {}",
-                shipmentLine.getNumber(), cancelledQuantity);
+                shipmentLine.getId(), cancelledQuantity);
+
+        shipmentLine.setOpenQuantity(shipmentLine.getOpenQuantity() + cancelledQuantity);
+        shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - cancelledQuantity);
+
+        /***
         shipmentLine.setInprocessQuantity(recalculateInprocessQuantity(shipmentLine, cancelledQuantity));
         // due to the over allocation, we may need to re-calculate the shipment line's open quantity
         logger.debug("Will reset the open quantity according to \n" +
@@ -260,6 +265,7 @@ public class ShipmentLineService {
                 shipmentLine.getQuantity() - shipmentLine.getInprocessQuantity() - shipmentLine.getLoadedQuantity() - shipmentLine.getShippedQuantity());
         shipmentLine.setOpenQuantity(
                 shipmentLine.getQuantity() - shipmentLine.getInprocessQuantity() - shipmentLine.getLoadedQuantity() - shipmentLine.getShippedQuantity());
+         **/
         shipmentLine = save(shipmentLine);
         logger.debug("after pick cancelled, shipment line {} has open quantity {}, in process quantity: {}",
                 shipmentLine.getNumber(), shipmentLine.getOpenQuantity(), shipmentLine.getInprocessQuantity());
@@ -278,8 +284,17 @@ public class ShipmentLineService {
     private Long recalculateInprocessQuantity(ShipmentLine shipmentLine, long cancelledQuantity) {
         // Get all the open pick quantities
         List<Pick> picks = pickService.getPicksByShipmentLine(shipmentLine.getId());
-        return picks.stream().mapToLong(pick -> pick.getQuantity()).sum() - cancelledQuantity
-                - shipmentLine.getLoadedQuantity() - shipmentLine.getShippedQuantity();
+        logger.debug("we get {} picks for this shipment line {}",
+                picks.size(), shipmentLine.getId());
+        Long pickQuantity = picks.stream().mapToLong(pick -> pick.getQuantity()).sum();
+        logger.debug("total allocated quantity {} for those picks", pickQuantity);
+        logger.debug("quantity to be cancelled {}", cancelledQuantity);
+        logger.debug("loaded quantity {}", shipmentLine.getLoadedQuantity());
+        logger.debug("shippped quantity {}", shipmentLine.getShippedQuantity());
+
+        return pickQuantity - cancelledQuantity - shipmentLine.getLoadedQuantity()
+                - shipmentLine.getShippedQuantity();
+
     }
 
     @Transactional

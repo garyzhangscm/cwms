@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.inventory.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,6 +72,7 @@ public class ItemController {
             evict = {
                     @CacheEvict(cacheNames = "workorder_item", allEntries = true),
                     @CacheEvict(cacheNames = "outbound_item", allEntries = true),
+                    @CacheEvict(cacheNames = "inbound_item", allEntries = true),
             }
     )
     public Item uploadItemImages(@PathVariable Long id,
@@ -93,6 +95,7 @@ public class ItemController {
             evict = {
                     @CacheEvict(cacheNames = "workorder_item", allEntries = true),
                     @CacheEvict(cacheNames = "outbound_item", allEntries = true),
+                    @CacheEvict(cacheNames = "inbound_item", allEntries = true),
             }
     )
     public Item addItem(@RequestBody Item item) {
@@ -105,6 +108,7 @@ public class ItemController {
             evict = {
                     @CacheEvict(cacheNames = "workorder_item", allEntries = true),
                     @CacheEvict(cacheNames = "outbound_item", allEntries = true),
+                    @CacheEvict(cacheNames = "inbound_item", allEntries = true),
             }
     )
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {

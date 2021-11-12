@@ -433,14 +433,18 @@ public class ItemService implements TestDataInitiableService{
         itemPackageType.getItemUnitOfMeasures().forEach(itemUnitOfMeasure -> {
             // If this is an existing item package type, then update
             // the attribute
-            logger.debug("{}: Objects.nonNull(unitOfMeasure.getId())? : {}",
+            logger.debug("new item unit of measure / {}: Objects.nonNull(unitOfMeasure.getId())? : {}",
                     itemUnitOfMeasure.getUnitOfMeasure().getName(),
                     Objects.nonNull(itemUnitOfMeasure.getId()));
             if (Objects.nonNull(itemUnitOfMeasure.getId())) {
-                existingItemPackageType.getItemUnitOfMeasures().stream().filter(existingUnitOfMeasure ->
-                        existingUnitOfMeasure.getId().equals(itemUnitOfMeasure.getId()))
+                // get the existing item unit of measure and copy it over
+                existingItemPackageType.getItemUnitOfMeasures().stream()
+
+                        .filter(existingUnitOfMeasure ->
+                                Objects.equals(existingUnitOfMeasure.getId(), itemUnitOfMeasure.getId()))
                         .forEach(existingUnitOfMeasure -> {
                             BeanUtils.copyProperties(itemUnitOfMeasure, existingUnitOfMeasure, "itemPackageType");
+
                         });
             }
             else {
@@ -550,6 +554,8 @@ public class ItemService implements TestDataInitiableService{
         return saveOrUpdate(item);
 
     }
+
+
 
 
 }

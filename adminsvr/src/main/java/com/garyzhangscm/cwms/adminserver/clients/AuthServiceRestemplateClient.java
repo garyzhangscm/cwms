@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -68,8 +69,15 @@ public class AuthServiceRestemplateClient {
     RestTemplate restTemplate = new RestTemplate();;
 
 
+    @Value("${admin.login.username}")
+    private String adminUsername;
+
+    @Value("${admin.login.password}")
+    private String adminPassword;
+
+
     public User login() throws IOException {
-        LoginCredential loginCredential = new LoginCredential(1L, "GZHANG", "GZHANG");
+        LoginCredential loginCredential = new LoginCredential(-1L, adminUsername, adminPassword);
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/auth/login?")

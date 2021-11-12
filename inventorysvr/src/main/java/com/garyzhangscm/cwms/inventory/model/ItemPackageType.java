@@ -26,9 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "item_package_type")
@@ -66,6 +65,12 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
 
     @Transient
     private ItemUnitOfMeasure stockItemUnitOfMeasure;
+    @Transient
+    private ItemUnitOfMeasure defaultInboundReceivingUOM;
+    @Transient
+    private ItemUnitOfMeasure defaultWorkOrderReceivingUOM;
+    @Transient
+    private ItemUnitOfMeasure trackingLpnUOM;
 
     @OneToMany(
             mappedBy = "itemPackageType",
@@ -84,6 +89,49 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
 
     @Transient
     private Warehouse warehouse;
+
+    public void setDefaultInboundReceivingUOM(ItemUnitOfMeasure defaultInboundReceivingUOM) {
+        this.defaultInboundReceivingUOM = defaultInboundReceivingUOM;
+    }
+
+    public void setDefaultWorkOrderReceivingUOM(ItemUnitOfMeasure defaultWorkOrderReceivingUOM) {
+        this.defaultWorkOrderReceivingUOM = defaultWorkOrderReceivingUOM;
+    }
+
+    public void setTrackingLpnUOM(ItemUnitOfMeasure trackingLpnUOM) {
+        this.trackingLpnUOM = trackingLpnUOM;
+    }
+
+    public ItemUnitOfMeasure getDefaultInboundReceivingUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForInboundReceiving())
+        ).findFirst().orElse(getStockItemUnitOfMeasure());
+    }
+    public ItemUnitOfMeasure getDefaultWorkOrderReceivingUOM() {
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForWorkOrderReceiving())
+        ).findFirst().orElse(getStockItemUnitOfMeasure());
+    }
+    public ItemUnitOfMeasure getTrackingLpnUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        // let's find the smallest uom marked as tracking UOM
+        List<ItemUnitOfMeasure> trackingLPNUoms = itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getTrackingLpn())
+        ).collect(Collectors.toList());
+        if (trackingLPNUoms.size() == 0) {
+            return null;
+        }
+        Collections.sort(trackingLPNUoms, (Comparator.comparing(ItemUnitOfMeasure::getQuantity)));
+
+        return trackingLPNUoms.get(0);
+    }
+
 
     @Override
     public String toString() {
@@ -229,4 +277,5 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     public void setDefaultFlag(Boolean defaultFlag) {
         this.defaultFlag = defaultFlag;
     }
+
 }

@@ -72,7 +72,12 @@ public class Inventory implements Serializable {
             return 0.0;
         }
 
-        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
+        if (Objects.isNull(stockItemUnitOfMeasure)) {
+            logger.debug("Can't calcuate the inventory {}'s size as there's no stock item unit of measure defined for this item",
+                    lpn);
+            return 0.0;
+        }
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()

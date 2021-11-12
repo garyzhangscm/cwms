@@ -498,6 +498,17 @@ public class UserService  implements TestDataInitiableService{
 
     public User changeUser(User user) {
 
+        // we can't change the admin user or global user from the
+        // client. Once it is created, we will need to change from the
+        // database side
+        if (Boolean.TRUE.equals(user.getSystemAdmin())) {
+
+            throw UserOperationException.raiseException("Can't remove system admin user");
+        }
+        if (user.getCompanyId() < 0){
+            throw UserOperationException.raiseException("Can't remove user that created for the system");
+        }
+
         // Save the user without role first
         // since we are adding new user, the user doesn't have an ID yet.
         // user / role are many to many relationship so we need both

@@ -60,6 +60,17 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Column(name = "height")
     private Double height;
 
+    @Column(name = "default_for_inbound_receiving")
+    private Boolean defaultForInboundReceiving = false;
+
+    @Column(name = "default_for_work_order_receiving")
+    private Boolean defaultForWorkOrderReceiving = false;
+
+    // whether we will need to tracking LPN at this level
+    @Column(name = "tracking_lpn")
+    private Boolean trackingLpn = false;
+
+
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -164,5 +175,29 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getDefaultForInboundReceiving() {
+        return defaultForInboundReceiving;
+    }
+
+    public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
+        this.defaultForInboundReceiving = defaultForInboundReceiving;
+    }
+
+    public Boolean getDefaultForWorkOrderReceiving() {
+        return defaultForWorkOrderReceiving;
+    }
+
+    public void setDefaultForWorkOrderReceiving(Boolean defaultForWorkOrderReceiving) {
+        this.defaultForWorkOrderReceiving = defaultForWorkOrderReceiving;
+    }
+
+    public Boolean getTrackingLpn() {
+        return trackingLpn;
+    }
+
+    public void setTrackingLpn(Boolean trackingLpn) {
+        this.trackingLpn = trackingLpn;
     }
 }
