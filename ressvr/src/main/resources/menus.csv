@@ -89,5 +89,6 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,menu_workorder_pick.png
 "Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,menu_workorder_produce.png
 "Work Order QC",menu.mobile.work-order.qc,work_order_qc,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC,menu_work_order_qc.png
-"Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,menu_workorder_checkin.png
-"Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,5,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,menu_workorder_checkout.png
+"QC Sampling",menu.mobile.work-order.qc-sampling,work_order_qc_sampling,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC-Sampling,menu_work_order_qc_sampling.png
+"Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,5,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,menu_workorder_checkin.png
+"Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,6,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,menu_workorder_checkout.png
