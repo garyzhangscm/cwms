@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "production_line_assignment")
@@ -183,6 +185,13 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     }
 
     public Long getWorkOrderId() {
+
+        if (Objects.nonNull(workOrderId)) {
+            return workOrderId;
+        }
+        else if (Objects.nonNull(workOrder)) {
+            return workOrder.getId();
+        }
         return workOrderId;
     }
 
@@ -227,6 +236,12 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     }
 
     public String getWorkOrderNumber() {
+        if (Strings.isNotBlank(workOrderNumber)) {
+            return workOrderNumber;
+        }
+        else if (Objects.nonNull(workOrder)) {
+            return workOrder.getNumber();
+        }
         return workOrderNumber;
     }
 
