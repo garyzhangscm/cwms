@@ -56,7 +56,8 @@ public class WorkOrderQCSampleController {
 
     @BillableEndpoint
     @RequestMapping(value="/qc-samples", method = RequestMethod.PUT)
-    public WorkOrderQCSample addWorkOrderQCSample(@RequestBody WorkOrderQCSample workOrderQCSample) {
+    public WorkOrderQCSample addWorkOrderQCSample(
+            @RequestParam Long warehouseId,@RequestBody WorkOrderQCSample workOrderQCSample) {
         return workOrderQCSampleService.addWorkOrderQCSample(workOrderQCSample);
     }
 
