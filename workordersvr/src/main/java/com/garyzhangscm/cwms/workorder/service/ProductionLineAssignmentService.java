@@ -327,7 +327,7 @@ public class ProductionLineAssignmentService   {
         return productionLineAssignments.stream().map(
                 productionLineAssignment -> productionLineAssignment.getWorkOrder()
         ).map(workOrder -> {
-            workOrderService.loadAttribute(workOrder);
+            workOrderService.loadAttribute(workOrder, false, false);
             return workOrder;
         }).collect(Collectors.toList());
     }

@@ -79,7 +79,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
         WorkOrderLine workOrderLine = workOrderLineRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("work order line not found by id: " + id));
         if (loadDetails) {
-            loadAttribute(workOrderLine);
+            loadAttribute(workOrderLine, true, true);
         }
         return workOrderLine;
     }
@@ -93,7 +93,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
         List<WorkOrderLine> workOrderLines = workOrderLineRepository.findAll();
 
         if (workOrderLines.size() > 0 && loadDetails) {
-            loadAttribute(workOrderLines);
+            loadAttribute(workOrderLines, true, true);
         }
         return workOrderLines;
     }
@@ -103,13 +103,13 @@ public class WorkOrderLineService implements TestDataInitiableService {
     }
 
 
-    public void loadAttribute(List<WorkOrderLine> workOrderLines) {
+    public void loadAttribute(List<WorkOrderLine> workOrderLines,  boolean loadPicks, boolean loadShortAllocations) {
         for (WorkOrderLine workOrderLine : workOrderLines) {
-            loadAttribute(workOrderLine);
+            loadAttribute(workOrderLine, loadPicks, loadShortAllocations);
         }
     }
 
-    public void loadAttribute(WorkOrderLine workOrderLine) {
+    public void loadAttribute(WorkOrderLine workOrderLine, boolean loadPicks, boolean loadShortAllocations) {
 
         if (Objects.nonNull(workOrderLine.getWorkOrder())) {
 
@@ -127,9 +127,15 @@ public class WorkOrderLineService implements TestDataInitiableService {
                     inventoryServiceRestemplateClient.getInventoryStatusById(workOrderLine.getInventoryStatusId()));
         }
 
-        workOrderLine.setPicks(outboundServiceRestemplateClient.getWorkOrderLinePicks(workOrderLine));
+        if (loadPicks) {
 
-        workOrderLine.setShortAllocations(outboundServiceRestemplateClient.getWorkOrderLineShortAllocations(workOrderLine));
+            workOrderLine.setPicks(outboundServiceRestemplateClient.getWorkOrderLinePicks(workOrderLine));
+        }
+        if (loadShortAllocations) {
+
+            workOrderLine.setShortAllocations(outboundServiceRestemplateClient.getWorkOrderLineShortAllocations(workOrderLine));
+        }
+
 
 
     }
@@ -145,7 +151,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
                 = workOrderLineRepository.findByNaturalKey(
                          warehouseId, workOrderNumber,number);
         if (workOrderLine != null && loadDetails) {
-            loadAttribute(workOrderLine);
+            loadAttribute(workOrderLine, true, true);
         }
         return workOrderLine;
     }
@@ -160,7 +166,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
         WorkOrderLine newWorkOrderLine = workOrderLineRepository.save(workOrderLine);
         if (loadDetails) {
 
-            loadAttribute(newWorkOrderLine);
+            loadAttribute(newWorkOrderLine, true, true);
         }
         return newWorkOrderLine;
     }
@@ -168,7 +174,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
     public WorkOrderLine saveAndFlush(WorkOrderLine workOrderLine) {
         WorkOrderLine newWorkOrderLine = workOrderLineRepository.saveAndFlush(workOrderLine);
         // workOrderLineRepository.flush();
-        loadAttribute(newWorkOrderLine);
+        loadAttribute(newWorkOrderLine, true, true);
         return newWorkOrderLine;
     }
     public WorkOrderLine saveOrUpdate(WorkOrderLine workOrderLine) {
