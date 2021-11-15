@@ -105,7 +105,7 @@ public class WorkOrderService implements TestDataInitiableService {
                     return ResourceNotFoundException.raiseException("work order not found by id: " + id);
                 });
         if (loadDetails) {
-            loadAttribute(workOrder);
+            loadAttribute(workOrder, true, true);
         }
         return workOrder;
     }
@@ -161,7 +161,7 @@ public class WorkOrderService implements TestDataInitiableService {
         );
 
         if (workOrders.size() > 0 && loadDetails) {
-            loadAttribute(workOrders);
+            loadAttribute(workOrders, true, true);
         }
         return workOrders;
     }
@@ -176,7 +176,7 @@ public class WorkOrderService implements TestDataInitiableService {
     public WorkOrder findByNumber(Long warehouseId, String number, boolean loadDetails) {
         WorkOrder workOrder = workOrderRepository.findByWarehouseIdAndNumber(warehouseId, number);
         if (workOrder != null && loadDetails) {
-            loadAttribute(workOrder);
+            loadAttribute(workOrder, true, true);
         }
         return workOrder;
     }
@@ -187,12 +187,18 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
     public void loadAttribute(List<WorkOrder> workOrders) {
+        loadAttribute(workOrders, true, true);
+    }
+    public void loadAttribute(List<WorkOrder> workOrders, boolean loadPicks, boolean loadShortAllocations) {
         for (WorkOrder workOrder : workOrders) {
-            loadAttribute(workOrder);
+            loadAttribute(workOrder, loadPicks, loadShortAllocations);
         }
     }
 
     public void loadAttribute(WorkOrder workOrder) {
+        loadAttribute(workOrder, true, true);
+    }
+    public void loadAttribute(WorkOrder workOrder, boolean loadPicks, boolean loadShortAllocations) {
 
         if (workOrder.getItemId() != null &&
                 (workOrder.getItem() == null || Objects.isNull(workOrder.getItem().getId()))) {
@@ -211,7 +217,7 @@ public class WorkOrderService implements TestDataInitiableService {
                     if (Objects.isNull(workOrderLine.getWorkOrder())) {
                         workOrderLine.setWorkOrder(workOrder);
                     }
-                    workOrderLineService.loadAttribute(workOrderLine);
+                    workOrderLineService.loadAttribute(workOrderLine, loadPicks, loadShortAllocations);
                 });
 
         // Load the item and inventory status information for each lines
@@ -236,7 +242,7 @@ public class WorkOrderService implements TestDataInitiableService {
         WorkOrder newWorkOrder = workOrderRepository.save(workOrder);
         if (loadDetails) {
 
-            loadAttribute(newWorkOrder);
+            loadAttribute(newWorkOrder, true, true);
         }
         return newWorkOrder;
     }

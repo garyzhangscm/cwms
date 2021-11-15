@@ -1360,13 +1360,19 @@ public class OrderService implements TestDataInitiableService {
         for (Inventory pickedInventory : pickedInventories) {
             String itemName = pickedInventory.getItem().getName();
             logger.debug("item name: {}", pickedInventory.getItem().getName());
-            logger.debug("item default package type: {}",
-                    pickedInventory.getItem().getDefaultItemPackageType().getName());
-            logger.debug("item default package type's item uom: {}",
-                    pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getId());
-            logger.debug("item default package type's item stock uom: {}",
-                    pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName());
-            String stockUOMName = pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+            String stockUOMName = "N/A";
+            if(Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType()) &&
+                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures()) &&
+                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure())) {
+                logger.debug("item default package type: {}",
+                        pickedInventory.getItem().getDefaultItemPackageType().getName());
+                logger.debug("item default package type's item uom: {}",
+                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getId());
+                logger.debug("item default package type's item stock uom: {}",
+                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName());
+
+                stockUOMName = pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+            }
 
             String itemFamilyName = "N/A";
             if (Objects.nonNull(pickedInventory.getItem().getItemFamily())) {

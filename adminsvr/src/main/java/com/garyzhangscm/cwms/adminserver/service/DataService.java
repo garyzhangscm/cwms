@@ -432,4 +432,14 @@ public class DataService {
         return dataInitialRequestRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("data initial request not found by id: " + id));
     }
+
+
+    /**
+     * Export data from the server so we can import into another server
+     * @param companyId
+     */
+    public void exportProductionData(Long companyId){
+
+
+    }
 }
