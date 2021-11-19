@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -185,6 +186,7 @@ public class DBBasedIntegration implements Integration{
     }
 
     @Override
+    @Transactional
     public IntegrationItemData addIntegrationItemData(Item item) {
         DBBasedItem dbBasedItem = new DBBasedItem(item);
         logger.debug("Get dbBasedItem\n{}\n from item : \n{}",

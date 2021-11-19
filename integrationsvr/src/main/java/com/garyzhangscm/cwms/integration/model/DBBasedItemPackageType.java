@@ -203,6 +203,12 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
         return itemPackageType;
     }
 
+
+    public String getItemReference() {
+        return Objects.isNull(item) ? "N/A" :
+                Objects.isNull(item.getName()) ? "NULL/NAME" : item.getName();
+    }
+
     public DBBasedItemPackageType() {}
     public DBBasedItemPackageType(ItemPackageType itemPackageType) {
 

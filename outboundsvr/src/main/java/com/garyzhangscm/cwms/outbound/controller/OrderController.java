@@ -48,9 +48,10 @@ public class OrderController {
     @RequestMapping(value="/orders", method = RequestMethod.GET)
     public List<Order> findAllOrders(@RequestParam Long warehouseId,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                     @RequestParam(name="status", required = false, defaultValue = "") String status,
                                      @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
         logger.debug("Start to find order by number {}", number);
-        return orderService.findAll(warehouseId, number, loadDetails);
+        return orderService.findAll(warehouseId, number, status, loadDetails);
     }
 
     @BillableEndpoint

@@ -391,4 +391,9 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
+
+    public String getItemPackageTypeReference() {
+        return Objects.isNull(itemPackageType) ? "N/A" :
+                Objects.isNull(itemPackageType.getName()) ? "NULL/NAME" : itemPackageType.getName();
+    }
 }

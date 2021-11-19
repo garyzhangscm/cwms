@@ -52,7 +52,7 @@ public class IntegrationService {
                     itemUnitOfMeasure.setItemPackageType(itemPackageType));
             itemPackageType.setItem(item);
         });
-        itemService.saveOrUpdate(item);
+        itemService.processIntegration(item);
         logger.debug(">> item information saved!");
 
 
