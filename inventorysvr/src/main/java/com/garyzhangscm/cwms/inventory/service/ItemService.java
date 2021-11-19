@@ -556,6 +556,112 @@ public class ItemService implements TestDataInitiableService{
     }
 
 
+    /**
+     * Process integration data.
+     * @param item
+     */
+    public void processIntegration(Item item) {
+
+        // if the item already exists, then update it
+        Item existingItem = findByName(item.getWarehouseId(), item.getName(), false);
+        if (Objects.nonNull(existingItem)) {
+            // we found item with the same name, let's update the item
+            item.setId(existingItem.getId());
+            // merge existing data to the integration information
+            // so that we will only adding and update existing information
+            // but not removing anything
+            mergeExistingItemForIntegration(item, existingItem);
+        }
 
 
+        logger.debug(">> start to save item integration data");
+        logger.debug("=========   Item Integration Data Content =========\n {}",
+                item.getName());
+        saveOrUpdate(item);
+
+
+
+
+    }
+
+    /**
+     * Merge the existing item information into the integrated one so that to make
+     * sure we are only adding or update information but not removing any existing
+     * information that doesn't exists in the integration information
+     * @param item
+     * @param existingItem
+     */
+    private void mergeExistingItemForIntegration(Item item, Item existingItem) {
+
+        // for any item package type that already exists, update
+        // otherwise, create the new item package type
+        existingItem.getItemPackageTypes().forEach(
+                existingItemPackageType -> {
+                    // for each existing item package type is not in the integration, let's
+                    // attached to the integration information
+                    Optional<ItemPackageType> matchedIntegratedItemPackageType =
+                            item.getItemPackageTypes().stream().filter(
+                                        itemPackageType -> existingItemPackageType.getName().equals(itemPackageType.getName())
+                                ).findFirst();
+                    if (!matchedIntegratedItemPackageType.isPresent()) {
+                        // ok, we have an existing item package type but not exists in the integration information,
+                        // then we will add it to the integration information
+                        item.addItemPackageType(existingItemPackageType);
+                        logger.debug("The item package type {} is not in the integration, let's just add it",
+                                existingItemPackageType.getName());
+                    }
+                    else {
+                        // ok the existing item package type already exists in the integration, let's make sure
+                        // all the UOM matches as well
+
+                        ItemPackageType itemPackageType = matchedIntegratedItemPackageType.get();
+                        itemPackageType.setId(existingItemPackageType.getId());
+
+                        logger.debug("The item package type {} exists in the integration, let's just merge the UOM",
+                                existingItemPackageType.getName());
+
+                        mergeExistingItemPackageTypeForIntegration(matchedIntegratedItemPackageType.get(), existingItemPackageType);
+                    }
+                }
+        );
+    }
+
+    /**
+     * Merge the existing UOMs from the existing item package type into the integration information
+     * @param itemPackageType
+     * @param existingItemPackageType
+     */
+    private void mergeExistingItemPackageTypeForIntegration(ItemPackageType itemPackageType, ItemPackageType existingItemPackageType) {
+
+        existingItemPackageType.getItemUnitOfMeasures().forEach(
+                existingItemUnitOfMeasure -> {
+                    // for each existing item package type is not in the integration, let's
+                    // attached to the integration information
+                    Optional<ItemUnitOfMeasure> matchedIntegratedItemUnitOfMeasure =
+                            itemPackageType.getItemUnitOfMeasures().stream().filter(
+                                    itemUnitOfMeasure -> existingItemUnitOfMeasure.getUnitOfMeasureId().equals(
+                                            itemUnitOfMeasure.getUnitOfMeasureId())
+                            ).findFirst();
+                    if (!matchedIntegratedItemUnitOfMeasure.isPresent()) {
+                        // ok, we have an existing item unit of measure but not exists in the integration information,
+                        // then we will add it to the integration information
+                        itemPackageType.addItemUnitOfMeasure(existingItemUnitOfMeasure);
+                        logger.debug("The item unit of measure {} is not in the item package type {} , let's just add it",
+                                existingItemUnitOfMeasure.getUnitOfMeasureId(),
+                                itemPackageType.getName());
+                    }
+                    else {
+                        // ok the existing item package type already exists in the integration, let's make sure
+                        // all the UOM matches as well
+
+                        ItemUnitOfMeasure itemUnitOfMeasure = matchedIntegratedItemUnitOfMeasure.get();
+                        itemUnitOfMeasure.setId(existingItemUnitOfMeasure.getId());
+
+                        logger.debug("The item unit of measure {} exists the item package type {} , let's just update it",
+                                existingItemUnitOfMeasure.getUnitOfMeasureId(),
+                                itemPackageType.getName());
+                    }
+                }
+        );
+    }
 }

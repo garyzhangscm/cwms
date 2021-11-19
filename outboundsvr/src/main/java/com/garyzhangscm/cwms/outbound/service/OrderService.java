@@ -103,6 +103,7 @@ public class OrderService implements TestDataInitiableService {
 
     public List<Order> findAll(Long warehouseId,
                                String number,
+                               String status,
                                Boolean loadDetails) {
 
         List<Order> orders =  orderRepository.findAll(
@@ -120,6 +121,12 @@ public class OrderService implements TestDataInitiableService {
                         }
                     }
 
+
+                    if (StringUtils.isNotBlank(status)) {
+                        OrderStatus orderStatus = OrderStatus.valueOf(status);
+                        predicates.add(criteriaBuilder.equal(root.get("status"), orderStatus));
+
+                    }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 },
@@ -137,8 +144,8 @@ public class OrderService implements TestDataInitiableService {
 
     }
 
-    public List<Order> findAll(Long warehouseId, String number) {
-        return findAll(warehouseId, number, true);
+    public List<Order> findAll(Long warehouseId, String number, String status) {
+        return findAll(warehouseId, number, status, true);
     }
 
 

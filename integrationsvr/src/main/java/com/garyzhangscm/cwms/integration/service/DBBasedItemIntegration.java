@@ -20,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ public class DBBasedItemIntegration {
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("item data not found by id: " + id));
     }
 
+    @Transactional
     public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem) {
 
         dbBasedItem.getItemPackageTypes().forEach(
@@ -101,7 +103,7 @@ public class DBBasedItemIntegration {
                     dbBasedItemPackageType.getItemUnitOfMeasures().forEach(
                             dbBasedItemUnitOfMeasure -> {
                                 dbBasedItemUnitOfMeasure.setItemPackageType(dbBasedItemPackageType);
-                                dbBasedItemUnitOfMeasure.setItemId(null);
+                                dbBasedItemUnitOfMeasure.setId(null);
                             }
                     );
                 }
