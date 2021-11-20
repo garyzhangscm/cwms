@@ -29,6 +29,7 @@ public interface Integration {
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationCustomerData getCustomerData(Long id);
     IntegrationCustomerData addIntegrationCustomerData(Customer customer);
+    IntegrationCustomerData addIntegrationCustomerData(DBBasedCustomer dbBasedCustomer);
 
 
     //
@@ -158,4 +159,7 @@ public interface Integration {
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationInventoryShippingConfirmationData getInventoryShippingConfirmationData(Long id);
     IntegrationInventoryShippingConfirmationData sendInventoryShippingConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation);
+
+    // save the integration result
+    public void saveIntegrationResult(IntegrationResult integrationResult);
 }

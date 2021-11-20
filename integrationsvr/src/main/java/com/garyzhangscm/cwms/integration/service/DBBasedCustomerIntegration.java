@@ -4,6 +4,7 @@ import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedCustomerRepository;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,41 @@ public class DBBasedCustomerIntegration {
 
     public IntegrationCustomerData addIntegrationCustomerData(DBBasedCustomer dbBasedCustomer) {
 
+        setupMissingField(dbBasedCustomer);
         return dbBasedCustomerRepository.save(dbBasedCustomer);
+    }
+
+    private void setupMissingField(DBBasedCustomer dbBasedCustomer) {
+        if (Strings.isBlank(dbBasedCustomer.getDescription())) {
+            dbBasedCustomer.setDescription(dbBasedCustomer.getName());
+        }
+
+        if (Strings.isBlank(dbBasedCustomer.getContactorFirstname())) {
+            dbBasedCustomer.setContactorFirstname("----");
+        }
+
+        if (Strings.isBlank(dbBasedCustomer.getContactorLastname())) {
+            dbBasedCustomer.setContactorLastname("----");
+        }
+
+        if (Strings.isBlank(dbBasedCustomer.getAddressCountry())) {
+            dbBasedCustomer.setAddressCountry("----");
+        }
+        if (Strings.isBlank(dbBasedCustomer.getAddressState())) {
+            dbBasedCustomer.setAddressState("----");
+        }
+        if (Strings.isBlank(dbBasedCustomer.getAddressCounty())) {
+            dbBasedCustomer.setAddressCounty("----");
+        }
+        if (Strings.isBlank(dbBasedCustomer.getAddressCity())) {
+            dbBasedCustomer.setAddressCity("----");
+        }
+        if (Strings.isBlank(dbBasedCustomer.getAddressLine1())) {
+            dbBasedCustomer.setAddressLine1("----");
+        }
+        if (Strings.isBlank(dbBasedCustomer.getAddressPostcode())) {
+            dbBasedCustomer.setAddressPostcode("----");
+        }
     }
 
 

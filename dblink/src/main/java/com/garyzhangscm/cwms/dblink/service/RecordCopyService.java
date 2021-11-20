@@ -28,6 +28,8 @@ public class RecordCopyService {
     @Autowired
     private DBBasedItemService dbBasedItemService;
     @Autowired
+    private DBBasedCustomerService dbBasedCustomerService;
+    @Autowired
     private DBBasedItemPackageTypeService dbBasedItemPackageTypeService;
 
     @Autowired
@@ -42,6 +44,17 @@ public class RecordCopyService {
 
         logger.debug("# copy data data @ {}", LocalDateTime.now());
 
+        logger.debug("@{}, Start to process supplier data", LocalDateTime.now());
+        dbBasedSupplierService.sendIntegrationData();
+
+        logger.debug("@{}, Start to process customer data", LocalDateTime.now());
+        dbBasedCustomerService.sendIntegrationData();
+
+
+
+        logger.debug("@{}, Start to process item data", LocalDateTime.now());
+        dbBasedItemService.sendIntegrationData();
+
         logger.debug("@{}, Start to process work order data", LocalDateTime.now());
         dbBasedWorkOrderService.sendIntegrationData();
 
@@ -49,16 +62,10 @@ public class RecordCopyService {
         dbBasedReceiptService.sendIntegrationData();
 
 
-        logger.debug("@{}, Start to process item data", LocalDateTime.now());
-        dbBasedItemService.sendIntegrationData();
-
-
         logger.debug("@{}, Start to process item package type data", LocalDateTime.now());
         dbBasedItemPackageTypeService.sendIntegrationData();
 
 
-        logger.debug("@{}, Start to process supplier data", LocalDateTime.now());
-        dbBasedSupplierService.sendIntegrationData();
 
     }
 

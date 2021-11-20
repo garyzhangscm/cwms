@@ -192,8 +192,8 @@ public class ReceiptService implements TestDataInitiableService{
 
     @Transactional
     public Receipt saveOrUpdate(Receipt receipt, boolean loadAttribute) {
-        if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),receipt.getNumber()) != null) {
-            receipt.setId(findByNumber(receipt.getWarehouseId(),receipt.getNumber()).getId());
+        if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),receipt.getNumber(), false) != null) {
+            receipt.setId(findByNumber(receipt.getWarehouseId(),receipt.getNumber(), false).getId());
         }
         if (Objects.isNull(receipt.getId())) {
             // we are creating a new receipt, let's setup the QC quantity

@@ -30,6 +30,8 @@ public class Receipt {
     private Long warehouseId;
     private String warehouseName;
 
+    private Warehouse warehouse;
+
     private Long clientId;
     private String clientName;
 
@@ -39,6 +41,14 @@ public class Receipt {
     private List<ReceiptLine> receiptLines = new ArrayList<>();
 
     private Boolean allowUnexpectedItem;
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
 
     public String getNumber() {
         return number;

@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -29,6 +30,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_receipt")
@@ -92,7 +94,8 @@ public class DBBasedReceipt implements Serializable, IntegrationReceiptData{
     @Column(name = "error_message")
     private String errorMessage;
 
-    public Receipt convertToReceipt() {
+    public Receipt convertToReceipt(
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
         Receipt receipt = new Receipt();
 
         String[] fieldNames = {
@@ -100,6 +103,17 @@ public class DBBasedReceipt implements Serializable, IntegrationReceiptData{
         };
 
         ObjectCopyUtil.copyValue(this, receipt, fieldNames);
+
+        Long warehouseId = getWarehouseId();
+        if (Objects.isNull(warehouseId)) {
+            warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
+                    getCompanyId(), getCompanyCode(), getWarehouseId(), getWarehouseName()
+            );
+        }
+        receipt.setWarehouseId(warehouseId);
+        receipt.setWarehouse(
+                warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId)
+        );
 
         // Copy each order line as well
         getReceiptLines().forEach(dbBasedReceiptLine -> {

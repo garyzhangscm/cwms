@@ -1,8 +1,10 @@
 package com.garyzhangscm.cwms.dblink.service;
 
 import com.garyzhangscm.cwms.dblink.client.IntegrationServiceRestemplateClient;
+import com.garyzhangscm.cwms.dblink.model.DBBasedCustomer;
 import com.garyzhangscm.cwms.dblink.model.DBBasedItem;
 import com.garyzhangscm.cwms.dblink.model.IntegrationStatus;
+import com.garyzhangscm.cwms.dblink.repository.DBBasedCustomerRepository;
 import com.garyzhangscm.cwms.dblink.repository.DBBasedItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,27 +27,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-public class DBBasedItemService {
+public class DBBasedCustomerService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DBBasedItemService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedCustomerService.class);
 
     @Autowired
-    DBBasedItemRepository dbBasedItemRepository;
+    DBBasedCustomerRepository dbBasedCustomerRepository;
     @Autowired
     IntegrationServiceRestemplateClient integrationServiceRestemplateClient;
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
 
 
-    public List<DBBasedItem> findAll() {
-        return dbBasedItemRepository.findAll();
+    public List<DBBasedCustomer> findAll() {
+        return dbBasedCustomerRepository.findAll();
     }
 
-    private List<DBBasedItem> findPendingIntegration() {
+    private List<DBBasedCustomer> findPendingIntegration() {
         Pageable limit = PageRequest.of(0,recordLimit);
 
-        Page<DBBasedItem> dbBasedItemPage = dbBasedItemRepository.findAll(
-                (Root<DBBasedItem> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+        Page<DBBasedCustomer> dbBasedCustomerPage = dbBasedCustomerRepository.findAll(
+                (Root<DBBasedCustomer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
@@ -55,32 +57,32 @@ public class DBBasedItemService {
                 },
                 limit
         );
-        return dbBasedItemPage.getContent();
+        return dbBasedCustomerPage.getContent();
 
     }
 
-    private void save(DBBasedItem dbBasedItem) {
-        dbBasedItemRepository.save(dbBasedItem);
+    private void save(DBBasedCustomer dbBasedCustomer) {
+        dbBasedCustomerRepository.save(dbBasedCustomer);
     }
 
     public void sendIntegrationData() {
-        List<DBBasedItem> pendingDBBasedItem = findPendingIntegration();
-        logger.debug("# find " +  pendingDBBasedItem.size() + " pendingDBBasedItem");
+        List<DBBasedCustomer> pendingDBBasedCustomer = findPendingIntegration();
+        logger.debug("# find " +  pendingDBBasedCustomer.size() + " pendingDBBasedCustomer");
 
         AtomicReference<LocalDateTime> startProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicReference<LocalDateTime> lastProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicInteger i = new AtomicInteger();
 
-        pendingDBBasedItem.forEach(
-                dbBasedItem -> {
+        pendingDBBasedCustomer.forEach(
+                dbBasedCustomer -> {
                     lastProcessingDateTime.set(LocalDateTime.now());
-                    logger.debug("# start to process item " + dbBasedItem.getName());
+                    logger.debug("# start to process Customer " + dbBasedCustomer.getName());
 
-                    // logger.debug("===========  Item  Content   ===============\n {} ", dbBasedItem);
+                    logger.debug("===========  Customer  Content   ===============\n {} ", dbBasedCustomer);
                     String result = "";
                     String errorMessage = "";
                     try {
-                        result = integrationServiceRestemplateClient.sendIntegrationData("item", dbBasedItem);
+                        result = integrationServiceRestemplateClient.sendIntegrationData("customer", dbBasedCustomer);
                         logger.debug("# get result " + result);
                     }
                     catch (Exception ex) {
@@ -89,19 +91,19 @@ public class DBBasedItemService {
                         errorMessage = ex.getMessage();
                     }
                     if (result.equalsIgnoreCase("success")) {
-                        dbBasedItem.setStatus(IntegrationStatus.COMPLETED);
+                        dbBasedCustomer.setStatus(IntegrationStatus.COMPLETED);
                     }
                     else {
-                        dbBasedItem.setStatus(IntegrationStatus.ERROR);
+                        dbBasedCustomer.setStatus(IntegrationStatus.ERROR);
                     }
-                    save(dbBasedItem);
+                    save(dbBasedCustomer);
                     logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",
                             i, ChronoUnit.MILLIS.between(lastProcessingDateTime.get(), LocalDateTime.now()));
                     i.getAndIncrement();
                 }
         );
-        logger.debug("====> total processing time for {} pendingDBBasedItem: {} millisecond(1/1000 second)",
-                pendingDBBasedItem.size(),
+        logger.debug("====> total processing time for {} pendingDBBasedCustomer: {} millisecond(1/1000 second)",
+                pendingDBBasedCustomer.size(),
                 ChronoUnit.MILLIS.between(startProcessingDateTime.get(), LocalDateTime.now()));
     }
 

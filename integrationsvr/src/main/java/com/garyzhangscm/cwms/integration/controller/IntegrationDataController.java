@@ -334,6 +334,16 @@ public class IntegrationDataController {
         return ResponseBodyWrapper.success("success");
     }
 
+    @RequestMapping(value="/dblink/customer", method = RequestMethod.PUT)
+    public ResponseBodyWrapper saveIntegrationCustomerData(
+            @RequestBody DBBasedCustomer dbBasedCustomer
+    ){
+
+        logger.debug("Start to save dbBasedCustomer into database \n{}",
+                dbBasedCustomer);
+        integrationDataService.addIntegrationCustomerData(dbBasedCustomer);
+        return ResponseBodyWrapper.success("success");
+    }
 
     @RequestMapping(value="/dblink/item", method = RequestMethod.PUT)
     public ResponseBodyWrapper saveIntegrationItemData(

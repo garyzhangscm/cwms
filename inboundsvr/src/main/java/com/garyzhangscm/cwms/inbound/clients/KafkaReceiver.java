@@ -2,9 +2,7 @@ package com.garyzhangscm.cwms.inbound.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.inbound.model.Receipt;
-import com.garyzhangscm.cwms.inbound.model.ReceiptStatus;
-import com.garyzhangscm.cwms.inbound.model.WarehouseTransferReceipt;
+import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.IntegrationService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptService;
 import org.slf4j.Logger;
@@ -13,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +30,8 @@ public class KafkaReceiver {
     @Autowired
     IntegrationService integrationService;
     @Autowired
+    private KafkaSender kafkaSender;
+    @Autowired
     ReceiptService receiptService;
 
 
@@ -38,8 +40,10 @@ public class KafkaReceiver {
      * -- Receipt
      * */
     @KafkaListener(topics = {"INTEGRATION_RECEIPT"})
-    public void processReceipt(@Payload String receiptJsonRepresent)  {
+    public void processReceipt(@Payload String receiptJsonRepresent,
+                               @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId)  {
         logger.info("# received integration - receipt data:\n {}", receiptJsonRepresent);
+        logger.info("with id {}", integrationId);
         try {
             Receipt receipt = objectMapper.readValue(receiptJsonRepresent, Receipt.class);
 
@@ -48,9 +52,25 @@ public class KafkaReceiver {
 
             integrationService.process(receipt);
 
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_RECEIPT,
+                    true, ""
+            );
+            kafkaSender.send(integrationResult);
+
+
         }
-        catch (JsonProcessingException ex) {
+        catch (Exception ex) {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_RECEIPT,
+                    false, ex.getMessage()
+            );
+            kafkaSender.send(integrationResult);
         }
 
     }

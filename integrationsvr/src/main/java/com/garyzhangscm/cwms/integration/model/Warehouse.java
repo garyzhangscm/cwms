@@ -24,6 +24,7 @@ import java.io.Serializable;
 public class Warehouse implements Serializable {
 
     private Long id;
+    private Company company;
 
     private String name;
 
@@ -37,6 +38,14 @@ public class Warehouse implements Serializable {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
 
     public Long getId() {
         return id;

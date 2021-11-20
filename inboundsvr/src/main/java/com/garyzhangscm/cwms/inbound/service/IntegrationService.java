@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 public class IntegrationService {
@@ -19,6 +20,9 @@ public class IntegrationService {
     private KafkaSender kafkaSender;
     // Add/ change item
     public void process(Receipt receipt) {
+
+
+
 
         // Setup the receipt line so it can be serialized along with the receipt
         receipt.getReceiptLines().forEach(receiptLine -> {

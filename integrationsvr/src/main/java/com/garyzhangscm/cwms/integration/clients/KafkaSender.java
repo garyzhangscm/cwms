@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Component
 public class KafkaSender {
@@ -32,6 +34,15 @@ public class KafkaSender {
     }
 
 
+
+    public <T> void send(IntegrationType integrationType, Long id, T data) {
+        try {
+            send(integrationType.name(), id.toString(), mapper.writeValueAsString(data));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
 
     public <T> void send(IntegrationType integrationType, T data) {
         try {
