@@ -47,6 +47,10 @@ public class IntegrationDataService {
     public IntegrationCustomerData addIntegrationCustomerData(Customer customer) {
         return integration.addIntegrationCustomerData(customer);
     }
+    public IntegrationCustomerData addIntegrationCustomerData(DBBasedCustomer dbBasedCustomer) {
+        return integration.addIntegrationCustomerData(dbBasedCustomer);
+    }
+
 
 
     //
@@ -258,5 +262,9 @@ public class IntegrationDataService {
     }
 
     public void saveIntegrationItemData(DBBasedItem dbBasedItem) {
+    }
+
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        integration.saveIntegrationResult(integrationResult);
     }
 }

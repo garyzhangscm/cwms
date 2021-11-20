@@ -78,7 +78,7 @@ public class DBBasedItemPackageTypeService {
         pendingDBBasedItemPackageType.forEach(
                 dbBasedItemPackageType -> {
                     lastProcessingDateTime.set(LocalDateTime.now());
-                    logger.debug("# start to process item package type " + dbBasedItemPackageType);
+                    // logger.debug("# start to process item package type " + dbBasedItemPackageType);
                     String result = "";
                     String errorMessage = "";
                     try {

@@ -170,6 +170,11 @@ public class DBBasedIntegration implements Integration{
         return dbBasedCustomerIntegration.addIntegrationCustomerData(new DBBasedCustomer(customer));
     }
 
+    @Override
+    public IntegrationCustomerData addIntegrationCustomerData(DBBasedCustomer dbBasedCustomer) {
+        return dbBasedCustomerIntegration.addIntegrationCustomerData(dbBasedCustomer);
+    }
+
     //
     // Integration - Item
     //
@@ -480,4 +485,11 @@ public class DBBasedIntegration implements Integration{
     }
 
 
+    @Override
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        switch (integrationResult.getIntegrationType()) {
+            case INTEGRATION_RECEIPT:
+                dbBasedReceiptIntegration.saveIntegrationResult(integrationResult);
+        }
+    }
 }

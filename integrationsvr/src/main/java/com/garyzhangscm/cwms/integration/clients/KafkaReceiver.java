@@ -51,6 +51,30 @@ public class KafkaReceiver {
     }
 
 
+    /**
+     * We get feedback from business services that either successfully processed the integration data, or fail due to some reason
+     * @param integrationResultJsonRepresent
+     */
+    @KafkaListener(topics = {"INTEGRATION_RESULT"})
+    public void processIntegrationResult(@Payload String integrationResultJsonRepresent)  {
+        logger.info("# received integration result data: {}", integrationResultJsonRepresent);
+
+        try {
+            IntegrationResult integrationResult
+                    = objectMapper.readValue(integrationResultJsonRepresent, IntegrationResult.class);
+            logger.info("integrationResult: {}", integrationResult);
+
+
+            integrationDataService.saveIntegrationResult(integrationResult);
+
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
+
     @KafkaListener(topics = {"INTEGRATION_INVENTORY_ATTRIBUTE_CHANGE_CONFIRMATION"})
     public void processInventoryAttributeChangeConfirmationIntegration(@Payload String inventoryAttributeChangeConfirmationJsonRepresent)  {
         logger.info("# received inventory attribute change confirmation data: {}", inventoryAttributeChangeConfirmationJsonRepresent);

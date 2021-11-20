@@ -102,6 +102,25 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Item getItemById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/items/{id}");
+
+        ResponseBodyWrapper<Item> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Item>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
     public Item getItemByName(Long warehouseId, String name)  {
         logger.debug("Start to get item by name");
         try {

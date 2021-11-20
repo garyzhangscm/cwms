@@ -31,6 +31,7 @@ public class ReceiptLine {
 
     private Long itemId;
     private String itemName;
+    private Item item;
 
     private Long expectedQuantity;
 
@@ -93,6 +94,14 @@ public class ReceiptLine {
 
     public void setOverReceivingPercent(Double overReceivingPercent) {
         this.overReceivingPercent = overReceivingPercent;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public String getWarehouseName() {

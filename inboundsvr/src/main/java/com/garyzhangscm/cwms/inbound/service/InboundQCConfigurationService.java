@@ -258,7 +258,7 @@ public class InboundQCConfigurationService {
                 supplierId, itemFamilyId, itemId, fromInventoryStatusId, warehouseId, companyId);
         List<InboundQCConfiguration> allInboundQCConfiguration =
                 findAll(null, null, null, null,
-                        null, companyId, true);
+                        null, companyId, false);
 
         if (allInboundQCConfiguration.size() == 0) {
             logger.debug("Can't find any inbound QC configuration. Suppose we don't need QC");

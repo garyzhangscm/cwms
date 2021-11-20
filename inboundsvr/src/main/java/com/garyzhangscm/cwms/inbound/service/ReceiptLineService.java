@@ -453,6 +453,7 @@ public class ReceiptLineService implements TestDataInitiableService{
 
         logger.debug("Start to setup qc quantity for receipt line {} / {}",
                 receipt.getNumber(), receiptLine.getNumber());
+
         Warehouse warehouse = receipt.getWarehouse();
         if (Objects.isNull(warehouse)) {
             warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
@@ -466,7 +467,10 @@ public class ReceiptLineService implements TestDataInitiableService{
             logger.debug("=======   Receipt ======= \n {}",
                     receipt);
         }
-        Item item = inventoryServiceRestemplateClient.getItemById(receiptLine.getItemId());
+        Item item =
+                Objects.nonNull(receiptLine.getItem()) ? receiptLine.getItem() :
+                        inventoryServiceRestemplateClient.getItemById(receiptLine.getItemId());
+
         InboundQCConfiguration inboundQCConfiguration =
                 inboundQCConfigurationService.getBestMatchedInboundQCConfiguration(
                         receipt.getSupplierId(),

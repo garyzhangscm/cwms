@@ -37,13 +37,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.Transient;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -104,6 +107,9 @@ public class OrderService implements TestDataInitiableService {
     public List<Order> findAll(Long warehouseId,
                                String number,
                                String status,
+                               LocalDateTime startCompleteTime,
+                               LocalDateTime endCompleteTime,
+                               LocalDate specificCompleteDate,
                                Boolean loadDetails) {
 
         List<Order> orders =  orderRepository.findAll(
@@ -127,6 +133,26 @@ public class OrderService implements TestDataInitiableService {
                         predicates.add(criteriaBuilder.equal(root.get("status"), orderStatus));
 
                     }
+
+                    if (Objects.nonNull(startCompleteTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("completeTime"), startCompleteTime));
+
+                    }
+
+                    if (Objects.nonNull(endCompleteTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("completeTime"), endCompleteTime));
+
+                    }
+                    if (Objects.nonNull(specificCompleteDate)) {
+                        LocalDateTime dateStartTime = specificCompleteDate.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = specificCompleteDate.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("completeTime"), dateStartTime, dateEndTime));
+
+                    }
+
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 },
@@ -144,8 +170,11 @@ public class OrderService implements TestDataInitiableService {
 
     }
 
-    public List<Order> findAll(Long warehouseId, String number, String status) {
-        return findAll(warehouseId, number, status, true);
+    public List<Order> findAll(Long warehouseId, String number, String status,
+                               LocalDateTime startCompleteTime, LocalDateTime endCompleteTime,
+                               LocalDate specificCompleteDate) {
+        return findAll(warehouseId, number, status, startCompleteTime, endCompleteTime,
+                specificCompleteDate, true);
     }
 
 

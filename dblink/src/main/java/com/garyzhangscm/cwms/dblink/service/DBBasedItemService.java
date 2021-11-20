@@ -76,7 +76,7 @@ public class DBBasedItemService {
                     lastProcessingDateTime.set(LocalDateTime.now());
                     logger.debug("# start to process item " + dbBasedItem.getName());
 
-                    logger.debug("===========  Item  Content   ===============\n {} ", dbBasedItem);
+                    // logger.debug("===========  Item  Content   ===============\n {} ", dbBasedItem);
                     String result = "";
                     String errorMessage = "";
                     try {

@@ -145,7 +145,7 @@ public class DBBasedReceiptIntegration {
 
         try {
 
-            Receipt receipt = dbBasedReceipt.convertToReceipt();
+            Receipt receipt = dbBasedReceipt.convertToReceipt(warehouseLayoutServiceRestemplateClient);
 
             // we will support host to send name
             // instead of id for the following field . In such case, we will
@@ -160,16 +160,16 @@ public class DBBasedReceiptIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Receipt:\n{}", receipt);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_RECEIPT, receipt);
+            kafkaSender.send(IntegrationType.INTEGRATION_RECEIPT, dbBasedReceipt.getId(), receipt);
 
-            dbBasedReceipt.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedReceipt.setStatus(IntegrationStatus.SENT);
             dbBasedReceipt.setErrorMessage("");
             dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
             dbBasedReceipt = save(dbBasedReceipt);
 
             // Save the order line as well
             dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
-                dbBasedReceiptLine.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedReceiptLine.setStatus(IntegrationStatus.SENT);
                 dbBasedReceiptLine.setErrorMessage("");
                 dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
                 dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
@@ -246,6 +246,12 @@ public class DBBasedReceiptIntegration {
                 );
         }
 
+        receiptLine.setItem(
+                inventoryServiceRestemplateClient.getItemById(
+                        receiptLine.getItemId()
+                )
+        );
+
 
         // 2. warehouse Id
 
@@ -259,4 +265,23 @@ public class DBBasedReceiptIntegration {
 
 
 
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        DBBasedReceipt dbBasedReceipt = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedReceipt.setStatus(integrationStatus);
+        dbBasedReceipt.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedReceipt);
+
+        dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
+            dbBasedReceiptLine.setStatus(integrationStatus);
+            dbBasedReceiptLine.setErrorMessage(integrationResult.getErrorMessage());
+            dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
+            dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
+        });
+
+    }
 }
