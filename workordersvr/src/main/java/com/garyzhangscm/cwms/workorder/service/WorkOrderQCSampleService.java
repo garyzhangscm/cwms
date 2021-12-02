@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderQCSampleRepository;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -245,5 +246,10 @@ public class WorkOrderQCSampleService   {
         // remove the qc sample record
         delete(workOrderQCSample);
 
+    }
+
+    public void removeQCSample(Long id) {
+        WorkOrderQCSample workOrderQCSample = findById(id);
+        removeQCSample(workOrderQCSample);
     }
 }

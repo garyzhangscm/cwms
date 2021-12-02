@@ -453,6 +453,10 @@ public class ReceiptLineService implements TestDataInitiableService{
 
         logger.debug("Start to setup qc quantity for receipt line {} / {}",
                 receipt.getNumber(), receiptLine.getNumber());
+        // default to the qc quantity to 0
+        receiptLine.setQcQuantity(0l);
+        receiptLine.setQcPercentage(0d);
+        receiptLine.setQcQuantityRequested(0l);
 
         Warehouse warehouse = receipt.getWarehouse();
         if (Objects.isNull(warehouse)) {
@@ -494,8 +498,14 @@ public class ReceiptLineService implements TestDataInitiableService{
             return;
         }
         // setup the qc quantity and percentage based on the configuration
-        receiptLine.setQcQuantity(inboundQCConfiguration.getQcQuantityPerReceipt());
-        receiptLine.setQcPercentage(inboundQCConfiguration.getQcPercentage());
+        if (Objects.nonNull(inboundQCConfiguration.getQcQuantityPerReceipt())) {
+
+            receiptLine.setQcQuantity(inboundQCConfiguration.getQcQuantityPerReceipt());
+        }
+        if (Objects.nonNull(inboundQCConfiguration.getQcPercentage())) {
+
+            receiptLine.setQcPercentage(inboundQCConfiguration.getQcPercentage());
+        }
 
     }
 }

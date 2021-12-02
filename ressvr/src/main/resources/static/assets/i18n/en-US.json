@@ -1453,5 +1453,6 @@
   "qc-quantity": "QC Quantity",
   "unit-of-measure.default-for-inbound-receiving": "Default for Inbound Receiving",
   "unit-of-measure.default-for-workorder-receiving": "Default for Work Order Receiving",
-  "unit-of-measure.tracking_lpn": "Tracking LPN"
+  "unit-of-measure.tracking_lpn": "Tracking LPN",
+  "qc.actualValue": "Actual Value"
 }

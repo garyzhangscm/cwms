@@ -1452,5 +1452,6 @@
   "qc-quantity": "QC 数量",
   "unit-of-measure.default-for-inbound-receiving": "入库默认收货单位",
   "unit-of-measure.default-for-workorder-receiving": "完工入库默认收货单位",
-  "unit-of-measure.tracking_lpn": "跟踪lpn"
+  "unit-of-measure.tracking_lpn": "跟踪lpn",
+  "qc.actualValue": "QC值"
 }
