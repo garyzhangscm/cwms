@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,7 @@ import java.io.InputStream;
 import java.util.*;
 
 @Service
+@CacheConfig(cacheNames = "menu")
 public class MenuGroupService implements TestDataInitiableService{
     private static final Logger logger = LoggerFactory.getLogger(MenuGroupService.class);
 
@@ -130,13 +132,15 @@ public class MenuGroupService implements TestDataInitiableService{
     }
     public List<MenuGroup> getAccessibleMenus(Long companyId, User user, MenuType menuType) {
         List<MenuGroup> menuGroups;
+        logger.debug("User {} is system admin? {}", user.getUsername(), user.getSystemAdmin());
         logger.debug("User {} is admin? {}", user.getUsername(), user.getAdmin());
-        if (user.getAdmin()) {
-            // If the user is admin, he/she has access to all menus
+        if (user.getSystemAdmin()) {
+            // If the user is system admin, he/she has access to all menus
             menuGroups = findAll(menuType);
         }
+
         else {
-            menuGroups = getAccessibleMenus(companyId, user.getRoles(), menuType);
+            menuGroups = getAccessibleMenus(companyId, user.getAdmin(), user.getRoles(), menuType);
         }
         menuGroups.sort(Comparator.comparing(MenuGroup::getSequence));
 
@@ -155,17 +159,9 @@ public class MenuGroupService implements TestDataInitiableService{
 
     // Get all the accessible menu based upon the list of roles
     private List<MenuGroup> getAccessibleMenus(Long companyId,List<Role> roles) {
-        return getAccessibleMenus(companyId, roles, null);
+        return getAccessibleMenus(companyId, false, roles, null);
     }
-    private List<MenuGroup> getAccessibleMenus(Long companyId, List<Role> roles, MenuType menuType) {
-
-        // Save the id of menus that are accessible from the list
-        // of roles, to make it easy for checking
-
-        Map<Long, Long> accessibleMenuIdMap = getAccessibleMenuIdMap(companyId, roles, menuType);
-        // logger.debug("We get following accessible menus for roles: \n {} \n {}",
-        //         roles, menuType);
-
+    private List<MenuGroup> getAccessibleMenus(Long companyId, Boolean isAdmin, List<Role> roles, MenuType menuType) {
 
         // Let's get all the menu groups and then loop one by one
         // to see if the list of roles has access to the menu
@@ -173,6 +169,74 @@ public class MenuGroupService implements TestDataInitiableService{
         // the menu.
         // As long as there's one menu in the group left, we will
         // keep the menu group
+        List<MenuGroup> menuGroups = findAll(menuType);
+
+        List<CompanyMenu> companyMenus = companyMenuService.findAll(companyId);
+        // logger.debug("We got menu Groups: {}", menuGroups);
+        Iterator<MenuGroup> menuGroupIterator = menuGroups.iterator();
+        while(menuGroupIterator.hasNext()) {
+            MenuGroup menuGroup = menuGroupIterator.next();
+            Iterator<MenuSubGroup> menuSubGroupIterator = menuGroup.getMenuSubGroups().iterator();
+            while(menuSubGroupIterator.hasNext()) {
+                MenuSubGroup menuSubGroup = menuSubGroupIterator.next();
+                Iterator<Menu> menuIterator = menuSubGroup.getMenus().iterator();
+                while(menuIterator.hasNext()) {
+                    Menu menu = menuIterator.next();
+                    if (Boolean.TRUE.equals(menu.getSystemAdminMenuFlag())) {
+                        // for system admin menu, we will ignore here
+                        // it is only accessible by system admin, which will have
+                        // full access to everything and thus handled separately
+
+                        menuIterator.remove();
+                    }
+                    else if (!Boolean.TRUE.equals(menu.getEnabled())) {
+                        // menu is diabled
+                        menuIterator.remove();
+                    }
+                    else if (!isAccessibleByCompany(menu, companyMenus)) {
+                        // menu is not assigned to this company
+
+                        menuIterator.remove();
+                    }
+                    // for admin, the user has access to all menus that is assigned to
+                    // this company, regardless of the roles that assigned to the
+                    // user
+                    else if (!isAdmin && !isAccessible(menu, roles)) {
+
+                        menuIterator.remove();
+                    }
+                }
+                if (menuSubGroup.getMenus().size() == 0) {
+                    // there's nothing left in the sub group, let's
+                    // remove it from the result
+                    menuSubGroupIterator.remove();
+                }
+            }
+            if (menuGroup.getMenuSubGroups().size() == 0) {
+                // there's nothing left in the  group, let's
+                // remove it from the result
+
+                menuGroupIterator.remove();
+            }
+        }
+        return menuGroups;
+
+    }
+
+/**
+    private Map<Long, Long> getAccessibleMenuIdMap(Long companyId, MenuType menuType) {
+        Map<Long, Long> accessibleMenuIdMap = new HashMap<>();
+        // see if we have defined the restriction of the menus for the company. If we haven't
+        // then it means the company have access to all menu.
+        List<CompanyMenu> companyMenus = companyMenuService.findAll(companyId);
+        // save the menu id into the hashmap so it will be faster to find out
+        // which menu has been assigned to the company
+        Map<Long, Long> companyMenuMap = new HashMap<>();
+        companyMenus.forEach(
+                companyMenu -> companyMenuMap.put(companyMenu.getMenu().getId(), 1l)
+        );
+
+
         List<MenuGroup> menuGroups = findAll(menuType);
         // logger.debug("We got menu Groups: {}", menuGroups);
         Iterator<MenuGroup> menuGroupIterator = menuGroups.iterator();
@@ -184,9 +248,15 @@ public class MenuGroupService implements TestDataInitiableService{
                 Iterator<Menu> menuIterator = menuSubGroup.getMenus().iterator();
                 while(menuIterator.hasNext()) {
                     Menu menu = menuIterator.next();
+                    if (Boolean.TRUE.equals(menu.getSystemAdminMenuFlag())) {
+                        // for system admin menu, we will ignore here
+                        // it is only accessible by system admin, which will have
+                        // full access to everything and thus handled separately
+                        menuIterator.remove();
+                    }
                     if (!accessibleMenuIdMap.containsKey(menu.getId())) {
                         // logger.debug("accessible menu id map doesn't have the menu {} / {}, will remove it",
-                         //       menu.getId(), menu.getName());
+                        //       menu.getId(), menu.getName());
                         menuIterator.remove();
                     }
                 }
@@ -198,14 +268,15 @@ public class MenuGroupService implements TestDataInitiableService{
             }
             if (menuGroup.getMenuSubGroups().size() == 0) {
                 // logger.debug("menuGroup {} / {} is empty, will remove it",
-                 //       menuGroup.getId(), menuGroup.getName());
+                //       menuGroup.getId(), menuGroup.getName());
                 menuGroupIterator.remove();
             }
         }
-        return menuGroups;
 
+        return accessibleMenuIdMap;
     }
-
+   **/
+/**
     private Map<Long, Long> getAccessibleMenuIdMap(Long companyId, List<Role> roles, MenuType menuType) {
         Map<Long, Long> accessibleMenuIdMap = new HashMap<>();
         // see if we have defined the restriction of the menus for the company. If we haven't
@@ -223,6 +294,8 @@ public class MenuGroupService implements TestDataInitiableService{
             role.getMenus().stream()
                     // skip the disabled menu first
                     .filter(menu -> !Boolean.FALSE.equals(menu.getEnabled()))
+                    // will only return user accessible menu
+                    .filter(menu -> !Boolean.TRUE.equals(menu.getSystemAdminMenuFlag()))
                     .filter(menu -> companyMenuMap.isEmpty() || companyMenuMap.containsKey(menu.getId()))
                     // filter out the menu if the type passed in and the menu's type doesn't
                     // match with the criteria
@@ -233,7 +306,7 @@ public class MenuGroupService implements TestDataInitiableService{
         );
         return accessibleMenuIdMap;
     }
-
+**/
     // As long as one role in the list has access to the menu,
     // we will return true;
     private boolean isAccessible(Menu menu, List<Role> roles) {
@@ -252,6 +325,32 @@ public class MenuGroupService implements TestDataInitiableService{
             }
         }
         return false;
+
+    }
+
+    private boolean isAccessible(Menu menu, Long companyId) {
+
+        // see if we have defined the restriction of the menus for the company. If we haven't
+        // then it means the company have access to all menu.
+        List<CompanyMenu> companyMenus = companyMenuService.findAll(companyId);
+        if (companyMenus.isEmpty()) {
+            return true;
+        }
+
+        return companyMenus.stream().anyMatch(companyAssignedMenu -> companyAssignedMenu.equals(menu));
+
+    }
+
+    private boolean isAccessibleByCompany(Menu menu, List<CompanyMenu> companyMenus) {
+
+        // see if we have defined the restriction of the menus for the company. If we haven't
+        // then it means the company have access to all menu.
+
+        if (companyMenus.isEmpty()) {
+            return true;
+        }
+
+        return companyMenus.stream().anyMatch(companyAssignedMenu -> companyAssignedMenu.equals(menu));
 
     }
 
@@ -287,4 +386,6 @@ public class MenuGroupService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+
+
 }

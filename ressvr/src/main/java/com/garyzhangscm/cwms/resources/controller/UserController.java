@@ -87,6 +87,19 @@ public class UserController {
         return userService.changeUser(user);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/users/{id}/copy", method = RequestMethod.POST)
+    public User copyUser(@PathVariable Long id,
+                         @RequestParam String username,
+                         @RequestParam String firstname,
+                         @RequestParam String lastname) {
+        // copy the existing user to create a new user with the new name
+        // the password will be default to the username
+        // and the user will be required to change password when next logon
+        return userService.copyUser(id, username, firstname, lastname);
+    }
+
+
 
     @BillableEndpoint
     @RequestMapping(value="/users/{id}/roles", method = RequestMethod.POST)

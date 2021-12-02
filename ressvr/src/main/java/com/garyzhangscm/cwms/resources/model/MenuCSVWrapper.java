@@ -37,6 +37,9 @@ public class MenuCSVWrapper {
     private String icon;
 
 
+    private Boolean enabled;
+    private Boolean systemAdminMenuFlag;
+
     public String getName() {
         return name;
     }
@@ -91,5 +94,21 @@ public class MenuCSVWrapper {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Boolean getSystemAdminMenuFlag() {
+        return systemAdminMenuFlag;
+    }
+
+    public void setSystemAdminMenuFlag(Boolean systemAdminMenuFlag) {
+        this.systemAdminMenuFlag = systemAdminMenuFlag;
     }
 }

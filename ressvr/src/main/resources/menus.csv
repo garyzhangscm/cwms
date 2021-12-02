@@ -1,94 +1,95 @@
-text,i18n,link,sequence,menuSubGruop,name,icon
-"Default",menu.dashboard.default,/dashboard/default,1,User-Menu-Dashboard,Dashboard-Default,
-"Production Kanban",menu.dashboard.production-kanban,/dashboard/production-kanban,2,User-Menu-Dashboard,Dashboard-Locations,
-"User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User,
-"Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role,
-"WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam,
-"Department",menu.main.auth.department,/auth/department,4,Main-Menu-Auth,Auth-Department,
-"Warehouse",menu.main.layout.warehouse,/warehouse-layout/warehouse,1,Main-Menu-Layout,Layout-warehouse,
-"LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group,
-"WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location,
-"Item Family",menu.main.inventory.item-family,/inventory/item-family,1,Main-Menu-Inventory,Inventory-ItemFamily,
-"Item",menu.main.inventory.item,/inventory/item,2,Main-Menu-Inventory,Inventory-Item,
-"inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory,
-"inventory activity",menu.main.inventory.inventory-activity,/inventory/inventory-activity,4,Main-Menu-Inventory,Inventory-InventoryActivity,
-"inventory adjust",menu.main.inventory.inventory-adjust,/inventory/inventory-adjust,5,Main-Menu-Inventory,Inventory-InventoryAdjust,
-"inventory adjust request",menu.main.inventory.inventory-adjustment-request,/inventory/inventory-adjustment-request,6,Main-Menu-Inventory,Inventory-InventoryAdjustmentRequest,
-"inventory adjustment Threshold",menu.main.inventory.inventory-adjustment-threshold,/inventory/inventory-adjustment-threshold,7,Main-Menu-Inventory,Inventory-InventoryAdjustmentThreshold,
-"Movement Path",menu.main.inventory.movement-path,/inventory/movement-path,8,Main-Menu-Inventory,Inventory-MovementPath,
-"Cycle Count",menu.main.inventory.count.cycle-count,/inventory/count/cycle-count,9,Main-Menu-Inventory,Inventory-CycleCount,
-"Emergency Replenishment Configuration",menu.main.inventory.replenishment.emergency.config,/inventory/replenishment/emergency/config,10,Main-Menu-Inventory,Inventory-EmerReplConfig,
-"Trigger Replenishment Configuration",menu.main.inventory.replenishment.trigger.config,/inventory/replenishment/trigger/config,11,Main-Menu-Inventory,Inventory-TriggerReplConfig,
-"Replenishment Display",menu.main.inventory.replenishment.display,/inventory/replenishment,12,Main-Menu-Inventory,Inventory-ReplDisplay,
-"Inventory Configuration",menu.main.inventory.configuration,/inventory/configuration,13,Main-Menu-Inventory,Inventory-Configuration,
-"Inventory Allocation Summary",menu.main.inventory.allocation-summary,/inventory/inventory-allocation-summary,14,Main-Menu-Inventory,Inventory-Allocation-Summary,
-"Inventory Snapshot",menu.main.inventory.snapshot,/inventory/snapshot,15,Main-Menu-Inventory,Inventory-Snapshot,
-"QC Rule Maintenance",menu.main.qc.qc-rule,/qc/rules,1,Main-Menu-QC,QC-Rule,
-"QC Rule Configuration",menu.main.qc.qc-rule-configuration,/qc/rules/configuration,2,Main-Menu-QC,QC-Rule-Configuration,
-"QC Configuration",menu.main.qc.qc-configuration,/qc/configuration,2,Main-Menu-QC,QC-Configuration,
-"QC Inspection",menu.main.qc.qc-inspection,/qc/inspection,3,Main-Menu-QC,QC-Inspection,
-"QC Result",menu.main.qc.qc-result,/qc/result,3,Main-Menu-QC,QC-Result,
-"Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt,
-"Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,2,Main-Menu-Inbound,Inbound-PutawayConfig,
-"QC Configuration",menu.main.inbound.qc-configuration,/inbound/inbound-qc-configuration,2,Main-Menu-Inbound,Inbound-QCConfig,
-"Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order,
-"Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment,
-"Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,
-"Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick,
-"Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList,
-"Carton",menu.main.outbound.carton,/outbound/carton,5,Main-Menu-Outbound,Outbound-Carton,
-"Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,5,Main-Menu-Outbound,Outbound-CartonizationConfiguration,
-"Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,5,Main-Menu-Outbound,Outbound-Cartonization,
-"Shipping Cartonization",menu.main.outbound.shipping-cartonization,/outbound/shipping-cartonization,6,Main-Menu-Outbound,Outbound-ShippingCartonization,
-"Grid",menu.main.outbound.grid,/outbound/grid,7,Main-Menu-Outbound,Outbound-Grid,
-"Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,8,Main-Menu-Outbound,Outbound-PickConfirm,
-"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,9,Main-Menu-Outbound,Outbound-ShortAllocation,
-"Trailer",menu.main.outbound.trailer,/outbound/trailer,10,Main-Menu-Outbound,Outbound-Trailer,
-"Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration,
-"Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,
-"Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,
-"Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,
-"Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line,
-"Work Order Produce Transaction",menu.main.work-order.wo-produce-transaction,/work-order/produce-transaction,5,Main-Menu-WorkOrder,Produce-Transaction,
-"Production Kanban",menu.dashboard.production-kanban,/work-order/production-kanban,6,Main-Menu-WorkOrder,Production-Kanban,
-"Mould",menu.main.work-order.mould,/work-order/mould,7,Main-Menu-WorkOrder,Mould,
-"Work Order Configuration",menu.main.work-order.work-order-config,/work-order/work-order-configuration,8,Main-Menu-WorkOrder,Work-Order-Config,
-"Work Order QC Rule Configuration",menu.main.work-order.qc-rule-config,/work-order/qc-rule-configuration,9,Main-Menu-WorkOrder,Work-Order-QC-Rule-Config,
-"Work Order Labor",menu.main.work-order.labor,/work-order/labor,10,Main-Menu-WorkOrder,Work-Order-Labor,
-"Work Order Labor Activity",menu.main.work-order.labor-activity,/work-order/labor-activity,11,Main-Menu-WorkOrder,Work-Order-LaborActivity,
-"Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,
-"Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,
-"Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,
-"Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer,
-"Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure,
-"File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client,
-"Test Data Initial",menu.main.util.test-data-init,,2,Main-Menu-Util,Util-TestDataInit,
-"Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester,
-"Valid Icon",menu.main.util.icon-list,/util/icon-list,4,Main-Menu-Util,Util-ValidIcon,
-"System Configuration",menu.main.util.system-config,/util/system-configuration,5,Main-Menu-Util,Util-SystemConfiguration,
-"RF",menu.main.util.rf,/util/rf,6,Main-Menu-Util,Util-RF,
-"RF App Version",menu.main.util.rf-app-version,/util/rf-app-version,7,Main-Menu-Util,Util-RFAppVersion,
-"System Controlled Number",menu.main.util.sys-controlled-num,/util/system-controlled-number,8,Main-Menu-Util,Util-SysControlledNum,
-"Data Initial",menu.main.util.data-initial,/util/data-init,9,Main-Menu-Util,Util-DataInitial,
-"Billable Request",menu.main.util.billable-request,/util/billable-request,10,Main-Menu-Util,Util-BillableRequest,
-"Company",menu.main.util.company,/util/company,11,Main-Menu-Util,Util-Company,
-"Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,
-"Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,
-"Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,
-"Report Printer Configuration",menu.main.report.report-printer-configuration,/report/report-printer-configuration,3,Main-Menu-Report,Report-Report-PRINTER-CONFIGURATION,
-"Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,menu_inbound_receive.png
-"Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,menu_outbound_pick_order.png
-"Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,menu_outbound_pick_list.png
-"Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,menu_outbound_pick_tote.png
-"Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,menu_inventory.png
-"Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,menu_inventory_count.png
-"Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,menu_inventory_audit.png
-"Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,menu_inventory_putaway.png
-"Inventory Lost And Found",menu.mobile.inventory.inventoryLF,inventory_lost_and_found,5,Mobile-Menu-Inventory,Mobile-Inventory-InventoryLF,menu_inventory_lf.png
-"Inventory QC",menu.mobile.inventory.qc,inventory_qc,4,Mobile-Menu-Inventory,Mobile-Inventory-QC,menu_inventory_qc.png
-"Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,menu_workorder_pick.png
-"Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,menu_workorder_produce.png
-"Work Order QC",menu.mobile.work-order.qc,work_order_qc,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC,menu_work_order_qc.png
-"QC Sampling",menu.mobile.work-order.qc-sampling,work_order_qc_sampling,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC-Sampling,menu_work_order_qc_sampling.png
-"Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,5,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,menu_workorder_checkin.png
-"Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,6,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,menu_workorder_checkout.png
+text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
+"Default",menu.dashboard.default,/dashboard/default,1,User-Menu-Dashboard,Dashboard-Default,,true,false
+"Production Kanban",menu.dashboard.production-kanban,/dashboard/production-kanban,2,User-Menu-Dashboard,Dashboard-Locations,,true,false
+"User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User,,true,false
+"Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role,,true,false
+"WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam,,true,false
+"Department",menu.main.auth.department,/auth/department,4,Main-Menu-Auth,Auth-Department,,true,false
+"Warehouse",menu.main.layout.warehouse,/warehouse-layout/warehouse,1,Main-Menu-Layout,Layout-warehouse,,true,false
+"LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group,,true,false
+"WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location,,true,false
+"Item Family",menu.main.inventory.item-family,/inventory/item-family,1,Main-Menu-Inventory,Inventory-ItemFamily,,true,false
+"Item",menu.main.inventory.item,/inventory/item,2,Main-Menu-Inventory,Inventory-Item,,true,false
+"inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory,,true,false
+"inventory activity",menu.main.inventory.inventory-activity,/inventory/inventory-activity,4,Main-Menu-Inventory,Inventory-InventoryActivity,,true,false
+"inventory adjust",menu.main.inventory.inventory-adjust,/inventory/inventory-adjust,5,Main-Menu-Inventory,Inventory-InventoryAdjust,,true,false
+"inventory adjust request",menu.main.inventory.inventory-adjustment-request,/inventory/inventory-adjustment-request,6,Main-Menu-Inventory,Inventory-InventoryAdjustmentRequest,,true,false
+"inventory adjustment Threshold",menu.main.inventory.inventory-adjustment-threshold,/inventory/inventory-adjustment-threshold,7,Main-Menu-Inventory,Inventory-InventoryAdjustmentThreshold,,true,false
+"Movement Path",menu.main.inventory.movement-path,/inventory/movement-path,8,Main-Menu-Inventory,Inventory-MovementPath,,true,false
+"Cycle Count",menu.main.inventory.count.cycle-count,/inventory/count/cycle-count,9,Main-Menu-Inventory,Inventory-CycleCount,,true,false
+"Emergency Replenishment Configuration",menu.main.inventory.replenishment.emergency.config,/inventory/replenishment/emergency/config,10,Main-Menu-Inventory,Inventory-EmerReplConfig,,true,false
+"Trigger Replenishment Configuration",menu.main.inventory.replenishment.trigger.config,/inventory/replenishment/trigger/config,11,Main-Menu-Inventory,Inventory-TriggerReplConfig,,true,false
+"Replenishment Display",menu.main.inventory.replenishment.display,/inventory/replenishment,12,Main-Menu-Inventory,Inventory-ReplDisplay,,true,false
+"Inventory Configuration",menu.main.inventory.configuration,/inventory/configuration,13,Main-Menu-Inventory,Inventory-Configuration,,true,false
+"Inventory Allocation Summary",menu.main.inventory.allocation-summary,/inventory/inventory-allocation-summary,14,Main-Menu-Inventory,Inventory-Allocation-Summary,,true,false
+"Inventory Snapshot",menu.main.inventory.snapshot,/inventory/snapshot,15,Main-Menu-Inventory,Inventory-Snapshot,,true,false
+"QC Rule Maintenance",menu.main.qc.qc-rule,/qc/rules,1,Main-Menu-QC,QC-Rule,,true,false
+"QC Rule Configuration",menu.main.qc.qc-rule-configuration,/qc/rules/configuration,2,Main-Menu-QC,QC-Rule-Configuration,,true,false
+"QC Configuration",menu.main.qc.qc-configuration,/qc/configuration,2,Main-Menu-QC,QC-Configuration,,true,false
+"QC Inspection",menu.main.qc.qc-inspection,/qc/inspection,3,Main-Menu-QC,QC-Inspection,,true,false
+"QC Result",menu.main.qc.qc-result,/qc/result,3,Main-Menu-QC,QC-Result,,true,false
+"Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt,,true,false
+"Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,2,Main-Menu-Inbound,Inbound-PutawayConfig,,true,false
+"QC Configuration",menu.main.inbound.qc-configuration,/inbound/inbound-qc-configuration,2,Main-Menu-Inbound,Inbound-QCConfig,,true,false
+"Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order,,true,false
+"Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment,,true,false
+"Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,,true,false
+"Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick,,true,false
+"Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList,,true,false
+"Carton",menu.main.outbound.carton,/outbound/carton,5,Main-Menu-Outbound,Outbound-Carton,,true,false
+"Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,5,Main-Menu-Outbound,Outbound-CartonizationConfiguration,,true,false
+"Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,5,Main-Menu-Outbound,Outbound-Cartonization,,true,false
+"Shipping Cartonization",menu.main.outbound.shipping-cartonization,/outbound/shipping-cartonization,6,Main-Menu-Outbound,Outbound-ShippingCartonization,,true,false
+"Grid",menu.main.outbound.grid,/outbound/grid,7,Main-Menu-Outbound,Outbound-Grid,,true,false
+"Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,8,Main-Menu-Outbound,Outbound-PickConfirm,,true,false
+"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,9,Main-Menu-Outbound,Outbound-ShortAllocation,,true,false
+"Trailer",menu.main.outbound.trailer,/outbound/trailer,10,Main-Menu-Outbound,Outbound-Trailer,,true,false
+"Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration,,true,false
+"Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,,true,false
+"Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,,true,false
+"Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,,true,false
+"Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line,,true,false
+"Work Order Produce Transaction",menu.main.work-order.wo-produce-transaction,/work-order/produce-transaction,5,Main-Menu-WorkOrder,Produce-Transaction,,true,false
+"Production Kanban",menu.dashboard.production-kanban,/work-order/production-kanban,6,Main-Menu-WorkOrder,Production-Kanban,,true,false
+"Mould",menu.main.work-order.mould,/work-order/mould,7,Main-Menu-WorkOrder,Mould,,true,false
+"Work Order Configuration",menu.main.work-order.work-order-config,/work-order/work-order-configuration,8,Main-Menu-WorkOrder,Work-Order-Config,,true,false
+"Work Order QC Rule Configuration",menu.main.work-order.qc-rule-config,/work-order/qc-rule-configuration,9,Main-Menu-WorkOrder,Work-Order-QC-Rule-Config,,true,false
+"Work Order Labor",menu.main.work-order.labor,/work-order/labor,10,Main-Menu-WorkOrder,Work-Order-Labor,,true,false
+"Work Order Labor Activity",menu.main.work-order.labor-activity,/work-order/labor-activity,11,Main-Menu-WorkOrder,Work-Order-LaborActivity,,true,false
+"Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,,true,false
+"Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,,true,false
+"Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false
+"Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer,,true,false
+"Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure,,true,false
+"File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client,,true,false
+"Test Data Initial",menu.main.util.test-data-init,,2,Main-Menu-Util,Util-TestDataInit,,true,true
+"Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester,,true,true
+"Valid Icon",menu.main.util.icon-list,/util/icon-list,4,Main-Menu-Util,Util-ValidIcon,,true,true
+"System Configuration",menu.main.util.system-config,/util/system-configuration,5,Main-Menu-Util,Util-SystemConfiguration,,true,true
+"RF",menu.main.util.rf,/util/rf,6,Main-Menu-Util,Util-RF,,true,false
+"RF App Version",menu.main.util.rf-app-version,/util/rf-app-version,7,Main-Menu-Util,Util-RFAppVersion,,true,true
+"System Controlled Number",menu.main.util.sys-controlled-num,/util/system-controlled-number,8,Main-Menu-Util,Util-SysControlledNum,,true,false
+"Data Initial",menu.main.util.data-initial,/util/data-init,9,Main-Menu-Util,Util-DataInitial,,true,true
+"Billable Request",menu.main.util.billable-request,/util/billable-request,10,Main-Menu-Util,Util-BillableRequest,,true,false
+"Company",menu.main.util.company,/util/company,11,Main-Menu-Util,Util-Company,,true,true
+"Menu",menu.main.util.menu,/util/menu,12,Main-Menu-Util,Util-Menu,,true,true
+"Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,,true,false
+"Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,,true,false
+"Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,,true,false
+"Report Printer Configuration",menu.main.report.report-printer-configuration,/report/report-printer-configuration,3,Main-Menu-Report,Report-Report-PRINTER-CONFIGURATION,,true,false
+"Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,menu_inbound_receive.png,true,false
+"Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,menu_outbound_pick_order.png,true,false
+"Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,menu_outbound_pick_list.png,true,false
+"Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,menu_outbound_pick_tote.png,true,false
+"Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,menu_inventory.png,true,false
+"Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,menu_inventory_count.png,true,false
+"Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,menu_inventory_audit.png,true,false
+"Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,menu_inventory_putaway.png,true,false
+"Inventory Lost And Found",menu.mobile.inventory.inventoryLF,inventory_lost_and_found,5,Mobile-Menu-Inventory,Mobile-Inventory-InventoryLF,menu_inventory_lf.png,true,false
+"Inventory QC",menu.mobile.inventory.qc,inventory_qc,4,Mobile-Menu-Inventory,Mobile-Inventory-QC,menu_inventory_qc.png,true,false
+"Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,menu_workorder_pick.png,true,false
+"Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,menu_workorder_produce.png,true,false
+"Work Order QC",menu.mobile.work-order.qc,work_order_qc,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC,menu_work_order_qc.png,true,false
+"QC Sampling",menu.mobile.work-order.qc-sampling,work_order_qc_sampling,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC-Sampling,menu_work_order_qc_sampling.png,true,false
+"Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,5,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,menu_workorder_checkin.png,true,false
+"Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,6,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,menu_workorder_checkout.png,true,false

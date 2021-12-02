@@ -27,7 +27,9 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.apache.tomcat.jni.Local;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -159,6 +161,33 @@ public class User extends AuditibleEntity<String>  {
         userAuth.setEnabled(enabled);
         userAuth.setLocked(locked);
         return userAuth;
+    }
+
+    /**
+     * Create a copy of current user
+     * @return
+     */
+    public User copy(String username, String firstname, String lastname) {
+        User user = new User();
+        BeanUtils.copyProperties(this, user, "id",
+                "username","password", "firstname", "lastname", "isSystemAdmin",
+                "email", "workingTeams", "roles",
+                "lastLoginCompanyId", "lastLoginWarehouseId", "lastLoginToken",
+                "onBoardTime");
+        // copy the roles into a new list
+        user.setRoles(new ArrayList<>(getRoles()));
+        user.setWorkingTeams(new ArrayList<>(getWorkingTeams()));
+        // default the values for the new user
+        user.setUsername(username);
+        user.setPassword(username);
+        user.setFirstname(firstname);
+        user.setLastname(lastname);
+        user.setSystemAdmin(false);
+        user.setEmail("");
+        user.setChangePasswordAtNextLogon(true);
+        return user;
+
+
     }
 
     public Long getId() {

@@ -707,6 +707,21 @@ public class ReceiptService implements TestDataInitiableService{
         lpnLabelContent.put("check_in_date", LocalDateTime.now().format(formatter));
 
 
+        if (Objects.nonNull(receiptLine.getReceipt())) {
+            // if we already have supplier setup, then use the value. otherwise,
+            // get the supplier information from the id
+            Supplier supplier = receiptLine.getReceipt().getSupplier();
+            if (Objects.isNull(supplier) &&
+                    Objects.nonNull(receiptLine.getReceipt().getSupplierId())) {
+
+                supplier = commonServiceRestemplateClient.getSupplierById(
+                    receiptLine.getReceipt().getSupplierId()
+                );
+            }
+
+            lpnLabelContent.put("supplier",
+                    Objects.nonNull(supplier) ? supplier.getDescription() : "");
+        }
         lpnLabelContent.put("supplier",
                 Objects.nonNull(receiptLine.getReceipt()) &&
                         Objects.nonNull(receiptLine.getReceipt().getSupplier()) ?
