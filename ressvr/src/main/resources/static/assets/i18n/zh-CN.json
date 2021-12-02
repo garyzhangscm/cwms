@@ -1453,5 +1453,8 @@
   "unit-of-measure.default-for-inbound-receiving": "入库默认收货单位",
   "unit-of-measure.default-for-workorder-receiving": "完工入库默认收货单位",
   "unit-of-measure.tracking_lpn": "跟踪lpn",
-  "qc.actualValue": "QC值"
+  "qc.actualValue": "QC值",
+  "menu.main.util.menu": "目录",
+  "systemAdminMenuFlag": "系统管理目录",
+  "copy-from-username": "源用户"
 }

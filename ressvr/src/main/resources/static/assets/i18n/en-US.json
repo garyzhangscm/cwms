@@ -1454,5 +1454,8 @@
   "unit-of-measure.default-for-inbound-receiving": "Default for Inbound Receiving",
   "unit-of-measure.default-for-workorder-receiving": "Default for Work Order Receiving",
   "unit-of-measure.tracking_lpn": "Tracking LPN",
-  "qc.actualValue": "Actual Value"
+  "qc.actualValue": "Actual Value",
+  "menu.main.util.menu": "Menu",
+  "systemAdminMenuFlag": "System Admin Menu",
+  "copy-from-username": "Copy From User"
 }

@@ -42,6 +42,7 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -565,7 +566,7 @@ public class UserService  implements TestDataInitiableService{
 
     public User addTempUser(Long companyId, String username, String firstname, String lastname) {
         // make user the user is not exists yet
-        if (Objects.nonNull(findByUsername(companyId, username))) {
+        if (Objects.nonNull(findByUsername(companyId, username, false))) {
             throw UserOperationException.raiseException("The user " + username + " already exists");
         }
         User user = new User();
@@ -579,5 +580,32 @@ public class UserService  implements TestDataInitiableService{
         user.setFirstname(firstname);
         user.setLastname(lastname);
         return addUser(user);
+    }
+
+    /**
+     * Copy the existing user into a new user with the specific username. The new user's password
+     * will be the same as the new username and the user will be forced to change password during
+     * next logon
+     * @param id
+     * @param username
+     * @return
+     */
+    public User copyUser(Long id, String username,
+                         String firstname,
+                         String lastname) {
+
+        User existingUser = findById(id);
+        // make user the user is not exists yet
+        if (Objects.nonNull(findByUsername(existingUser.getCompanyId(), username, false))) {
+            throw UserOperationException.raiseException("The user " + username + " already exists");
+        }
+
+        User newUser = existingUser.copy(username, firstname, lastname);
+        newUser.setCreatedTime(LocalDateTime.now());
+        newUser.setLastModifiedTime(LocalDateTime.now());
+
+        return addUser(newUser);
+
+
     }
 }

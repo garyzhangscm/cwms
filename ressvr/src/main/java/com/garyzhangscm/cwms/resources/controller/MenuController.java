@@ -18,40 +18,47 @@
 
 package com.garyzhangscm.cwms.resources.controller;
 
+import com.garyzhangscm.cwms.resources.model.Menu;
 import com.garyzhangscm.cwms.resources.model.MenuGroup;
 import com.garyzhangscm.cwms.resources.model.MenuType;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
+import com.garyzhangscm.cwms.resources.service.MenuService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping(value="/menus")
 public class MenuController {
 
     @Autowired
     MenuGroupService menuGroupService;
+    @Autowired
+    MenuService menuService;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value="/menus", method = RequestMethod.GET)
     public List<MenuGroup> listAllMenus(@RequestParam Long companyId,
                                         @RequestParam(name = "username", required = false, defaultValue = "") String username) {
         return menuGroupService.getAccessibleMenus(companyId, username);
     }
 
-    @RequestMapping(value="/web", method = RequestMethod.GET)
+    @RequestMapping(value="/menus/web", method = RequestMethod.GET)
     public List<MenuGroup> listAllWebMenus(@RequestParam Long companyId,
                                            @RequestParam(name = "username", required = false, defaultValue = "") String username) {
         return menuGroupService.getAccessibleMenus(companyId, username, MenuType.WEB);
     }
 
-    @RequestMapping(value="/mobile", method = RequestMethod.GET)
+    @RequestMapping(value="/menus/mobile", method = RequestMethod.GET)
     public List<MenuGroup> listAllMobileMenus(@RequestParam Long companyId,
                                               @RequestParam(name = "username", required = false, defaultValue = "") String username) {
         return menuGroupService.getAccessibleMenus(companyId, username, MenuType.MOBILE);
+    }
+
+
+    @RequestMapping(value="/menu/{id}/enable", method = RequestMethod.POST)
+    public Menu enableDisableMenu(@PathVariable Long id,
+                                  @RequestParam Boolean enabled) {
+        return menuService.enableDisableMenu(id, enabled);
     }
 
 

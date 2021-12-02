@@ -60,6 +60,12 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
     private Boolean enabled;
 
 
+    // we will only allow system admin to access this menu
+    @Column(name = "is_system_admin_menu")
+    private Boolean systemAdminMenuFlag;
+
+
+
     @ManyToOne
     @JoinColumn(name = "menu_sub_group_id")
     @JsonIgnore
@@ -163,5 +169,13 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getSystemAdminMenuFlag() {
+        return systemAdminMenuFlag;
+    }
+
+    public void setSystemAdminMenuFlag(Boolean systemAdminMenuFlag) {
+        this.systemAdminMenuFlag = systemAdminMenuFlag;
     }
 }

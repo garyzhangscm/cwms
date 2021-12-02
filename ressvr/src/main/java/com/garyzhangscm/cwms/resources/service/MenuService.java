@@ -91,6 +91,8 @@ public class MenuService  implements TestDataInitiableService{
                 addColumn("menuSubGroup").
                 addColumn("name").
                 addColumn("icon").
+                addColumn("enabled").
+                addColumn("systemAdminMenuFlag").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, MenuCSVWrapper.class);
@@ -120,6 +122,8 @@ public class MenuService  implements TestDataInitiableService{
         menu.setSequence(menuCSVWrapper.getSequence());
         menu.setName(menuCSVWrapper.getName());
         menu.setIcon(menuCSVWrapper.getIcon());
+        menu.setEnabled(menuCSVWrapper.getEnabled());
+        menu.setSystemAdminMenuFlag(menuCSVWrapper.getSystemAdminMenuFlag());
 
         // Setup the parent menu group for this subgroup
         menu.setMenuSubGroup(menuSubGroupService.findByName(menuCSVWrapper.getMenuSubGroup()));
@@ -138,5 +142,9 @@ public class MenuService  implements TestDataInitiableService{
     }
 
 
-
+    public Menu enableDisableMenu(Long id, Boolean enabled) {
+        Menu menu = findById(id);
+        menu.setEnabled(enabled);
+        return saveOrUpdate(menu);
+    }
 }
