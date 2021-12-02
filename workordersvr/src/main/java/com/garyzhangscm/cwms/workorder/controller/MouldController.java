@@ -19,13 +19,11 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
-import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.Mould;
-import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.MouldService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

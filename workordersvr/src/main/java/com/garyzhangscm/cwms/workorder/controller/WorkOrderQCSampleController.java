@@ -78,7 +78,7 @@ public class WorkOrderQCSampleController {
     @BillableEndpoint
     @RequestMapping(value="/qc-samples/{id}", method = RequestMethod.DELETE)
     public void removeWorkOrderQCSample(@PathVariable Long id) {
-        workOrderQCSampleService.delete(id);
+        workOrderQCSampleService.removeQCSample(id);
     }
 
 

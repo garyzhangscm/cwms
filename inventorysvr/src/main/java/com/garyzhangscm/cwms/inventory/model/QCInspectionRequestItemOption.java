@@ -33,7 +33,6 @@ import java.io.Serializable;
 @Table(name = "qc_inspection_request_item_option")
 public class QCInspectionRequestItemOption extends AuditibleEntity<String> implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(QCInspectionRequestItemOption.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,6 +47,16 @@ public class QCInspectionRequestItemOption extends AuditibleEntity<String> imple
     @Column(name = "qc_inspection_result")
     @Enumerated(EnumType.STRING)
     private QCInspectionResult qcInspectionResult;
+
+    @Column(name = "boolean_value")
+    private Boolean booleanValue;
+
+    @Column(name = "string_value")
+    private String stringValue;
+
+    @Column(name = "double_value")
+    private Double doubleValue;
+
 
 
     @ManyToOne
@@ -96,5 +105,29 @@ public class QCInspectionRequestItemOption extends AuditibleEntity<String> imple
 
     public void setQcInspectionRequestItem(QCInspectionRequestItem qcInspectionRequestItem) {
         this.qcInspectionRequestItem = qcInspectionRequestItem;
+    }
+
+    public String getStringValue() {
+        return stringValue;
+    }
+
+    public void setStringValue(String stringValue) {
+        this.stringValue = stringValue;
+    }
+
+    public Double getDoubleValue() {
+        return doubleValue;
+    }
+
+    public void setDoubleValue(Double doubleValue) {
+        this.doubleValue = doubleValue;
+    }
+
+    public Boolean getBooleanValue() {
+        return booleanValue;
+    }
+
+    public void setBooleanValue(Boolean booleanValue) {
+        this.booleanValue = booleanValue;
     }
 }
