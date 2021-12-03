@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.CompanyMenu;
 import com.garyzhangscm.cwms.resources.model.Menu;
 import com.garyzhangscm.cwms.resources.model.MenuCSVWrapper;
+import com.garyzhangscm.cwms.resources.model.Role;
 import com.garyzhangscm.cwms.resources.repository.CompanyMenuRepository;
 import com.garyzhangscm.cwms.resources.repository.MenuRepository;
 import org.apache.commons.lang.StringUtils;
@@ -34,10 +35,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class CompanyMenuService  {
@@ -73,6 +74,37 @@ public class CompanyMenuService  {
         return save(companyMenu);
     }
 
+    @Transactional
+    public void processCompanyMenus(Long companyId, String assignedMenuIds, String deassignedMenuIds) {
+
+        // get all menus that assigned to this company
+        List<CompanyMenu> companyMenus = findAll(companyId);
+        Map<Long, Long> assignedMenuMap = new HashMap<>();
+        companyMenus.stream().forEach(
+                companyMenu -> assignedMenuMap.put(companyMenu.getMenu().getId(), companyMenu.getMenu().getId())
+        );
+
+
+        if (!StringUtils.isBlank(assignedMenuIds)) {
+            Arrays.stream(assignedMenuIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    // for each menu that is not assigned yet
+                    .filter(menuId -> !assignedMenuMap.containsKey(menuId))
+                    .forEach(menuId -> {
+                        companyMenuRepository.assignMenu(companyId, menuId);
+                    });
+        }
+        if (!StringUtils.isBlank(deassignedMenuIds)) {
+            Arrays.stream(deassignedMenuIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    // for each menu that is already assigned yet
+                    .filter(menuId -> assignedMenuMap.containsKey(menuId))
+                    .forEach(menuId -> {
+                        companyMenuRepository.deassignMenu(companyId, menuId);
+                    });
+        }
+
+    }
 
 
 

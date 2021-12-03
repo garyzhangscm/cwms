@@ -1457,5 +1457,6 @@
   "qc.actualValue": "Actual Value",
   "menu.main.util.menu": "Menu",
   "systemAdminMenuFlag": "System Admin Menu",
-  "copy-from-username": "Copy From User"
+  "copy-from-username": "Copy From User",
+  "company-menu": "Company Menu"
 }
