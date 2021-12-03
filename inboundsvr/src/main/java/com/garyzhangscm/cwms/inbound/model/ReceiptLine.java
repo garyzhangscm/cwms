@@ -80,6 +80,9 @@ public class ReceiptLine {
     @Column(name = "qc_quantity_requested")
     private Long qcQuantityRequested = 0L;
 
+    // filed for customer return
+
+
     public Long getId() {
         return id;
     }

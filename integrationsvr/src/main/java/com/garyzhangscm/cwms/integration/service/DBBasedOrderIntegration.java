@@ -80,7 +80,7 @@ public class DBBasedOrderIntegration {
     }
 
 
-    public IntegrationOrderData findById(Long id) {
+    public DBBasedOrder findById(Long id) {
         return dbBasedOrderRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("order data not found by id: " + id));
     }
@@ -136,16 +136,16 @@ public class DBBasedOrderIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Order:\n{}", order);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ORDER, order);
+            kafkaSender.send(IntegrationType.INTEGRATION_ORDER, dbBasedOrder.getId(), order);
 
-            dbBasedOrder.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedOrder.setStatus(IntegrationStatus.SENT);
             dbBasedOrder.setErrorMessage("");
             dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
             dbBasedOrder = save(dbBasedOrder);
 
             // Save the order line as well
             dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
-                dbBasedOrderLine.setStatus(IntegrationStatus.COMPLETED);
+                dbBasedOrderLine.setStatus(IntegrationStatus.SENT);
                 dbBasedOrderLine.setErrorMessage("");
                 dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
                 dbBasedOrderLineRepository.save(dbBasedOrderLine);
@@ -263,5 +263,29 @@ public class DBBasedOrderIntegration {
     }
 
 
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the customer integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
+        DBBasedOrder dbBasedOrder = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedOrder.setStatus(integrationStatus);
+        dbBasedOrder.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedOrder);
+
+        dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
+            dbBasedOrderLine.setStatus(integrationStatus);
+            dbBasedOrderLine.setErrorMessage(integrationResult.getErrorMessage());
+            dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
+            dbBasedOrderLineRepository.save(dbBasedOrderLine);
+        });
+
+
+
+    }
 
 }

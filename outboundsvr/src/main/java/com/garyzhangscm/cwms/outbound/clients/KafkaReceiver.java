@@ -2,9 +2,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.outbound.model.Location;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.Warehouse;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.IntegrationService;
 import com.garyzhangscm.cwms.outbound.service.UserService;
 import org.slf4j.Logger;
@@ -45,6 +43,9 @@ public class KafkaReceiver {
     OAuth2ClientContext oauth2ClientContext;
 
     @Autowired
+    private KafkaSender kafkaSender;
+
+    @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
@@ -53,17 +54,35 @@ public class KafkaReceiver {
      * -- Receipt
      * */
     @KafkaListener(topics = {"INTEGRATION_ORDER"})
-    public void processOrder(@Payload String orderJsonRepresent)  {
+    public void processOrder(@Payload String orderJsonRepresent,
+                             @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId)  {
         logger.info("# received integration - order data:\n {}", orderJsonRepresent);
+
         try {
             Order order = objectMapper.readValue(orderJsonRepresent, Order.class);
             logger.info("order: {}", order);
 
             integrationService.process(order);
 
+
+
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_ORDER,
+                    true, ""
+            );
+            kafkaSender.send(integrationResult);
         }
-        catch (JsonProcessingException ex) {
+        catch (Exception ex) {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_ORDER,
+                    false, ex.getMessage()
+            );
+            kafkaSender.send(integrationResult);
         }
 
     }

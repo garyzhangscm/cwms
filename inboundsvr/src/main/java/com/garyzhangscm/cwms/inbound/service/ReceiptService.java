@@ -863,4 +863,19 @@ public class ReceiptService implements TestDataInitiableService{
         }
         return lpnNumbers;
     }
+
+    public void processIntegration(Receipt receipt) {
+
+        // if the receipt already exists, make sure its status is
+        // still open
+        Receipt existingReceipt = findByNumber(receipt.getWarehouseId(),
+                receipt.getNumber(), false);
+        if (Objects.nonNull(existingReceipt) &&
+                !existingReceipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
+            throw ReceiptOperationException.raiseException("Receipt " + existingReceipt.getNumber() +
+                    " already exists and not in OPEN status");
+        }
+
+        saveOrUpdate(receipt, false);
+    }
 }

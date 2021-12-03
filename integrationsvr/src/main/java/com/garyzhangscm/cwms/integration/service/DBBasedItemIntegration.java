@@ -154,26 +154,26 @@ public class DBBasedItemIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Item:\n{}", item);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ITEM, item);
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM, dbBasedItem.getId(), item);
 
 
             dbBasedItem.setErrorMessage("");
-            dbBasedItem.completeIntegration(IntegrationStatus.COMPLETED);
+            dbBasedItem.completeIntegration(IntegrationStatus.SENT);
             if (Objects.nonNull(dbBasedItem.getItemFamily())) {
 
                 dbBasedItem.getItemFamily().setErrorMessage("");
-                dbBasedItem.getItemFamily().completeIntegration(IntegrationStatus.COMPLETED);
+                dbBasedItem.getItemFamily().completeIntegration(IntegrationStatus.SENT);
                 dbBasedItemFamilyIntegration.save(dbBasedItem.getItemFamily());
             }
             dbBasedItem.getItemPackageTypes().forEach(
                     dbBasedItemPackageType -> {
                         dbBasedItemPackageType.setErrorMessage("");
-                        dbBasedItemPackageType.completeIntegration(IntegrationStatus.COMPLETED);
+                        dbBasedItemPackageType.completeIntegration(IntegrationStatus.SENT);
                         dbBasedItemPackageTypeIntegration.save(dbBasedItemPackageType);
                         dbBasedItemPackageType.getItemUnitOfMeasures().forEach(
                                 dbBasedItemUnitOfMeasure -> {
                                     dbBasedItemUnitOfMeasure.setErrorMessage("");
-                                    dbBasedItemUnitOfMeasure.completeIntegration(IntegrationStatus.COMPLETED);
+                                    dbBasedItemUnitOfMeasure.completeIntegration(IntegrationStatus.SENT);
                                     dbBasedItemUnitOfMeasureIntegration.save(dbBasedItemUnitOfMeasure);
 
                                 }
@@ -220,6 +220,38 @@ public class DBBasedItemIntegration {
     }
 
 
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the item integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
+        DBBasedItem dbBasedItem = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedItem.setStatus(integrationStatus);
+        dbBasedItem.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedItem.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedItem);
+
+
+        dbBasedItem.getItemPackageTypes().forEach(dbBasedItemPackageType ->{
+            dbBasedItemPackageType.setStatus(integrationStatus);
+            dbBasedItemPackageType.setErrorMessage(integrationResult.getErrorMessage());
+            dbBasedItemPackageType.setLastUpdateTime(LocalDateTime.now());
+            dbBasedItemPackageTypeIntegration.save(dbBasedItemPackageType);
+
+            dbBasedItemPackageType.getItemUnitOfMeasures().forEach(dbBasedItemUnitOfMeasure -> {
+
+                dbBasedItemUnitOfMeasure.setStatus(integrationStatus);
+                dbBasedItemUnitOfMeasure.setErrorMessage(integrationResult.getErrorMessage());
+                dbBasedItemUnitOfMeasure.setLastUpdateTime(LocalDateTime.now());
+                dbBasedItemUnitOfMeasureIntegration.save(dbBasedItemUnitOfMeasure);
+            });
+        });
+
+
+    }
 
 
 }

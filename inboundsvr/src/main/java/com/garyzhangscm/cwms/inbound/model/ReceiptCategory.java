@@ -19,6 +19,18 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 public enum ReceiptCategory {
-    PURCHASE_ORDER,
-    WAREHOUSE_TRANSFER_ORDER
+    PURCHASE_ORDER(false),
+    WAREHOUSE_TRANSFER_ORDER(false),
+    CUSTOMER_RETURN(true);
+
+    // whether this is a customer return
+    private boolean returnFlag;
+
+    private ReceiptCategory(boolean returnFlag) {
+        this.returnFlag = returnFlag;
+    }
+
+    public boolean isReturn() {
+        return returnFlag;
+    }
 }

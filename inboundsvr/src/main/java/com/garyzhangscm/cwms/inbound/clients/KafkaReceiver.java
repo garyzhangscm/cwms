@@ -46,9 +46,7 @@ public class KafkaReceiver {
         logger.info("with id {}", integrationId);
         try {
             Receipt receipt = objectMapper.readValue(receiptJsonRepresent, Receipt.class);
-
             logger.info("receipt: {}", receipt);
-
 
             integrationService.process(receipt);
 
@@ -59,8 +57,6 @@ public class KafkaReceiver {
                     true, ""
             );
             kafkaSender.send(integrationResult);
-
-
         }
         catch (Exception ex) {
             logger.debug("JsonProcessingException: {}", ex.getMessage());

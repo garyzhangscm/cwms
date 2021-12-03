@@ -148,10 +148,10 @@ public class DBBasedSupplierIntegration {
             logger.debug(">> will process Supplier :\n{}", supplier);
 
 
-            kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER, supplier);
+            kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER, dbBasedSupplier.getId(), supplier);
 
 
-            dbBasedSupplier.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedSupplier.setStatus(IntegrationStatus.SENT);
             dbBasedSupplier.setErrorMessage("");
 
             logger.debug(">> customer data process, {}", dbBasedSupplier.getStatus());
@@ -186,8 +186,21 @@ public class DBBasedSupplierIntegration {
 
         supplier.setWarehouseId(warehouseId);
 
+    }
 
-
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the customer integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
+        DBBasedSupplier dbBasedSupplier = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedSupplier.setStatus(integrationStatus);
+        dbBasedSupplier.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedSupplier.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedSupplier);
 
 
     }

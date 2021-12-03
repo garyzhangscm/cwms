@@ -164,6 +164,22 @@ public class DBBasedItemUnitOfMeasureIntegration {
         save(dbBasedItemUnitOfMeasure);
     }
 
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the customer integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
+        DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedItemUnitOfMeasure.setStatus(integrationStatus);
+        dbBasedItemUnitOfMeasure.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedItemUnitOfMeasure.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedItemUnitOfMeasure);
+
+
+    }
 
 
 }

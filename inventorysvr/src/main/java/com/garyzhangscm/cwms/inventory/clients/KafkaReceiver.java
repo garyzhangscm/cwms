@@ -37,6 +37,8 @@ public class KafkaReceiver {
     InventoryActivityService inventoryActivityService;
     @Autowired
     InventoryService inventoryService;
+    @Autowired
+    private KafkaSender kafkaSender;
 
     @KafkaListener(topics = {"short_allocation"})
     public void listen(ConsumerRecord<?, ?> record) {
@@ -56,34 +58,70 @@ public class KafkaReceiver {
      * */
 
     @KafkaListener(topics = {"INTEGRATION_ITEM_FAMILY"})
-    public void processItemFamily(@Payload String itemFamilyJsonRepresent)  {
+    public void processItemFamily(@Payload String itemFamilyJsonRepresent,
+                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId)  {
         logger.info("# received integration - item family data: {}", itemFamilyJsonRepresent);
+
         try {
+
             ItemFamily itemFamily = objectMapper.readValue(itemFamilyJsonRepresent, ItemFamily.class);
             logger.info("Item Family: {}", itemFamily);
 
             integrationService.process(itemFamily);
 
+
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_ITEM_FAMILY,
+                    true, ""
+            );
+            kafkaSender.send(integrationResult);
         }
-        catch (JsonProcessingException ex) {
+        catch (Exception ex) {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_ITEM_FAMILY,
+                    false, ex.getMessage()
+            );
+            kafkaSender.send(integrationResult);
         }
 
     }
 
     @KafkaListener(topics = {"INTEGRATION_ITEM"})
-    public void processItem(@Payload String itemJsonRepresent)  {
+    public void processItem(@Payload String itemJsonRepresent,
+                            @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId)  {
         logger.info("# received integration - item data: {}", itemJsonRepresent);
+
         try {
+
             Item item = objectMapper.readValue(itemJsonRepresent, Item.class);
             logger.info("Item: {}", item);
 
             integrationService.process(item);
 
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_ITEM,
+                    true, ""
+            );
+            kafkaSender.send(integrationResult);
         }
-        catch (JsonProcessingException ex) {
+        catch (Exception ex) {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    Long.parseLong(integrationId),
+                    IntegrationType.INTEGRATION_ITEM,
+                    false, ex.getMessage()
+            );
+            kafkaSender.send(integrationResult);
         }
+
 
     }
 
