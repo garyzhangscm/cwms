@@ -1456,5 +1456,6 @@
   "qc.actualValue": "QC值",
   "menu.main.util.menu": "目录",
   "systemAdminMenuFlag": "系统管理目录",
-  "copy-from-username": "源用户"
+  "copy-from-username": "源用户",
+  "company-menu": "公司目录"
 }

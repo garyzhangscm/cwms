@@ -18,9 +18,12 @@
 
 package com.garyzhangscm.cwms.resources.controller;
 
+import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.Menu;
 import com.garyzhangscm.cwms.resources.model.MenuGroup;
 import com.garyzhangscm.cwms.resources.model.MenuType;
+import com.garyzhangscm.cwms.resources.service.CompanyMenuService;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
 import com.garyzhangscm.cwms.resources.service.MenuService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,9 @@ public class MenuController {
     MenuGroupService menuGroupService;
     @Autowired
     MenuService menuService;
+
+    @Autowired
+    CompanyMenuService companyMenuService;
 
     @RequestMapping(value="/menus", method = RequestMethod.GET)
     public List<MenuGroup> listAllMenus(@RequestParam Long companyId,
@@ -60,6 +66,15 @@ public class MenuController {
                                   @RequestParam Boolean enabled) {
         return menuService.enableDisableMenu(id, enabled);
     }
+
+    @RequestMapping(value="/menus/company-accessible", method = RequestMethod.GET)
+    public List<MenuGroup> getCompanyAccessibleMenu(@RequestParam Long companyId) {
+        return menuGroupService.getCompanyAccessibleMenu(companyId);
+    }
+
+
+
+
 
 
 }

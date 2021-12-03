@@ -23,9 +23,11 @@ import com.garyzhangscm.cwms.resources.model.Menu;
 import com.garyzhangscm.cwms.resources.model.RF;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -35,4 +37,15 @@ public interface CompanyMenuRepository extends JpaRepository<CompanyMenu, Long>,
 
     @Query("select cm from CompanyMenu cm inner join cm.menu m where cm.companyId = :companyId and m.id = :menuId")
     CompanyMenu findByCompanyIdAndMenu(Long companyId, Long menuId);
+
+    @Modifying
+    @Transactional
+    @Query( value = "insert into company_menu (company_id, menu_id) values (:companyId, :menuId)", nativeQuery = true)
+    void assignMenu(Long companyId, Long menuId);
+
+
+    @Modifying
+    @Transactional
+    @Query( "delete from CompanyMenu cm where cm.companyId = :companyId  and cm.menu.id = :menuId" )
+    void deassignMenu(Long companyId, Long menuId);
 }

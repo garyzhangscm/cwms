@@ -388,4 +388,10 @@ public class MenuGroupService implements TestDataInitiableService{
     }
 
 
+    public List<MenuGroup> getCompanyAccessibleMenu(Long companyId) {
+        // company admin will always have access to all menus as long as
+        // 1. the menu is enabled
+        // 2. the menu is assigned to the company
+        return getAccessibleMenus(companyId, true, new ArrayList<>(), null);
+    }
 }
