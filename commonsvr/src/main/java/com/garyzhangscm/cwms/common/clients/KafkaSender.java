@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.common.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.common.model.BillableRequest;
+import com.garyzhangscm.cwms.common.model.IntegrationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,17 @@ public class KafkaSender {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
             send("BILLABLE_REQUEST", objectMapper.writeValueAsString(billableRequest));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
+    public void send(IntegrationResult integrationResult) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("INTEGRATION_RESULT", objectMapper.writeValueAsString(integrationResult));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

@@ -24,11 +24,12 @@ public class IntegrationService {
 
 
 
+
         // Setup the receipt line so it can be serialized along with the receipt
         receipt.getReceiptLines().forEach(receiptLine -> {
             receiptLine.setReceipt(receipt);
         });
-        receiptService.saveOrUpdate(receipt, false);
+        receiptService.processIntegration(receipt);
         logger.debug(">> receipt information saved!");
     }
 

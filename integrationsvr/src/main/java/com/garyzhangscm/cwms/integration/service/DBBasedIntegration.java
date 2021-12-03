@@ -487,9 +487,37 @@ public class DBBasedIntegration implements Integration{
 
     @Override
     public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("Start to save integration result for {}, id: {}",
+                integrationResult.getIntegrationType(),
+                integrationResult.getIntegrationId());
         switch (integrationResult.getIntegrationType()) {
             case INTEGRATION_RECEIPT:
                 dbBasedReceiptIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_ITEM:
+                dbBasedItemIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_CLIENT:
+                dbBasedClientIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_CUSTOMER:
+                dbBasedCustomerIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_BILL_OF_MATERIAL:
+                dbBasedBillOfMaterialIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_ORDER:
+                dbBasedOrderIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_ITEM_FAMILY:
+                dbBasedItemFamilyIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_SUPPLIER:
+                dbBasedSupplierIntegration.saveIntegrationResult(integrationResult);
+                break;
+            case INTEGRATION_WORK_ORDER:
+                dbBasedWorkOrderIntegration.saveIntegrationResult(integrationResult);
+                break;
         }
     }
 }

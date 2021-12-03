@@ -105,11 +105,11 @@ public class DBBasedClientIntegration {
             Client client = dbBasedClient.convertToClient();
             logger.debug(">> will process customer:\n{}", client);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_CLIENT, client);
+            kafkaSender.send(IntegrationType.INTEGRATION_CLIENT, dbBasedClient.getId(), client);
 
 
             dbBasedClient.setErrorMessage("");
-            dbBasedClient.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedClient.setStatus(IntegrationStatus.SENT);
 
             logger.debug(">> customer data process, {}", dbBasedClient.getStatus());
         }
@@ -120,6 +120,23 @@ public class DBBasedClientIntegration {
         }
         dbBasedClient.setLastUpdateTime(LocalDateTime.now());
         dbBasedClient = save(dbBasedClient);
+    }
+
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the client integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
+        DBBasedClient dbBasedClient = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedClient.setStatus(integrationStatus);
+        dbBasedClient.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedClient.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedClient);
+
+
     }
 
 

@@ -112,10 +112,10 @@ public class DBBasedItemFamilyIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Item Family:\n{}", itemFamily);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_FAMILY, itemFamily);
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_FAMILY, dbBasedItemFamily.getId(), itemFamily);
 
 
-            dbBasedItemFamily.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedItemFamily.setStatus(IntegrationStatus.SENT);
             dbBasedItemFamily.setErrorMessage("");
 
             logger.debug(">> Item family data process, {}", dbBasedItemFamily.getStatus());
@@ -129,6 +129,22 @@ public class DBBasedItemFamilyIntegration {
         save(dbBasedItemFamily);
     }
 
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the item family integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
+        DBBasedItemFamily dbBasedItemFamily = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedItemFamily.setStatus(integrationStatus);
+        dbBasedItemFamily.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedItemFamily.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedItemFamily);
+
+
+    }
 
 
 

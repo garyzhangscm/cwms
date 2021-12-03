@@ -266,6 +266,9 @@ public class DBBasedReceiptIntegration {
 
 
     public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the receipt integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
         DBBasedReceipt dbBasedReceipt = findById(
                 integrationResult.getIntegrationId()
         );

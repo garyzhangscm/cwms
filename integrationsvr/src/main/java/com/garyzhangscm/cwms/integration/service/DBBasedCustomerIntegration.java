@@ -142,10 +142,10 @@ public class DBBasedCustomerIntegration {
             Customer customer = dbBasedCustomer.convertToCustomer();
             logger.debug(">> will process customer:\n{}", customer);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_CUSTOMER, customer);
+            kafkaSender.send(IntegrationType.INTEGRATION_CUSTOMER, dbBasedCustomer.getId(), customer);
 
 
-            dbBasedCustomer.setStatus(IntegrationStatus.COMPLETED);
+            dbBasedCustomer.setStatus(IntegrationStatus.SENT);
             dbBasedCustomer.setErrorMessage("");
 
             logger.debug(">> customer data process, {}", dbBasedCustomer.getStatus());
@@ -157,6 +157,23 @@ public class DBBasedCustomerIntegration {
         }
         dbBasedCustomer.setLastUpdateTime(LocalDateTime.now());
         dbBasedCustomer = save(dbBasedCustomer);
+
+    }
+
+    public void saveIntegrationResult(IntegrationResult integrationResult) {
+        logger.debug("will update the customer integration {}'s result to {}",
+                integrationResult.getIntegrationId(),
+                integrationResult.isSuccess());
+        DBBasedCustomer dbBasedCustomer = findById(
+                integrationResult.getIntegrationId()
+        );
+        IntegrationStatus integrationStatus =
+                integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
+        dbBasedCustomer.setStatus(integrationStatus);
+        dbBasedCustomer.setErrorMessage(integrationResult.getErrorMessage());
+        dbBasedCustomer.setLastUpdateTime(LocalDateTime.now());
+        save(dbBasedCustomer);
+
 
     }
 }
