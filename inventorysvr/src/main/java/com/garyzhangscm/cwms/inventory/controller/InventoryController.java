@@ -320,9 +320,11 @@ public class InventoryController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory/{id}/reverse-receiving")
-    public Inventory reverseReceivedInventory(@PathVariable long id) {
+    public Inventory reverseReceivedInventory(@PathVariable long id,
+                                              @RequestParam(name =  "reverseQCQuantity", defaultValue = "", required = false) Boolean reverseQCQuantity,
+                                              @RequestParam(name =  "allowReuseLPN", defaultValue = "", required = false) Boolean allowReuseLPN) {
 
-        return inventoryService.reverseReceivedInventory(id);
+        return inventoryService.reverseReceivedInventory(id, reverseQCQuantity, allowReuseLPN);
     }
 
     @BillableEndpoint

@@ -2189,17 +2189,30 @@ public class InventoryService implements TestDataInitiableService{
      * @return
      */
     @Transactional
-    public Inventory reverseReceivedInventory(long id) {
+    public Inventory reverseReceivedInventory(long id,
+                                              Boolean reverseQCQuantity,
+                                              Boolean allowReuseLPN) {
         Inventory inventory = findById(id);
         if (Objects.isNull(inventory.getReceiptLineId())) {
             throw InventoryException.raiseException("Can't reverse the inventory. We can't find the receipt attached to this inventory");
         }
         Long quantity = inventory.getQuantity();
         Inventory removedInventory = removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING);
+        if (Boolean.TRUE.equals(inventory.getInboundQCRequired())) {
+            // the inventory needs QC, we may need to remove all the QC request that
+            // attached to this inventory
+            logger.debug("The inventory needs QC, let's remove all the qc related data");
+            qcInspectionRequestService.removeInboundQCInspectionRequest(inventory);
+        }
+        if (Boolean.TRUE.equals(allowReuseLPN)) {
+            // if we allow the user to reuse the lPN, then let's remove the record
+            delete(removedInventory.getId());
+        }
 
         logger.debug("Inventory Reserved!");
         inboundServiceRestemplateClient.reverseReceivedInventory(
-                inventory.getReceiptId(), inventory.getReceiptLineId(), quantity
+                inventory.getReceiptId(), inventory.getReceiptLineId(), quantity,
+                inventory.getInboundQCRequired(), reverseQCQuantity
         );
 
         return removedInventory;

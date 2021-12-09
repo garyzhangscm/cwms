@@ -227,6 +227,7 @@ public class QCInspectionRequestService {
         }
         else {
 
+            save(setupInboundQCInspectionRequest(inventory, null));
             logger.debug("We can't find any qc rule configuration for this inventory {} / {}",
                     inventory.getId(), inventory.getLpn());
         }
@@ -238,29 +239,40 @@ public class QCInspectionRequestService {
         qcInspectionRequest.setWarehouseId(inventory.getWarehouseId());
         qcInspectionRequest.setQcInspectionResult(QCInspectionResult.PENDING);
         qcInspectionRequest.setNumber(getNextQCInspectionRequest(inventory.getWarehouseId()));
-        qcRuleConfiguration.getQcRules().forEach(
-                qcRule -> {
-                    QCInspectionRequestItem qcInspectionRequestItem = new QCInspectionRequestItem();
-                    qcInspectionRequestItem.setQcInspectionRequest(qcInspectionRequest);
-                    qcInspectionRequestItem.setQcInspectionResult(QCInspectionResult.PENDING);
-                    qcInspectionRequestItem.setQcRule(qcRule);
-                    qcRule.getQcRuleItems().forEach(
-                            qcRuleItem -> {
-                                QCInspectionRequestItemOption qcInspectionRequestItemOption = new QCInspectionRequestItemOption();
-                                qcInspectionRequestItemOption.setQcRuleItem(qcRuleItem);
-                                qcInspectionRequestItemOption.setQcInspectionRequestItem(qcInspectionRequestItem);
-                                qcInspectionRequestItemOption.setQcInspectionResult(QCInspectionResult.PENDING);
-                                qcInspectionRequestItem.addQcInspectionRequestItemOption(qcInspectionRequestItemOption);
-                            }
-                    );
-                    qcInspectionRequest.addQcInspectionRequestItem(qcInspectionRequestItem);
-                }
-        );
+        if (Objects.nonNull(qcRuleConfiguration)) {
+            qcRuleConfiguration.getQcRules().forEach(
+                    qcRule -> {
+                        QCInspectionRequestItem qcInspectionRequestItem = new QCInspectionRequestItem();
+                        qcInspectionRequestItem.setQcInspectionRequest(qcInspectionRequest);
+                        qcInspectionRequestItem.setQcInspectionResult(QCInspectionResult.PENDING);
+                        qcInspectionRequestItem.setQcRule(qcRule);
+                        qcRule.getQcRuleItems().forEach(
+                                qcRuleItem -> {
+                                    QCInspectionRequestItemOption qcInspectionRequestItemOption = new QCInspectionRequestItemOption();
+                                    qcInspectionRequestItemOption.setQcRuleItem(qcRuleItem);
+                                    qcInspectionRequestItemOption.setQcInspectionRequestItem(qcInspectionRequestItem);
+                                    qcInspectionRequestItemOption.setQcInspectionResult(QCInspectionResult.PENDING);
+                                    qcInspectionRequestItem.addQcInspectionRequestItemOption(qcInspectionRequestItemOption);
+                                }
+                        );
+                        qcInspectionRequest.addQcInspectionRequestItem(qcInspectionRequestItem);
+                    }
+            );
+        }
         return qcInspectionRequest;
 
 
     }
 
+    public void removeInboundQCInspectionRequest(Inventory inventory) {
+
+        List<QCInspectionRequest> qcInspectionRequests = findAll(inventory.getWarehouseId(),
+                inventory.getId(), null, null, null, null, false);
+
+        qcInspectionRequests.forEach(
+                qcInspectionRequest -> delete(qcInspectionRequest)
+        );
+    }
     private String getNextQCInspectionRequest(Long warehouseId) {
         return commonServiceRestemplateClient.getNextQCInspectionRequest(warehouseId);
     }

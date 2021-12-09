@@ -22,7 +22,8 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionCode {
     SYSTEM_FATAL_ERROR(1, HttpStatus.REQUEST_TIMEOUT, "System Fatal Error"),
     RESOURCE_NOT_FOUND(65000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
-    TEST_FAIL(65001, HttpStatus.NOT_FOUND, "Test fail");
+    TEST_FAIL(65001, HttpStatus.NOT_FOUND, "Test fail"),
+    DATA_TRANSFER_ERROR(65002, HttpStatus.BAD_REQUEST, "Data transfer error");
 
 
     private final int code;

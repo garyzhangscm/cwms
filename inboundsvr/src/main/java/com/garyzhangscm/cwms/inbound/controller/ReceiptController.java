@@ -131,9 +131,11 @@ public class ReceiptController {
     @BillableEndpoint
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/reverse", method = RequestMethod.POST)
     public ReceiptLine reverseReceivedInventory(@PathVariable Long receiptId,
-                                     @PathVariable Long receiptLineId,
-                                     @RequestParam Long quantity) {
-        return receiptLineService.reverseReceivedInventory(receiptId, receiptLineId, quantity);
+                                                 @PathVariable Long receiptLineId,
+                                                 @RequestParam Long quantity,
+                                                @RequestParam(name = "inboundQCRequired", defaultValue = "", required = false) Boolean inboundQCRequired,
+                                                @RequestParam(name = "reverseQCQuantity", defaultValue = "", required = false) Boolean reverseQCQuantity) {
+        return receiptLineService.reverseReceivedInventory(receiptId, receiptLineId, quantity, inboundQCRequired, reverseQCQuantity);
     }
 
     @BillableEndpoint

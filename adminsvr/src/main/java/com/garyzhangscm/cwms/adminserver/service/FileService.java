@@ -21,12 +21,15 @@ package com.garyzhangscm.cwms.adminserver.service;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -79,5 +82,21 @@ public class FileService {
         // read from input stream
         MappingIterator<T> mappingIterator = mapper.readerFor(tClass).with(schema).readValues(csvInputStream);
         return mappingIterator.readAll();
+    }
+
+
+    public void createCSVFile(String filePath, String header, String[] data) throws IOException {
+        FileWriter out = new FileWriter(filePath);
+        try (
+            CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT
+                .withHeader(header))) {
+                    Arrays.stream(data).forEach((line) -> {
+                        try {
+                            printer.printRecord(line);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+        }
     }
 }
