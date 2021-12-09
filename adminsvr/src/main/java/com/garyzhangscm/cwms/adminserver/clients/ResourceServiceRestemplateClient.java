@@ -165,23 +165,6 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "admin_company", unless="#result == null")
-    public Company getCompanyById(Long id) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/companies/{id}");
-
-        ResponseBodyWrapper<Company> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.buildAndExpand(id).toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
 
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =

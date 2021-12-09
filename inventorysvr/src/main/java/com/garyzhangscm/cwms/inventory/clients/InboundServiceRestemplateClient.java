@@ -63,12 +63,18 @@ public class InboundServiceRestemplateClient {
 
     }
 
-    public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity) {
+    public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity,
+                                                Boolean inboundQCRequired, Boolean reverseQCQuantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inbound/receipts/{receiptId}/lines/{receiptLineId}/reverse")
                 .queryParam("quantity", quantity);
+        if (Boolean.TRUE.equals(inboundQCRequired)) {
+            builder = builder.queryParam("inboundQCRequired", true)
+                    .queryParam("reverseQCQuantity", reverseQCQuantity);
+        }
+
 
         ResponseBodyWrapper<ReceiptLine> responseBodyWrapper
                 = restTemplate.exchange(

@@ -50,6 +50,8 @@ public class BillableRequestService {
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     public BillableRequest findById(Long id ) {
         return findById(id, true);
@@ -147,7 +149,7 @@ public class BillableRequestService {
         if (Objects.nonNull(billableRequest.getCompanyId())) {
 
             billableRequest.setCompany(
-                    resourceServiceRestemplateClient.getCompanyById(
+                    warehouseLayoutServiceRestemplateClient.getCompanyById(
                             billableRequest.getCompanyId()
                     )
             );

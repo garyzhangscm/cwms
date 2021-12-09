@@ -432,10 +432,21 @@ public class ReceiptLineService implements TestDataInitiableService{
 
     }
 
-    public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity) {
+    public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity,
+                                                Boolean inboundQCRequired, Boolean reverseQCQuantity) {
         ReceiptLine receiptLine = findById(receiptLineId);
 
-        receiptLine.setReceivedQuantity(receiptLine.getReceivedQuantity() - quantity);
+        receiptLine.setReceivedQuantity(
+                receiptLine.getReceivedQuantity() - quantity > 0 ?
+                        receiptLine.getReceivedQuantity() - quantity : 0);
+        if (Boolean.TRUE.equals(inboundQCRequired) &&
+            Boolean.TRUE.equals(reverseQCQuantity)) {
+            // we just reserved an inventory that needs QC, let's return
+            // the qc quantity back
+            receiptLine.setQcQuantityRequested(
+                    receiptLine.getQcQuantityRequested() - quantity > 0 ?
+                            receiptLine.getQcQuantityRequested() - quantity  : 0);
+        }
 
         return saveOrUpdate(receiptLine);
     }

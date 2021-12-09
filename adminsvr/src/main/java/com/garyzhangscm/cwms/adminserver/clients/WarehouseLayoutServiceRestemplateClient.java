@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -236,6 +237,45 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    public List<Warehouse> getWarehouseByCompany(Long companyId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyId", companyId);
+
+        logger.debug("Start to get warehouse by companyId: {}, /n >> {}",
+                companyId, builder.toUriString());
+
+        ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    @Cacheable(cacheNames = "admin_company", unless="#result == null")
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies/{id}");
+
+        ResponseBodyWrapper<Company> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
 
     public Warehouse getWarehouseByName(String name) {
         UriComponentsBuilder builder =
@@ -616,6 +656,26 @@ public class WarehouseLayoutServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+    }
+
+    public Company getCompanyByCode(String companyCode) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/companies")
+                        .queryParam("code", companyCode);
+
+        ResponseBodyWrapper<List<Company>> responseBodyWrapper = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {
+                }).getBody();
+
+        List<Company> companies = responseBodyWrapper.getData();
+        if (companies.size() != 1) {
+            return null;
+        }
+        else {
+            return companies.get(0);
+        }
     }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {

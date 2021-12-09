@@ -1457,5 +1457,9 @@
   "menu.main.util.menu": "目录",
   "systemAdminMenuFlag": "系统管理目录",
   "copy-from-username": "源用户",
-  "company-menu": "公司目录"
+  "company-menu": "公司目录",
+  "menu.main.util.data-transfer": "数据迁移",
+  "reverse-QC-quantity": "重置QC数量",
+  "allow-reuse-LPN": "允许重用LPN",
+  "data-transfer-request-detail.tablesName": "表名"
 }

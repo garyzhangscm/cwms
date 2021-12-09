@@ -47,8 +47,8 @@ public class RecordCopyService {
         logger.debug("@{}, Start to process supplier data", LocalDateTime.now());
         dbBasedSupplierService.sendIntegrationData();
 
-        logger.debug("@{}, Start to process customer data", LocalDateTime.now());
-        dbBasedCustomerService.sendIntegrationData();
+        // logger.debug("@{}, Start to process customer data", LocalDateTime.now());
+        // dbBasedCustomerService.sendIntegrationData();
 
 
 

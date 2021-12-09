@@ -1458,5 +1458,9 @@
   "menu.main.util.menu": "Menu",
   "systemAdminMenuFlag": "System Admin Menu",
   "copy-from-username": "Copy From User",
-  "company-menu": "Company Menu"
+  "company-menu": "Company Menu",
+  "menu.main.util.data-transfer": "Data Transfer",
+  "reverse-QC-quantity": "Reverse QC Quantity",
+  "allow-reuse-LPN": "Allow Reuse LPN",
+  "data-transfer-request-detail.tablesName": "Table Name"
 }

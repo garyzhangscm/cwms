@@ -107,8 +107,13 @@ public class ReceiptService implements TestDataInitiableService{
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(number)) {
-                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
 
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
                     }
 
                     if (StringUtils.isNotBlank(receiptStatusList)) {
