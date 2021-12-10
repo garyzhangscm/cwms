@@ -21,6 +21,7 @@ public class AdminServerConfiguration extends ResourceServerConfigurerAdapter {
                 .antMatchers("/app").permitAll()
           .antMatchers("/actuator").permitAll()
                 .antMatchers("/probe/**").permitAll()
+                .antMatchers("/data-transfer/csv-download/**").permitAll()
           .anyRequest()
           .authenticated();
     }

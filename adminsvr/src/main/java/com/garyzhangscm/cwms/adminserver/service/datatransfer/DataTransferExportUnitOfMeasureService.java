@@ -1,11 +1,13 @@
 package com.garyzhangscm.cwms.adminserver.service.datatransfer;
 
+import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.model.DataTransferRequest;
 import com.garyzhangscm.cwms.adminserver.model.DataTransferRequestTable;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
+import com.garyzhangscm.cwms.adminserver.model.wms.Policy;
+import com.garyzhangscm.cwms.adminserver.model.wms.UnitOfMeasure;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
-import com.garyzhangscm.cwms.adminserver.service.DataTransferRequestService;
 import com.garyzhangscm.cwms.adminserver.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +16,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class DataTransferExportWarehouseService implements DataTransferExportService{
+public class DataTransferExportUnitOfMeasureService implements DataTransferExportService{
 
-    private static final Logger logger = LoggerFactory.getLogger(DataTransferExportWarehouseService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataTransferExportUnitOfMeasureService.class);
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
@@ -50,57 +54,55 @@ public class DataTransferExportWarehouseService implements DataTransferExportSer
 
     private List<Object[]> getCSVData(Company company) {
         List<Warehouse> warehouses = warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId());
-        return warehouses.stream().map(warehouse -> getCSVDataLine(company, warehouse)).collect(Collectors.toList());
+        List<Object[]> csvData = new ArrayList<>();
+        for(Warehouse warehouse : warehouses) {
+            List<UnitOfMeasure> unitOfMeasures = commonServiceRestemplateClient.getUnitOfMeasureByWarehouseId(
+                    warehouse.getId()
+            );
+            unitOfMeasures.forEach(
+                    unitOfMeasure -> csvData.add(getCSVDataLine(company, warehouse, unitOfMeasure))
+            );
+        }
+        return csvData;
     }
 
-    private Object[] getCSVDataLine(Company company, Warehouse warehouse) {
-        // "company,name,size,addressCountry,addressState,addressCounty,addressCity,addressDistrict,addressLine1,addressLine2,addressPostcode";
+    private Object[] getCSVDataLine(Company company, Warehouse warehouse, UnitOfMeasure unitOfMeasure) {
+        // "company,warehouse,name,description"
 
         return new Object[]{
                 company.getCode(),
                 warehouse.getName(),
-                String.valueOf(warehouse.getSize()),
-                warehouse.getAddressCountry(),
-                warehouse.getAddressState(),
-                warehouse.getAddressCounty(),
-                warehouse.getAddressCity(),
-                warehouse.getAddressDistrict(),
-                warehouse.getAddressLine1(),
-                warehouse.getAddressLine2(),
-                warehouse.getAddressPostcode()
+                unitOfMeasure.getName(),
+                unitOfMeasure.getDescription()
+        };
+    }
+
+
+    private String[] getCSVHeader() {
+        // "company,warehouse,name,description"
+        return new String[] {
+                "company",
+                "warehouse",
+                "name",
+                "description"
         };
     }
 
     @Override
     public int getSequence() {
-        return 0;
+        return 3;
     }
 
     @Override
     public DataTransferRequestTable getTablesName() {
-        return DataTransferRequestTable.WAREHOUSE;
+        return DataTransferRequestTable.UNIT_OF_MEASURE;
     }
 
     @Override
     public String getDescription() {
-        return DataTransferRequestTable.WAREHOUSE.toString();
+        return DataTransferRequestTable.UNIT_OF_MEASURE.toString();
     }
 
-    private String[] getCSVHeader() {
-        return new String[] {
-            "company",
-                "name",
-                "size",
-                "addressCountry",
-                "addressState",
-                "addressCounty",
-                "addressCity",
-                "addressDistrict",
-                "addressLine1",
-                "addressLine2",
-                "addressPostcode"
-        };
-    }
     private String getFileName() {
         return getTablesName() + ".csv";
     }

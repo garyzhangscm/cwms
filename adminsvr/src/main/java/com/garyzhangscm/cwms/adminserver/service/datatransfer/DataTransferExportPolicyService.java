@@ -1,11 +1,12 @@
 package com.garyzhangscm.cwms.adminserver.service.datatransfer;
 
+import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.model.DataTransferRequest;
 import com.garyzhangscm.cwms.adminserver.model.DataTransferRequestTable;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
+import com.garyzhangscm.cwms.adminserver.model.wms.Policy;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
-import com.garyzhangscm.cwms.adminserver.service.DataTransferRequestService;
 import com.garyzhangscm.cwms.adminserver.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +15,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class DataTransferExportWarehouseService implements DataTransferExportService{
+public class DataTransferExportPolicyService implements DataTransferExportService{
 
-    private static final Logger logger = LoggerFactory.getLogger(DataTransferExportWarehouseService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataTransferExportPolicyService.class);
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
@@ -50,55 +54,52 @@ public class DataTransferExportWarehouseService implements DataTransferExportSer
 
     private List<Object[]> getCSVData(Company company) {
         List<Warehouse> warehouses = warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId());
-        return warehouses.stream().map(warehouse -> getCSVDataLine(company, warehouse)).collect(Collectors.toList());
+        List<Object[]> csvData = new ArrayList<>();
+        for(Warehouse warehouse : warehouses) {
+            List<Policy> policies = commonServiceRestemplateClient.getPoliciesByWarehouseId(
+                    warehouse.getId()
+            );
+            policies.forEach(
+                    policy -> csvData.add(getCSVDataLine(company, warehouse, policy))
+            );
+        }
+        return csvData;
     }
 
-    private Object[] getCSVDataLine(Company company, Warehouse warehouse) {
-        // "company,name,size,addressCountry,addressState,addressCounty,addressCity,addressDistrict,addressLine1,addressLine2,addressPostcode";
+    private Object[] getCSVDataLine(Company company, Warehouse warehouse, Policy policy) {
+        // "company,warehouse,key,value,description";
 
         return new Object[]{
                 company.getCode(),
                 warehouse.getName(),
-                String.valueOf(warehouse.getSize()),
-                warehouse.getAddressCountry(),
-                warehouse.getAddressState(),
-                warehouse.getAddressCounty(),
-                warehouse.getAddressCity(),
-                warehouse.getAddressDistrict(),
-                warehouse.getAddressLine1(),
-                warehouse.getAddressLine2(),
-                warehouse.getAddressPostcode()
+                policy.getKey(),
+                policy.getValue(),
+                policy.getDescription()
         };
     }
 
     @Override
     public int getSequence() {
-        return 0;
+        return 1;
     }
 
     @Override
     public DataTransferRequestTable getTablesName() {
-        return DataTransferRequestTable.WAREHOUSE;
+        return DataTransferRequestTable.POLICY;
     }
 
     @Override
     public String getDescription() {
-        return DataTransferRequestTable.WAREHOUSE.toString();
+        return DataTransferRequestTable.POLICY.toString();
     }
 
     private String[] getCSVHeader() {
         return new String[] {
             "company",
-                "name",
-                "size",
-                "addressCountry",
-                "addressState",
-                "addressCounty",
-                "addressCity",
-                "addressDistrict",
-                "addressLine1",
-                "addressLine2",
-                "addressPostcode"
+                "warehouse",
+                "key",
+                "value",
+                "description"
         };
     }
     private String getFileName() {

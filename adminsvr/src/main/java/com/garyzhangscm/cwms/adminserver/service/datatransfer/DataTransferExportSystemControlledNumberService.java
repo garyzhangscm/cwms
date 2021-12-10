@@ -1,11 +1,13 @@
 package com.garyzhangscm.cwms.adminserver.service.datatransfer;
 
+import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.model.DataTransferRequest;
 import com.garyzhangscm.cwms.adminserver.model.DataTransferRequestTable;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
+import com.garyzhangscm.cwms.adminserver.model.wms.Policy;
+import com.garyzhangscm.cwms.adminserver.model.wms.SystemControlledNumber;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
-import com.garyzhangscm.cwms.adminserver.service.DataTransferRequestService;
 import com.garyzhangscm.cwms.adminserver.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +16,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
 
 @Service
-public class DataTransferExportWarehouseService implements DataTransferExportService{
+public class DataTransferExportSystemControlledNumberService implements DataTransferExportService{
 
-    private static final Logger logger = LoggerFactory.getLogger(DataTransferExportWarehouseService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataTransferExportSystemControlledNumberService.class);
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
@@ -50,55 +56,64 @@ public class DataTransferExportWarehouseService implements DataTransferExportSer
 
     private List<Object[]> getCSVData(Company company) {
         List<Warehouse> warehouses = warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId());
-        return warehouses.stream().map(warehouse -> getCSVDataLine(company, warehouse)).collect(Collectors.toList());
+        List<Object[]> csvData = new ArrayList<>();
+        for(Warehouse warehouse : warehouses) {
+            List<SystemControlledNumber> systemControlledNumbers = commonServiceRestemplateClient.getSystemControlledNumberByWarehouseId(
+                    warehouse.getId()
+            );
+            systemControlledNumbers.forEach(
+                    systemControlledNumber -> csvData.add(getCSVDataLine(company, warehouse, systemControlledNumber))
+            );
+        }
+        logger.debug("will write data into system controlled number");
+        logger.debug("=============   CSV   Data   ==============");
+        csvData.forEach(
+                csvLine -> logger.debug(Arrays.deepToString(csvLine))
+        );
+        return csvData;
     }
 
-    private Object[] getCSVDataLine(Company company, Warehouse warehouse) {
-        // "company,name,size,addressCountry,addressState,addressCounty,addressCity,addressDistrict,addressLine1,addressLine2,addressPostcode";
+    private Object[] getCSVDataLine(Company company, Warehouse warehouse, SystemControlledNumber systemControlledNumber) {
+        // "company,warehouse,variable,prefix,postfix,length,currentNumber,rollover";
 
         return new Object[]{
                 company.getCode(),
                 warehouse.getName(),
-                String.valueOf(warehouse.getSize()),
-                warehouse.getAddressCountry(),
-                warehouse.getAddressState(),
-                warehouse.getAddressCounty(),
-                warehouse.getAddressCity(),
-                warehouse.getAddressDistrict(),
-                warehouse.getAddressLine1(),
-                warehouse.getAddressLine2(),
-                warehouse.getAddressPostcode()
+                systemControlledNumber.getVariable(),
+                systemControlledNumber.getPrefix(),
+                systemControlledNumber.getPostfix(),
+                systemControlledNumber.getLength(),
+                systemControlledNumber.getCurrentNumber(),
+                String.valueOf(systemControlledNumber.getRollover()).toLowerCase()
         };
     }
 
     @Override
     public int getSequence() {
-        return 0;
+        return 2;
     }
 
     @Override
     public DataTransferRequestTable getTablesName() {
-        return DataTransferRequestTable.WAREHOUSE;
+        return DataTransferRequestTable.SYSTEM_CONTROLLED_NUMBER;
     }
 
     @Override
     public String getDescription() {
-        return DataTransferRequestTable.WAREHOUSE.toString();
+        return DataTransferRequestTable.SYSTEM_CONTROLLED_NUMBER.toString();
     }
 
     private String[] getCSVHeader() {
+        // "company,warehouse,variable,prefix,postfix,length,currentNumber,rollover";
         return new String[] {
             "company",
-                "name",
-                "size",
-                "addressCountry",
-                "addressState",
-                "addressCounty",
-                "addressCity",
-                "addressDistrict",
-                "addressLine1",
-                "addressLine2",
-                "addressPostcode"
+                "warehouse",
+                "variable",
+                "prefix",
+                "postfix",
+                "length",
+                "currentNumber",
+                "rollover"
         };
     }
     private String getFileName() {

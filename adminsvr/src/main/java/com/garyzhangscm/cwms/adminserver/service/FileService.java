@@ -31,6 +31,11 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class FileService {
@@ -85,18 +90,57 @@ public class FileService {
     }
 
 
-    public void createCSVFile(String filePath, String header, String[] data) throws IOException {
-        FileWriter out = new FileWriter(filePath);
-        try (
-            CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT
-                .withHeader(header))) {
-                    Arrays.stream(data).forEach((line) -> {
-                        try {
-                            printer.printRecord(line);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
+    public void createCSVFile(String filePath, String[] header, List<Object[]> data) throws IOException {
+        File file = new File(filePath);
+
+
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
         }
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        // FileWriter out = new FileWriter(file);
+
+        try (CSVPrinter printer = new CSVPrinter(new FileWriter(file), CSVFormat.EXCEL)) {
+            printer.printRecord(header);
+            for(Object[] line: data) {
+                printer.printRecord(line);
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
+    public Set<File> listFilesInDirectory(String directoryPath) {
+        return Stream.of(new File(directoryPath).listFiles())
+                .collect(Collectors.toSet());
+    }
+
+    public File zipFilesInDirectory(String zipFileName, String directoryPath) throws IOException {
+        Set<File> srcFiles = listFilesInDirectory(directoryPath);
+
+        FileOutputStream fos = new FileOutputStream(zipFileName);
+        ZipOutputStream zipOut = new ZipOutputStream(fos);
+        for (File srcFile : srcFiles) {
+
+            FileInputStream fis = new FileInputStream(srcFile);
+            ZipEntry zipEntry = new ZipEntry(srcFile.getName());
+            zipOut.putNextEntry(zipEntry);
+
+            byte[] bytes = new byte[1024];
+            int length;
+            while((length = fis.read(bytes)) >= 0) {
+                zipOut.write(bytes, 0, length);
+            }
+            fis.close();
+        }
+        zipOut.close();
+        fos.close();
+
+        return new File(zipFileName);
     }
 }

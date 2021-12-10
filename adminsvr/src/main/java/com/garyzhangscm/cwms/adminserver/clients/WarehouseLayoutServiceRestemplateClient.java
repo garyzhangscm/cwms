@@ -321,6 +321,23 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public List<LocationGroup> getLocationGroupByWarehouseId(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locationgroups")
+                .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<LocationGroup>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<LocationGroup>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     public LocationGroup getLocationGroupByName(String warehouseName, String name) {
         Warehouse warehouse = getWarehouseByName(warehouseName);
         if (warehouse == null) {
@@ -686,4 +703,20 @@ public class WarehouseLayoutServiceRestemplateClient {
         return new HttpEntity<String>(requestBody, headers);
     }
 
+    public List<Location> getLocationsByWarehouseId(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Location>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 }
