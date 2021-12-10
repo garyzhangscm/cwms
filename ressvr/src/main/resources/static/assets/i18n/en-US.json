@@ -1462,5 +1462,7 @@
   "menu.main.util.data-transfer": "Data Transfer",
   "reverse-QC-quantity": "Reverse QC Quantity",
   "allow-reuse-LPN": "Allow Reuse LPN",
-  "data-transfer-request-detail.tablesName": "Table Name"
+  "data-transfer-request-detail.tablesName": "Table Name",
+  "data-transfer-request-detail": "Request Detail",
+  "csv-file": "CSV File"
 }

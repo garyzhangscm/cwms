@@ -1461,5 +1461,7 @@
   "menu.main.util.data-transfer": "数据迁移",
   "reverse-QC-quantity": "重置QC数量",
   "allow-reuse-LPN": "允许重用LPN",
-  "data-transfer-request-detail.tablesName": "表名"
+  "data-transfer-request-detail.tablesName": "表名",
+  "data-transfer-request-detail": "明细",
+  "csv-file": "CSV 文件"
 }

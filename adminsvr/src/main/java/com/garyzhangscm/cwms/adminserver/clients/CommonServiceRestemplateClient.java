@@ -217,6 +217,23 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+    public List<UnitOfMeasure> getUnitOfMeasureByWarehouseId(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/unit-of-measures")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<UnitOfMeasure>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -279,6 +296,23 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData().getNextNumber();
     }
 
+    public List<SystemControlledNumber> getSystemControlledNumberByWarehouseId(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/system-controlled-numbers")
+                .queryParam("warehouseId", warehouseId);
+        ResponseBodyWrapper<List<SystemControlledNumber>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<SystemControlledNumber>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
 
     public SystemControlledNumber addSystemControlledNumbers(SystemControlledNumber systemControlledNumber) throws JsonProcessingException {
 
@@ -300,6 +334,24 @@ public class CommonServiceRestemplateClient {
 
     public String getNextLpn() {
         return getNextNumber("lpn");
+    }
+
+    public List<Policy> getPoliciesByWarehouseId(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/policies")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Policy>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Policy>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
     }
 
 

@@ -32,12 +32,14 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +52,12 @@ public class DataTransferRequestService {
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
+
+    @Value("${admin.dataTransfer.folder}")
+    private String dataTransferFolder;
+
+    @Autowired
+    private FileService fileService;
 
     @Autowired()
     List<DataTransferExportService> dataTransferExportServices;
@@ -152,7 +160,6 @@ public class DataTransferRequestService {
         dataTransferRequest = saveOrUpdate(dataTransferRequest);
         long dataTransferRequestId = dataTransferRequest.getId();
         dataTransferRequestMap.put(dataTransferRequestId, dataTransferRequest);
-        Company company = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId);
 
         new Thread(() ->{
 
@@ -160,56 +167,66 @@ public class DataTransferRequestService {
                     dataTransferRequestMap.get(dataTransferRequestId);
             logger.debug("Start to process data transfer request \n{}", savedDataTransferRequest);
 
+            boolean exportResult = true;
             try {
                 // go through all the export service and export one by one based on the sequence
                 Collections.sort(dataTransferExportServices, Comparator.comparing(DataTransferExportService::getSequence));
 
-                dataTransferExportServices.forEach(
-                        dataTransferExportService -> {
-                            logger.debug("start to process export service: {}", dataTransferExportService.getTablesName());
-                            // set the status of the matched detail to INPROCESS
-                            DataTransferRequestDetail matchedDataTransferRequestDetail =
+                // export the data
+                for(DataTransferExportService dataTransferExportService: dataTransferExportServices) {
+
+                    logger.debug("start to process export service: {}", dataTransferExportService.getTablesName());
+                    // set the status of the matched detail to INPROCESS
+                    DataTransferRequestDetail matchedDataTransferRequestDetail =
                                     savedDataTransferRequest.getDataTransferRequestDetail(
                                             dataTransferExportService.getTablesName()
-                                    );
-                            if (Objects.nonNull(matchedDataTransferRequestDetail)) {
-                                logger.debug("We got matched request detail");
-                                matchedDataTransferRequestDetail.setStatus(
+                    );
+                    if (Objects.nonNull(matchedDataTransferRequestDetail)) {
+                        logger.debug("We got matched request detail");
+                        matchedDataTransferRequestDetail.setStatus(
                                         DataTransferRequestStatus.INPROCESS
                                 );
-                                save(savedDataTransferRequest);
-                            }
+                        save(savedDataTransferRequest);
+                    }
 
-                            // export the data
-                            boolean exportResult = true;
-                            try {
-                                dataTransferExportService.exportData(savedDataTransferRequest);
+                    // export the data
+                    boolean exportDetailResult = true;
+                    try {
+                        dataTransferExportService.exportData(savedDataTransferRequest);
+                    } catch (IOException e) {
+                        logger.debug("Error while write CSV file");
+                        e.printStackTrace();
+                        exportDetailResult = false;
+                    }
 
-                            } catch (IOException e) {
-                                exportResult = false;
-                            }
-
-                            // update the correspondent record to COMPLETE
-                            if (Objects.nonNull(matchedDataTransferRequestDetail)) {
-                                matchedDataTransferRequestDetail.setStatus(
-                                        exportResult? DataTransferRequestStatus.COMPLETE : DataTransferRequestStatus.ERROR
-                                );
-                                save(savedDataTransferRequest);
-                            }
-
-
-                        }
-                );
+                    // update the correspondent record to COMPLETE
+                    if (Objects.nonNull(matchedDataTransferRequestDetail)) {
+                        logger.debug("Finish process the export of (), the result is {}",
+                                matchedDataTransferRequestDetail.getTablesName(),
+                                exportDetailResult);
+                        matchedDataTransferRequestDetail.setStatus(
+                                exportDetailResult? DataTransferRequestStatus.COMPLETE : DataTransferRequestStatus.ERROR
+                        );
+                        save(savedDataTransferRequest);
+                    }
+                    if (!exportDetailResult) {
+                        // if we failed in this detail, then we break here and mark the whole process as fail
+                        exportResult = false;
+                        break;
+                    }
+                }
 
             } catch (Exception e) {
+                logger.debug("Get error {} during exporting data", e.getMessage());
                 e.printStackTrace();
-                savedDataTransferRequest.setStatus(DataTransferRequestStatus.ERROR);
-                saveOrUpdate(savedDataTransferRequest);
-                dataTransferRequestMap.remove(savedDataTransferRequest);
+                exportResult = false;
+
             }
             // the data transfer request is done
 
-            savedDataTransferRequest.setStatus(DataTransferRequestStatus.COMPLETE);
+            savedDataTransferRequest.setStatus(
+                    exportResult ? DataTransferRequestStatus.COMPLETE : DataTransferRequestStatus.ERROR
+            );
             saveOrUpdate(savedDataTransferRequest);
             dataTransferRequestMap.remove(savedDataTransferRequest);
         }).start();
@@ -276,5 +293,35 @@ public class DataTransferRequestService {
             );
         }
         throw DataTransferException.raiseException("can't process data transfer request with type " + type);
+    }
+
+    public File getCSVFile(Long id, String tableName) {
+        DataTransferRequest dataTransferRequest = findById(id);
+        String csfFilePath = getFilePath(dataTransferRequest.getNumber(), tableName);
+
+        return new File(csfFilePath);
+    }
+
+
+    private String getFileName(String tableName) {
+        return tableName + ".csv";
+    }
+    private String getFilePath(String dataTransferRequestNumber, String tableName) {
+        return dataTransferFolder + "/" + dataTransferRequestNumber + "/" + getFileName(tableName);
+    }
+
+    public File getCSVZipFile(Long id) throws IOException {
+        DataTransferRequest dataTransferRequest = findById(id);
+        String directoryPath = dataTransferFolder + "/" + dataTransferRequest.getNumber();
+
+        // zip the whole directory and send it back to the client
+        String zipFileName = dataTransferFolder + "/" + dataTransferRequest.getNumber() + "/" + dataTransferRequest.getNumber() + ".zip";
+        File zipFile = new File(zipFileName);
+        if (zipFile.exists()) {
+            // the file already exists, let's return it
+            return  zipFile;
+        }
+        return fileService.zipFilesInDirectory(zipFileName, directoryPath);
+
     }
 }

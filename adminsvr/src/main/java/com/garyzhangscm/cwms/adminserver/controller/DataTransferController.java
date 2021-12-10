@@ -8,8 +8,16 @@ import com.garyzhangscm.cwms.adminserver.service.DataService;
 import com.garyzhangscm.cwms.adminserver.service.DataTransferRequestService;
 import com.garyzhangscm.cwms.adminserver.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -50,6 +58,42 @@ public class DataTransferController {
 
 
 
+    @RequestMapping(method=RequestMethod.GET, value="/data-transfer/csv-download/{id}/{tableName}")
+    public ResponseEntity<Resource> getCSVFile(
+            @PathVariable Long id,
+            @PathVariable String tableName) throws FileNotFoundException {
+
+
+
+        File csvFile = dataTransferRequestService.getCSVFile(id, tableName);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(csvFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + csvFile.getName())
+                .contentLength(csvFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
+
+
+    @RequestMapping(method=RequestMethod.GET, value="/data-transfer/csv-download/{id}")
+    public ResponseEntity<Resource> getCSVZipFile(
+            @PathVariable Long id) throws IOException {
+
+
+
+        File csvZipFile = dataTransferRequestService.getCSVZipFile(id);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(csvZipFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + csvZipFile.getName())
+                .contentLength(csvZipFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
 
 
 

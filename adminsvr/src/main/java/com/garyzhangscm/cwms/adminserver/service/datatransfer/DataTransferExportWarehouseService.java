@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DataTransferExportWarehouseService implements DataTransferExportService{
@@ -33,9 +34,10 @@ public class DataTransferExportWarehouseService implements DataTransferExportSer
     public void exportData(DataTransferRequest dataTransferRequest) throws IOException {
 
 
-        logger.debug("start to write into file {}", getFilePath(dataTransferRequest.getNumber()));
-        logger.debug("CSV HEADER: \n{}", getCSVHeader());
-        logger.debug("CSV content: \n {}", getCSVData(dataTransferRequest.getCompany()));
+        logger.debug("start to write {} into file {}",
+                getTablesName(), getFilePath(dataTransferRequest.getNumber()));
+        // logger.debug("CSV HEADER: \n{}", getCSVHeader());
+        // logger.debug("CSV content: \n {}", getCSVData(dataTransferRequest.getCompany()));
 
         fileService.createCSVFile(
                 getFilePath(dataTransferRequest.getNumber()),
@@ -46,26 +48,27 @@ public class DataTransferExportWarehouseService implements DataTransferExportSer
 
     }
 
-    private String[] getCSVData(Company company) {
+    private List<Object[]> getCSVData(Company company) {
         List<Warehouse> warehouses = warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId());
-        return warehouses.stream().map(warehouse -> getCSVDataLine(company, warehouse)).toArray(String[]::new);
+        return warehouses.stream().map(warehouse -> getCSVDataLine(company, warehouse)).collect(Collectors.toList());
     }
 
-    private String getCSVDataLine(Company company, Warehouse warehouse) {
+    private Object[] getCSVDataLine(Company company, Warehouse warehouse) {
         // "company,name,size,addressCountry,addressState,addressCounty,addressCity,addressDistrict,addressLine1,addressLine2,addressPostcode";
-        return new StringBuilder()
-                .append(company.getCode())
-                .append(warehouse.getName())
-                .append(warehouse.getSize())
-                .append(warehouse.getAddressCountry())
-                .append(warehouse.getAddressState())
-                .append(warehouse.getAddressCounty())
-                .append(warehouse.getAddressCity())
-                .append(warehouse.getAddressDistrict())
-                .append(warehouse.getAddressLine1())
-                .append(warehouse.getAddressLine2())
-                .append(warehouse.getAddressPostcode())
-                .toString();
+
+        return new Object[]{
+                company.getCode(),
+                warehouse.getName(),
+                String.valueOf(warehouse.getSize()),
+                warehouse.getAddressCountry(),
+                warehouse.getAddressState(),
+                warehouse.getAddressCounty(),
+                warehouse.getAddressCity(),
+                warehouse.getAddressDistrict(),
+                warehouse.getAddressLine1(),
+                warehouse.getAddressLine2(),
+                warehouse.getAddressPostcode()
+        };
     }
 
     @Override
@@ -83,8 +86,20 @@ public class DataTransferExportWarehouseService implements DataTransferExportSer
         return DataTransferRequestTable.WAREHOUSE.toString();
     }
 
-    private String getCSVHeader() {
-        return "company,name,size,addressCountry,addressState,addressCounty,addressCity,addressDistrict,addressLine1,addressLine2,addressPostcode";
+    private String[] getCSVHeader() {
+        return new String[] {
+            "company",
+                "name",
+                "size",
+                "addressCountry",
+                "addressState",
+                "addressCounty",
+                "addressCity",
+                "addressDistrict",
+                "addressLine1",
+                "addressLine2",
+                "addressPostcode"
+        };
     }
     private String getFileName() {
         return getTablesName() + ".csv";

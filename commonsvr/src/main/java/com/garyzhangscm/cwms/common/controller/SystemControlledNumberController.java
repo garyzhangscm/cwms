@@ -34,6 +34,9 @@ public class SystemControlledNumberController {
     @Autowired
     SystemControlledNumberService systemControlledNumberService;
 
+
+
+
     @RequestMapping(value="/system-controlled-number/{variable}/next", method = RequestMethod.GET)
     public SystemControlledNumber getNextNumber(@RequestParam Long warehouseId,
                                                 @PathVariable String variable) {
