@@ -114,4 +114,24 @@ public class FileService {
             rows.stream().forEach(pw::println);
         }
     }
+
+
+    public File saveFile(MultipartFile file, String folder, String fileName) throws IOException {
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
+        String destination = folder  + fileName;
+        File localFile = new File(destination);
+
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+        if (!localFile.exists()) {
+            localFile.createNewFile();
+        }
+        file.transferTo(localFile);
+
+        return localFile;
+
+    }
 }
