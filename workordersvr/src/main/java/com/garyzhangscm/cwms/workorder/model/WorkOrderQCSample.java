@@ -35,6 +35,15 @@ public class WorkOrderQCSample extends AuditibleEntity<String>{
     @Column(name = "image_urls")
     private String imageUrls;
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public Long getId() {
         return id;
     }
