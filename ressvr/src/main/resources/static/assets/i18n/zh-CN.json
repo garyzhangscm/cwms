@@ -1463,5 +1463,7 @@
   "allow-reuse-LPN": "允许重用LPN",
   "data-transfer-request-detail.tablesName": "表名",
   "data-transfer-request-detail": "明细",
-  "csv-file": "CSV 文件"
+  "csv-file": "CSV 文件",
+  "menu.main.inventory.item-sampling": "商品采样",
+  "item-sampling":  "商品采样"
 }

@@ -1464,5 +1464,7 @@
   "allow-reuse-LPN": "Allow Reuse LPN",
   "data-transfer-request-detail.tablesName": "Table Name",
   "data-transfer-request-detail": "Request Detail",
-  "csv-file": "CSV File"
+  "csv-file": "CSV File",
+  "menu.main.inventory.item-sampling": "Item Sampling",
+  "item-sampling": "Item Sampling"
 }

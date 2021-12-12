@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -115,6 +116,26 @@ public class FileService {
         }
     }
 
+    public void copyFile(String sourceFilePath, String destinationFilePath)
+            throws IOException {
+
+        File sourceFile = new File(sourceFilePath);
+        File destinationFile = new File(destinationFilePath);
+
+        copyFile(sourceFile, destinationFile);
+    }
+    public void copyFile(File sourceFile, File destinationFile)
+            throws IOException {
+
+        // InputStream in = new BufferedInputStream(
+        //        new FileInputStream(sourceFile));
+
+
+        // copyFile(in, destinationFile);
+
+        FileUtils.copyFile(sourceFile, destinationFile);
+
+    }
 
     public File saveFile(MultipartFile file, String folder, String fileName) throws IOException {
         if (!folder.endsWith("/")) {

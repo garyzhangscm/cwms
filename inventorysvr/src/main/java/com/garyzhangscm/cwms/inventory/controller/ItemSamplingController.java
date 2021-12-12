@@ -54,6 +54,18 @@ public class ItemSamplingController {
                 itemId,enabled,currentSampleOnly);
     }
 
+    @RequestMapping(value="/item-sampling/display", method = RequestMethod.GET)
+    public List<ItemSampling> findAllItemSamplingForDisplay(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="number", required = false, defaultValue = "") String number,
+            @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+            @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+            @RequestParam(name="currentSampleOnly", required = false, defaultValue = "") Boolean currentSampleOnly) {
+        return itemSamplingService.findAllItemSamplingForDisplay(warehouseId, number, itemName,
+                itemId,currentSampleOnly);
+    }
+
+
     @BillableEndpoint
     @RequestMapping(value="/item-sampling", method = RequestMethod.PUT)
     public ItemSampling addItemSampling(
@@ -82,12 +94,13 @@ public class ItemSamplingController {
     }
 
 
-    @RequestMapping(value="/item-sampling/images/{warehouseId}/{number}/{fileName}", method = RequestMethod.GET)
+    @RequestMapping(value="/item-sampling/images/{warehouseId}/{itemId}/{number}/{fileName}", method = RequestMethod.GET)
     public ResponseEntity<Resource> getItemSamplingImage(@PathVariable Long warehouseId,
+                                                    @PathVariable Long itemId,
                                                     @PathVariable String number,
                                                     @PathVariable String fileName) throws FileNotFoundException {
 
-        File imageFile = itemSamplingService.getItemSamplingImage(warehouseId, number, fileName);
+        File imageFile = itemSamplingService.getItemSamplingImage(warehouseId, itemId, number, fileName);
 
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(imageFile));
@@ -99,14 +112,58 @@ public class ItemSamplingController {
 
     }
 
+    @RequestMapping(value="/item-sampling/images/{warehouseId}/{itemId}/{fileName}", method = RequestMethod.GET)
+    public ResponseEntity<Resource> getItemSamplingImage(@PathVariable Long warehouseId,
+                                                         @PathVariable Long itemId,
+                                                         @PathVariable String fileName) throws FileNotFoundException {
+
+        File imageFile = itemSamplingService.getItemSamplingImage(warehouseId, itemId, fileName);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(imageFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + fileName)
+                .contentLength(imageFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+
+    }
+
+    /**
+     * Add images to an existing item sampling record
+     * @param number
+     * @param file
+     * @return
+     * @throws IOException
+     */
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.POST, value="/item-sampling/{number}/images")
+    @RequestMapping(method=RequestMethod.POST, value="/item-sampling/{itemId}/{number}/images")
     public ResponseBodyWrapper uploadQCSampleImage(
+            @PathVariable Long itemId,
             @PathVariable String number,
             @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        String filePath = itemSamplingService.uploadQCSampleImage(number, file);
+        String filePath = itemSamplingService.uploadQCSampleImage(itemId, number, file);
+        return  ResponseBodyWrapper.success(filePath);
+    }
+
+    /**
+     * Add images to an new item sampling record. We will save the images in a temporary location
+     * and move it to a permanent location when we save the record
+     * @param itemId
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/item-sampling/{itemId}/images")
+    public ResponseBodyWrapper uploadQCSampleImage(
+            @PathVariable Long itemId,
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        String filePath = itemSamplingService.uploadQCSampleImage(itemId, file);
         return  ResponseBodyWrapper.success(filePath);
     }
 
