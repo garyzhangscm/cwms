@@ -34,6 +34,7 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemSamplingService {
@@ -145,7 +146,51 @@ public class ItemSamplingService {
     public ItemSampling addItemSampling(ItemSampling itemSampling) {
         // we will need to disable previous item sampling for the same item
         disablePreviousItemSampling(itemSampling);
-        return saveOrUpdate(itemSampling);
+        // copy the files from the temporary folder into the permanent folder
+        itemSampling = saveOrUpdate(itemSampling);
+        logger.debug("item sampling {} is added, start to copy the images files",
+                itemSampling.getNumber());
+        saveSamplingImagePermanently(itemSampling);
+        return itemSampling;
+
+    }
+
+    /**
+     * Copy the image file from temp folder into permanent folder
+     * @param itemSampling
+     */
+    private void saveSamplingImagePermanently(ItemSampling itemSampling) {
+        logger.debug("start to process images urls {} for item sampling {}",
+                itemSampling.getImageUrls(),
+                itemSampling.getNumber());
+        Arrays.stream(itemSampling.getImageUrls().split(",")).forEach(
+            imageUrl -> {
+                logger.debug("> start to process image {}", imageUrl);
+                File imageFile = getItemSamplingImage(itemSampling.getWarehouseId(),
+                        itemSampling.getItem().getId(), imageUrl);
+                if (imageFile.exists()) {
+                    // file exists, copy it to the permenate folder
+                    logger.debug(">> file exists, start copy into the permanent folder");
+                    try {
+                        fileService.copyFile(imageFile,
+                                getItemSamplingImage(
+                                        itemSampling.getWarehouseId(),
+                                        itemSampling.getItem().getId(),
+                                        itemSampling.getNumber(),
+                                        imageUrl
+                                ));
+                        logger.debug(">> copy is done, start to remove the original file");
+                        logger.debug(">>>> original file is removed? {}", imageFile.delete());
+                    } catch (IOException e) {
+                        logger.debug(">> error while copy the image into permanent folder");
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    logger.debug(">> ignore this image as the file doesn't exists");
+                }
+            }
+        );
     }
 
     private void disablePreviousItemSampling(ItemSampling itemSampling) {
@@ -179,18 +224,31 @@ public class ItemSamplingService {
 
     /**
      * Get the item sampling image folder. it will be in the predefined folder
-     * and a subfolder defined by the number
-     * @param number
+     * and a subfolder
+     * @param subFolder
      * @return
      */
-    private String getWorkOrderQCSampleImageFolder(String number) {
-        return qcSampleImageFolder + "/" + number + "/";
+    private String getWorkOrderQCSampleImageFolder(String subFolder) {
+        return qcSampleImageFolder + "/" + subFolder + "/";
     }
 
-    public String uploadQCSampleImage(String number, MultipartFile file) throws IOException {
+    public String uploadQCSampleImage(Long itemId, MultipartFile file) throws IOException {
+
+        String subFolder = itemId.toString();
+        return uploadQCSampleImage(subFolder, file);
+
+    }
+    public String uploadQCSampleImage(Long itemId, String number, MultipartFile file) throws IOException {
+
+        String subFolder = itemId.toString() + "/" + number;
+        return uploadQCSampleImage(subFolder, file);
+
+    }
+
+    public String uploadQCSampleImage(String subFolder, MultipartFile file) throws IOException {
 
 
-        String filePath = getWorkOrderQCSampleImageFolder(number);
+        String filePath = getWorkOrderQCSampleImageFolder(subFolder);
         logger.debug("Save file to {}{}",
                 filePath, file.getOriginalFilename());
 
@@ -204,14 +262,81 @@ public class ItemSamplingService {
 
     }
 
-    public File getItemSamplingImage(Long warehouseId, String number, String fileName) {
+    public File getItemSamplingImage(Long warehouseId, Long itemId, String number, String fileName) {
 
 
-        String fileUrl = getWorkOrderQCSampleImageFolder(number) + fileName;
+        String subFolder = itemId.toString() + "/" + number;
+        String fileUrl = getWorkOrderQCSampleImageFolder(subFolder) + fileName;
 
         logger.debug("Will return {} to the client",
                 fileUrl);
         return new File(fileUrl);
     }
 
+    public File getItemSamplingImage(Long warehouseId,  Long itemId,  String fileName) {
+
+
+        String subFolder = itemId.toString();
+        String fileUrl = getWorkOrderQCSampleImageFolder(subFolder) + fileName;
+
+        logger.debug("Will return {} to the client",
+                fileUrl);
+        return new File(fileUrl);
+    }
+
+    /**
+     * For display purpose, we will return one record for each item. If the last item sampling is disabled, then we will return an
+     * record but without any detail information, so that the user will be able to query the history of the item sampling for this item
+     *  from the web client
+     * @param warehouseId
+     * @param number
+     * @param itemName
+     * @param itemId
+     * @param currentSampleOnly
+     * @return
+     */
+    public List<ItemSampling> findAllItemSamplingForDisplay(Long warehouseId, String number, String itemName, Long itemId, Boolean currentSampleOnly) {
+        // let's get all the item sampling first
+        List<ItemSampling> itemSamplings =  findAll(warehouseId, number, itemName, itemId, null, currentSampleOnly);
+
+        // map of the item sampling,
+        // key: item id
+        // value: latest item sampling
+        // for each item, we will have one item sampling returned from the above list
+        // if the item has an enabled item sampling, then it will be the enabled item sampling
+        // otherwise, we will save any of the disabled item sampling in the map then we will
+        // clear the image url so it will show as an empty sampling with the item informaton only
+        // in the web client
+        Map<Long, ItemSampling> itemSamplingMap = new HashMap<>();
+        itemSamplings.forEach(
+                itemSampling -> {
+                    ItemSampling existingItemSampling = itemSamplingMap.get(itemSampling.getItem().getId());
+                    if (Objects.isNull(existingItemSampling) || itemSampling.getEnabled()) {
+                        itemSamplingMap.put(itemSampling.getItem().getId(), itemSampling);
+                    }
+                }
+        );
+
+        return itemSamplingMap.values().stream().map(
+                itemSampling -> {
+                    // if the item smapling is disabled, then we will clear the image url so it looks like
+                    // the
+                    if(!itemSampling.getEnabled()) {
+
+                        return new ItemSampling(
+                                "",
+                                "",
+                                itemSampling.getWarehouseId(),
+                                "",
+                                itemSampling.getItem(),
+                                false) ;
+                    }
+                    else {
+                        return itemSampling;
+                    }
+                }
+        ).collect(Collectors.toList());
+
+
+    }
 }

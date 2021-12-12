@@ -59,6 +59,18 @@ public class ItemSampling extends AuditibleEntity<String> implements Serializabl
     @Column(name = "enabled")
     private Boolean enabled;
 
+    public ItemSampling() {
+    }
+
+    public ItemSampling(String number, String description, Long warehouseId, String imageUrls, Item item, Boolean enabled) {
+        this.number = number;
+        this.description = description;
+        this.warehouseId = warehouseId;
+        this.imageUrls = imageUrls;
+        this.item = item;
+        this.enabled = enabled;
+    }
+
     @Override
     public String toString() {
         try {
