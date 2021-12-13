@@ -1465,5 +1465,6 @@
   "data-transfer-request-detail": "明细",
   "csv-file": "CSV 文件",
   "menu.main.inventory.item-sampling": "商品采样",
-  "item-sampling":  "商品采样"
+  "item-sampling":  "商品采样",
+  "item-sampling.previous": "过期采样记录"
 }

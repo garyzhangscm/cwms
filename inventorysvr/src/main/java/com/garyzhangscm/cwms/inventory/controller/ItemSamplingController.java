@@ -65,6 +65,15 @@ public class ItemSamplingController {
                 itemId,currentSampleOnly);
     }
 
+    @RequestMapping(value="/item-sampling/previous/display", method = RequestMethod.GET)
+    public List<ItemSampling> findAllPreviousItemSamplingForDisplay(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+            @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId) {
+        return itemSamplingService.findAllPreviousItemSamplingForDisplay(warehouseId, itemName,
+                itemId);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/item-sampling", method = RequestMethod.PUT)
@@ -89,8 +98,16 @@ public class ItemSamplingController {
 
     @BillableEndpoint
     @RequestMapping(value="/item-sampling/{id}", method = RequestMethod.DELETE)
-    public void removeItemSampling(@PathVariable Long id) {
+    public void removeItemSampling(@PathVariable Long id,
+                                   @RequestParam Long warehouseId) {
         itemSamplingService.removeItemSampling(id);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/item-sampling/{id}/disable", method = RequestMethod.POST)
+    public ItemSampling disableItemSampling(@PathVariable Long id,
+                                   @RequestParam Long warehouseId) {
+        return itemSamplingService.disableItemSampling(id);
     }
 
 
@@ -111,6 +128,17 @@ public class ItemSamplingController {
                 .body(resource);
 
     }
+    @RequestMapping(value="/item-sampling/images/{warehouseId}/{itemId}/{number}/{fileName}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeItemSamplingImage(@PathVariable Long warehouseId,
+                                                         @PathVariable Long itemId,
+                                                         @PathVariable String number,
+                                                         @PathVariable String fileName) throws FileNotFoundException {
+
+        itemSamplingService.removeItemSamplingImage(warehouseId, itemId, number, fileName);
+
+        return ResponseBodyWrapper.success("File " + fileName + " removed!");
+
+    }
 
     @RequestMapping(value="/item-sampling/images/{warehouseId}/{itemId}/{fileName}", method = RequestMethod.GET)
     public ResponseEntity<Resource> getItemSamplingImage(@PathVariable Long warehouseId,
@@ -126,6 +154,17 @@ public class ItemSamplingController {
                 .contentLength(imageFile.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
+
+    }
+
+    @RequestMapping(value="/item-sampling/images/{warehouseId}/{itemId}/{fileName}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeItemSamplingImage(@PathVariable Long warehouseId,
+                                                         @PathVariable Long itemId,
+                                                         @PathVariable String fileName) throws FileNotFoundException {
+
+        itemSamplingService.removeItemSamplingImage(warehouseId, itemId, fileName);
+
+        return ResponseBodyWrapper.success("File " + fileName + " removed!");
 
     }
 

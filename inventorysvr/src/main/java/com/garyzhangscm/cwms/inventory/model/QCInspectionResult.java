@@ -23,5 +23,6 @@ public enum QCInspectionResult {
     PASS,
     FAIL,
     SKIPPED,
-    CANCELLED
+    CANCELLED,
+    NOT_APPLY
 }
