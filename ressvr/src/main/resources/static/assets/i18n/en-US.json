@@ -1466,5 +1466,6 @@
   "data-transfer-request-detail": "Request Detail",
   "csv-file": "CSV File",
   "menu.main.inventory.item-sampling": "Item Sampling",
-  "item-sampling": "Item Sampling"
+  "item-sampling": "Item Sampling",
+  "item-sampling.previous": "Previous Item Sampling"
 }

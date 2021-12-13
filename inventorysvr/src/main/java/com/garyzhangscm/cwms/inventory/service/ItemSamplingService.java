@@ -18,10 +18,12 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
+import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemSamplingRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -338,5 +340,41 @@ public class ItemSamplingService {
         ).collect(Collectors.toList());
 
 
+    }
+
+    public ItemSampling disableItemSampling(Long id) {
+        ItemSampling itemSampling = findById(id);
+        itemSampling.setEnabled(false);
+        return saveOrUpdate(itemSampling);
+    }
+
+    public List<ItemSampling> findAllPreviousItemSamplingForDisplay(Long warehouseId, String itemName, Long itemId) {
+
+        // we need to have at least the item name or item id as we will only return
+        // the item sampling for one single item
+        if (Strings.isBlank(itemName) && Objects.isNull(itemId)) {
+            throw InventoryException.raiseException("Please pass in either the item's name or item's id");
+        }
+        return findAll(warehouseId, null, itemName, itemId, false, null);
+    }
+
+    public void removeItemSamplingImage(Long warehouseId, Long itemId, String number, String fileName) {
+
+        File imageFile = getItemSamplingImage(warehouseId, itemId, number, fileName);
+        if (imageFile.exists()) {
+            logger.debug("File {} exists for item id {}, item sampling number {}, we will remove it",
+                    fileName, itemId, fileName);
+            imageFile.delete();
+        }
+    }
+
+    public void removeItemSamplingImage(Long warehouseId, Long itemId, String fileName) {
+
+        File imageFile = getItemSamplingImage(warehouseId, itemId, fileName);
+        if (imageFile.exists()) {
+            logger.debug("File {} exists for item id {}, item sampling number {}, we will remove it",
+                    fileName, itemId, fileName);
+            imageFile.delete();
+        }
     }
 }
