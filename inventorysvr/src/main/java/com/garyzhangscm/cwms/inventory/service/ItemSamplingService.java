@@ -183,6 +183,7 @@ public class ItemSamplingService {
                                 ));
                         logger.debug(">> copy is done, start to remove the original file");
                         logger.debug(">>>> original file is removed? {}", imageFile.delete());
+
                     } catch (IOException e) {
                         logger.debug(">> error while copy the image into permanent folder");
                         e.printStackTrace();
@@ -193,6 +194,29 @@ public class ItemSamplingService {
                 }
             }
         );
+
+        String subFolder = itemSampling.getItem().getId().toString();
+        String folder = getWorkOrderQCSampleImageFolder(subFolder);
+        // remove any image files that still exists in the original folder
+        removeUnusedImages(folder, "");
+    }
+
+    /**
+     * Remove unused images from the folder. The existingImageUrls has all the
+     * image file names that is used by current system. We will only remove files but not
+     * folder
+     * @param folder
+     * @param existingImageUrls
+     */
+    private void removeUnusedImages(String folder, String existingImageUrls) {
+        File directory = new File(folder);
+        for (File fileEntry : directory.listFiles()) {
+            if (!fileEntry.isDirectory() && !existingImageUrls.contains(fileEntry.getName())) {
+                logger.debug("Remove files {} from folder {} as it is no long needed",
+                        fileEntry.getName(), folder);
+                fileEntry.delete();
+            }
+        }
     }
 
     private void disablePreviousItemSampling(ItemSampling itemSampling) {
@@ -221,6 +245,12 @@ public class ItemSamplingService {
             // for this item
             disablePreviousItemSampling(itemSampling);
         }
+
+
+        String subFolder = itemSampling.getItem().getId().toString() + "/" + itemSampling.getNumber();
+        String folder = getWorkOrderQCSampleImageFolder(subFolder);
+        removeUnusedImages(folder, itemSampling.getImageUrls());
+
         return saveOrUpdate(itemSampling);
     }
 
