@@ -467,7 +467,6 @@ public class ReceiptLineService implements TestDataInitiableService{
         // default to the qc quantity to 0
         receiptLine.setQcQuantity(0l);
         receiptLine.setQcPercentage(0d);
-        receiptLine.setQcQuantityRequested(0l);
 
         Warehouse warehouse = receipt.getWarehouse();
         if (Objects.isNull(warehouse)) {
@@ -518,5 +517,37 @@ public class ReceiptLineService implements TestDataInitiableService{
             receiptLine.setQcPercentage(inboundQCConfiguration.getQcPercentage());
         }
 
+    }
+
+    /**
+     *
+     * Recalculate the qc quantity for the receipt line. We can specify the qc quantity and percentage, or let
+     * the system run the configuration again to refresh the qc quantity required
+     * @param receiptId
+     * @param receiptLineId
+     * @param qcQuantity
+     * @param qcPercentage
+     * @return
+     */
+    public ReceiptLine recalculateQCQuantity(Long receiptLineId, Long qcQuantity, Double qcPercentage) {
+        ReceiptLine receiptLine = findById(receiptLineId);
+        if (Objects.isNull(qcQuantity) && Objects.isNull(qcPercentage)) {
+            // the user doesn't specify any field, let's re-run the configuration to get the
+            // quantity or percentage
+
+            setupQCQuantity(receiptLine.getReceipt(), receiptLine);
+        }
+        // if the user specify at least quantity of percentage, then update the field
+        // based on the user's input
+        else{
+            if (Objects.nonNull(qcQuantity)){
+                receiptLine.setQcQuantity(qcQuantity);
+            }
+            if (Objects.nonNull(qcPercentage)){
+                receiptLine.setQcPercentage(qcPercentage);
+            }
+        }
+
+        return saveOrUpdate(receiptLine);
     }
 }
