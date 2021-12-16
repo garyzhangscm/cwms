@@ -21,6 +21,26 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
+    @Transient
+    private Warehouse warehouse;
+
+
+    @Column(name = "company_id")
+    private Long companyId;
+    @Transient
+    private Company company;
+
+
+    @Column(name = "item_family_id")
+    private Long itemFamilyId;
+    @Transient
+    private ItemFamily itemFamily;
+
+
+    @Column(name = "item_id")
+    private Long itemId;
+    @Transient
+    private Item item;
 
     @ManyToOne
     @JoinColumn(name="production_line_id")
@@ -31,6 +51,14 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
     WorkOrder workOrder;
 
 
+    // match the bto work order for certain customer
+    // and/or order
+    @Column(name = "outbound_order_id")
+    private Long outboundOrderId;
+    @Column(name = "customer_id")
+    private Long customerId;
+
+
     @OneToMany(
             mappedBy = "workOrderQCRuleConfiguration",
             cascade = CascadeType.ALL,
@@ -38,10 +66,29 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
     )
     List<WorkOrderQCRuleConfigurationRule> workOrderQCRuleConfigurationRules = new ArrayList<>();
 
-
     // how many actual product we will need to qc
+    // used by 'qc by sample'
     @Column(name = "qc_quantity")
     private Long qcQuantity = 0l;
+
+
+    // following fields will be used by 'QC by work order'
+    @Column(name = "qc_quantity_per_work_order")
+    private Long qcQuantityPerWorkOrder;
+
+    @Column(name = "qc_percentage_per_work_order")
+    private Double qcPercentagePerWorkOrder;
+
+    @Column(name = "from_inventory_status_id")
+    private Long fromInventoryStatusId;
+    @Transient
+    private InventoryStatus fromInventoryStatus;
+
+    @Column(name = "to_inventory_status_id")
+    private Long toInventoryStatusId;
+    @Transient
+    private InventoryStatus toInventoryStatus;
+
 
     public Long getId() {
         return id;
@@ -89,5 +136,125 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
 
     public void setQcQuantity(Long qcQuantity) {
         this.qcQuantity = qcQuantity;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
+
+    public Long getItemFamilyId() {
+        return itemFamilyId;
+    }
+
+    public void setItemFamilyId(Long itemFamilyId) {
+        this.itemFamilyId = itemFamilyId;
+    }
+
+    public ItemFamily getItemFamily() {
+        return itemFamily;
+    }
+
+    public void setItemFamily(ItemFamily itemFamily) {
+        this.itemFamily = itemFamily;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Long getOutboundOrderId() {
+        return outboundOrderId;
+    }
+
+    public void setOutboundOrderId(Long outboundOrderId) {
+        this.outboundOrderId = outboundOrderId;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public Long getQcQuantityPerWorkOrder() {
+        return qcQuantityPerWorkOrder;
+    }
+
+    public void setQcQuantityPerWorkOrder(Long qcQuantityPerWorkOrder) {
+        this.qcQuantityPerWorkOrder = qcQuantityPerWorkOrder;
+    }
+
+    public Double getQcPercentagePerWorkOrder() {
+        return qcPercentagePerWorkOrder;
+    }
+
+    public void setQcPercentagePerWorkOrder(Double qcPercentagePerWorkOrder) {
+        this.qcPercentagePerWorkOrder = qcPercentagePerWorkOrder;
+    }
+
+    public Long getFromInventoryStatusId() {
+        return fromInventoryStatusId;
+    }
+
+    public void setFromInventoryStatusId(Long fromInventoryStatusId) {
+        this.fromInventoryStatusId = fromInventoryStatusId;
+    }
+
+    public InventoryStatus getFromInventoryStatus() {
+        return fromInventoryStatus;
+    }
+
+    public void setFromInventoryStatus(InventoryStatus fromInventoryStatus) {
+        this.fromInventoryStatus = fromInventoryStatus;
+    }
+
+    public Long getToInventoryStatusId() {
+        return toInventoryStatusId;
+    }
+
+    public void setToInventoryStatusId(Long toInventoryStatusId) {
+        this.toInventoryStatusId = toInventoryStatusId;
+    }
+
+    public InventoryStatus getToInventoryStatus() {
+        return toInventoryStatus;
+    }
+
+    public void setToInventoryStatus(InventoryStatus toInventoryStatus) {
+        this.toInventoryStatus = toInventoryStatus;
     }
 }

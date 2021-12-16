@@ -204,7 +204,10 @@ public class ReceiptService implements TestDataInitiableService{
             // we are creating a new receipt, let's setup the QC quantity
             // for each line
             receipt.getReceiptLines().forEach(
-                    receiptLine -> receiptLineService.setupQCQuantity(receipt, receiptLine)
+                    receiptLine -> {
+                        receiptLineService.setupQCQuantity(receipt, receiptLine);
+                        receiptLine.setQcQuantityRequested(0l);
+                    }
             );
         }
         return save(receipt, loadAttribute);

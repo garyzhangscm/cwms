@@ -113,6 +113,23 @@ public class ReceiptController {
             return receiptLineService.receive(receiptId, receiptLineId, inventory);
     }
 
+
+    /**
+     * Recalculate the qc quantity for the receipt line. We can specify the qc quantity and percentage, or let
+     * the system run the configuration again to refresh the qc quantity required
+     * @param receiptLineId
+     * @param qcQuantity
+     * @param qcPercentage
+     * @return
+     */
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/lines/{receiptLineId}/recalculate-qc-quantity", method = RequestMethod.POST)
+    public ReceiptLine recalculateQCQuantity(@PathVariable Long receiptLineId,
+                                           @RequestParam(name = "qcQuantity", required = false, defaultValue = "") Long qcQuantity,
+                                           @RequestParam(name = "qcPercentage", required = false, defaultValue = "") Double qcPercentage) {
+        return receiptLineService.recalculateQCQuantity(receiptLineId, qcQuantity, qcPercentage);
+    }
+
     /***
      * Receive multiple LPNs with the same quantity
      * @param receiptId

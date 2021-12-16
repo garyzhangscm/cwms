@@ -1466,5 +1466,19 @@
   "csv-file": "CSV 文件",
   "menu.main.inventory.item-sampling": "商品采样",
   "item-sampling":  "商品采样",
-  "item-sampling.previous": "过期采样记录"
+  "item-sampling.previous": "过期采样记录",
+  "qcQuantity": "质检数量",
+  "qcPercentage": "质检比例",
+  "newQCQuantity": "新质检数量",
+  "newQCPercentage": "新质检比例",
+  "qcQuantityRequested": "已质检数量",
+  "recalculateQCQuantity": "重新计算质检数量",
+  "manualRecalculateQCQuantity": "手动计算质检数量",
+  "menu.main.inventory.lock": "库存锁",
+  "inventoryLock": "库存锁",
+  "locked-inventory": "已锁定库存",
+  "unlock-inventory": "解锁库存",
+  "menu.main.inventory.lock.maintenance": "库存锁维护",
+  "allow-pick": "允许拣货",
+  "allow-ship": "允许发货"
 }

@@ -27,7 +27,8 @@ public enum ExceptionCode {
     ID_IN_PATH_DOES_NOT_MATCH(35003, HttpStatus.BAD_REQUEST, "ID in the URL doesn't match with the data passed in the request"),
     INVENTORY_ERROR(35004, HttpStatus.BAD_REQUEST, "Inventory Exception"),
     INVENTORY_CONSOLIDATION_EXCEPTION(35005, HttpStatus.BAD_REQUEST, "Inventory Consolidation Exception"),
-    ITEM_ERROR(35006, HttpStatus.BAD_REQUEST, "Item Exception");
+    ITEM_ERROR(35006, HttpStatus.BAD_REQUEST, "Item Exception"),
+    INVENTORY_LOCK_ERROR(35007, HttpStatus.BAD_REQUEST, "Inventory Lock Exception");
 
     private final int code;
 

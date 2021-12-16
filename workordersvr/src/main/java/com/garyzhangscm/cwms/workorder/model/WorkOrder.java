@@ -106,6 +106,36 @@ public class WorkOrder extends AuditibleEntity<String>{
 
 
 
+    // whether the produced inventory needs qc
+    @Column(name = "qc_required")
+    private Boolean qcRequired = false;
+    // whether the new inventory produced needs QC
+    @Column(name = "future_inventory_qc_required")
+    private Boolean futureInventoryQCRequired = false;
+
+
+    // qc needed by quantity
+    @Column(name = "qc_quantity")
+    private Long qcQuantity = 0l;
+
+    // qc needed by percentage
+    @Column(name = "qc_percentage")
+    private Double qcPercentage = 0.0;
+
+    // quantity already QCed
+    @Column(name = "qc_quantity_requested")
+    private Long qcQuantityRequested = 0L;
+
+    // bind the work order to the customer's order
+    // if this is a build to order type of work order
+    @Column(name = "bto_outbound_order_id")
+    private Long btoOutboundOrderId;
+    @Column(name = "bto_customer_id")
+    private Long btoCustomerId;
+
+
+
+
     @OneToMany(mappedBy = "workOrder")
     private List<WorkOrderAssignment> assignments = new ArrayList<>();
 
@@ -384,5 +414,61 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setConsumeByBom(BillOfMaterial consumeByBom) {
         this.consumeByBom = consumeByBom;
+    }
+
+    public Boolean getQcRequired() {
+        return qcRequired;
+    }
+
+    public void setQcRequired(Boolean qcRequired) {
+        this.qcRequired = qcRequired;
+    }
+
+    public Boolean getFutureInventoryQCRequired() {
+        return futureInventoryQCRequired;
+    }
+
+    public void setFutureInventoryQCRequired(Boolean futureInventoryQCRequired) {
+        this.futureInventoryQCRequired = futureInventoryQCRequired;
+    }
+
+    public Long getQcQuantity() {
+        return qcQuantity;
+    }
+
+    public void setQcQuantity(Long qcQuantity) {
+        this.qcQuantity = qcQuantity;
+    }
+
+    public Double getQcPercentage() {
+        return qcPercentage;
+    }
+
+    public void setQcPercentage(Double qcPercentage) {
+        this.qcPercentage = qcPercentage;
+    }
+
+    public Long getQcQuantityRequested() {
+        return qcQuantityRequested;
+    }
+
+    public void setQcQuantityRequested(Long qcQuantityRequested) {
+        this.qcQuantityRequested = qcQuantityRequested;
+    }
+
+    public Long getBtoOutboundOrderId() {
+        return btoOutboundOrderId;
+    }
+
+    public void setBtoOutboundOrderId(Long btoOutboundOrderId) {
+        this.btoOutboundOrderId = btoOutboundOrderId;
+    }
+
+    public Long getBtoCustomerId() {
+        return btoCustomerId;
+    }
+
+    public void setBtoCustomerId(Long btoCustomerId) {
+        this.btoCustomerId = btoCustomerId;
     }
 }

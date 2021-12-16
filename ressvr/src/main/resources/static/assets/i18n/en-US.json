@@ -1467,5 +1467,19 @@
   "csv-file": "CSV File",
   "menu.main.inventory.item-sampling": "Item Sampling",
   "item-sampling": "Item Sampling",
-  "item-sampling.previous": "Previous Item Sampling"
+  "item-sampling.previous": "Previous Item Sampling",
+  "qcQuantity": "QC Quantity",
+  "qcPercentage": "QC Percentage",
+  "newQCQuantity": "New QC Quantity",
+  "newQCPercentage": "New QC Percentage",
+  "qcQuantityRequested": "QC Quantity Requested",
+  "recalculateQCQuantity": "Recalculate QC Quantity",
+  "manualRecalculateQCQuantity": "Input QC Quantity",
+  "menu.main.inventory.lock": "Lock",
+  "inventoryLock": "Inventory Lock",
+  "locked-inventory": "Locked Inventory",
+  "unlock-inventory": "Unlock Inventory",
+  "menu.main.inventory.lock.maintenance": "Inventory Lock Maintenance",
+  "allow-pick": "Allow Pick",
+  "allow-ship": "Allow Ship"
 }

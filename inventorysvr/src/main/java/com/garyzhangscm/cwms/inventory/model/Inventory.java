@@ -122,6 +122,15 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Warehouse warehouse;
 
+
+    @OneToMany(
+            mappedBy = "inventory",
+            cascade = CascadeType.ALL,
+            // orphanRemoval = true, // We will process the movement manually from InventoryMovementService
+            fetch = FetchType.LAZY
+    )
+    private List<InventoryWithLock> locks = new ArrayList<>();
+
     @Column(name = "locked_for_adjust")
     private Boolean lockedForAdjust = false;
 
@@ -429,6 +438,16 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         this.inboundQCRequired = inboundQCRequired;
     }
 
+    public List<InventoryWithLock> getLocks() {
+        return locks;
+    }
 
+    public void setLocks(List<InventoryWithLock> locks) {
+        this.locks = locks;
+    }
 
+    public boolean isLocked() {
+        return Objects.nonNull(getLocks())  &&
+                getLocks().size() >0;
+    }
 }
