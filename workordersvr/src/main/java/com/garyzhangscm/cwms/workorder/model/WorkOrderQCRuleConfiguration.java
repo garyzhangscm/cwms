@@ -55,9 +55,13 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
     // and/or order
     @Column(name = "outbound_order_id")
     private Long outboundOrderId;
+    @Transient
+    private Order outboundOrder;
+
     @Column(name = "customer_id")
     private Long customerId;
-
+    @Transient
+    private Customer customer;
 
     @OneToMany(
             mappedBy = "workOrderQCRuleConfiguration",
@@ -65,6 +69,7 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
             orphanRemoval = true
     )
     List<WorkOrderQCRuleConfigurationRule> workOrderQCRuleConfigurationRules = new ArrayList<>();
+
 
     // how many actual product we will need to qc
     // used by 'qc by sample'
@@ -88,6 +93,22 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
     private Long toInventoryStatusId;
     @Transient
     private InventoryStatus toInventoryStatus;
+
+    // inventory lock that will be placed on the
+    // inventory that's needs QC
+    @Column(name = "inventory_lock_id")
+    private Long inventoryLockId;
+    @Transient
+    private InventoryLock inventoryLock;
+
+    // inventory lock that will be placed on the
+    // future inventory that doesn't needs QC
+    // but may need to be locked until the QC is completed
+    @Column(name = "future_inventory_lock_id")
+    private Long futureInventoryLockId;
+    @Transient
+    private InventoryLock futureInventoryLock;
+
 
 
     public Long getId() {
@@ -256,5 +277,53 @@ public class WorkOrderQCRuleConfiguration extends AuditibleEntity<String>{
 
     public void setToInventoryStatus(InventoryStatus toInventoryStatus) {
         this.toInventoryStatus = toInventoryStatus;
+    }
+
+    public Long getInventoryLockId() {
+        return inventoryLockId;
+    }
+
+    public void setInventoryLockId(Long inventoryLockId) {
+        this.inventoryLockId = inventoryLockId;
+    }
+
+    public InventoryLock getInventoryLock() {
+        return inventoryLock;
+    }
+
+    public void setInventoryLock(InventoryLock inventoryLock) {
+        this.inventoryLock = inventoryLock;
+    }
+
+    public Long getFutureInventoryLockId() {
+        return futureInventoryLockId;
+    }
+
+    public void setFutureInventoryLockId(Long futureInventoryLockId) {
+        this.futureInventoryLockId = futureInventoryLockId;
+    }
+
+    public InventoryLock getFutureInventoryLock() {
+        return futureInventoryLock;
+    }
+
+    public void setFutureInventoryLock(InventoryLock futureInventoryLock) {
+        this.futureInventoryLock = futureInventoryLock;
+    }
+
+    public Order getOutboundOrder() {
+        return outboundOrder;
+    }
+
+    public void setOutboundOrder(Order outboundOrder) {
+        this.outboundOrder = outboundOrder;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 }

@@ -105,37 +105,6 @@ public class WorkOrder extends AuditibleEntity<String>{
     private Long producedQuantity;
 
 
-
-    // whether the produced inventory needs qc
-    @Column(name = "qc_required")
-    private Boolean qcRequired = false;
-    // whether the new inventory produced needs QC
-    @Column(name = "future_inventory_qc_required")
-    private Boolean futureInventoryQCRequired = false;
-
-
-    // qc needed by quantity
-    @Column(name = "qc_quantity")
-    private Long qcQuantity = 0l;
-
-    // qc needed by percentage
-    @Column(name = "qc_percentage")
-    private Double qcPercentage = 0.0;
-
-    // quantity already QCed
-    @Column(name = "qc_quantity_requested")
-    private Long qcQuantityRequested = 0L;
-
-    // bind the work order to the customer's order
-    // if this is a build to order type of work order
-    @Column(name = "bto_outbound_order_id")
-    private Long btoOutboundOrderId;
-    @Column(name = "bto_customer_id")
-    private Long btoCustomerId;
-
-
-
-
     @OneToMany(mappedBy = "workOrder")
     private List<WorkOrderAssignment> assignments = new ArrayList<>();
 
@@ -172,6 +141,31 @@ public class WorkOrder extends AuditibleEntity<String>{
     private Long totalOpenPickQuantity;
     @Transient
     private Long totalPickedQuantity;
+
+
+    // qc needed by quantity
+    @Column(name = "qc_quantity")
+    private Long qcQuantity = 0l;
+
+    // qc needed by percentage
+    @Column(name = "qc_percentage")
+    private Double qcPercentage = 0.0;
+
+    // quantity already QCed
+    @Column(name = "qc_quantity_requested")
+    private Long qcQuantityRequested = 0L;
+    @Column(name = "qc_quantity_completed")
+    private Long qcQuantityCompleted = 0L;
+
+    // bind the work order to the customer's order
+    // if this is a build to order type of work order
+    @Column(name = "bto_outbound_order_id")
+    private Long btoOutboundOrderId;
+    @Column(name = "bto_customer_id")
+    private Long btoCustomerId;
+
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -416,22 +410,6 @@ public class WorkOrder extends AuditibleEntity<String>{
         this.consumeByBom = consumeByBom;
     }
 
-    public Boolean getQcRequired() {
-        return qcRequired;
-    }
-
-    public void setQcRequired(Boolean qcRequired) {
-        this.qcRequired = qcRequired;
-    }
-
-    public Boolean getFutureInventoryQCRequired() {
-        return futureInventoryQCRequired;
-    }
-
-    public void setFutureInventoryQCRequired(Boolean futureInventoryQCRequired) {
-        this.futureInventoryQCRequired = futureInventoryQCRequired;
-    }
-
     public Long getQcQuantity() {
         return qcQuantity;
     }
@@ -454,6 +432,14 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setQcQuantityRequested(Long qcQuantityRequested) {
         this.qcQuantityRequested = qcQuantityRequested;
+    }
+
+    public Long getQcQuantityCompleted() {
+        return qcQuantityCompleted;
+    }
+
+    public void setQcQuantityCompleted(Long qcQuantityCompleted) {
+        this.qcQuantityCompleted = qcQuantityCompleted;
     }
 
     public Long getBtoOutboundOrderId() {

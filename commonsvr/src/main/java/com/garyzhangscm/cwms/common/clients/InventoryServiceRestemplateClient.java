@@ -130,4 +130,23 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
+    public String validateNewInventoryLockName(Long warehouseId, String inventoryLockName) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory-lock/validate-new-inventory-lock-name")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("inventoryLockName", inventoryLockName);
+
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 }

@@ -480,6 +480,7 @@ public class ReceiptLineService implements TestDataInitiableService{
                     "information from the receipt");
             logger.debug("=======   Receipt ======= \n {}",
                     receipt);
+            return;
         }
         Item item =
                 Objects.nonNull(receiptLine.getItem()) ? receiptLine.getItem() :

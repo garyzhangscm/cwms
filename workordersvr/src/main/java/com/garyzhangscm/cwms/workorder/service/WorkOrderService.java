@@ -79,6 +79,8 @@ public class WorkOrderService implements TestDataInitiableService {
     private WorkOrderKPITransactionService workOrderKPITransactionService;
     @Autowired
     private ProductionLineAssignmentService productionLineAssignmentService;
+    @Autowired
+    private WorkOrderQCRuleConfigurationService workOrderQCRuleConfigurationService;
 
     @Autowired
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
@@ -255,7 +257,72 @@ public class WorkOrderService implements TestDataInitiableService {
             workOrder.setId(
                     findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), loadDetails).getId());
         }
+        if (Objects.isNull(workOrder.getId())) {
+            // when we add a new work order, we will setup the QC related information
+            setupQCQuantity(workOrder);
+            workOrder.setQcQuantityRequested(0l);
+            workOrder.setQcQuantityCompleted(0l);
+        }
         return save(workOrder, loadDetails);
+    }
+
+    private void setupQCQuantity(WorkOrder workOrder) {
+        logger.debug("Start to setup qc quantity for workOrder {}",
+                workOrder.getNumber() );
+        // default to the qc quantity to 0
+        workOrder.setQcQuantity(0l);
+        workOrder.setQcPercentage(0d);
+
+        Warehouse warehouse = workOrder.getWarehouse();
+        if (Objects.isNull(warehouse)) {
+            warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                    workOrder.getWarehouseId()
+            );
+        }
+        if (Objects.isNull(warehouse)) {
+            // we should not arrive here！
+            logger.debug("Can't get the QC configuration as we can't get the warehouse" +
+                    " information from the work order");
+            logger.debug("=======   Work Order ======= \n {}",
+                    workOrder);
+            return;
+        }
+        Item item =
+                Objects.nonNull(workOrder.getItem()) ? workOrder.getItem() :
+                        inventoryServiceRestemplateClient.getItemById(workOrder.getItemId());
+
+        WorkOrderQCRuleConfiguration workOrderQCRuleConfiguration =
+                workOrderQCRuleConfigurationService.getBestMatchedWorkOrderQCRuleConfiguration(
+                        workOrder.getBtoOutboundOrderId(),
+                        workOrder.getBtoCustomerId(),
+                        Objects.isNull(item.getItemFamily()) ? null : item.getItemFamily().getId(),
+                        workOrder.getItemId(),
+                        workOrder.getWarehouseId(),
+                        warehouse.getCompany().getId()
+                );
+        if (Objects.isNull(workOrderQCRuleConfiguration)) {
+            logger.debug("No work order qc configuration is defined for the work order {}",
+                    workOrder.getNumber());
+            logger.debug("bto order: {}, bto customer id {}, item {} / {}, warehouse {} / {}, company {} / {}",
+                    workOrder.getBtoOutboundOrderId(),
+                    workOrder.getBtoCustomerId(),
+                    workOrder.getItemId(),
+                    Objects.isNull(workOrder.getItem()) ? "" : workOrder.getItem().getName(),
+                    warehouse.getId(),
+                    warehouse.getName(),
+                    Objects.isNull(warehouse.getCompany()) ? "" : warehouse.getCompany().getId(),
+                    Objects.isNull(warehouse.getCompany()) ? "" : warehouse.getCompany().getName());
+            return;
+        }
+        // setup the qc quantity and percentage based on the configuration
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getQcQuantityPerWorkOrder())) {
+
+            workOrder.setQcQuantity(workOrderQCRuleConfiguration.getQcQuantityPerWorkOrder());
+        }
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getQcPercentagePerWorkOrder())) {
+
+            workOrder.setQcPercentage(workOrderQCRuleConfiguration.getQcPercentagePerWorkOrder());
+        }
     }
 
 
@@ -1455,5 +1522,28 @@ public class WorkOrderService implements TestDataInitiableService {
             }
         }
         return lpnNumbers;
+    }
+
+    public WorkOrder recalculateQCQuantity(Long workOrderId, Long qcQuantity, Double qcPercentage) {
+
+        WorkOrder workOrder = findById(workOrderId);
+        if (Objects.isNull(qcQuantity) && Objects.isNull(qcPercentage)) {
+            // the user doesn't specify any field, let's re-run the configuration to get the
+            // quantity or percentage
+
+            setupQCQuantity(workOrder);
+        }
+        // if the user specify at least quantity of percentage, then update the field
+        // based on the user's input
+        else{
+            if (Objects.nonNull(qcQuantity)){
+                workOrder.setQcQuantity(qcQuantity);
+            }
+            if (Objects.nonNull(qcPercentage)){
+                workOrder.setQcPercentage(qcPercentage);
+            }
+        }
+
+        return saveOrUpdate(workOrder);
     }
 }

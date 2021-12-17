@@ -1480,5 +1480,11 @@
   "unlock-inventory": "解锁库存",
   "menu.main.inventory.lock.maintenance": "库存锁维护",
   "allow-pick": "允许拣货",
-  "allow-ship": "允许发货"
+  "allow-ship": "允许发货",
+  "qcPercentagePerWorkOrder": "工单QC数量",
+  "qcQuantityPerWorkOrder": "工单QC比例",
+  "futureInventoryLock": "未来库存锁",
+  "work-order-qc.by-sample": "按样品",
+  "work-order-qc.by-work-order": "按工单",
+  "qcQuantityCompleted": "QC完成数量"
 }

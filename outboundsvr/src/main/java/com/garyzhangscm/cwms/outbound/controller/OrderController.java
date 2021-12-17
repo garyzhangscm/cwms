@@ -173,4 +173,13 @@ public class OrderController {
     public List<Order> getOrdersWithOpenPick(@RequestParam Long warehouseId) {
         return orderService.getOrdersWithOpenPick(warehouseId);
     }
+
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/validate-new-order-number")
+    public ResponseBodyWrapper<String> validateNewOrderNumber(@RequestParam Long warehouseId,
+                                                                    @RequestParam String orderNumber)  {
+
+        return ResponseBodyWrapper.success(orderService.validateNewOrderNumber(warehouseId, orderNumber));
+    }
 }
