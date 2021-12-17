@@ -264,4 +264,21 @@ public class WorkOrderController {
         logger.debug("start generate pre-printed lpn label with id: {}", id);
         return workOrderService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, productionLineName, locale);
     }
+
+
+    /**
+     * Recalculate the qc quantity for the work order. We can specify the qc quantity and percentage, or let
+     * the system run the configuration again to refresh the qc quantity required
+     * @param workOrderId
+     * @param qcQuantity
+     * @param qcPercentage
+     * @return
+     */
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/{workOrderId}/recalculate-qc-quantity", method = RequestMethod.POST)
+    public WorkOrder recalculateQCQuantity(@PathVariable Long workOrderId,
+                                             @RequestParam(name = "qcQuantity", required = false, defaultValue = "") Long qcQuantity,
+                                             @RequestParam(name = "qcPercentage", required = false, defaultValue = "") Double qcPercentage) {
+        return workOrderService.recalculateQCQuantity(workOrderId, qcQuantity, qcPercentage);
+    }
 }

@@ -296,7 +296,7 @@ public class InboundQCConfigurationService {
                     bestInboundQCConfiguration.getId(),
                     getPriority(bestInboundQCConfiguration));
             logger.debug("comparePriority(inboundQCConfiguration, bestInboundQCConfiguration): {}",
-                    comparePriority(inboundQCConfiguration, bestInboundQCConfiguration) );
+                    comparePriority(inboundQCConfiguration, bestInboundQCConfiguration));
             if (comparePriority(inboundQCConfiguration, bestInboundQCConfiguration) > 0) {
                 bestInboundQCConfiguration = inboundQCConfiguration;
             }

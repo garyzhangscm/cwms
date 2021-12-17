@@ -179,4 +179,11 @@ public class InventoryLockService {
                  inventoryLock
         );
     }
+
+    public String validateNewInventoryLockName(Long warehouseId, String inventoryLockName) {
+        InventoryLock inventoryLock =
+                findByName(warehouseId, inventoryLockName);
+
+        return Objects.isNull(inventoryLock) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+    }
 }

@@ -102,21 +102,39 @@ public class WorkOrderQCRuleConfigurationService {
 
     public List<WorkOrderQCRuleConfiguration> findAll(Long warehouseId, Long workOrderId,
                                                       String workOrderNumber,
-                                                      Long productionLineId ) {
+                                                      Long productionLineId,
+                                                      Long btoOutboundOrderId,
+                                                      Long btoCustomerId,
+                                                      Long itemFamilyId,
+                                                      Long itemId,
+                                                      Long fromInventoryStatusId,
+                                                      Long companyId) {
 
-        return findAll(warehouseId, workOrderId, workOrderNumber, productionLineId, true);
+        return findAll(warehouseId, workOrderId, workOrderNumber, productionLineId,
+                btoOutboundOrderId, btoCustomerId,
+                itemFamilyId, itemId, fromInventoryStatusId, companyId,
+                true);
     }
 
     public List<WorkOrderQCRuleConfiguration> findAll(Long warehouseId, Long workOrderId,
                                                       String workOrderNumber,
                                                       Long productionLineId,
+                                                      Long btoOutboundOrderId,
+                                                      Long btoCustomerId,
+                                                      Long itemFamilyId,
+                                                      Long itemId,
+                                                      Long fromInventoryStatusId,
+                                                      Long companyId,
                                            boolean loadDetail) {
         List<WorkOrderQCRuleConfiguration> workOrderQCRuleConfigurations =
                 workOrderQCRuleConfigurationRepository.findAll(
                 (Root<WorkOrderQCRuleConfiguration> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    if (Objects.nonNull(warehouseId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
 
                     if (Objects.nonNull(workOrderId)) {
 
@@ -138,14 +156,38 @@ public class WorkOrderQCRuleConfigurationService {
                         predicates.add(criteriaBuilder.equal(joinProductionLine.get("id"), productionLineId));
                     }
 
+                    if (Objects.nonNull(btoOutboundOrderId)) {
 
+                        predicates.add(criteriaBuilder.equal(root.get("btoOutboundOrderId"), btoOutboundOrderId));
+                    }
 
+                    if (Objects.nonNull(btoCustomerId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("btoCustomerId"), btoCustomerId));
+                    }
+
+                    if (Objects.nonNull(itemFamilyId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("itemFamilyId"), itemFamilyId));
+                    }
+                    if (Objects.nonNull(itemId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
+                    }
+                    if (Objects.nonNull(fromInventoryStatusId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("fromInventoryStatusId"), fromInventoryStatusId));
+                    }
+                    if (Objects.nonNull(companyId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
-        if (workOrderQCRuleConfigurations.size() > 0 && loadDetail) {
+        if (workOrderQCRuleConfigurations.size() > 0 && Boolean.TRUE.equals(loadDetail)) {
             loadAttribute(workOrderQCRuleConfigurations);
         }
         return  workOrderQCRuleConfigurations;
@@ -201,7 +243,8 @@ public class WorkOrderQCRuleConfigurationService {
         logger.debug("start to find matched work order qc configuration for sample: {} / {}",
                 workOrderQCSample.getId(), workOrderQCSample.getNumber());
         List<WorkOrderQCRuleConfiguration> allConfiguraiton =
-                findAll(workOrderQCSample.getWarehouseId(), null, null, null);
+                findAll(workOrderQCSample.getWarehouseId(), null, null, null,
+                        null, null, null, null, null, null);
         logger.debug("We have {} work order qc configuration defined ",
                 allConfiguraiton.size());
         return allConfiguraiton.stream().filter(
@@ -261,5 +304,241 @@ public class WorkOrderQCRuleConfigurationService {
         }
         logger.debug(">> match? {}", isMatch);
         return isMatch;
+    }
+
+    public WorkOrderQCRuleConfiguration getBestMatchedWorkOrderQCRuleConfiguration(
+            Long btoOutboundOrderId, Long btoCustomerId, Long itemFamilyId, Long itemId, Long warehouseId, Long companyId) {
+
+        logger.debug("start to get best matched work order qc configuration with " +
+                        "\n bto outbound order id: {}, bto customer id: {}" +
+                " item family id: {}, item id: {}, warehouse id: {}, company id: {}",
+                btoOutboundOrderId, btoCustomerId, itemFamilyId,  itemId, warehouseId, companyId);
+        return getBestMatchedWorkOrderQCRuleConfiguration(
+                btoOutboundOrderId, btoCustomerId, itemFamilyId, itemId,  null, warehouseId, companyId
+        );
+    }
+
+    public WorkOrderQCRuleConfiguration getBestMatchedWorkOrderQCRuleConfiguration(
+            Long btoOutboundOrderId, Long btoCustomerId,
+            Long itemFamilyId, Long itemId,
+            Long fromInventoryStatusId,
+            Long warehouseId, Long companyId) {
+
+        logger.debug("start to get best matched work order qc configuration with " +
+                        "\n bto outbound order id: {}, bto customer id: {}" +
+                        " item family id: {}, item id: {}, " +
+                " from inventory status id: {}, warehouse id: {}, company id: {}",
+                btoOutboundOrderId, btoCustomerId,
+                itemFamilyId, itemId, fromInventoryStatusId, warehouseId, companyId);
+        List<WorkOrderQCRuleConfiguration> allWorkOrderQCRuleConfiguration =
+                findAll(null, null, null, null,
+                        null, null, null, null,
+                        null, companyId, false);
+
+        if (allWorkOrderQCRuleConfiguration.size() == 0) {
+            logger.debug("Can't find any work order QC configuration. Suppose we don't need QC");
+            return null;
+        }
+        // we will get the best matched qc configuration based on the priority
+        // 1. supplier + item
+        // 2. supplier
+        // 3. item
+        // 4. warehouse id
+        // 5. company id
+        List<WorkOrderQCRuleConfiguration> matchedWorkOrderQCRuleConfiguration =
+                allWorkOrderQCRuleConfiguration.stream().filter(
+                        workOrderQCRuleConfiguration -> isMatch(
+                                workOrderQCRuleConfiguration,
+                                btoOutboundOrderId, btoCustomerId,
+                                itemFamilyId, itemId, fromInventoryStatusId,
+                                warehouseId, companyId
+                        )
+                ).collect(Collectors.toList());
+
+        if (matchedWorkOrderQCRuleConfiguration.size() == 0) {
+            logger.debug("Can't find any work order qc configuration matched with " +
+                            "btoOutboundOrderId: {}, btoCustomerId: {}, itemFamilyId: {},itemId: {}, fromInventoryStatusId: {}, " +
+                            "warehouseId: {}, companyId: {}",
+                    btoOutboundOrderId, btoCustomerId,
+                    itemFamilyId,  itemId, fromInventoryStatusId,
+                    warehouseId, companyId);
+            return null;
+        }
+        WorkOrderQCRuleConfiguration bestWorkOrderQCRuleConfiguration = matchedWorkOrderQCRuleConfiguration.get(0);
+        for (WorkOrderQCRuleConfiguration workOrderQCRuleConfiguration : matchedWorkOrderQCRuleConfiguration) {
+            logger.debug("workOrderQCRuleConfiguration {}'s priority: {}",
+                    workOrderQCRuleConfiguration.getId(),
+                    getPriority(workOrderQCRuleConfiguration));
+            logger.debug("current bestWorkOrderQCRuleConfiguration {}'s priority: {}",
+                    bestWorkOrderQCRuleConfiguration.getId(),
+                    getPriority(bestWorkOrderQCRuleConfiguration));
+            logger.debug("comparePriority(workOrderQCRuleConfiguration, bestWorkOrderQCRuleConfiguration): {}",
+                    comparePriority(workOrderQCRuleConfiguration, bestWorkOrderQCRuleConfiguration) );
+            if (comparePriority(workOrderQCRuleConfiguration, bestWorkOrderQCRuleConfiguration) > 0) {
+                bestWorkOrderQCRuleConfiguration = workOrderQCRuleConfiguration;
+            }
+        }
+        logger.debug("bestWorkOrderQCRuleConfiguration: {} for btoOutboundOrderId: {}, btoCustomerId: {}， item {}, warehouse {}",
+                bestWorkOrderQCRuleConfiguration.getId(),
+                btoOutboundOrderId,
+                btoCustomerId,
+                itemId,
+                warehouseId);
+        return bestWorkOrderQCRuleConfiguration;
+    }
+
+
+    private boolean isMatch(WorkOrderQCRuleConfiguration workOrderQCRuleConfiguration,
+                            Long btoOutboundOrderId,
+                            Long btoCustomerId,
+                            Long itemFamilyId,
+                            Long itemId,
+                            Long fromInventoryStatusId,
+                            Long warehouseId,
+                            Long companyId) {
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getCompanyId()) &&
+                !workOrderQCRuleConfiguration.getCompanyId().equals(companyId)) {
+            logger.debug("company id in the qc configuration is {}, company id being compared is {}, mis match",
+                    workOrderQCRuleConfiguration.getCompanyId(),
+                    companyId);
+            return false;
+        }
+
+
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getWarehouseId()) &&
+                !workOrderQCRuleConfiguration.getWarehouseId().equals(warehouseId)) {
+            logger.debug("warehouse id in the qc configuration is {}, warehouse id being compared is {}, mis match",
+                    workOrderQCRuleConfiguration.getWarehouseId(),
+                    warehouseId);
+            return false;
+        }
+
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getItemFamilyId()) &&
+                !workOrderQCRuleConfiguration.getItemFamilyId().equals(itemFamilyId)) {
+            logger.debug("item family id in the qc configuration is {}, item family id being compared is {}, mis match",
+                    workOrderQCRuleConfiguration.getItemFamilyId(),
+                    itemFamilyId);
+            return false;
+        }
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getItemId()) &&
+                !workOrderQCRuleConfiguration.getItemId().equals(itemId)) {
+            logger.debug("item id in the qc configuration is {}, item id being compared is {}, mis match",
+                    workOrderQCRuleConfiguration.getItemId(),
+                    itemId);
+            return false;
+        }
+
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getOutboundOrderId()) &&
+                !workOrderQCRuleConfiguration.getOutboundOrderId().equals(btoOutboundOrderId)
+        ) {
+            logger.debug("outbound order id in the qc configuration is {}, bto order id being compared is {}, mis match",
+                    workOrderQCRuleConfiguration.getOutboundOrderId(),
+                    btoOutboundOrderId);
+            return false;
+        }
+
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getCustomerId()) &&
+                !workOrderQCRuleConfiguration.getCustomerId().equals(btoCustomerId)
+        ) {
+            logger.debug("outbound customer id in the qc configuration is {}, bto customer id being compared is {}, mis match",
+                    workOrderQCRuleConfiguration.getCustomerId(),
+                    btoCustomerId);
+            return false;
+        }
+        // from inventory status is optional
+        if (Objects.nonNull(fromInventoryStatusId) &&
+                Objects.nonNull(workOrderQCRuleConfiguration.getFromInventoryStatusId()) &&
+                !workOrderQCRuleConfiguration.getFromInventoryStatusId().equals(fromInventoryStatusId)
+        ) {
+
+            logger.debug("from inventory id in the qc configuration is {}, from inventory id being compared is {}, mis match",
+                    workOrderQCRuleConfiguration.getFromInventoryStatusId(),
+                    fromInventoryStatusId);
+            return false;
+        }
+
+        logger.debug("qc configuration id {} matches with " +
+                        "btoOutboundOrderId: {}, btoCustomerId: {},itemFamilyId: {},itemId: {}, fromInventoryStatusId: {}, " +
+                        "warehouseId: {}, companyId: {}",
+                workOrderQCRuleConfiguration.getId(),
+                btoOutboundOrderId, btoCustomerId, itemFamilyId,  itemId, fromInventoryStatusId,
+                warehouseId, companyId);
+        return true;
+    }
+
+
+    /**
+     * Get the priority of the configuration based off, lower the number, higher the priority
+     * 1. order + item
+     * 2. order + item family
+     * 3. order
+     * 4. customer + item
+     * 5. customer + item family
+     * 6. customer
+     * 7. item
+     * 8. item family
+     * 9. warehouse id
+     * 10. company id
+     * @param workOrderQCRuleConfiguration
+     * @return
+     */
+    private Integer getPriority(WorkOrderQCRuleConfiguration workOrderQCRuleConfiguration) {
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getOutboundOrderId())) {
+            if (Objects.nonNull(workOrderQCRuleConfiguration.getItemId())) {
+                return 1;
+            }
+            if (Objects.nonNull(workOrderQCRuleConfiguration.getItemFamilyId())) {
+                return 2;
+            }
+            return 3;
+        }
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getCustomerId())) {
+            if (Objects.nonNull(workOrderQCRuleConfiguration.getItemId())) {
+                return 4;
+            }
+            if (Objects.nonNull(workOrderQCRuleConfiguration.getItemFamilyId())) {
+                return 5;
+            }
+            return 6;
+        }
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getItemId())) {
+            return 7;
+
+        }
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getItemFamilyId())) {
+            return 8;
+
+        }
+        if (Objects.nonNull(workOrderQCRuleConfiguration.getWarehouseId())) {
+            return 9;
+        }
+        return 10;
+    }
+
+    /**
+     * Return 1 if the first one has high priority(lower number). Return 0 if both have the same priority
+     * return -1 if the last one has high priority(lower number)
+     * Priority number is based off
+     * 1. order + item
+     * 2. order + item family
+     * 3. order
+     * 4. customer + item
+     * 5. customer + item family
+     * 6. customer
+     * 7. item
+     * 8. item family
+     * 9. warehouse id
+     * 10. company id
+     * low number means high priority
+     * @param firstWorkOrderQCRuleConfiguration
+     * @param secondWorkOrderQCRuleConfiguration
+     * @return
+     */
+    private int comparePriority(WorkOrderQCRuleConfiguration firstWorkOrderQCRuleConfiguration,
+                                WorkOrderQCRuleConfiguration secondWorkOrderQCRuleConfiguration) {
+        return getPriority(secondWorkOrderQCRuleConfiguration).compareTo(
+                getPriority(firstWorkOrderQCRuleConfiguration)
+        );
+
     }
 }

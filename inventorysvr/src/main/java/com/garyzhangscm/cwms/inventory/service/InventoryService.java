@@ -466,6 +466,7 @@ public class InventoryService implements TestDataInitiableService{
      * 3. it is not virutal
      * 4. it is not qc required
      * 5. it is not locked for adjust
+     * 6. it is not locked by certain lock that doesn't allow pick
      * @param inventory
      * @return
      */
@@ -474,7 +475,12 @@ public class InventoryService implements TestDataInitiableService{
                 Objects.isNull(inventory.getAllocatedByPickId()) &&
                 !Boolean.TRUE.equals(inventory.getVirtual()) &&
                 !Boolean.TRUE.equals(inventory.getInboundQCRequired()) &&
-                !Boolean.TRUE.equals(inventory.getLockedForAdjust());
+                !Boolean.TRUE.equals(inventory.getLockedForAdjust()) &&
+                // if inventory is locked by a 'not pickable lock', then
+                // the inventory is not pickable
+                inventory.getLocks().stream().noneMatch(
+                        inventoryWithLock -> Boolean.TRUE.equals(inventoryWithLock.getLock().getAllowPick())
+                );
     }
 
     // CHeck if the inventory is in a pickable location

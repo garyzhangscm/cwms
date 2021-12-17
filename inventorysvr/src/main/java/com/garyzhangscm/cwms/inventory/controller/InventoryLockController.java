@@ -113,6 +113,13 @@ public class InventoryLockController {
     }
 
 
+    @RequestMapping(method=RequestMethod.POST, value="/inventory-lock/validate-new-inventory-lock-name")
+    public ResponseBodyWrapper<String> validateNewInventoryLockName(@RequestParam Long warehouseId,
+                                                           @RequestParam String inventoryLockName)  {
+
+        return ResponseBodyWrapper.success(inventoryLockService.validateNewInventoryLockName(warehouseId, inventoryLockName));
+    }
+
 
 
 }

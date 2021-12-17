@@ -1504,4 +1504,11 @@ public class OrderService implements TestDataInitiableService {
         // remove the order
         delete(order);
     }
+
+    public String validateNewOrderNumber(Long warehouseId, String orderNumber) {
+        Order order =
+                findByNumber(warehouseId, orderNumber, false);
+
+        return Objects.isNull(order) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
+    }
 }

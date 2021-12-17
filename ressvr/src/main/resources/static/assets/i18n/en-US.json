@@ -1481,5 +1481,11 @@
   "unlock-inventory": "Unlock Inventory",
   "menu.main.inventory.lock.maintenance": "Inventory Lock Maintenance",
   "allow-pick": "Allow Pick",
-  "allow-ship": "Allow Ship"
+  "allow-ship": "Allow Ship",
+  "qcPercentagePerWorkOrder": "QC Quantity Per Work Order",
+  "qcQuantityPerWorkOrder": "QC Percentage Per Work Order",
+  "futureInventoryLock": "Future Inventory Lock",
+  "work-order-qc.by-sample": "By Sample",
+  "work-order-qc.by-work-order": "By Work Order",
+  "qcQuantityCompleted": "QC Qty Completed"
 }

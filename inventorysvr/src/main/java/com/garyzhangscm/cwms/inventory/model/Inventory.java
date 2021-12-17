@@ -450,4 +450,5 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         return Objects.nonNull(getLocks())  &&
                 getLocks().size() >0;
     }
+
 }

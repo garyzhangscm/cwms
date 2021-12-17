@@ -37,11 +37,20 @@ public class WorkOrderQCRuleConfigurationController {
 
     @RequestMapping(value="/qc-rule-configuration", method = RequestMethod.GET)
     public List<WorkOrderQCRuleConfiguration> findAllQCRuleConfigurations(
-            @RequestParam Long warehouseId,
+            @RequestParam Long companyId,
             @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
             @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId ,
-            @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber) {
-        return workOrderQCRuleConfigurationService.findAll(warehouseId, workOrderId, workOrderNumber, productionLineId);
+            @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber,
+            @RequestParam(name="btoOutboundOrderId", required = false, defaultValue = "") Long btoOutboundOrderId,
+            @RequestParam(name="btoCustomerId", required = false, defaultValue = "") Long btoCustomerId,
+            @RequestParam(name="itemFamilyId", required = false, defaultValue = "") Long itemFamilyId,
+            @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+            @RequestParam(name="fromInventoryStatusId", required = false, defaultValue = "") Long fromInventoryStatusId,
+            @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
+            @RequestParam(name="loadDetail", required = false, defaultValue = "true") Boolean loadDetail) {
+        return workOrderQCRuleConfigurationService.findAll(warehouseId, workOrderId, workOrderNumber, productionLineId,
+                btoOutboundOrderId, btoCustomerId, itemFamilyId, itemId, fromInventoryStatusId, companyId,
+                loadDetail);
     }
 
     @RequestMapping(value="/qc-rule-configuration/{id}", method = RequestMethod.GET)

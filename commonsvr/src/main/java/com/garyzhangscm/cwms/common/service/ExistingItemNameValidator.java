@@ -15,11 +15,12 @@ public class ExistingItemNameValidator implements Validator {
     @Override
     public String validate(Long companyId, Long warehouseId, String value) {
 
-        // make sure the bom number doesn't exists yet
+        // newItemResult will have value if the lock name is not new
+        // it will be empty if this is a new lock
         String newItemResult = inventoryServiceRestemplateClient.validateNewItemName(
                 warehouseId, value
         );
-        // Check if this is a new item. If this is a new item,
+        // Check if this is an exist item. If this is a exist item,
         // the above call should return an empty string.
         if (StringUtils.isBlank(newItemResult)) {
             return ValidatorResult.VALUE_NON_EXISTS.toString();
