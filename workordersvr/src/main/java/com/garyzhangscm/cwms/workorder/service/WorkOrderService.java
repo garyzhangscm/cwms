@@ -208,6 +208,7 @@ public class WorkOrderService implements TestDataInitiableService {
         }
         if (workOrder.getWarehouseId() != null && workOrder.getWarehouse() == null) {
             workOrder.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId()));
+
         }
 
         // Load the item and inventory status information for each lines
@@ -824,18 +825,28 @@ public class WorkOrderService implements TestDataInitiableService {
     public List<Inventory> getDeliveredInventory(Long workOrderId, Long productionLineId) {
         // return the delivered inventory for the whole work order, regardless of the
         // assigned production line
+        logger.debug("start to get delivered invenotry workOrderId: {} / productionLineId: {}",
+                workOrderId, productionLineId);
         ProductionLine productionLine = null;
         if (Objects.nonNull(productionLineId)) {
+            logger.debug("will get production line by id： {}", productionLineId);
             productionLine = productionLineService.findById(productionLineId);
         }
         return getDeliveredInventory(workOrderId, productionLine);
     }
     public List<Inventory> getDeliveredInventory(Long workOrderId, ProductionLine productionLine) {
+        logger.debug("Will get delivered inventory for work order by id {}, production line {}",
+                workOrderId,
+                Objects.isNull(productionLine)? "N/A" : productionLine.getName());
         WorkOrder workOrder = findById(workOrderId);
+        logger.debug("Will get delivered inventory for work order {}, production line {}",
+                workOrder.getNumber(),
+                Objects.isNull(productionLine)? "N/A" : productionLine.getName());
 
         // Get all the picked inventory that already arrived at the
         // right location
         if (workOrder.getProductionLineAssignments().size() == 0) {
+            logger.debug("The work order has no production line assignment, so we can't get the delivered inventory");
             // The work order doesn't have production line assigned yet, probably
             // it is a new work order;
             return new ArrayList<>();
@@ -843,10 +854,11 @@ public class WorkOrderService implements TestDataInitiableService {
 
         List<Inventory> deliveredInventory = new ArrayList<>();
 
-            // Get all the picks that belongs to this work order
-            List<Pick> picks = outboundServiceRestemplateClient.getWorkOrderPicks(workOrder);
+        // Get all the picks that belongs to this work order
+        List<Pick> picks = outboundServiceRestemplateClient.getWorkOrderPicks(workOrder);
 
-            if (picks.size() > 0) {
+        logger.debug("We got {} picks for this work order", picks.size());
+        if (picks.size() > 0) {
                 String pickIds = picks.stream()
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
 
@@ -866,7 +878,8 @@ public class WorkOrderService implements TestDataInitiableService {
 
                 productionInStagingLocationIds.forEach(productionInStagingLocationId -> {
 
-
+                    logger.debug("Start to find delivered invenotry with production in staging location id {]",
+                            productionInStagingLocationId);
                             deliveredInventory.addAll(
                                     inventoryServiceRestemplateClient.findDeliveredInventory(
                                             workOrder.getWarehouseId(),
@@ -881,6 +894,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
 
+        logger.debug("return {} delivered invenotry", deliveredInventory.size());
         return deliveredInventory;
     }
 
@@ -1208,7 +1222,7 @@ public class WorkOrderService implements TestDataInitiableService {
      * @return
      */
     public WorkOrder reverseProduction(Long id, String lpn) {
-        WorkOrder workOrder = findById(id);
+        WorkOrder workOrder = findById(id, false);
 
         List<Inventory> inventories = inventoryServiceRestemplateClient.findProducedInventoryByLPN(
                 workOrder.getWarehouseId(), workOrder.getId(),

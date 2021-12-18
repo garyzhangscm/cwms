@@ -178,7 +178,7 @@ public class WorkOrderController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/work-orders/{id}/reserve-production", method = RequestMethod.POST)
+    @RequestMapping(value="/work-orders/{id}/reverse-production", method = RequestMethod.POST)
     public WorkOrder reverseProduction(@PathVariable Long id,
                                        @RequestParam String lpn) {
         return workOrderService.reverseProduction(id, lpn);

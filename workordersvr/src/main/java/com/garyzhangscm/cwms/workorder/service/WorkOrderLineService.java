@@ -120,20 +120,25 @@ public class WorkOrderLineService implements TestDataInitiableService {
         }
         if (workOrderLine.getItemId() != null &&
                 (workOrderLine.getItem() == null || Objects.isNull(workOrderLine.getItem().getId()))) {
-            workOrderLine.setItem(inventoryServiceRestemplateClient.getItemById(workOrderLine.getItemId()));
-        }
+             workOrderLine.setItem(inventoryServiceRestemplateClient.getItemById(workOrderLine.getItemId()));
+         }
         if (workOrderLine.getInventoryStatusId() != null && workOrderLine.getInventoryStatus() == null) {
-            workOrderLine.setInventoryStatus(
+             workOrderLine.setInventoryStatus(
                     inventoryServiceRestemplateClient.getInventoryStatusById(workOrderLine.getInventoryStatusId()));
-        }
+         }
 
         if (loadPicks) {
 
+
             workOrderLine.setPicks(outboundServiceRestemplateClient.getWorkOrderLinePicks(workOrderLine));
+
         }
+
         if (loadShortAllocations) {
 
+
             workOrderLine.setShortAllocations(outboundServiceRestemplateClient.getWorkOrderLineShortAllocations(workOrderLine));
+
         }
 
 

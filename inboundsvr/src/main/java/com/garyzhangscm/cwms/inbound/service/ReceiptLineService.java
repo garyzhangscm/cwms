@@ -524,7 +524,7 @@ public class ReceiptLineService implements TestDataInitiableService{
      *
      * Recalculate the qc quantity for the receipt line. We can specify the qc quantity and percentage, or let
      * the system run the configuration again to refresh the qc quantity required
-     * @param receiptId
+     * @param receiptLineId
      * @param receiptLineId
      * @param qcQuantity
      * @param qcPercentage

@@ -87,9 +87,10 @@ public class QCInspectionRequestService {
                                              String inventoryIds,
                                              String lpn,
                                              String workOrderQCSampleNumber,
-                                             QCInspectionResult qcInspectionResult){
+                                             QCInspectionResult qcInspectionResult,
+                                             String type){
         return findAll(warehouseId, inventoryId, inventoryIds,
-                lpn, workOrderQCSampleNumber, qcInspectionResult, true);
+                lpn, workOrderQCSampleNumber, qcInspectionResult, type, true);
     }
     public List<QCInspectionRequest> findAll(Long warehouseId,
                                              Long inventoryId,
@@ -97,6 +98,7 @@ public class QCInspectionRequestService {
                                              String lpn,
                                              String workOrderQCSampleNumber,
                                              QCInspectionResult qcInspectionResult,
+                                             String type,
                                              boolean loadDetails) {
 
         List<QCInspectionRequest> qcInspectionRequests =
@@ -147,6 +149,10 @@ public class QCInspectionRequestService {
                         // we can't find the work order sample by the number, let's return nothing
                         predicates.add(criteriaBuilder.equal(root.get("workOrderQCSampleId"), -1l));
                     }
+                }
+                if (Strings.isNotBlank(type)) {
+
+                    predicates.add(criteriaBuilder.equal(root.get("type"), QCInspectionRequestType.valueOf(type)));
                 }
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
@@ -267,7 +273,7 @@ public class QCInspectionRequestService {
     public void removeInboundQCInspectionRequest(Inventory inventory) {
 
         List<QCInspectionRequest> qcInspectionRequests = findAll(inventory.getWarehouseId(),
-                inventory.getId(), null, null, null, null, false);
+                inventory.getId(), null, null, null, null, null, false);
 
         qcInspectionRequests.forEach(
                 qcInspectionRequest -> delete(qcInspectionRequest)
@@ -286,7 +292,7 @@ public class QCInspectionRequestService {
                 inventoryIds,
                 null,
                 null,
-                QCInspectionResult.PENDING
+                QCInspectionResult.PENDING, null
         );
     }
 
@@ -381,9 +387,9 @@ public class QCInspectionRequestService {
                                                                        String lpn,
                                                                        String workOrderQCSampleNumber) {
         List<QCInspectionRequest> passedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.PASS);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.PASS, null);
         List<QCInspectionRequest> failedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.FAIL);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.FAIL, null);
 
         // return both passed qc inspection and failed qc inspection
         passedQCInspectionRequest.addAll(failedQCInspectionRequest);

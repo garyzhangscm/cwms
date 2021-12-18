@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -21,6 +22,9 @@ public class WorkOrderLine extends AuditibleEntity<String>{
     @JoinColumn(name = "work_order_id")
     @JsonIgnore
     private WorkOrder workOrder;
+
+    @Transient
+    private String workOrderNumber;
 
 
     @OneToOne
@@ -96,9 +100,28 @@ public class WorkOrderLine extends AuditibleEntity<String>{
 
     }
 
+
     @Override
     public int hashCode() {
         return Objects.hash(id, workOrder, number);
+    }
+
+    public String getWorkOrderNumber() {
+        return Strings.isNotBlank(workOrderNumber) ?
+                workOrderNumber :
+                    Objects.nonNull(workOrder) ? workOrder.getNumber() : "";
+    }
+
+    public void setWorkOrderNumber(String workOrderNumber) {
+        this.workOrderNumber = workOrderNumber;
+    }
+
+    public WorkOrder getMaterialWorkOrder() {
+        return materialWorkOrder;
+    }
+
+    public void setMaterialWorkOrder(WorkOrder materialWorkOrder) {
+        this.materialWorkOrder = materialWorkOrder;
     }
 
     public Long getId() {

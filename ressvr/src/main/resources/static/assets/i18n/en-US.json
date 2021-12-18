@@ -1487,5 +1487,17 @@
   "futureInventoryLock": "Future Inventory Lock",
   "work-order-qc.by-sample": "By Sample",
   "work-order-qc.by-work-order": "By Work Order",
-  "qcQuantityCompleted": "QC Qty Completed"
+  "qcQuantityCompleted": "QC Qty Completed",
+  "inventory-quantity": "Inventory Quantity",
+  "qc-inspection-request-type": "Type",
+  "qc-inspection-result": "Result",
+  "QC-INSPECTION-REQUEST-TYPE-BY_INVENTORY": "By Inventory",
+  "QC-INSPECTION-REQUEST-TYPE-BY_ITEM": "By Item",
+  "QC-INSPECTION-REQUEST-TYPE-BY_WORK_ORDER_SAMPLING": "By Work Order Sampling",
+  "QC-INSPECTION-RESULT-PENDING": "Pending",
+  "QC-INSPECTION-RESULT-PASS": "Pass",
+  "QC-INSPECTION-RESULT-FAIL": "Fail",
+  "QC-INSPECTION-RESULT-SKIPPED": "Skipped",
+  "QC-INSPECTION-RESULT-CANCELLED": "Cancelled",
+  "QC-INSPECTION-RESULT-NOT_APPLY": "Not Apply"
 }
