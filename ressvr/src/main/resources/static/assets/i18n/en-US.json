@@ -1499,5 +1499,6 @@
   "QC-INSPECTION-RESULT-FAIL": "Fail",
   "QC-INSPECTION-RESULT-SKIPPED": "Skipped",
   "QC-INSPECTION-RESULT-CANCELLED": "Cancelled",
-  "QC-INSPECTION-RESULT-NOT_APPLY": "Not Apply"
+  "QC-INSPECTION-RESULT-NOT_APPLY": "Not Apply",
+  "menu.main.qc.qc-inspection-request-maintenance": "QC Inspection Request Maintenance"
 }
