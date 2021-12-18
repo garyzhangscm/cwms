@@ -1498,5 +1498,6 @@
   "QC-INSPECTION-RESULT-FAIL": "失败",
   "QC-INSPECTION-RESULT-SKIPPED": "跳过",
   "QC-INSPECTION-RESULT-CANCELLED": "取消",
-  "QC-INSPECTION-RESULT-NOT_APPLY": "不适用"
+  "QC-INSPECTION-RESULT-NOT_APPLY": "不适用",
+  "menu.main.qc.qc-inspection-request-maintenance": "质检请求"
 }
