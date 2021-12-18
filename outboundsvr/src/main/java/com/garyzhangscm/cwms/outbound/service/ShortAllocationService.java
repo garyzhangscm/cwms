@@ -212,9 +212,9 @@ public class ShortAllocationService {
         }
         if (Objects.nonNull(shortAllocation.getWorkOrderLineId())) {
             shortAllocation.setWorkOrderNumber(
-                    workOrderServiceRestemplateClient.getWorkOrderById(
+                    workOrderServiceRestemplateClient.getWorkOrderLineById(
                             shortAllocation.getWorkOrderLineId()
-                    ).getNumber()
+                    ).getWorkOrderNumber()
             );
         }
 

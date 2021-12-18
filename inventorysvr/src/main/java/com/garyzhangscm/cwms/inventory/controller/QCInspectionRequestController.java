@@ -21,9 +21,11 @@ package com.garyzhangscm.cwms.inventory.controller;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.QCInspectionRequest;
+import com.garyzhangscm.cwms.inventory.model.QCInspectionResult;
 import com.garyzhangscm.cwms.inventory.model.QCRuleConfiguration;
 import com.garyzhangscm.cwms.inventory.service.QCInspectionRequestService;
 import com.garyzhangscm.cwms.inventory.service.QCRuleConfigurationService;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,8 +42,18 @@ public class QCInspectionRequestController {
             @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
             @RequestParam(name="inventoryIds", required = false, defaultValue = "") String inventoryIds,
             @RequestParam(name="lpn", required = false, defaultValue = "") String lpn ,
-            @RequestParam(name="workOrderQCSampleNumber", required = false, defaultValue = "") String workOrderQCSampleNumber) {
-        return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, workOrderQCSampleNumber, null);
+            @RequestParam(name="workOrderQCSampleNumber", required = false, defaultValue = "") String workOrderQCSampleNumber ,
+            @RequestParam(name="type", required = false, defaultValue = "") String type ,
+            @RequestParam(name="qcInspectionResult", required = false, defaultValue = "") String qcInspectionResult) {
+        if (Strings.isNotBlank(qcInspectionResult)) {
+
+            return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, workOrderQCSampleNumber,
+                    QCInspectionResult.valueOf(qcInspectionResult), type);
+        }
+        else {
+
+            return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, workOrderQCSampleNumber, null, type);
+        }
     }
 
     @RequestMapping(value="/qc-inspection-requests/result", method = RequestMethod.GET)

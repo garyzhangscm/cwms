@@ -12,8 +12,9 @@ public class WorkOrderLine {
 
     private Long itemId;
 
-    @Transient
     private Item item;
+
+    private String workOrderNumber;
 
     private Long expectedQuantity;
 
@@ -144,5 +145,13 @@ public class WorkOrderLine {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getWorkOrderNumber() {
+        return workOrderNumber;
+    }
+
+    public void setWorkOrderNumber(String workOrderNumber) {
+        this.workOrderNumber = workOrderNumber;
     }
 }

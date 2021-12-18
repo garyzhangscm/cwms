@@ -293,30 +293,39 @@ public class InventoryServiceRestemplateClient {
     }
 
     public List<Inventory> findProducedInventoryByLPN(Long warehouseId, Long workOrderId,
-                                                      String lpn) {
+                                                      String lpn)   {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/inventories")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("workOrderId", workOrderId)
-                        .queryParam("lpn", lpn);
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/inventory/inventories")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("workOrderId", workOrderId)
+                    .queryParam("lpn", URLEncoder.encode(lpn, "UTF-8"));
 
-        logger.debug("Start to find produced inventory by work order id {}",
-                workOrderId);
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+            logger.debug("Start to find produced inventory by work order id {}",
+                    workOrderId);
+            ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
 
-        logger.debug("Returned");
-        List<Inventory> inventories = responseBodyWrapper.getData();
-        logger.debug("got {} inventory record produced by work order",
-                inventories.size());
-        return inventories;
+            logger.debug("Returned");
+            List<Inventory> inventories = responseBodyWrapper.getData();
+            logger.debug("got {} inventory record produced by work order",
+                    inventories.size());
+            return inventories;
+        } catch (UnsupportedEncodingException e) {
+
+            e.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the produced inventory  by work order id " +
+                   workOrderId + ",  lpn: " + lpn);
+
+        }
 
     }
     public List<Inventory> findProducedInventory(Long warehouseId, Long workOrderId) {

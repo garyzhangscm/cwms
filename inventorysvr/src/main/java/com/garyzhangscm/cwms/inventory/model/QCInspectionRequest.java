@@ -67,16 +67,40 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     // only if the qc is for work order
     @Column(name="work_order_qc_sample_id")
     private Long workOrderQCSampleId;
+    @Transient
+    private WorkOrderQCSample workOrderQCSample;
+    // only if the qc is for work order sampling
+    // or item by work order/receipt
     @Column(name="qc_quantity")
     private Long qcQuantity = 0l;
 
+
+    // when qc by item
+    @ManyToOne
+    @JoinColumn(name="item_id")
+    private Item item;
+
+    // more filter when qc by item.
+    // restrict to inventory of the item
+    // that is received from work order or receipt
+    @Column(name="work_order_id")
+    private Long workOrderId;
     @Transient
-    private WorkOrderQCSample workOrderQCSample;
+    private WorkOrder workOrder;
+
+    @Column(name="receipt_id")
+    private Long receiptId;
+    @Transient
+    private Receipt receipt;
 
 
     @Column(name = "qc_inspection_result")
     @Enumerated(EnumType.STRING)
     private QCInspectionResult qcInspectionResult;
+
+    @Column(name = "qc_inspection_request_type")
+    @Enumerated(EnumType.STRING)
+    private QCInspectionRequestType type;
 
     @Column(name = "qc_username")
     private String qcUsername;
@@ -208,5 +232,53 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
 
     public void setQcQuantity(Long qcQuantity) {
         this.qcQuantity = qcQuantity;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Long getWorkOrderId() {
+        return workOrderId;
+    }
+
+    public void setWorkOrderId(Long workOrderId) {
+        this.workOrderId = workOrderId;
+    }
+
+    public WorkOrder getWorkOrder() {
+        return workOrder;
+    }
+
+    public void setWorkOrder(WorkOrder workOrder) {
+        this.workOrder = workOrder;
+    }
+
+    public Long getReceiptId() {
+        return receiptId;
+    }
+
+    public void setReceiptId(Long receiptId) {
+        this.receiptId = receiptId;
+    }
+
+    public Receipt getReceipt() {
+        return receipt;
+    }
+
+    public void setReceipt(Receipt receipt) {
+        this.receipt = receipt;
+    }
+
+    public QCInspectionRequestType getType() {
+        return type;
+    }
+
+    public void setType(QCInspectionRequestType type) {
+        this.type = type;
     }
 }

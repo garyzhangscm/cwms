@@ -64,7 +64,7 @@ public class WorkOrderServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/workorder/work-orders/{id}");
+                        .path("/api/workorder/work-orders/lines/{id}");
 
         ResponseBodyWrapper<WorkOrderLine> responseBodyWrapper
                 = restTemplate.exchange(

@@ -1486,5 +1486,17 @@
   "futureInventoryLock": "未来库存锁",
   "work-order-qc.by-sample": "按样品",
   "work-order-qc.by-work-order": "按工单",
-  "qcQuantityCompleted": "QC完成数量"
+  "qcQuantityCompleted": "QC完成数量",
+  "inventory-quantity": "库存数量",
+  "qc-inspection-request-type": "类型",
+  "qc-inspection-result": "结果",
+  "QC-INSPECTION-REQUEST-TYPE-BY_INVENTORY": "按库存",
+  "QC-INSPECTION-REQUEST-TYPE-BY_ITEM": "按商品",
+  "QC-INSPECTION-REQUEST-TYPE-BY_WORK_ORDER_SAMPLING": "按工单样品",
+  "QC-INSPECTION-RESULT-PENDING": "新建",
+  "QC-INSPECTION-RESULT-PASS": "通过",
+  "QC-INSPECTION-RESULT-FAIL": "失败",
+  "QC-INSPECTION-RESULT-SKIPPED": "跳过",
+  "QC-INSPECTION-RESULT-CANCELLED": "取消",
+  "QC-INSPECTION-RESULT-NOT_APPLY": "不适用"
 }
