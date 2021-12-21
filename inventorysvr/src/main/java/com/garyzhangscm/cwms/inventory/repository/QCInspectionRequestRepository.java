@@ -26,5 +26,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QCInspectionRequestRepository extends JpaRepository<QCInspectionRequest, Long>, JpaSpecificationExecutor<QCInspectionRequest> {
-    
+
+    QCInspectionRequest findByWarehouseIdAndNumber(Long warehouseId, String number);
 }

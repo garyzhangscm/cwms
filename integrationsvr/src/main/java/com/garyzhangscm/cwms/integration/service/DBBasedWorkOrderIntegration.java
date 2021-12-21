@@ -260,6 +260,12 @@ public class DBBasedWorkOrderIntegration {
 
 
         workOrder.setWarehouseId(warehouseId);
+        workOrder.setWarehouse(
+                warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                        warehouseId
+                )
+        );
+
 
         Item item = inventoryServiceRestemplateClient.getItemByName(
                         warehouseId, dbBasedWorkOrder.getItemName()
@@ -270,7 +276,9 @@ public class DBBasedWorkOrderIntegration {
                     "warehouse id: " + warehouseId);
         }
 
+
         workOrder.setItemId(item.getId());
+        workOrder.setItem(item);
 
         for(WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
             // Get the matched order line and setup the missing field

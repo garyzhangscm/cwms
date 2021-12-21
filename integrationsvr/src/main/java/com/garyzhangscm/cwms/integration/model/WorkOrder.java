@@ -29,6 +29,7 @@ public class WorkOrder implements Serializable {
     private String number;
 
     private Long warehouseId;
+    private Warehouse warehouse;
     private String warehouseName;
 
 
@@ -42,6 +43,7 @@ public class WorkOrder implements Serializable {
 
     private Long itemId;
     private String itemName;
+    private Item item;
 
     Long expectedQuantity;
 
@@ -143,5 +145,21 @@ public class WorkOrder implements Serializable {
 
     public void setStatus(WorkOrderStatus status) {
         this.status = status;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 }
