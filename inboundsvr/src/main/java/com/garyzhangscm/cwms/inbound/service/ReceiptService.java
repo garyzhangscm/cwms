@@ -225,6 +225,9 @@ public class ReceiptService implements TestDataInitiableService{
 
             receipt.setReceiptStatus(ReceiptStatus.CHECK_IN);
             logger.debug("update the receipt to check in");
+            if (recalculateQCDuringCheckin()) {
+                recalculateQCQuantity(receipt);
+            }
             Receipt newReceipt = saveOrUpdate(receipt, false);
 
             // After we check in the receipt, we will create a location
@@ -236,6 +239,20 @@ public class ReceiptService implements TestDataInitiableService{
             return newReceipt;
         }
         throw ReceiptOperationException.raiseException("Can't check in the receipt due to not correct status. Current Status: " + receipt.getReceiptStatus());
+    }
+
+    /**
+     * Recalculate the qc quantity for all the lines in the receipt
+     * @param receipt
+     */
+    private void recalculateQCQuantity(Receipt receipt) {
+        receipt.getReceiptLines().forEach(
+                receiptLine -> receiptLineService.recalculateQCQuantity(receiptLine.getId(), null, null)
+        );
+    }
+
+    private boolean recalculateQCDuringCheckin() {
+        return true;
     }
 
     @Transactional

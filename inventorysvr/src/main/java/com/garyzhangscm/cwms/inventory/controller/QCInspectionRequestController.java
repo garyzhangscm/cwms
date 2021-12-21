@@ -39,6 +39,7 @@ public class QCInspectionRequestController {
     @RequestMapping(value="/qc-inspection-requests", method = RequestMethod.GET)
     public List<QCInspectionRequest> findAllQCInspectionRequests(
             @RequestParam Long warehouseId,
+            @RequestParam(name="number", required = false, defaultValue = "") String number,
             @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
             @RequestParam(name="inventoryIds", required = false, defaultValue = "") String inventoryIds,
             @RequestParam(name="lpn", required = false, defaultValue = "") String lpn ,
@@ -48,11 +49,11 @@ public class QCInspectionRequestController {
         if (Strings.isNotBlank(qcInspectionResult)) {
 
             return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, workOrderQCSampleNumber,
-                    QCInspectionResult.valueOf(qcInspectionResult), type);
+                    QCInspectionResult.valueOf(qcInspectionResult), type, number);
         }
         else {
 
-            return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, workOrderQCSampleNumber, null, type);
+            return qcInspectionRequestService.findAll(warehouseId, inventoryId, inventoryIds, lpn, workOrderQCSampleNumber, null, type, number);
         }
     }
 
@@ -89,5 +90,12 @@ public class QCInspectionRequestController {
             @RequestParam(name="qcQuantity", required = false, defaultValue = "0") Long qcQuantity,
             @RequestParam String ruleIds) {
         return qcInspectionRequestService.generateWorkOrderQCInspectionRequest(warehouseId, workOrderQCSampleId, ruleIds, qcQuantity);
+    }
+
+    @RequestMapping(value="/qc-inspection-requests", method = RequestMethod.PUT)
+    public QCInspectionRequest addQCInspectionRequest(
+            @RequestParam Long warehouseId,
+            @RequestBody QCInspectionRequest qcInspectionRequest) {
+        return qcInspectionRequestService.addQCInspectionRequest(warehouseId, qcInspectionRequest);
     }
 }

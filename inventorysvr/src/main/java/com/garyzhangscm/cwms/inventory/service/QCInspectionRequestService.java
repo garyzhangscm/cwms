@@ -88,9 +88,9 @@ public class QCInspectionRequestService {
                                              String lpn,
                                              String workOrderQCSampleNumber,
                                              QCInspectionResult qcInspectionResult,
-                                             String type){
+                                             String type, String number){
         return findAll(warehouseId, inventoryId, inventoryIds,
-                lpn, workOrderQCSampleNumber, qcInspectionResult, type, true);
+                lpn, workOrderQCSampleNumber, qcInspectionResult, type, number, true);
     }
     public List<QCInspectionRequest> findAll(Long warehouseId,
                                              Long inventoryId,
@@ -98,7 +98,7 @@ public class QCInspectionRequestService {
                                              String lpn,
                                              String workOrderQCSampleNumber,
                                              QCInspectionResult qcInspectionResult,
-                                             String type,
+                                             String type, String number,
                                              boolean loadDetails) {
 
         List<QCInspectionRequest> qcInspectionRequests =
@@ -108,6 +108,17 @@ public class QCInspectionRequestService {
 
                 predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
+                if (Strings.isNotBlank(number)) {
+
+                    if (number.contains("%")) {
+                        predicates.add(criteriaBuilder.like(root.get("number"), number));
+                    }
+                    else {
+                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                    }
+
+
+                }
                 if (Objects.nonNull(inventoryId)) {
 
                     Join<QCInspectionRequest, Inventory> joinInventory = root.join("inventory", JoinType.INNER);
@@ -167,6 +178,21 @@ public class QCInspectionRequestService {
 
 
 
+    }
+
+    private QCInspectionRequest findByNumber(Long warehouseId, String number) {
+        return qcInspectionRequestRepository.findByWarehouseIdAndNumber(warehouseId, number);
+    }
+
+    public QCInspectionRequest saveOrUpdate(QCInspectionRequest qcInspectionRequest) {
+        if (Objects.isNull(qcInspectionRequest.getId()) &&
+                Objects.nonNull(findByNumber(qcInspectionRequest.getWarehouseId(), qcInspectionRequest.getNumber()))) {
+            qcInspectionRequest.setId(
+                    findByNumber(qcInspectionRequest.getWarehouseId(), qcInspectionRequest.getNumber())
+                    .getId()
+            );
+        }
+        return save(qcInspectionRequest);
     }
 
     private void loadAttributes(List<QCInspectionRequest> qcInspectionRequests) {
@@ -273,7 +299,7 @@ public class QCInspectionRequestService {
     public void removeInboundQCInspectionRequest(Inventory inventory) {
 
         List<QCInspectionRequest> qcInspectionRequests = findAll(inventory.getWarehouseId(),
-                inventory.getId(), null, null, null, null, null, false);
+                inventory.getId(), null, null, null, null, null, null, false);
 
         qcInspectionRequests.forEach(
                 qcInspectionRequest -> delete(qcInspectionRequest)
@@ -292,7 +318,7 @@ public class QCInspectionRequestService {
                 inventoryIds,
                 null,
                 null,
-                QCInspectionResult.PENDING, null
+                QCInspectionResult.PENDING, null, null
         );
     }
 
@@ -387,9 +413,9 @@ public class QCInspectionRequestService {
                                                                        String lpn,
                                                                        String workOrderQCSampleNumber) {
         List<QCInspectionRequest> passedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.PASS, null);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.PASS, null, null);
         List<QCInspectionRequest> failedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.FAIL, null);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.FAIL, null, null);
 
         // return both passed qc inspection and failed qc inspection
         passedQCInspectionRequest.addAll(failedQCInspectionRequest);
@@ -433,5 +459,23 @@ public class QCInspectionRequestService {
                 }
         );
         return save(qcInspectionRequest);
+    }
+
+    public QCInspectionRequest addQCInspectionRequest(Long warehouseId, QCInspectionRequest qcInspectionRequest) {
+        qcInspectionRequest.getQcInspectionRequestItems().forEach(
+                qcInspectionRequestItem -> {
+                    qcInspectionRequestItem.setQcInspectionRequest(qcInspectionRequest);
+                    qcInspectionRequestItem.setQcInspectionResult(QCInspectionResult.PENDING);
+                    qcInspectionRequestItem.getQcInspectionRequestItemOptions().forEach(
+                            qcInspectionRequestItemOption -> {
+                                qcInspectionRequestItemOption.setQcInspectionRequestItem(
+                                        qcInspectionRequestItem
+                                );
+                                qcInspectionRequestItemOption.setQcInspectionResult(QCInspectionResult.PENDING);
+                            }
+                    );
+                }
+        );
+        return saveOrUpdate(qcInspectionRequest);
     }
 }
