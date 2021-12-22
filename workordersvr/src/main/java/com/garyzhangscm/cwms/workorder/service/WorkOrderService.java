@@ -1560,4 +1560,17 @@ public class WorkOrderService implements TestDataInitiableService {
 
         return saveOrUpdate(workOrder);
     }
+
+    public WorkOrder addQCQuantity(Long id, Long qcQuantity) {
+        WorkOrder workOrder = findById(id);
+        logger.debug("start to add qc quantity  {} to the work order {}",
+                qcQuantity, workOrder.getNumber());
+        workOrder.setQcQuantityCompleted(
+                Objects.isNull(workOrder.getQcQuantityCompleted()) ? 0 : workOrder.getQcQuantityCompleted()
+                        + qcQuantity
+        );
+        logger.debug("after the quantity is added, the new qc quantity is {}",
+                workOrder.getQcQuantityCompleted());
+        return saveOrUpdate(workOrder,false);
+    }
 }

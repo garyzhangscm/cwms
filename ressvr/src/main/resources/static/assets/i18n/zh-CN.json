@@ -1499,5 +1499,9 @@
   "QC-INSPECTION-RESULT-SKIPPED": "跳过",
   "QC-INSPECTION-RESULT-CANCELLED": "取消",
   "QC-INSPECTION-RESULT-NOT_APPLY": "不适用",
-  "menu.main.qc.qc-inspection-request-maintenance": "质检请求"
+  "menu.main.qc.qc-inspection-request-maintenance": "质检请求",
+  "message.item.not-match": "商品不吻合",
+  "qc-inspection-inventory": "质检库存",
+  "message.lpn.not-exists": "LPN 不存在",
+  "message.lpn.added": "LPN 添加成功"
 }

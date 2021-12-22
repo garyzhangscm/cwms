@@ -131,4 +131,21 @@ public class WorkOrderServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
+    public WorkOrder addQCQuantity(Long workOrderId, Long qcQuantity) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/work-orders/{id}/add-qc-quantity")
+                        .queryParam("qcQuantity", qcQuantity);
+
+        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(workOrderId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 }

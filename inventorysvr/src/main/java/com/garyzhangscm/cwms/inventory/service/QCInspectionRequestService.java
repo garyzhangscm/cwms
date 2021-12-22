@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WorkOrderServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.QCException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.QCInspectionRequestRepository;
@@ -211,6 +212,15 @@ public class QCInspectionRequestService {
                     )
             );
         }
+
+        if (Objects.nonNull(qcInspectionRequest.getWorkOrderId()) &&
+                Objects.isNull(qcInspectionRequest.getWorkOrder())) {
+            qcInspectionRequest.setWorkOrder(
+                    workOrderServiceRestemplateClient.getWorkOrderById(
+                            qcInspectionRequest.getWorkOrderId()
+                    )
+            );
+        }
     }
 
 
@@ -350,9 +360,17 @@ public class QCInspectionRequestService {
                                 );
                             }
                     );
-                    newQCInspectionRequests.add(
-                            save(qcInspectionRequest)
-                    );
+                    QCInspectionRequest newQCInspectionRequest = save(qcInspectionRequest);
+
+                    // if this is for certain work order, we will update the work order's qc quantity
+                    if (Objects.nonNull(newQCInspectionRequest.getWorkOrderId())) {
+                        // logger.debug("start to process qc quantity by inventory: {}", newQCInspectionRequest.getInventories());
+                        Long qcQuantity = newQCInspectionRequest.getInventories().stream().mapToLong(Inventory::getQuantity).sum();
+                        workOrderServiceRestemplateClient.addQCQuantity(
+                                qcInspectionRequest.getWorkOrderId(), qcQuantity
+                        );
+                    }
+                    newQCInspectionRequests.add(newQCInspectionRequest);
                 }
         );
         // change the result according
@@ -411,11 +429,12 @@ public class QCInspectionRequestService {
 
     public List<QCInspectionRequest> findAllQCInspectionRequestResults(Long warehouseId,
                                                                        String lpn,
-                                                                       String workOrderQCSampleNumber) {
+                                                                       String workOrderQCSampleNumber,
+                                                                       String number) {
         List<QCInspectionRequest> passedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.PASS, null, null);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.PASS, null, number);
         List<QCInspectionRequest> failedQCInspectionRequest =
-                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.FAIL, null, null);
+                findAll(warehouseId, null, null, lpn, workOrderQCSampleNumber, QCInspectionResult.FAIL, null, number);
 
         // return both passed qc inspection and failed qc inspection
         passedQCInspectionRequest.addAll(failedQCInspectionRequest);
@@ -462,6 +481,8 @@ public class QCInspectionRequestService {
     }
 
     public QCInspectionRequest addQCInspectionRequest(Long warehouseId, QCInspectionRequest qcInspectionRequest) {
+        // verify the qc inspection
+        verifyQCInspectionRequest(qcInspectionRequest);
         qcInspectionRequest.getQcInspectionRequestItems().forEach(
                 qcInspectionRequestItem -> {
                     qcInspectionRequestItem.setQcInspectionRequest(qcInspectionRequest);
@@ -476,6 +497,71 @@ public class QCInspectionRequestService {
                     );
                 }
         );
-        return saveOrUpdate(qcInspectionRequest);
+
+        QCInspectionRequest newQCInspectionRequest = saveOrUpdate(qcInspectionRequest);
+
+        return newQCInspectionRequest;
+    }
+
+    private void verifyQCInspectionRequest(QCInspectionRequest qcInspectionRequest) {
+        switch (qcInspectionRequest.getType()) {
+            case BY_ITEM:
+                verifyItemQCInspectionRequest(qcInspectionRequest);
+                break;
+
+        }
+    }
+
+    /**
+     * Make sure if the user pass in the work order, the work order matches with the item
+     * @param qcInspectionRequest
+     */
+    private void verifyItemQCInspectionRequest(QCInspectionRequest qcInspectionRequest) {
+        if (Objects.isNull(qcInspectionRequest.getItem())) {
+            throw QCException.raiseException("item is needed for the qc inspection request");
+        }
+        if (Objects.nonNull(qcInspectionRequest.getWorkOrder()) &&
+                !Objects.equals(qcInspectionRequest.getWorkOrder().getItem().getId(),
+                        qcInspectionRequest.getItem().getId())) {
+            throw QCException.raiseException("the item " + qcInspectionRequest.getItem().getName() +
+                    " doesn't match with work order " + qcInspectionRequest.getWorkOrder().getNumber() + "'s " +
+                    " item " + qcInspectionRequest.getWorkOrder().getItem().getId());
+
+        }
+        if (Objects.nonNull(qcInspectionRequest.getWorkOrderId())) {
+            WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(
+                    qcInspectionRequest.getWorkOrderId()
+            );
+            if (!Objects.equals(workOrder.getItem().getId(), qcInspectionRequest.getItem().getId())) {
+
+                throw QCException.raiseException("the item " + qcInspectionRequest.getItem().getName() +
+                        " doesn't match with work order " + workOrder.getNumber() + "'s " +
+                        " item " + workOrder.getItem().getId());
+            }
+        }
+    }
+
+    /**
+     * make sure we can use the LPN for the qc and return the inventories of this LPN
+     * @param id
+     * @param warehouseId
+     * @param lpn
+     * @return
+     */
+    public List<Inventory> validateLPNForInspectionByQCRequest(Long id, Long warehouseId, String lpn) {
+        QCInspectionRequest qcInspectionRequest = findById(id);
+
+        List<Inventory> inventories = inventoryService.findByLpn(warehouseId, lpn);
+
+        if (inventories.isEmpty()) {
+            throw QCException.raiseException("Invalid LPN");
+        }
+        // make sure all the items on the LPN match with the qc request's item
+        if (inventories.stream().anyMatch(inventory -> !Objects.equals(inventory.getItem(), qcInspectionRequest.getItem()))) {
+
+            throw QCException.raiseException("LPN " + lpn + " contains item that doesn't match with " +
+                    " the qc request " + qcInspectionRequest.getNumber() + "'s item ");
+        }
+        return inventories;
     }
 }

@@ -28,7 +28,8 @@ public enum ExceptionCode {
     INVENTORY_ERROR(35004, HttpStatus.BAD_REQUEST, "Inventory Exception"),
     INVENTORY_CONSOLIDATION_EXCEPTION(35005, HttpStatus.BAD_REQUEST, "Inventory Consolidation Exception"),
     ITEM_ERROR(35006, HttpStatus.BAD_REQUEST, "Item Exception"),
-    INVENTORY_LOCK_ERROR(35007, HttpStatus.BAD_REQUEST, "Inventory Lock Exception");
+    INVENTORY_LOCK_ERROR(35007, HttpStatus.BAD_REQUEST, "Inventory Lock Exception"),
+    QC_ERROR(35008, HttpStatus.BAD_REQUEST, "QC Exception");
 
     private final int code;
 
