@@ -19,10 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
-import com.garyzhangscm.cwms.inventory.model.QCInspectionRequest;
-import com.garyzhangscm.cwms.inventory.model.QCInspectionResult;
-import com.garyzhangscm.cwms.inventory.model.QCRuleConfiguration;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.QCInspectionRequestService;
 import com.garyzhangscm.cwms.inventory.service.QCRuleConfigurationService;
 import org.apache.logging.log4j.util.Strings;
@@ -61,8 +58,9 @@ public class QCInspectionRequestController {
     public List<QCInspectionRequest> findAllQCInspectionRequestResults(
             @RequestParam Long warehouseId,
             @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+            @RequestParam(name="number", required = false, defaultValue = "") String number,
             @RequestParam(name="workOrderQCSampleNumber", required = false, defaultValue = "") String workOrderQCSampleNumber ) {
-        return qcInspectionRequestService.findAllQCInspectionRequestResults(warehouseId, lpn, workOrderQCSampleNumber);
+        return qcInspectionRequestService.findAllQCInspectionRequestResults(warehouseId, lpn, workOrderQCSampleNumber, number);
     }
 
 
@@ -72,6 +70,12 @@ public class QCInspectionRequestController {
             @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
             @RequestParam(name="inventoryIds", required = false, defaultValue = "") String inventoryIds ) {
         return qcInspectionRequestService.findPendingQCInspectionRequests(warehouseId, inventoryId, inventoryIds);
+    }
+
+    @RequestMapping(value="/qc-inspection-request/{id}", method = RequestMethod.GET)
+    public QCInspectionRequest getQCInspectionRequestResult(
+            @RequestParam Long warehouseId, @PathVariable Long id ) {
+        return qcInspectionRequestService.findById(id);
     }
 
     @RequestMapping(value="/qc-inspection-requests", method = RequestMethod.POST)
@@ -97,5 +101,19 @@ public class QCInspectionRequestController {
             @RequestParam Long warehouseId,
             @RequestBody QCInspectionRequest qcInspectionRequest) {
         return qcInspectionRequestService.addQCInspectionRequest(warehouseId, qcInspectionRequest);
+    }
+
+    /**
+     * make sure we can use the LPN for the qc and return the inventories of this LPN
+     * @param warehouseId
+     * @param lpn
+     * @return
+     */
+    @RequestMapping(value="/qc-inspection-requests/{id}/inspect-by-request/validate-lpn", method = RequestMethod.POST)
+    public List<Inventory> validateLPNForInspectionByQCRequest(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam String lpn) {
+        return qcInspectionRequestService.validateLPNForInspectionByQCRequest(id, warehouseId, lpn);
     }
 }

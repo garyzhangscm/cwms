@@ -64,6 +64,20 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     @JoinColumn(name="inventory_id")
     private Inventory inventory;
 
+
+    // only if the qc request is manually generated
+    // and by item. So that the user can specify
+    // which invenotories has been QCed during
+    // the request
+    @ManyToMany(cascade = {
+            CascadeType.ALL
+    })
+    @JoinTable(name = "qc_inspection_request_inventory",
+            joinColumns = @JoinColumn(name = "qc_inspection_request_id"),
+            inverseJoinColumns = @JoinColumn(name = "inventory_id")
+    )
+    private List<Inventory> inventories = new ArrayList<>();
+
     // only if the qc is for work order
     @Column(name="work_order_qc_sample_id")
     private Long workOrderQCSampleId;
@@ -280,5 +294,13 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
 
     public void setType(QCInspectionRequestType type) {
         this.type = type;
+    }
+
+    public List<Inventory> getInventories() {
+        return inventories;
+    }
+
+    public void setInventories(List<Inventory> inventories) {
+        this.inventories = inventories;
     }
 }

@@ -178,6 +178,13 @@ public class WorkOrderController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/work-orders/{id}/add-qc-quantity", method = RequestMethod.POST)
+    public WorkOrder addQCQuantity(@PathVariable Long id,
+                                   @RequestParam Long  qcQuantity) {
+        return workOrderService.addQCQuantity(id, qcQuantity);
+    }
+
+    @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/reverse-production", method = RequestMethod.POST)
     public WorkOrder reverseProduction(@PathVariable Long id,
                                        @RequestParam String lpn) {
