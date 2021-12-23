@@ -18,10 +18,8 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.WorkOrderServiceRestemplateClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.garyzhangscm.cwms.inventory.clients.*;
 import com.garyzhangscm.cwms.inventory.exception.QCException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
@@ -66,6 +64,8 @@ public class QCInspectionRequestService {
     private InboundServiceRestemplateClient inboundServiceRestemplateClient;
     @Autowired
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
 
     public QCInspectionRequest findById(Long id, boolean loadDetails) {
@@ -563,5 +563,79 @@ public class QCInspectionRequestService {
                     " the qc request " + qcInspectionRequest.getNumber() + "'s item ");
         }
         return inventories;
+    }
+
+    public ReportHistory generateQCInspectionRequestReport(Long id, String locale)
+            throws JsonProcessingException {
+
+        return generateQCInspectionRequestReport(findById(id), locale);
+    }
+    public ReportHistory generateQCInspectionRequestReport(QCInspectionRequest qcInspectionRequest, String locale)
+            throws JsonProcessingException {
+
+        Long warehouseId = qcInspectionRequest.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupOrderPickReportParameters(
+                reportData, qcInspectionRequest
+        );
+        setupOrderPickReportData(
+                reportData, qcInspectionRequest
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.QC_INSPECTION_REQUEST_REPORT, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupOrderPickReportParameters(
+            Report report, QCInspectionRequest qcInspectionRequest) {
+
+        // set the parameters to be the meta data of
+        // the qcInspectionRequest
+
+        report.addParameter("number", qcInspectionRequest.getNumber());
+
+        report.addParameter("itemName",
+                Objects.nonNull(qcInspectionRequest.getItem()) ?
+                    qcInspectionRequest.getItem().getName() : "");
+        report.addParameter("itemDescription",
+                Objects.nonNull(qcInspectionRequest.getItem()) ?
+                        qcInspectionRequest.getItem().getDescription() : "");
+        report.addParameter("quantity",
+                 qcInspectionRequest.getQcQuantity());
+
+        report.addParameter("workOrder",
+                Objects.nonNull(qcInspectionRequest.getWorkOrder()) ?
+                        qcInspectionRequest.getWorkOrder().getNumber() : "");
+        report.addParameter("receipt",
+                Objects.nonNull(qcInspectionRequest.getReceipt()) ?
+                        qcInspectionRequest.getReceipt().getNumber() : "");
+
+
+
+    }
+
+    private void setupOrderPickReportData(Report report, QCInspectionRequest qcInspectionRequest) {
+
+        // set data to be all picks
+        List<QCInspectionRequestItem> qcInspectionRequestItems = qcInspectionRequest.getQcInspectionRequestItems();
+        List<QCInspectionRequestItemOption> qcInspectionRequestItemOptions =
+                qcInspectionRequestItems.stream().map(
+                        qcInspectionRequestItem -> qcInspectionRequestItem.getQcInspectionRequestItemOptions()
+                ).flatMap(List::stream)
+                        .collect(Collectors.toList());
+        report.setData(qcInspectionRequestItemOptions);
     }
 }

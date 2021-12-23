@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.inventory.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "qc_inspection_request_item")
@@ -56,6 +58,9 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
     @JoinColumn(name = "qc_inspection_request_id")
     @JsonIgnore
     private QCInspectionRequest qcInspectionRequest;
+
+    @Transient
+    private String qcInspectionRequestNumber;
 
 
     @OneToMany(
@@ -109,6 +114,17 @@ public class QCInspectionRequestItem extends AuditibleEntity<String> implements 
 
     public List<QCInspectionRequestItemOption> getQcInspectionRequestItemOptions() {
         return qcInspectionRequestItemOptions;
+    }
+
+    public String getQcInspectionRequestNumber() {
+        return Strings.isNotBlank(qcInspectionRequestNumber) ?
+               qcInspectionRequestNumber :
+                Objects.nonNull(qcInspectionRequest) ?
+                    qcInspectionRequest.getNumber() : "";
+    }
+
+    public void setQcInspectionRequestNumber(String qcInspectionRequestNumber) {
+        this.qcInspectionRequestNumber = qcInspectionRequestNumber;
     }
 
     public void setQcInspectionRequestItemOptions(List<QCInspectionRequestItemOption> qcInspectionRequestItemOptions) {

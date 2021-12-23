@@ -22,12 +22,14 @@ package com.garyzhangscm.cwms.inventory.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Table(name = "qc_inspection_request_item_option")
@@ -56,6 +58,10 @@ public class QCInspectionRequestItemOption extends AuditibleEntity<String> imple
 
     @Column(name = "double_value")
     private Double doubleValue;
+
+    // for display purpose
+    @Transient
+    private String qcRuleName;
 
 
 
@@ -129,5 +135,16 @@ public class QCInspectionRequestItemOption extends AuditibleEntity<String> imple
 
     public void setBooleanValue(Boolean booleanValue) {
         this.booleanValue = booleanValue;
+    }
+
+    public String getQcRuleName() {
+        return Strings.isNotBlank(qcRuleName) ?
+                  qcRuleName :
+                Objects.nonNull(qcInspectionRequestItem) && Objects.nonNull(qcInspectionRequestItem.getQcRule()) ?
+                    qcInspectionRequestItem.getQcRule().getName() : "";
+    }
+
+    public void setQcRuleName(String qcRuleName) {
+        this.qcRuleName = qcRuleName;
     }
 }
