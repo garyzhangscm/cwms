@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 
 import java.util.Comparator;
@@ -48,6 +49,10 @@ public class Inventory implements Serializable {
     private Long quantity;
 
     private Boolean virtual;
+
+    private Long customerReturnOrderId;
+
+    private Long customerReturnOrderLineId;
 
     private InventoryStatus inventoryStatus;
 
@@ -229,5 +234,21 @@ public class Inventory implements Serializable {
 
     public void setInboundQCRequired(Boolean inboundQCRequired) {
         this.inboundQCRequired = inboundQCRequired;
+    }
+
+    public Long getCustomerReturnOrderId() {
+        return customerReturnOrderId;
+    }
+
+    public void setCustomerReturnOrderId(Long customerReturnOrderId) {
+        this.customerReturnOrderId = customerReturnOrderId;
+    }
+
+    public Long getCustomerReturnOrderLineId() {
+        return customerReturnOrderLineId;
+    }
+
+    public void setCustomerReturnOrderLineId(Long customerReturnOrderLineId) {
+        this.customerReturnOrderLineId = customerReturnOrderLineId;
     }
 }

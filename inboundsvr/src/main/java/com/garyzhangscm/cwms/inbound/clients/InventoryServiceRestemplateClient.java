@@ -272,6 +272,35 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public List<Inventory> findInventoryByCustomerReturnOrder(
+            Long warehouseId, Long customerReturnOrderId,
+            String inventoryIds,
+            Boolean notPutawayInventoryOnly) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("customerReturnOrderId", customerReturnOrderId)
+                        .queryParam("warehouseId", warehouseId);
+
+        if (Objects.nonNull(inventoryIds)) {
+            builder.queryParam("inventoryIds", inventoryIds);
+        }
+        if (Objects.nonNull(notPutawayInventoryOnly)) {
+            builder.queryParam("notPutawayInventoryOnly", notPutawayInventoryOnly);
+        }
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     public List<Inventory> findInventoryByItem(Item item) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

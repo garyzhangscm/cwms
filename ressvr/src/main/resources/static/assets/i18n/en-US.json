@@ -1504,5 +1504,6 @@
   "message.item.not-match": "Item doesn't match",
   "qc-inspection-inventory": "QC Inspection Inventory",
   "message.lpn.not-exists": "LPN doesn't exist",
-  "message.lpn.added": "LPN added"
+  "message.lpn.added": "LPN added",
+  "menu.main.inbound.customer-return": "Customer Return"
 }

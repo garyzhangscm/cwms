@@ -195,4 +195,19 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Customer getCustomerById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/customers/{id}");
+
+        ResponseBodyWrapper<Customer> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Customer>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 }
