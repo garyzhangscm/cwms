@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.inbound.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inbound.model.BillableRequest;
+import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrderConfirmation;
 import com.garyzhangscm.cwms.inbound.model.IntegrationResult;
 import com.garyzhangscm.cwms.inbound.model.ReceiptConfirmation;
 import org.slf4j.Logger;
@@ -56,6 +57,17 @@ public class KafkaSender {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
             send("INTEGRATION_RECEIPT_CONFIRMATION", objectMapper.writeValueAsString(receiptConfirmation));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
+    public void send(CustomerReturnOrderConfirmation customerReturnOrderConfirmation) {
+        try {
+
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("INTEGRATION_CUSTOMER_RETURN_ORDER_CONFIRMATION", objectMapper.writeValueAsString(customerReturnOrderConfirmation));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

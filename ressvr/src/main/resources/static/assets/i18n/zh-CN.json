@@ -1503,5 +1503,6 @@
   "message.item.not-match": "商品不吻合",
   "qc-inspection-inventory": "质检库存",
   "message.lpn.not-exists": "LPN 不存在",
-  "message.lpn.added": "LPN 添加成功"
+  "message.lpn.added": "LPN 添加成功",
+  "menu.main.inbound.customer-return": "退货"
 }

@@ -31,8 +31,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "QC Inspection",menu.main.qc.qc-inspection,/qc/inspection,3,Main-Menu-QC,QC-Inspection,,true,false
 "QC Result",menu.main.qc.qc-result,/qc/result,3,Main-Menu-QC,QC-Result,,true,false
 "Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt,,true,false
-"Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,2,Main-Menu-Inbound,Inbound-PutawayConfig,,true,false
-"QC Configuration",menu.main.inbound.qc-configuration,/inbound/inbound-qc-configuration,2,Main-Menu-Inbound,Inbound-QCConfig,,true,false
+"Customer Return",menu.main.inbound.customer-return,/inbound/customer-return,2,Main-Menu-Inbound,Inbound-CustomerReturn,,true,false
+"Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,3,Main-Menu-Inbound,Inbound-PutawayConfig,,true,false
+"QC Configuration",menu.main.inbound.qc-configuration,/inbound/inbound-qc-configuration,4,Main-Menu-Inbound,Inbound-QCConfig,,true,false
 "Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order,,true,false
 "Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment,,true,false
 "Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,,true,false

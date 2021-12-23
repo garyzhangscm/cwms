@@ -1,6 +1,8 @@
 package com.garyzhangscm.cwms.inbound.service;
 
 import com.garyzhangscm.cwms.inbound.clients.KafkaSender;
+import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrder;
+import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrderConfirmation;
 import com.garyzhangscm.cwms.inbound.model.Receipt;
 import com.garyzhangscm.cwms.inbound.model.ReceiptConfirmation;
 import org.slf4j.Logger;
@@ -40,6 +42,18 @@ public class IntegrationService {
 
         logger.debug("Will send receipt confirmation\n {}", receiptConfirmation);
         kafkaSender.send(receiptConfirmation);
+
+    }
+
+
+    public void sendCustomerReturnOrderCompleteData(CustomerReturnOrder customerReturnOrder) {
+
+
+        CustomerReturnOrderConfirmation customerReturnOrderConfirmation
+                = new CustomerReturnOrderConfirmation(customerReturnOrder);
+
+        logger.debug("Will send customer return order confirmation\n {}", customerReturnOrderConfirmation);
+        kafkaSender.send(customerReturnOrderConfirmation);
 
     }
 

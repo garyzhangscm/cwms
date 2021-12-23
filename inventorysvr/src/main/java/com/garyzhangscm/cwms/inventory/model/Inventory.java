@@ -71,11 +71,19 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Pick allocatedByPick;
 
+    // if the inventory is received from receipt
     @Column(name = "receipt_id")
     private Long receiptId;
 
     @Column(name = "receipt_line_id")
     private Long receiptLineId;
+
+    // if the inventory is received from the customer return
+    @Column(name = "customer_return_order_id")
+    private Long customerReturnOrderId;
+
+    @Column(name = "customer_return_order_line_id")
+    private Long customerReturnOrderLineId;
 
     // When inventory is produced by some work order
     @Column(name = "work_order_id")
@@ -451,4 +459,19 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
                 getLocks().size() >0;
     }
 
+    public Long getCustomerReturnOrderId() {
+        return customerReturnOrderId;
+    }
+
+    public void setCustomerReturnOrderId(Long customerReturnOrderId) {
+        this.customerReturnOrderId = customerReturnOrderId;
+    }
+
+    public Long getCustomerReturnOrderLineId() {
+        return customerReturnOrderLineId;
+    }
+
+    public void setCustomerReturnOrderLineId(Long customerReturnOrderLineId) {
+        this.customerReturnOrderLineId = customerReturnOrderLineId;
+    }
 }

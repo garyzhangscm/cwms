@@ -151,6 +151,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String locationIds,
                                    Long locationGroupId,
                                    String receiptId,
+                                   String customerReturnOrderId,
                                    Long workOrderId,
                                    String workOrderLineIds,
                                    String workOrderByProductIds,
@@ -162,7 +163,7 @@ public class InventoryService implements TestDataInitiableService{
         return findAll(warehouseId, itemId,
                 itemName, itemPackageTypeName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
-                receiptId, workOrderId, workOrderLineIds,
+                receiptId, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
@@ -182,6 +183,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String locationIds,
                                    Long locationGroupId,
                                    String receiptId,
+                                   String customerReturnOrderId,
                                    Long workOrderId,
                                    String workOrderLineIds,
                                    String workOrderByProductIds,
@@ -288,6 +290,11 @@ public class InventoryService implements TestDataInitiableService{
 
                     if (StringUtils.isNotBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
+
+                    }
+
+                    if (StringUtils.isNotBlank(customerReturnOrderId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("customerReturnOrderId"), customerReturnOrderId));
 
                     }
 
@@ -1990,7 +1997,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
-                        null,
+                        null, null,
                         pickIds,
                         null,
                         null,
@@ -2032,7 +2039,7 @@ public class InventoryService implements TestDataInitiableService{
                     null,
                     inboundLocationId,
                     null,
-                    null,
+                    null, null,
                     null,
                     null,
                     null,
@@ -2067,7 +2074,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
-                        null,
+                        null, null,
                         null,
                         null,
                         pickIds,
@@ -2419,7 +2426,7 @@ public class InventoryService implements TestDataInitiableService{
                 null,
                 null,
                 null,
-                null,
+                null, null,
                 null,
                 null,
                 null,
