@@ -1566,8 +1566,9 @@ public class WorkOrderService implements TestDataInitiableService {
         logger.debug("start to add qc quantity  {} to the work order {}",
                 qcQuantity, workOrder.getNumber());
         workOrder.setQcQuantityCompleted(
-                Objects.isNull(workOrder.getQcQuantityCompleted()) ? 0 : workOrder.getQcQuantityCompleted()
-                        + qcQuantity
+                Objects.isNull(workOrder.getQcQuantityCompleted()) ?
+                        qcQuantity :
+                        workOrder.getQcQuantityCompleted() + qcQuantity
         );
         logger.debug("after the quantity is added, the new qc quantity is {}",
                 workOrder.getQcQuantityCompleted());

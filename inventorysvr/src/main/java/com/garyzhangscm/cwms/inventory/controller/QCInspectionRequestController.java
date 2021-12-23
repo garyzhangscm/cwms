@@ -18,11 +18,14 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.QCInspectionRequestService;
 import com.garyzhangscm.cwms.inventory.service.QCRuleConfigurationService;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +33,9 @@ import java.util.List;
 
 @RestController
 public class QCInspectionRequestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(QCInspectionRequestController.class);
+
     @Autowired
     QCInspectionRequestService qcInspectionRequestService;
 
@@ -115,5 +121,17 @@ public class QCInspectionRequestController {
             @RequestParam Long warehouseId,
             @RequestParam String lpn) {
         return qcInspectionRequestService.validateLPNForInspectionByQCRequest(id, warehouseId, lpn);
+    }
+
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/qc-inspection-requests/{id}/report", method = RequestMethod.POST)
+    public ReportHistory generateQCInspectionRequestReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print report for qc inspection request with id: {}", id);
+        return qcInspectionRequestService.generateQCInspectionRequestReport(id, locale);
     }
 }
