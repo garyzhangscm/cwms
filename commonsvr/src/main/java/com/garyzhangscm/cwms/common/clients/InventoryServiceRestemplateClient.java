@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,8 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 @Component
@@ -79,20 +82,28 @@ public class InventoryServiceRestemplateClient {
     public String validateNewItemName(Long warehouseId, String itemName) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/items/validate-new-item-name")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("itemName", itemName);
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/inventory/items/validate-new-item-name")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("itemName", URLEncoder.encode(itemName, "UTF-8"));
 
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+            ResponseBodyWrapper<String> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+            return responseBodyWrapper.getData();
+        }
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by name " + itemName);
+        }
+
     }
 
     public Inventory getInventoryById(Long id) {

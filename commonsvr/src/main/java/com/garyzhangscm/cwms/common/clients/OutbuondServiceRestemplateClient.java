@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.common.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 @Component
@@ -55,20 +58,27 @@ public class OutbuondServiceRestemplateClient {
     public String validateNewOrderNumber(Long warehouseId, String orderNumber) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/orders/validate-new-order-number")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("orderNumber", orderNumber);
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/outbound/orders/validate-new-order-number")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("orderNumber", URLEncoder.encode(orderNumber, "UTF-8"));
 
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+            ResponseBodyWrapper<String> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+            return responseBodyWrapper.getData();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the order by name " + orderNumber);
+        }
+
     }
 
 
