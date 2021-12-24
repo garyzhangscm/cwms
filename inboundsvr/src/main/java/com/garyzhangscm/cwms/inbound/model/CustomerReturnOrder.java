@@ -57,6 +57,9 @@ public class CustomerReturnOrder {
     @Column(name = "rma_number")
     private String RMANumber;
 
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
     @Column(name = "customer_id")
     private Long customerId;
 
@@ -79,6 +82,7 @@ public class CustomerReturnOrder {
     private List<CustomerReturnOrderLine> customerReturnOrderLines = new ArrayList<>();
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private ReceiptStatus status = ReceiptStatus.OPEN;
 
     @Column(name = "allow_unexpected_item")
@@ -196,5 +200,13 @@ public class CustomerReturnOrder {
 
     public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
         this.allowUnexpectedItem = allowUnexpectedItem;
+    }
+
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
     }
 }
