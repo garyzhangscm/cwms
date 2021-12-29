@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -31,6 +33,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,13 +48,20 @@ public class OrderActivityService {
     @Autowired
     private OrderActivityRepository orderActivityRepository;
 
+    @Autowired
+    private HttpSession httpSession;
+    @Autowired
+    private KafkaSender kafkaSender;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
+
 
     public OrderActivity findById(Long id) {
         return orderActivityRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("carton not found by id: " + id));
     }
 
-    public OrderActivity save(OrderActivity orderActivity) {
+    private OrderActivity save(OrderActivity orderActivity) {
         return orderActivityRepository.save(orderActivity);
     }
 
@@ -166,5 +176,145 @@ public class OrderActivityService {
 
     public OrderActivity addOrderActivity(OrderActivity orderActivity) {
         return save(orderActivity);
+    }
+
+    public String getNextNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "order-activity-number");
+    }
+
+    public String getNextTransactionGroupId(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "order-activity-transaction-group-id");
+    }
+
+    private String getTransactionGroupId(Long warehouseId) {
+        String transactionGroupId;
+        if (Objects.isNull(httpSession.getAttribute("order-activity-transaction-group-id"))) {
+            logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
+            transactionGroupId = getNextTransactionGroupId(warehouseId);
+            httpSession.setAttribute("order-activity-transaction-group-id", transactionGroupId);
+            logger.debug(">> {}", transactionGroupId);
+        }
+        else {
+            transactionGroupId = httpSession.getAttribute("order-activity-transaction-group-id").toString();
+            logger.debug("Get transaction ID {} from current session", transactionGroupId);
+        }
+        return transactionGroupId;
+    }
+
+    public OrderActivity createOrderActivity(Long warehouseId, Order order, OrderActivityType orderActivityType) {
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, order, orderActivityType);
+    }
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                             Order order, OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                .withOrder(order)
+                .withOrderActivityType(orderActivityType);
+        return orderActivity;
+    }
+    public OrderActivity createOrderActivity(Long warehouseId, Order order,
+                                             Shipment shipment, OrderActivityType orderActivityType) {
+
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, order, shipment, orderActivityType);
+    }
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                             Order order, Shipment shipment, OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                .withOrder(order)
+                .withShipment(shipment).withOrderActivityType(orderActivityType);
+        return orderActivity;
+    }
+
+    public OrderActivity createOrderActivity(Long warehouseId, Order order,
+                                             Shipment shipment, ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
+
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, order, shipment, shipmentLine, orderActivityType);
+    }
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                             Order order, Shipment shipment,
+                                             ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                .withOrder(order)
+                .withShipment(shipment)
+                .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
+
+        return orderActivity;
+    }
+
+    public OrderActivity createOrderActivity(Long warehouseId, Order order,
+                                             ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
+
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, order, shipmentLine, orderActivityType);
+    }
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                             Order order, ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                .withOrder(order)
+                .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
+
+        return orderActivity;
+    }
+
+    public OrderActivity createOrderActivity(Long warehouseId,
+                                             ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
+
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, shipmentLine, orderActivityType);
+    }
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                             ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =
+                OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
+
+        return orderActivity;
+    }
+
+
+    public OrderActivity createOrderActivity(Long warehouseId,
+                                             ShipmentLine shipmentLine,
+                                             Pick pick,
+                                             OrderActivityType orderActivityType) {
+
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, shipmentLine, pick,  orderActivityType);
+    }
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                             ShipmentLine shipmentLine,
+                                              Pick pick,
+                                              OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =
+                OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                        .withShipmentLine(shipmentLine)
+                        .withPick(pick).withOrderActivityType(orderActivityType);
+
+        return orderActivity;
+    }
+    public OrderActivity createOrderActivity(Long warehouseId,
+                                             ShipmentLine shipmentLine,
+                                             ShortAllocation shortAllocation,
+                                             OrderActivityType orderActivityType) {
+
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, shipmentLine, shortAllocation,  orderActivityType);
+    }
+
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                              ShipmentLine shipmentLine,
+                                              ShortAllocation shortAllocation,
+                                              OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =
+                OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                        .withShipmentLine(shipmentLine)
+                        .withShortAllocation(shortAllocation).withOrderActivityType(orderActivityType);
+
+        return orderActivity;
+    }
+
+    public void saveOrderActivity(OrderActivity orderActivity) {
+        kafkaSender.send(orderActivity);
     }
 }

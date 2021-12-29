@@ -51,6 +51,8 @@ public class ShipmentService {
     @Autowired
     private ShipmentLineService shipmentLineService;
     @Autowired
+    private OrderActivityService orderActivityService;
+    @Autowired
     private WaveService waveService;
     @Autowired
     private OrderLineService orderLineService;
@@ -70,6 +72,7 @@ public class ShipmentService {
     private ShortAllocationService shortAllocationService;
     @Autowired
     private KafkaSender kafkaSender;
+
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
@@ -264,9 +267,10 @@ public class ShipmentService {
             return null;
         }
 
-        kafkaSender.send(OrderActivity.build()
-                .withOrder(orderService.findById(order.getId()))
-                .withOrderActivityType(OrderActivityType.ORDER_PLAN));
+        orderActivityService.createOrderActivity(
+                order.getWarehouseId(), order, OrderActivityType.ORDER_PLAN
+        );
+
 
         return createShipment(wave, shipmentNumber, order, plannableOrderLines);
 
@@ -349,6 +353,13 @@ public class ShipmentService {
 
         orderLines.forEach(orderLine -> {
             ShipmentLine shipmentLine = shipmentLineService.createShipmentLine(wave, newShipment, orderLine);
+
+            orderActivityService.saveOrderActivity(
+                orderActivityService.createOrderActivity(
+                        newShipment.getWarehouseId(), order, newShipment,
+                        shipmentLine, OrderActivityType.ORDER_PLAN
+                ));
+
 
             // Add the new shipment line to the shipment
             newShipment.getShipmentLines().add(shipmentLine);

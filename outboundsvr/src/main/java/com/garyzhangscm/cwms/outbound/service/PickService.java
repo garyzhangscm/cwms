@@ -71,6 +71,8 @@ public class PickService {
     private WaveService waveService;
     @Autowired
     private PickConfirmStrategyService pickConfirmStrategyService;
+    @Autowired
+    private OrderActivityService orderActivityService;
 
 
     @Autowired
@@ -435,11 +437,17 @@ public class PickService {
         logger.debug("pick.getShipmentLine() != null : {}", pick.getShipmentLine() != null);
         logger.debug("pick.getShortAllocation() != null : {}", pick.getShortAllocation() != null);
         logger.debug("pick.getWorkOrderLineId() != null : {}", pick.getWorkOrderLineId() != null);
+        OrderActivity orderActivity = orderActivityService.createOrderActivity(
+                pick.getWarehouseId(), pick.getShipmentLine(), pick, OrderActivityType.PICK_CALCELLATION
+        );
         if (pick.getShipmentLine() != null) {
-            shipmentLineService.registerPickCancelled(pick.getShipmentLine(), cancelledQuantity);
+            ShipmentLine newShipmentLine = shipmentLineService.registerPickCancelled(pick.getShipmentLine(), cancelledQuantity);
+            orderActivity.setQuantityByNewShipmentLine(newShipmentLine);
         }
         else if (pick.getShortAllocation() != null) {
-            shortAllocationService.registerPickCancelled(pick.getShortAllocation(), cancelledQuantity);
+            ShortAllocation newShortAllocation =
+                    shortAllocationService.registerPickCancelled(pick.getShortAllocation(), cancelledQuantity);
+            orderActivity.setQuantityByNewShortAllocation(newShortAllocation);
         }
         else if (pick.getWorkOrderLineId() != null) {
             workOrderServiceRestemplateClient.registerPickCancelled(
@@ -458,6 +466,11 @@ public class PickService {
         cancelledPickService.registerPickCancelled(pick, cancelledQuantity);
 
         pick.setQuantity(pick.getQuantity() - cancelledQuantity);
+
+        // save the order activity
+        orderActivity.setQuantityByNewPick(pick);
+        orderActivityService.saveOrderActivity(orderActivity);
+
         if (pick.getQuantity() == 0) {
             // There's nothing left on the picks, let's remove it.
             // We can find the history in the cancelled pick table
@@ -1007,6 +1020,10 @@ public class PickService {
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
 
+        // start the ord activity transaction
+        OrderActivity orderActivity = orderActivityService.createOrderActivity(
+                pick.getWarehouseId(), pick.getShipmentLine(), pick, OrderActivityType.PICK_CONFIRM
+        );
         // make sure we are not over pick. At this moment, over pick is not allowed
         // If the quantity is not passed in, we will pick the whole quantity that is still left
         Long quantityToBePicked = quantity == null ? pick.getQuantity() - pick.getPickedQuantity() : quantity;
@@ -1066,7 +1083,11 @@ public class PickService {
         }
 
         // Get the latest pick information
-        return findById(pick.getId());
+        Pick newPick = findById(pick.getId());
+        orderActivity.setQuantityByNewPick(newPick);
+        orderActivityService.saveOrderActivity(orderActivity);
+        return newPick;
+
     }
 
     private void sendNotification(Pick pick, Location nextLocation, Long totalQuantityPicked) {

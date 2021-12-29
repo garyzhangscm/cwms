@@ -63,6 +63,8 @@ public class ShortAllocationService {
     private ShipmentLineService shipmentLineService;
     @Autowired
     private ShortAllocationConfigurationService shortAllocationConfigurationService;
+    @Autowired
+    private OrderActivityService orderActivityService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -237,7 +239,9 @@ public class ShortAllocationService {
 
     public List<ShortAllocation> cancelShortAllocations(String ShortAllocationIds) {
 
-        return Arrays.stream(ShortAllocationIds.split(",")).mapToLong(Long::parseLong).mapToObj(this::cancelShortAllocation).collect(Collectors.toList());
+        return Arrays.stream(ShortAllocationIds.split(","))
+                .mapToLong(Long::parseLong)
+                .mapToObj(this::cancelShortAllocation).collect(Collectors.toList());
     }
 
     public ShortAllocation cancelShortAllocation(Long id) {
@@ -268,12 +272,22 @@ public class ShortAllocationService {
     }
 
     private void registerShortAllocationCancelled(ShortAllocation shortAllocation, Long cancelledQuantity) {
+        OrderActivity orderActivity = orderActivityService.createOrderActivity(
+                shortAllocation.getWarehouseId(),
+                shortAllocation.getShipmentLine(),
+                shortAllocation,
+                OrderActivityType.SHORT_ALLOCATION_CANCELLATION
+        );
         if (shortAllocation.getShipmentLine() != null) {
-            shipmentLineService.registerShortAllocationCancelled(shortAllocation.getShipmentLine(), shortAllocation.getQuantity());
+            ShipmentLine newShipmentLine = shipmentLineService.registerShortAllocationCancelled(
+                    shortAllocation.getShipmentLine(), shortAllocation.getQuantity());
+            orderActivity.setQuantityByNewShipmentLine(newShipmentLine);
         }
         else if (shortAllocation.getWorkOrderLineId() != null) {
             workOrderServiceRestemplateClient.registerShortAllocationCancelled(shortAllocation.getWorkOrderLineId(), shortAllocation.getQuantity());
         }
+
+        orderActivityService.saveOrderActivity(orderActivity);
 
         // When we cancel the short allocation, do we still want to finish the
         // related emergency replenishment picks, if the picks are already
@@ -331,6 +345,15 @@ public class ShortAllocationService {
         return allocateShortAllocation(findById(id));
     }
     public ShortAllocation allocateShortAllocation(ShortAllocation shortAllocation) {
+
+        // start a order activity
+        OrderActivity orderActivity = orderActivityService.createOrderActivity(
+                shortAllocation.getWarehouseId(),
+                shortAllocation.getShipmentLine(),
+                shortAllocation,
+                OrderActivityType.SHORT_ALLOCATION_ALLOCATE
+        );
+
         logger.debug("Start to allocate short allocation: {} / {}",
                 shortAllocation.getItem(), shortAllocation.getItem().getItemFamily());
         if (!isAllocatable(shortAllocation) || shortAllocation.getOpenQuantity() <= 0) {
@@ -339,6 +362,9 @@ public class ShortAllocationService {
             return shortAllocation;
         }
         shortAllocation =  allocationConfigurationService.allocate(shortAllocation);
+
+        orderActivity.setQuantityByNewShortAllocation(shortAllocation);
+        orderActivityService.saveOrderActivity(orderActivity);
 
         if (readyToRemoveShortAllocation(shortAllocation)) {
 
@@ -457,10 +483,10 @@ public class ShortAllocationService {
     }
 
 
-    public void registerPickCancelled(ShortAllocation shortAllocation, Long cancelledQuantity) {
+    public ShortAllocation registerPickCancelled(ShortAllocation shortAllocation, Long cancelledQuantity) {
         shortAllocation.setOpenQuantity(shortAllocation.getOpenQuantity() + cancelledQuantity);
         shortAllocation.setInprocessQuantity(shortAllocation.getInprocessQuantity() - cancelledQuantity);
-        save(shortAllocation);
+        return save(shortAllocation);
     }
 
     public void processShortAllocation(ShortAllocation shortAllocation) {

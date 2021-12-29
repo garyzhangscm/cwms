@@ -49,6 +49,8 @@ public class ShipmentLineService {
     @Autowired
     private OrderLineService orderLineService;
     @Autowired
+    private OrderActivityService orderActivityService;
+    @Autowired
     private PickService pickService;
     @Autowired
     private AllocationConfigurationService allocationConfigurationService;
@@ -206,12 +208,19 @@ public class ShipmentLineService {
         // AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine);
 
         AllocationResult allocationResult = allocationService.allocate(shipmentLine);
+
+        OrderActivity orderActivity =
+                orderActivityService.createOrderActivity(shipmentLine.getWarehouseId(),
+                shipmentLine, OrderActivityType.SHIPMENT_ALLOCATION);
         // Move the open quantity into the in process quantity and start allocation
         logger.debug("Allocation Step 1: Move quantity {} from open quantity to in process quantity",
                 shipmentLine.getOpenQuantity());
 
         shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() + shipmentLine.getOpenQuantity());
         shipmentLine.setOpenQuantity(0L);
+
+        orderActivity.setQuantityByNewShipmentLine(shipmentLine);
+        orderActivityService.saveOrderActivity(orderActivity);
 
 
         save(shipmentLine);
@@ -242,7 +251,7 @@ public class ShipmentLineService {
      * @param cancelledQuantity
      */
     @Transactional
-    public void registerPickCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
+    public ShipmentLine registerPickCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
         logger.debug("registerPickCancelled: shipment line: {}, cancelledQuantity: {}",
                 shipmentLine.getId(), cancelledQuantity);
 
@@ -270,6 +279,7 @@ public class ShipmentLineService {
         logger.debug("after pick cancelled, shipment line {} has open quantity {}, in process quantity: {}",
                 shipmentLine.getNumber(), shipmentLine.getOpenQuantity(), shipmentLine.getInprocessQuantity());
 
+        return shipmentLine;
     }
 
     /**
@@ -298,7 +308,7 @@ public class ShipmentLineService {
     }
 
     @Transactional
-    public void registerShortAllocationCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
+    public ShipmentLine registerShortAllocationCancelled(ShipmentLine shipmentLine, Long cancelledQuantity) {
         logger.debug("registerShortAllocationCancelled: shipment line: {}, cancelledQuantity: {}",
                 shipmentLine.getNumber(), cancelledQuantity);
         shipmentLine.setOpenQuantity(shipmentLine.getOpenQuantity() + cancelledQuantity);
@@ -307,6 +317,7 @@ public class ShipmentLineService {
         logger.debug("after pick cancelled, shipment line {} has open quantity {}, in process quantity: {}",
                 shipmentLine.getNumber(), shipmentLine.getOpenQuantity(), shipmentLine.getInprocessQuantity());
 
+        return shipmentLine;
     }
 
     @Transactional

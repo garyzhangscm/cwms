@@ -62,6 +62,8 @@ public class OrderService implements TestDataInitiableService {
     private OrderRepository orderRepository;
     @Autowired
     private OrderLineService orderLineService;
+    @Autowired
+    private OrderActivityService orderActivityService;
 
     @Autowired
     private PickService pickService;
@@ -908,6 +910,12 @@ public class OrderService implements TestDataInitiableService {
 
 
         Order newOrder =  saveOrUpdate(order);
+
+        orderActivityService.saveOrderActivity(
+                orderActivityService.createOrderActivity(
+                        newOrder.getWarehouseId(), newOrder, OrderActivityType.ORDER_CREATE
+                ));
+
         if (Objects.nonNull(order.getStageLocationId())) {
             // the user specify a location for this order
             // let's reserve it now so it won't reserved by other

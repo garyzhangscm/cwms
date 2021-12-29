@@ -33,7 +33,7 @@ public class IntegrationService {
             orderLine.setShippedQuantity(0L);
             orderLine.setOrder(order);
         });
-         orderService.saveOrUpdate(order);
+         orderService.addOrders(order);
         logger.debug(">> order information saved!");
 
     }
