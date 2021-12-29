@@ -1,25 +1,176 @@
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class OrderActivity  implements Serializable {
+@Entity
+@Table(name = "order_activity")
+public class OrderActivity extends AuditibleEntity<String> implements Serializable {
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_activity_id")
+    @JsonProperty(value="id")
+    private Long id;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Column(name = "number")
+    private String number;
+
+    @Column(name = "activity_datetime")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime activityDateTime;
+
+    @Column(name = "username")
     private String username;
+    @Column(name = "rf_code")
+    private String rfCode;
 
-    private Order order = null;
+    @ManyToOne
+    @JoinColumn(name="outbound_order_id")
+    private Order order;
 
+    @ManyToOne
+    @JoinColumn(name="outbound_order_line_id")
+    private OrderLine orderLine;
+
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private OrderActivityType orderActivityType;
+
+
+    // transaction quantity
+    @Column(name = "quantity")
+    private Long quantity;
+
+    // order related quantity
+    @Column(name = "outbound_order_number")
+    private String orderNumber;
+    @Column(name = "outbound_order_line_number")
+    private String orderLineNumber;
+    @Column(name = "old_order_line_expected_quantity")
+    private Long oldOrderLineExpectedQuantity;
+    @Column(name = "new_order_line_expected_quantity")
+    private Long newOrderLineExpectedQuantity;
+
+    @Column(name = "old_order_line_open_quantity")
+    private Long oldOrderLineOpenQuantity;
+    @Column(name = "new_order_line_open_quantity")
+    private Long newOrderLineOpenQuantity;
+
+    @Column(name = "old_order_line_inprocess_quantity")
+    private Long oldOrderLineInProcessQuantity;
+    @Column(name = "new_order_line_inprocess_quantity")
+    private Long newOrderLineInProcessQuantity;
+
+    @Column(name = "old_order_line_shipped_quantity")
+    private Long oldOrderLineShippedQuantity;
+    @Column(name = "new_order_line_shipped_quantity")
+    private Long newOrderLineShippedQuantity;
+
+    // shipment line related quantity
+    @Column(name = "shipment_number")
+    private String shipmentNumber;
+    @Column(name = "shipment_line_number")
+    private String shipmentLineNumber;
+    @Column(name = "old_shipment_line_quantity")
+    private Long oldShipmentLineQuantity;
+    @Column(name = "new_shipment_line_quantity")
+    private Long newShipmentLineQuantity;
+
+    @Column(name = "old_shipment_line_open_quantity")
+    private Long oldShipmentLineOpenQuantity;
+    @Column(name = "new_shipment_line_open_quantity")
+    private Long newShipmentLineOpenQuantity;
+
+    @Column(name = "old_shipment_line_inprocess_quantity")
+    private Long oldShipmentLineInProcessQuantity;
+    @Column(name = "new_shipment_line_inprocess_quantity")
+    private Long newShipmentLineInProcessQuantity;
+
+    @Column(name = "old_shipment_line_loaded_quantity")
+    private Long oldShipmentLineLoadedQuantity;
+    @Column(name = "new_shipment_line_loaded_quantity")
+    private Long newShipmentLineLoadedQuantity;
+
+    @Column(name = "old_shipment_line_shipped_quantity")
+    private Long oldShipmentLineShippedQuantity;
+    @Column(name = "new_shipment_line_shipped_quantity")
+    private Long newShipmentLineShippedQuantity;
+
+
+    // pick related quantity
+    @Column(name = "pick_number")
+    private String pickNumber;
+    @Column(name = "old_pick_quantity")
+    private Long oldPickQuantity;
+    @Column(name = "new_pick_quantity")
+    private Long newPickQuantity;
+    @Column(name = "old_pick_picked_quantity")
+    private Long oldPickPickedQuantity;
+    @Column(name = "new_pick_picked_quantity")
+    private Long newPickPickedQuantity;
+
+    // short allocation related quantity
+    @Column(name = "old_short_allocation_quantity")
+    private Long oldShortAllocationQuantity;
+    @Column(name = "new_short_allocation_quantity")
+    private Long newShortAllocationQuantity;
+
+    @Column(name = "old_short_allocation_open_quantity")
+    private Long oldShortAllocationOpenQuantity;
+    @Column(name = "new_short_allocation_open_quantity")
+    private Long newShortAllocationOpenQuantity;
+
+    @Column(name = "old_short_allocation_inprocess_quantity")
+    private Long oldShortAllocationInProcessQuantity;
+    @Column(name = "new_short_allocation_inprocess_quantity")
+    private Long newShortAllocationInProcessQuantity;
+
+    @Column(name = "old_short_allocation_delivered_quantity")
+    private Long oldShortAllocationDeliveredQuantity;
+    @Column(name = "new_short_allocation_delivered_quantity")
+    private Long newShortAllocationDeliveredQuantity;
+
+
+
+    @ManyToOne
+    @JoinColumn(name="pick_id")
+    private Pick pick;
+
+    @ManyToOne
+    @JoinColumn(name="short_allocation_id")
+    private ShortAllocation shortAllocation;
+
+    @ManyToOne
+    @JoinColumn(name="shipment_id")
+    private Shipment shipment;
+
+    @ManyToOne
+    @JoinColumn(name="shipment_line_id")
+    private ShipmentLine shipmentLine;
 
     public OrderActivity(){};
 
     public static OrderActivity build() {
 
-    return new OrderActivity()
-            .withUsername(SecurityContextHolder.getContext().getAuthentication().getName())
-            .withActivityDateTime(LocalDateTime.now());
+        return new OrderActivity()
+                .withUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .withActivityDateTime(LocalDateTime.now());
     }
 
     public OrderActivity withActivityDateTime(LocalDateTime activityDateTime) {
@@ -30,14 +181,70 @@ public class OrderActivity  implements Serializable {
         setUsername(username);
         return this;
     }
-    public OrderActivity withOrder(Order order) {
-        setOrder(order);
+    public OrderActivity withRFCode(String rfCode) {
+        setRfCode(rfCode);
         return this;
     }
     public OrderActivity withOrderActivityType(OrderActivityType orderActivityType) {
         setOrderActivityType(orderActivityType);
         return this;
     }
+    public OrderActivity withOrder(Order order) {
+        setOrder(order);
+        setOrderNumber(order.getNumber());
+
+        return this;
+    }
+    public OrderActivity withOrderLine(OrderLine orderLine) {
+        setOrderLine(orderLine);
+        setOrderLineNumber(orderLine.getNumber());
+
+        setOldOrderLineExpectedQuantity(orderLine.getExpectedQuantity());
+        setOldOrderLineOpenQuantity(orderLine.getOpenQuantity());
+        setOldOrderLineInProcessQuantity(orderLine.getInprocessQuantity());
+        setOldOrderLineShippedQuantity(orderLine.getShippedQuantity());
+
+        setNewOrderLineExpectedQuantity(orderLine.getExpectedQuantity());
+        setNewOrderLineOpenQuantity(orderLine.getOpenQuantity());
+        setNewOrderLineInProcessQuantity(orderLine.getInprocessQuantity());
+        setNewOrderLineShippedQuantity(orderLine.getShippedQuantity());
+
+        return this;
+    }
+
+    public OrderActivity withShipment(Shipment shipment) {
+        setShipment(shipment);
+        setShipmentNumber(shipment.getNumber());
+        return this;
+    }
+    public OrderActivity withShipmentLine(ShipmentLine shipmentLine) {
+        setShipmentLine(shipmentLine);
+        setShipmentLineNumber(shipmentLine.getNumber());
+
+        setOldShipmentLineQuantity(shipmentLine.getQuantity());
+        setOldShipmentLineOpenQuantity(shipmentLine.getOpenQuantity());
+        setOldShipmentLineInProcessQuantity(shipmentLine.getInprocessQuantity());
+        setOldShipmentLineLoadedQuantity(shipmentLine.getLoadedQuantity());
+        return this;
+    }
+    public OrderActivity withPick(Pick pick) {
+        setPick(pick);
+        setPickNumber(pick.getNumber());
+        return this;
+    }
+    public OrderActivity withShortAllocation(ShortAllocation shortAllocation) {
+        setShortAllocation(shortAllocation);
+        return this;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
     public LocalDateTime getActivityDateTime() {
         return activityDateTime;
     }
@@ -70,4 +277,355 @@ public class OrderActivity  implements Serializable {
         this.orderActivityType = orderActivityType;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
+    }
+
+    public Pick getPick() {
+        return pick;
+    }
+
+    public void setPick(Pick pick) {
+        this.pick = pick;
+    }
+
+    public ShortAllocation getShortAllocation() {
+        return shortAllocation;
+    }
+
+    public void setShortAllocation(ShortAllocation shortAllocation) {
+        this.shortAllocation = shortAllocation;
+    }
+
+    public Shipment getShipment() {
+        return shipment;
+    }
+
+    public void setShipment(Shipment shipment) {
+        this.shipment = shipment;
+    }
+
+    public ShipmentLine getShipmentLine() {
+        return shipmentLine;
+    }
+
+    public void setShipmentLine(ShipmentLine shipmentLine) {
+        this.shipmentLine = shipmentLine;
+    }
+
+    public String getRfCode() {
+        return rfCode;
+    }
+
+    public void setRfCode(String rfCode) {
+        this.rfCode = rfCode;
+    }
+
+    public OrderLine getOrderLine() {
+        return orderLine;
+    }
+
+    public void setOrderLine(OrderLine orderLine) {
+        this.orderLine = orderLine;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public String getOrderLineNumber() {
+        return orderLineNumber;
+    }
+
+    public void setOrderLineNumber(String orderLineNumber) {
+        this.orderLineNumber = orderLineNumber;
+    }
+
+    public Long getOldOrderLineExpectedQuantity() {
+        return oldOrderLineExpectedQuantity;
+    }
+
+    public void setOldOrderLineExpectedQuantity(Long oldOrderLineExpectedQuantity) {
+        this.oldOrderLineExpectedQuantity = oldOrderLineExpectedQuantity;
+    }
+
+    public Long getNewOrderLineExpectedQuantity() {
+        return newOrderLineExpectedQuantity;
+    }
+
+    public void setNewOrderLineExpectedQuantity(Long newOrderLineExpectedQuantity) {
+        this.newOrderLineExpectedQuantity = newOrderLineExpectedQuantity;
+    }
+
+    public Long getOldOrderLineOpenQuantity() {
+        return oldOrderLineOpenQuantity;
+    }
+
+    public void setOldOrderLineOpenQuantity(Long oldOrderLineOpenQuantity) {
+        this.oldOrderLineOpenQuantity = oldOrderLineOpenQuantity;
+    }
+
+    public Long getNewOrderLineOpenQuantity() {
+        return newOrderLineOpenQuantity;
+    }
+
+    public void setNewOrderLineOpenQuantity(Long newOrderLineOpenQuantity) {
+        this.newOrderLineOpenQuantity = newOrderLineOpenQuantity;
+    }
+
+    public Long getOldOrderLineInProcessQuantity() {
+        return oldOrderLineInProcessQuantity;
+    }
+
+    public void setOldOrderLineInProcessQuantity(Long oldOrderLineInProcessQuantity) {
+        this.oldOrderLineInProcessQuantity = oldOrderLineInProcessQuantity;
+    }
+
+    public Long getNewOrderLineInProcessQuantity() {
+        return newOrderLineInProcessQuantity;
+    }
+
+    public void setNewOrderLineInProcessQuantity(Long newOrderLineInProcessQuantity) {
+        this.newOrderLineInProcessQuantity = newOrderLineInProcessQuantity;
+    }
+
+    public Long getOldOrderLineShippedQuantity() {
+        return oldOrderLineShippedQuantity;
+    }
+
+    public void setOldOrderLineShippedQuantity(Long oldOrderLineShippedQuantity) {
+        this.oldOrderLineShippedQuantity = oldOrderLineShippedQuantity;
+    }
+
+    public Long getNewOrderLineShippedQuantity() {
+        return newOrderLineShippedQuantity;
+    }
+
+    public void setNewOrderLineShippedQuantity(Long newOrderLineShippedQuantity) {
+        this.newOrderLineShippedQuantity = newOrderLineShippedQuantity;
+    }
+
+    public String getShipmentNumber() {
+        return shipmentNumber;
+    }
+
+    public void setShipmentNumber(String shipmentNumber) {
+        this.shipmentNumber = shipmentNumber;
+    }
+
+    public String getShipmentLineNumber() {
+        return shipmentLineNumber;
+    }
+
+    public void setShipmentLineNumber(String shipmentLineNumber) {
+        this.shipmentLineNumber = shipmentLineNumber;
+    }
+
+    public Long getOldShipmentLineQuantity() {
+        return oldShipmentLineQuantity;
+    }
+
+    public void setOldShipmentLineQuantity(Long oldShipmentLineQuantity) {
+        this.oldShipmentLineQuantity = oldShipmentLineQuantity;
+    }
+
+    public Long getNewShipmentLineQuantity() {
+        return newShipmentLineQuantity;
+    }
+
+    public void setNewShipmentLineQuantity(Long newShipmentLineQuantity) {
+        this.newShipmentLineQuantity = newShipmentLineQuantity;
+    }
+
+    public Long getOldShipmentLineOpenQuantity() {
+        return oldShipmentLineOpenQuantity;
+    }
+
+    public void setOldShipmentLineOpenQuantity(Long oldShipmentLineOpenQuantity) {
+        this.oldShipmentLineOpenQuantity = oldShipmentLineOpenQuantity;
+    }
+
+    public Long getNewShipmentLineOpenQuantity() {
+        return newShipmentLineOpenQuantity;
+    }
+
+    public void setNewShipmentLineOpenQuantity(Long newShipmentLineOpenQuantity) {
+        this.newShipmentLineOpenQuantity = newShipmentLineOpenQuantity;
+    }
+
+    public Long getOldShipmentLineInProcessQuantity() {
+        return oldShipmentLineInProcessQuantity;
+    }
+
+    public void setOldShipmentLineInProcessQuantity(Long oldShipmentLineInProcessQuantity) {
+        this.oldShipmentLineInProcessQuantity = oldShipmentLineInProcessQuantity;
+    }
+
+    public Long getNewShipmentLineInProcessQuantity() {
+        return newShipmentLineInProcessQuantity;
+    }
+
+    public void setNewShipmentLineInProcessQuantity(Long newShipmentLineInProcessQuantity) {
+        this.newShipmentLineInProcessQuantity = newShipmentLineInProcessQuantity;
+    }
+
+    public Long getOldShipmentLineLoadedQuantity() {
+        return oldShipmentLineLoadedQuantity;
+    }
+
+    public void setOldShipmentLineLoadedQuantity(Long oldShipmentLineLoadedQuantity) {
+        this.oldShipmentLineLoadedQuantity = oldShipmentLineLoadedQuantity;
+    }
+
+    public Long getNewShipmentLineLoadedQuantity() {
+        return newShipmentLineLoadedQuantity;
+    }
+
+    public void setNewShipmentLineLoadedQuantity(Long newShipmentLineLoadedQuantity) {
+        this.newShipmentLineLoadedQuantity = newShipmentLineLoadedQuantity;
+    }
+
+    public Long getOldShipmentLineShippedQuantity() {
+        return oldShipmentLineShippedQuantity;
+    }
+
+    public void setOldShipmentLineShippedQuantity(Long oldShipmentLineShippedQuantity) {
+        this.oldShipmentLineShippedQuantity = oldShipmentLineShippedQuantity;
+    }
+
+    public Long getNewShipmentLineShippedQuantity() {
+        return newShipmentLineShippedQuantity;
+    }
+
+    public void setNewShipmentLineShippedQuantity(Long newShipmentLineShippedQuantity) {
+        this.newShipmentLineShippedQuantity = newShipmentLineShippedQuantity;
+    }
+
+    public String getPickNumber() {
+        return pickNumber;
+    }
+
+    public void setPickNumber(String pickNumber) {
+        this.pickNumber = pickNumber;
+    }
+
+    public Long getOldPickQuantity() {
+        return oldPickQuantity;
+    }
+
+    public void setOldPickQuantity(Long oldPickQuantity) {
+        this.oldPickQuantity = oldPickQuantity;
+    }
+
+    public Long getNewPickQuantity() {
+        return newPickQuantity;
+    }
+
+    public void setNewPickQuantity(Long newPickQuantity) {
+        this.newPickQuantity = newPickQuantity;
+    }
+
+    public Long getOldPickPickedQuantity() {
+        return oldPickPickedQuantity;
+    }
+
+    public void setOldPickPickedQuantity(Long oldPickPickedQuantity) {
+        this.oldPickPickedQuantity = oldPickPickedQuantity;
+    }
+
+    public Long getNewPickPickedQuantity() {
+        return newPickPickedQuantity;
+    }
+
+    public void setNewPickPickedQuantity(Long newPickPickedQuantity) {
+        this.newPickPickedQuantity = newPickPickedQuantity;
+    }
+
+    public Long getOldShortAllocationQuantity() {
+        return oldShortAllocationQuantity;
+    }
+
+    public void setOldShortAllocationQuantity(Long oldShortAllocationQuantity) {
+        this.oldShortAllocationQuantity = oldShortAllocationQuantity;
+    }
+
+    public Long getNewShortAllocationQuantity() {
+        return newShortAllocationQuantity;
+    }
+
+    public void setNewShortAllocationQuantity(Long newShortAllocationQuantity) {
+        this.newShortAllocationQuantity = newShortAllocationQuantity;
+    }
+
+    public Long getOldShortAllocationOpenQuantity() {
+        return oldShortAllocationOpenQuantity;
+    }
+
+    public void setOldShortAllocationOpenQuantity(Long oldShortAllocationOpenQuantity) {
+        this.oldShortAllocationOpenQuantity = oldShortAllocationOpenQuantity;
+    }
+
+    public Long getNewShortAllocationOpenQuantity() {
+        return newShortAllocationOpenQuantity;
+    }
+
+    public void setNewShortAllocationOpenQuantity(Long newShortAllocationOpenQuantity) {
+        this.newShortAllocationOpenQuantity = newShortAllocationOpenQuantity;
+    }
+
+    public Long getOldShortAllocationInProcessQuantity() {
+        return oldShortAllocationInProcessQuantity;
+    }
+
+    public void setOldShortAllocationInProcessQuantity(Long oldShortAllocationInProcessQuantity) {
+        this.oldShortAllocationInProcessQuantity = oldShortAllocationInProcessQuantity;
+    }
+
+    public Long getNewShortAllocationInProcessQuantity() {
+        return newShortAllocationInProcessQuantity;
+    }
+
+    public void setNewShortAllocationInProcessQuantity(Long newShortAllocationInProcessQuantity) {
+        this.newShortAllocationInProcessQuantity = newShortAllocationInProcessQuantity;
+    }
+
+    public Long getOldShortAllocationDeliveredQuantity() {
+        return oldShortAllocationDeliveredQuantity;
+    }
+
+    public void setOldShortAllocationDeliveredQuantity(Long oldShortAllocationDeliveredQuantity) {
+        this.oldShortAllocationDeliveredQuantity = oldShortAllocationDeliveredQuantity;
+    }
+
+    public Long getNewShortAllocationDeliveredQuantity() {
+        return newShortAllocationDeliveredQuantity;
+    }
+
+    public void setNewShortAllocationDeliveredQuantity(Long newShortAllocationDeliveredQuantity) {
+        this.newShortAllocationDeliveredQuantity = newShortAllocationDeliveredQuantity;
+    }
 }

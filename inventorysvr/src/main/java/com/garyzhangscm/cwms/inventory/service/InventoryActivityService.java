@@ -144,7 +144,7 @@ public class InventoryActivityService{
                 (Root<InventoryActivity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
                     if (!StringUtils.isBlank(itemName) || !StringUtils.isBlank(clientIds)) {
-                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        Join<InventoryActivity, Item> joinItem = root.join("item", JoinType.INNER);
                         if (!itemName.isEmpty()) {
                             predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
                         }
@@ -159,7 +159,7 @@ public class InventoryActivityService{
                         }
                     }
                     if (!StringUtils.isBlank(itemFamilyIds)) {
-                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        Join<InventoryActivity, Item> joinItem = root.join("item", JoinType.INNER);
                         Join<Item, ItemFamily> joinItemFamily = joinItem.join("itemFamily", JoinType.INNER);
 
                         CriteriaBuilder.In<Long> inItemFamilyIds = criteriaBuilder.in(joinItemFamily.get("id"));
@@ -169,7 +169,7 @@ public class InventoryActivityService{
                         predicates.add(criteriaBuilder.and(inItemFamilyIds));
                     }
                     if (inventoryStatusId != null) {
-                        Join<Inventory, InventoryStatus> joinInventoryStatus = root.join("inventoryStatus", JoinType.INNER);
+                        Join<InventoryActivity, InventoryStatus> joinInventoryStatus = root.join("inventoryStatus", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinInventoryStatus.get("id"), inventoryStatusId));
 
                     }

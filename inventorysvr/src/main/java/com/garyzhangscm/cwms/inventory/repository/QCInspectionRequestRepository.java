@@ -22,10 +22,18 @@ import com.garyzhangscm.cwms.inventory.model.QCInspectionRequest;
 import com.garyzhangscm.cwms.inventory.model.QCRuleConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface QCInspectionRequestRepository extends JpaRepository<QCInspectionRequest, Long>, JpaSpecificationExecutor<QCInspectionRequest> {
 
     QCInspectionRequest findByWarehouseIdAndNumber(Long warehouseId, String number);
+
+    @Query("select r from QCInspectionRequest r inner join r.inventories i where i.id = :inventoryId")
+    List<QCInspectionRequest> findByQCCompletedInventory(Long inventoryId);
+    @Query("select r from QCInspectionRequest r inner join r.inventories i where i.lpn = :lpn")
+    List<QCInspectionRequest> findByQCCompletedInventory(String lpn);
 }

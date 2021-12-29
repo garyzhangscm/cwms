@@ -77,6 +77,7 @@ docker tag garyzhangscm/cwms-outboundserver:latest garyzhangscm/cwms-outboundser
 docker tag garyzhangscm/cwms-ressvr:latest   garyzhangscm/cwms-ressvr:v1.0
 docker tag garyzhangscm/cwms-workorderserver:latest  garyzhangscm/cwms-workorderserver:v1.0
 
+//// db link is always use latest
 
 docker push garyzhangscm/cwms-adminserver:v1.0
 docker push garyzhangscm/cwms-auth:v1.0
