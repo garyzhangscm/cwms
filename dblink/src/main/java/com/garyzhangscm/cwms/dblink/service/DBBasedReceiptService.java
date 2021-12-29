@@ -69,7 +69,7 @@ public class DBBasedReceiptService {
 
     public void sendIntegrationData() {
         List<DBBasedReceipt> pendingDBBasedReceipts = findPendingIntegration();
-        logger.debug("# find " +  pendingDBBasedReceipts.size() + " pendingDBBasedWorkOrder");
+        logger.debug("# find " +  pendingDBBasedReceipts.size() + " pendingDBBasedReceipts");
         AtomicReference<LocalDateTime> startProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicReference<LocalDateTime> lastProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicInteger i = new AtomicInteger();

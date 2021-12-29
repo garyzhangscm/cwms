@@ -1,6 +1,8 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -85,24 +87,14 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
 
     @Override
     public String toString() {
-        return "ShortAllocation{" +
-                "id=" + id +
-                ", shipmentLine=" + shipmentLine +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", lastAllocationDatetime=" + lastAllocationDatetime +
-                ", picks=" + picks +
-                ", itemId=" + itemId +
-                ", item=" + item +
-                ", quantity=" + quantity +
-                ", openQuantity=" + openQuantity +
-                ", inprocessQuantity=" + inprocessQuantity +
-                ", deliveredQuantity=" + deliveredQuantity +
-                ", allocationCount=" + allocationCount +
-                ", status=" + status +
-                ", workOrderLineId=" + workOrderLineId +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
 
     public Long getId() {
         return id;

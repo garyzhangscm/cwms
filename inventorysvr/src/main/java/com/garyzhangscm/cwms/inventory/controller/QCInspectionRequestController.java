@@ -119,8 +119,9 @@ public class QCInspectionRequestController {
     public List<Inventory> validateLPNForInspectionByQCRequest(
             @PathVariable Long id,
             @RequestParam Long warehouseId,
-            @RequestParam String lpn) {
-        return qcInspectionRequestService.validateLPNForInspectionByQCRequest(id, warehouseId, lpn);
+            @RequestParam String lpn,
+            @RequestParam(name = "reQC", defaultValue = "", required = false) Boolean reQC) {
+        return qcInspectionRequestService.validateLPNForInspectionByQCRequest(id, warehouseId, lpn, reQC);
     }
 
 

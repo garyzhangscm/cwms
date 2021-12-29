@@ -48,7 +48,7 @@ public class KafkaSender {
 
     public void send(OrderActivity orderActivity) {
         try {
-            send(orderActivity.getOrderActivityType().toString(), objectMapper.writeValueAsString(orderActivity));
+            send("order_activity", objectMapper.writeValueAsString(orderActivity));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

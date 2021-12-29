@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.IntegrationService;
+import com.garyzhangscm.cwms.outbound.service.OrderActivityService;
 import com.garyzhangscm.cwms.outbound.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,9 @@ public class KafkaReceiver {
     OAuth2ClientContext oauth2ClientContext;
 
     @Autowired
+    private OrderActivityService orderActivityService;
+
+    @Autowired
     private KafkaSender kafkaSender;
 
     @Autowired
@@ -51,7 +55,7 @@ public class KafkaReceiver {
 
     /*
      * Integration process
-     * -- Receipt
+     * -- ORDER
      * */
     @KafkaListener(topics = {"INTEGRATION_ORDER"})
     public void processOrder(@Payload String orderJsonRepresent,
@@ -89,8 +93,7 @@ public class KafkaReceiver {
 
 
     /*
-     * Integration process
-     * -- Receipt
+     * Allocation request
      * */
     @KafkaListener(topics = {"ALLOCATION_REQUEST"})
     public void processAllocationRequest(@Payload String allocationRequestJsonRepresent,
@@ -131,6 +134,24 @@ public class KafkaReceiver {
 
     }
 
+
+    @KafkaListener(topics = {"order_activity"})
+    public void processOrderActivity(@Payload String orderActivityJsonRepresent)  {
+        logger.info("# received  order activity data:\n {}", orderActivityJsonRepresent);
+
+        try {
+            OrderActivity orderActivity = objectMapper.readValue(orderActivityJsonRepresent, OrderActivity.class);
+            logger.info("orderActivity: {}", orderActivity);
+
+
+            orderActivityService.addOrderActivity(orderActivity);
+        }
+        catch (Exception ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+            ex.printStackTrace();
+        }
+
+    }
 
 
 }

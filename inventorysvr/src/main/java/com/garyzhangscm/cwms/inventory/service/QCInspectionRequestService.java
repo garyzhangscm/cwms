@@ -91,8 +91,11 @@ public class QCInspectionRequestService {
                                              QCInspectionResult qcInspectionResult,
                                              String type, String number){
         return findAll(warehouseId, inventoryId, inventoryIds,
-                lpn, workOrderQCSampleNumber, qcInspectionResult, type, number, true);
+                lpn,
+                workOrderQCSampleNumber, qcInspectionResult, type, number, true);
     }
+
+
     public List<QCInspectionRequest> findAll(Long warehouseId,
                                              Long inventoryId,
                                              String inventoryIds,
@@ -120,6 +123,8 @@ public class QCInspectionRequestService {
 
 
                 }
+
+
                 if (Objects.nonNull(inventoryId)) {
 
                     Join<QCInspectionRequest, Inventory> joinInventory = root.join("inventory", JoinType.INNER);
@@ -145,7 +150,13 @@ public class QCInspectionRequestService {
 
                     Join<QCInspectionRequest, Inventory> joinInventory = root.join("inventory", JoinType.INNER);
 
-                    predicates.add(criteriaBuilder.equal(joinInventory.get("lpn"), lpn));
+                    if (lpn.contains("%")) {
+                        predicates.add(criteriaBuilder.like(joinInventory.get("lpn"), lpn));
+                    }
+                    else {
+                        predicates.add(criteriaBuilder.equal(joinInventory.get("lpn"), lpn));
+                    }
+
                 }
 
                 if (Strings.isNotBlank(workOrderQCSampleNumber)) {
@@ -265,21 +276,25 @@ public class QCInspectionRequestService {
             logger.debug("We found a qc rule configuration for this inventory {} / {}",
                     inventory.getId(), inventory.getLpn());
             // assign each rule into this inventory
-             save(setupInboundQCInspectionRequest(inventory, qcRuleConfiguration));
+             save(setupInboundQCInspectionRequest(inventory, qcRuleConfiguration, QCInspectionRequestType.BY_INVENTORY));
         }
         else {
 
-            save(setupInboundQCInspectionRequest(inventory, null));
+            save(setupInboundQCInspectionRequest(inventory, null, QCInspectionRequestType.BY_INVENTORY));
             logger.debug("We can't find any qc rule configuration for this inventory {} / {}",
                     inventory.getId(), inventory.getLpn());
         }
     }
 
-    private QCInspectionRequest setupInboundQCInspectionRequest(Inventory inventory, QCRuleConfiguration qcRuleConfiguration) {
+    private QCInspectionRequest setupInboundQCInspectionRequest(Inventory inventory,
+                                                                QCRuleConfiguration qcRuleConfiguration,
+                                                                QCInspectionRequestType type) {
         QCInspectionRequest qcInspectionRequest = new QCInspectionRequest();
         qcInspectionRequest.setInventory(inventory);
         qcInspectionRequest.setWarehouseId(inventory.getWarehouseId());
         qcInspectionRequest.setQcInspectionResult(QCInspectionResult.PENDING);
+        qcInspectionRequest.setType(
+                Objects.isNull(type) ? QCInspectionRequestType.BY_INVENTORY : type);
         qcInspectionRequest.setNumber(getNextQCInspectionRequest(inventory.getWarehouseId()));
         if (Objects.nonNull(qcRuleConfiguration)) {
             qcRuleConfiguration.getQcRules().forEach(
@@ -455,6 +470,7 @@ public class QCInspectionRequestService {
         qcInspectionRequest.setWorkOrderQCSampleId(workOrderQCSampleId);
         qcInspectionRequest.setWarehouseId(warehouseId);
         qcInspectionRequest.setQcQuantity(qcQuantity);
+        qcInspectionRequest.setType(QCInspectionRequestType.BY_WORK_ORDER_SAMPLING);
         qcInspectionRequest.setQcInspectionResult(QCInspectionResult.PENDING);
         qcInspectionRequest.setNumber(getNextQCInspectionRequest(warehouseId));
 
@@ -548,7 +564,8 @@ public class QCInspectionRequestService {
      * @param lpn
      * @return
      */
-    public List<Inventory> validateLPNForInspectionByQCRequest(Long id, Long warehouseId, String lpn) {
+    public List<Inventory> validateLPNForInspectionByQCRequest(Long id, Long warehouseId, String lpn,
+                                                               Boolean reQC) {
         QCInspectionRequest qcInspectionRequest = findById(id);
 
         List<Inventory> inventories = inventoryService.findByLpn(warehouseId, lpn);
@@ -562,6 +579,21 @@ public class QCInspectionRequestService {
             throw QCException.raiseException("LPN " + lpn + " contains item that doesn't match with " +
                     " the qc request " + qcInspectionRequest.getNumber() + "'s item ");
         }
+        // if we are not in the ReQC mode, then we will not allow the user to re-enter the same LPN again
+        if (!Boolean.TRUE.equals(reQC)) {
+            List<QCInspectionRequest> qcInspectionRequests = qcInspectionRequestRepository.findByQCCompletedInventory(lpn);
+
+            if (!qcInspectionRequests.isEmpty()) {
+
+                // OK, we are not in Reqc mode but we found there's some qc completed on this lpn,
+                // let's raise an error
+                throw QCException.raiseException("LPN " + lpn + " has been QC by request: [" +
+                                qcInspectionRequests.stream().map(QCInspectionRequest::getNumber).collect(Collectors.joining(","))  +
+                        "], please specify that you are Re-QC the same LPN explicitly");
+            }
+
+        }
+
         return inventories;
     }
 
