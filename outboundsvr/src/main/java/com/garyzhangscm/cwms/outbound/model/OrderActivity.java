@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "order_activity")
@@ -28,6 +29,8 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     @Column(name = "number")
     private String number;
+    @Column(name = "transaction_group_id")
+    private String transactionGroupId;
 
     @Column(name = "activity_datetime")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -166,9 +169,15 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     public OrderActivity(){};
 
-    public static OrderActivity build() {
+    public OrderActivity(Long warehouseId, String transactionGroupId, String number) {
+        this.warehouseId = warehouseId;
+        this.transactionGroupId = transactionGroupId;
+        this.number = number;
 
-        return new OrderActivity()
+    }
+    public static OrderActivity build(Long warehouseId, String transactionGroupId, String number) {
+
+        return new OrderActivity(warehouseId, transactionGroupId, number)
                 .withUsername(SecurityContextHolder.getContext().getAuthentication().getName())
                 .withActivityDateTime(LocalDateTime.now());
     }
@@ -212,28 +221,104 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
         return this;
     }
 
+    public OrderActivity setQuantityByNewOrderLine(OrderLine orderLine) {
+
+        setNewOrderLineExpectedQuantity(orderLine.getExpectedQuantity());
+        setNewOrderLineOpenQuantity(orderLine.getOpenQuantity());
+        setNewOrderLineInProcessQuantity(orderLine.getInprocessQuantity());
+        setNewOrderLineShippedQuantity(orderLine.getShippedQuantity());
+
+        return this;
+    }
+
     public OrderActivity withShipment(Shipment shipment) {
         setShipment(shipment);
+
+        if (Objects.isNull(shipment)) {
+            return this;
+        }
         setShipmentNumber(shipment.getNumber());
         return this;
     }
     public OrderActivity withShipmentLine(ShipmentLine shipmentLine) {
         setShipmentLine(shipmentLine);
+
+        if (Objects.isNull(shipmentLine)) {
+            return this;
+        }
         setShipmentLineNumber(shipmentLine.getNumber());
 
         setOldShipmentLineQuantity(shipmentLine.getQuantity());
         setOldShipmentLineOpenQuantity(shipmentLine.getOpenQuantity());
         setOldShipmentLineInProcessQuantity(shipmentLine.getInprocessQuantity());
         setOldShipmentLineLoadedQuantity(shipmentLine.getLoadedQuantity());
+        setOldShipmentLineShippedQuantity(shipmentLine.getShippedQuantity());
+
+        setNewShipmentLineQuantity(shipmentLine.getQuantity());
+        setNewShipmentLineOpenQuantity(shipmentLine.getOpenQuantity());
+        setNewShipmentLineInProcessQuantity(shipmentLine.getInprocessQuantity());
+        setNewShipmentLineLoadedQuantity(shipmentLine.getLoadedQuantity());
+        setNewShipmentLineShippedQuantity(shipmentLine.getShippedQuantity());
+
+        return this;
+    }
+
+    public OrderActivity setQuantityByNewShipmentLine(ShipmentLine shipmentLine) {
+
+        setNewShipmentLineQuantity(shipmentLine.getQuantity());
+        setNewShipmentLineOpenQuantity(shipmentLine.getOpenQuantity());
+        setNewShipmentLineInProcessQuantity(shipmentLine.getInprocessQuantity());
+        setNewShipmentLineLoadedQuantity(shipmentLine.getLoadedQuantity());
+        setNewShipmentLineShippedQuantity(shipmentLine.getShippedQuantity());
+
         return this;
     }
     public OrderActivity withPick(Pick pick) {
         setPick(pick);
+
+        if (Objects.isNull(pick)) {
+            return this;
+        }
         setPickNumber(pick.getNumber());
+        setOldPickQuantity(pick.getQuantity());
+        setOldPickPickedQuantity(pick.getPickedQuantity());
+
+        setNewPickQuantity(pick.getQuantity());
+        setNewPickPickedQuantity(pick.getPickedQuantity());
+        return this;
+    }
+
+    public OrderActivity setQuantityByNewPick(Pick pick) {
+
+        setNewPickQuantity(pick.getQuantity());
+        setNewPickPickedQuantity(pick.getPickedQuantity());
         return this;
     }
     public OrderActivity withShortAllocation(ShortAllocation shortAllocation) {
         setShortAllocation(shortAllocation);
+
+        if (Objects.isNull(shortAllocation)) {
+            return this;
+        }
+        setOldShortAllocationQuantity(shortAllocation.getQuantity());
+        setOldShortAllocationOpenQuantity(shortAllocation.getOpenQuantity());
+        setOldShortAllocationInProcessQuantity(shortAllocation.getInprocessQuantity());
+        setOldShortAllocationDeliveredQuantity(shortAllocation.getDeliveredQuantity());
+
+        setNewShortAllocationQuantity(shortAllocation.getQuantity());
+        setNewShortAllocationOpenQuantity(shortAllocation.getOpenQuantity());
+        setNewShortAllocationInProcessQuantity(shortAllocation.getInprocessQuantity());
+        setNewShortAllocationDeliveredQuantity(shortAllocation.getDeliveredQuantity());
+
+        return this;
+    }
+    public OrderActivity setQuantityByNewShortAllocation(ShortAllocation shortAllocation) {
+
+        setNewShortAllocationQuantity(shortAllocation.getQuantity());
+        setNewShortAllocationOpenQuantity(shortAllocation.getOpenQuantity());
+        setNewShortAllocationInProcessQuantity(shortAllocation.getInprocessQuantity());
+        setNewShortAllocationDeliveredQuantity(shortAllocation.getDeliveredQuantity());
+
         return this;
     }
 
@@ -628,4 +713,13 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     public void setNewShortAllocationDeliveredQuantity(Long newShortAllocationDeliveredQuantity) {
         this.newShortAllocationDeliveredQuantity = newShortAllocationDeliveredQuantity;
     }
+
+    public String getTransactionGroupId() {
+        return transactionGroupId;
+    }
+
+    public void setTransactionGroupId(String transactionGroupId) {
+        this.transactionGroupId = transactionGroupId;
+    }
+
 }

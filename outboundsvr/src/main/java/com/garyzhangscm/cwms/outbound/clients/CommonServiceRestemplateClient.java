@@ -212,4 +212,5 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData().getNextNumber();
     }
 
+
 }

@@ -157,7 +157,8 @@ public class CancelledShortAllocationService {
     }
 
     public CancelledShortAllocation registerShortAllocationCancelled(ShortAllocation shortAllocation, Long cancelledQuantity) {
-        CancelledShortAllocation cancelledShortAllocation = createCancelledShortAllocationFromOriginalShortAllocation(shortAllocation, cancelledQuantity);
+        CancelledShortAllocation cancelledShortAllocation =
+                createCancelledShortAllocationFromOriginalShortAllocation(shortAllocation, cancelledQuantity);
         return save(cancelledShortAllocation);
     }
 

@@ -35,7 +35,7 @@ public class OrderActivityController {
     @Autowired
     private OrderActivityService orderActivityService;
 
-    @RequestMapping(value="/inventory-activities", method = RequestMethod.GET)
+    @RequestMapping(value="/order-activities", method = RequestMethod.GET)
     public List<OrderActivity> findAllOrderActivities(@RequestParam Long warehouseId,
                                                       @RequestParam(name="beginDateTime", required = false, defaultValue = "") String beginDateTime,
                                                       @RequestParam(name="endDateTime", required = false, defaultValue = "") String endDateTime,
@@ -50,7 +50,7 @@ public class OrderActivityController {
                                                       @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                                       @RequestParam(name="shipmentLineId", required = false, defaultValue = "") Long shipmentLineId,
                                                       @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
-                                                      @RequestParam(name="pickId", required = false, defaultValue = "") Long shortAllocationId) {
+                                                      @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId) {
         return orderActivityService.findAll(warehouseId,
                 beginDateTime,
                 endDateTime,
