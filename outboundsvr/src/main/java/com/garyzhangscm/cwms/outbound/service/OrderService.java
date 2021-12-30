@@ -1519,4 +1519,22 @@ public class OrderService implements TestDataInitiableService {
 
         return Objects.isNull(order) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
+
+    /**
+     * Re trigger order confirm integration
+     * @param id
+     */
+    public Order retriggerOrderConfirmIntegration(Long id) {
+
+        Order order = findById(id);
+        if (!order.getStatus().equals(OrderStatus.COMPLETE)) {
+            throw  OrderOperationException.raiseException(
+                    "Order is not complete yet, can't manually trigger an order confirm integration");
+        }
+
+        logger.debug("Start to send order confirmation after the order {} is marked as completed",
+                order.getNumber());
+        sendOrderConfirmationIntegration(order);
+        return order;
+    }
 }

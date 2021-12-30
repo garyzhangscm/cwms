@@ -1538,6 +1538,7 @@
   "oldShortAllocationInProcessQuantity": "Old Short Allocation In Process Quantity",
   "newShortAllocationInProcessQuantity": "New Short Allocation In Process Quantity",
   "oldShortAllocationDeliveredQuantity": "Old Short Allocation Delivered Quantity",
-  "newShortAllocationDeliveredQuantity": "New Short Allocation Delivered Quantity"
+  "newShortAllocationDeliveredQuantity": "New Short Allocation Delivered Quantity",
+  "retrigger-order-confirm-integration": "Retrigger Order Confirmation Integration"
 
 }

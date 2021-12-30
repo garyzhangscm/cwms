@@ -182,4 +182,11 @@ public class OrderController {
 
         return ResponseBodyWrapper.success(orderService.validateNewOrderNumber(warehouseId, orderNumber));
     }
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/retrigger-order-confirm-integration")
+    public Order retriggerOrderConfirmIntegration(@RequestParam Long warehouseId,
+                                                              @PathVariable Long id)  {
+
+        return orderService.retriggerOrderConfirmIntegration(id);
+    }
 }

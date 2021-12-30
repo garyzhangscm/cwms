@@ -240,6 +240,10 @@ public class OrderActivityService {
                 .withShipment(shipment)
                 .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
 
+        if (Objects.nonNull(shipmentLine.getOrderLine())) {
+            orderActivity = orderActivity.withOrderLine(shipmentLine.getOrderLine());
+
+        }
         return orderActivity;
     }
 
@@ -255,6 +259,11 @@ public class OrderActivityService {
                 .withOrder(order)
                 .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
 
+        if (Objects.nonNull(shipmentLine.getOrderLine())) {
+            orderActivity = orderActivity.withOrderLine(shipmentLine.getOrderLine());
+
+        }
+
         return orderActivity;
     }
 
@@ -269,6 +278,14 @@ public class OrderActivityService {
         OrderActivity orderActivity =
                 OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
                 .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
+        if (Objects.nonNull(shipmentLine.getOrderLine())) {
+            orderActivity = orderActivity.withOrderLine(shipmentLine.getOrderLine());
+            if (Objects.nonNull(shipmentLine.getOrderLine().getOrder())) {
+                orderActivity = orderActivity.withOrder(
+                        shipmentLine.getOrderLine().getOrder()
+                );
+            }
+        }
 
         return orderActivity;
     }
@@ -288,8 +305,18 @@ public class OrderActivityService {
                                               OrderActivityType orderActivityType) {
         OrderActivity orderActivity =
                 OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
-                        .withShipmentLine(shipmentLine)
                         .withPick(pick).withOrderActivityType(orderActivityType);
+        if (Objects.nonNull(shipmentLine)) {
+            orderActivity = orderActivity.withShipmentLine(shipmentLine);
+            if (Objects.nonNull(shipmentLine.getOrderLine())) {
+                orderActivity = orderActivity.withOrderLine(shipmentLine.getOrderLine());
+                if (Objects.nonNull(shipmentLine.getOrderLine().getOrder())) {
+                    orderActivity = orderActivity.withOrder(
+                            shipmentLine.getOrderLine().getOrder()
+                    );
+                }
+            }
+        }
 
         return orderActivity;
     }
@@ -308,8 +335,19 @@ public class OrderActivityService {
                                               OrderActivityType orderActivityType) {
         OrderActivity orderActivity =
                 OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
-                        .withShipmentLine(shipmentLine)
                         .withShortAllocation(shortAllocation).withOrderActivityType(orderActivityType);
+
+        if (Objects.nonNull(shipmentLine)) {
+            orderActivity = orderActivity.withShipmentLine(shipmentLine);
+            if (Objects.nonNull(shipmentLine.getOrderLine())) {
+                orderActivity = orderActivity.withOrderLine(shipmentLine.getOrderLine());
+                if (Objects.nonNull(shipmentLine.getOrderLine().getOrder())) {
+                    orderActivity = orderActivity.withOrder(
+                            shipmentLine.getOrderLine().getOrder()
+                    );
+                }
+            }
+        }
 
         return orderActivity;
     }
