@@ -224,6 +224,7 @@ public class ReceiptService implements TestDataInitiableService{
         if (receipt != null && receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
 
             receipt.setReceiptStatus(ReceiptStatus.CHECK_IN);
+            receipt.setCheckInTime(LocalDateTime.now());
             logger.debug("update the receipt to check in");
             if (recalculateQCDuringCheckin()) {
                 recalculateQCQuantity(receipt);
@@ -491,10 +492,13 @@ public class ReceiptService implements TestDataInitiableService{
         logger.debug("Start to setup receiving document's paramters: {}",
                 receipt.getNumber());
         report.addParameter("receipt_number", receipt.getNumber());
+        report.addParameter("check_in_time",
+                Objects.nonNull(receipt.getCheckInTime()) ? receipt.getCheckInTime() : "");
 
         if (Objects.nonNull(receipt.getSupplier())) {
 
             report.addParameter("supplier_name", receipt.getSupplier().getName());
+            report.addParameter("supplier_description", receipt.getSupplier().getDescription());
 
             report.addParameter("supplier_contact_name",
                     receipt.getSupplier().getContactorLastname() + " " + receipt.getSupplier().getContactorFirstname());
@@ -506,6 +510,7 @@ public class ReceiptService implements TestDataInitiableService{
         }
         else {
             report.addParameter("supplier_name", "");
+            report.addParameter("supplier_description", "");
 
             report.addParameter("supplier_contact_name",
                     "");

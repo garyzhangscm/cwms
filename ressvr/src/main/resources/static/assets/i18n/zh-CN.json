@@ -1537,5 +1537,6 @@
   "oldShortAllocationInProcessQuantity": "缺货单处理中数量（原）",
   "newShortAllocationInProcessQuantity": "缺货单处理中数量（新）",
   "oldShortAllocationDeliveredQuantity": "缺货单已处理数量（原）",
-  "newShortAllocationDeliveredQuantity": "缺货单已处理数量（新）"
+  "newShortAllocationDeliveredQuantity": "缺货单已处理数量（新）",
+  "retrigger-order-confirm-integration": "再次触发订单确认接口"
 }
