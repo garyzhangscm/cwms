@@ -462,7 +462,11 @@ public class ProductionLineAssignmentService   {
         List<Pick> openPicks =
                 outboundServiceRestemplateClient.getWorkOrderPicks(workOrder)
                         .stream()
+                        // we will only cancel open pick
                 .filter(pick -> pick.getQuantity() > pick.getPickedQuantity())
+                        // we will only cancel the picks that go into this production line
+                        .filter(pick ->
+                                Objects.equals(productionLine.getInboundStageLocationId(), pick.getDestinationLocationId()))
                 .collect(Collectors.toList());
 
         openPicks.forEach(

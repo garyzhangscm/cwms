@@ -434,9 +434,9 @@ public class PickService {
 
         // return the open quantity back to the shipment line
         // shipmentLineService.cancelPickQuantity(pick.getShipmentLine(), cancelQuantity);
-        logger.debug("pick.getShipmentLine() != null : {}", pick.getShipmentLine() != null);
-        logger.debug("pick.getShortAllocation() != null : {}", pick.getShortAllocation() != null);
-        logger.debug("pick.getWorkOrderLineId() != null : {}", pick.getWorkOrderLineId() != null);
+        // logger.debug("pick.getShipmentLine() != null : {}", pick.getShipmentLine() != null);
+        // logger.debug("pick.getShortAllocation() != null : {}", pick.getShortAllocation() != null);
+        // logger.debug("pick.getWorkOrderLineId() != null : {}", pick.getWorkOrderLineId() != null);
         OrderActivity orderActivity = orderActivityService.createOrderActivity(
                 pick.getWarehouseId(), pick.getShipmentLine(), pick, OrderActivityType.PICK_CALCELLATION
         );

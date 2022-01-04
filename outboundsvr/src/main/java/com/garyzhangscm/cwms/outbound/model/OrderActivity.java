@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.*;
@@ -45,10 +47,12 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     @ManyToOne
     @JoinColumn(name="outbound_order_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Order order;
 
     @ManyToOne
     @JoinColumn(name="outbound_order_line_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private OrderLine orderLine;
 
     @Column(name = "type")
@@ -153,18 +157,22 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     @ManyToOne
     @JoinColumn(name="pick_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Pick pick;
 
     @ManyToOne
     @JoinColumn(name="short_allocation_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private ShortAllocation shortAllocation;
 
     @ManyToOne
     @JoinColumn(name="shipment_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Shipment shipment;
 
     @ManyToOne
     @JoinColumn(name="shipment_line_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private ShipmentLine shipmentLine;
 
     public OrderActivity(){};
