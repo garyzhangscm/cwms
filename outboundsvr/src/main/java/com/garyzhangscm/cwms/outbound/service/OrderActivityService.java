@@ -286,6 +286,9 @@ public class OrderActivityService {
                 );
             }
         }
+        if (Objects.nonNull(shipmentLine.getShipment())) {
+            orderActivity = orderActivity.withShipment(shipmentLine.getShipment());
+        }
 
         return orderActivity;
     }
@@ -315,6 +318,11 @@ public class OrderActivityService {
                             shipmentLine.getOrderLine().getOrder()
                     );
                 }
+            }
+
+            if (Objects.nonNull(shipmentLine.getShipment())) {
+                orderActivity = orderActivity.withShipment(shipmentLine.getShipment());
+
             }
         }
 
@@ -346,6 +354,10 @@ public class OrderActivityService {
                             shipmentLine.getOrderLine().getOrder()
                     );
                 }
+            }
+            if (Objects.nonNull(shipmentLine.getShipment())) {
+                orderActivity = orderActivity.withShipment(shipmentLine.getShipment());
+
             }
         }
 
