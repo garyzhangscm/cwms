@@ -255,8 +255,18 @@ public class ShipmentLineService {
         logger.debug("registerPickCancelled: shipment line: {}, cancelledQuantity: {}",
                 shipmentLine.getId(), cancelledQuantity);
 
-        shipmentLine.setOpenQuantity(shipmentLine.getOpenQuantity() + cancelledQuantity);
-        shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - cancelledQuantity);
+        // return the quantity to the open quantity and not exceed
+        // the original total quantity
+        Long newOpenQuantity = Math.min(
+                shipmentLine.getQuantity(),
+                shipmentLine.getOpenQuantity() + cancelledQuantity
+        );
+        shipmentLine.setOpenQuantity(newOpenQuantity);
+        Long newInprocessQuantity = Math.max(
+                0l,
+                shipmentLine.getInprocessQuantity() - cancelledQuantity
+        );
+        shipmentLine.setInprocessQuantity(newInprocessQuantity);
 
         /***
         shipmentLine.setInprocessQuantity(recalculateInprocessQuantity(shipmentLine, cancelledQuantity));
