@@ -29,10 +29,16 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,6 +61,8 @@ public class QCInspectionRequestService {
     private ItemService itemService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private FileService fileService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -66,6 +74,10 @@ public class QCInspectionRequestService {
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+
+
+    @Value("${inventory.qc.documentFolder}")
+    private String qcDocumentFolder;
 
 
     public QCInspectionRequest findById(Long id, boolean loadDetails) {
@@ -669,5 +681,50 @@ public class QCInspectionRequestService {
                 ).flatMap(List::stream)
                         .collect(Collectors.toList());
         report.setData(qcInspectionRequestItemOptions);
+    }
+
+    public String uploadQCInspectionDocument(Long id, MultipartFile file) throws IOException {
+
+
+        String filePath = getQCInspectionDocumentFolder(id).toString();
+        logger.debug("Save file to {}{}",
+                filePath, file.getOriginalFilename());
+
+        File savedFile =
+                fileService.saveFile(
+                        file, filePath, file.getOriginalFilename());
+
+        logger.debug("File saved, path: {}",
+                savedFile.getAbsolutePath());
+        return file.getOriginalFilename();
+    }
+
+    private Path getQCInspectionDocumentFolder(Long id) {
+        return Paths.get(qcDocumentFolder, String.valueOf(id));
+        // return qcImageFolder + "/" + id + "/";
+    }
+
+    private Path getQCInspectionDocumentPath(Long id, String fileName) {
+        return Paths.get(qcDocumentFolder, String.valueOf(id), fileName);
+        // return qcImageFolder + "/" + id + "/";
+    }
+
+    public File getQCInspectionDocument(Long warehouseId,
+                                          Long id, String fileName) {
+
+
+
+        String fileUrl = getQCInspectionDocumentPath(id, fileName).toString();
+
+        logger.debug("Will return {} to the client",
+                fileUrl);
+        return new File(fileUrl);
+    }
+
+    public QCInspectionRequest changeQCInspectionDocumentUrls(Long id, String documentUrls) {
+        QCInspectionRequest qcInspectionRequest = findById(id);
+
+        qcInspectionRequest.setDocumentUrls(documentUrls);
+        return saveOrUpdate(qcInspectionRequest);
     }
 }

@@ -137,6 +137,9 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     List<QCInspectionRequestItem> qcInspectionRequestItems = new ArrayList<>();
 
 
+    @Column(name = "document_urls")
+    private String documentUrls;
+
     @Override
     public String toString() {
         try {
@@ -302,5 +305,13 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
 
     public void setInventories(List<Inventory> inventories) {
         this.inventories = inventories;
+    }
+
+    public String getDocumentUrls() {
+        return documentUrls;
+    }
+
+    public void setDocumentUrls(String documentUrls) {
+        this.documentUrls = documentUrls;
     }
 }
