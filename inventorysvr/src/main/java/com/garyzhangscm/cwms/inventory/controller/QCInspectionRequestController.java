@@ -27,8 +27,17 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -135,4 +144,45 @@ public class QCInspectionRequestController {
         logger.debug("start print report for qc inspection request with id: {}", id);
         return qcInspectionRequestService.generateQCInspectionRequestReport(id, locale);
     }
+
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/qc-inspection-requests/{id}/documents")
+    public ResponseBodyWrapper uploadQCInspectionDocument(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        String filePath = qcInspectionRequestService.uploadQCInspectionDocument(id, file);
+        return  ResponseBodyWrapper.success(filePath);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/qc-inspection-requests/{id}/change-document-urls")
+    public QCInspectionRequest changeQCInspectionDocumentUrls(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam String documentUrls)  {
+
+
+        return qcInspectionRequestService.changeQCInspectionDocumentUrls(id, documentUrls);
+    }
+
+    @RequestMapping(value="/qc-inspection-requests/documents/{warehouseId}/{id}/{fileName}", method = RequestMethod.GET)
+    public ResponseEntity<Resource> getQCInspectionDocument(@PathVariable Long warehouseId,
+                                                              @PathVariable Long id,
+                                                              @PathVariable String fileName) throws FileNotFoundException {
+
+        File imageFile = qcInspectionRequestService.getQCInspectionDocument(warehouseId, id, fileName);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(imageFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + fileName)
+                .contentLength(imageFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+
+    }
+
 }
