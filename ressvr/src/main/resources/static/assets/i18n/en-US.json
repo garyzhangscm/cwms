@@ -1540,6 +1540,10 @@
   "oldShortAllocationDeliveredQuantity": "Old Short Allocation Delivered Quantity",
   "newShortAllocationDeliveredQuantity": "New Short Allocation Delivered Quantity",
   "retrigger-order-confirm-integration": "Retrigger Order Confirmation Integration",
-  "qc.document-maintenance": "Document Maintenance"
+  "qc.document-maintenance": "Document Maintenance",
+  "menu.main.work-order.mps": "MPS",
+  "menu.main.work-order.mrp": "MRP",
+  "MPS": "Master Production Schedule",
+  "MRP": "Material Requirements Planning"
 
 }

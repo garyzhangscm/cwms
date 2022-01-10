@@ -1539,6 +1539,10 @@
   "oldShortAllocationDeliveredQuantity": "缺货单已处理数量（原）",
   "newShortAllocationDeliveredQuantity": "缺货单已处理数量（新）",
   "retrigger-order-confirm-integration": "再次触发订单确认接口",
-  "qc.document-maintenance": "文档维护"
+  "qc.document-maintenance": "文档维护",
+  "menu.main.work-order.mps": "MPS",
+  "menu.main.work-order.mrp": "MRP",
+  "MPS": "主生产计划",
+  "MRP": "物料需求计划"
 
 }

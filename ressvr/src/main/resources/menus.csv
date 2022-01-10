@@ -60,6 +60,8 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Work Order QC Rule Configuration",menu.main.work-order.qc-rule-config,/work-order/qc-rule-configuration,9,Main-Menu-WorkOrder,Work-Order-QC-Rule-Config,,true,false
 "Work Order Labor",menu.main.work-order.labor,/work-order/labor,10,Main-Menu-WorkOrder,Work-Order-Labor,,true,false
 "Work Order Labor Activity",menu.main.work-order.labor-activity,/work-order/labor-activity,11,Main-Menu-WorkOrder,Work-Order-LaborActivity,,true,false
+"Master Production Schedule",menu.main.work-order.mps,/work-order/mps,12,Main-Menu-WorkOrder,Work-Order-MPS,,true,false
+"Material Requirements Planning",menu.main.work-order.mrp,/work-order/mrp,13,Main-Menu-WorkOrder,Work-Order-MRP,,true,false
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,,true,false
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,,true,false
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false
