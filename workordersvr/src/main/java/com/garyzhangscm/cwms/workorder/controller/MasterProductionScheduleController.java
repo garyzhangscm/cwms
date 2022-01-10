@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
+import com.garyzhangscm.cwms.workorder.model.MasterProductionSchedule;
 import com.garyzhangscm.cwms.workorder.model.Mould;
 import com.garyzhangscm.cwms.workorder.service.MasterProductionScheduleService;
 import com.garyzhangscm.cwms.workorder.service.MouldService;
@@ -33,39 +34,40 @@ public class MasterProductionScheduleController {
     @Autowired
     MasterProductionScheduleService masterProductionScheduleService;
 
-    @RequestMapping(value="/master-production-schedule", method = RequestMethod.GET)
-    public List<Mould> findAllMoulds(@RequestParam Long warehouseId,
-                                     @RequestParam(name="number", required = false, defaultValue = "") String number,
-                                     @RequestParam(name="description", required = false, defaultValue = "") String description) {
+    @RequestMapping(value="/master-production-schedules", method = RequestMethod.GET)
+    public List<MasterProductionSchedule> findAllMasterProductionSchedules(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="number", required = false, defaultValue = "") String number,
+            @RequestParam(name="description", required = false, defaultValue = "") String description) {
         return masterProductionScheduleService.findAll(warehouseId, number, description);
     }
 
 
 
     @BillableEndpoint
-    @RequestMapping(value="/moulds", method = RequestMethod.POST)
-    public Mould addMoulds(@RequestBody Mould mould) {
-        return mouldService.addMould(mould);
+    @RequestMapping(value="/master-production-schedules", method = RequestMethod.PUT)
+    public MasterProductionSchedule addMasterProductionSchedules(@RequestBody MasterProductionSchedule masterProductionSchedule) {
+        return masterProductionScheduleService.addMasterProductionSchedule(masterProductionSchedule);
     }
 
 
-    @RequestMapping(value="/moulds/{id}", method = RequestMethod.GET)
-    public Mould findMould(@PathVariable Long id) {
+    @RequestMapping(value="/master-production-schedules/{id}", method = RequestMethod.GET)
+    public MasterProductionSchedule findMasterProductionSchedule(@PathVariable Long id) {
 
-        return mouldService.findById(id);
-    }
-
-    @BillableEndpoint
-    @RequestMapping(value="/moulds/{id}", method = RequestMethod.PUT)
-    public Mould changeMould(@PathVariable Long id,
-                                               @RequestBody Mould mould){
-        return mouldService.changeMould(id, mould);
+        return masterProductionScheduleService.findById(id);
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/moulds/{id}", method = RequestMethod.DELETE)
-    public void removeMould(@PathVariable Long id) {
-        mouldService.delete(id);
+    @RequestMapping(value="/master-production-schedules/{id}", method = RequestMethod.POST)
+    public MasterProductionSchedule changeMasterProductionSchedule(@PathVariable Long id,
+                                                                   @RequestBody MasterProductionSchedule masterProductionSchedule){
+        return masterProductionScheduleService.changeMasterProductionSchedule(id, masterProductionSchedule);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/master-production-schedule/{id}", method = RequestMethod.DELETE)
+    public void removeMasterProductionSchedule(@PathVariable Long id) {
+        masterProductionScheduleService.delete(id);
     }
 
 
