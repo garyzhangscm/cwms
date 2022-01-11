@@ -25,9 +25,16 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface OrderLineRepository extends JpaRepository<OrderLine, Long>, JpaSpecificationExecutor<OrderLine> {
 
     @Query("select ol from OrderLine ol where order.id = :orderId and number = :number")
     OrderLine findByNaturalKey(Long orderId, String number);
+
+
+    @Query("select ol from OrderLine ol inner join ol.order o where ol.itemId = :itemId " +
+            " and o.status = com.garyzhangscm.cwms.outbound.model.OrderStatus.OPEN")
+    List<OrderLine> findOpenOrderLinesByItem(Long itemId);
 }

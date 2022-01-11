@@ -1544,6 +1544,20 @@
   "menu.main.work-order.mps": "MPS",
   "menu.main.work-order.mrp": "MRP",
   "MPS": "Master Production Schedule",
-  "MRP": "Material Requirements Planning"
+  "MRP": "Material Requirements Planning",
+  "cutoffDate": "Cutoff Date",
+  "filter-by-item": "Filter By Item",
+  "filter-quantity": "Filter Quantity By",
+  "filter-calculator": "Filter Calculator",
+  "existing-inventory": "Existing Inventory",
+  "existing-order": "Existing Order",
+  "expected-order-quantity": "Expected Order Quantity",
+  "existing-inbound-quantity": "Existing Inbound",
+  "expected-inbound-quantity" : "Expected Inbound Quantity",
+  "existing-workorder-quantity" : "Existing Work Order",
+  "expected-workorder-quantity" : "Expected Work Order Quantity",
+  "suggested-mps-quantity" : "Suggested MPS Quantity",
+  "quantity-calculator": "Quantity Calculator",
+  "production-line-produce-plan": "Produce Plan By Production Line"
 
 }

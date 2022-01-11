@@ -368,4 +368,26 @@ public class InventoryController {
                 itemId, itemName);
     }
 
+    @RequestMapping(value="/inventories/available-for-mps/quantity-ignore-order", method = RequestMethod.GET)
+    public Long getAvailableQuantityForMPS(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId,
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
+
+        return inventoryService.getAvailableQuantityForMPS(warehouseId,
+
+                itemId, itemName);
+    }
+
+    @RequestMapping(value="/inventories/available-for-mps/inventory-ignore-order", method = RequestMethod.GET)
+    public List<Inventory> getAvailableInventoryForMPS(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId,
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
+
+        return inventoryService.getAvailableInventoryForMPS(warehouseId,
+
+                itemId, itemName);
+    }
+
 }

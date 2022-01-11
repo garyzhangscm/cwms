@@ -24,9 +24,16 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ReceiptLineRepository extends JpaRepository<ReceiptLine, Long>, JpaSpecificationExecutor<ReceiptLine> {
 
     @Query("select rl from ReceiptLine rl where receipt.id = :receiptId and number = :number and warehouseId = :warehouseId")
     ReceiptLine findByNaturalKey(Long warehouseId, Long receiptId, String number);
+
+
+    @Query("select rl from ReceiptLine rl inner join rl.receipt r where rl.itemId = :itemId " +
+            " and r.receiptStatus != com.garyzhangscm.cwms.inbound.model.ReceiptStatus.CLOSED")
+    List<ReceiptLine> findOpenReceiptLinesByItem(Long itemId);
 }

@@ -1543,6 +1543,20 @@
   "menu.main.work-order.mps": "MPS",
   "menu.main.work-order.mrp": "MRP",
   "MPS": "主生产计划",
-  "MRP": "物料需求计划"
+  "MRP": "物料需求计划",
+  "cutoffDate": "截止日期",
+  "filter-by-item": "商品",
+  "filter-quantity": "数量选项",
+  "filter-calculator": "计数项",
+  "existing-inventory": "现有库存",
+  "existing-order": "现有订单",
+  "expected-order-quantity": "预计订单数量",
+  "existing-inbound-quantity": "现有入库单",
+  "expected-inbound-quantity" : "预计入库数量",
+  "existing-workorder-quantity" : "现有加工单",
+  "expected-workorder-quantity" : "预计加工数量",
+  "suggested-mps-quantity" : "建议生产数量",
+  "quantity-calculator": "计算数量",
+  "production-line-produce-plan": "按产线计划数量"
 
 }

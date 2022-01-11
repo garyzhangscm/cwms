@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -2440,6 +2442,56 @@ public class InventoryService implements TestDataInitiableService{
         return Arrays.stream(inventoryIds.split(",")).map(
                 id -> Long.parseLong(id)
         ).map(id -> removeInventory(id, "", "")).collect(Collectors.toList());
+
+    }
+
+    public Long getAvailableQuantityForMPS(Long warehouseId, Long itemId, String itemName) {
+
+        return getAvailableInventoryForMPS(warehouseId, itemId, itemName).stream()
+                .mapToLong(Inventory::getQuantity).sum();
+
+    }
+
+    public List<Inventory> getAvailableInventoryForMPS(Long warehouseId, Long itemId, String itemName) {
+
+        // we will only return available inventory status
+        Optional<InventoryStatus> availableInventoryStatus =
+                inventoryStatusService.getAvailableInventoryStatus(warehouseId);
+        if (!availableInventoryStatus.isPresent()) {
+            // if we can't find a available status
+            logger.debug("Can't get available quantity for MPS with item id {} and item name {}" +
+                            " as we can't find any available status",
+                    itemId, itemName);
+            return Collections.emptyList();
+        }
+
+        Stream<Inventory> inventoryStream;
+        if (Objects.nonNull(itemId)) {
+            inventoryStream = inventoryRepository
+                    .findByItemIdAndInventoryStatusId(itemId, availableInventoryStatus.get().getId())
+                    .stream();
+
+        }
+        else if (Strings.isNotBlank(itemName)) {
+            inventoryStream =  inventoryRepository
+                    .findByItemNameAndInventoryStatusId(warehouseId, itemName, availableInventoryStatus.get().getId())
+                    .stream();
+        }
+        else {
+            throw InventoryException.raiseException("at least item id or item name needs to be passed in");
+        }
+        return inventoryStream
+                .map(inventory -> {
+                    // setup the location so we can filter the inventory by four wall inventory only
+                    if (Objects.nonNull(inventory.getLocationId()) &&
+                            Objects.isNull(inventory.getLocation())) {
+                        inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
+                    }
+                    return inventory;
+                })
+                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getFourWallInventory())
+                .collect(Collectors.toList());
+
 
     }
 }

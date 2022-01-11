@@ -50,6 +50,9 @@ public class InventoryStatus extends AuditibleEntity<String> implements Serializ
     @Transient
     private Warehouse warehouse;
 
+    @Column(name = "available_status_flag")
+    private Boolean availableStatusFlag;
+
     @Override
     public Object clone() {
         InventoryStatus inventoryStatus = null;
@@ -132,5 +135,13 @@ public class InventoryStatus extends AuditibleEntity<String> implements Serializ
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getAvailableStatusFlag() {
+        return availableStatusFlag;
+    }
+
+    public void setAvailableStatusFlag(Boolean availableStatusFlag) {
+        this.availableStatusFlag = availableStatusFlag;
     }
 }

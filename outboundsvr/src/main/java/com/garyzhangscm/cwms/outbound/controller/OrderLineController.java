@@ -76,4 +76,14 @@ public class OrderLineController {
     }
 
 
+
+    @RequestMapping(value="/orders/lines/available-for-mps", method = RequestMethod.GET)
+    public List<OrderLine> getAvailableOrderLinesForMPS(
+            @RequestParam Long warehouseId,
+            @RequestParam Long itemId) {
+
+        return orderLineService.getAvailableOrderLinesForMPS(warehouseId,
+                itemId);
+    }
+
 }
