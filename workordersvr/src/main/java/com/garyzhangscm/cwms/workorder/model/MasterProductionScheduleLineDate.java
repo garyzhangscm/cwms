@@ -36,11 +36,11 @@ public class MasterProductionScheduleLineDate extends AuditibleEntity<String>{
     @Column(name = "planned_quantity")
     private Long plannedQuantity;
 
-    @Column(name = "date")
+    @Column(name = "planned_date")
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = LocalDateSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate date;
+    private LocalDate plannedDate;
 
 
     public Long getId() {
@@ -67,11 +67,11 @@ public class MasterProductionScheduleLineDate extends AuditibleEntity<String>{
         this.plannedQuantity = plannedQuantity;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDate getPlannedDate() {
+        return plannedDate;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setPlannedDate(LocalDate plannedDate) {
+        this.plannedDate = plannedDate;
     }
 }

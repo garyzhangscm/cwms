@@ -288,4 +288,15 @@ public class WorkOrderController {
                                              @RequestParam(name = "qcPercentage", required = false, defaultValue = "") Double qcPercentage) {
         return workOrderService.recalculateQCQuantity(workOrderId, qcQuantity, qcPercentage);
     }
+
+
+    @RequestMapping(value="/work-orders/available-for-mps", method = RequestMethod.GET)
+    public List<WorkOrder> getAvailableWorkOrderForMPS(
+            @RequestParam Long warehouseId,
+            @RequestParam Long itemId) {
+
+        return workOrderService.getAvailableWorkOrderForMPS(warehouseId,
+                itemId);
+    }
+
 }

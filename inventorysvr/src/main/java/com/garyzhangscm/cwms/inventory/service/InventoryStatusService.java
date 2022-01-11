@@ -34,10 +34,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class InventoryStatusService implements TestDataInitiableService{
@@ -166,5 +163,11 @@ public class InventoryStatusService implements TestDataInitiableService{
         logger.debug("Start to save invenotry status, warehouse id {}, name {}",
                 inventoryStatus.getWarehouseId(), inventoryStatus.getName());
         return inventoryStatus;
+    }
+
+    public Optional<InventoryStatus> getAvailableInventoryStatus(Long warehouseId) {
+        return findAll(warehouseId, null).stream().filter(
+                inventoryStatus -> Boolean.TRUE.equals(inventoryStatus.getAvailableStatusFlag())
+        ).findFirst();
     }
 }

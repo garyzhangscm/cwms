@@ -222,4 +222,14 @@ public class ReceiptController {
         logger.debug("start generate pre-printed lpn label with id: {}", id);
         return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, locale);
     }
+
+
+    @RequestMapping(value="/receipts/lines/available-for-mps", method = RequestMethod.GET)
+    public List<ReceiptLine> getAvailableReceiptLinesForMPS(
+            @RequestParam Long warehouseId,
+            @RequestParam Long itemId) {
+
+        return receiptLineService.getAvailableReceiptLinesForMPS(warehouseId,
+                itemId);
+    }
 }

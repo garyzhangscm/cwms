@@ -34,6 +34,10 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
     @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId and inv.inventoryStatus.id = :inventoryStatusId")
     List<Inventory> findByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId);
+    @Query("select inv from Inventory inv inner join inv.item i where inv.warehouseId = :warehouseId" +
+            "    and inv.inventoryStatus.id = :inventoryStatusId " +
+            "  and i.name = :itemName")
+    List<Inventory> findByItemNameAndInventoryStatusId(Long warehouseId, String itemName, Long inventoryStatusId);
 
     @Query("select inv from Inventory inv where inv.warehouseId = :warehouseId and inv.virtual = :virtual")
     List<Inventory> findByVirtual(Long warehouseId, Boolean virtual);

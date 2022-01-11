@@ -416,4 +416,11 @@ public class OrderLineService implements TestDataInitiableService{
                 (orderLine.getOpenQuantity().equals(orderLine.getExpectedQuantity())));
         return orderLine.getOpenQuantity().equals(orderLine.getExpectedQuantity());
     }
+
+    public List<OrderLine> getAvailableOrderLinesForMPS(Long warehouseId, Long itemId) {
+
+        List<OrderLine> orderLines = orderLineRepository.findOpenOrderLinesByItem(itemId);
+
+        return orderLines;
+    }
 }

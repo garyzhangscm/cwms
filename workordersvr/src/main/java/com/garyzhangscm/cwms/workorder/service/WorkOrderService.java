@@ -1574,4 +1574,10 @@ public class WorkOrderService implements TestDataInitiableService {
                 workOrder.getQcQuantityCompleted());
         return saveOrUpdate(workOrder,false);
     }
+
+    public List<WorkOrder> getAvailableWorkOrderForMPS(Long warehouseId, Long itemId) {
+
+        return workOrderRepository.findOpenWorkOrderByItem(itemId);
+
+    }
 }

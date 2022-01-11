@@ -551,4 +551,8 @@ public class ReceiptLineService implements TestDataInitiableService{
 
         return saveOrUpdate(receiptLine);
     }
+
+    public List<ReceiptLine> getAvailableReceiptLinesForMPS(Long warehouseId, Long itemId) {
+        return receiptLineRepository.findOpenReceiptLinesByItem(itemId);
+    }
 }

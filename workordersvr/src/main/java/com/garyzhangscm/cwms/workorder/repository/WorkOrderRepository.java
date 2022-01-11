@@ -36,4 +36,11 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, Jpa
             " and wo.warehouseId = :warehouseId")
     List<WorkOrder> findInprocessWorkOrder(Long warehouseId);
 
+
+    @Query("select wo from WorkOrder wo where wo.itemId = :itemId " +
+            " and wo.status != com.garyzhangscm.cwms.workorder.model.WorkOrderStatus.CANCELLED " +
+            " and wo.status != com.garyzhangscm.cwms.workorder.model.WorkOrderStatus.COMPLETED " +
+            " and wo.status != com.garyzhangscm.cwms.workorder.model.WorkOrderStatus.CLOSED ")
+    List<WorkOrder> findOpenWorkOrderByItem(Long itemId);
+
 }
