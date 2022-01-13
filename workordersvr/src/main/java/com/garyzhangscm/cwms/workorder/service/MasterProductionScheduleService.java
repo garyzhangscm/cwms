@@ -40,10 +40,7 @@ import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -92,9 +89,18 @@ public class MasterProductionScheduleService   {
 
 
     public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description) {
-        return findAll(warehouseId, number, description, true);
+        return findAll(warehouseId, number, description,  true);
     }
     public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description, boolean loadDetails) {
+        return findAll(warehouseId, number, description, null, null, loadDetails);
+    }
+    public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description,
+                                                  LocalDateTime beginDateTime, LocalDateTime endDateTime) {
+        return findAll(warehouseId, number, description, beginDateTime, endDateTime, true);
+    }
+    public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description,
+                                                  LocalDateTime beginDateTime, LocalDateTime endDateTime,
+                                                  boolean loadDetails) {
         List<MasterProductionSchedule> masterProductionSchedules =
                 masterProductionScheduleRepository.findAll(
                 (Root<MasterProductionSchedule> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -113,6 +119,30 @@ public class MasterProductionScheduleService   {
                         }
 
                     }
+
+                    if (Objects.nonNull(beginDateTime)) {
+
+                        Join<MasterProductionSchedule, MasterProductionScheduleLine> joinMasterProductionScheduleLine
+                                = root.join("masterProductionScheduleLines", JoinType.INNER);
+                        Join<MasterProductionScheduleLine, MasterProductionScheduleLineDate> joinMasterProductionScheduleLineDate
+                                = joinMasterProductionScheduleLine.join("masterProductionScheduleLineDates", JoinType.INNER);
+
+
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(joinMasterProductionScheduleLineDate.get("plannedDate"), beginDateTime));
+
+                    }
+                    if (Objects.nonNull(endDateTime)) {
+
+                        Join<MasterProductionSchedule, MasterProductionScheduleLine> joinMasterProductionScheduleLine
+                                = root.join("masterProductionScheduleLines", JoinType.INNER);
+                        Join<MasterProductionScheduleLine, MasterProductionScheduleLineDate> joinMasterProductionScheduleLineDate
+                                = joinMasterProductionScheduleLine.join("masterProductionScheduleLineDates", JoinType.INNER);
+
+
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(joinMasterProductionScheduleLineDate.get("plannedDate"), endDateTime));
+
+                    }
+
 
                     if (StringUtils.isNotBlank(description)) {
                         predicates.add(criteriaBuilder.like(root.get("description"), description));
@@ -143,15 +173,18 @@ public class MasterProductionScheduleService   {
                 (Root<MasterProductionScheduleLineDate> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    Join<MasterProductionScheduleLineDate, MasterProductionScheduleLine> joinMasterProductionScheduleLine
+                            = root.join("masterProductionScheduleLine", JoinType.INNER);
+                    Join<MasterProductionScheduleLine, MasterProductionSchedule> joinMasterProductionSchedule
+                            = joinMasterProductionScheduleLine.join("masterProductionSchedule", JoinType.INNER);
+
+                    predicates.add(criteriaBuilder.equal(joinMasterProductionSchedule.get("warehouseId"), warehouseId));
 
                     predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("plannedDate"), beginDateTime));
                     predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("plannedDate"), endDateTime));
 
                     if (Objects.nonNull(productionLineId)) {
 
-                        Join<MasterProductionScheduleLineDate, MasterProductionScheduleLine> joinMasterProductionScheduleLine
-                                = root.join("masterProductionScheduleLine", JoinType.INNER);
                         Join<MasterProductionScheduleLine, ProductionLine> joinProductionLine
                                 = joinMasterProductionScheduleLine.join("productionLine", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinProductionLine.get("id"), productionLineId));
@@ -246,5 +279,17 @@ public class MasterProductionScheduleService   {
                         LocalDateTime.parse(endDateTime),
                         productionLineId);
         return masterProductionScheduleLineDates.stream().map(MasterProductionScheduleLineDate::getPlannedDate).collect(Collectors.toSet());
+    }
+
+    public Collection<MasterProductionSchedule> getExistingMPSs(Long warehouseId, Long productionLineId,
+                                                                String beginDateTime, String endDateTime) {
+        List<MasterProductionScheduleLineDate> masterProductionScheduleLineDates =
+                findAllMasterProductionScheduleLineDate(
+                        warehouseId,
+                        LocalDateTime.parse(beginDateTime),
+                        LocalDateTime.parse(endDateTime),
+                        productionLineId);
+        return masterProductionScheduleLineDates.stream().map(MasterProductionScheduleLineDate::getMasterProductionScheduleLine)
+                .map(MasterProductionScheduleLine::getMasterProductionSchedule).collect(Collectors.toSet());
     }
 }
