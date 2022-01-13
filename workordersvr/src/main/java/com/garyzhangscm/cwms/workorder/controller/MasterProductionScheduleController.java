@@ -83,4 +83,14 @@ public class MasterProductionScheduleController {
         return masterProductionScheduleService.getAvailableDate(warehouseId, productionLineId, beginDateTime, endDateTime);
     }
 
+    @RequestMapping(value="/master-production-schedules/existing-mps", method = RequestMethod.GET)
+    public Collection<MasterProductionSchedule> getExistingMPSs(
+            @RequestParam Long warehouseId,
+            @RequestParam Long productionLineId,
+            @RequestParam String beginDateTime,
+            @RequestParam String endDateTime
+    ) {
+        return masterProductionScheduleService.getExistingMPSs(warehouseId, productionLineId, beginDateTime, endDateTime);
+    }
+
 }

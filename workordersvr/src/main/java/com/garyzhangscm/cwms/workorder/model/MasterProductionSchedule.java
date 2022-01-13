@@ -72,6 +72,17 @@ public class MasterProductionSchedule extends AuditibleEntity<String>{
     List<MasterProductionScheduleLine> masterProductionScheduleLines = new ArrayList<>();
 
 
+    @Override
+    public boolean equals(Object anotherMps) {
+        if (this == anotherMps) {
+            return true;
+        }
+        if (!(anotherMps instanceof MasterProductionSchedule)) {
+            return false;
+        }
+        return this.getNumber().equals(((MasterProductionSchedule)anotherMps).getNumber());
+    }
+
     public Long getId() {
         return id;
     }
