@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -37,10 +40,11 @@ public class MasterProductionScheduleLineDate extends AuditibleEntity<String>{
     private Long plannedQuantity;
 
     @Column(name = "planned_date")
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate plannedDate;
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime plannedDate;
 
 
     public Long getId() {
@@ -67,11 +71,11 @@ public class MasterProductionScheduleLineDate extends AuditibleEntity<String>{
         this.plannedQuantity = plannedQuantity;
     }
 
-    public LocalDate getPlannedDate() {
+    public LocalDateTime getPlannedDate() {
         return plannedDate;
     }
 
-    public void setPlannedDate(LocalDate plannedDate) {
+    public void setPlannedDate(LocalDateTime plannedDate) {
         this.plannedDate = plannedDate;
     }
 }

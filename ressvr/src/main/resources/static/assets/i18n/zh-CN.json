@@ -1557,6 +1557,17 @@
   "expected-workorder-quantity" : "预计加工数量",
   "suggested-mps-quantity" : "建议生产数量",
   "quantity-calculator": "计算数量",
-  "production-line-produce-plan": "按产线计划数量"
+  "production-line-produce-plan": "按产线计划数量",
+  "required-quantity": "需要数量",
+  "planned-quantity": "已计划数量",
+  "date-already-assigned": "已分配日期",
+  "total-planned-quantity": "总计划数量",
+  "mps.add-date": "添加日期",
+  "following-date-will-be-added-to-the-current-MPS": "以下日期将被添加",
+  "total-days": "总天数",
+  "daily-quantity": "每日数量",
+  "daily-quantity-is-required": "必须填写每日数量",
+  "no-valid-date": "没有合适的日期",
+  "cutoff-date-needs-to-be-future": "截止日期必须为未来的日期"
 
 }

@@ -136,6 +136,11 @@ public class ProductionLineService implements TestDataInitiableService {
         return findAllAvailableProductionLines(warehouseId, itemId,true);
     }
 
+    public List<ProductionLine> findAllAvailableProductionLinesForMPS(
+            Long warehouseId, Long itemId) {
+        return findAllAvailableProductionLinesForMPS(warehouseId, itemId,true);
+    }
+
     public List<ProductionLine> findAllAvailableProductionLines(
             Long warehouseId, Long itemId, boolean loadDetails) {
         List<ProductionLine> productionLines
@@ -152,6 +157,30 @@ public class ProductionLineService implements TestDataInitiableService {
 
     }
 
+
+    public List<ProductionLine> findAllAvailableProductionLinesForMPS(
+            Long warehouseId, Long itemId, boolean loadDetails) {
+        List<ProductionLine> productionLines
+                = productionLineRepository.findByWarehouseId(warehouseId);
+        productionLines =
+                productionLines.stream()
+                        .filter(productionLine ->
+                                isAvailableForFutureWorkOrder(productionLine, itemId))
+                        .collect(Collectors.toList());
+        if (productionLines.size() > 0 && loadDetails) {
+            loadAttribute(productionLines);
+        }
+        return productionLines;
+
+    }
+
+    /**
+     * Check if the production is valid to be assigned to the work order with the
+     * specific item
+     * @param productionLine
+     * @param itemId
+     * @return
+     */
     private boolean isAvailableForNewWorkOrder(
             ProductionLine productionLine, Long itemId) {
         logger.debug("Start to check if production line {} can be used by itemId: {}",
@@ -194,6 +223,49 @@ public class ProductionLineService implements TestDataInitiableService {
         return true;
     }
 
+    /**
+     * Check if the production line is valid for future work order, normally
+     * used when we setup the MPS for the production line
+     * @param productionLine
+     * @param itemId
+     * @return
+     */
+    private boolean isAvailableForFutureWorkOrder(
+            ProductionLine productionLine, Long itemId) {
+        logger.debug("Start to check if production line {} can be used by itemId: {} for future MPS",
+                productionLine.getName(),
+                itemId);
+        // The production line is available for new work order only if
+        // both of the following conditions are met
+        // 1. production line is enabled
+        // 2. production line is not exclusive
+        //    or is exclusive but no work order on it yet
+        if (!productionLine.getEnabled()) {
+            logger.debug("> production line is disabled");
+            return false;
+        }
+
+        // if this production line is not for generic purpose, then we
+        // know it is for certain item only , we will need to make sure
+        // the item id is in the list
+        if (!productionLine.getGenericPurpose()) {
+            if (Objects.isNull(itemId)) {
+                // the production line is for certain item only but
+                // we didn't pass in the item as qualifier, let's return false
+
+                logger.debug("> production line is not generic purpose but item id is not passed in");
+                return false;
+            }
+            if (productionLine.getProductionLineCapacities().stream()
+                    .noneMatch(productionLineCapacity
+                            -> itemId.equals(productionLineCapacity.getItemId()))) {
+                logger.debug("> production line is not generic purpose but item id is not in the list");
+
+                return false;
+            }
+        }
+        return true;
+    }
 
     public ProductionLine findByName(Long warehouseId, String name, boolean loadDetails) {
         ProductionLine productionLine = productionLineRepository.findByWarehouseIdAndName(warehouseId, name);

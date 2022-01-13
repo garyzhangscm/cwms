@@ -22,10 +22,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.workorder.model.MasterProductionSchedule;
-import com.garyzhangscm.cwms.workorder.model.Mould;
-import com.garyzhangscm.cwms.workorder.model.MouldCVSWrapper;
-import com.garyzhangscm.cwms.workorder.model.Warehouse;
+import com.garyzhangscm.cwms.workorder.model.*;
+import com.garyzhangscm.cwms.workorder.model.Order;
+import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleLineDateRepository;
 import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleRepository;
 import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import org.apache.commons.lang.StringUtils;
@@ -37,15 +36,15 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -54,6 +53,8 @@ public class MasterProductionScheduleService   {
 
     @Autowired
     private MasterProductionScheduleRepository masterProductionScheduleRepository;
+    @Autowired
+    private MasterProductionScheduleLineDateRepository masterProductionScheduleLineDateRepository;
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -134,6 +135,38 @@ public class MasterProductionScheduleService   {
 
     }
 
+
+    public List<MasterProductionScheduleLineDate> findAllMasterProductionScheduleLineDate(
+            Long warehouseId, LocalDateTime beginDateTime, LocalDateTime endDateTime, Long productionLineId) {
+
+        return masterProductionScheduleLineDateRepository.findAll(
+                (Root<MasterProductionScheduleLineDate> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("plannedDate"), beginDateTime));
+                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("plannedDate"), endDateTime));
+
+                    if (Objects.nonNull(productionLineId)) {
+
+                        Join<MasterProductionScheduleLineDate, MasterProductionScheduleLine> joinMasterProductionScheduleLine
+                                = root.join("masterProductionScheduleLine", JoinType.INNER);
+                        Join<MasterProductionScheduleLine, ProductionLine> joinProductionLine
+                                = joinMasterProductionScheduleLine.join("productionLine", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinProductionLine.get("id"), productionLineId));
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+                ,
+                Sort.by(Sort.Direction.ASC, "plannedDate")
+        );
+
+    }
+
     public MasterProductionSchedule findByNumber(Long warehouseId, String number) {
 
         return findByNumber(warehouseId, number, true);
@@ -174,10 +207,44 @@ public class MasterProductionScheduleService   {
 
 
     public MasterProductionSchedule addMasterProductionSchedule(MasterProductionSchedule masterProductionSchedule) {
+        masterProductionSchedule.getMasterProductionScheduleLines().forEach(
+                masterProductionScheduleLine -> {
+                    masterProductionScheduleLine.setMasterProductionSchedule(masterProductionSchedule);
+                    masterProductionScheduleLine.getMasterProductionScheduleLineDates().forEach(
+                            masterProductionScheduleLineDate ->
+                                    masterProductionScheduleLineDate.setMasterProductionScheduleLine(
+                                            masterProductionScheduleLine
+                                    )
+                    );
+                }
+        );
         return saveOrUpdate(masterProductionSchedule);
     }
 
     public MasterProductionSchedule changeMasterProductionSchedule(Long id, MasterProductionSchedule masterProductionSchedule) {
+        masterProductionSchedule.getMasterProductionScheduleLines().forEach(
+                masterProductionScheduleLine -> {
+                    masterProductionScheduleLine.setMasterProductionSchedule(masterProductionSchedule);
+                    masterProductionScheduleLine.getMasterProductionScheduleLineDates().forEach(
+                            masterProductionScheduleLineDate ->
+                                    masterProductionScheduleLineDate.setMasterProductionScheduleLine(
+                                            masterProductionScheduleLine
+                                    )
+                    );
+                }
+        );
         return saveOrUpdate(masterProductionSchedule);
+    }
+
+    public Set<LocalDateTime> getAvailableDate(Long warehouseId, Long productionLineId, String beginDateTime, String endDateTime) {
+
+
+        List<MasterProductionScheduleLineDate> masterProductionScheduleLineDates =
+                findAllMasterProductionScheduleLineDate(
+                        warehouseId,
+                        LocalDateTime.parse(beginDateTime),
+                        LocalDateTime.parse(endDateTime),
+                        productionLineId);
+        return masterProductionScheduleLineDates.stream().map(MasterProductionScheduleLineDate::getPlannedDate).collect(Collectors.toSet());
     }
 }
