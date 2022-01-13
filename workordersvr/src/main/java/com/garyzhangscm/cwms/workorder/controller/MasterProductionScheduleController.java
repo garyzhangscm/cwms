@@ -27,6 +27,9 @@ import com.garyzhangscm.cwms.workorder.service.MouldService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -70,5 +73,14 @@ public class MasterProductionScheduleController {
         masterProductionScheduleService.delete(id);
     }
 
+    @RequestMapping(value="/master-production-schedules/available-date", method = RequestMethod.GET)
+    public Collection<LocalDateTime> getAvailableDate(
+            @RequestParam Long warehouseId,
+            @RequestParam Long productionLineId,
+            @RequestParam String beginDateTime,
+            @RequestParam String endDateTime
+            ) {
+        return masterProductionScheduleService.getAvailableDate(warehouseId, productionLineId, beginDateTime, endDateTime);
+    }
 
 }

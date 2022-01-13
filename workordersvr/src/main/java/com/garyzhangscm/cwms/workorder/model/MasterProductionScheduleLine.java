@@ -21,10 +21,6 @@ public class MasterProductionScheduleLine extends AuditibleEntity<String>{
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "number")
-    private String number;
-
-
     @ManyToOne
     @JoinColumn(name = "master_production_schedule_id")
     @JsonIgnore
@@ -39,13 +35,12 @@ public class MasterProductionScheduleLine extends AuditibleEntity<String>{
     // MPS line on the production line
     @ManyToOne
     @JoinColumn(name = "production_line_id")
-    @JsonIgnore
     private ProductionLine productionLine;
 
     // planned quantity on different days
     @OneToMany(
             mappedBy = "masterProductionScheduleLine",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     List<MasterProductionScheduleLineDate> masterProductionScheduleLineDates = new ArrayList<>();
@@ -56,14 +51,6 @@ public class MasterProductionScheduleLine extends AuditibleEntity<String>{
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
     }
 
     public MasterProductionSchedule getMasterProductionSchedule() {

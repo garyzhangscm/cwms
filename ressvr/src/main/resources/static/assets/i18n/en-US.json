@@ -1558,6 +1558,17 @@
   "expected-workorder-quantity" : "Expected Work Order Quantity",
   "suggested-mps-quantity" : "Suggested MPS Quantity",
   "quantity-calculator": "Quantity Calculator",
-  "production-line-produce-plan": "Produce Plan By Production Line"
+  "production-line-produce-plan": "Produce Plan By Production Line",
+  "required-quantity": "Required Quantity",
+  "planned-quantity": "Planned Quantity",
+  "date-already-assigned": "Date Already Assigned",
+  "total-planned-quantity": "Total Planned Quantity",
+  "mps.add-date": "Add Date",
+  "following-date-will-be-added-to-the-current-MPS": "Following Date Will Be Added",
+  "total-days": "Total Days",
+  "daily-quantity": "Daily Quantity",
+  "daily-quantity-is-required": "Daily Quantity is Required",
+  "no-valid-date": "No Valid Date",
+  "cutoff-date-needs-to-be-future": "Cutoff Date Needs to be a Future Date"
 
 }

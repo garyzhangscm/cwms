@@ -42,10 +42,11 @@ public class MasterProductionSchedule extends AuditibleEntity<String>{
     private String description;
 
     @Column(name = "cutoff_date")
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate cutoffDate;
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime cutoffDate;
 
 
     @Column(name = "item_id")
@@ -59,11 +60,13 @@ public class MasterProductionSchedule extends AuditibleEntity<String>{
     private Long totalQuantity;
 
 
+    @Transient
+    private Long plannedQuantity;
 
     // one MPS line for each production line
     @OneToMany(
             mappedBy = "masterProductionSchedule",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     List<MasterProductionScheduleLine> masterProductionScheduleLines = new ArrayList<>();
@@ -101,11 +104,11 @@ public class MasterProductionSchedule extends AuditibleEntity<String>{
         this.number = number;
     }
 
-    public LocalDate getCutoffDate() {
+    public LocalDateTime getCutoffDate() {
         return cutoffDate;
     }
 
-    public void setCutoffDate(LocalDate cutoffDate) {
+    public void setCutoffDate(LocalDateTime cutoffDate) {
         this.cutoffDate = cutoffDate;
     }
 
@@ -139,5 +142,24 @@ public class MasterProductionSchedule extends AuditibleEntity<String>{
 
     public void setMasterProductionScheduleLines(List<MasterProductionScheduleLine> masterProductionScheduleLines) {
         this.masterProductionScheduleLines = masterProductionScheduleLines;
+    }
+
+    public Long getPlannedQuantity() {
+        if (Objects.nonNull(plannedQuantity)) {
+            return plannedQuantity;
+        }
+        plannedQuantity = 0l;
+        for (MasterProductionScheduleLine masterProductionScheduleLine : this.masterProductionScheduleLines) {
+            for (MasterProductionScheduleLineDate masterProductionScheduleLineDate :
+                    masterProductionScheduleLine.masterProductionScheduleLineDates) {
+
+                plannedQuantity += masterProductionScheduleLineDate.getPlannedQuantity();
+            }
+        }
+        return plannedQuantity;
+    }
+
+    public void setPlannedQuantity(Long plannedQuantity) {
+        this.plannedQuantity = plannedQuantity;
     }
 }
