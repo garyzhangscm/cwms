@@ -1569,6 +1569,7 @@
   "daily-quantity": "Daily Quantity",
   "daily-quantity-is-required": "Daily Quantity is Required",
   "no-valid-date": "No Valid Date",
-  "cutoff-date-needs-to-be-future": "Cutoff Date Needs to be a Future Date"
+  "cutoff-date-needs-to-be-future": "Cutoff Date Needs to be a Future Date",
+  "menu.main.work-order.mps-view": "MPS View"
 
 }
