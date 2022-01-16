@@ -143,6 +143,7 @@ public class InventoryActivityService{
         List<InventoryActivity> inventoryActivities =  inventoryActivityRepository.findAll(
                 (Root<InventoryActivity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+                    criteriaQuery.distinct(true);
                     if (!StringUtils.isBlank(itemName) || !StringUtils.isBlank(clientIds)) {
                         Join<InventoryActivity, Item> joinItem = root.join("item", JoinType.INNER);
                         if (!itemName.isEmpty()) {

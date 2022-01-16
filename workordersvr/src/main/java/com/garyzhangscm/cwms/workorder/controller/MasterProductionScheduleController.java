@@ -41,8 +41,14 @@ public class MasterProductionScheduleController {
     public List<MasterProductionSchedule> findAllMasterProductionSchedules(
             @RequestParam Long warehouseId,
             @RequestParam(name="number", required = false, defaultValue = "") String number,
-            @RequestParam(name="description", required = false, defaultValue = "") String description) {
-        return masterProductionScheduleService.findAll(warehouseId, number, description);
+            @RequestParam(name="description", required = false, defaultValue = "") String description,
+            @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
+            @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds,
+            @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+            @RequestParam(name="beginDateTime", required = false, defaultValue = "") String beginDateTime,
+            @RequestParam(name="endDateTime", required = false, defaultValue = "") String endDateTime) {
+        return masterProductionScheduleService.findAll(warehouseId, number, description,
+                beginDateTime, endDateTime, productionLineId, productionLineIds, itemName);
     }
 
 
