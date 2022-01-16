@@ -192,9 +192,9 @@ public class WorkOrderLineService implements TestDataInitiableService {
         String number = workOrderLine.getNumber();
 
         if (workOrderLine.getId() == null
-                && findByNumber(warehouseId, workOrderNumber, number) != null) {
+                && findByNumber(warehouseId, workOrderNumber, number, false) != null) {
             workOrderLine.setId(
-                    findByNumber(warehouseId, workOrderNumber, number).getId());
+                    findByNumber(warehouseId, workOrderNumber, number, false).getId());
         }
         return save(workOrderLine, loadDetails);
     }

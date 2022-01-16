@@ -1569,6 +1569,10 @@
   "daily-quantity-is-required": "必须填写每日数量",
   "no-valid-date": "没有合适的日期",
   "cutoff-date-needs-to-be-future": "截止日期必须为未来的日期",
-  "menu.main.work-order.mps-view": "主生产计划视图"
+  "menu.main.work-order.mps-view": "主生产计划视图",
+  "number": "编号",
+  "date-range": "日期范围",
+  "moved-days": "移动天数",
+  "extended-days": "增加天数"
 
 }

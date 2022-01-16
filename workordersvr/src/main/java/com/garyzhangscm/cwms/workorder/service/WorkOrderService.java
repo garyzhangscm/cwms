@@ -254,9 +254,9 @@ public class WorkOrderService implements TestDataInitiableService {
         return saveOrUpdate(workOrder, true);
     }
     public WorkOrder saveOrUpdate(WorkOrder workOrder, boolean loadDetails) {
-        if (workOrder.getId() == null && findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), loadDetails) != null) {
+        if (workOrder.getId() == null && findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), false) != null) {
             workOrder.setId(
-                    findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), loadDetails).getId());
+                    findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), false).getId());
         }
         if (Objects.isNull(workOrder.getId())) {
             // when we add a new work order, we will setup the QC related information

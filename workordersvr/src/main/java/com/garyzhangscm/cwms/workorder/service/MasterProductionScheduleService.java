@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleLineDa
 import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleRepository;
 import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,23 +89,27 @@ public class MasterProductionScheduleService   {
     }
 
 
-    public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description) {
-        return findAll(warehouseId, number, description,  true);
-    }
-    public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description, boolean loadDetails) {
-        return findAll(warehouseId, number, description, null, null, loadDetails);
+
+
+
+
+    public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description,
+                                                  String beginDateTime, String endDateTime,
+                                                  Long productionLineId, String productionLineIds,
+                                                  String itemName) {
+        return findAll(warehouseId, number, description, beginDateTime, endDateTime, productionLineId, productionLineIds,
+                itemName, true);
     }
     public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description,
-                                                  LocalDateTime beginDateTime, LocalDateTime endDateTime) {
-        return findAll(warehouseId, number, description, beginDateTime, endDateTime, true);
-    }
-    public List<MasterProductionSchedule> findAll(Long warehouseId, String number, String description,
-                                                  LocalDateTime beginDateTime, LocalDateTime endDateTime,
+                                                  String beginDateTime, String endDateTime,
+                                                  Long productionLineId, String productionLineIds,
+                                                  String itemName,
                                                   boolean loadDetails) {
         List<MasterProductionSchedule> masterProductionSchedules =
                 masterProductionScheduleRepository.findAll(
                 (Root<MasterProductionSchedule> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+                    criteriaQuery.distinct(true);
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
@@ -119,19 +124,38 @@ public class MasterProductionScheduleService   {
                         }
 
                     }
-
-                    if (Objects.nonNull(beginDateTime)) {
+                    if(Objects.nonNull(productionLineId)) {
 
                         Join<MasterProductionSchedule, MasterProductionScheduleLine> joinMasterProductionScheduleLine
                                 = root.join("masterProductionScheduleLines", JoinType.INNER);
-                        Join<MasterProductionScheduleLine, MasterProductionScheduleLineDate> joinMasterProductionScheduleLineDate
-                                = joinMasterProductionScheduleLine.join("masterProductionScheduleLineDates", JoinType.INNER);
 
+                        Join<MasterProductionScheduleLine, ProductionLine> joinProductionLine
+                                = joinMasterProductionScheduleLine.join("productionLine", JoinType.INNER);
 
-                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(joinMasterProductionScheduleLineDate.get("plannedDate"), beginDateTime));
-
+                        predicates.add(criteriaBuilder.equal(joinProductionLine.get("id"), productionLineId));
                     }
-                    if (Objects.nonNull(endDateTime)) {
+                    if (Strings.isNotBlank(productionLineIds)) {
+
+                        Join<MasterProductionSchedule, MasterProductionScheduleLine> joinMasterProductionScheduleLine
+                                = root.join("masterProductionScheduleLines", JoinType.INNER);
+
+                        Join<MasterProductionScheduleLine, ProductionLine> joinProductionLine
+                                = joinMasterProductionScheduleLine.join("productionLine", JoinType.INNER);
+
+                        CriteriaBuilder.In<Long> inProductionLineIds
+                                = criteriaBuilder.in(joinProductionLine.get("id"));
+                        for(String id : productionLineIds.split(",")) {
+                            inProductionLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inProductionLineIds));
+                    }
+                    if (Strings.isNotBlank(itemName)) {
+                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemName);
+
+                        predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
+                    }
+
+                    if (Strings.isNotBlank(beginDateTime) || Strings.isNotBlank(endDateTime)) {
 
                         Join<MasterProductionSchedule, MasterProductionScheduleLine> joinMasterProductionScheduleLine
                                 = root.join("masterProductionScheduleLines", JoinType.INNER);
@@ -139,7 +163,18 @@ public class MasterProductionScheduleService   {
                                 = joinMasterProductionScheduleLine.join("masterProductionScheduleLineDates", JoinType.INNER);
 
 
-                        predicates.add(criteriaBuilder.lessThanOrEqualTo(joinMasterProductionScheduleLineDate.get("plannedDate"), endDateTime));
+                        if (Strings.isNotBlank(beginDateTime)) {
+
+                            predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                    joinMasterProductionScheduleLineDate.get("plannedDate"),
+                                    LocalDateTime.parse(beginDateTime)));
+                        }
+                        if (Strings.isNotBlank(endDateTime)) {
+
+                            predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                    joinMasterProductionScheduleLineDate.get("plannedDate"),
+                                    LocalDateTime.parse(endDateTime)));
+                        }
 
                     }
 
@@ -161,6 +196,7 @@ public class MasterProductionScheduleService   {
             loadAttributes(masterProductionSchedules);
         }
 
+        logger.debug("find {} result", masterProductionSchedules.size());
         return masterProductionSchedules;
 
     }

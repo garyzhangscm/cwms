@@ -201,6 +201,7 @@ public class InventoryService implements TestDataInitiableService{
         List<Inventory> inventories =  inventoryRepository.findAll(
                 (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+                    criteriaQuery.distinct(true);
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
