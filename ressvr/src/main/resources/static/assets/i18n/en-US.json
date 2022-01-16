@@ -1574,6 +1574,8 @@
   "number": "Number",
   "date-range": "Date Range",
   "moved-days": "Moved Days",
-  "extended-days": "Extended Days"
+  "extended-days": "Extended Days",
+  "mps.change-date": "Change Date",
+  "new-mps-date-interval-not-valid": "New MPS Date Interval is not Valid"
 
 }

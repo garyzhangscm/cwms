@@ -1573,6 +1573,8 @@
   "number": "编号",
   "date-range": "日期范围",
   "moved-days": "移动天数",
-  "extended-days": "增加天数"
+  "extended-days": "增加天数",
+  "mps.change-date": "修改日期",
+  "new-mps-date-interval-not-valid": "新的主生产计划日期范围不正确"
 
 }
