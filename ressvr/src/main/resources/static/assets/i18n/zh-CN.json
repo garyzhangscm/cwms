@@ -1575,6 +1575,10 @@
   "moved-days": "移动天数",
   "extended-days": "增加天数",
   "mps.change-date": "修改日期",
-  "new-mps-date-interval-not-valid": "新的主生产计划日期范围不正确"
+  "new-mps-date-interval-not-valid": "新的主生产计划日期范围不正确",
+  "mps.move-successor-mps": "平移后续的MPS",
+  "mps.move-cutoff-date": "平移截单日期",
+  "new-mps-date-interval-beyond-cutoff-date": "新的主生产计划日期范围超过了截单日期",
+  "new-mps-date-interval-overlap-with-other-mps": "新的主生产计划日期范围和其他的主生产计划有冲突"
 
 }

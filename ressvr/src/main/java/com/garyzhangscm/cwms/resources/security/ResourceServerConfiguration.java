@@ -33,6 +33,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
           .antMatchers(HttpMethod.GET, "/reports/templates").permitAll()
                 .antMatchers(HttpMethod.GET, "/rf-apk-files/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/rf-apk-files").permitAll()
+                .antMatchers(HttpMethod.GET, "/email/test").permitAll()
                 .antMatchers(HttpMethod.GET, "/rf-app-version/latest-version").permitAll()
           .anyRequest()
           .authenticated();

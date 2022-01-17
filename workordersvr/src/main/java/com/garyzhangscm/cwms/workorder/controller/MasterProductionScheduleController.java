@@ -69,14 +69,17 @@ public class MasterProductionScheduleController {
     @BillableEndpoint
     @RequestMapping(value="/master-production-schedules/{id}", method = RequestMethod.POST)
     public MasterProductionSchedule changeMasterProductionSchedule(@PathVariable Long id,
-                                                                   @RequestBody MasterProductionSchedule masterProductionSchedule){
-        return masterProductionScheduleService.changeMasterProductionSchedule(id, masterProductionSchedule);
+                                                                   @RequestBody MasterProductionSchedule masterProductionSchedule,
+                                                                   @RequestParam(name="moveSuccessor", required = false, defaultValue = "true") Boolean moveSuccessor){
+        return masterProductionScheduleService.changeMasterProductionSchedule(id, masterProductionSchedule, moveSuccessor);
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/master-production-schedule/{id}", method = RequestMethod.DELETE)
-    public void removeMasterProductionSchedule(@PathVariable Long id) {
-        masterProductionScheduleService.delete(id);
+    @RequestMapping(value="/master-production-schedules/{id}", method = RequestMethod.DELETE)
+    public void removeMasterProductionSchedule(@PathVariable Long id,
+
+                                               @RequestParam(name="moveSuccessor", required = false, defaultValue = "true") Boolean moveSuccessor) {
+        masterProductionScheduleService.delete(id, moveSuccessor);
     }
 
     @RequestMapping(value="/master-production-schedules/available-date", method = RequestMethod.GET)
