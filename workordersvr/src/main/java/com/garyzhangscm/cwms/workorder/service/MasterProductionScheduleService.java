@@ -18,31 +18,27 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
-import com.garyzhangscm.cwms.workorder.model.Order;
 import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleLineDateRepository;
 import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleRepository;
-import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
+
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 
 @Service
@@ -266,12 +262,33 @@ public class MasterProductionScheduleService   {
     }
 
 
-    public void delete(MasterProductionSchedule masterProductionSchedule) {
+    public void delete(MasterProductionSchedule masterProductionSchedule, Boolean moveSuccessor) {
+        // see if we will need to move the successor MPS back wards after we remove the current MPS
+
+        logger.debug("do we need to move successor after the change? {}", moveSuccessor);
+
+        if (Boolean.TRUE.equals(moveSuccessor)) {
+            masterProductionSchedule.getMasterProductionScheduleLines().forEach(
+                    masterProductionScheduleLine -> {
+                        long productionLineId = masterProductionScheduleLine.getProductionLine().getId();
+                        long movedDays =
+                                getLastDateDifference(masterProductionSchedule, null, productionLineId) - 1;
+                        logger.debug("> we may need move {} days for the successor MPS after we chaged the currnet MPS {} on production line {}",
+                                movedDays, masterProductionSchedule.getNumber(),
+                                masterProductionScheduleLine.getProductionLine().getName());
+                        if (movedDays != 0) {
+                            moveSuccessingMPS(masterProductionSchedule, productionLineId, movedDays);
+                        }
+                    }
+            );
+        }
         masterProductionScheduleRepository.delete(masterProductionSchedule);
     }
 
-    public void delete(Long id) {
-        masterProductionScheduleRepository.deleteById(id);
+    public void delete(Long id, Boolean moveSuccessor) {
+
+        delete(findById(id), moveSuccessor);
+
     }
 
 
@@ -290,7 +307,12 @@ public class MasterProductionScheduleService   {
         return saveOrUpdate(masterProductionSchedule);
     }
 
-    public MasterProductionSchedule changeMasterProductionSchedule(Long id, MasterProductionSchedule masterProductionSchedule) {
+    @Transactional
+    public MasterProductionSchedule changeMasterProductionSchedule(Long id,
+                                                                   MasterProductionSchedule masterProductionSchedule,
+                                                                   Boolean moveSuccessor) {
+        MasterProductionSchedule originalMasterProductionSchedule = findById(id);
+
         masterProductionSchedule.getMasterProductionScheduleLines().forEach(
                 masterProductionScheduleLine -> {
                     masterProductionScheduleLine.setMasterProductionSchedule(masterProductionSchedule);
@@ -302,7 +324,166 @@ public class MasterProductionScheduleService   {
                     );
                 }
         );
+        // see if the last date of the MPS is changed, if so, we may need to move the successor
+        // forward or backward accordingly
+        logger.debug("do we need to move successor after the change? {}", moveSuccessor);
+        if (Boolean.TRUE.equals(moveSuccessor)) {
+            originalMasterProductionSchedule.getMasterProductionScheduleLines().forEach(
+                    masterProductionScheduleLine -> {
+                        long productionLineId = masterProductionScheduleLine.getProductionLine().getId();
+                        long movedDays =
+                                getLastDateDifference(originalMasterProductionSchedule, masterProductionSchedule, productionLineId);
+                        logger.debug("> we may need move {} days for the successor MPS after we chaged the currnet MPS {} on production line {}",
+                                movedDays, masterProductionSchedule.getNumber(),
+                                masterProductionScheduleLine.getProductionLine().getName());
+                        if (movedDays != 0) {
+                            moveSuccessingMPS(originalMasterProductionSchedule, productionLineId, movedDays);
+                        }
+                    }
+            );
+        }
         return saveOrUpdate(masterProductionSchedule);
+    }
+
+    @Transactional
+    private void moveSuccessingMPS(MasterProductionSchedule originalMasterProductionSchedule,
+                                   long productionLineId, long movedDays) {
+        // let's find all the successing MPS that on the same production and have
+        // date that later than the current MPS's last date
+
+        LocalDateTime originalMPSLastDay = getLastPlannedDate(originalMasterProductionSchedule, productionLineId);
+        List<MasterProductionSchedule> allMPSNeedsMove = findAll(
+                originalMasterProductionSchedule.getWarehouseId(),
+                null,
+                null,
+                originalMPSLastDay.toLocalDate().plusDays(1).atStartOfDay().toString(),  // only return MPS that is after the last day of the original MPS
+                null,
+                productionLineId,
+                null, null, false
+        );
+        allMPSNeedsMove.forEach(
+                masterProductionSchedule ->
+                        moveMPSByDays(masterProductionSchedule, productionLineId, originalMPSLastDay.plusDays(1), movedDays)
+        );
+    }
+
+    @Transactional
+    private void moveMPSByDays(MasterProductionSchedule masterProductionSchedule,
+                               long productionLineId,
+                               LocalDateTime startDate,
+                               long movedDays) {
+        masterProductionSchedule.getMasterProductionScheduleLines().stream().filter(
+                masterProductionScheduleLine -> masterProductionScheduleLine.getProductionLine().getId().equals(productionLineId)
+        ).forEach(
+                masterProductionScheduleLine -> {
+                    logger.debug("Start to move MPS {}, on production line {}, by {} days, for any date on or after {}",
+                            masterProductionSchedule.getNumber(),
+                            masterProductionScheduleLine.getProductionLine().getName(),
+                            movedDays, startDate);
+                    masterProductionScheduleLine.getMasterProductionScheduleLineDates().forEach(
+                            masterProductionScheduleLineDate -> {
+                                if (!masterProductionScheduleLineDate.getPlannedDate().toLocalDate().isBefore(
+                                        startDate.toLocalDate()
+                                )) {
+                                    // the planned date is not before the start date, let's move the date
+                                    logger.debug("start to move date from {}", masterProductionScheduleLineDate.getPlannedDate().toLocalDate());
+                                    masterProductionScheduleLineDate.setPlannedDate(
+                                            masterProductionScheduleLineDate.getPlannedDate().toLocalDate().plusDays(movedDays).atStartOfDay()
+                                    );
+                                    logger.debug("==> to {}", masterProductionScheduleLineDate.getPlannedDate().toLocalDate());
+                                }
+                            }
+                    );
+                }
+        );
+        saveOrUpdate(masterProductionSchedule);
+    }
+
+    private long getLastDateDifference(MasterProductionSchedule originalMasterProductionSchedule,
+                                      MasterProductionSchedule masterProductionSchedule,
+                                       Long productionLineId) {
+
+        LocalDateTime originalMPSLastDay = getLastPlannedDate(originalMasterProductionSchedule, productionLineId);
+        LocalDateTime newMPSLastDay = getLastPlannedDate(masterProductionSchedule, productionLineId);
+
+        logger.debug("0. originalMPSLastDay: {}", Objects.isNull(originalMPSLastDay) ? "N/A" : originalMPSLastDay);
+        logger.debug("0. newMPSLastDay: {}", Objects.isNull(newMPSLastDay) ? "N/A" : newMPSLastDay);
+        if (Objects.isNull(originalMPSLastDay) && Objects.isNull(newMPSLastDay)) {
+            // the last day in both MPS are empty, which should not happen
+            return 0;
+        }
+        else if (Objects.isNull(originalMPSLastDay) && Objects.nonNull(newMPSLastDay)) {
+            // the original MPS is empty but we have new MPS, then we are adding MPS and
+            // we will use the new MPS' total days as the difference in days so that
+            // we can move the successor
+            LocalDateTime newMPSFirstDay = getFirstPlannedDate(masterProductionSchedule, productionLineId);
+
+            logger.debug("1. newMPSFirstDay: {}", Objects.isNull(newMPSFirstDay) ? "N/A" : newMPSFirstDay);
+            logger.debug("1. DAYS.between(newMPSFirstDay.toLocalDate(), newMPSLastDay.toLocalDate()): {}",
+                    DAYS.between(newMPSFirstDay.toLocalDate(), newMPSLastDay.toLocalDate()));
+
+            return DAYS.between(newMPSFirstDay.toLocalDate(), newMPSLastDay.toLocalDate());
+
+        }
+        else if (Objects.nonNull(originalMPSLastDay) && Objects.isNull(newMPSLastDay)) {
+            // the new MPS is empty but we have original MPS, then we are removing MPS and
+            // we will use the original MPS' total days as the difference in days so that
+            // we can move the successor BACKWARDS
+            LocalDateTime originalMPSFirstDay = getFirstPlannedDate(originalMasterProductionSchedule, productionLineId);
+            logger.debug("2. originalMPSFirstDay: {}", Objects.isNull(originalMPSFirstDay) ? "N/A" : originalMPSFirstDay);
+            logger.debug("2. DAYS.between(originalMPSLastDay.toLocalDate(), originalMPSFirstDay.toLocalDate()): {}",
+                    DAYS.between(originalMPSLastDay.toLocalDate(), originalMPSFirstDay.toLocalDate()));
+            return DAYS.between(originalMPSLastDay.toLocalDate(), originalMPSFirstDay.toLocalDate());
+
+        }
+        else {
+            // we have both the original MPS and new MPS. so we are changing existing MPS
+            // see if we need to move the successor
+            logger.debug("3. DAYS.between(originalMPSLastDay.toLocalDate(), newMPSLastDay.toLocalDate(): {}",
+                    DAYS.between(originalMPSLastDay.toLocalDate(), newMPSLastDay.toLocalDate()));
+            return DAYS.between(originalMPSLastDay.toLocalDate(), newMPSLastDay.toLocalDate());
+        }
+    }
+
+    private LocalDateTime getLastPlannedDate(MasterProductionSchedule masterProductionSchedule,
+                                             Long productionLineId) {
+
+        if (Objects.isNull(masterProductionSchedule)) {
+            return null;
+        }
+        LocalDateTime mpsLastDay = null;
+
+        for (MasterProductionScheduleLine masterProductionScheduleLine : masterProductionSchedule.getMasterProductionScheduleLines()) {
+            if (masterProductionScheduleLine.getProductionLine().getId().equals(productionLineId)) {
+
+                for (MasterProductionScheduleLineDate masterProductionScheduleLineDate : masterProductionScheduleLine.getMasterProductionScheduleLineDates()) {
+                    if (Objects.isNull(mpsLastDay) ||
+                            mpsLastDay.toLocalDate().isBefore(masterProductionScheduleLineDate.getPlannedDate().toLocalDate())) {
+                        mpsLastDay = masterProductionScheduleLineDate.getPlannedDate();
+                    }
+                }
+            }
+        }
+        return  mpsLastDay;
+    }
+
+    private LocalDateTime getFirstPlannedDate(MasterProductionSchedule masterProductionSchedule,
+                                              Long productionLineId) {
+
+        LocalDateTime mpsFirstDay = null;
+
+        for (MasterProductionScheduleLine masterProductionScheduleLine : masterProductionSchedule.getMasterProductionScheduleLines()) {
+            if (masterProductionScheduleLine.getProductionLine().getId().equals(productionLineId)) {
+
+                for (MasterProductionScheduleLineDate masterProductionScheduleLineDate : masterProductionScheduleLine.getMasterProductionScheduleLineDates()) {
+                    if (Objects.isNull(mpsFirstDay) ||
+                            mpsFirstDay.toLocalDate().isAfter(masterProductionScheduleLineDate.getPlannedDate().toLocalDate())) {
+                        mpsFirstDay = masterProductionScheduleLineDate.getPlannedDate();
+                    }
+                }
+            }
+        }
+        return  mpsFirstDay;
     }
 
     public Set<LocalDateTime> getAvailableDate(Long warehouseId, Long productionLineId, String beginDateTime, String endDateTime) {

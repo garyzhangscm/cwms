@@ -1576,6 +1576,9 @@
   "moved-days": "Moved Days",
   "extended-days": "Extended Days",
   "mps.change-date": "Change Date",
-  "new-mps-date-interval-not-valid": "New MPS Date Interval is not Valid"
-
+  "new-mps-date-interval-not-valid": "New MPS Date Interval is not Valid",
+  "mps.move-successor-mps": "Move Successor MPS",
+  "mps.move-cutoff-date": "Move Cutoff Date",
+  "new-mps-date-interval-beyond-cutoff-date": "New MPS Dates Are Beyond the Cutoff Date",
+  "new-mps-date-interval-overlap-with-other-mps": "New MPS Dates Are Overlapping With Other MPS"
 }

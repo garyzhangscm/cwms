@@ -63,6 +63,9 @@ public class MyApplicationRunner implements ApplicationRunner {
     FileService fileService;
 
     @Autowired
+    private EMailService eMailService;
+
+    @Autowired
     private ResourceLoader resourceLoader;
 
 
@@ -85,6 +88,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         menuService.initTestData(null, "");
 
         initReportData();
+
 
 
     }
