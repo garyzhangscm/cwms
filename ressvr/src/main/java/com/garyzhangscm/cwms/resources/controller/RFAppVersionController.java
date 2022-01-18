@@ -56,6 +56,14 @@ public class RFAppVersionController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value = "/rf-app-versions/{id}", method = RequestMethod.POST)
+    public RFAppVersion changeRFAppVersion(
+            @PathVariable Long id,
+            @RequestBody RFAppVersion rfAppVersion) throws IOException {
+        return rfAppVersionService.changeRFAppVersion(id, rfAppVersion);
+    }
+
+    @BillableEndpoint
     @RequestMapping(value = "/rf-app-versions/{id}", method = RequestMethod.DELETE)
     public Boolean removeRFAppVersion(@PathVariable Long id) {
         rfAppVersionService.removeRFAppVersion(id);
