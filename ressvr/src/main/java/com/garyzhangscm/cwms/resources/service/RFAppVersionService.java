@@ -21,10 +21,7 @@ package com.garyzhangscm.cwms.resources.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.resources.model.RF;
-import com.garyzhangscm.cwms.resources.model.RFAppVersion;
-import com.garyzhangscm.cwms.resources.model.RFCSVWrapper;
-import com.garyzhangscm.cwms.resources.model.Warehouse;
+import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.RFAppVersionRepository;
 import com.garyzhangscm.cwms.resources.repository.RFRepository;
 import org.apache.commons.lang.StringUtils;
@@ -120,7 +117,12 @@ public class RFAppVersionService {
         return save(rfAppVersion);
     }
 
-    public RFAppVersion addRFAppVersion(RFAppVersion rfAppVersion) throws IOException {
+    /**
+     * Update the lastest RF APP whenever we add a new version or change a existing version
+     * @param rfAppVersion
+     */
+    private void updateLastestRFAppVersion(RFAppVersion rfAppVersion) {
+
         // check if the rf App version is newer than the original one
         RFAppVersion latestRFAppVersion = rfAppVersionRepository.getLatestRFAppVersion(
                 rfAppVersion.getCompanyId()
@@ -140,7 +142,10 @@ public class RFAppVersionService {
 
             rfAppVersion.setLatestVersion(false);
         }
+    }
 
+    public RFAppVersion addRFAppVersion(RFAppVersion rfAppVersion) throws IOException {
+        updateLastestRFAppVersion(rfAppVersion);
         String destinationFilePath =
                 getAPKFolder(rfAppVersion.getCompanyId()) +
                         rfAppVersion.getVersionNumber() + "/" + rfAppVersion.getFileName();
@@ -250,31 +255,15 @@ public class RFAppVersionService {
     public RFAppVersion getLatestRFAppVersion(Long companyId, String rfCode) {
         List<RFAppVersion> rfAppVersions = findAll(companyId, null, null);
 
-        logger.debug("Overall we found {} rf versions", rfAppVersions.size());
         if (Strings.isNotBlank(rfCode)) {
-            logger.debug("rf code is passed in: {}", rfCode);
             // rf code is passed in, let's only return the app version that is not
             // restrained by rf code, or has the specific rf code listed
-
             rfAppVersions = rfAppVersions.stream().filter(
-                    rfAppVersion -> {
-                        logger.debug("rfAppVersion: {}, rf list is empty? {}, any match with rf code {}?: {}",
-                                rfAppVersion.getVersionNumber(),
-                                rfAppVersion.getRfAppVersionByRFCodes().isEmpty(),
-                                rfCode,
-                                rfAppVersion.getRfAppVersionByRFCodes().stream().anyMatch(
-                                        rfAppVersionByRFCode -> {
-                                            logger.debug("compare {} with input {}",
-                                                    rfAppVersionByRFCode.getRf().getRfCode(),
-                                                    rfCode);
-                                            return rfCode.equals(rfAppVersionByRFCode.getRf().getRfCode());
-                                        }
-                                ));
-                        return rfAppVersion.getRfAppVersionByRFCodes().isEmpty() ||
+                    rfAppVersion ->  rfAppVersion.getRfAppVersionByRFCodes().isEmpty() ||
                                 rfAppVersion.getRfAppVersionByRFCodes().stream().anyMatch(
                                         rfAppVersionByRFCode -> rfCode.equals(rfAppVersionByRFCode.getRf().getRfCode())
-                                );
-                    }
+                                )
+
             ).sorted(Comparator.comparing(RFAppVersion::getReleaseDate).reversed())
                     .collect(Collectors.toList());
         }
@@ -284,5 +273,49 @@ public class RFAppVersionService {
             return rfAppVersions.get(0);
         }
         return null;
+    }
+
+    public RFAppVersion changeRFAppVersion(Long id, RFAppVersion rfAppVersion) throws IOException {
+
+        updateLastestRFAppVersion(rfAppVersion);
+        String destinationFilePath =
+                getAPKFolder(rfAppVersion.getCompanyId()) +
+                        rfAppVersion.getVersionNumber() + "/" + rfAppVersion.getFileName();
+        fileService.copyFile(
+                getAPKTempFolder(rfAppVersion.getCompanyId()) + rfAppVersion.getFileName(),
+                destinationFilePath
+        );
+        // get the file size
+        File file = new File(destinationFilePath);
+        rfAppVersion.setFileSize(file.length());
+
+        // setup all the RFs for this version
+
+        rfAppVersion.getRfAppVersionByRFCodes().forEach(
+                rfAppVersionByRFCode -> {
+                    rfAppVersionByRFCode.setRfAppVersion(rfAppVersion);
+                    // setup the primary key(id) if the record already exists
+                    Optional<RFAppVersionByRFCode> rfAppVersionByRFCodeOptional =
+                            findRFAppVersionByRFCode(id, rfAppVersionByRFCode.getRf().getId());
+                    if (rfAppVersionByRFCodeOptional.isPresent()) {
+
+                        rfAppVersionByRFCode.setId(
+                                rfAppVersionByRFCodeOptional.get().getId()
+                        );
+                    }
+                }
+        );
+        RFAppVersion newRFAppVersion =  saveOrUpdate(rfAppVersion);
+        return newRFAppVersion;
+
+    }
+
+    private Optional<RFAppVersionByRFCode> findRFAppVersionByRFCode(Long rfAppVersionId, Long rfId) {
+        return findRFAppVersionByRFCode(findById(rfAppVersionId), rfId);
+    }
+    private Optional<RFAppVersionByRFCode> findRFAppVersionByRFCode(RFAppVersion rfAppVersion, Long rfId) {
+        return rfAppVersion.getRfAppVersionByRFCodes().stream().filter(
+                rfAppVersionByRFCode -> rfAppVersionByRFCode.getRf().getId().equals(rfId)
+        ).findFirst();
     }
 }
