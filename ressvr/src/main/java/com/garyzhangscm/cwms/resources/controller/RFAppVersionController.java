@@ -44,8 +44,9 @@ public class RFAppVersionController {
 
 
     @RequestMapping(value = "/rf-app-version/latest-version", method = RequestMethod.GET)
-    public RFAppVersion getLatestRFAppVersion(@RequestParam Long companyId) {
-        return rfAppVersionService.getLatestRFAppVersion(companyId);
+    public RFAppVersion getLatestRFAppVersion(@RequestParam Long companyId,
+                                               @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
+        return rfAppVersionService.getLatestRFAppVersion(companyId, rfCode);
     }
 
     @BillableEndpoint

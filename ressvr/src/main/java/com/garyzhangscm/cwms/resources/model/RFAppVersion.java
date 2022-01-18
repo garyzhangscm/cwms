@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -28,7 +29,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "rf_app_version")
@@ -63,6 +64,14 @@ public class RFAppVersion extends AuditibleEntity<String>  {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime releaseDate;
+
+
+    // if the version is only for certain RF code
+    @OneToMany(
+            mappedBy = "rfAppVersion",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY)
+    private List<RFAppVersionByRFCode> rfAppVersionByRFCodes = new ArrayList<>();
 
     public boolean isNewerThan(RFAppVersion anotherVersion) {
         return getReleaseDate().isAfter(anotherVersion.getReleaseDate());
@@ -129,5 +138,13 @@ public class RFAppVersion extends AuditibleEntity<String>  {
 
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
+    }
+
+    public List<RFAppVersionByRFCode> getRfAppVersionByRFCodes() {
+        return rfAppVersionByRFCodes;
+    }
+
+    public void setRfAppVersionByRFCodes(List<RFAppVersionByRFCode> rfAppVersionByRFCodes) {
+        this.rfAppVersionByRFCodes = rfAppVersionByRFCodes;
     }
 }
