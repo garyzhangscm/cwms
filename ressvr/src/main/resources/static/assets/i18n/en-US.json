@@ -1580,5 +1580,8 @@
   "mps.move-successor-mps": "Move Successor MPS",
   "mps.move-cutoff-date": "Move Cutoff Date",
   "new-mps-date-interval-beyond-cutoff-date": "New MPS Dates Are Beyond the Cutoff Date",
-  "new-mps-date-interval-overlap-with-other-mps": "New MPS Dates Are Overlapping With Other MPS"
+  "new-mps-date-interval-overlap-with-other-mps": "New MPS Dates Are Overlapping With Other MPS",
+  "assign-rf": "Assign RF",
+  "RF.unassigned": "Unassigned RF",
+  "RF.assigned": "Assigned RF"
 }

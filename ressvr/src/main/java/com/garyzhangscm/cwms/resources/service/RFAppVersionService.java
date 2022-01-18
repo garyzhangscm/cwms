@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.resources.model.Warehouse;
 import com.garyzhangscm.cwms.resources.repository.RFAppVersionRepository;
 import com.garyzhangscm.cwms.resources.repository.RFRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RFAppVersionService {
@@ -149,6 +151,11 @@ public class RFAppVersionService {
         // get the file size
         File file = new File(destinationFilePath);
         rfAppVersion.setFileSize(file.length());
+
+        // setup all the RFs for this version
+        rfAppVersion.getRfAppVersionByRFCodes().forEach(
+                rfAppVersionByRFCode -> rfAppVersionByRFCode.setRfAppVersion(rfAppVersion)
+        );
         RFAppVersion newRFAppVersion =  saveOrUpdate(rfAppVersion);
         return newRFAppVersion;
 
@@ -240,8 +247,39 @@ public class RFAppVersionService {
         return new File(fileUrl);
     }
 
-    public RFAppVersion getLatestRFAppVersion(Long companyId) {
-        List<RFAppVersion> rfAppVersions = findAll(companyId, true, null);
+    public RFAppVersion getLatestRFAppVersion(Long companyId, String rfCode) {
+        List<RFAppVersion> rfAppVersions = findAll(companyId, null, null);
+
+        logger.debug("Overall we found {} rf versions", rfAppVersions.size());
+        if (Strings.isNotBlank(rfCode)) {
+            logger.debug("rf code is passed in: {}", rfCode);
+            // rf code is passed in, let's only return the app version that is not
+            // restrained by rf code, or has the specific rf code listed
+
+            rfAppVersions = rfAppVersions.stream().filter(
+                    rfAppVersion -> {
+                        logger.debug("rfAppVersion: {}, rf list is empty? {}, any match with rf code {}?: {}",
+                                rfAppVersion.getVersionNumber(),
+                                rfAppVersion.getRfAppVersionByRFCodes().isEmpty(),
+                                rfCode,
+                                rfAppVersion.getRfAppVersionByRFCodes().stream().anyMatch(
+                                        rfAppVersionByRFCode -> {
+                                            logger.debug("compare {} with input {}",
+                                                    rfAppVersionByRFCode.getRf().getRfCode(),
+                                                    rfCode);
+                                            return rfCode.equals(rfAppVersionByRFCode.getRf().getRfCode());
+                                        }
+                                ));
+                        return rfAppVersion.getRfAppVersionByRFCodes().isEmpty() ||
+                                rfAppVersion.getRfAppVersionByRFCodes().stream().anyMatch(
+                                        rfAppVersionByRFCode -> rfCode.equals(rfAppVersionByRFCode.getRf().getRfCode())
+                                );
+                    }
+            ).sorted(Comparator.comparing(RFAppVersion::getReleaseDate).reversed())
+                    .collect(Collectors.toList());
+        }
+
+
         if (rfAppVersions.size() > 0) {
             return rfAppVersions.get(0);
         }
