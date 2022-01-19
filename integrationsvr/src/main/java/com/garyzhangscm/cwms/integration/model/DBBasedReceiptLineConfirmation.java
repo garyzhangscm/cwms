@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_receipt_line_confirmation")
-public class DBBasedReceiptLineConfirmation implements Serializable, IntegrationReceiptLineConfirmationData {
+public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> implements Serializable, IntegrationReceiptLineConfirmationData {
 
 
     @Id
@@ -77,10 +77,7 @@ public class DBBasedReceiptLineConfirmation implements Serializable, Integration
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -103,7 +100,7 @@ public class DBBasedReceiptLineConfirmation implements Serializable, Integration
         setOverReceivingPercent(receiptLineConfirmation.getOverReceivingPercent());
 
 
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
         setStatus(IntegrationStatus.PENDING);
     }
 
@@ -227,20 +224,12 @@ public class DBBasedReceiptLineConfirmation implements Serializable, Integration
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

@@ -33,7 +33,8 @@ public class DBBasedCustomerIntegration {
 
 
     public List<DBBasedCustomer> findAll(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList) {
 
         return dbBasedCustomerRepository.findAll(
                 (Root<DBBasedCustomer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -59,6 +60,14 @@ public class DBBasedCustomerIntegration {
                         predicates.add(criteriaBuilder.between(
                                 root.get("insertTime"), dateStartTime, dateEndTime));
 
+                    }
+
+                    if (Strings.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<IntegrationStatus> inStatus = criteriaBuilder.in(root.get("status"));
+                        for(String status : statusList.split(",")) {
+                            inStatus.value(IntegrationStatus.valueOf(status));
+                        }
+                        predicates.add(criteriaBuilder.and(inStatus));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

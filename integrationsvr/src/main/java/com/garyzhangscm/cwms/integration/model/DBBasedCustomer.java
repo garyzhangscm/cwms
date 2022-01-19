@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_customer")
-public class DBBasedCustomer implements Serializable , IntegrationCustomerData{
+public class DBBasedCustomer extends AuditibleEntity<String> implements Serializable , IntegrationCustomerData{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -81,10 +81,7 @@ public class DBBasedCustomer implements Serializable , IntegrationCustomerData{
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -100,7 +97,7 @@ public class DBBasedCustomer implements Serializable , IntegrationCustomerData{
 
         BeanUtils.copyProperties(customer, this);
         setStatus(IntegrationStatus.PENDING);
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
     }
 
     @Override
@@ -257,20 +254,14 @@ public class DBBasedCustomer implements Serializable , IntegrationCustomerData{
         this.status = status;
     }
 
+    @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
+        return getCreatedTime();
     }
 
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
-    }
-
+    @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

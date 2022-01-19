@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_bill_of_material_line")
-public class DBBasedBillOfMaterialLine implements Serializable, IntegrationBillOfMaterialLineData {
+public class DBBasedBillOfMaterialLine extends AuditibleEntity<String> implements Serializable, IntegrationBillOfMaterialLineData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,10 +82,7 @@ public class DBBasedBillOfMaterialLine implements Serializable, IntegrationBillO
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -232,20 +229,12 @@ public class DBBasedBillOfMaterialLine implements Serializable, IntegrationBillO
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

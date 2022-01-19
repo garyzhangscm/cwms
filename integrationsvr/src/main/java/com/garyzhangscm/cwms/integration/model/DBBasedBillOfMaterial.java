@@ -34,7 +34,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "integration_bill_of_material")
-public class DBBasedBillOfMaterial implements Serializable, IntegrationBillOfMaterialData {
+public class DBBasedBillOfMaterial extends AuditibleEntity<String> implements Serializable, IntegrationBillOfMaterialData {
 
 
     @Id
@@ -97,10 +97,7 @@ public class DBBasedBillOfMaterial implements Serializable, IntegrationBillOfMat
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -266,21 +263,14 @@ public class DBBasedBillOfMaterial implements Serializable, IntegrationBillOfMat
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
+        return getLastModifiedTime();
     }
 
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
 
     public String getErrorMessage() {
         return errorMessage;

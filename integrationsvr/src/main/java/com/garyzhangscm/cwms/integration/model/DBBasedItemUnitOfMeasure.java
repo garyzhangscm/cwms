@@ -37,7 +37,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_item_unit_of_measure")
-public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUnitOfMeasureData {
+public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements Serializable, IntegrationItemUnitOfMeasureData {
 
     private static final Logger logger = LoggerFactory.getLogger(DBBasedItemUnitOfMeasure.class);
     @Id
@@ -101,10 +101,7 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -200,7 +197,7 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
         ObjectCopyUtil.copyValue(  itemUnitOfMeasure, this,  fieldNames);
 
         setStatus(IntegrationStatus.PENDING);
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
 
     }
 
@@ -236,7 +233,7 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastUpdateTime(LocalDateTime.now());
+        setLastModifiedTime(LocalDateTime.now());
     }
     public Long getId() {
         return id;
@@ -336,20 +333,14 @@ public class DBBasedItemUnitOfMeasure implements Serializable, IntegrationItemUn
         this.status = status;
     }
 
+    @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
+        return getCreatedTime();
     }
 
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
-    }
-
+    @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public Long getItemId() {

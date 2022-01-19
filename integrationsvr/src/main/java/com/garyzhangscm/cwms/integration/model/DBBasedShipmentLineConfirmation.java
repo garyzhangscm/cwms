@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -28,7 +30,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_shipment_line_confirmation")
-public class DBBasedShipmentLineConfirmation implements Serializable, IntegrationShipmentLineConfirmationData {
+public class DBBasedShipmentLineConfirmation extends AuditibleEntity<String> implements Serializable, IntegrationShipmentLineConfirmationData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -94,39 +96,20 @@ public class DBBasedShipmentLineConfirmation implements Serializable, Integratio
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
 
+
     @Override
     public String toString() {
-        return "DBBasedShipmentLineConfirmation{" +
-                "id=" + id +
-                ", shipmentNumber='" + shipmentNumber + '\'' +
-                ", shipmentLineNumber='" + shipmentLineNumber + '\'' +
-                ", orderNumber='" + orderNumber + '\'' +
-                ", orderLineNumber='" + orderLineNumber + '\'' +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", orderExpectedQuantity=" + orderExpectedQuantity +
-                ", orderShippedQuantity=" + orderShippedQuantity +
-                ", shipmentShippedQuantity=" + shipmentShippedQuantity +
-                ", inventoryStatusId=" + inventoryStatusId +
-                ", inventoryStatusName='" + inventoryStatusName + '\'' +
-                ", carrierId=" + carrierId +
-                ", carrierName='" + carrierName + '\'' +
-                ", carrierServiceLevelId=" + carrierServiceLevelId +
-                ", carrierServiceLevelName='" + carrierServiceLevelName + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -302,20 +285,12 @@ public class DBBasedShipmentLineConfirmation implements Serializable, Integratio
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

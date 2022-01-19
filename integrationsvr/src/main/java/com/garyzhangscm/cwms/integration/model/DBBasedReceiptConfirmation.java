@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -30,7 +32,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_receipt_confirmation")
-public class DBBasedReceiptConfirmation implements Serializable, IntegrationReceiptConfirmationData{
+public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implements Serializable, IntegrationReceiptConfirmationData{
 
 
     @Id
@@ -77,10 +79,7 @@ public class DBBasedReceiptConfirmation implements Serializable, IntegrationRece
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -112,11 +111,20 @@ public class DBBasedReceiptConfirmation implements Serializable, IntegrationRece
         setAllowUnexpectedItem(receiptConfirmation.getAllowUnexpectedItem());
 
 
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
         setStatus(IntegrationStatus.PENDING);
 
     }
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     @Override
     public Long getId() {
         return id;
@@ -224,20 +232,12 @@ public class DBBasedReceiptConfirmation implements Serializable, IntegrationRece
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

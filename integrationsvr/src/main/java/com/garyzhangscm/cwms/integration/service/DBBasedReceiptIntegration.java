@@ -50,7 +50,8 @@ public class DBBasedReceiptIntegration {
 
 
     public List<DBBasedReceipt> findAll(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList) {
 
         return dbBasedReceiptRepository.findAll(
                 (Root<DBBasedReceipt> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -75,6 +76,14 @@ public class DBBasedReceiptIntegration {
                         predicates.add(criteriaBuilder.between(
                                 root.get("insertTime"), dateStartTime, dateEndTime));
 
+                    }
+
+                    if (Strings.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<IntegrationStatus> inStatus = criteriaBuilder.in(root.get("status"));
+                        for(String status : statusList.split(",")) {
+                            inStatus.value(IntegrationStatus.valueOf(status));
+                        }
+                        predicates.add(criteriaBuilder.and(inStatus));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

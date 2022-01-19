@@ -41,7 +41,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_item")
-public class DBBasedItem implements Serializable, IntegrationItemData {
+public class DBBasedItem extends AuditibleEntity<String> implements Serializable, IntegrationItemData {
 
     private static final Logger logger = LoggerFactory.getLogger(DBBasedItem.class);
 
@@ -101,10 +101,7 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -207,7 +204,7 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         });
 
         setStatus(IntegrationStatus.PENDING);
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
 
     }
 
@@ -248,7 +245,7 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastUpdateTime(LocalDateTime.now());
+        setLastModifiedTime(LocalDateTime.now());
         // Complete related integration
         if (Objects.nonNull(itemFamily)) {
             itemFamily.completeIntegration(integrationStatus, errorMessage);
@@ -346,20 +343,14 @@ public class DBBasedItem implements Serializable, IntegrationItemData {
         this.status = status;
     }
 
+    @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
+        return getCreatedTime();
     }
 
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
-    }
-
+    @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

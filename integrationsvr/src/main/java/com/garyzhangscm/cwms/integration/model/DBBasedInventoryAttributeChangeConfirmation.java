@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -29,7 +31,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_inventory_attribute_change_confirmation")
-public class DBBasedInventoryAttributeChangeConfirmation implements Serializable, IntegrationInventoryAttributeChangeConfirmationData {
+public class DBBasedInventoryAttributeChangeConfirmation extends AuditibleEntity<String> implements Serializable, IntegrationInventoryAttributeChangeConfirmationData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,10 +84,7 @@ public class DBBasedInventoryAttributeChangeConfirmation implements Serializable
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -117,26 +116,15 @@ public class DBBasedInventoryAttributeChangeConfirmation implements Serializable
         setNewValue(inventoryAttributeChangeConfirmation.getNewValue());
     }
 
+
     @Override
     public String toString() {
-        return "DBBasedInventoryAttributeChangeConfirmation{" +
-                "id=" + id +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                ", quantity=" + quantity +
-                ", inventoryStatusId=" + inventoryStatusId +
-                ", inventoryStatusName='" + inventoryStatusName + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", attributeName='" + attributeName + '\'' +
-                ", originalValue='" + originalValue + '\'' +
-                ", newValue='" + newValue + '\'' +
-                ", status=" + status +
-                ", insertTime=" + insertTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -267,20 +255,12 @@ public class DBBasedInventoryAttributeChangeConfirmation implements Serializable
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

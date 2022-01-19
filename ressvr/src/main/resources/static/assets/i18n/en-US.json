@@ -1597,5 +1597,11 @@
   "ALERT-STATUS-PENDING": "Pending",
   "ALERT-STATUS-IN_PROCESS": "In Process",
   "ALERT-STATUS-SENT": "Send",
-  "menu.main.alert.subscription-maintenance": "Subscription Maintenance"
+  "menu.main.alert.subscription-maintenance": "Subscription Maintenance",
+  "INTEGRATION-STATUS-PREPARING": "Preparing",
+  "INTEGRATION-STATUS-ATTACHED": "Attached",
+  "INTEGRATION-STATUS-PENDING": "Pending",
+  "INTEGRATION-STATUS-INPROCESS": "In Process",
+  "INTEGRATION-STATUS-ERROR": "Error",
+  "INTEGRATION-STATUS-COMPLETED": "Completed"
 }

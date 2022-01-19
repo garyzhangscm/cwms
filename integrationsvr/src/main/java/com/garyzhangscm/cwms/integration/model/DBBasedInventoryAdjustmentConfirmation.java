@@ -31,7 +31,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_inventory_adjustment_confirmation")
-public class DBBasedInventoryAdjustmentConfirmation implements Serializable, IntegrationInventoryAdjustmentConfirmationData {
+public class DBBasedInventoryAdjustmentConfirmation extends AuditibleEntity<String> implements Serializable, IntegrationInventoryAdjustmentConfirmationData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -84,10 +84,7 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -230,20 +227,12 @@ public class DBBasedInventoryAdjustmentConfirmation implements Serializable, Int
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {
