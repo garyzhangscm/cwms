@@ -520,4 +520,51 @@ public class DBBasedIntegration implements Integration{
                 break;
         }
     }
+
+
+    @Override
+    public IntegrationReceiptData resendReceiptData(Long id) {
+        return dbBasedReceiptIntegration.resendReceiptData(id);
+    }
+
+    @Override
+    public IntegrationBillOfMaterialData resendBillOfMaterialData(Long id) {
+        return dbBasedBillOfMaterialIntegration.resendBillOfMaterialData(id);
+    }
+    @Override
+    public IntegrationClientData resendClientData(Long id) {
+        return dbBasedClientIntegration.resendClientData(id);
+    }
+    @Override
+    public IntegrationCustomerData resendCustomerData(Long id) {
+        return dbBasedCustomerIntegration.resendCustomerData(id);
+    }
+    @Override
+    public IntegrationItemFamilyData resendItemFamilyData(Long id) {
+        return dbBasedItemFamilyIntegration.resendItemFamilyData(id);
+    }
+    @Override
+    public IntegrationItemData resendItemData(Long id) {
+        return dbBasedItemIntegration.resendItemData(id);
+    }
+    @Override
+    public IntegrationItemPackageTypeData resendItemPackageTypeData(Long id) {
+        return dbBasedItemPackageTypeIntegration.resendItemPackageTypeData(id);
+    }
+    @Override
+    public IntegrationItemUnitOfMeasureData resendItemUnitOfMeasureData(Long id) {
+        return dbBasedItemUnitOfMeasureIntegration.resendItemUnitOfMeasureData(id);
+    }
+    @Override
+    public IntegrationOrderData resendOrderData(Long id) {
+        return dbBasedOrderIntegration.resendOrderData(id);
+    }
+    @Override
+    public IntegrationSupplierData resendSupplierData(Long id) {
+        return dbBasedSupplierIntegration.resendSupplierData(id);
+    }
+    @Override
+    public IntegrationWorkOrderData resendWorkOrderData(Long id) {
+        return dbBasedWorkOrderIntegration.resendWorkOrderData(id);
+    }
 }

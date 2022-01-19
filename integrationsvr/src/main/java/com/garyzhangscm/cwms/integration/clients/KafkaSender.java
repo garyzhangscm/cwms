@@ -73,4 +73,16 @@ public class KafkaSender {
             send("SYSTEM_ERROR", ex.getMessage());
         }
     }
+
+    public void send(Alert alert) {
+        try {
+
+            logger.debug("Start to send alert \n{}", alert);
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("ALERT", mapper.writeValueAsString(alert));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
 }

@@ -139,5 +139,12 @@ public class DBBasedClientIntegration {
 
     }
 
+    public IntegrationClientData resendClientData(Long id) {
+        DBBasedClient dbBasedClient =
+                findById(id);
+        dbBasedClient.setStatus(IntegrationStatus.PENDING);
+        dbBasedClient.setErrorMessage("");
+        return save(dbBasedClient);
+    }
 
 }

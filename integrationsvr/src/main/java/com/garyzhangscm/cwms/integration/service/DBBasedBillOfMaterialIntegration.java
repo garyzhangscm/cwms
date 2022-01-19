@@ -343,4 +343,13 @@ public class DBBasedBillOfMaterialIntegration {
 
     }
 
+
+    public IntegrationBillOfMaterialData resendBillOfMaterialData(Long id) {
+        DBBasedBillOfMaterial dbBasedBillOfMaterial =
+                findById(id);
+        dbBasedBillOfMaterial.setStatus(IntegrationStatus.PENDING);
+        dbBasedBillOfMaterial.setErrorMessage("");
+        return save(dbBasedBillOfMaterial);
+    }
+
 }

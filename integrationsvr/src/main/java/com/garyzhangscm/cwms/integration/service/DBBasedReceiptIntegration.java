@@ -287,4 +287,12 @@ public class DBBasedReceiptIntegration {
         });
 
     }
+
+    public IntegrationReceiptData resendReceiptData(Long id) {
+        DBBasedReceipt dbBasedReceipt =
+                findById(id);
+        dbBasedReceipt.setStatus(IntegrationStatus.PENDING);
+        dbBasedReceipt.setErrorMessage("");
+        return save(dbBasedReceipt);
+    }
 }

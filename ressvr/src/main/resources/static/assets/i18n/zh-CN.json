@@ -1582,6 +1582,20 @@
   "new-mps-date-interval-overlap-with-other-mps": "新的主生产计划日期范围和其他的主生产计划有冲突",
   "assign-rf": "分配RF",
   "RF.unassigned": "未分配的RF",
-  "RF.assigned": "已分配的RF"
+  "RF.assigned": "已分配的RF",
+  "menu.main.alert": "通知",
+  "menu.main.alert.config": "配置",
+  "menu.main.alert.subscription": "订阅",
+  "menu.main.alert.alert": "通知",
+  "ALERT-TYPE-INTEGRATION_FAIL": "接口错误",
+  "ALERT-TYPE-INTEGRATION_SUCCESS": "接口成功",
+  "ALERT-TYPE-ORDER_COMPLETE": "订单完成",
+  "ALERT-TYPE-INVENTORY_STATUS_CHANGE": "库存状态更改",
+  "ALERT-TYPE-INVENTORY_ADJUSTMENT": "库存调整",
+  "ALERT-TYPE-RECEIPT_COMPLETE": "入库单完成",
+  "ALERT-STATUS-PENDING": "新建",
+  "ALERT-STATUS-IN_PROCESS": "处理中",
+  "ALERT-STATUS-SENT": "已发送",
+  "menu.main.alert.subscription-maintenance": "订阅维护"
 
 }

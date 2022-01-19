@@ -27,6 +27,9 @@ public class KafkaReceiver {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private KafkaSender kafkaSender;
+
+    @Autowired
     private IntegrationDataService integrationDataService;
 
 
@@ -66,6 +69,7 @@ public class KafkaReceiver {
 
 
             integrationDataService.saveIntegrationResult(integrationResult);
+            sendIntegrationCompleteAlert(integrationResult);
 
 
         }
@@ -73,6 +77,31 @@ public class KafkaReceiver {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
         }
 
+    }
+
+    private void sendIntegrationCompleteAlert(IntegrationResult integrationResult) {
+        Alert alert = integrationResult.isSuccess() ?
+                new Alert(integrationResult.getCompanyId(),
+                    AlertType.INTEGRATION_SUCCESS,
+                    "INTEGRATION-" + integrationResult.getIntegrationType() + "-" + integrationResult.getIntegrationId(),
+                    "Integration type " + integrationResult.getIntegrationType() +
+                            ", id: " + integrationResult.getIntegrationId() + " succeed!",
+                    "Integration Succeed: \n" +
+                            "Type: " + integrationResult.getIntegrationType() + "\n" +
+                            "Id: " + integrationResult.getIntegrationId() + "\n")
+        :
+                new Alert(integrationResult.getCompanyId(),
+                    AlertType.INTEGRATION_FAIL,
+                    "INTEGRATION-" + integrationResult.getIntegrationType() + "-" + integrationResult.getIntegrationId(),
+                    "Integration type " + integrationResult.getIntegrationType() +
+                            ", id: " + integrationResult.getIntegrationId() + " fail!",
+                    "Integration Fail: \n" +
+                            "Type: " + integrationResult.getIntegrationType() + "\n" +
+                            "Id: " + integrationResult.getIntegrationId() + "\n" +
+                            "Error: " + integrationResult.getErrorMessage());
+
+
+        kafkaSender.send(alert);
     }
 
     @KafkaListener(topics = {"INTEGRATION_INVENTORY_ATTRIBUTE_CHANGE_CONFIRMATION"})

@@ -181,5 +181,12 @@ public class DBBasedItemUnitOfMeasureIntegration {
 
     }
 
+    public IntegrationItemUnitOfMeasureData resendItemUnitOfMeasureData(Long id) {
+        DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure =
+                findById(id);
+        dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.PENDING);
+        dbBasedItemUnitOfMeasure.setErrorMessage("");
+        return save(dbBasedItemUnitOfMeasure);
+    }
 
 }
