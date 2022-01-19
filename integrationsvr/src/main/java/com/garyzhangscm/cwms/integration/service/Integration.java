@@ -162,4 +162,19 @@ public interface Integration {
 
     // save the integration result
     public void saveIntegrationResult(IntegrationResult integrationResult);
+
+
+    // resend the integration data
+    IntegrationReceiptData resendReceiptData(Long id);
+    IntegrationBillOfMaterialData resendBillOfMaterialData(Long id);
+    IntegrationClientData resendClientData(Long id);
+    IntegrationCustomerData resendCustomerData(Long id);
+    IntegrationItemFamilyData resendItemFamilyData(Long id);
+    IntegrationItemData resendItemData(Long id);
+    IntegrationItemPackageTypeData resendItemPackageTypeData(Long id);
+    IntegrationItemUnitOfMeasureData resendItemUnitOfMeasureData(Long id);
+    IntegrationOrderData resendOrderData(Long id);
+    IntegrationSupplierData resendSupplierData(Long id);
+    IntegrationWorkOrderData resendWorkOrderData(Long id);
+
 }

@@ -254,4 +254,13 @@ public class DBBasedItemIntegration {
     }
 
 
+    public IntegrationItemData resendItemData(Long id) {
+        DBBasedItem dbBasedItem =
+                findById(id);
+        dbBasedItem.setStatus(IntegrationStatus.PENDING);
+        dbBasedItem.setErrorMessage("");
+        return save(dbBasedItem);
+    }
+
+
 }

@@ -278,6 +278,7 @@ public class RFAppVersionService {
     public RFAppVersion changeRFAppVersion(Long id, RFAppVersion rfAppVersion) throws IOException {
 
         updateLastestRFAppVersion(rfAppVersion);
+
         String destinationFilePath =
                 getAPKFolder(rfAppVersion.getCompanyId()) +
                         rfAppVersion.getVersionNumber() + "/" + rfAppVersion.getFileName();
@@ -288,8 +289,6 @@ public class RFAppVersionService {
         // get the file size
         File file = new File(destinationFilePath);
         rfAppVersion.setFileSize(file.length());
-
-        // setup all the RFs for this version
 
         rfAppVersion.getRfAppVersionByRFCodes().forEach(
                 rfAppVersionByRFCode -> {
@@ -305,6 +304,7 @@ public class RFAppVersionService {
                     }
                 }
         );
+
         RFAppVersion newRFAppVersion =  saveOrUpdate(rfAppVersion);
         return newRFAppVersion;
 

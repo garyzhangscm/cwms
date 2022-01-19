@@ -155,6 +155,13 @@ public class DBBasedItemPackageTypeIntegration {
     }
 
 
+    public IntegrationItemPackageTypeData resendItemPackageTypeData(Long id) {
+        DBBasedItemPackageType dbBasedItemPackageType =
+                findById(id);
+        dbBasedItemPackageType.setStatus(IntegrationStatus.PENDING);
+        dbBasedItemPackageType.setErrorMessage("");
+        return save(dbBasedItemPackageType);
+    }
 
 
 }

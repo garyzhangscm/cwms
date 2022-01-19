@@ -1583,5 +1583,19 @@
   "new-mps-date-interval-overlap-with-other-mps": "New MPS Dates Are Overlapping With Other MPS",
   "assign-rf": "Assign RF",
   "RF.unassigned": "Unassigned RF",
-  "RF.assigned": "Assigned RF"
+  "RF.assigned": "Assigned RF",
+  "menu.main.alert": "Alert",
+  "menu.main.alert.config": "Configuration",
+  "menu.main.alert.subscription": "Subscription",
+  "menu.main.alert.alert": "Alert",
+  "ALERT-TYPE-INTEGRATION_FAIL": "Integration Fail",
+  "ALERT-TYPE-INTEGRATION_SUCCESS": "Integration Success",
+  "ALERT-TYPE-ORDER_COMPLETE": "Order Complete",
+  "ALERT-TYPE-INVENTORY_STATUS_CHANGE": "Inv Status Change",
+  "ALERT-TYPE-INVENTORY_ADJUSTMENT": "Inventory Adjust",
+  "ALERT-TYPE-RECEIPT_COMPLETE": "Receipt Complete",
+  "ALERT-STATUS-PENDING": "Pending",
+  "ALERT-STATUS-IN_PROCESS": "In Process",
+  "ALERT-STATUS-SENT": "Send",
+  "menu.main.alert.subscription-maintenance": "Subscription Maintenance"
 }

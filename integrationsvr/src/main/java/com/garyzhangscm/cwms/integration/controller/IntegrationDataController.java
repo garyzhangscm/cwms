@@ -65,6 +65,13 @@ public class IntegrationDataController {
         return integrationDataService.getClientData(id);
     }
 
+    @RequestMapping(value="/clients/{id}/resend", method = RequestMethod.POST)
+    public IntegrationClientData resendClientData(@PathVariable Long id) {
+
+        return integrationDataService.resendClientData(id);
+    }
+
+
     @RequestMapping(value="/clients", method = RequestMethod.PUT)
     public IntegrationClientData addIntegrationClientData(@RequestBody Client client) {
 
@@ -89,6 +96,11 @@ public class IntegrationDataController {
     public IntegrationCustomerData getIntegrationCustomerData(@PathVariable Long id) {
 
         return integrationDataService.getCustomerData(id);
+    }
+    @RequestMapping(value="/customers/{id}/resend", method = RequestMethod.POST)
+    public IntegrationCustomerData resendCustomerData(@PathVariable Long id) {
+
+        return integrationDataService.resendCustomerData(id);
     }
 
     @RequestMapping(value="/customers", method = RequestMethod.PUT)
@@ -116,6 +128,12 @@ public class IntegrationDataController {
 
         return integrationDataService.getItemData(id);
     }
+    @RequestMapping(value="/items/{id}/resend", method = RequestMethod.POST)
+    public IntegrationItemData resendItemData(@PathVariable Long id) {
+
+        return integrationDataService.resendItemData(id);
+    }
+
 
     @RequestMapping(value="/items", method = RequestMethod.PUT)
     public IntegrationItemData addIntegrationItemData(@RequestBody Item item) {
@@ -143,6 +161,11 @@ public class IntegrationDataController {
         return integrationDataService.getItemFamilyData(id);
     }
 
+    @RequestMapping(value="/item-families/{id}/resend", method = RequestMethod.POST)
+    public IntegrationItemFamilyData resendItemFamilyData(@PathVariable Long id) {
+
+        return integrationDataService.resendItemFamilyData(id);
+    }
     @RequestMapping(value="/item-families", method = RequestMethod.PUT)
     public IntegrationItemFamilyData addIntegrationItemFamilyData(@RequestBody ItemFamily itemFamily) {
 
@@ -168,6 +191,11 @@ public class IntegrationDataController {
 
         return integrationDataService.getItemPackageTypeData(id);
     }
+    @RequestMapping(value="/item-package-types/{id}/resend", method = RequestMethod.POST)
+    public IntegrationItemPackageTypeData resendItemPackageTypeData(@PathVariable Long id) {
+
+        return integrationDataService.resendItemPackageTypeData(id);
+    }
 
     @RequestMapping(value="/item-package-types", method = RequestMethod.PUT)
     public IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(@RequestBody ItemPackageType itemPackageType) {
@@ -192,6 +220,11 @@ public class IntegrationDataController {
     public IntegrationItemUnitOfMeasureData getIntegrationItemUnitOfMeasureData(@PathVariable Long id) {
 
         return integrationDataService.getItemUnitOfMeasureData(id);
+    }
+    @RequestMapping(value="/item-unit-of-measures/{id}/resend", method = RequestMethod.POST)
+    public IntegrationItemUnitOfMeasureData resendItemUnitOfMeasureData(@PathVariable Long id) {
+
+        return integrationDataService.resendItemUnitOfMeasureData(id);
     }
 
     @RequestMapping(value="/item-unit-of-measures", method = RequestMethod.PUT)
@@ -219,6 +252,12 @@ public class IntegrationDataController {
     public IntegrationSupplierData getIntegrationSupplierData(@PathVariable Long id) {
 
         return integrationDataService.getSupplierData(id);
+    }
+
+    @RequestMapping(value="/suppliers/{id}/resend", method = RequestMethod.POST)
+    public IntegrationSupplierData resendSupplierData(@PathVariable Long id) {
+
+        return integrationDataService.resendSupplierData(id);
     }
 
     @RequestMapping(value="/suppliers", method = RequestMethod.PUT)
@@ -257,6 +296,11 @@ public class IntegrationDataController {
 
         return integrationDataService.getOrderData(id);
     }
+    @RequestMapping(value="/orders/{id}/resend", method = RequestMethod.POST)
+    public IntegrationOrderData resendOrderData(@PathVariable Long id) {
+
+        return integrationDataService.resendOrderData(id);
+    }
     @RequestMapping(value="/orders", method = RequestMethod.PUT)
     public IntegrationOrderData addIntegrationOrderData(@RequestBody Order order) {
 
@@ -284,6 +328,11 @@ public class IntegrationDataController {
         return integrationDataService.getReceiptData(id);
     }
 
+    @RequestMapping(value="/receipts/{id}/resend", method = RequestMethod.POST)
+    public IntegrationReceiptData resendIntegrationReceiptData(@PathVariable Long id) {
+
+        return integrationDataService.resendReceiptData(id);
+    }
     @RequestMapping(value="/receipts", method = RequestMethod.PUT)
     public IntegrationReceiptData addIntegrationReceiptData(@RequestBody Receipt receipt) {
 

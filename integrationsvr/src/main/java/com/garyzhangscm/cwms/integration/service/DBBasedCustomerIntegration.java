@@ -176,4 +176,12 @@ public class DBBasedCustomerIntegration {
 
 
     }
+
+    public IntegrationCustomerData resendCustomerData(Long id) {
+        DBBasedCustomer dbBasedCustomer =
+                findById(id);
+        dbBasedCustomer.setStatus(IntegrationStatus.PENDING);
+        dbBasedCustomer.setErrorMessage("");
+        return save(dbBasedCustomer);
+    }
 }

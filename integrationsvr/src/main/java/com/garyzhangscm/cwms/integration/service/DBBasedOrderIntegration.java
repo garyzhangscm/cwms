@@ -288,4 +288,12 @@ public class DBBasedOrderIntegration {
 
     }
 
+    public IntegrationOrderData resendOrderData(Long id) {
+        DBBasedOrder dbBasedOrder =
+                findById(id);
+        dbBasedOrder.setStatus(IntegrationStatus.PENDING);
+        dbBasedOrder.setErrorMessage("");
+        return save(dbBasedOrder);
+    }
+
 }

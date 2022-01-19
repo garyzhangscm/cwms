@@ -426,4 +426,13 @@ public class DBBasedWorkOrderIntegration {
         });
     }
 
+
+    public IntegrationWorkOrderData resendWorkOrderData(Long id) {
+        DBBasedWorkOrder dbBasedWorkOrder =
+                findById(id);
+        dbBasedWorkOrder.setStatus(IntegrationStatus.PENDING);
+        dbBasedWorkOrder.setErrorMessage("");
+        return save(dbBasedWorkOrder);
+    }
+
 }

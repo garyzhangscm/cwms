@@ -267,4 +267,42 @@ public class IntegrationDataService {
     public void saveIntegrationResult(IntegrationResult integrationResult) {
         integration.saveIntegrationResult(integrationResult);
     }
+
+
+
+    // resend the integration data
+    public IntegrationReceiptData resendReceiptData(Long id) {
+        return integration.resendReceiptData(id);
+    }
+
+    public IntegrationBillOfMaterialData resendBillOfMaterialData(Long id) {
+        return integration.resendBillOfMaterialData(id);
+    }
+    public IntegrationClientData resendClientData(Long id) {
+        return integration.resendClientData(id);
+    }
+    public IntegrationCustomerData resendCustomerData(Long id) {
+        return integration.resendCustomerData(id);
+    }
+    public IntegrationItemFamilyData resendItemFamilyData(Long id) {
+        return integration.resendItemFamilyData(id);
+    }
+    public IntegrationItemData resendItemData(Long id) {
+        return integration.resendItemData(id);
+    }
+    public IntegrationItemPackageTypeData resendItemPackageTypeData(Long id) {
+        return integration.resendItemPackageTypeData(id);
+    }
+    public IntegrationItemUnitOfMeasureData resendItemUnitOfMeasureData(Long id) {
+        return integration.resendItemUnitOfMeasureData(id);
+    }
+    public IntegrationOrderData resendOrderData(Long id) {
+        return integration.resendOrderData(id);
+    }
+    public IntegrationSupplierData resendSupplierData(Long id) {
+        return integration.resendSupplierData(id);
+    }
+    public IntegrationWorkOrderData resendWorkOrderData(Long id) {
+        return integration.resendWorkOrderData(id);
+    }
 }

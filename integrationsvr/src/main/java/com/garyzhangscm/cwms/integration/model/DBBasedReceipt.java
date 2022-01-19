@@ -285,6 +285,7 @@ public class DBBasedReceipt implements Serializable, IntegrationReceiptData{
         return status;
     }
 
+    @Override
     public void setStatus(IntegrationStatus status) {
         this.status = status;
     }
@@ -311,6 +312,7 @@ public class DBBasedReceipt implements Serializable, IntegrationReceiptData{
         return errorMessage;
     }
 
+    @Override
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }

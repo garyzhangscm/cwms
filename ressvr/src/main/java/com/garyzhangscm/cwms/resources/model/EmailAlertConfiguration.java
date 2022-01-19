@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.util.Objects;
+import java.util.Properties;
 
 @Entity
 @Table(name = "email_alert_configuration")
@@ -34,26 +35,28 @@ public class EmailAlertConfiguration extends AuditibleEntity<String>  {
     @Column(name = "email_alert_configuration_id")
     private Long id;
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
+    @Column(name = "company_id")
+    private Long companyId;
 
-    @Column(name = "rf_code")
-    private String rfCode;
+    @Column(name = "host")
+    private String host;
+    @Column(name = "port")
+    private int port;
 
+    @Column(name = "username")
+    private String username;
+    @Column(name = "password")
+    private String password;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        EmailAlertConfiguration rf = (EmailAlertConfiguration) o;
-        if(Objects.nonNull(id) &&
-           Objects.nonNull(rf.getId())) {
-            return Objects.equals(id, rf.id);
-        }
+    @Column(name = "transport_protocol")
+    private String transportProtocol;
+    @Column(name = "auth_flag")
+    private Boolean authFlag;
+    @Column(name = "starttls_enable_flag")
+    private Boolean starttlsEnableFlag;
+    @Column(name = "debug_flag")
+    private Boolean debugFlag;
 
-        return warehouseId.equals(rf.getWarehouseId()) &&
-                rfCode.equals(rf.getRfCode());
-    }
 
     @Override
     public String toString() {
@@ -74,19 +77,75 @@ public class EmailAlertConfiguration extends AuditibleEntity<String>  {
         this.id = id;
     }
 
-    public Long getWarehouseId() {
-        return warehouseId;
+    public Long getCompanyId() {
+        return companyId;
     }
 
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
-    public String getRfCode() {
-        return rfCode;
+    public String getHost() {
+        return host;
     }
 
-    public void setRfCode(String rfCode) {
-        this.rfCode = rfCode;
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getTransportProtocol() {
+        return transportProtocol;
+    }
+
+    public void setTransportProtocol(String transportProtocol) {
+        this.transportProtocol = transportProtocol;
+    }
+
+    public Boolean getAuthFlag() {
+        return authFlag;
+    }
+
+    public void setAuthFlag(Boolean authFlag) {
+        this.authFlag = authFlag;
+    }
+
+    public Boolean getStarttlsEnableFlag() {
+        return starttlsEnableFlag;
+    }
+
+    public void setStarttlsEnableFlag(Boolean starttlsEnableFlag) {
+        this.starttlsEnableFlag = starttlsEnableFlag;
+    }
+
+    public Boolean getDebugFlag() {
+        return debugFlag;
+    }
+
+    public void setDebugFlag(Boolean debugFlag) {
+        this.debugFlag = debugFlag;
     }
 }

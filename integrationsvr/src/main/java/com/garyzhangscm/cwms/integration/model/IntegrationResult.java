@@ -7,6 +7,8 @@ public class IntegrationResult {
 
     private Long integrationId;
 
+    private Long companyId;
+
     private IntegrationType integrationType;
 
     private boolean success;
@@ -25,11 +27,20 @@ public class IntegrationResult {
 
 
     public IntegrationResult(){}
-    public IntegrationResult(Long integrationId, IntegrationType integrationType, boolean success, String errorMessage) {
+    public IntegrationResult(Long integrationId, Long companyId, IntegrationType integrationType, boolean success, String errorMessage) {
         this.integrationId = integrationId;
+        this.companyId = companyId;
         this.integrationType = integrationType;
         this.success = success;
         this.errorMessage = errorMessage;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Long getIntegrationId() {

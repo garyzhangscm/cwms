@@ -146,6 +146,14 @@ public class DBBasedItemFamilyIntegration {
 
     }
 
+    public IntegrationItemFamilyData resendItemFamilyData(Long id) {
+        DBBasedItemFamily dbBasedItemFamily =
+                findById(id);
+        dbBasedItemFamily.setStatus(IntegrationStatus.PENDING);
+        dbBasedItemFamily.setErrorMessage("");
+        return save(dbBasedItemFamily);
+    }
+
 
 
 }

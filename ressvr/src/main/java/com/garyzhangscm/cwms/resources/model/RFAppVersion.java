@@ -70,6 +70,7 @@ public class RFAppVersion extends AuditibleEntity<String>  {
     @OneToMany(
             mappedBy = "rfAppVersion",
             cascade = CascadeType.ALL,
+            orphanRemoval = true,
             fetch = FetchType.LAZY)
     private List<RFAppVersionByRFCode> rfAppVersionByRFCodes = new ArrayList<>();
 

@@ -204,4 +204,13 @@ public class DBBasedSupplierIntegration {
 
 
     }
+
+
+    public IntegrationSupplierData resendSupplierData(Long id) {
+        DBBasedSupplier dbBasedSupplier =
+                findById(id);
+        dbBasedSupplier.setStatus(IntegrationStatus.PENDING);
+        dbBasedSupplier.setErrorMessage("");
+        return save(dbBasedSupplier);
+    }
 }
