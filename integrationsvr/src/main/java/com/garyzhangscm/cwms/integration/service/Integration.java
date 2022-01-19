@@ -17,7 +17,8 @@ public interface Integration {
     // Integration - Client
     //
     List<? extends IntegrationClientData> getClientData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationClientData getClientData(Long id);
     IntegrationClientData addIntegrationClientData(Client client);
 
@@ -26,7 +27,8 @@ public interface Integration {
     // Integration - Customer
     //
     List<? extends IntegrationCustomerData> getCustomerData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationCustomerData getCustomerData(Long id);
     IntegrationCustomerData addIntegrationCustomerData(Customer customer);
     IntegrationCustomerData addIntegrationCustomerData(DBBasedCustomer dbBasedCustomer);
@@ -36,7 +38,8 @@ public interface Integration {
     // Integration - Item
     //
     List<? extends IntegrationItemData> getItemData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationItemData getItemData(Long id);
     IntegrationItemData addIntegrationItemData(Item item);
 
@@ -45,7 +48,8 @@ public interface Integration {
     // Integration - Item Family
     //
     List<? extends IntegrationItemFamilyData> getItemFamilyData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationItemFamilyData getItemFamilyData(Long id);
     IntegrationItemFamilyData addIntegrationItemFamilyData(ItemFamily itemFamily);
 
@@ -54,7 +58,8 @@ public interface Integration {
     // Integration - Item Package Type
     //
     List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationItemPackageTypeData getItemPackageTypeData(Long id);
     IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(ItemPackageType itemPackageType);
     IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(IntegrationItemPackageTypeData integrationItemPackageTypeData);
@@ -64,7 +69,8 @@ public interface Integration {
     // Integration - Item Unit Of Measure
     //
     List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationItemUnitOfMeasureData getItemUnitOfMeasureData(Long id);
     IntegrationItemUnitOfMeasureData addIntegrationItemUnitOfMeasureData(ItemUnitOfMeasure itemUnitOfMeasure);
 
@@ -72,7 +78,8 @@ public interface Integration {
     // Integration - Supplier
     //
     List<? extends IntegrationSupplierData> getSupplierData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationSupplierData getSupplierData(Long id);
     IntegrationSupplierData addIntegrationSupplierData(Supplier supplier);
     IntegrationSupplierData addIntegrationSupplierData(DBBasedSupplier dbBasedSupplier);
@@ -87,7 +94,8 @@ public interface Integration {
     //
     List<? extends IntegrationReceiptData> getReceiptData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList);
+            String statusList,
+            Long id);
     IntegrationReceiptData getReceiptData(Long id);
     IntegrationReceiptData addReceiptData(Receipt receipt);
     IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt);
@@ -96,7 +104,8 @@ public interface Integration {
     // Integration - Order and Order Line
     //
     List<? extends IntegrationOrderData> getOrderData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationOrderData getOrderData(Long id);
     IntegrationOrderData addOrderData(Order order);
 
@@ -104,7 +113,8 @@ public interface Integration {
     // Integration - Work Order and Work Order Line
     //
     List<? extends IntegrationWorkOrderData> getWorkOrderData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationWorkOrderData getWorkOrderData(Long id);
     IntegrationWorkOrderData addWorkOrderData(WorkOrder workOrder);
 
@@ -112,7 +122,8 @@ public interface Integration {
     // Integration - BOM and BOM line
     //
     List<? extends IntegrationBillOfMaterialData> getBillOfMaterialData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id);
     IntegrationBillOfMaterialData getBillOfMaterialData(Long id);
     IntegrationBillOfMaterialData addBillOfMaterialData(BillOfMaterial billOfMaterial);
 

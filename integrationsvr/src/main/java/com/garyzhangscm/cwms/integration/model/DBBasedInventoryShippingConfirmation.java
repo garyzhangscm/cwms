@@ -289,15 +289,7 @@ public class DBBasedInventoryShippingConfirmation extends AuditibleEntity<String
         this.status = status;
     }
 
-    @Override
-    public LocalDateTime getInsertTime() {
-        return getCreatedTime();
-    }
 
-    @Override
-    public LocalDateTime getLastUpdateTime() {
-        return getLastModifiedTime();
-    }
 
     @Override
     public String getLpn() {

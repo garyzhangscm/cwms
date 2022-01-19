@@ -23,9 +23,7 @@ public interface IntegrationItemUnitOfMeasureData {
     public String getWarehouseName() ;
 
     public IntegrationStatus getStatus() ;
-    public LocalDateTime getInsertTime() ;
 
-    public LocalDateTime getLastUpdateTime() ;
     public Long getItemId() ;
 
     public String getItemName();

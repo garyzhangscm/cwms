@@ -35,7 +35,5 @@ public interface IntegrationOrderLineData {
 
     public IntegrationStatus getStatus() ;
 
-    public LocalDateTime getInsertTime() ;
 
-    public LocalDateTime getLastUpdateTime();
 }

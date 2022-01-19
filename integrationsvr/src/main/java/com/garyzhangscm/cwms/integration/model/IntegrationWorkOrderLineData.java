@@ -29,7 +29,4 @@ public interface IntegrationWorkOrderLineData {
 
     public IntegrationStatus getStatus() ;
 
-    public LocalDateTime getInsertTime() ;
-
-    public LocalDateTime getLastUpdateTime();
 }

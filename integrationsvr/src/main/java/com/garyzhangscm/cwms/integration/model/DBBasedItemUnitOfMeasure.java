@@ -333,15 +333,6 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
         this.status = status;
     }
 
-    @Override
-    public LocalDateTime getInsertTime() {
-        return getCreatedTime();
-    }
-
-    @Override
-    public LocalDateTime getLastUpdateTime() {
-        return getLastModifiedTime();
-    }
 
     public Long getItemId() {
         return itemId;

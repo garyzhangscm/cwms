@@ -186,15 +186,6 @@ public class DBBasedItemFamily extends AuditibleEntity<String> implements Serial
         this.status = status;
     }
 
-    @Override
-    public LocalDateTime getInsertTime() {
-        return getCreatedTime();
-    }
-
-    @Override
-    public LocalDateTime getLastUpdateTime() {
-        return getLastModifiedTime();
-    }
 
     public String getErrorMessage() {
         return errorMessage;

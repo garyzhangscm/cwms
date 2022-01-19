@@ -18,7 +18,5 @@ public interface IntegrationOrderConfirmationData {
     public List<? extends IntegrationOrderLineConfirmationData> getOrderLines() ;
 
     public IntegrationStatus getStatus() ;
-    public LocalDateTime getInsertTime();
 
-    public LocalDateTime getLastUpdateTime() ;
 }

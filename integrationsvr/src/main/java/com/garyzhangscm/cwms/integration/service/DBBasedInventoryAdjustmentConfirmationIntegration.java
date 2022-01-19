@@ -70,13 +70,13 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     logger.debug(">> Date is passed in {}", date);
@@ -84,7 +84,7 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
                     Predicate[] p = new Predicate[predicates.size()];
@@ -108,8 +108,6 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                 getDBBasedInventoryAdjustmentConfirmation(inventoryAdjustmentConfirmation);
 
         dbBasedInventoryAdjustmentConfirmation.setStatus(IntegrationStatus.PENDING);
-        dbBasedInventoryAdjustmentConfirmation.setInsertTime(LocalDateTime.now());
-        dbBasedInventoryAdjustmentConfirmation.setLastUpdateTime(LocalDateTime.now());
         return save(dbBasedInventoryAdjustmentConfirmation);
     }
 

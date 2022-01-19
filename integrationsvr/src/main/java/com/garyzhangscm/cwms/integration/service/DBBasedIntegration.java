@@ -133,9 +133,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<DBBasedClient> getClientData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedClientIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override
@@ -157,9 +158,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationCustomerData> getCustomerData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedCustomerIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override
@@ -183,9 +185,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationItemData> getItemData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedItemIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override
@@ -209,9 +212,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationItemFamilyData> getItemFamilyData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedItemFamilyIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override
@@ -230,9 +234,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedItemPackageTypeIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override
@@ -256,9 +261,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedItemUnitOfMeasureIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override
@@ -277,9 +283,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationSupplierData> getSupplierData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedSupplierIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override
@@ -314,9 +321,10 @@ public class DBBasedIntegration implements Integration{
     //
     public List<? extends IntegrationReceiptData> getReceiptData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedReceiptIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationReceiptData getReceiptData(Long id) {
         return dbBasedReceiptIntegration.findById(id);
@@ -337,9 +345,10 @@ public class DBBasedIntegration implements Integration{
     //
     public List<? extends IntegrationOrderData> getOrderData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedOrderIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationOrderData getOrderData(Long id) {
         return dbBasedOrderIntegration.findById(id);
@@ -355,9 +364,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationWorkOrderData> getWorkOrderData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedWorkOrderIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList
+                warehouseId, startTime, endTime, date, statusList, id
         );
     }
 
@@ -377,9 +387,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationBillOfMaterialData> getBillOfMaterialData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList,
+            Long id) {
         return dbBasedBillOfMaterialIntegration.findAll(
-                warehouseId, startTime, endTime, date, statusList
+                warehouseId, startTime, endTime, date, statusList, id
         );
     }
 

@@ -27,7 +27,5 @@ public interface IntegrationWorkOrderByProductData {
 
     public IntegrationStatus getStatus() ;
 
-    public LocalDateTime getInsertTime() ;
 
-    public LocalDateTime getLastUpdateTime();
 }

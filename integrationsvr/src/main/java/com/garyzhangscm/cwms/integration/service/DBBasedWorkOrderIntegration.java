@@ -50,7 +50,7 @@ public class DBBasedWorkOrderIntegration {
 
     public List<DBBasedWorkOrder> findAll(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList, Long id) {
 
         return dbBasedWorkOrderRepository.findAll(
                 (Root<DBBasedWorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -60,20 +60,20 @@ public class DBBasedWorkOrderIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     if (Objects.nonNull(date)) {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
 
@@ -83,6 +83,12 @@ public class DBBasedWorkOrderIntegration {
                             inStatus.value(IntegrationStatus.valueOf(status));
                         }
                         predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -153,7 +159,7 @@ public class DBBasedWorkOrderIntegration {
                         "work order " + dbBasedWorkOrder.getNumber() +
                                 " already exists, and it's status indicate it is not changable"
                 );
-                dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
+
                 save(dbBasedWorkOrder);
                 return;
             }
@@ -165,28 +171,28 @@ public class DBBasedWorkOrderIntegration {
 
             dbBasedWorkOrder.setStatus(IntegrationStatus.SENT);
             dbBasedWorkOrder.setErrorMessage("");
-            dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedWorkOrder = save(dbBasedWorkOrder);
 
             // Save the WORK order line as well
             dbBasedWorkOrder.getWorkOrderLines().forEach(dbBasedWorkOrderLine ->{
                 dbBasedWorkOrderLine.setStatus(IntegrationStatus.SENT);
                 dbBasedWorkOrderLine.setErrorMessage("");
-                dbBasedWorkOrderLine.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedWorkOrderLineRepository.save(dbBasedWorkOrderLine);
             });
 
             dbBasedWorkOrder.getWorkOrderInstructions().forEach(dbBasedWorkOrderInstruction ->{
                 dbBasedWorkOrderInstruction.setStatus(IntegrationStatus.SENT);
                 dbBasedWorkOrderInstruction.setErrorMessage("");
-                dbBasedWorkOrderInstruction.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedWorkOrderInstructionRepository.save(dbBasedWorkOrderInstruction);
             });
 
             dbBasedWorkOrder.getWorkOrderByProduct().forEach(dbBasedWorkOrderByProduct ->{
                 dbBasedWorkOrderByProduct.setStatus(IntegrationStatus.SENT);
                 dbBasedWorkOrderByProduct.setErrorMessage("");
-                dbBasedWorkOrderByProduct.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedWorkOrderByProductRepository.save(dbBasedWorkOrderByProduct);
             });
 
@@ -196,28 +202,28 @@ public class DBBasedWorkOrderIntegration {
             ex.printStackTrace();
             dbBasedWorkOrder.setStatus(IntegrationStatus.ERROR);
             dbBasedWorkOrder.setErrorMessage(ex.getMessage());
-            dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedWorkOrder = save(dbBasedWorkOrder);
 
             // Save the WORK order line as well
             dbBasedWorkOrder.getWorkOrderLines().forEach(dbBasedWorkOrderLine ->{
                 dbBasedWorkOrderLine.setStatus(IntegrationStatus.ERROR);
                 dbBasedWorkOrderLine.setErrorMessage(ex.getMessage());
-                dbBasedWorkOrderLine.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedWorkOrderLineRepository.save(dbBasedWorkOrderLine);
             });
 
             dbBasedWorkOrder.getWorkOrderInstructions().forEach(dbBasedWorkOrderInstruction ->{
                 dbBasedWorkOrderInstruction.setStatus(IntegrationStatus.ERROR);
                 dbBasedWorkOrderInstruction.setErrorMessage(ex.getMessage());
-                dbBasedWorkOrderInstruction.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedWorkOrderInstructionRepository.save(dbBasedWorkOrderInstruction);
             });
 
             dbBasedWorkOrder.getWorkOrderByProduct().forEach(dbBasedWorkOrderByProduct ->{
                 dbBasedWorkOrderByProduct.setStatus(IntegrationStatus.ERROR);
                 dbBasedWorkOrderByProduct.setErrorMessage(ex.getMessage());
-                dbBasedWorkOrderByProduct.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedWorkOrderByProductRepository.save(dbBasedWorkOrderByProduct);
             });
         }
@@ -411,27 +417,27 @@ public class DBBasedWorkOrderIntegration {
                 integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
         dbBasedWorkOrder.setStatus(integrationStatus);
         dbBasedWorkOrder.setErrorMessage(integrationResult.getErrorMessage());
-        dbBasedWorkOrder.setLastUpdateTime(LocalDateTime.now());
+
         save(dbBasedWorkOrder);
 
         dbBasedWorkOrder.getWorkOrderLines().forEach(dbBasedWorkOrderLine ->{
             dbBasedWorkOrderLine.setStatus(integrationStatus);
             dbBasedWorkOrderLine.setErrorMessage(integrationResult.getErrorMessage());
-            dbBasedWorkOrderLine.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedWorkOrderLineRepository.save(dbBasedWorkOrderLine);
         });
 
         dbBasedWorkOrder.getWorkOrderByProduct().forEach(dbBasedWorkOrderByProduct ->{
             dbBasedWorkOrderByProduct.setStatus(integrationStatus);
             dbBasedWorkOrderByProduct.setErrorMessage(integrationResult.getErrorMessage());
-            dbBasedWorkOrderByProduct.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedWorkOrderByProductRepository.save(dbBasedWorkOrderByProduct);
         });
 
         dbBasedWorkOrder.getWorkOrderInstructions().forEach(dbBasedWorkOrderInstruction ->{
             dbBasedWorkOrderInstruction.setStatus(integrationStatus);
             dbBasedWorkOrderInstruction.setErrorMessage(integrationResult.getErrorMessage());
-            dbBasedWorkOrderInstruction.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedWorkOrderInstructionRepository.save(dbBasedWorkOrderInstruction);
         });
     }

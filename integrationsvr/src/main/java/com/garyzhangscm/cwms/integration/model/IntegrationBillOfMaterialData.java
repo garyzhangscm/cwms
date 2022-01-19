@@ -29,9 +29,6 @@ public interface IntegrationBillOfMaterialData {
 
     IntegrationStatus getStatus();
 
-    LocalDateTime getInsertTime();
-
-    LocalDateTime getLastUpdateTime();
 
 
 }

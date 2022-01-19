@@ -41,6 +41,4 @@ public interface IntegrationShipmentLineConfirmationData {
 
     public IntegrationStatus getStatus() ;
 
-    public LocalDateTime getInsertTime() ;
-    public LocalDateTime getLastUpdateTime() ;
 }

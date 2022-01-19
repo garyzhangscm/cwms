@@ -31,9 +31,6 @@ public interface IntegrationWorkOrderData {
 
     IntegrationStatus getStatus();
 
-    LocalDateTime getInsertTime();
-
-    LocalDateTime getLastUpdateTime();
 
 
 }
