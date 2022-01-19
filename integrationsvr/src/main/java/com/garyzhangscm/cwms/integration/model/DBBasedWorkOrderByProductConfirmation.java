@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_work_order_by_product_confirmation")
-public class DBBasedWorkOrderByProductConfirmation implements Serializable, IntegrationWorkOrderByProductConfirmationData {
+public class DBBasedWorkOrderByProductConfirmation extends AuditibleEntity<String> implements Serializable, IntegrationWorkOrderByProductConfirmationData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,10 +69,7 @@ public class DBBasedWorkOrderByProductConfirmation implements Serializable, Inte
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -90,7 +87,7 @@ public class DBBasedWorkOrderByProductConfirmation implements Serializable, Inte
         setInventoryStatusId(workOrderByProductConfirmation.getInventoryStatusId());
         setInventoryStatusName(workOrderByProductConfirmation.getInventoryStatusName());
 
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
         setStatus(IntegrationStatus.PENDING);
     }
 
@@ -191,20 +188,12 @@ public class DBBasedWorkOrderByProductConfirmation implements Serializable, Inte
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

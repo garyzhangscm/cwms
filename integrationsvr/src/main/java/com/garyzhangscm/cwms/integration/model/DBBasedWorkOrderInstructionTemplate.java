@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "integration_work_order_instruction_template")
-public class DBBasedWorkOrderInstructionTemplate implements Serializable, IntegrationWorkOrderInstructionTemplateData {
+public class DBBasedWorkOrderInstructionTemplate extends AuditibleEntity<String> implements Serializable, IntegrationWorkOrderInstructionTemplateData {
 
 
     @Id
@@ -55,10 +55,7 @@ public class DBBasedWorkOrderInstructionTemplate implements Serializable, Integr
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -133,20 +130,12 @@ public class DBBasedWorkOrderInstructionTemplate implements Serializable, Integr
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

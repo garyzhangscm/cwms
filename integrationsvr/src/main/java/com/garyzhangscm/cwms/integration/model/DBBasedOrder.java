@@ -36,7 +36,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_order")
-public class DBBasedOrder implements Serializable, IntegrationOrderData {
+public class DBBasedOrder extends AuditibleEntity<String> implements Serializable, IntegrationOrderData {
 
 
     @Id
@@ -166,10 +166,7 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -204,7 +201,7 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
         });
 
         setStatus(IntegrationStatus.PENDING);
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
 
     }
 
@@ -611,20 +608,12 @@ public class DBBasedOrder implements Serializable, IntegrationOrderData {
 
     @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
+        return getCreatedTime();
     }
 
     @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getErrorMessage() {

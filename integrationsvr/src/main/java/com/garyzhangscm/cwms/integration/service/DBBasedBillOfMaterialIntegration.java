@@ -7,6 +7,7 @@ import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestempla
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,8 @@ public class DBBasedBillOfMaterialIntegration {
 
 
     public List<DBBasedBillOfMaterial> findAll(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList) {
 
         return dbBasedBillOfMaterialRepository.findAll(
                 (Root<DBBasedBillOfMaterial> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -76,6 +78,14 @@ public class DBBasedBillOfMaterialIntegration {
                         predicates.add(criteriaBuilder.between(
                                 root.get("insertTime"), dateStartTime, dateEndTime));
 
+                    }
+
+                    if (Strings.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<IntegrationStatus> inStatus = criteriaBuilder.in(root.get("status"));
+                        for(String status : statusList.split(",")) {
+                            inStatus.value(IntegrationStatus.valueOf(status));
+                        }
+                        predicates.add(criteriaBuilder.and(inStatus));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

@@ -1596,6 +1596,12 @@
   "ALERT-STATUS-PENDING": "新建",
   "ALERT-STATUS-IN_PROCESS": "处理中",
   "ALERT-STATUS-SENT": "已发送",
-  "menu.main.alert.subscription-maintenance": "订阅维护"
+  "menu.main.alert.subscription-maintenance": "订阅维护",
+  "INTEGRATION-STATUS-PREPARING": "准备中",
+  "INTEGRATION-STATUS-ATTACHED": "依附于父接口记录",
+  "INTEGRATION-STATUS-PENDING": "新建",
+  "INTEGRATION-STATUS-INPROCESS": "处理中",
+  "INTEGRATION-STATUS-ERROR": "错误",
+  "INTEGRATION-STATUS-COMPLETED": "完成"
 
 }

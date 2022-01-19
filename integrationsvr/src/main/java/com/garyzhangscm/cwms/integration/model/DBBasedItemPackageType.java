@@ -40,7 +40,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_item_package_type")
-public class DBBasedItemPackageType implements Serializable, IntegrationItemPackageTypeData {
+public class DBBasedItemPackageType extends AuditibleEntity<String> implements Serializable, IntegrationItemPackageTypeData {
 
     private static final Logger logger = LoggerFactory.getLogger(DBBasedItemPackageType.class);
 
@@ -103,10 +103,7 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -237,7 +234,7 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
 
 
         setStatus(IntegrationStatus.PENDING);
-        setInsertTime(LocalDateTime.now());
+        setCreatedTime(LocalDateTime.now());
 
     }
 
@@ -248,7 +245,7 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastUpdateTime(LocalDateTime.now());
+        setLastModifiedTime(LocalDateTime.now());
         itemUnitOfMeasures.forEach(dbBasedItemUnitOfMeasure -> dbBasedItemUnitOfMeasure.completeIntegration(integrationStatus, errorMessage));
     }
     public void addItemUnitOfMeasure(DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure) {
@@ -356,20 +353,14 @@ public class DBBasedItemPackageType implements Serializable, IntegrationItemPack
         this.status = status;
     }
 
+    @Override
     public LocalDateTime getInsertTime() {
-        return insertTime;
+        return getCreatedTime();
     }
 
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
-    }
-
+    @Override
     public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        return getLastModifiedTime();
     }
 
     public String getClientName() {
