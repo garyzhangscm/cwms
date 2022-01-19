@@ -15,8 +15,4 @@ public interface IntegrationItemFamilyData {
 
     public IntegrationStatus getStatus();
 
-    public LocalDateTime getInsertTime();
-
-
-    public LocalDateTime getLastUpdateTime();
 }

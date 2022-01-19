@@ -28,7 +28,4 @@ public interface IntegrationReceiptLineConfirmationData {
 
     public IntegrationStatus getStatus();
 
-    public LocalDateTime getInsertTime();
-
-    public LocalDateTime getLastUpdateTime();
 }

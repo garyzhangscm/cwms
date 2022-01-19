@@ -43,13 +43,13 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     logger.debug(">> Date is passed in {}", date);
@@ -57,7 +57,7 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
                     Predicate[] p = new Predicate[predicates.size()];
@@ -82,8 +82,6 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
                 getDBBasedInventoryAttributeChangeConfirmation(inventoryAttributeChangeConfirmation);
 
         dbBasedInventoryAttributeChangeConfirmation.setStatus(IntegrationStatus.COMPLETED);
-        dbBasedInventoryAttributeChangeConfirmation.setInsertTime(LocalDateTime.now());
-        dbBasedInventoryAttributeChangeConfirmation.setLastUpdateTime(LocalDateTime.now());
         return save(dbBasedInventoryAttributeChangeConfirmation);
     }
 

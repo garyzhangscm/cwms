@@ -31,8 +31,5 @@ public interface IntegrationReceiptData {
 
     public void setStatus(IntegrationStatus status) ;
 
-    public LocalDateTime getInsertTime() ;
-
-    public LocalDateTime getLastUpdateTime();
     public void setErrorMessage(String errorMessage) ;
 }

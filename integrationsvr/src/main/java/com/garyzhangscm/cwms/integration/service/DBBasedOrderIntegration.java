@@ -49,7 +49,7 @@ public class DBBasedOrderIntegration {
 
     public List<DBBasedOrder> findAll(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList, Long id) {
 
         return dbBasedOrderRepository.findAll(
                 (Root<DBBasedOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -59,20 +59,20 @@ public class DBBasedOrderIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     if (Objects.nonNull(date)) {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
                     if (Strings.isNotBlank(statusList)) {
@@ -81,6 +81,12 @@ public class DBBasedOrderIntegration {
                             inStatus.value(IntegrationStatus.valueOf(status));
                         }
                         predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -149,14 +155,14 @@ public class DBBasedOrderIntegration {
 
             dbBasedOrder.setStatus(IntegrationStatus.SENT);
             dbBasedOrder.setErrorMessage("");
-            dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedOrder = save(dbBasedOrder);
 
             // Save the order line as well
             dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
                 dbBasedOrderLine.setStatus(IntegrationStatus.SENT);
                 dbBasedOrderLine.setErrorMessage("");
-                dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedOrderLineRepository.save(dbBasedOrderLine);
             });
 
@@ -166,14 +172,14 @@ public class DBBasedOrderIntegration {
             ex.printStackTrace();
             dbBasedOrder.setStatus(IntegrationStatus.ERROR);
             dbBasedOrder.setErrorMessage(ex.getMessage());
-            dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedOrder = save(dbBasedOrder);
 
             // Save the order line as well
             dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
                 dbBasedOrderLine.setStatus(IntegrationStatus.ERROR);
                 dbBasedOrderLine.setErrorMessage(ex.getMessage());
-                dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedOrderLineRepository.save(dbBasedOrderLine);
             });
         }
@@ -283,13 +289,13 @@ public class DBBasedOrderIntegration {
                 integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
         dbBasedOrder.setStatus(integrationStatus);
         dbBasedOrder.setErrorMessage(integrationResult.getErrorMessage());
-        dbBasedOrder.setLastUpdateTime(LocalDateTime.now());
+
         save(dbBasedOrder);
 
         dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine ->{
             dbBasedOrderLine.setStatus(integrationStatus);
             dbBasedOrderLine.setErrorMessage(integrationResult.getErrorMessage());
-            dbBasedOrderLine.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedOrderLineRepository.save(dbBasedOrderLine);
         });
 

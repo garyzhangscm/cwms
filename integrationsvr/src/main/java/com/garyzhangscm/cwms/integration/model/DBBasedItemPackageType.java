@@ -353,15 +353,6 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
         this.status = status;
     }
 
-    @Override
-    public LocalDateTime getInsertTime() {
-        return getCreatedTime();
-    }
-
-    @Override
-    public LocalDateTime getLastUpdateTime() {
-        return getLastModifiedTime();
-    }
 
     public String getClientName() {
         return clientName;

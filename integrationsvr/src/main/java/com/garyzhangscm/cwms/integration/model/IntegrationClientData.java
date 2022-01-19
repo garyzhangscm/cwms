@@ -62,11 +62,5 @@ public interface IntegrationClientData {
 
 
 
-    public LocalDateTime getInsertTime();
-
-
-
-    public LocalDateTime getLastUpdateTime();
-
 
 }

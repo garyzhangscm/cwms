@@ -16,7 +16,4 @@ public interface IntegrationWorkOrderInstructionTemplateData {
 
     public IntegrationStatus getStatus() ;
 
-    public LocalDateTime getInsertTime() ;
-
-    public LocalDateTime getLastUpdateTime();
 }

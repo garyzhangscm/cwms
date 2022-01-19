@@ -34,7 +34,7 @@ public class DBBasedCustomerIntegration {
 
     public List<DBBasedCustomer> findAll(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList, Long id) {
 
         return dbBasedCustomerRepository.findAll(
                 (Root<DBBasedCustomer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -44,13 +44,13 @@ public class DBBasedCustomerIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     logger.debug(">> Date is passed in {}", date);
@@ -58,7 +58,7 @@ public class DBBasedCustomerIntegration {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
 
@@ -68,6 +68,12 @@ public class DBBasedCustomerIntegration {
                             inStatus.value(IntegrationStatus.valueOf(status));
                         }
                         predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -164,7 +170,6 @@ public class DBBasedCustomerIntegration {
             dbBasedCustomer.setStatus(IntegrationStatus.ERROR);
             dbBasedCustomer.setErrorMessage(ex.getMessage());
         }
-        dbBasedCustomer.setLastUpdateTime(LocalDateTime.now());
         dbBasedCustomer = save(dbBasedCustomer);
 
     }
@@ -180,7 +185,6 @@ public class DBBasedCustomerIntegration {
                 integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
         dbBasedCustomer.setStatus(integrationStatus);
         dbBasedCustomer.setErrorMessage(integrationResult.getErrorMessage());
-        dbBasedCustomer.setLastUpdateTime(LocalDateTime.now());
         save(dbBasedCustomer);
 
 

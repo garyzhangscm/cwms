@@ -38,7 +38,7 @@ public class DBBasedSupplierIntegration {
 
     public List<DBBasedSupplier> findAll(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList, Long id) {
 
         return dbBasedSupplierRepository.findAll(
                 (Root<DBBasedSupplier> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -48,20 +48,20 @@ public class DBBasedSupplierIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     if (Objects.nonNull(date)) {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
                     if (Strings.isNotBlank(statusList)) {
@@ -70,6 +70,12 @@ public class DBBasedSupplierIntegration {
                             inStatus.value(IntegrationStatus.valueOf(status));
                         }
                         predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -169,7 +175,7 @@ public class DBBasedSupplierIntegration {
             dbBasedSupplier.setStatus(IntegrationStatus.ERROR);
             dbBasedSupplier.setErrorMessage(ex.getMessage());
         }
-        dbBasedSupplier.setLastUpdateTime(LocalDateTime.now());
+
         save(dbBasedSupplier);
 
     }
@@ -207,7 +213,7 @@ public class DBBasedSupplierIntegration {
                 integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
         dbBasedSupplier.setStatus(integrationStatus);
         dbBasedSupplier.setErrorMessage(integrationResult.getErrorMessage());
-        dbBasedSupplier.setLastUpdateTime(LocalDateTime.now());
+
         save(dbBasedSupplier);
 
 

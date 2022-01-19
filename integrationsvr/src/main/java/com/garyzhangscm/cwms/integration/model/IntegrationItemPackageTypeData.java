@@ -26,8 +26,5 @@ public interface IntegrationItemPackageTypeData {
 
     public IntegrationStatus getStatus() ;
 
-    public LocalDateTime getInsertTime();
 
-
-    public LocalDateTime getLastUpdateTime();
 }

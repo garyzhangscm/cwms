@@ -25,7 +25,5 @@ public interface IntegrationItemData extends IntegrationData{
 
     public IntegrationStatus getStatus() ;
 
-    public LocalDateTime getInsertTime() ;
 
-    public LocalDateTime getLastUpdateTime();
 }

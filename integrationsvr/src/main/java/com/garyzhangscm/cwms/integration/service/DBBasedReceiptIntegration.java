@@ -51,7 +51,7 @@ public class DBBasedReceiptIntegration {
 
     public List<DBBasedReceipt> findAll(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList, Long id) {
 
         return dbBasedReceiptRepository.findAll(
                 (Root<DBBasedReceipt> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -61,20 +61,20 @@ public class DBBasedReceiptIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     if (Objects.nonNull(date)) {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
 
@@ -84,6 +84,12 @@ public class DBBasedReceiptIntegration {
                             inStatus.value(IntegrationStatus.valueOf(status));
                         }
                         predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -173,14 +179,14 @@ public class DBBasedReceiptIntegration {
 
             dbBasedReceipt.setStatus(IntegrationStatus.SENT);
             dbBasedReceipt.setErrorMessage("");
-            dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedReceipt = save(dbBasedReceipt);
 
             // Save the order line as well
             dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
                 dbBasedReceiptLine.setStatus(IntegrationStatus.SENT);
                 dbBasedReceiptLine.setErrorMessage("");
-                dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
             });
 
@@ -190,14 +196,14 @@ public class DBBasedReceiptIntegration {
             ex.printStackTrace();
             dbBasedReceipt.setStatus(IntegrationStatus.ERROR);
             dbBasedReceipt.setErrorMessage(ex.getMessage());
-            dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedReceipt = save(dbBasedReceipt);
 
             // Save the order line as well
             dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
                 dbBasedReceiptLine.setStatus(IntegrationStatus.ERROR);
                 dbBasedReceiptLine.setErrorMessage(ex.getMessage());
-                dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
+
                 dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
             });
         }
@@ -285,13 +291,13 @@ public class DBBasedReceiptIntegration {
                 integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
         dbBasedReceipt.setStatus(integrationStatus);
         dbBasedReceipt.setErrorMessage(integrationResult.getErrorMessage());
-        dbBasedReceipt.setLastUpdateTime(LocalDateTime.now());
+
         save(dbBasedReceipt);
 
         dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine ->{
             dbBasedReceiptLine.setStatus(integrationStatus);
             dbBasedReceiptLine.setErrorMessage(integrationResult.getErrorMessage());
-            dbBasedReceiptLine.setLastUpdateTime(LocalDateTime.now());
+
             dbBasedReceiptLineRepository.save(dbBasedReceiptLine);
         });
 

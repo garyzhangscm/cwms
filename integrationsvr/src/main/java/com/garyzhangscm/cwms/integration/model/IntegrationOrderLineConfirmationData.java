@@ -37,6 +37,5 @@ public interface IntegrationOrderLineConfirmationData {
     public String getCarrierServiceLevelName();
 
     public IntegrationStatus getStatus();
-    public LocalDateTime getInsertTime();
-    public LocalDateTime getLastUpdateTime();
+
 }

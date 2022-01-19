@@ -27,7 +27,5 @@ public interface IntegrationWorkOrderConfirmationData {
     public List<? extends IntegrationWorkOrderByProductConfirmationData> getWorkOrderByProductConfirmations();
 
     public IntegrationStatus getStatus() ;
-    public LocalDateTime getInsertTime();
 
-    public LocalDateTime getLastUpdateTime() ;
 }

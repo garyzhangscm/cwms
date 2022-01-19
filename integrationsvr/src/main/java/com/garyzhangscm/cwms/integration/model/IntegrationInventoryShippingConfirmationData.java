@@ -38,8 +38,7 @@ public interface IntegrationInventoryShippingConfirmationData {
     public Long getCarrierServiceLevelId();
     public String getCarrierServiceLevelName();
     public IntegrationStatus getStatus();
-    public LocalDateTime getInsertTime();
-    public LocalDateTime getLastUpdateTime();
+
     public String getLpn();
 
     public Long getQuantity();

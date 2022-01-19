@@ -606,15 +606,6 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
         this.status = status;
     }
 
-    @Override
-    public LocalDateTime getInsertTime() {
-        return getCreatedTime();
-    }
-
-    @Override
-    public LocalDateTime getLastUpdateTime() {
-        return getLastModifiedTime();
-    }
 
     public String getErrorMessage() {
         return errorMessage;

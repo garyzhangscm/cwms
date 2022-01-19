@@ -26,7 +26,4 @@ public interface IntegrationReceiptConfirmationData {
 
     public IntegrationStatus getStatus();
 
-    public LocalDateTime getInsertTime();
-
-    public LocalDateTime getLastUpdateTime();
 }

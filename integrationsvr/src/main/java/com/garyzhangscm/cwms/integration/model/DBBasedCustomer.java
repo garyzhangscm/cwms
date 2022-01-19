@@ -254,15 +254,7 @@ public class DBBasedCustomer extends AuditibleEntity<String> implements Serializ
         this.status = status;
     }
 
-    @Override
-    public LocalDateTime getInsertTime() {
-        return getCreatedTime();
-    }
 
-    @Override
-    public LocalDateTime getLastUpdateTime() {
-        return getLastModifiedTime();
-    }
 
     public String getErrorMessage() {
         return errorMessage;

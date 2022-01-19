@@ -29,7 +29,5 @@ public interface IntegrationInventoryAttributeChangeConfirmationData {
     public String getNewValue() ;
     public IntegrationStatus getStatus();
 
-    public LocalDateTime getInsertTime();
 
-    public LocalDateTime getLastUpdateTime();
 }

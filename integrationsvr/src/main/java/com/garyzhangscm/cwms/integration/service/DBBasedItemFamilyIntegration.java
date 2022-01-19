@@ -37,7 +37,7 @@ public class DBBasedItemFamilyIntegration {
 
     public List<DBBasedItemFamily> findAll(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList) {
+            String statusList, Long id) {
 
         return dbBasedItemFamilyRepository.findAll(
                 (Root<DBBasedItemFamily> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -47,13 +47,13 @@ public class DBBasedItemFamilyIntegration {
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("insertTime"), startTime));
+                                root.get("createdTime"), startTime));
 
                     }
 
                     if (Objects.nonNull(endTime)) {
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("insertTime"), endTime));
+                                root.get("createdTime"), endTime));
 
                     }
                     logger.debug(">> Date is passed in {}", date);
@@ -61,7 +61,7 @@ public class DBBasedItemFamilyIntegration {
                         LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("insertTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime, dateEndTime));
 
                     }
                     if (Strings.isNotBlank(statusList)) {
@@ -70,6 +70,12 @@ public class DBBasedItemFamilyIntegration {
                             inStatus.value(IntegrationStatus.valueOf(status));
                         }
                         predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -134,7 +140,6 @@ public class DBBasedItemFamilyIntegration {
             dbBasedItemFamily.setStatus(IntegrationStatus.ERROR);
             dbBasedItemFamily.setErrorMessage(ex.getMessage());
         }
-        dbBasedItemFamily.setLastUpdateTime(LocalDateTime.now());
         save(dbBasedItemFamily);
     }
 
@@ -149,7 +154,6 @@ public class DBBasedItemFamilyIntegration {
                 integrationResult.isSuccess() ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR;
         dbBasedItemFamily.setStatus(integrationStatus);
         dbBasedItemFamily.setErrorMessage(integrationResult.getErrorMessage());
-        dbBasedItemFamily.setLastUpdateTime(LocalDateTime.now());
         save(dbBasedItemFamily);
 
 
