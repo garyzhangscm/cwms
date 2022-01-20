@@ -2,10 +2,7 @@ package com.garyzhangscm.cwms.workorder.clients;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.workorder.model.BillableRequest;
-import com.garyzhangscm.cwms.workorder.model.ChangeWorkOrderLineDeliveryQuantityRequest;
-import com.garyzhangscm.cwms.workorder.model.IntegrationResult;
-import com.garyzhangscm.cwms.workorder.model.WorkOrderConfirmation;
+import com.garyzhangscm.cwms.workorder.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +28,21 @@ public class KafkaSender {
                      ,topic, message);
         kafkaTemplate.send(topic, message);
     }
+    public <K, V> void send(String topic, K key, V value) {
+        try {
+            send(topic, objectMapper.writeValueAsString(key), objectMapper.writeValueAsString(value));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
 
 
     public void send(WorkOrderConfirmation workOrderConfirmation) {
         try {
-            send("INTEGRATION_WORK_ORDER_CONFIRMATION", objectMapper.writeValueAsString(workOrderConfirmation));
+            send("INTEGRATION_CONFIRMATION",
+                    IntegrationType.INTEGRATION_WORK_ORDER_CONFIRMATION.name(),
+                    objectMapper.writeValueAsString(workOrderConfirmation));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

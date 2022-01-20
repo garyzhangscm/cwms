@@ -1602,6 +1602,9 @@
   "INTEGRATION-STATUS-PENDING": "新建",
   "INTEGRATION-STATUS-INPROCESS": "处理中",
   "INTEGRATION-STATUS-ERROR": "错误",
-  "INTEGRATION-STATUS-COMPLETED": "完成"
+  "INTEGRATION-STATUS-SENT": "已发送",
+  "INTEGRATION-STATUS-COMPLETED": "完成",
+  "integration.in.work-order": "工单（入站）",
+  "poNumber": "采购单号"
 
 }

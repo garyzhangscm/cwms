@@ -55,7 +55,7 @@ public class DBBasedItemIntegration {
     int recordLimit;
 
 
-    public List<DBBasedItem> findAll(
+    public List<DBBasedItem> findAll(String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
@@ -63,7 +63,12 @@ public class DBBasedItemIntegration {
                 (Root<DBBasedItem> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyCode"), companyCode));
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
@@ -170,7 +175,8 @@ public class DBBasedItemIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Item:\n{}", item);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ITEM, dbBasedItem.getId(), item);
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM,
+                    item.getWarehouseId() + "-" + dbBasedItem.getId(), item);
 
 
             dbBasedItem.setErrorMessage("");

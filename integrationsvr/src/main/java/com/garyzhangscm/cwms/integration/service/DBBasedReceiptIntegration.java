@@ -49,7 +49,7 @@ public class DBBasedReceiptIntegration {
 
 
 
-    public List<DBBasedReceipt> findAll(
+    public List<DBBasedReceipt> findAll(String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
@@ -57,7 +57,12 @@ public class DBBasedReceiptIntegration {
                 (Root<DBBasedReceipt> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyCode"), companyCode));
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
@@ -175,7 +180,8 @@ public class DBBasedReceiptIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Receipt:\n{}", receipt);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_RECEIPT, dbBasedReceipt.getId(), receipt);
+            kafkaSender.send(IntegrationType.INTEGRATION_RECEIPT,
+                    receipt.getWarehouseId() + "-" + dbBasedReceipt.getId(), receipt);
 
             dbBasedReceipt.setStatus(IntegrationStatus.SENT);
             dbBasedReceipt.setErrorMessage("");

@@ -61,7 +61,8 @@ public class KafkaSender {
         try {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
-            send("INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION", objectMapper.writeValueAsString(inventoryAdjustmentConfirmation));
+            send("INTEGRATION_CONFIRMATION", IntegrationType.INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION.name(),
+                    objectMapper.writeValueAsString(inventoryAdjustmentConfirmation));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

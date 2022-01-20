@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.garyzhangscm.cwms.workorder.clients.KafkaSender;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
@@ -43,7 +44,8 @@ public class IntegrationService {
                 workOrder.getWarehouseId(), workOrder.getNumber(), false);
         if (Objects.nonNull(existingWorkOrder) && !existingWorkOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
             logger.debug("We are not allow the user to override an existing work order once it is not in PENDING STATUS");
-            return;
+            throw WorkOrderException.raiseException("work order " + existingWorkOrder.getNumber() +
+                    " already exists and not in PENDING status");
         }
 
 

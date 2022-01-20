@@ -35,7 +35,7 @@ public class DBBasedItemFamilyIntegration {
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
-    public List<DBBasedItemFamily> findAll(
+    public List<DBBasedItemFamily> findAll(String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
@@ -43,7 +43,12 @@ public class DBBasedItemFamilyIntegration {
                 (Root<DBBasedItemFamily> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyCode"), companyCode));
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
@@ -127,7 +132,8 @@ public class DBBasedItemFamilyIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Item Family:\n{}", itemFamily);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_FAMILY, dbBasedItemFamily.getId(), itemFamily);
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_FAMILY,
+                    itemFamily.getWarehouseId() + "-" + dbBasedItemFamily.getId(), itemFamily);
 
 
             dbBasedItemFamily.setStatus(IntegrationStatus.SENT);

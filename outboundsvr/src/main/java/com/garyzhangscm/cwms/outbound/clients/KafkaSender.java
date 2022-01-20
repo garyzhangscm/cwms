@@ -57,7 +57,9 @@ public class KafkaSender {
 
     public void send(OrderConfirmation orderConfirmation) {
         try {
-            send("INTEGRATION_ORDER_CONFIRMATION", objectMapper.writeValueAsString(orderConfirmation));
+            send("INTEGRATION_CONFIRMATION",
+                    IntegrationType.INTEGRATION_ORDER_CONFIRMATION.name(),
+                    objectMapper.writeValueAsString(orderConfirmation));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

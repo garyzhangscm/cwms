@@ -48,7 +48,7 @@ public class DBBasedWorkOrderIntegration {
     WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
 
-    public List<DBBasedWorkOrder> findAll(
+    public List<DBBasedWorkOrder> findAll(String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
@@ -56,7 +56,12 @@ public class DBBasedWorkOrderIntegration {
                 (Root<DBBasedWorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyCode"), companyCode));
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
@@ -152,22 +157,26 @@ public class DBBasedWorkOrderIntegration {
 
             // make sure this is a new work order
             // or it exists but in a changable status
-            if (!validateExistingWorkOrder(workOrder)) {
+            /***
+             * We will let the application decide how to process the existing work order
+             if (!validateExistingWorkOrder(workOrder)) {
 
-                dbBasedWorkOrder.setStatus(IntegrationStatus.ERROR);
-                dbBasedWorkOrder.setErrorMessage(
-                        "work order " + dbBasedWorkOrder.getNumber() +
-                                " already exists, and it's status indicate it is not changable"
-                );
+                 dbBasedWorkOrder.setStatus(IntegrationStatus.ERROR);
+                 dbBasedWorkOrder.setErrorMessage(
+                 "work order " + dbBasedWorkOrder.getNumber() +
+                 " already exists, and it's status indicate it is not changable"
+                 );
 
-                save(dbBasedWorkOrder);
-                return;
-            }
+                 save(dbBasedWorkOrder);
+                 return;
+             }
+             */
 
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Work Order:\n{}", workOrder);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_WORK_ORDER, dbBasedWorkOrder.getId(),  workOrder);
+            kafkaSender.send(IntegrationType.INTEGRATION_WORK_ORDER,
+                    workOrder.getWarehouseId() + "-" + dbBasedWorkOrder.getId(),  workOrder);
 
             dbBasedWorkOrder.setStatus(IntegrationStatus.SENT);
             dbBasedWorkOrder.setErrorMessage("");

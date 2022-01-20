@@ -1602,6 +1602,9 @@
   "INTEGRATION-STATUS-ATTACHED": "Attached",
   "INTEGRATION-STATUS-PENDING": "Pending",
   "INTEGRATION-STATUS-INPROCESS": "In Process",
+  "INTEGRATION-STATUS-SENT": "Sent",
   "INTEGRATION-STATUS-ERROR": "Error",
-  "INTEGRATION-STATUS-COMPLETED": "Completed"
+  "INTEGRATION-STATUS-COMPLETED": "Completed",
+  "integration.in.work-order": "Work Order(Inbound)",
+  "poNumber": "PO Number"
 }

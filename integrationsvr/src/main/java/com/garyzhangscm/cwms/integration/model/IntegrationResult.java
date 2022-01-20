@@ -8,6 +8,7 @@ public class IntegrationResult {
     private Long integrationId;
 
     private Long companyId;
+    private Long warehouseId;
 
     private IntegrationType integrationType;
 
@@ -33,6 +34,14 @@ public class IntegrationResult {
         this.integrationType = integrationType;
         this.success = success;
         this.errorMessage = errorMessage;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public Long getCompanyId() {

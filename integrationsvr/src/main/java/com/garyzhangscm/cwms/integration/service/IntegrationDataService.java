@@ -59,10 +59,11 @@ public class IntegrationDataService {
     // Integration - Item
     //
     public List<? extends IntegrationItemData> getItemData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationItemData getItemData(Long id) {
         return integration.getItemData(id);
@@ -78,10 +79,11 @@ public class IntegrationDataService {
     // Integration - Item Family
     //
     public List<? extends IntegrationItemFamilyData> getItemFamilyData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemFamilyData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationItemFamilyData getItemFamilyData(Long id) {
         return integration.getItemFamilyData(id);
@@ -95,10 +97,11 @@ public class IntegrationDataService {
     // Integration - Item Package Type
     //
     public List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemPackageTypeData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationItemPackageTypeData getItemPackageTypeData(Long id) {
         return integration.getItemPackageTypeData(id);
@@ -115,10 +118,11 @@ public class IntegrationDataService {
     // Integration - Item Unit Of Measure
     //
     public List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemUnitOfMeasureData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationItemUnitOfMeasureData getItemUnitOfMeasureData(Long id) {
         return integration.getItemUnitOfMeasureData(id);
@@ -149,6 +153,17 @@ public class IntegrationDataService {
 
 
     // Integration - Work order
+
+    public List<? extends IntegrationWorkOrderData> getWorkOrderData(
+            String companyCode,
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long id) {
+        return integration.getWorkOrderData(
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
+    }
+    public IntegrationWorkOrderData getWorkOrderData(Long id) {
+        return integration.getWorkOrderData(id);
+    }
     public IntegrationWorkOrderData addIntegrationWorkOrderData(IntegrationWorkOrderData workOrderData) {
         return integration.addIntegrationWorkOrderData(workOrderData);
     }
@@ -162,11 +177,12 @@ public class IntegrationDataService {
     // Integration - Receipt and Receipt Line
     //
     public List<? extends IntegrationReceiptData> getReceiptData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList,
             Long id) {
         return integration.getReceiptData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode,  warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationReceiptData getReceiptData(Long id) {
         return integration.getReceiptData(id);
@@ -182,10 +198,11 @@ public class IntegrationDataService {
     // Integration - Order and Order Line
     //
     public List<? extends IntegrationOrderData> getOrderData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getOrderData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
     public IntegrationOrderData getOrderData(Long id) {
         return integration.getOrderData(id);

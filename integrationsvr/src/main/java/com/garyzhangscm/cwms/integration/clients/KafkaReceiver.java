@@ -12,8 +12,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 
 @Component
@@ -31,10 +35,11 @@ public class KafkaReceiver {
 
     @Autowired
     private IntegrationDataService integrationDataService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
-    @KafkaListener(topics = {"INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION"})
-    public void processInventoryAdjustmentConfirmationIntegration(@Payload String inventoryAdjustmentConfirmationJsonRepresent)  {
+    public void processInventoryAdjustmentConfirmationIntegration( String inventoryAdjustmentConfirmationJsonRepresent)  {
         logger.info("# received inventory adjustment confirmation data: {}", inventoryAdjustmentConfirmationJsonRepresent);
 
         try {
@@ -80,6 +85,17 @@ public class KafkaReceiver {
     }
 
     private void sendIntegrationCompleteAlert(IntegrationResult integrationResult) {
+        // setup the company ID, if we haven't done so
+        if (Objects.isNull(integrationResult.getCompanyId())
+                && Objects.nonNull(integrationResult.getWarehouseId())) {
+            integrationResult.setCompanyId(
+                    warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                            integrationResult.getWarehouseId()
+                    ).getCompany().getId()
+            );
+            logger.debug("Get company id {} from warehouse id {}",
+                    integrationResult.getCompanyId(), integrationResult.getWarehouseId());
+        }
         Alert alert = integrationResult.isSuccess() ?
                 new Alert(integrationResult.getCompanyId(),
                     AlertType.INTEGRATION_SUCCESS,
@@ -104,8 +120,7 @@ public class KafkaReceiver {
         kafkaSender.send(alert);
     }
 
-    @KafkaListener(topics = {"INTEGRATION_INVENTORY_ATTRIBUTE_CHANGE_CONFIRMATION"})
-    public void processInventoryAttributeChangeConfirmationIntegration(@Payload String inventoryAttributeChangeConfirmationJsonRepresent)  {
+    public void processInventoryAttributeChangeConfirmationIntegration( String inventoryAttributeChangeConfirmationJsonRepresent)  {
         logger.info("# received inventory attribute change confirmation data: {}", inventoryAttributeChangeConfirmationJsonRepresent);
 
         try {
@@ -125,8 +140,7 @@ public class KafkaReceiver {
 
 
 
-    @KafkaListener(topics = {"INTEGRATION_ORDER_CONFIRMATION"})
-    public void processOrderConfirmationIntegration(@Payload String orderConfirmationJsonRepresent)  {
+    public void processOrderConfirmationIntegration( String orderConfirmationJsonRepresent)  {
         logger.info("# received order confirmation data: {}", orderConfirmationJsonRepresent);
 
         try {
@@ -146,8 +160,7 @@ public class KafkaReceiver {
     }
 
 
-    @KafkaListener(topics = {"INTEGRATION_WORK_ORDER_CONFIRMATION"})
-    public void processWorkOrderConfirmationIntegration(@Payload String workOrderConfirmationJsonRepresent)  {
+    public void processWorkOrderConfirmationIntegration(String workOrderConfirmationJsonRepresent)  {
         logger.info("# received work order confirmation data: {}", workOrderConfirmationJsonRepresent);
 
         try {
@@ -166,8 +179,7 @@ public class KafkaReceiver {
 
     }
 
-    @KafkaListener(topics = {"INTEGRATION_RECEIPT_CONFIRMATION"})
-    public void processReceiptConfirmationIntegration(@Payload String receiptConfirmationJsonRepresent)  {
+    public void processReceiptConfirmationIntegration(String receiptConfirmationJsonRepresent)  {
         logger.info("# received inventory adjustment confirmation data: {}", receiptConfirmationJsonRepresent);
 
         try {
@@ -184,5 +196,41 @@ public class KafkaReceiver {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
         }
 
+    }
+
+    @KafkaListener(topics = {"INTEGRATION_CONFIRMATION"})
+    public void processConfirmationIntegration(@Payload String confirmationJsonRepresent,
+                                               @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationTypeJsonRepresent)  {
+        logger.info("# received confirmation data of type {} :\n {}",
+                integrationTypeJsonRepresent, confirmationJsonRepresent);
+
+        IntegrationType integrationType = IntegrationType.valueOf(integrationTypeJsonRepresent);
+        switch (integrationType) {
+            case INTEGRATION_INVENTORY_ADJUSTMENT_CONFIRMATION:
+                processInventoryAdjustmentConfirmationIntegration(confirmationJsonRepresent);
+                break;
+            case INTEGRATION_INVENTORY_ATTRIBUTE_CHANGE_CONFIRMATION:
+                processInventoryAttributeChangeConfirmationIntegration(confirmationJsonRepresent);
+                break;
+            case INTEGRATION_ORDER_CONFIRMATION:
+                processOrderConfirmationIntegration(confirmationJsonRepresent);
+                break;
+            case INTEGRATION_RECEIPT_CONFIRMATION:
+                processReceiptConfirmationIntegration(confirmationJsonRepresent);
+                break;
+            case INTEGRATION_WORK_ORDER_CONFIRMATION:
+                processWorkOrderConfirmationIntegration(confirmationJsonRepresent);
+                break;
+            case INTEGRATION_CUSTOMER_RETURN_ORDER_CONFIRMATION:
+                processCustomerReturnOrderConfirmationIntegration(confirmationJsonRepresent);
+                break;
+            default:
+                logger.debug("==> {} is not supported!!!!", integrationTypeJsonRepresent);
+        }
+
+    }
+
+    private void processCustomerReturnOrderConfirmationIntegration(String confirmationJsonRepresent) {
+        throw new UnsupportedOperationException("customer return order configmration integratino is not support yet!!!");
     }
 }

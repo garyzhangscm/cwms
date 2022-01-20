@@ -2,10 +2,7 @@ package com.garyzhangscm.cwms.inbound.clients;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.inbound.model.BillableRequest;
-import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrderConfirmation;
-import com.garyzhangscm.cwms.inbound.model.IntegrationResult;
-import com.garyzhangscm.cwms.inbound.model.ReceiptConfirmation;
+import com.garyzhangscm.cwms.inbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +53,9 @@ public class KafkaSender {
         try {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
-            send("INTEGRATION_RECEIPT_CONFIRMATION", objectMapper.writeValueAsString(receiptConfirmation));
+            send("INTEGRATION_CONFIRMATION",
+                    IntegrationType.INTEGRATION_RECEIPT_CONFIRMATION.name(),
+                    objectMapper.writeValueAsString(receiptConfirmation));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());
@@ -67,7 +66,9 @@ public class KafkaSender {
         try {
 
             // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
-            send("INTEGRATION_CUSTOMER_RETURN_ORDER_CONFIRMATION", objectMapper.writeValueAsString(customerReturnOrderConfirmation));
+            send("INTEGRATION_CUSTOMER_RETURN_ORDER_CONFIRMATION",
+                    IntegrationType.INTEGRATION_CUSTOMER_RETURN_ORDER_CONFIRMATION.name(),
+                    objectMapper.writeValueAsString(customerReturnOrderConfirmation));
         }
         catch (Exception ex) {
             send("SYSTEM_ERROR", ex.getMessage());

@@ -118,6 +118,7 @@ public class AlertService {
 
 
     public Alert addAlert(Alert alert) {
+        alert.setStatus(AlertStatus.PENDING);
         return saveOrUpdate(alert);
 
     }
