@@ -37,9 +37,13 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"INTEGRATION_CUSTOMER"})
     public void listenForCustomer(@Payload String customerJsonRepresent,
-                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId) throws JsonProcessingException {
+                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received customer data: {}", customerJsonRepresent);
-        logger.info("with id {}", integrationId);
+        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+
+        String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
+        Long warehouseId = Long.parseLong(key[0]);
+        Long integrationId = Long.parseLong(key[1]);
 
         try {
             Customer customer = objectMapper.readValue(customerJsonRepresent, Customer.class);
@@ -48,10 +52,9 @@ public class KafkaReceiver {
             integrationService.save(customer);
 
 
-
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_CUSTOMER,
                     true, ""
             );
@@ -61,7 +64,7 @@ public class KafkaReceiver {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_CUSTOMER,
                     false, ex.getMessage()
             );
@@ -73,9 +76,13 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"INTEGRATION_CLIENT"})
     public void listenForClient(@Payload String clientJsonRepresent,
-                                @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId) throws JsonProcessingException {
+                                @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received client data: {}", clientJsonRepresent);
-        logger.info("with id {}", integrationId);
+        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+
+        String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
+        Long warehouseId = Long.parseLong(key[0]);
+        Long integrationId = Long.parseLong(key[1]);
 
         try {
             Client client = objectMapper.readValue(clientJsonRepresent, Client.class);
@@ -84,7 +91,7 @@ public class KafkaReceiver {
 
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_CLIENT,
                     true, ""
             );
@@ -94,7 +101,7 @@ public class KafkaReceiver {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_CLIENT,
                     false, ex.getMessage()
             );
@@ -105,9 +112,13 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"INTEGRATION_SUPPLIER"})
     public void listenForSupplier(@Payload String supplierJsonRepresent,
-                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId) throws JsonProcessingException {
+                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received supplier data: {}", supplierJsonRepresent);
-        logger.info("with id {}", integrationId);
+        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+
+        String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
+        Long warehouseId = Long.parseLong(key[0]);
+        Long integrationId = Long.parseLong(key[1]);
 
 
         try {
@@ -118,7 +129,7 @@ public class KafkaReceiver {
 
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_SUPPLIER,
                     true, ""
             );
@@ -128,7 +139,7 @@ public class KafkaReceiver {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_SUPPLIER,
                     false, ex.getMessage()
             );

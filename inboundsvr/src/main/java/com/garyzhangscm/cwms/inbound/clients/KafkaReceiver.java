@@ -41,9 +41,15 @@ public class KafkaReceiver {
      * */
     @KafkaListener(topics = {"INTEGRATION_RECEIPT"})
     public void processReceipt(@Payload String receiptJsonRepresent,
-                               @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationId)  {
+                               @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received integration - receipt data:\n {}", receiptJsonRepresent);
-        logger.info("with id {}", integrationId);
+        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+
+        String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
+        logger.debug("keys: {}", key);
+        Long warehouseId = Long.parseLong(key[0]);
+        Long integrationId = Long.parseLong(key[1]);
+
         try {
             Receipt receipt = objectMapper.readValue(receiptJsonRepresent, Receipt.class);
             logger.info("receipt: {}", receipt);
@@ -52,7 +58,7 @@ public class KafkaReceiver {
 
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_RECEIPT,
                     true, ""
             );
@@ -62,7 +68,7 @@ public class KafkaReceiver {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    Long.parseLong(integrationId),
+                    null, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_RECEIPT,
                     false, ex.getMessage()
             );

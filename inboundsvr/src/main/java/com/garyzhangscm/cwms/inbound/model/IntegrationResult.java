@@ -7,6 +7,10 @@ public class IntegrationResult {
 
     private Long integrationId;
 
+    private Long companyId;
+    private Long warehouseId;
+
+
     private IntegrationType integrationType;
 
     private boolean success;
@@ -24,11 +28,32 @@ public class IntegrationResult {
     }
 
     public IntegrationResult(){}
-    public IntegrationResult(Long integrationId, IntegrationType integrationType, boolean success, String errorMessage) {
+
+    public IntegrationResult(Long companyId, Long warehouseId,
+                             Long integrationId, IntegrationType integrationType, boolean success, String errorMessage) {
+        this.companyId = companyId;
+        this.warehouseId = warehouseId;
         this.integrationId = integrationId;
         this.integrationType = integrationType;
         this.success = success;
         this.errorMessage = errorMessage;
+    }
+
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public Long getIntegrationId() {

@@ -118,7 +118,8 @@ public class IntegrationDataController {
     //
     @RequestMapping(value="/items", method = RequestMethod.GET)
     public List<? extends IntegrationItemData> getIntegrationItemData(
-            @RequestParam Long warehouseId,
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
@@ -126,7 +127,7 @@ public class IntegrationDataController {
             @RequestParam(name = "id", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Long id) {
 
         return integrationDataService.getItemData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @RequestMapping(value="/items/{id}", method = RequestMethod.GET)
@@ -152,7 +153,8 @@ public class IntegrationDataController {
     //
     @RequestMapping(value="/item-families", method = RequestMethod.GET)
     public List<? extends IntegrationItemFamilyData> getIntegrationItemFamilyData(
-            @RequestParam Long warehouseId,
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
@@ -160,7 +162,7 @@ public class IntegrationDataController {
             @RequestParam(name = "id", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Long id) {
 
         return integrationDataService.getItemFamilyData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @RequestMapping(value="/item-families/{id}", method = RequestMethod.GET)
@@ -185,7 +187,8 @@ public class IntegrationDataController {
     //
     @RequestMapping(value="/item-package-types", method = RequestMethod.GET)
     public List<? extends IntegrationItemPackageTypeData> getIntegrationItemPackageTypeData(
-            @RequestParam Long warehouseId,
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
@@ -193,7 +196,7 @@ public class IntegrationDataController {
             @RequestParam(name = "id", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Long id) {
 
         return integrationDataService.getItemPackageTypeData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @RequestMapping(value="/item-package-types/{id}", method = RequestMethod.GET)
@@ -217,7 +220,8 @@ public class IntegrationDataController {
     //
     @RequestMapping(value="/item-unit-of-measures", method = RequestMethod.GET)
     public List<? extends IntegrationItemUnitOfMeasureData> getIntegrationItemUnitOfMeasureData(
-            @RequestParam Long warehouseId,
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
@@ -225,7 +229,7 @@ public class IntegrationDataController {
             @RequestParam(name = "id", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Long id) {
 
         return integrationDataService.getItemUnitOfMeasureData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @RequestMapping(value="/item-unit-of-measures/{id}", method = RequestMethod.GET)
@@ -296,7 +300,8 @@ public class IntegrationDataController {
     //
     @RequestMapping(value="/orders", method = RequestMethod.GET)
     public List<? extends IntegrationOrderData> getIntegrationOrderData(
-            @RequestParam Long warehouseId,
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
@@ -304,7 +309,7 @@ public class IntegrationDataController {
             @RequestParam(name = "id", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Long id) {
 
         return integrationDataService.getOrderData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @RequestMapping(value="/orders/{id}", method = RequestMethod.GET)
@@ -329,7 +334,8 @@ public class IntegrationDataController {
     //
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
     public List<? extends IntegrationReceiptData> getIntegrationReceiptData(
-            @RequestParam Long warehouseId,
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
@@ -337,7 +343,7 @@ public class IntegrationDataController {
             @RequestParam(name = "id", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Long id) {
 
         return integrationDataService.getReceiptData(
-                warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @RequestMapping(value="/receipts/{id}", method = RequestMethod.GET)
@@ -390,6 +396,33 @@ public class IntegrationDataController {
         return integrationDataService.getIntegrationOrderConfirmationData(id);
     }
 
+    //
+    // Work Order Related
+    //
+    @RequestMapping(value="/work-orders", method = RequestMethod.GET)
+    public List<? extends IntegrationWorkOrderData> getIntegrationWorkOrderData(
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
+            @RequestParam(name = "statusList", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  String statusList,
+            @RequestParam(name = "id", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Long id) {
+
+        return integrationDataService.getWorkOrderData(
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
+    }
+
+    @RequestMapping(value="/work-orders/{id}", method = RequestMethod.GET)
+    public IntegrationWorkOrderData getIntegrationWorkOrderData(@PathVariable Long id) {
+
+        return integrationDataService.getWorkOrderData(id);
+    }
+    @RequestMapping(value="/work-orders/{id}/resend", method = RequestMethod.POST)
+    public IntegrationWorkOrderData resendWorkOrderData(@PathVariable Long id) {
+
+        return integrationDataService.resendWorkOrderData(id);
+    }
     @RequestMapping(value="/dblink/work-order", method = RequestMethod.PUT)
     public ResponseBodyWrapper saveIntegrationWorkOrderData(
             @RequestBody DBBasedWorkOrder dbBasedWorkOrder

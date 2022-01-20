@@ -121,7 +121,8 @@ public class DBBasedClientIntegration {
             Client client = dbBasedClient.convertToClient();
             logger.debug(">> will process customer:\n{}", client);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_CLIENT, dbBasedClient.getId(), client);
+            kafkaSender.send(IntegrationType.INTEGRATION_CLIENT,
+                    dbBasedClient.getWarehouseId() + "-" + dbBasedClient.getId(), client);
 
 
             dbBasedClient.setErrorMessage("");

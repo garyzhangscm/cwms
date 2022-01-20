@@ -38,6 +38,7 @@ public interface Integration {
     // Integration - Item
     //
     List<? extends IntegrationItemData> getItemData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemData getItemData(Long id);
@@ -48,6 +49,7 @@ public interface Integration {
     // Integration - Item Family
     //
     List<? extends IntegrationItemFamilyData> getItemFamilyData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemFamilyData getItemFamilyData(Long id);
@@ -58,6 +60,7 @@ public interface Integration {
     // Integration - Item Package Type
     //
     List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemPackageTypeData getItemPackageTypeData(Long id);
@@ -69,6 +72,7 @@ public interface Integration {
     // Integration - Item Unit Of Measure
     //
     List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemUnitOfMeasureData getItemUnitOfMeasureData(Long id);
@@ -93,6 +97,7 @@ public interface Integration {
     // Integration - Receipt and Receipt Line
     //
     List<? extends IntegrationReceiptData> getReceiptData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList,
             Long id);
@@ -104,6 +109,7 @@ public interface Integration {
     // Integration - Order and Order Line
     //
     List<? extends IntegrationOrderData> getOrderData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationOrderData getOrderData(Long id);
@@ -113,6 +119,7 @@ public interface Integration {
     // Integration - Work Order and Work Order Line
     //
     List<? extends IntegrationWorkOrderData> getWorkOrderData(
+            String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationWorkOrderData getWorkOrderData(Long id);

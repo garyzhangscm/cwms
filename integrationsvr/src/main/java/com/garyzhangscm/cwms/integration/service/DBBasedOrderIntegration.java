@@ -47,7 +47,7 @@ public class DBBasedOrderIntegration {
     InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
-    public List<DBBasedOrder> findAll(
+    public List<DBBasedOrder> findAll(String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
@@ -55,7 +55,13 @@ public class DBBasedOrderIntegration {
                 (Root<DBBasedOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyCode"), companyCode));
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
+
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
@@ -151,7 +157,8 @@ public class DBBasedOrderIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Order:\n{}", order);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ORDER, dbBasedOrder.getId(), order);
+            kafkaSender.send(IntegrationType.INTEGRATION_ORDER,
+                    order.getWarehouseId() + "-" + dbBasedOrder.getId(), order);
 
             dbBasedOrder.setStatus(IntegrationStatus.SENT);
             dbBasedOrder.setErrorMessage("");

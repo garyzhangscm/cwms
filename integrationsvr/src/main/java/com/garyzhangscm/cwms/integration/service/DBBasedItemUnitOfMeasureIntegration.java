@@ -43,7 +43,7 @@ public class DBBasedItemUnitOfMeasureIntegration {
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
 
-    public List<DBBasedItemUnitOfMeasure> findAll(
+    public List<DBBasedItemUnitOfMeasure> findAll(String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
@@ -51,8 +51,12 @@ public class DBBasedItemUnitOfMeasureIntegration {
                 (Root<DBBasedItemUnitOfMeasure> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyCode"), companyCode));
 
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
                                 root.get("createdTime"), startTime));
@@ -164,7 +168,8 @@ public class DBBasedItemUnitOfMeasureIntegration {
 
             }
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_UNIT_OF_MEASURE, item, itemUnitOfMeasure);
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_UNIT_OF_MEASURE,
+                    itemUnitOfMeasure.getWarehouseId() + "-" + dbBasedItemUnitOfMeasure.getId(), itemUnitOfMeasure);
 
 
             dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.COMPLETED);

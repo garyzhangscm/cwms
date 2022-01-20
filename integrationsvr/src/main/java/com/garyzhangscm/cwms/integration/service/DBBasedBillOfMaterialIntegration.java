@@ -143,7 +143,8 @@ public class DBBasedBillOfMaterialIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process B.O.M :\n{}", billOfMaterial);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_BILL_OF_MATERIAL, dbBasedBillOfMaterial.getId(), billOfMaterial);
+            kafkaSender.send(IntegrationType.INTEGRATION_BILL_OF_MATERIAL,
+                    billOfMaterial.getWarehouseId() + "-" + dbBasedBillOfMaterial.getId(), billOfMaterial);
 
             dbBasedBillOfMaterial.setStatus(IntegrationStatus.SENT);
             dbBasedBillOfMaterial.setErrorMessage("");

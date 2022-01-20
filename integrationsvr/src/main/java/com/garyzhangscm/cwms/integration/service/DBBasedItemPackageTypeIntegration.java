@@ -42,7 +42,7 @@ public class DBBasedItemPackageTypeIntegration {
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
 
-    public List<DBBasedItemPackageType> findAll(
+    public List<DBBasedItemPackageType> findAll(String companyCode,
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
@@ -50,7 +50,13 @@ public class DBBasedItemPackageTypeIntegration {
                 (Root<DBBasedItemPackageType> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyCode"), companyCode));
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
+
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
@@ -150,7 +156,8 @@ public class DBBasedItemPackageTypeIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Item Package Type:\n{}", itemPackageType);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_PACKAGE_TYPE, item, itemPackageType);
+            kafkaSender.send(IntegrationType.INTEGRATION_ITEM_PACKAGE_TYPE,
+                    itemPackageType.getWarehouseId() + "-" + dbBasedItemPackageType.getId(), itemPackageType);
 
 
             dbBasedItemPackageType.setErrorMessage("");

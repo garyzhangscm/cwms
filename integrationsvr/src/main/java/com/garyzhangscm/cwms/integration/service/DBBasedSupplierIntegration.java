@@ -162,7 +162,8 @@ public class DBBasedSupplierIntegration {
             logger.debug(">> will process Supplier :\n{}", supplier);
 
 
-            kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER, dbBasedSupplier.getId(), supplier);
+            kafkaSender.send(IntegrationType.INTEGRATION_SUPPLIER,
+                    dbBasedSupplier.getWarehouseId() + "-" + dbBasedSupplier.getId(), supplier);
 
 
             dbBasedSupplier.setStatus(IntegrationStatus.SENT);
