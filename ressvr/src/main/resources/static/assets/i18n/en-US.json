@@ -1618,5 +1618,8 @@
   "authFlag": "Auth Flag",
   "starttlsEnableFlag": "Start TLS Enable Flag",
   "debugFlag": "Debug Flag",
-  "errorMessage": "Error Message"
+  "errorMessage": "Error Message",
+  "ALERT-TYPE-INTEGRATION_TO_HOST_SUCCESS": "Integration To Host Success",
+  "ALERT-TYPE-INTEGRATION_TO_HOST_FAIL": "Integration To Host Fail",
+  "sendFromEmail": "Send from Email"
 }

@@ -7,6 +7,7 @@ import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedOrderConfirmationRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedWorkOrderConfirmationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,8 @@ public class DBBasedWorkOrderConfirmationIntegration {
 
     public List<DBBasedWorkOrderConfirmation> findAll(Long warehouseId, String warehouseName,
                                                       String number,
-                                                      LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+                                                      LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+                                                      String statusList, Long id) {
         return dbBasedWorkOrderConfirmationRepository.findAll(
                 (Root<DBBasedWorkOrderConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -68,6 +70,19 @@ public class DBBasedWorkOrderConfirmationIntegration {
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
                                 root.get("createdTime"), dateStartTime, dateEndTime));
+
+                    }
+                    if (Strings.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<IntegrationStatus> inStatus = criteriaBuilder.in(root.get("status"));
+                        for(String status : statusList.split(",")) {
+                            inStatus.value(IntegrationStatus.valueOf(status));
+                        }
+                        predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
 
                     }
 
@@ -134,7 +149,8 @@ public class DBBasedWorkOrderConfirmationIntegration {
                                 ", id: " + dbBasedWorkOrderConfirmation.getId() + " succeed!",
                         "Integration Succeed: \n" +
                                 "Type: WORK-ORDER-CONFIRM send to HOST\n" +
-                                "Id: " + dbBasedWorkOrderConfirmation.getId() + "\n")
+                                "Id: " + dbBasedWorkOrderConfirmation.getId() + "\n" +
+                                "Receipt Number: " + dbBasedWorkOrderConfirmation.getNumber() + "\n")
                 :
                 new Alert(dbBasedWorkOrderConfirmation.getCompanyId(),
                         AlertType.INTEGRATION_TO_HOST_FAIL,
@@ -143,7 +159,9 @@ public class DBBasedWorkOrderConfirmationIntegration {
                                 ", id: " + dbBasedWorkOrderConfirmation.getId() + " fail!",
                         "Integration Fail: \n" +
                                 "Type: WORK-ORDER-CONFIRM send to HOST\n" +
-                                "Id: " + dbBasedWorkOrderConfirmation.getId() + "\n")
+                                "Id: " + dbBasedWorkOrderConfirmation.getId() + "\n" +
+                                "Receipt Number: " + dbBasedWorkOrderConfirmation.getNumber() + "\n" +
+                                "\n\nERROR: " + dbBasedWorkOrderConfirmation.getErrorMessage() + "\n")
                 ;
 
 

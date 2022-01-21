@@ -8,6 +8,7 @@ import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedOrderConfirmationRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedReceiptConfirmationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +63,8 @@ public class DBBasedReceiptConfirmationIntegration {
     public List<DBBasedReceiptConfirmation> findAll(Long warehouseId, String warehouseName,
                                                     String number, Long clientId, String clientName,
                                                     Long supplierId, String supplierName,
-                                                    LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+                                                    LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+                                                    String statusList, Long id) {
 
         return dbBasedReceiptConfirmationRepository.findAll(
                 (Root<DBBasedReceiptConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -109,6 +111,19 @@ public class DBBasedReceiptConfirmationIntegration {
 
                     }
 
+                    if (Strings.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<IntegrationStatus> inStatus = criteriaBuilder.in(root.get("status"));
+                        for(String status : statusList.split(",")) {
+                            inStatus.value(IntegrationStatus.valueOf(status));
+                        }
+                        predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
+
+                    }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
@@ -209,7 +224,8 @@ public class DBBasedReceiptConfirmationIntegration {
                                 ", id: " + dbBasedReceiptConfirmation.getId() + " succeed!",
                         "Integration Succeed: \n" +
                                 "Type: RECEIPT-CONFIRM send to HOST\n" +
-                                "Id: " + dbBasedReceiptConfirmation.getId() + "\n")
+                                "Id: " + dbBasedReceiptConfirmation.getId() + "\n" +
+                                "Receipt Number: " + dbBasedReceiptConfirmation.getNumber() + "\n")
                 :
                 new Alert(dbBasedReceiptConfirmation.getCompanyId(),
                         AlertType.INTEGRATION_TO_HOST_FAIL,
@@ -218,7 +234,9 @@ public class DBBasedReceiptConfirmationIntegration {
                                 ", id: " + dbBasedReceiptConfirmation.getId() + " fail!",
                         "Integration Fail: \n" +
                                 "Type: RECEIPT-CONFIRM send to HOST\n" +
-                                "Id: " + dbBasedReceiptConfirmation.getId() + "\n")
+                                "Id: " + dbBasedReceiptConfirmation.getId() + "\n" +
+                                "Receipt Number: " + dbBasedReceiptConfirmation.getNumber() + "\n" +
+                                "\n\nERROR: " + dbBasedReceiptConfirmation.getErrorMessage() + "\n")
                 ;
 
 

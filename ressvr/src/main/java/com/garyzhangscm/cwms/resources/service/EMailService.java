@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.exception.EmailException;
+import com.garyzhangscm.cwms.resources.model.EmailAlertConfiguration;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,26 +26,29 @@ public class EMailService {
 
     @Autowired
     private EmailAlertConfigurationService emailAlertConfigurationService;
-    @Value("${mail.fromMail.address}")
-    private String from;
 
     /**
      * 发送纯文本邮件.
      *
      * @param companyId    Company Id
+     * @param from      源email 地址
      * @param to      目标email 地址
      * @param subject 邮件主题
      * @param text    纯文本内容
      */
-    public void sendMail(Long companyId, String to, String subject, String text) {
+    public void sendMail(Long companyId,   String to, String subject, String text) {
         // load the java mail configuration
+        EmailAlertConfiguration emailAlertConfiguration = emailAlertConfigurationService.findByCompany(companyId);
+        if (Objects.isNull(emailAlertConfiguration)) {
+            throw EmailException.raiseException("email confirmation for the company " + companyId + " is not setup");
+        }
         JavaMailSender javaMailSender = getJavaMailSender(companyId);
         if (Objects.isNull(javaMailSender)) {
-            throw EmailException.raiseException("email server is not setup");
+            throw EmailException.raiseException("email server for the company " + companyId + "  is not setup");
         }
         SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom(from);
+        message.setFrom(emailAlertConfiguration.getSendFromEmail());
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);

@@ -1617,6 +1617,9 @@
   "authFlag": "Auth Flag",
   "starttlsEnableFlag": "Start TLS Enable Flag",
   "debugFlag": "Debug Flag",
-  "errorMessage": "错误信息"
+  "errorMessage": "错误信息",
+  "ALERT-TYPE-INTEGRATION_TO_HOST_SUCCESS": "接口成功发送到上游系统",
+  "ALERT-TYPE-INTEGRATION_TO_HOST_FAIL": "接口无法发送到上游系统",
+  "sendFromEmail": "发送邮箱"
 
 }

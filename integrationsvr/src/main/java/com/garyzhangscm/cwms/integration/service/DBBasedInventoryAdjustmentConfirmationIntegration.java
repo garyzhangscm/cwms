@@ -7,6 +7,7 @@ import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedInventoryAdjustmentConfirmationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,8 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
 
 
     public List<DBBasedInventoryAdjustmentConfirmation> findAll(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id) {
 
         return dbBasedInventoryAdjustmentConfirmationRepository.findAll(
                 (Root<DBBasedInventoryAdjustmentConfirmation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -90,6 +92,19 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
                                 root.get("createdTime"), dateStartTime, dateEndTime));
+
+                    }
+                    if (Strings.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<IntegrationStatus> inStatus = criteriaBuilder.in(root.get("status"));
+                        for(String status : statusList.split(",")) {
+                            inStatus.value(IntegrationStatus.valueOf(status));
+                        }
+                        predicates.add(criteriaBuilder.and(inStatus));
+                    }
+
+                    if (Objects.nonNull(id)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("id"), id));
 
                     }
                     Predicate[] p = new Predicate[predicates.size()];
@@ -180,7 +195,12 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                                 ", id: " + dbBasedInventoryAdjustmentConfirmation.getId() + " succeed!",
                         "Integration Succeed: \n" +
                                 "Type: INVENTORY-ADJUSTMENT-CONFIRM send to HOST\n" +
-                                "Id: " + dbBasedInventoryAdjustmentConfirmation.getId() + "\n")
+                                "Id: " + dbBasedInventoryAdjustmentConfirmation.getId() + "\n" +
+                                "Company Code: " + dbBasedInventoryAdjustmentConfirmation.getCompanyCode() + "\n" +
+                                "Warehouse Name: " + dbBasedInventoryAdjustmentConfirmation.getWarehouseName() + "\n" +
+                                "Item: " + dbBasedInventoryAdjustmentConfirmation.getItemName() + "\n" +
+                                "Inventory Status: " + dbBasedInventoryAdjustmentConfirmation.getInventoryStatusName() + "\n" +
+                                "Adjust Quantity: " + dbBasedInventoryAdjustmentConfirmation.getAdjustQuantity() + "\n")
                 :
                 new Alert(dbBasedInventoryAdjustmentConfirmation.getCompanyId(),
                         AlertType.INTEGRATION_TO_HOST_FAIL,
@@ -189,7 +209,13 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                                 ", id: " + dbBasedInventoryAdjustmentConfirmation.getId() + " fail!",
                         "Integration Fail: \n" +
                                 "Type: INVENTORY-ADJUSTMENT-CONFIRM send to HOST\n" +
-                                "Id: " + dbBasedInventoryAdjustmentConfirmation.getId() + "\n")
+                                "Id: " + dbBasedInventoryAdjustmentConfirmation.getId() + "\n" +
+                                "Company Code: " + dbBasedInventoryAdjustmentConfirmation.getCompanyCode() + "\n" +
+                                "Warehouse Name: " + dbBasedInventoryAdjustmentConfirmation.getWarehouseName() + "\n" +
+                                "Item: " + dbBasedInventoryAdjustmentConfirmation.getItemName() + "\n" +
+                                "Inventory Status: " + dbBasedInventoryAdjustmentConfirmation.getInventoryStatusName() + "\n" +
+                                "Adjust Quantity: " + dbBasedInventoryAdjustmentConfirmation.getAdjustQuantity() + "\n" +
+                                "\n\nERROR: " + dbBasedInventoryAdjustmentConfirmation.getErrorMessage() + "\n")
                 ;
 
 
