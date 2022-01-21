@@ -119,7 +119,7 @@ public class DBBasedIntegration implements Integration{
 
         logger.debug("Will use DBBasedIntegration to process the outbound integration data");
 
-        logger.debug("#1 Customer data");
+        logger.debug("#1 inventory adjustment confirmation");
         dbBasedInventoryAdjustmentConfirmationIntegration.sendToHost();
 
 
@@ -423,6 +423,9 @@ public class DBBasedIntegration implements Integration{
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
         return dbBasedOrderConfirmationIntegration.findById(id);
     }
+    public IntegrationOrderConfirmationData resendOrderConfirmationData(Long id){
+        return dbBasedOrderConfirmationIntegration.resendOrderConfirmationData(id);
+    }
     public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
         return dbBasedOrderConfirmationIntegration.sendIntegrationOrderConfirmationData(orderConfirmation);
     }
@@ -435,9 +438,15 @@ public class DBBasedIntegration implements Integration{
                 number, startTime, endTime, date);
     }
 
+
     @Override
     public IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id) {
         return dbBasedWorkOrderConfirmationIntegration.findById(id);
+    }
+
+    @Override
+    public IntegrationWorkOrderConfirmationData resendWorkOrderConfirmationData(Long id) {
+        return dbBasedWorkOrderConfirmationIntegration.resendWorkOrderConfirmationData(id);
     }
 
     @Override
@@ -458,6 +467,10 @@ public class DBBasedIntegration implements Integration{
 
         return dbBasedReceiptConfirmationIntegration.findById(id);
     }
+    public IntegrationReceiptConfirmationData resendReceiptConfirmationData(Long id){
+
+        return dbBasedReceiptConfirmationIntegration.resendReceiptConfirmationData(id);
+    }
     public IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation){
 
         return dbBasedReceiptConfirmationIntegration.sendIntegrationReceiptConfirmationData(receiptConfirmation);
@@ -474,6 +487,9 @@ public class DBBasedIntegration implements Integration{
     public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.findById(id);
     }
+    public IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id) {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.resendInventoryAdjustmentConfirmationData(id);
+    }
     public IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.saveInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
     }
@@ -488,6 +504,11 @@ public class DBBasedIntegration implements Integration{
     @Override
     public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {
         return dbBasedInventoryAttributeChangeConfirmationIntegration.findById(id);
+    }
+
+    @Override
+    public IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id) {
+        return dbBasedInventoryAttributeChangeConfirmationIntegration.resendInventoryAttributeChangeConfirmationData(id);
     }
 
     @Override

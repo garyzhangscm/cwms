@@ -226,6 +226,9 @@ public class IntegrationDataService {
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
         return integration.getIntegrationOrderConfirmationData(id);
     }
+    public IntegrationOrderConfirmationData resendOrderConfirmationData(Long id){
+        return integration.resendOrderConfirmationData(id);
+    }
     public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
         return integration.sendIntegrationOrderConfirmationData(orderConfirmation);
     }
@@ -242,6 +245,9 @@ public class IntegrationDataService {
     public IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id){
         return integration.getIntegrationWorkOrderConfirmationData(id);
     }
+    public IntegrationWorkOrderConfirmationData resendWorkOrderConfirmationData(Long id){
+        return integration.resendWorkOrderConfirmationData(id);
+    }
     public IntegrationWorkOrderConfirmationData sendIntegrationWorkOrderConfirmationData(WorkOrderConfirmation workOrderConfirmation){
         return integration.sendIntegrationWorkOrderConfirmationData(workOrderConfirmation);
     }
@@ -255,6 +261,9 @@ public class IntegrationDataService {
     }
     public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
         return integration.getIntegrationReceiptConfirmationData(id);
+    }
+    public IntegrationReceiptConfirmationData resendReceiptConfirmationData(Long id){
+        return integration.resendReceiptConfirmationData(id);
     }
     public IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation){
         return integration.sendIntegrationReceiptConfirmationData(receiptConfirmation);
@@ -272,6 +281,9 @@ public class IntegrationDataService {
     public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
         return integration.getInventoryAdjustmentConfirmationData(id);
     }
+    public IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id) {
+        return integration.resendInventoryAdjustmentConfirmationData(id);
+    }
     public IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
         return integration.sendInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
     }
@@ -283,6 +295,9 @@ public class IntegrationDataService {
     }
     public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {
         return integration.getInventoryAttributeChangeConfirmationData(id);
+    }
+    public IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id) {
+        return integration.resendInventoryAttributeChangeConfirmationData(id);
     }
     public IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
         return integration.sendInventoryAttributeChangeConfirmationData(inventoryAttributeChangeConfirmation);

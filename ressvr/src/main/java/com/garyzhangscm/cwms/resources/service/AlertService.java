@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
+import com.garyzhangscm.cwms.resources.exception.EmailException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.AlertRepository;
@@ -32,6 +33,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -139,10 +141,22 @@ public class AlertService {
         alert.setStatus(AlertStatus.IN_PROCESS);
         saveOrUpdate(alert);
         logger.debug("Start to send alert \n {}", alert);
-        alertSubscriptionService.sendAlert(alert);
-        // set the status of the alert to Send
-        alert.setStatus(AlertStatus.SENT);
-        saveOrUpdate(alert);
+        try {
+
+            alertSubscriptionService.sendAlert(alert);
+            // set the status of the alert to Send
+            alert.setStatus(AlertStatus.SENT);
+            alert.setLastSentTime(LocalDateTime.now());
+            alert.setErrorMessage("");
+            saveOrUpdate(alert);
+        }
+        catch (EmailException emailException) {
+            emailException.printStackTrace();
+            alert.setStatus(AlertStatus.ERROR);
+            alert.setLastSentTime(LocalDateTime.now());
+            alert.setErrorMessage(emailException.getMessage());
+            saveOrUpdate(alert);
+        }
     }
 
     /**
@@ -153,6 +167,7 @@ public class AlertService {
     public Alert resetAlert(Long id) {
         Alert alert = findById(id);
         alert.setStatus(AlertStatus.PENDING);
+        alert.setErrorMessage("");
         return saveOrUpdate(alert);
     }
 }

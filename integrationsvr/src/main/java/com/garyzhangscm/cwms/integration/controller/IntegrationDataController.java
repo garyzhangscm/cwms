@@ -396,6 +396,11 @@ public class IntegrationDataController {
         return integrationDataService.getIntegrationOrderConfirmationData(id);
     }
 
+    @RequestMapping(value="/order-confirmations/{id}/resend", method = RequestMethod.POST)
+    public IntegrationOrderConfirmationData resendOrderConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.resendOrderConfirmationData(id);
+    }
     //
     // Work Order Related
     //
@@ -493,6 +498,11 @@ public class IntegrationDataController {
 
         return integrationDataService.getIntegrationWorkOrderConfirmationData(id);
     }
+    @RequestMapping(value="/work-order-confirmations/{id}/resend", method = RequestMethod.POST)
+    public IntegrationWorkOrderConfirmationData resendWorkOrderConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.resendWorkOrderConfirmationData(id);
+    }
     //
     // Receipt Confirmation Related
     //
@@ -522,6 +532,12 @@ public class IntegrationDataController {
         return integrationDataService.getIntegrationReceiptConfirmationData(id);
     }
 
+    @RequestMapping(value="/receipt-confirmations/{id}/resend", method = RequestMethod.POST)
+    public IntegrationReceiptConfirmationData resendReceiptConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.resendReceiptConfirmationData(id);
+    }
+
     //
     // Inventory Adjustment Confirmation Related
     //
@@ -543,6 +559,12 @@ public class IntegrationDataController {
         return integrationDataService.getInventoryAdjustmentConfirmationData(id);
     }
 
+    @RequestMapping(value="/inventory-adjustment-confirmations/{id}/resend", method = RequestMethod.POST)
+    public IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(@PathVariable Long id) {
+
+        return integrationDataService.resendInventoryAdjustmentConfirmationData(id);
+    }
+
     //
     // Inventory Attribute Change Confirmation Related
     //
@@ -558,5 +580,9 @@ public class IntegrationDataController {
     @RequestMapping(value="/inventory-attribute-change-confirmations/{id}", method = RequestMethod.GET)
     public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {
         return integrationDataService.getInventoryAttributeChangeConfirmationData(id);
+    }
+    @RequestMapping(value="/inventory-attribute-change-confirmations/{id}/resend", method = RequestMethod.POST)
+    public IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id) {
+        return integrationDataService.resendInventoryAttributeChangeConfirmationData(id);
     }
 }

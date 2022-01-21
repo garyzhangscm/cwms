@@ -57,6 +57,8 @@ public class User extends AuditibleEntity<String>  {
     private String firstname;
     @Column(name = "last_name")
     private String lastname;
+    @Column(name = "email")
+    private String email;
 
 
     // system admin. the admin will have full access
@@ -80,9 +82,6 @@ public class User extends AuditibleEntity<String>  {
     @Column(name = "last_login_token")
     private String lastLoginToken;
 
-
-    @Transient
-    private String email;
 
     @Transient
     @JsonIgnore

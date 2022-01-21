@@ -143,6 +143,7 @@ public interface Integration {
             Long warehouseId, String warehouseName, String number,
             LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id);
+    IntegrationOrderConfirmationData resendOrderConfirmationData(Long id);
     IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation);
 
     // Work Order Confirmation Data
@@ -150,6 +151,7 @@ public interface Integration {
             Long warehouseId, String warehouseName, String number,
             LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id);
+    IntegrationWorkOrderConfirmationData resendWorkOrderConfirmationData(Long id);
     IntegrationWorkOrderConfirmationData sendIntegrationWorkOrderConfirmationData(WorkOrderConfirmation workOrderConfirmation);
 
     // Receipt Confirmation Data
@@ -157,6 +159,7 @@ public interface Integration {
             Long warehouseId, String warehouseName, String number, Long clientId, String clientName,
             Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id);
+    IntegrationReceiptConfirmationData resendReceiptConfirmationData(Long id);
     IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation);
 
     // Inventory Adjustment Confirmation
@@ -165,12 +168,14 @@ public interface Integration {
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date
     );
     IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id);
+    IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id);
     IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation);
 
     // Inventory Attribute Confirmation
     List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
     IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id);
+    IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id);
     IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation);
 
     // Inventory Shipping Confirmation

@@ -18,10 +18,17 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "alert")
@@ -56,6 +63,16 @@ public class Alert extends AuditibleEntity<String>  {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private AlertStatus status;
+
+    @Column(name = "error_message")
+    private String errorMessage;
+
+    @Column(name = "last_sent_time")
+    @LastModifiedDate
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime lastSentTime;
 
     @Override
     public String toString() {
@@ -122,5 +139,21 @@ public class Alert extends AuditibleEntity<String>  {
 
     public void setStatus(AlertStatus status) {
         this.status = status;
+    }
+
+    public LocalDateTime getLastSentTime() {
+        return lastSentTime;
+    }
+
+    public void setLastSentTime(LocalDateTime lastSentTime) {
+        this.lastSentTime = lastSentTime;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

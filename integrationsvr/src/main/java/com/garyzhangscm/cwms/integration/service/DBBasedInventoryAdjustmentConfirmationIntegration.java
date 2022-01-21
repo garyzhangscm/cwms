@@ -145,4 +145,12 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
         );
 
     }
+
+    public IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id) {
+        DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation =
+                findById(id);
+        dbBasedInventoryAdjustmentConfirmation.setStatus(IntegrationStatus.PENDING);
+        dbBasedInventoryAdjustmentConfirmation.setErrorMessage("");
+        return save(dbBasedInventoryAdjustmentConfirmation);
+    }
 }

@@ -48,6 +48,24 @@ public class AlertSubscription extends AuditibleEntity<String>  {
     @Column(name = "delivery_channel")
     private AlertDeliveryChannel deliveryChannel;
 
+
+    // may filter out the alert by key words
+    // so that the user will only get the alert
+    // when the key wards of the alert contains any
+    // of the key words from the list.
+    // The list will contains a list of key words
+    // separated by ,
+    @Column(name = "key_words_list")
+    private String keyWordsList;
+    public AlertSubscription(){}
+    public AlertSubscription(Long companyId, User user, AlertType type, AlertDeliveryChannel deliveryChannel, String keyWordsList) {
+        this.companyId = companyId;
+        this.user = user;
+        this.type = type;
+        this.deliveryChannel = deliveryChannel;
+        this.keyWordsList = keyWordsList;
+    }
+
     @Override
     public String toString() {
         try {
@@ -81,6 +99,14 @@ public class AlertSubscription extends AuditibleEntity<String>  {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getKeyWordsList() {
+        return keyWordsList;
+    }
+
+    public void setKeyWordsList(String keyWordsList) {
+        this.keyWordsList = keyWordsList;
     }
 
     public AlertType getType() {

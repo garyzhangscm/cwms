@@ -27,6 +27,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -36,13 +38,13 @@ import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 
 @Service
 public class EmailAlertConfigurationService {
     private static final Logger logger = LoggerFactory.getLogger(EmailAlertConfigurationService.class);
     @Autowired
     private EmailAlertConfigurationRepository emailAlertConfigurationRepository;
-
 
     public EmailAlertConfiguration findById(Long id) {
         EmailAlertConfiguration emailAlertConfiguration =  emailAlertConfigurationRepository.findById(id)
@@ -71,7 +73,39 @@ public class EmailAlertConfigurationService {
 
 
 
-        return emailAlertConfigurationRepository.save(emailAlertConfiguration);
+        EmailAlertConfiguration newEmailAlertConfiguration =
+                emailAlertConfigurationRepository.save(emailAlertConfiguration);
+
+        // everytime we change the email configuration, we will change the
+        // javaMailSender bean to read the new configuration
+        reloadJavaMailSender(newEmailAlertConfiguration);
+        return newEmailAlertConfiguration;
+    }
+
+    private JavaMailSender reloadJavaMailSender(EmailAlertConfiguration newEmailAlertConfiguration) {
+
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost(newEmailAlertConfiguration.getHost());
+        mailSender.setPort(newEmailAlertConfiguration.getPort());
+
+        mailSender.setUsername(newEmailAlertConfiguration.getUsername());
+        mailSender.setPassword(newEmailAlertConfiguration.getPassword());
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", newEmailAlertConfiguration.getTransportProtocol());
+        props.put("mail.smtp.auth", newEmailAlertConfiguration.getAuthFlag());
+        props.put("mail.smtp.starttls.enable", newEmailAlertConfiguration.getStarttlsEnableFlag());
+        props.put("mail.debug", newEmailAlertConfiguration.getDebugFlag());
+
+        return mailSender;
+    }
+
+    public JavaMailSender reloadJavaMailSender(Long companyId) {
+        EmailAlertConfiguration emailAlertConfiguration = findByCompany(companyId);
+        if (Objects.nonNull(emailAlertConfiguration)) {
+            return reloadJavaMailSender(emailAlertConfiguration);
+        }
+        return null;
     }
 
     public EmailAlertConfiguration findByCompany(Long companyId) {

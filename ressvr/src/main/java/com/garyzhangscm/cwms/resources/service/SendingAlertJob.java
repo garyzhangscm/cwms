@@ -28,6 +28,7 @@ public class SendingAlertJob {
     public void sendAlert() throws IOException {
         logger.debug("# start JOB to send alert @ {}", LocalDateTime.now());
         List<Alert> alerts = alertService.findPendingAlerts();
+        logger.debug(">> found  {} alert to be sent", alerts.size());
 
         alerts.forEach(
                 alert -> alertService.sendAlert(alert)

@@ -197,7 +197,7 @@ public class UserService  implements TestDataInitiableService{
         setUserAuthInformation(user, userAuth);
     }
     private void setUserAuthInformation(User user, UserAuth userAuth) {
-        user.setEmail(userAuth.getEmail());
+        // user.setEmail(userAuth.getEmail());
         user.setPassword(userAuth.getPassword());
         user.setLocked(userAuth.isLocked());
         user.setEnabled(userAuth.isEnabled());
