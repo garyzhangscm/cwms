@@ -96,4 +96,13 @@ public class DBBasedWorkOrderConfirmationIntegration {
     private DBBasedWorkOrderConfirmation getDBBasedWorkOrderConfirmation(WorkOrderConfirmation workOrderConfirmation) {
         return new DBBasedWorkOrderConfirmation(workOrderConfirmation);
     }
+
+
+    public IntegrationWorkOrderConfirmationData resendWorkOrderConfirmationData(Long id) {
+        DBBasedWorkOrderConfirmation dbBasedWorkOrderConfirmation =
+                findById(id);
+        dbBasedWorkOrderConfirmation.setStatus(IntegrationStatus.PENDING);
+        dbBasedWorkOrderConfirmation.setErrorMessage("");
+        return save(dbBasedWorkOrderConfirmation);
+    }
 }

@@ -1605,6 +1605,18 @@
   "INTEGRATION-STATUS-SENT": "已发送",
   "INTEGRATION-STATUS-COMPLETED": "完成",
   "integration.in.work-order": "工单（入站）",
-  "poNumber": "采购单号"
+  "poNumber": "采购单号",
+  "keyWords": "关键字",
+  "createdTime": "创建时间",
+  "lastSentTime": "上次发送时间",
+  "resend": "重新发送",
+  "ALERT-DELIVERY-CHANNEL-BY_EMAIL": "通过Email发送",
+  "ALERT-DELIVERY-CHANNEL-BY_SMS": "通过短信发送",
+  "alert.filter_by_keywords": "关键字过滤",
+  "transportProtocol": "Transport Protocol",
+  "authFlag": "Auth Flag",
+  "starttlsEnableFlag": "Start TLS Enable Flag",
+  "debugFlag": "Debug Flag",
+  "errorMessage": "错误信息"
 
 }

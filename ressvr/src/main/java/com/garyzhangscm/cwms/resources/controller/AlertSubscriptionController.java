@@ -61,6 +61,38 @@ public class AlertSubscriptionController {
         return alertSubscriptionService.removeAlertSubscription(id);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/alert-subscriptions/subscribe", method = RequestMethod.POST)
+    public AlertSubscription subscribe(@RequestParam Long companyId,
+                                                  @RequestParam String alertType,
+                                                  @RequestParam String alertDeliveryChannel,
+                                                  @RequestParam String username) {
+        return alertSubscriptionService.subscribe(
+                companyId, alertType, alertDeliveryChannel, username
+        );
+    }
 
+    @BillableEndpoint
+    @RequestMapping(value="/alert-subscriptions/unsubscribe", method = RequestMethod.POST)
+    public AlertSubscription unsubscribe(@RequestParam Long companyId,
+                                       @RequestParam String alertType,
+                                       @RequestParam String alertDeliveryChannel,
+                                       @RequestParam String username) {
+        return alertSubscriptionService.unsubscribe(
+                companyId, alertType, alertDeliveryChannel, username
+        );
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/alert-subscriptions/change-key-words", method = RequestMethod.POST)
+    public AlertSubscription changeKeyWords(@RequestParam Long companyId,
+                                         @RequestParam String alertType,
+                                         @RequestParam String alertDeliveryChannel,
+                                         @RequestParam String username,
+                                         @RequestParam String keyWordsList) {
+        return alertSubscriptionService.changeKeyWords(
+                companyId, alertType, alertDeliveryChannel, username, keyWordsList
+        );
+    }
 
 }

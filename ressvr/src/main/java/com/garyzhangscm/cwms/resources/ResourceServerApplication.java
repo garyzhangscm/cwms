@@ -27,6 +27,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -50,6 +51,7 @@ import java.util.*;
 @EnableResourceServer
 @EnableOAuth2Client
 @EnableJpaAuditing
+@EnableScheduling
 public class ResourceServerApplication {
 
 
@@ -116,6 +118,7 @@ public class ResourceServerApplication {
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
 
+	/***
 	@Bean
 	public JavaMailSender getJavaMailSender() {
 		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
@@ -133,4 +136,5 @@ public class ResourceServerApplication {
 
 		return mailSender;
 	}
+	**/
 }

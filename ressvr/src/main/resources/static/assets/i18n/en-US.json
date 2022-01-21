@@ -1606,5 +1606,17 @@
   "INTEGRATION-STATUS-ERROR": "Error",
   "INTEGRATION-STATUS-COMPLETED": "Completed",
   "integration.in.work-order": "Work Order(Inbound)",
-  "poNumber": "PO Number"
+  "poNumber": "PO Number",
+  "keyWords": "Key Words",
+  "createdTime": "Created Time",
+  "lastSentTime": "Last Sent Time",
+  "resend": "Resend",
+  "ALERT-DELIVERY-CHANNEL-BY_EMAIL": "By Email",
+  "ALERT-DELIVERY-CHANNEL-BY_SMS": "By Short Message",
+  "alert.filter_by_keywords": "Filter By Key Words",
+  "transportProtocol": "Transport Protocol",
+  "authFlag": "Auth Flag",
+  "starttlsEnableFlag": "Start TLS Enable Flag",
+  "debugFlag": "Debug Flag",
+  "errorMessage": "Error Message"
 }

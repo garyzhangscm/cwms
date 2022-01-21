@@ -88,4 +88,11 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
     private DBBasedInventoryAttributeChangeConfirmation getDBBasedInventoryAttributeChangeConfirmation(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
         return new DBBasedInventoryAttributeChangeConfirmation(inventoryAttributeChangeConfirmation);
     }
+    public IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id) {
+        DBBasedInventoryAttributeChangeConfirmation dbBasedInventoryAttributeChangeConfirmation =
+                findById(id);
+        dbBasedInventoryAttributeChangeConfirmation.setStatus(IntegrationStatus.PENDING);
+        dbBasedInventoryAttributeChangeConfirmation.setErrorMessage("");
+        return save(dbBasedInventoryAttributeChangeConfirmation);
+    }
 }

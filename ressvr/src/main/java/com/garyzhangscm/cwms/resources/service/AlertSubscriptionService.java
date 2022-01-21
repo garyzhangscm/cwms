@@ -32,6 +32,7 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class AlertSubscriptionService {
@@ -41,6 +42,8 @@ public class AlertSubscriptionService {
 
     @Autowired
     private EMailService eMailService;
+    @Autowired
+    private UserService userService;
 
 
     public AlertSubscription findById(Long id) {
@@ -137,15 +140,18 @@ public class AlertSubscriptionService {
                 alert.getType().name(),
                 null
         );
-        alertSubscriptions.forEach(
-                alertSubscription -> sendAlert(alert, alertSubscription)
-        );
+
+        for (AlertSubscription alertSubscription : alertSubscriptions) {
+            sendAlert(alert, alertSubscription);
+        }
     }
     public void sendAlert(Alert alert, AlertSubscription alertSubscription) {
 
         switch (alertSubscription.getDeliveryChannel()) {
             case BY_SMS:
-                throw new UnsupportedOperationException("alert by SMS is not support yet");
+                // throw new UnsupportedOperationException("alert by SMS is not support yet");
+                logger.debug("alert by SMS is not support yet");
+                break;
             default:
                 sendEmailAlert(alert, alertSubscription);
                 break;
@@ -153,10 +159,14 @@ public class AlertSubscriptionService {
     }
 
     private void sendEmailAlert(Alert alert, AlertSubscription alertSubscription) {
-        logger.debug("Start to send alert to email {}", alertSubscription.getUser().getEmail());
+
+        logger.debug("Start to send alert to user {} by email {}", alertSubscription.getUser().getName(),
+                alertSubscription.getUser().getEmail());
+
         if (Strings.isNotBlank(alertSubscription.getUser().getEmail())) {
 
             eMailService.sendMail(
+                    alert.getCompanyId(),
                     alertSubscription.getUser().getEmail(),
                     alert.getTitle(),
                     alert.getMessage()
@@ -168,5 +178,53 @@ public class AlertSubscriptionService {
         AlertSubscription alertSubscription = findById(id);
         delete(id);
         return alertSubscription;
+    }
+
+    public AlertSubscription subscribe(Long companyId, String alertType, String alertDeliveryChannel, String username) {
+        // only add the subscription if the user hasn't subscribed to it yet
+        List<AlertSubscription> userAlertSubscription = findAll(companyId, username, alertType, alertDeliveryChannel);
+        if(userAlertSubscription.isEmpty()) {
+            User user = userService.findByUsername(companyId,username, false);
+            AlertSubscription alertSubscription =
+                    new AlertSubscription(companyId, user,
+                            AlertType.valueOf(alertType),
+                            AlertDeliveryChannel.valueOf(alertDeliveryChannel),
+                            "");
+            return saveOrUpdate(alertSubscription);
+        }
+        else {
+            // we should only have one record returned for the user & alert type & delivery channel
+            return userAlertSubscription.get(0);
+        }
+    }
+    public AlertSubscription unsubscribe(Long companyId, String alertType, String alertDeliveryChannel, String username) {
+        // only remove the subscription if the user already subscribe to it
+        List<AlertSubscription> userAlertSubscriptions = findAll(companyId, username, alertType, alertDeliveryChannel);
+        if(userAlertSubscriptions.isEmpty()) {
+            return null;
+        }
+        else {
+            // we should only have one record returned for the user & alert type & delivery channel
+            AlertSubscription alertSubscription = userAlertSubscriptions.get(0);
+            userAlertSubscriptions.forEach(
+                    userAlertSubscription -> delete(userAlertSubscription.getId())
+            );
+            return alertSubscription;
+        }
+    }
+
+    public AlertSubscription changeKeyWords(Long companyId, String alertType,
+                                            String alertDeliveryChannel, String username, String keyWordsList) {
+
+        List<AlertSubscription> userAlertSubscriptions = findAll(companyId, username, alertType, alertDeliveryChannel);
+        if (userAlertSubscriptions.isEmpty()) {
+            return null;
+        }
+        return userAlertSubscriptions.stream().map(
+                userAlertSubscription -> {
+                    userAlertSubscription.setKeyWordsList(keyWordsList);
+                    return saveOrUpdate(userAlertSubscription);
+            }
+        ).findFirst().get();
     }
 }
