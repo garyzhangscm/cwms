@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedOrderConfirmationRepository;
@@ -30,6 +31,8 @@ public class DBBasedWorkOrderConfirmationIntegration {
     KafkaSender kafkaSender;
     @Autowired
     DBBasedWorkOrderConfirmationRepository dbBasedWorkOrderConfirmationRepository;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
     public List<DBBasedWorkOrderConfirmation> findAll(Long warehouseId, String warehouseName,
@@ -89,6 +92,7 @@ public class DBBasedWorkOrderConfirmationIntegration {
         DBBasedWorkOrderConfirmation dbBasedWorkOrderConfirmation =
                 getDBBasedWorkOrderConfirmation(workOrderConfirmation);
 
+        setupCompanyInformation(dbBasedWorkOrderConfirmation);
 
         return save(dbBasedWorkOrderConfirmation);
     }
@@ -104,5 +108,45 @@ public class DBBasedWorkOrderConfirmationIntegration {
         dbBasedWorkOrderConfirmation.setStatus(IntegrationStatus.PENDING);
         dbBasedWorkOrderConfirmation.setErrorMessage("");
         return save(dbBasedWorkOrderConfirmation);
+    }
+    /**
+     * When we receive integration from the warehouse, normally it will only include the warehouse id / warehouse name.
+     * we will need to setup the company id and company name as well, especailly in the multi-tenancy environment
+     * @param dbBasedWorkOrderConfirmation
+     */
+    private void setupCompanyInformation(DBBasedWorkOrderConfirmation dbBasedWorkOrderConfirmation) {
+        if (Objects.isNull(dbBasedWorkOrderConfirmation.getCompanyId()) ||
+                Objects.isNull(dbBasedWorkOrderConfirmation.getCompanyCode())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(dbBasedWorkOrderConfirmation.getWarehouseId());
+            if (Objects.nonNull(warehouse)) {
+                dbBasedWorkOrderConfirmation.setCompanyId(warehouse.getCompany().getId());
+                dbBasedWorkOrderConfirmation.setCompanyCode(warehouse.getCompany().getCode());
+            }
+        }
+    }
+
+    private void sendAlert(DBBasedWorkOrderConfirmation dbBasedWorkOrderConfirmation) {
+        Alert alert = dbBasedWorkOrderConfirmation.getStatus().equals(IntegrationStatus.COMPLETED) ?
+                new Alert(dbBasedWorkOrderConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_SUCCESS,
+                        "INTEGRATION-WORK-ORDER-CONFIRM-TO-HOST-" + dbBasedWorkOrderConfirmation.getId(),
+                        "Integration WORK-ORDER-CONFIRM send to HOST " +
+                                ", id: " + dbBasedWorkOrderConfirmation.getId() + " succeed!",
+                        "Integration Succeed: \n" +
+                                "Type: WORK-ORDER-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedWorkOrderConfirmation.getId() + "\n")
+                :
+                new Alert(dbBasedWorkOrderConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_FAIL,
+                        "INTEGRATION-WORK-ORDER-CONFIRM-TO-HOST-" + dbBasedWorkOrderConfirmation.getId(),
+                        "Integration WORK-ORDER-CONFIRM send to HOST " +
+                                ", id: " + dbBasedWorkOrderConfirmation.getId() + " fail!",
+                        "Integration Fail: \n" +
+                                "Type: WORK-ORDER-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedWorkOrderConfirmation.getId() + "\n")
+                ;
+
+
+        kafkaSender.send(alert);
     }
 }

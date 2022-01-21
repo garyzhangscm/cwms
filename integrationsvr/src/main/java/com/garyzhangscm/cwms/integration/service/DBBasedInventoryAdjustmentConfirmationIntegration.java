@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.HostRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedInventoryAdjustmentConfirmationRepository;
@@ -36,6 +37,10 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
     DBBasedInventoryAdjustmentConfirmationRepository dbBasedInventoryAdjustmentConfirmationRepository;
     @Autowired
     HostRestemplateClient hostRestemplateClient;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    KafkaSender kafkaSender;
 
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
@@ -107,8 +112,26 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
         DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation =
                 getDBBasedInventoryAdjustmentConfirmation(inventoryAdjustmentConfirmation);
 
+        setupCompanyInformation(dbBasedInventoryAdjustmentConfirmation);
+
         dbBasedInventoryAdjustmentConfirmation.setStatus(IntegrationStatus.PENDING);
         return save(dbBasedInventoryAdjustmentConfirmation);
+    }
+
+    /**
+     * When we receive integration from the warehouse, normally it will only include the warehouse id / warehouse name.
+     * we will need to setup the company id and company name as well, especailly in the multi-tenancy environment
+     * @param dbBasedInventoryAdjustmentConfirmation
+     */
+    private void setupCompanyInformation(DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation) {
+        if (Objects.isNull(dbBasedInventoryAdjustmentConfirmation.getCompanyId()) ||
+                Objects.isNull(dbBasedInventoryAdjustmentConfirmation.getCompanyCode())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(dbBasedInventoryAdjustmentConfirmation.getWarehouseId());
+            if (Objects.nonNull(warehouse)) {
+                dbBasedInventoryAdjustmentConfirmation.setCompanyId(warehouse.getCompany().getId());
+                dbBasedInventoryAdjustmentConfirmation.setCompanyCode(warehouse.getCompany().getCode());
+            }
+        }
     }
 
     private DBBasedInventoryAdjustmentConfirmation getDBBasedInventoryAdjustmentConfirmation(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
@@ -140,10 +163,37 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                         dbBasedInventoryAdjustmentConfirmation.setStatus(IntegrationStatus.ERROR);
                         dbBasedInventoryAdjustmentConfirmation.setErrorMessage(errorMessage);
                     }
-                    save(dbBasedInventoryAdjustmentConfirmation);
+                    dbBasedInventoryAdjustmentConfirmation = save(dbBasedInventoryAdjustmentConfirmation);
+                    sendAlert(dbBasedInventoryAdjustmentConfirmation);
+
                 }
         );
 
+    }
+
+    private void sendAlert(DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation) {
+        Alert alert = dbBasedInventoryAdjustmentConfirmation.getStatus().equals(IntegrationStatus.COMPLETED) ?
+                new Alert(dbBasedInventoryAdjustmentConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_SUCCESS,
+                        "INTEGRATION-INVENTORY-ADJUSTMENT-CONFIRM-TO-HOST-" + dbBasedInventoryAdjustmentConfirmation.getId(),
+                        "Integration INVENTORY-ADJUSTMENT-CONFIRM send to HOST " +
+                                ", id: " + dbBasedInventoryAdjustmentConfirmation.getId() + " succeed!",
+                        "Integration Succeed: \n" +
+                                "Type: INVENTORY-ADJUSTMENT-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedInventoryAdjustmentConfirmation.getId() + "\n")
+                :
+                new Alert(dbBasedInventoryAdjustmentConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_FAIL,
+                        "INTEGRATION-INVENTORY-ADJUSTMENT-CONFIRM-TO-HOST-" + dbBasedInventoryAdjustmentConfirmation.getId(),
+                        "Integration INVENTORY-ADJUSTMENT-CONFIRM send to HOST " +
+                                ", id: " + dbBasedInventoryAdjustmentConfirmation.getId() + " fail!",
+                        "Integration Fail: \n" +
+                                "Type: INVENTORY-ADJUSTMENT-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedInventoryAdjustmentConfirmation.getId() + "\n")
+                ;
+
+
+        kafkaSender.send(alert);
     }
 
     public IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id) {

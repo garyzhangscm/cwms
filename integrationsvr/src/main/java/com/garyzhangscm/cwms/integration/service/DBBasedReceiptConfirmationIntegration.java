@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.HostRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedOrderConfirmationRepository;
@@ -34,6 +35,8 @@ public class DBBasedReceiptConfirmationIntegration {
     DBBasedReceiptConfirmationRepository dbBasedReceiptConfirmationRepository;
     @Autowired
     HostRestemplateClient hostRestemplateClient;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
@@ -127,6 +130,8 @@ public class DBBasedReceiptConfirmationIntegration {
         DBBasedReceiptConfirmation dbBasedReceiptConfirmation =
                 getDBBasedReceiptConfirmation(receiptConfirmation);
 
+        setupCompanyInformation(dbBasedReceiptConfirmation);
+
         return save(dbBasedReceiptConfirmation);
     }
 
@@ -164,7 +169,9 @@ public class DBBasedReceiptConfirmationIntegration {
                         dbBasedReceiptConfirmation.setStatus(IntegrationStatus.ERROR);
                         dbBasedReceiptConfirmation.setErrorMessage(errorMessage);
                     }
-                    save(dbBasedReceiptConfirmation);
+
+                    dbBasedReceiptConfirmation = save(dbBasedReceiptConfirmation);
+                    sendAlert(dbBasedReceiptConfirmation);
                 }
         );
 
@@ -176,5 +183,45 @@ public class DBBasedReceiptConfirmationIntegration {
         dbBasedReceiptConfirmation.setStatus(IntegrationStatus.PENDING);
         dbBasedReceiptConfirmation.setErrorMessage("");
         return save(dbBasedReceiptConfirmation);
+    }
+    /**
+     * When we receive integration from the warehouse, normally it will only include the warehouse id / warehouse name.
+     * we will need to setup the company id and company name as well, especailly in the multi-tenancy environment
+     * @param dbBasedReceiptConfirmation
+     */
+    private void setupCompanyInformation(DBBasedReceiptConfirmation dbBasedReceiptConfirmation) {
+        if (Objects.isNull(dbBasedReceiptConfirmation.getCompanyId()) ||
+                Objects.isNull(dbBasedReceiptConfirmation.getCompanyCode())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(dbBasedReceiptConfirmation.getWarehouseId());
+            if (Objects.nonNull(warehouse)) {
+                dbBasedReceiptConfirmation.setCompanyId(warehouse.getCompany().getId());
+                dbBasedReceiptConfirmation.setCompanyCode(warehouse.getCompany().getCode());
+            }
+        }
+    }
+
+    private void sendAlert(DBBasedReceiptConfirmation dbBasedReceiptConfirmation) {
+        Alert alert = dbBasedReceiptConfirmation.getStatus().equals(IntegrationStatus.COMPLETED) ?
+                new Alert(dbBasedReceiptConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_SUCCESS,
+                        "INTEGRATION-RECEIPT-CONFIRM-TO-HOST-" + dbBasedReceiptConfirmation.getId(),
+                        "Integration RECEIPT-CONFIRM send to HOST " +
+                                ", id: " + dbBasedReceiptConfirmation.getId() + " succeed!",
+                        "Integration Succeed: \n" +
+                                "Type: RECEIPT-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedReceiptConfirmation.getId() + "\n")
+                :
+                new Alert(dbBasedReceiptConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_FAIL,
+                        "INTEGRATION-RECEIPT-CONFIRM-TO-HOST-" + dbBasedReceiptConfirmation.getId(),
+                        "Integration RECEIPT-CONFIRM send to HOST " +
+                                ", id: " + dbBasedReceiptConfirmation.getId() + " fail!",
+                        "Integration Fail: \n" +
+                                "Type: RECEIPT-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedReceiptConfirmation.getId() + "\n")
+                ;
+
+
+        kafkaSender.send(alert);
     }
 }
