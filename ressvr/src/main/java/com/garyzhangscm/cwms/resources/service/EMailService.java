@@ -31,7 +31,6 @@ public class EMailService {
      * 发送纯文本邮件.
      *
      * @param companyId    Company Id
-     * @param from      源email 地址
      * @param to      目标email 地址
      * @param subject 邮件主题
      * @param text    纯文本内容
