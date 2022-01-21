@@ -45,6 +45,12 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
     private String number;
 
 
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
+
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
@@ -132,6 +138,22 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     @Override

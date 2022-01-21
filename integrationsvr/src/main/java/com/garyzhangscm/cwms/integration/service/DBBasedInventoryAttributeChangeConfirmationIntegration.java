@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedInventoryAdjustmentConfirmationRepository;
@@ -29,6 +30,8 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
     KafkaSender kafkaSender;
     @Autowired
     DBBasedInventoryAttributeChangeConfirmationRepository dbBasedInventoryAttributeChangeConfirmationRepository;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
 
@@ -81,8 +84,24 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
         DBBasedInventoryAttributeChangeConfirmation dbBasedInventoryAttributeChangeConfirmation =
                 getDBBasedInventoryAttributeChangeConfirmation(inventoryAttributeChangeConfirmation);
 
+        setupCompanyInformation(dbBasedInventoryAttributeChangeConfirmation);
         dbBasedInventoryAttributeChangeConfirmation.setStatus(IntegrationStatus.COMPLETED);
         return save(dbBasedInventoryAttributeChangeConfirmation);
+    }
+    /**
+     * When we receive integration from the warehouse, normally it will only include the warehouse id / warehouse name.
+     * we will need to setup the company id and company name as well, especailly in the multi-tenancy environment
+     * @param dbBasedInventoryAttributeChangeConfirmation
+     */
+    private void setupCompanyInformation(DBBasedInventoryAttributeChangeConfirmation dbBasedInventoryAttributeChangeConfirmation) {
+        if (Objects.isNull(dbBasedInventoryAttributeChangeConfirmation.getCompanyId()) ||
+                Objects.isNull(dbBasedInventoryAttributeChangeConfirmation.getCompanyCode())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(dbBasedInventoryAttributeChangeConfirmation.getWarehouseId());
+            if (Objects.nonNull(warehouse)) {
+                dbBasedInventoryAttributeChangeConfirmation.setCompanyId(warehouse.getCompany().getId());
+                dbBasedInventoryAttributeChangeConfirmation.setCompanyCode(warehouse.getCompany().getCode());
+            }
+        }
     }
 
     private DBBasedInventoryAttributeChangeConfirmation getDBBasedInventoryAttributeChangeConfirmation(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
@@ -94,5 +113,30 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
         dbBasedInventoryAttributeChangeConfirmation.setStatus(IntegrationStatus.PENDING);
         dbBasedInventoryAttributeChangeConfirmation.setErrorMessage("");
         return save(dbBasedInventoryAttributeChangeConfirmation);
+    }
+
+    private void sendAlert(DBBasedInventoryAttributeChangeConfirmation dbBasedInventoryAttributeChangeConfirmation) {
+        Alert alert = dbBasedInventoryAttributeChangeConfirmation.getStatus().equals(IntegrationStatus.COMPLETED) ?
+                new Alert(dbBasedInventoryAttributeChangeConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_SUCCESS,
+                        "INTEGRATION-INVENTORY-ATTRIBUTE-CHANGE-CONFIRM-TO-HOST-" + dbBasedInventoryAttributeChangeConfirmation.getId(),
+                        "Integration INVENTORY-ATTRIBUTE-CHANGE-CONFIRM send to HOST " +
+                                ", id: " + dbBasedInventoryAttributeChangeConfirmation.getId() + " succeed!",
+                        "Integration Succeed: \n" +
+                                "Type: INVENTORY-ATTRIBUTE-CHANGE-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedInventoryAttributeChangeConfirmation.getId() + "\n")
+                :
+                new Alert(dbBasedInventoryAttributeChangeConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_FAIL,
+                        "INTEGRATION-INVENTORY-ATTRIBUTE-CHANGE-CONFIRM-TO-HOST-" + dbBasedInventoryAttributeChangeConfirmation.getId(),
+                        "Integration INVENTORY-ATTRIBUTE-CHANGE-CONFIRM send to HOST " +
+                                ", id: " + dbBasedInventoryAttributeChangeConfirmation.getId() + " fail!",
+                        "Integration Fail: \n" +
+                                "Type: INVENTORY-ATTRIBUTE-CHANGE-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedInventoryAttributeChangeConfirmation.getId() + "\n")
+                ;
+
+
+        kafkaSender.send(alert);
     }
 }

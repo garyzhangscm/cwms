@@ -50,6 +50,12 @@ public class DBBasedInventoryAdjustmentConfirmation extends AuditibleEntity<Stri
     @Column(name = "warehouse_name")
     private String warehouseName;
 
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Column(name = "company_code")
+    private String companyCode;
+
     @Column(name = "adjust_quantity")
     private Long adjustQuantity;
 
@@ -226,6 +232,21 @@ public class DBBasedInventoryAdjustmentConfirmation extends AuditibleEntity<Stri
     }
 
 
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
 
     public String getErrorMessage() {
         return errorMessage;

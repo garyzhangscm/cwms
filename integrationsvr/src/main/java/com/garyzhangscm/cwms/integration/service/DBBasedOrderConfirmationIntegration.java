@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.HostRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedInventoryAdjustmentConfirmationRepository;
@@ -37,6 +38,8 @@ public class DBBasedOrderConfirmationIntegration {
     DBBasedOrderConfirmationRepository dbBasedOrderConfirmationRepository;
     @Autowired
     HostRestemplateClient hostRestemplateClient;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
@@ -114,6 +117,7 @@ public class DBBasedOrderConfirmationIntegration {
         DBBasedOrderConfirmation dbBasedOrderConfirmation =
                 getDBBasedOrderConfirmation(orderConfirmation);
 
+        setupCompanyInformation(dbBasedOrderConfirmation);
 
         return save(dbBasedOrderConfirmation);
     }
@@ -151,7 +155,8 @@ public class DBBasedOrderConfirmationIntegration {
                         dbBasedOrderConfirmation.setStatus(IntegrationStatus.ERROR);
                         dbBasedOrderConfirmation.setErrorMessage(errorMessage);
                     }
-                    save(dbBasedOrderConfirmation);
+                    dbBasedOrderConfirmation = save(dbBasedOrderConfirmation);
+                    sendAlert(dbBasedOrderConfirmation);
                 }
         );
 
@@ -163,5 +168,45 @@ public class DBBasedOrderConfirmationIntegration {
         dbBasedOrderConfirmation.setStatus(IntegrationStatus.PENDING);
         dbBasedOrderConfirmation.setErrorMessage("");
         return save(dbBasedOrderConfirmation);
+    }
+    /**
+     * When we receive integration from the warehouse, normally it will only include the warehouse id / warehouse name.
+     * we will need to setup the company id and company name as well, especailly in the multi-tenancy environment
+     * @param dbBasedOrderConfirmation
+     */
+    private void setupCompanyInformation(DBBasedOrderConfirmation dbBasedOrderConfirmation) {
+        if (Objects.isNull(dbBasedOrderConfirmation.getCompanyId()) ||
+                Objects.isNull(dbBasedOrderConfirmation.getCompanyCode())) {
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(dbBasedOrderConfirmation.getWarehouseId());
+            if (Objects.nonNull(warehouse)) {
+                dbBasedOrderConfirmation.setCompanyId(warehouse.getCompany().getId());
+                dbBasedOrderConfirmation.setCompanyCode(warehouse.getCompany().getCode());
+            }
+        }
+    }
+
+    private void sendAlert(DBBasedOrderConfirmation dbBasedOrderConfirmation) {
+        Alert alert = dbBasedOrderConfirmation.getStatus().equals(IntegrationStatus.COMPLETED) ?
+                new Alert(dbBasedOrderConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_SUCCESS,
+                        "INTEGRATION-ORDER-CONFIRM-TO-HOST-" + dbBasedOrderConfirmation.getId(),
+                        "Integration ORDER-CONFIRM send to HOST " +
+                                ", id: " + dbBasedOrderConfirmation.getId() + " succeed!",
+                        "Integration Succeed: \n" +
+                                "Type: ORDER-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedOrderConfirmation.getId() + "\n")
+                :
+                new Alert(dbBasedOrderConfirmation.getCompanyId(),
+                        AlertType.INTEGRATION_TO_HOST_FAIL,
+                        "INTEGRATION-ORDER-CONFIRM-TO-HOST-" + dbBasedOrderConfirmation.getId(),
+                        "Integration ORDER-CONFIRM send to HOST " +
+                                ", id: " + dbBasedOrderConfirmation.getId() + " fail!",
+                        "Integration Fail: \n" +
+                                "Type: ORDER-CONFIRM send to HOST\n" +
+                                "Id: " + dbBasedOrderConfirmation.getId() + "\n")
+                ;
+
+
+        kafkaSender.send(alert);
     }
 }
