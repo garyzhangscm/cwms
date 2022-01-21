@@ -416,9 +416,10 @@ public class DBBasedIntegration implements Integration{
     // Order Confirmation Data
     public List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(Long warehouseId, String warehouseName,
                                                                                                 String number, LocalDateTime startTime,
-                                                                                                LocalDateTime endTime, LocalDate date){
+                                                                                                LocalDateTime endTime, LocalDate date,
+                                                                                                String statusList, Long id){
         return dbBasedOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
-                number, startTime, endTime, date);
+                number, startTime, endTime, date, statusList, id);
     }
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
         return dbBasedOrderConfirmationIntegration.findById(id);
@@ -433,9 +434,10 @@ public class DBBasedIntegration implements Integration{
     @Override
     public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id) {
         return dbBasedWorkOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
-                number, startTime, endTime, date);
+                number, startTime, endTime, date, statusList, id);
     }
 
 
@@ -457,11 +459,12 @@ public class DBBasedIntegration implements Integration{
     // Receipt Confirmation Data
     public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(
             Long warehouseId, String warehouseName, String number, Long clientId, String clientName,
-            Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date){
+            Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id){
 
         return dbBasedReceiptConfirmationIntegration.findAll(warehouseId, warehouseName,
                 number, clientId, clientName,
-                supplierId, supplierName, startTime, endTime, date);
+                supplierId, supplierName, startTime, endTime, date, statusList, id);
     }
     public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
 
@@ -478,10 +481,11 @@ public class DBBasedIntegration implements Integration{
 
     public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData(
 
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id
     ) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.findAll(
-                warehouseId, startTime, endTime, date
+                warehouseId, startTime, endTime, date, statusList, id
         );
     }
     public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
@@ -496,9 +500,10 @@ public class DBBasedIntegration implements Integration{
 
     @Override
     public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id) {
         return dbBasedInventoryAttributeChangeConfirmationIntegration.findAll(
-                warehouseId, startTime, endTime, date);
+                warehouseId, startTime, endTime, date, statusList, id);
     }
 
     @Override

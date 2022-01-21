@@ -48,6 +48,10 @@ public class EmailAlertConfiguration extends AuditibleEntity<String>  {
     @Column(name = "password")
     private String password;
 
+    // alert send from the email address
+    @Column(name = "send_from_email")
+    private String sendFromEmail;
+
     @Column(name = "transport_protocol")
     private String transportProtocol;
     @Column(name = "auth_flag")
@@ -99,6 +103,14 @@ public class EmailAlertConfiguration extends AuditibleEntity<String>  {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public String getSendFromEmail() {
+        return sendFromEmail;
+    }
+
+    public void setSendFromEmail(String sendFromEmail) {
+        this.sendFromEmail = sendFromEmail;
     }
 
     public String getUsername() {

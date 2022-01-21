@@ -141,7 +141,8 @@ public interface Integration {
     // Order Confirmation Data
     List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
+            LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id);
     IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id);
     IntegrationOrderConfirmationData resendOrderConfirmationData(Long id);
     IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation);
@@ -149,7 +150,8 @@ public interface Integration {
     // Work Order Confirmation Data
     List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
+            LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id);
     IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id);
     IntegrationWorkOrderConfirmationData resendWorkOrderConfirmationData(Long id);
     IntegrationWorkOrderConfirmationData sendIntegrationWorkOrderConfirmationData(WorkOrderConfirmation workOrderConfirmation);
@@ -157,7 +159,8 @@ public interface Integration {
     // Receipt Confirmation Data
     List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(
             Long warehouseId, String warehouseName, String number, Long clientId, String clientName,
-            Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
+            Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id);
     IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id);
     IntegrationReceiptConfirmationData resendReceiptConfirmationData(Long id);
     IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation);
@@ -165,7 +168,8 @@ public interface Integration {
     // Inventory Adjustment Confirmation
     List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData(
 
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id
     );
     IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id);
     IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id);
@@ -173,7 +177,8 @@ public interface Integration {
 
     // Inventory Attribute Confirmation
     List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList, Long id);
     IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id);
     IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id);
     IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation);
