@@ -118,7 +118,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
-                                   String itemName, Long productionPlanId,
+                                   String itemName, String statusList, Long productionPlanId,
                                    boolean genericQuery, boolean loadDetails) {
 
         List<WorkOrder> workOrders =  workOrderRepository.findAll(
@@ -149,6 +149,16 @@ public class WorkOrderService implements TestDataInitiableService {
                         }
                     }
 
+
+                    if (StringUtils.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<WorkOrderStatus> inWorkOrderStatuses = criteriaBuilder.in(root.get("status"));
+                        for(String workOrderStatus : statusList.split(",")) {
+                            inWorkOrderStatuses.value(WorkOrderStatus.valueOf(workOrderStatus));
+                        }
+                        predicates.add(criteriaBuilder.and(inWorkOrderStatuses));
+                    }
+
+
                     if (Objects.nonNull(productionPlanId)) {
                         Join<WorkOrder, ProductionPlanLine> joinProductionPlanLine = root.join("productionPlanLine", JoinType.INNER);
                         Join<ProductionPlanLine, ProductionPlan> joinProductionPlan = joinProductionPlanLine.join("productionPlan", JoinType.INNER);
@@ -169,9 +179,9 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
-                                   String itemName, Long productionPlanId,
+                                   String itemName, String statusList, Long productionPlanId,
                                    boolean genericQuery) {
-        return findAll(warehouseId, number, itemName, productionPlanId, genericQuery, true);
+        return findAll(warehouseId, number, itemName,  statusList, productionPlanId, genericQuery, true);
     }
 
 

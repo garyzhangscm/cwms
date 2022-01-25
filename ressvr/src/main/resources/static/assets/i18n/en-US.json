@@ -1621,5 +1621,13 @@
   "errorMessage": "Error Message",
   "ALERT-TYPE-INTEGRATION_TO_HOST_SUCCESS": "Integration To Host Success",
   "ALERT-TYPE-INTEGRATION_TO_HOST_FAIL": "Integration To Host Fail",
-  "sendFromEmail": "Send from Email"
+  "sendFromEmail": "Send from Email",
+  "MPS-EXPORT-TYPE.BY_PRODUCTION_LINE": "By Production Line",
+  "MPS-EXPORT-TYPE.BY_ITEM": "By Item",
+  "mps-export": "Export MPS",
+  "export": "Export",
+  "mps-export.result-group-by": "Group Result By",
+  "date-time-range": "Date Time Range",
+  "date-range": "Date Range",
+  "time-range": "Time Range"
 }

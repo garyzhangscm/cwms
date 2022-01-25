@@ -50,10 +50,11 @@ public class WorkOrderController {
     public List<WorkOrder> findAllWorkOrders(@RequestParam Long warehouseId,
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                             @RequestParam(name="statusList", required = false, defaultValue = "") String statusList,
                                              @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId,
                                              @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
                                              @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails) {
-        return workOrderService.findAll(warehouseId, number, itemName, productionPlanId, genericQuery, loadDetails);
+        return workOrderService.findAll(warehouseId, number, itemName, statusList, productionPlanId, genericQuery, loadDetails);
     }
 
     @BillableEndpoint
