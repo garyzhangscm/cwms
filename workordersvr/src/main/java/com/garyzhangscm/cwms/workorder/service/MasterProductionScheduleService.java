@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.workorder.service;
 
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleLineDateRepository;
 import com.garyzhangscm.cwms.workorder.repository.MasterProductionScheduleRepository;
@@ -28,12 +29,14 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -49,6 +52,7 @@ public class MasterProductionScheduleService   {
     private MasterProductionScheduleRepository masterProductionScheduleRepository;
     @Autowired
     private MasterProductionScheduleLineDateRepository masterProductionScheduleLineDateRepository;
+
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -509,4 +513,6 @@ public class MasterProductionScheduleService   {
         return masterProductionScheduleLineDates.stream().map(MasterProductionScheduleLineDate::getMasterProductionScheduleLine)
                 .map(MasterProductionScheduleLine::getMasterProductionSchedule).collect(Collectors.toSet());
     }
+
+
 }

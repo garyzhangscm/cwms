@@ -1620,6 +1620,14 @@
   "errorMessage": "错误信息",
   "ALERT-TYPE-INTEGRATION_TO_HOST_SUCCESS": "接口成功发送到上游系统",
   "ALERT-TYPE-INTEGRATION_TO_HOST_FAIL": "接口无法发送到上游系统",
-  "sendFromEmail": "发送邮箱"
+  "sendFromEmail": "发送邮箱",
+  "MPS-EXPORT-TYPE.BY_PRODUCTION_LINE": "按生产线",
+  "MPS-EXPORT-TYPE.BY_ITEM": "按商品",
+  "mps-export": "导出MPS",
+  "export": "导出",
+  "mps-export.result-group-by": "结果汇总",
+  "date-time-range": "日期时间范围",
+  "date-range": "日期范围",
+  "time-range": "时间范围"
 
 }
