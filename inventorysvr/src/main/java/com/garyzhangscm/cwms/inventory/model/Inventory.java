@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Long id;
 
     @Column(name = "lpn")
+    @NotNull
     private String lpn;
 
     @Column(name = "location_id")

@@ -1627,7 +1627,8 @@
   "export": "导出",
   "mps-export.result-group-by": "结果汇总",
   "date-time-range": "日期时间范围",
-  "date-range": "日期范围",
-  "time-range": "时间范围"
+  "time-range": "时间范围",
+  "goalQuantity": "目标数量",
+  "productionDays": "生成日期"
 
 }

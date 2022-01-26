@@ -1628,6 +1628,7 @@
   "export": "Export",
   "mps-export.result-group-by": "Group Result By",
   "date-time-range": "Date Time Range",
-  "date-range": "Date Range",
-  "time-range": "Time Range"
+  "time-range": "Time Range",
+  "goalQuantity": "Goal Quantity",
+  "productionDays": "Production Days"
 }
