@@ -1630,5 +1630,10 @@
   "date-time-range": "Date Time Range",
   "time-range": "Time Range",
   "goalQuantity": "Goal Quantity",
-  "productionDays": "Production Days"
+  "productionDays": "Production Days",
+  "MRP.maintenance": "MRP Maintenance",
+  "filter-by-mps": "Filter By MPS",
+  "incorrect-mps-number": "Incorrect MPS Number",
+  "select-mps": "Select MPS",
+  "expand-by-bom": "Expand By BOM"
 }
