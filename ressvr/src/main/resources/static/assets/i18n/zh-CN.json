@@ -1629,6 +1629,11 @@
   "date-time-range": "日期时间范围",
   "time-range": "时间范围",
   "goalQuantity": "目标数量",
-  "productionDays": "生成日期"
+  "productionDays": "生成日期",
+  "MRP.maintenance": "MRP 维护",
+  "filter-by-mps": "选择MPS",
+  "incorrect-mps-number": "错误的MPS编号",
+  "select-mps": "选择 MPS",
+  "expand-by-bom": "按BOM展开"
 
 }
