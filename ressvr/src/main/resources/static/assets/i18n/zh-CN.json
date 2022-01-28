@@ -1635,6 +1635,11 @@
   "incorrect-mps-number": "错误的MPS编号",
   "select-mps": "选择 MPS",
   "expand-by-bom": "按BOM展开",
-  "no-matched-bom-found": "未找到合适的BOM"
-
+  "no-matched-bom-found": "未找到合适的BOM",
+  "total-required-quantity": "总需要数量",
+  "on-hand-quantity": "库存数量",
+  "expandable-view": "可展开视图",
+  "table-view": "表格视图",
+  "openPickOnly": "只显示未完成的拣货任务",
+  "MRP.line": "MRP 行"
 }

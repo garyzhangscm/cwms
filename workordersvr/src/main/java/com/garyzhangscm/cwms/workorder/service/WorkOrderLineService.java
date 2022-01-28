@@ -111,6 +111,9 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
     public void loadAttribute(WorkOrderLine workOrderLine, boolean loadPicks, boolean loadShortAllocations) {
 
+        workOrderLine.setWorkOrderNumber(
+                Objects.nonNull(workOrderLine.getWorkOrder()) ? workOrderLine.getWorkOrder().getNumber() : ""
+        );
         if (Objects.nonNull(workOrderLine.getWorkOrder())) {
 
             if (workOrderLine.getWorkOrder().getWarehouseId() != null && workOrderLine.getWorkOrder().getWarehouse() == null) {

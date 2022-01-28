@@ -135,6 +135,9 @@ public class MaterialRequirementsPlanning extends AuditibleEntity<String>{
     public void setProductionLines(List<ProductionLine> productionLines) {
         this.productionLines = productionLines;
     }
+    public void addProductionLine(ProductionLine productionLine) {
+        this.productionLines.add(productionLine);
+    }
 
     public MasterProductionSchedule getMasterProductionSchedule() {
         return masterProductionSchedule;

@@ -21,10 +21,12 @@ package com.garyzhangscm.cwms.workorder.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.MaterialRequirementsPlanningRepository;
 import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -47,6 +50,8 @@ public class MaterialRequirementsPlanningService   {
     @Autowired
     private MaterialRequirementsPlanningRepository materialRequirementsPlanningRepository;
 
+    @Autowired
+    private ProductionLineService productionLineService;
 
 
     public MaterialRequirementsPlanning findById(Long id) {
@@ -138,10 +143,50 @@ public class MaterialRequirementsPlanningService   {
 
 
     public MaterialRequirementsPlanning addMRP(MaterialRequirementsPlanning materialRequirementsPlanning) {
-        return saveOrUpdate(materialRequirementsPlanning);
+        //  make sure the number is passed in and not used before
+        if (Strings.isBlank(materialRequirementsPlanning.getNumber())) {
+            throw WorkOrderException.raiseException("Number is not passed in for the new MRP");
+        }
+        if (Objects.nonNull(
+                findByNumber(
+                        materialRequirementsPlanning.getWarehouseId(), materialRequirementsPlanning.getNumber()))) {
+
+            throw WorkOrderException.raiseException("Number is not already used by existing MRP");
+        }
+        materialRequirementsPlanning.getMaterialRequirementsPlanningLines().forEach(
+                materialRequirementsPlanningLine ->
+                        materialRequirementsPlanningLine.setMaterialRequirementsPlanning(
+                                materialRequirementsPlanning
+                        )
+        );
+
+        // Save the MRP without production line first
+        // since we are adding new MRP, the MRP doesn't have an ID yet.
+        // MRP / Production line are many to many relationship so we need both
+        // MRP and Production line having the ID so that the relationship can be
+        // persist in the mrp_production_line table
+        // So we will save the MRP without Production line,
+        // then attach all the Production line to the saved MRP and persist the
+        // relationship again
+        List<ProductionLine> productionLines = materialRequirementsPlanning.getProductionLines();
+        materialRequirementsPlanning.setProductionLines(new ArrayList<>());
+        MaterialRequirementsPlanning newMRP = saveOrUpdate(materialRequirementsPlanning);
+
+        productionLines.forEach(productionLine -> {
+            ProductionLine newProductionLine = productionLineService.findById(productionLine.getId());
+            newMRP.addProductionLine(newProductionLine);
+        });
+
+        return saveOrUpdate(newMRP);
     }
 
     public MaterialRequirementsPlanning changeMRP(Long id, MaterialRequirementsPlanning materialRequirementsPlanning) {
+        materialRequirementsPlanning.getMaterialRequirementsPlanningLines().forEach(
+                materialRequirementsPlanningLine ->
+                        materialRequirementsPlanningLine.setMaterialRequirementsPlanning(
+                                materialRequirementsPlanning
+                        )
+        );
         return saveOrUpdate(materialRequirementsPlanning);
     }
 }

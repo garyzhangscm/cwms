@@ -1636,5 +1636,11 @@
   "incorrect-mps-number": "Incorrect MPS Number",
   "select-mps": "Select MPS",
   "expand-by-bom": "Expand By BOM",
-  "no-matched-bom-found": "No Matched BOM Found"
+  "no-matched-bom-found": "No Matched BOM Found",
+  "total-required-quantity": "Total Required Quantity",
+  "on-hand-quantity": "On Hand Quantity",
+  "expandable-view": "Expandable View",
+  "table-view": "Table View",
+  "openPickOnly": "Open Pick Only",
+  "MRP.line": "MRP Line"
 }
