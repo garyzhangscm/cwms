@@ -1634,6 +1634,7 @@
   "filter-by-mps": "选择MPS",
   "incorrect-mps-number": "错误的MPS编号",
   "select-mps": "选择 MPS",
-  "expand-by-bom": "按BOM展开"
+  "expand-by-bom": "按BOM展开",
+  "no-matched-bom-found": "未找到合适的BOM"
 
 }
