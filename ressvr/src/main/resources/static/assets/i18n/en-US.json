@@ -1635,5 +1635,6 @@
   "filter-by-mps": "Filter By MPS",
   "incorrect-mps-number": "Incorrect MPS Number",
   "select-mps": "Select MPS",
-  "expand-by-bom": "Expand By BOM"
+  "expand-by-bom": "Expand By BOM",
+  "no-matched-bom-found": "No Matched BOM Found"
 }
