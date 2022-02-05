@@ -65,6 +65,15 @@ public class KafkaSender {
             send("SYSTEM_ERROR", ex.getMessage());
         }
     }
+    public void send(AllocationTransactionHistory allocationTransactionHistory) {
+        try {
+            send("ALLOCATION_TRANSACTION_HISTORY",
+                    objectMapper.writeValueAsString(allocationTransactionHistory));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
 
 
     public void send(WarehouseTransferReceipt warehouseTransferReceipt) {
