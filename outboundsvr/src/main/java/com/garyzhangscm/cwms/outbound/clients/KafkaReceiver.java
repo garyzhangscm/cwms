@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.service.AllocationTransactionHistoryService;
 import com.garyzhangscm.cwms.outbound.service.IntegrationService;
 import com.garyzhangscm.cwms.outbound.service.OrderActivityService;
 import com.garyzhangscm.cwms.outbound.service.UserService;
@@ -45,6 +46,8 @@ public class KafkaReceiver {
 
     @Autowired
     private OrderActivityService orderActivityService;
+    @Autowired
+    private AllocationTransactionHistoryService allocationTransactionHistoryService;
 
     @Autowired
     private KafkaSender kafkaSender;
@@ -150,6 +153,25 @@ public class KafkaReceiver {
 
 
             orderActivityService.addOrderActivity(orderActivity);
+        }
+        catch (Exception ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+            ex.printStackTrace();
+        }
+
+    }
+
+    @KafkaListener(topics = {"ALLOCATION_TRANSACTION_HISTORY"})
+    public void processAllocationTransactionHistory(@Payload String allocationTransactionHistoryJsonRepresent)  {
+        logger.info("# received allocation transaction history data:\n {}", allocationTransactionHistoryJsonRepresent);
+
+        try {
+            AllocationTransactionHistory allocationTransactionHistory
+                    = objectMapper.readValue(allocationTransactionHistoryJsonRepresent, AllocationTransactionHistory.class);
+            logger.info("allocationTransactionHistory: \n{}", allocationTransactionHistory);
+
+
+            allocationTransactionHistoryService.addAllocationTransactionHistory(allocationTransactionHistory);
         }
         catch (Exception ex) {
             logger.debug("JsonProcessingException: {}", ex.getMessage());

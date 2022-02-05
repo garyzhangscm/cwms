@@ -51,23 +51,6 @@ public class Carton  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "picking_carton_flag")
     private Boolean pickingCartonFlag;
 
-    @Override
-    public String toString() {
-        return "Carton{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", length=" + length +
-                ", width=" + width +
-                ", height=" + height +
-                ", fillRate=" + fillRate +
-                ", enabled=" + enabled +
-                ", shippingCartonFlag=" + shippingCartonFlag +
-                ", pickingCartonFlag=" + pickingCartonFlag +
-                '}';
-    }
-
     public Double getTotalSpace() {
         return length * width * height * fillRate / 100;
     }

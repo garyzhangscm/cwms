@@ -24,6 +24,9 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
     protected PickService pickService;
 
     @Autowired
+    private AllocationTransactionHistoryService allocationTransactionHistoryService;
+
+    @Autowired
     protected InventorySummaryService inventorySummaryService;
 
     @Autowired
@@ -125,6 +128,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             allocationResult.addPicks(tryAllocateByLPN(allocationRequest, openQuantity, inventorySummaries, existingPicks,
                     AllocationRoundUpStrategy.none()));
         }
+        else {
+            allocationTransactionHistoryService.createAndSendEmptyAllocationTransactionHistory(
+                    allocationRequest, null, openQuantity, true, false,
+                    "allocation by lpn is not allowed for the item"
+            );
+        }
         // Let's see how many we have allocated
         openQuantity = totalQuantity - getTotalPickQuantity(allocationResult);
         logger.debug("After allocate by LPN without round up, we still need {} of item {}",
@@ -163,6 +172,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 // try allocating by LPN, without round up first
                 allocationResult.addPicks(tryAllocateByLPN(allocationRequest, openQuantity, inventorySummaries, existingPicks,
                         allocationRoundUpStrategy));
+            }
+            else {
+                allocationTransactionHistoryService.createAndSendEmptyAllocationTransactionHistory(
+                        allocationRequest, null, openQuantity, true, true,
+                        "allocation by lpn is not allowed for the item"
+                );
             }
             // Let's see how many we have allocated
             openQuantity = totalQuantity - getTotalPickQuantity(allocationResult);
@@ -232,6 +247,15 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             if (Objects.isNull(smallestPickableUnitOfMeasure)) {
                 logger.debug("No pickable unit of measure defined for the inventory summary, {} / {}",
                         inventorySummary.getItem().getName(), inventorySummary.getItemPackageType().getName());
+                allocationTransactionHistoryService.createAndSendEmptyAllocationTransactionHistory(
+                        allocationRequest,
+                        inventorySummary.getLocation(),
+                        totalQuantityToBeAllocated,
+                        false,
+                        allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
+                        "No pickable unit of measure defined for the inventory summary," +
+                         inventorySummary.getItem().getName() + " / " + inventorySummary.getItemPackageType().getName()
+                );
                 continue;
             }
 
@@ -252,6 +276,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             // the LPN that has been allocated by LPN picks.
             // the balance of those 2 number is the available quantity that can be allocated at this moment
             long pickByQuantityPicksTotalOpenQuantity = pickByQuantityPicksTotalOpenQuantity(existingPicksByInventorySummary);
+            long totalInventoryQuantity =
+                    inventorySummary.getInventories().values().stream().flatMap(List::stream).mapToLong(Inventory::getQuantity).sum();
             long availableInventoryQuantity = getAvailableInventoryQuantity(inventorySummary);
 
             long allocatibleQuantity = getAllocatiableQuantityByUnitOfMeasure(
@@ -266,9 +292,19 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             if (allocatibleQuantity ==0) {
                 // we can't allocate anything from this location
+                allocationTransactionHistoryService.createAndSendEmptyAllocationTransactionHistory(
+                        allocationRequest,
+                        inventorySummary.getLocation(),
+                        totalQuantityToBeAllocated,
+                        false,
+                        allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
+                        "No allocatable quantity in the location"
+                );
                 continue;
             }
 
+            // total allocated quantity
+            long totalAllocatedQuantity = 0;
             try {
 
                 // we will try to make sure each pick's quantity won't exceed the LPN's quantity
@@ -295,6 +331,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
                 Iterator<Map.Entry<String, Long>> sortedLPNQuantityIterator = sortedLPNQuantites.entrySet().iterator();
 
+
                 while (allocatibleQuantity > 0 && totalQuantityToBeAllocated > 0
                         && sortedLPNQuantityIterator.hasNext())
                 {
@@ -318,6 +355,21 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     picks.add(pick);
                     allocatibleQuantity -= allocatedQuantity;
                     totalQuantityToBeAllocated -= allocatedQuantity;
+                    totalAllocatedQuantity += allocatedQuantity;
+
+                    allocationTransactionHistoryService.createAndSendAllocationTransactionHistory(
+                            allocationRequest,
+                            inventorySummary.getLocation(),
+                            totalQuantityToBeAllocated,
+                            totalInventoryQuantity,
+                            availableInventoryQuantity,
+                            allocatedQuantity,
+                            pickByQuantityPicksTotalOpenQuantity,
+                            false,
+                            false,
+                            allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
+                            ""
+                    );
                     logger.debug("We are able to allocate {} from LPN {}, after this LPN, we still need to allocate {}, " +
                             " there's still quantity {} left in this inventory summary",
                             allocatedQuantity, allocatedLpn, totalQuantityToBeAllocated,
@@ -336,6 +388,18 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 continue;
             }
 
+            if (totalAllocatedQuantity == 0) {
+
+                // we can't allocate anything from this location
+                allocationTransactionHistoryService.createAndSendEmptyAllocationTransactionHistory(
+                        allocationRequest,
+                        inventorySummary.getLocation(),
+                        totalQuantityToBeAllocated,
+                        false,
+                        allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
+                        "We are not able to allocate anything from this location"
+                );
+            }
 
 
 
@@ -536,6 +600,9 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             // Go through each LPN to see if we can allocate from the whole LPN
             Iterator<Map.Entry<String, List<Inventory>>> lpnInventoryIterator = lpnInventories.entrySet().iterator();
+            long alreadyAllocatedQuantity = 0;
+
+
             while(lpnInventoryIterator.hasNext()) {
                 Map.Entry<String, List<Inventory>> lpnInventoryMapEntry =
                         lpnInventoryIterator.next();
@@ -545,14 +612,24 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 // by SUOM.
                 logger.debug("Check if lpn {} is allocatable", lpnInventoryMapEntry.getKey());
 
+                boolean lpnAlreadyAllocated =
+                        lpnInventoryMapEntry.getValue().stream()
+                                .anyMatch(inventory -> Objects.nonNull(inventory.getAllocatedByPickId()));
+                long totalLPNquantity =
+                        lpnInventoryMapEntry.getValue().stream()
+                                .mapToLong(Inventory::getQuantity).sum();
 
-                if (validateLPNAllocatable(totalQuantityToBeAllocated,
-                        lpnInventoryMapEntry.getValue(),
-                        inventorySummary, existingPicksByInventorySummary, allocationRoundUpStrategy)) {
+                if (lpnAlreadyAllocated) {
+                    alreadyAllocatedQuantity  += totalLPNquantity;
 
-                    long totalLPNquantity =
-                            lpnInventoryMapEntry.getValue().stream()
-                                    .mapToLong(Inventory::getQuantity).sum();
+                }
+
+
+                if (!lpnAlreadyAllocated &&
+                        validateLPNAllocatable(totalQuantityToBeAllocated,
+                            lpnInventoryMapEntry.getValue(),
+                            inventorySummary, existingPicksByInventorySummary, allocationRoundUpStrategy)) {
+
 
                     logger.debug("lpn {} is allocatable, quantity: {}",
                             lpnInventoryMapEntry.getKey(),
@@ -579,6 +656,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     lpnQuantityToBeAllocatedMap,
                     totalQuantityToBeAllocated);
 
+
             Iterator<Map.Entry<String, Long>> lpnToBeAllocatedMapIterator = lpnQuantityToBeAllocatedMap.entrySet().iterator();
             while(lpnToBeAllocatedMapIterator.hasNext() && totalQuantityToBeAllocated > 0) {
                 // re-evaluate whether the LPN is still valid for this LPN pick
@@ -596,6 +674,16 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     // Current LPN is a valid LPN at the first place
                     // but it is not valid any more after we allocated several
                     // LPNs
+                    allocationTransactionHistoryService.createAndSendEmptyAllocationTransactionHistory(
+                            allocationRequest,
+                            inventorySummary.getLocation(),
+                            totalQuantityToBeAllocated,
+                            true,
+                            allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
+                            "lpn " + lpnToBeAllocated.getKey() + " is NOT allocatable in the re-evaluation " +
+                                    " after the totalQuantityToBeAllocated is changed to " + totalQuantityToBeAllocated
+                    );
+
                     continue;
 
                 }
@@ -618,6 +706,21 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 // setup the pick on the inventory of this LPN
                 // and refresh the invenotry summary so it can be used later
                 markLPNAllocated(inventorySummary, lpn, pick);
+                allocationTransactionHistoryService.createAndSendAllocationTransactionHistory(
+                        allocationRequest,
+                        inventorySummary.getLocation(),
+                        totalQuantityToBeAllocated,  // required quantity at this allocation transaction
+                        lpnQuantityToBeAllocated,  // total required quantity
+                        lpnQuantityToBeAllocatedMap.values().stream().mapToLong(Long::longValue).sum(),  // all LPN quantity left in this location
+                        lpnQuantityToBeAllocated,  // allocated quantity by this round
+                        alreadyAllocatedQuantity,
+                        false,
+                        true,
+                        allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
+                        ""
+                );
+
+
 
 
             }
