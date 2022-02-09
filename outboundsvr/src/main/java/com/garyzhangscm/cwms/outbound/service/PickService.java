@@ -30,6 +30,7 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,16 +104,27 @@ public class PickService {
     }
 
 
-    public List<Pick> findAll(String number, Long orderId, Long shipmentId, Long waveId,
+    public List<Pick> findAll(Long warehouseId, String number, Long orderId, String orderNumber,
+                              Long shipmentId, Long waveId,
                               Long  listId, Long cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
                               Long shortAllocationId, Boolean openPickOnly,
-                              Long inventoryStatusId, boolean loadDetails) {
+                              Long inventoryStatusId,
+                              String shipmentNumber,
+                              String workOrderNumber,
+                              String waveNumber,
+                              String cartonizationNumber,
+                              String itemNumber,
+                              String sourceLocationName,
+                              String destinationLocationName,
+                              boolean loadDetails) {
 
         List<Pick> picks =  pickRepository.findAll(
                 (Root<Pick> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(number)) {
                         predicates.add(criteriaBuilder.equal(root.get("number"), number));
@@ -125,16 +137,51 @@ public class PickService {
                         predicates.add(criteriaBuilder.equal(joinOrder.get("id"), orderId));
 
                     }
+                    if (Strings.isNotBlank(orderNumber)) {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, OrderLine> joinOrderLine= joinShipmentLine.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+                        if (orderNumber.contains("%")) {
+                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
+                        }
+                    }
                     if (Objects.nonNull(shipmentId)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, Shipment> joinShipment= joinShipmentLine.join("shipment", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
 
                     }
+                    if (Strings.isNotBlank(shipmentNumber)) {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, Shipment> joinShipment= joinShipmentLine.join("shipment", JoinType.INNER);
+                        if (shipmentNumber.contains("%")) {
+                            predicates.add(criteriaBuilder.like(joinShipment.get("number"), shipmentNumber));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(joinShipment.get("number"), shipmentNumber));
+                        }
+
+                    }
+
+
                     if (Objects.nonNull(waveId)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, Wave> joinWave = joinShipmentLine.join("wave", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
+
+                    }
+                    if (Strings.isNotBlank(waveNumber)) {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, Wave> joinWave = joinShipmentLine.join("wave", JoinType.INNER);
+                        if (waveNumber.contains("%")) {
+                            predicates.add(criteriaBuilder.like(joinWave.get("number"), waveNumber));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(joinWave.get("number"), waveNumber));
+                        }
 
                     }
                     if (Objects.nonNull(listId)) {
@@ -148,6 +195,16 @@ public class PickService {
                         predicates.add(criteriaBuilder.equal(joinCartonization.get("id"), cartonizationId));
 
                     }
+                    if (Strings.isNotBlank(cartonizationNumber)) {
+                        Join<Pick, Cartonization> joinCartonization = root.join("cartonization", JoinType.INNER);
+                        if (cartonizationNumber.contains("%")) {
+                            predicates.add(criteriaBuilder.like(joinCartonization.get("number"), cartonizationNumber));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(joinCartonization.get("number"), cartonizationNumber));
+                        }
+
+                    }
                     if (StringUtils.isNotBlank(ids)) {
 
                         CriteriaBuilder.In<Long> inIds = criteriaBuilder.in(root.get("id"));
@@ -157,8 +214,13 @@ public class PickService {
                         predicates.add(criteriaBuilder.and(inIds));
                     }
 
+
                     if (Objects.nonNull(itemId)) {
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
+                    }
+                    if (Strings.isNotBlank(itemNumber)) {
+                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemNumber);
+                        predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
                     }
                     if (Objects.nonNull(inventoryStatusId)) {
                         predicates.add(criteriaBuilder.equal(root.get("inventoryStatusId"), inventoryStatusId));
@@ -167,8 +229,21 @@ public class PickService {
                     if (Objects.nonNull(sourceLocationId)) {
                         predicates.add(criteriaBuilder.equal(root.get("sourceLocationId"), sourceLocationId));
                     }
+                    if (Strings.isNotBlank(sourceLocationName)) {
+                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                warehouseId, sourceLocationName
+                        );
+                        predicates.add(criteriaBuilder.equal(root.get("sourceLocationId"), location.getId()));
+                    }
+
                     if (Objects.nonNull(destinationLocationId)) {
                         predicates.add(criteriaBuilder.equal(root.get("destinationLocationId"), destinationLocationId));
+                    }
+                    if (Strings.isNotBlank(destinationLocationName)) {
+                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                warehouseId, destinationLocationName
+                        );
+                        predicates.add(criteriaBuilder.equal(root.get("destinationLocationId"), location.getId()));
                     }
                     if (Objects.nonNull(shortAllocationId )) {
                         Join<Pick, ShortAllocation> joinShortAllocation = root.join("shortAllocation", JoinType.INNER);
@@ -201,14 +276,24 @@ public class PickService {
         return picks;
     }
 
-    public List<Pick> findAll(String number, Long orderId, Long shipmentId,Long waveId,
+    public List<Pick> findAll(Long warehouseId, String number, Long orderId, String orderNumber, Long shipmentId,Long waveId,
                               Long  listId, Long  cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
-                              Long shortAllocationId, Long inventoryStatusId, Boolean openPickOnly) {
-        return findAll(number, orderId,shipmentId, waveId, listId, cartonizationId, ids,
+                              Long shortAllocationId, Long inventoryStatusId,
+                              String shipmentNumber,
+                              String workOrderNumber,
+                              String waveNumber,
+                              String cartonizationNumber,
+                              String itemNumber,
+                              String sourceLocationName,
+                              String destinationLocationName,Boolean openPickOnly) {
+        return findAll(warehouseId, number, orderId, orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
                 itemId, sourceLocationId, destinationLocationId,
-                workOrderLineId, workOrderLineIds, shortAllocationId, openPickOnly, inventoryStatusId, true);
+                workOrderLineId, workOrderLineIds, shortAllocationId, openPickOnly, inventoryStatusId,
+                shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber,
+                itemNumber, sourceLocationName, destinationLocationName,
+                true);
     }
 
     public Pick findByNumber(String number, boolean loadDetails) {
@@ -220,13 +305,15 @@ public class PickService {
     }
 
     public List<Pick> findByOrder(Order order) {
-        return findAll(null, order.getId(), null,
+        return findAll(order.getWarehouseId(), null, order.getId(), null, null,
+                null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null);
     }
 
     public List<Pick> findByShipment(Shipment shipment) {
-        return findAll(null, null, shipment.getId(),
+        return findAll(shipment.getWarehouseId(), null, null, null, shipment.getId(),
+                null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null);
     }
@@ -236,26 +323,30 @@ public class PickService {
                         map(WorkOrderLine::getId).
                         map(Object::toString).
                         collect( Collectors.joining( "," ) );
-        return findAll(null, null, null,
+        return findAll(workOrder.getWarehouseId(), null, null, null,  null,
+                null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, workOrderLineIds, null,null, null);
     }
     public List<Pick> findByWave(Wave wave) {
 
-        return findAll(null, null, null,
+        return findAll(wave.getWarehouseId(), null, null, null, null,
                 wave.getId(), null,  null,null, null, null, null,
+                null, null,  null,null, null, null, null,
                 null, null, null, null,null);
     }
     public List<Pick> findByPickList(PickList pickList) {
 
-        return findAll(null, null, null,
+        return findAll(pickList.getWarehouseId(), null, null, null,  null,
                 null, pickList.getId(),  null,null, null, null, null,
+                null, null,  null,null, null, null, null,
                 null, null, null, null,null);
     }
     public List<Pick> findByCartonization(Cartonization cartonization) {
 
-        return findAll(null, null, null,
+        return findAll(cartonization.getWarehouseId(), null, null, null, null,
                 null, null,  cartonization.getId(),null, null, null, null,
+                null, null,  null,null, null, null, null,
                 null, null, null, null,null);
     }
 
@@ -410,8 +501,18 @@ public class PickService {
 
     public List<Pick> cancelPicks(String pickIds) {
 
-        return Arrays.stream(pickIds.split(","))
-                .mapToLong(Long::parseLong).mapToObj(this::cancelPick).collect(Collectors.toList());
+        List<Pick> picks = new ArrayList<>();
+
+        Arrays.stream(pickIds.split(",")).forEach(
+                pickIdString -> {
+                    Long pickId = Long.parseLong(pickIdString);
+                    picks.add(findById(pickId));
+                    cancelPick(pickId);
+                }
+        );
+
+        return picks;
+
     }
 
     public Pick cancelPick(Long id) {

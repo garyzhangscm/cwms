@@ -39,6 +39,7 @@ public class PickController {
     @RequestMapping(value="/picks", method = RequestMethod.GET)
     public List<Pick> findAllPicks(@RequestParam Long warehouseId,
                                    @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                   @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
                                    @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                    @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
@@ -53,6 +54,13 @@ public class PickController {
                                    @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId,
                                    @RequestParam(name="containerId", required = false, defaultValue = "") String containerId,
                                    @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
+                                   @RequestParam(name="shipmentNumber", required = false, defaultValue = "") String shipmentNumber,
+                                   @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber,
+                                   @RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
+                                   @RequestParam(name="cartonizationNumber", required = false, defaultValue = "") String cartonizationNumber,
+                                   @RequestParam(name="itemNumber", required = false, defaultValue = "") String itemNumber,
+                                   @RequestParam(name="sourceLocationName", required = false, defaultValue = "") String sourceLocationName,
+                                   @RequestParam(name="destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
                                    @RequestParam(name="openPickOnly", required = false, defaultValue = "false") Boolean openPickOnly,
             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
 
@@ -60,9 +68,12 @@ public class PickController {
         if (StringUtils.isNotBlank(containerId)) {
             return pickService.getPicksByContainer(warehouseId, containerId);
         }
-        return pickService.findAll(number, orderId, shipmentId, waveId, listId,cartonizationId,  ids,
+        return pickService.findAll(warehouseId, number, orderId, orderNumber, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
-                shortAllocationId, openPickOnly, inventoryStatusId, loadDetails);
+                shortAllocationId, openPickOnly, inventoryStatusId,
+                shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber, itemNumber,
+                sourceLocationName, destinationLocationName,
+                loadDetails);
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)
     public Pick findPick(@PathVariable Long id) {

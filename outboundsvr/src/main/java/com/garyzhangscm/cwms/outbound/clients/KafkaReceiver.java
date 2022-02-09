@@ -149,7 +149,7 @@ public class KafkaReceiver {
 
         try {
             OrderActivity orderActivity = objectMapper.readValue(orderActivityJsonRepresent, OrderActivity.class);
-            logger.info("orderActivity: {}", orderActivity);
+            // logger.info("orderActivity: {}", orderActivity);
 
 
             orderActivityService.addOrderActivity(orderActivity);

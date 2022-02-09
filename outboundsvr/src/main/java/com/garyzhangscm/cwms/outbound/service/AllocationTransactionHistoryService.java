@@ -79,12 +79,12 @@ public class AllocationTransactionHistoryService   {
         return allocationTransactionHistoryRepository.save(allocationTransactionHistory);
     }
     public List<AllocationTransactionHistory> findAll(Long warehouseId,
-                                                        String number,
-                                                        String transactionGroupId,
-                                                        String orderNumber,
-                                                        String workOrderNumber,
-                                                        String itemName,
-                                                        String locationName,
+                                                      String number,
+                                                      String transactionGroupId,
+                                                      String orderNumber,
+                                                      String workOrderNumber,
+                                                      String itemName,
+                                                      String locationName,
                                                       Boolean loadDetails) {
 
         List<AllocationTransactionHistory> allocationTransactionHistories =  allocationTransactionHistoryRepository.findAll(
@@ -219,6 +219,7 @@ public class AllocationTransactionHistoryService   {
             Boolean isRoundUpFlag,
             String message
     ) {
+        // logger.debug("Start to build allocation transaction history from the allocation request: ====> \n {}", allocationRequest);
         ShipmentLine shipmentLine =
                 Objects.nonNull(allocationRequest.getShipmentLines()) &&
                     !allocationRequest.getShipmentLines().isEmpty() ?
@@ -228,14 +229,19 @@ public class AllocationTransactionHistoryService   {
                         !allocationRequest.getWorkOrderLines().isEmpty() ?
                         allocationRequest.getWorkOrderLines().get(0) : null;
 
+        Long warehouseId = Objects.nonNull(shipmentLine) ? shipmentLine.getWarehouseId() :
+                workOrderLine.getWarehouseId();
+
+
+
+
         AllocationTransactionHistory.Builder builder =
                 new AllocationTransactionHistory.Builder(
-                        allocationRequest.getWarehouse().getId(),
-                        getNextNumber(
-                                allocationRequest.getWarehouse().getId()),
-                        getTransactionGroupId(
-                                allocationRequest.getWarehouse().getId())
+                        warehouseId,
+                        getNextNumber(warehouseId),
+                        getTransactionGroupId(warehouseId)
                 );
+        // logger.debug("start with AllocationTransactionHistory.Builder: \n {}", builder);
         builder = builder.shipmentLine(shipmentLine)
                 .orderNumber(Objects.nonNull(shipmentLine) ?
                         shipmentLine.getOrderNumber() : "")
@@ -268,8 +274,12 @@ public class AllocationTransactionHistoryService   {
                 .isRoundUpFlag(isRoundUpFlag)
                 .username(userService.getCurrentUserName())
                 .message(message);
-        return builder.build();
+        AllocationTransactionHistory allocationTransactionHistory =
+                builder.build();
 
+        // logger.debug("We get allocation transaction history out of builder \n {}",
+        //        allocationTransactionHistory);
+        return allocationTransactionHistory;
     }
 
     /**
@@ -341,6 +351,8 @@ public class AllocationTransactionHistoryService   {
 
 
     public void send(AllocationTransactionHistory allocationTransactionHistory) {
+        logger.debug("Start to send allocation transaction history: \n {}",
+                allocationTransactionHistory);
         kafkaSender.send(allocationTransactionHistory);
     }
 

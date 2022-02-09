@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -81,10 +83,10 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
 
     @OneToMany(
             mappedBy = "shipmentLine",
-            cascade = CascadeType.REMOVE,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @NotFound(action = NotFoundAction.IGNORE)
     private List<Pick> picks = new ArrayList<>();
 
     @OneToMany(
@@ -185,10 +187,13 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     }
 
     public String getOrderNumber() {
-        return orderLine.getOrder().getNumber();
+
+        return Objects.nonNull(orderLine.getOrder()) ?
+                    orderLine.getOrder().getNumber() :
+                    "";
     }
 
-    public String getShipmentNumber() {return shipment.getNumber();}
+    public String getShipmentNumber() {return Objects.nonNull(shipment) ? shipment.getNumber() : "";}
 
     public Long getOpenQuantity() {
         return openQuantity;
