@@ -1642,5 +1642,21 @@
   "expandable-view": "Expandable View",
   "table-view": "Table View",
   "openPickOnly": "Open Pick Only",
-  "MRP.line": "MRP Line"
+  "MRP.line": "MRP Line",
+  "menu.main.outbound.allocation-transaction-history": "Allocation History",
+  "allocation-transaction-history": "Allocation Transaction History",
+  "transactionGroupId": "Transaction Group Id",
+  "orderNumber": "Order Number",
+  "workOrderNumber": "Work Order Number",
+  "itemName": "Item Name",
+  "locationName": "Location Name",
+  "totalRequiredQuantity": "Total Required Quantity",
+  "currentRequiredQuantity": "Current Required Quantity",
+  "totalInventoryQuantity": "Total Inventory Quantity",
+  "totalAvailableQuantity": "Total Available Quantity",
+  "totalAllocatedQuantity": "Total Allocated Quantity",
+  "alreadyAllocatedQuantity": "Already Allocated Quantity",
+  "isSkippedFlag": "Skip Flag",
+  "isAllocatedByLPNFlag": "Allocated By LPN Flag",
+  "isRoundUpFlag": "Round Up Flag"
 }

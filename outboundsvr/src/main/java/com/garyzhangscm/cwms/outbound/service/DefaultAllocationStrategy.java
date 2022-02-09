@@ -353,10 +353,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
                     Pick pick = tryCreatePickForUOMAllocation(allocationRequest, inventorySummary, allocatedQuantity, smallestPickableUnitOfMeasure);
                     picks.add(pick);
-                    allocatibleQuantity -= allocatedQuantity;
-                    totalQuantityToBeAllocated -= allocatedQuantity;
-                    totalAllocatedQuantity += allocatedQuantity;
 
+                    // SAVE the allocation transaction
                     allocationTransactionHistoryService.createAndSendAllocationTransactionHistory(
                             allocationRequest,
                             inventorySummary.getLocation(),
@@ -370,6 +368,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                             allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
                             ""
                     );
+
+                    // update all the quantities
+                    allocatibleQuantity -= allocatedQuantity;
+                    totalQuantityToBeAllocated -= allocatedQuantity;
+                    totalAllocatedQuantity += allocatedQuantity;
+
                     logger.debug("We are able to allocate {} from LPN {}, after this LPN, we still need to allocate {}, " +
                             " there's still quantity {} left in this inventory summary",
                             allocatedQuantity, allocatedLpn, totalQuantityToBeAllocated,
@@ -691,11 +695,6 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                         lpnToBeAllocated.getKey(), lpnToBeAllocated.getValue());
                 String lpn = lpnToBeAllocated.getKey();
                 Long lpnQuantityToBeAllocated = lpnToBeAllocated.getValue();
-                // allocate quantity from this LPN
-                totalQuantityToBeAllocated = totalQuantityToBeAllocated - lpnQuantityToBeAllocated;
-
-                logger.debug("After allocate from LPN: {}, we still have quantity: {}",
-                        lpnToBeAllocated.getKey(), totalQuantityToBeAllocated);
                 // create the pick
                 Pick pick = tryCreatePickForLPNAllocation(allocationRequest,
                         lpn, lpnQuantityToBeAllocated,
@@ -719,6 +718,11 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                         allocationRoundUpStrategy.isRoundUpAllowed() ? true: false,
                         ""
                 );
+                // allocate quantity from this LPN
+                totalQuantityToBeAllocated = totalQuantityToBeAllocated - lpnQuantityToBeAllocated;
+
+                logger.debug("After allocate from LPN: {}, we still have quantity: {}",
+                        lpnToBeAllocated.getKey(), totalQuantityToBeAllocated);
 
 
 

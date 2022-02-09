@@ -119,7 +119,7 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
     @Column(name = "message")
     private String message;
 
-    public static class Builder {
+    public static class Builder implements Serializable{
 
         private Long warehouseId;
 
@@ -157,6 +157,36 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
         private String username;
         private String message;
 
+        @Override
+        public String toString() {
+            return "{\"Builder\":{"
+                    + "\"warehouseId\":\"" + warehouseId + "\""
+                    + ", \"number\":\"" + number + "\""
+                    + ", \"transactionGroupId\":\"" + transactionGroupId + "\""
+                    + ", \"orderNumber\":\"" + orderNumber + "\""
+                    + ", \"shipmentLine\":" + shipmentLine
+                    + ", \"workOrderNumber\":\"" + workOrderNumber + "\""
+                    + ", \"workOrderId\":\"" + workOrderId + "\""
+                    + ", \"workOrder\":" + workOrder
+                    + ", \"itemName\":\"" + itemName + "\""
+                    + ", \"itemId\":\"" + itemId + "\""
+                    + ", \"item\":" + item
+                    + ", \"locationName\":\"" + locationName + "\""
+                    + ", \"locationId\":\"" + locationId + "\""
+                    + ", \"location\":" + location
+                    + ", \"totalRequiredQuantity\":\"" + totalRequiredQuantity + "\""
+                    + ", \"currentRequiredQuantity\":\"" + currentRequiredQuantity + "\""
+                    + ", \"totalInventoryQuantity\":\"" + totalInventoryQuantity + "\""
+                    + ", \"totalAvailableQuantity\":\"" + totalAvailableQuantity + "\""
+                    + ", \"totalAllocatedQuantity\":\"" + totalAllocatedQuantity + "\""
+                    + ", \"alreadyAllocatedQuantity\":\"" + alreadyAllocatedQuantity + "\""
+                    + ", \"isSkippedFlag\":\"" + isSkippedFlag + "\""
+                    + ", \"isAllocatedByLPNFlag\":\"" + isAllocatedByLPNFlag + "\""
+                    + ", \"isRoundUpFlag\":\"" + isRoundUpFlag + "\""
+                    + ", \"username\":\"" + username + "\""
+                    + ", \"message\":\"" + message + "\""
+                    + "}}";
+        }
 
         public Builder(Long warehouseId, String number,
                        String transactionGroupId) {

@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -76,7 +78,8 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     // 1. shipment line
     // 2. work order line
     // 3. short allocation
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "shipment_line_id")
     @JsonIgnore
     private ShipmentLine shipmentLine;

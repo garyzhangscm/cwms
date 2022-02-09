@@ -1641,5 +1641,21 @@
   "expandable-view": "可展开视图",
   "table-view": "表格视图",
   "openPickOnly": "只显示未完成的拣货任务",
-  "MRP.line": "MRP 行"
+  "MRP.line": "MRP 行",
+  "menu.main.outbound.allocation-transaction-history": "分配记录",
+  "allocation-transaction-history": "分配记录",
+  "transactionGroupId": "事务组id",
+  "orderNumber": "出库单号",
+  "workOrderNumber": "工单号",
+  "itemName": "商品名称",
+  "locationName": "库位名称",
+  "totalRequiredQuantity": "总需求数量",
+  "currentRequiredQuantity": "当前需求数量",
+  "totalInventoryQuantity": "库存总数量",
+  "totalAvailableQuantity": "库存可用数量",
+  "totalAllocatedQuantity": "本次分配数量",
+  "alreadyAllocatedQuantity": "已分配数量",
+  "isSkippedFlag": "跳过",
+  "isAllocatedByLPNFlag": "按LPN 分配",
+  "isRoundUpFlag": "允许取整"
 }
