@@ -46,10 +46,34 @@ public class ItemPackageType implements Serializable {
 
     private ItemUnitOfMeasure stockItemUnitOfMeasure;
 
+    public ItemUnitOfMeasure getDefaultInboundReceivingUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        if (Objects.nonNull(defaultInboundReceivingUOM)) {
+            return defaultInboundReceivingUOM;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForInboundReceiving())
+        ).findFirst().orElse(getStockItemUnitOfMeasure());
+    }
     public void setDefaultInboundReceivingUOM(ItemUnitOfMeasure defaultInboundReceivingUOM) {
         this.defaultInboundReceivingUOM = defaultInboundReceivingUOM;
     }
 
+    public ItemUnitOfMeasure getDefaultWorkOrderReceivingUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        if (Objects.nonNull(defaultWorkOrderReceivingUOM)) {
+            return defaultWorkOrderReceivingUOM;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForWorkOrderReceiving())
+        ).findFirst().orElse(getStockItemUnitOfMeasure());
+    }
     public void setDefaultWorkOrderReceivingUOM(ItemUnitOfMeasure defaultWorkOrderReceivingUOM) {
         this.defaultWorkOrderReceivingUOM = defaultWorkOrderReceivingUOM;
     }
@@ -78,30 +102,6 @@ public class ItemPackageType implements Serializable {
         this.trackingLpnUOM = trackingLpnUOM;
     }
 
-    public ItemUnitOfMeasure getDefaultInboundReceivingUOM() {
-        if (itemUnitOfMeasures.size() == 0) {
-            return null;
-        }
-        if (Objects.nonNull(defaultInboundReceivingUOM)) {
-            return defaultInboundReceivingUOM;
-        }
-
-        return itemUnitOfMeasures.stream().filter(
-                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForInboundReceiving())
-        ).findFirst().orElse(getStockItemUnitOfMeasure());
-    }
-    public ItemUnitOfMeasure getDefaultWorkOrderReceivingUOM() {
-        if (itemUnitOfMeasures.size() == 0) {
-            return null;
-        }
-        if (Objects.nonNull(defaultWorkOrderReceivingUOM)) {
-            return defaultWorkOrderReceivingUOM;
-        }
-
-        return itemUnitOfMeasures.stream().filter(
-                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForWorkOrderReceiving())
-        ).findFirst().orElse(getStockItemUnitOfMeasure());
-    }
 
     public ItemUnitOfMeasure getStockItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {

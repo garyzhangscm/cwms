@@ -360,4 +360,11 @@ public class AllocationTransactionHistoryService   {
     public AllocationTransactionHistory addAllocationTransactionHistory(AllocationTransactionHistory allocationTransactionHistory) {
         return saveOrUpdate(allocationTransactionHistory);
     }
+
+    public void removeAllocationTransactionHistory(Shipment shipment) {
+        for (ShipmentLine shipmentLine : shipment.getShipmentLines()) {
+            allocationTransactionHistoryRepository.deleteByShipmentLine(shipmentLine);
+
+        }
+    }
 }
