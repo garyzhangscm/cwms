@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 import com.garyzhangscm.cwms.outbound.model.AllocationTransactionHistory;
 import com.garyzhangscm.cwms.outbound.model.Carton;
+import com.garyzhangscm.cwms.outbound.model.ShipmentLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -30,5 +31,6 @@ public interface AllocationTransactionHistoryRepository extends JpaRepository<Al
         JpaSpecificationExecutor<AllocationTransactionHistory> {
 
     AllocationTransactionHistory findByWarehouseIdAndNumber(Long warehouseId, String number);
+    long deleteByShipmentLine(ShipmentLine shipmentLine);
 
 }

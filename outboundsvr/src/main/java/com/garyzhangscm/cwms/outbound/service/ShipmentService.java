@@ -53,6 +53,8 @@ public class ShipmentService {
     @Autowired
     private OrderActivityService orderActivityService;
     @Autowired
+    private AllocationTransactionHistoryService allocationTransactionHistoryService;
+    @Autowired
     private WaveService waveService;
     @Autowired
     private OrderLineService orderLineService;
@@ -983,6 +985,9 @@ public class ShipmentService {
 
         shortAllocationService.removeCancelledShortAllocations(shipment);
         cancelledShortAllocationService.removeCancelledShortAllocations(shipment);
+
+        allocationTransactionHistoryService.removeAllocationTransactionHistory(shipment);
+
 
 
         delete(shipment);

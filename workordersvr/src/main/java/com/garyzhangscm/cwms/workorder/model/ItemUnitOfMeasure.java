@@ -39,6 +39,10 @@ public class ItemUnitOfMeasure implements Serializable {
     private Double width;
     private Double height;
 
+    private Boolean defaultForInboundReceiving;
+
+    private Boolean defaultForWorkOrderReceiving;
+    private Boolean trackingLpn;
 
     public Long getId() {
         return id;
@@ -112,4 +116,29 @@ public class ItemUnitOfMeasure implements Serializable {
     public void setItemPackageType(ItemPackageType itemPackageType) {
         this.itemPackageType = itemPackageType;
     }
+
+    public Boolean getDefaultForInboundReceiving() {
+        return defaultForInboundReceiving;
+    }
+
+    public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
+        this.defaultForInboundReceiving = defaultForInboundReceiving;
+    }
+
+    public Boolean getDefaultForWorkOrderReceiving() {
+        return defaultForWorkOrderReceiving;
+    }
+
+    public void setDefaultForWorkOrderReceiving(Boolean defaultForWorkOrderReceiving) {
+        this.defaultForWorkOrderReceiving = defaultForWorkOrderReceiving;
+    }
+
+    public Boolean getTrackingLpn() {
+        return trackingLpn;
+    }
+
+    public void setTrackingLpn(Boolean trackingLpn) {
+        this.trackingLpn = trackingLpn;
+    }
+
 }
