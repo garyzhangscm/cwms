@@ -51,7 +51,7 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     RestTemplate restTemplate;
 
-    public ItemFamily getItemFamilyByName(Long warehouseId, String name)  {
+    public ItemFamily getItemFamilyByName(Long companyId, Long warehouseId, String name)  {
         logger.debug("Start to get item family by name");
         try {
             UriComponentsBuilder builder =
@@ -59,6 +59,7 @@ public class InventoryServiceRestemplateClient {
                             .scheme("http").host("zuulserver").port(5555)
                             .path("/api/inventory/item-families")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("companyId", companyId)
                             .queryParam("warehouseId", warehouseId);
 
 

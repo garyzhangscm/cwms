@@ -22,7 +22,9 @@ package com.garyzhangscm.cwms.integration.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -68,10 +70,26 @@ public class DBBasedItemFamily extends AuditibleEntity<String> implements Serial
 
     public ItemFamily convertToItemFamily(
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+
+        // company ID or company code is required
+        if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
+
+            throw MissingInformationException.raiseException("company information is required for item family integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            setCompanyId(
+                    warehouseLayoutServiceRestemplateClient
+                            .getCompanyByCode(companyCode).getId()
+            );
+        }
+
+
         ItemFamily itemFamily = new ItemFamily();
 
         String[] fieldNames = {
-                "name","description", "warehouseId","warehouseName"
+                "name","description", "warehouseId","warehouseName", "companyId"
         };
 
         ObjectCopyUtil.copyValue(this,itemFamily,  fieldNames);

@@ -50,6 +50,10 @@ public class Item implements Serializable {
     private String warehouseName;
 
 
+    private Long companyId;
+    private String companyCode;
+
+
 
     @Override
     public String toString() {
@@ -142,5 +146,21 @@ public class Item implements Serializable {
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 }

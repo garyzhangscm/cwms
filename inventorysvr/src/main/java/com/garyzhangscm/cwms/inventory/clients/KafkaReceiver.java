@@ -7,6 +7,7 @@ import com.garyzhangscm.cwms.inventory.service.IntegrationService;
 import com.garyzhangscm.cwms.inventory.service.InventoryActivityService;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,9 +94,12 @@ public class KafkaReceiver {
         logger.info("# received integration - item data: {}", itemJsonRepresent);
         logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 
+        // for item, the key will be companyId - wareouseId - integrationId,
+        // while warehouseId is optional
         String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
-        Long warehouseId = Long.parseLong(key[0]);
-        Long integrationId = Long.parseLong(key[1]);
+        Long companyId = Long.parseLong(key[0]);
+        Long warehouseId = Strings.isNotBlank(key[1]) ? Long.parseLong(key[1]) : null;
+        Long integrationId = Long.parseLong(key[2]);
 
         try {
 
@@ -106,7 +110,7 @@ public class KafkaReceiver {
 
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    null, warehouseId, integrationId,
+                    companyId, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_ITEM,
                     true, ""
             );
@@ -116,7 +120,7 @@ public class KafkaReceiver {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
-                    null, warehouseId, integrationId,
+                    companyId, warehouseId, integrationId,
                     IntegrationType.INTEGRATION_ITEM,
                     false, ex.getMessage()
             );

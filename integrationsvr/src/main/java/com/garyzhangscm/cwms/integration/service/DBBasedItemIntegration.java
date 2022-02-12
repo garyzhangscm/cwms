@@ -176,7 +176,9 @@ public class DBBasedItemIntegration {
             logger.debug(">> will process Item:\n{}", item);
 
             kafkaSender.send(IntegrationType.INTEGRATION_ITEM,
-                    item.getWarehouseId() + "-" + dbBasedItem.getId(), item);
+                    item.getCompanyId() + "-" +
+                            (Objects.isNull(item.getWarehouseId()) ? "" : item.getWarehouseId())
+                            + "-" + dbBasedItem.getId(), item);
 
 
             dbBasedItem.setErrorMessage("");

@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
+import com.google.common.base.Predicates;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,18 +96,9 @@ public class ItemService implements TestDataInitiableService{
         return findById(id, true);
     }
 
-    public List<Item> findAll(boolean includeDetails) {
-        List<Item> items = itemRepository.findAll();
-        if (items.size() > 0 && includeDetails)
-            loadAttribute(items);
-        return items;
-    }
 
-    public List<Item> findAll() {
-        return findAll(true);
-    }
-
-    public List<Item> findAll(Long warehouseId,
+    public List<Item> findAll(Long companyId,
+                              Long warehouseId,
                               String name,
                               String clientIds,
                               String itemFamilyIds,
@@ -117,8 +109,15 @@ public class ItemService implements TestDataInitiableService{
             (Root<Item> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
 
-                predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
+                if (Objects.nonNull(warehouseId)) {
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                }
+                else {
+                    // if the user doesn't specify the warehouse id, then
+                    // only return the company level item information
+                }
                 if (StringUtils.isNotBlank(itemFamilyIds)) {
 
                     Join<Item, ItemFamily> joinItemFamily = root.join("itemFamily", JoinType.INNER);
@@ -156,14 +155,59 @@ public class ItemService implements TestDataInitiableService{
 
 
                 Predicate[] p = new Predicate[predicates.size()];
-                return criteriaBuilder.and(predicates.toArray(p));
+
+                // special handling for warehouse id
+                // if warehouse id is passed in, then return both the warehouse level item
+                // and the company level item information.
+                // otherwise, return the company level item information
+                Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+                if (Objects.nonNull(warehouseId)) {
+                    return criteriaBuilder.and(predicate,
+                            criteriaBuilder.or(
+                                    criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
+                                    criteriaBuilder.isNull(root.get("warehouseId"))));
+                }
+                else  {
+                    return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
+                }
             }
+            ,
+            // we may get duplicated record from the above query when we pass in the warehouse id
+            // if so, we may need to remove the company level item if we have the warehouse level item
+            Sort.by(Sort.Direction.DESC, "warehouseId")
         );
+
+        // we may get duplicated record from the above query when we pass in the warehouse id
+        // if so, we may need to remove the company level item if we have the warehouse level item
+        if (Objects.nonNull(warehouseId)) {
+            removeDuplicatedItemRecords(items);
+        }
 
         if (items.size() > 0 && loadDetails) {
             loadAttribute(items);
         }
         return items;
+    }
+
+    /**
+     * Remove teh duplicated item record. If we have 2 record with the same item name
+     * but different warehouse, then we will remove the one without any warehouse information
+     * from the result
+     * @param items
+     */
+    private void removeDuplicatedItemRecords(List<Item> items) {
+        Iterator<Item> itemIterator = items.listIterator();
+        Set<String> itemProcessed = new HashSet<>();
+        while(itemIterator.hasNext()) {
+            Item item = itemIterator.next();
+            if (itemProcessed.contains(item.getName()) &&
+                   Objects.isNull(item.getWarehouseId())) {
+                // ok, we already processed the item and the current
+                // record is a company level item, then we will remove
+                // this record from the result
+                itemIterator.remove();
+            }
+        }
     }
 
     private void loadAttribute(List<Item> items) {

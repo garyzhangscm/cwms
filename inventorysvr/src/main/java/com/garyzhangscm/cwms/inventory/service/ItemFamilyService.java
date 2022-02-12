@@ -30,15 +30,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ItemFamilyService implements TestDataInitiableService{
@@ -62,36 +61,80 @@ public class ItemFamilyService implements TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("item family not found by id: " + id));
     }
 
-    public List<ItemFamily> findAll(Long warehouseId, String name) {
-        return findAll(warehouseId, name, true);
+    public List<ItemFamily> findAll(Long companyId,
+                                    Long warehouseId, String name) {
+        return findAll(companyId, warehouseId, name, true);
     }
-    public List<ItemFamily> findAll(Long warehouseId, String name, boolean loadAttributes) {
+    public List<ItemFamily> findAll(Long companyId, Long warehouseId, String name, boolean loadAttributes) {
 
 
         List<ItemFamily> itemFamilies = itemFamilyRepository.findAll(
                 (Root<ItemFamily> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
 
                     if (StringUtils.isNotBlank(name)) {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
                     }
 
-
-
-
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for warehouse id
+                    // if warehouse id is passed in, then return both the warehouse level item
+                    // and the company level item information.
+                    // otherwise, return the company level item information
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+                    if (Objects.nonNull(warehouseId)) {
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.or(
+                                        criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
+                                        criteriaBuilder.isNull(root.get("warehouseId"))));
+                    }
+                    else  {
+                        return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
+                    }
                 }
+                ,
+                // important: We will need to sort by warehouse so that if we have item record with same
+                // item but different warehouse, then the company level record(warehouse is empty) is
+                // always at the end so we can easily remove those company level record if we have warehouse
+                // level record
+                Sort.by(Sort.Direction.DESC, "warehouseId")
         );
+
+        // we may get duplicated record from the above query when we pass in the warehouse id
+        // if so, we may need to remove the company level item if we have the warehouse level item
+        if (Objects.nonNull(warehouseId)) {
+            removeDuplicatedItemFamilyRecords(itemFamilies);
+        }
 
         if (itemFamilies.size() > 0 && loadAttributes) {
             loadAttributes(itemFamilies);
         }
         return itemFamilies;
 
+    }
+    /**
+     * Remove teh duplicated item record. If we have 2 record with the same item name
+     * but different warehouse, then we will remove the one without any warehouse information
+     * from the result
+     * @param itemFamilies
+     */
+    private void removeDuplicatedItemFamilyRecords(List<ItemFamily> itemFamilies) {
+        Iterator<ItemFamily> itemFamilyIterator = itemFamilies.listIterator();
+        Set<String> itemFamilyProcessed = new HashSet<>();
+        while(itemFamilyIterator.hasNext()) {
+            ItemFamily itemFamily = itemFamilyIterator.next();
+            if (itemFamilyProcessed.contains(itemFamily.getName()) &&
+                    Objects.isNull(itemFamily.getWarehouseId())) {
+                // ok, we already processed the item and the current
+                // record is a company level item, then we will remove
+                // this record from the result
+                itemFamilyIterator.remove();
+            }
+        }
     }
 
     private void loadAttributes(List<ItemFamily> itemFamilies) {

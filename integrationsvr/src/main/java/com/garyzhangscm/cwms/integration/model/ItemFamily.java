@@ -36,6 +36,8 @@ public class ItemFamily implements Serializable {
     private Long warehouseId;
     private String warehouseName;
 
+    private Long companyId;
+
     @Override
     public String toString() {
         return "ItemFamily{" +
@@ -85,5 +87,13 @@ public class ItemFamily implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

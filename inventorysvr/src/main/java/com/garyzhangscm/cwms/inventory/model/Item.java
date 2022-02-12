@@ -93,6 +93,9 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "company_id")
+    private Long companyId;
+
 
     @Column(name = "allow_cartonization")
     private Boolean allowCartonization = false;
@@ -253,7 +256,13 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         return shelfLifeDays;
     }
 
+    public Long getCompanyId() {
+        return companyId;
+    }
 
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
 
     public boolean isTrackingExpirationDateFlag() {
         return trackingExpirationDateFlag;
