@@ -39,11 +39,13 @@ public class ItemFamilyController {
     ItemFamilyService itemFamilyService;
 
     @RequestMapping(value="/item-families", method = RequestMethod.GET)
-    public List<ItemFamily> findAllItemFaimlies(@RequestParam Long warehouseId,
+    public List<ItemFamily> findAllItemFaimlies(@RequestParam Long companyId,
+                                                @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
                                                 @RequestParam(name="name", required = false, defaultValue = "") String name) {
-        logger.debug("Start to call findAllItemFaimlies with parameters warehouse id: {}, name: {}",
-                warehouseId, name);
-        return itemFamilyService.findAll(warehouseId, name);
+        logger.debug("Start to call findAllItemFaimlies with parameters " +
+                "company id: {}, warehouse id: {}, name: {}",
+                companyId, warehouseId, name);
+        return itemFamilyService.findAll(companyId, warehouseId, name);
     }
 
     @RequestMapping(value="/item-family/{id}", method = RequestMethod.GET)

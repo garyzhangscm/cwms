@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.DBBasedSupplierIntegration;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.apache.logging.log4j.util.Strings;
@@ -109,6 +110,20 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
                               CommonServiceRestemplateClient commonServiceRestemplateClient,
                               WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
 
+        // company ID or company code is required
+        if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
+
+            throw MissingInformationException.raiseException("company information is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            setCompanyId(
+                    warehouseLayoutServiceRestemplateClient
+                            .getCompanyByCode(companyCode).getId()
+            );
+        }
+
         Item item = new Item();
 
 
@@ -129,7 +144,6 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
             );
         }
         item.setWarehouseId(warehouseId);
-
 
         if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
             item.setClientId(
@@ -158,11 +172,14 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
                         item.getItemFamily().getName(), getItemFamilyId());
             }
             else if (Strings.isNotBlank(getItemFamilyName())) {
-                item.setItemFamily(
+                ItemFamily itemFamily =
                         inventoryServiceRestemplateClient.getItemFamilyByName(
-                                warehouseId, getItemFamilyName()
-                        )
-                );
+                                companyId, warehouseId, getItemFamilyName()
+                        );
+                if (Objects.isNull(itemFamily)) {
+                    throw MissingInformationException.raiseException("can't find item family by name " + getItemFamilyName());
+                }
+                item.setItemFamily(itemFamily);
                 logger.debug("The item's family is setup to {} per name {}",
                         item.getItemFamily().getName(), getItemFamilyName());
             }
