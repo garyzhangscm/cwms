@@ -212,10 +212,13 @@ public class DBBasedBillOfMaterialIntegration {
         );
         billOfMaterial.setWarehouseId(warehouseId);
 
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
+
 
         billOfMaterial.setItemId(
                 inventoryServiceRestemplateClient.getItemByName(
-                        warehouseId, dbBasedBillOfMaterial.getItemName()
+                        warehouse.getCompany().getId(), warehouseId, dbBasedBillOfMaterial.getItemName()
                 ).getId()
         );
 
@@ -229,7 +232,7 @@ public class DBBasedBillOfMaterialIntegration {
             // 5. carrier service level id
             dbBasedBillOfMaterial.getBillOfMaterialLines().forEach(dbBasedBillOfMaterialLine -> {
                 if (billOfMaterialLine.getNumber().equals(dbBasedBillOfMaterialLine.getNumber())) {
-                    setupMissingField(warehouseId, billOfMaterialLine, dbBasedBillOfMaterialLine);
+                    setupMissingField(warehouse, billOfMaterialLine, dbBasedBillOfMaterialLine);
                 }
             });
 
@@ -240,7 +243,7 @@ public class DBBasedBillOfMaterialIntegration {
 
             dbBasedBillOfMaterial.getBillOfMaterialByProducts().forEach(dbBasedBillOfMaterialByProduct -> {
                 if (billOfMaterialByProduct.getItemName().equals(dbBasedBillOfMaterialByProduct.getItemName())) {
-                    setupMissingField(warehouseId, billOfMaterialByProduct, dbBasedBillOfMaterialByProduct);
+                    setupMissingField(warehouse, billOfMaterialByProduct, dbBasedBillOfMaterialByProduct);
                 }
             });
 
@@ -257,19 +260,19 @@ public class DBBasedBillOfMaterialIntegration {
      * 1. item Id
      * 2. warehouse Id
      * 3. inventory status ID
-     * @param warehouseId      Warehouse id
+     * @param warehouse      Warehouse
      * @param billOfMaterialLine
      * @param dbBasedBillOfMaterialLine
      */
-    private void setupMissingField(Long warehouseId, BillOfMaterialLine billOfMaterialLine, DBBasedBillOfMaterialLine dbBasedBillOfMaterialLine){
+    private void setupMissingField(Warehouse warehouse, BillOfMaterialLine billOfMaterialLine, DBBasedBillOfMaterialLine dbBasedBillOfMaterialLine){
 
-        billOfMaterialLine.setWarehouseId(warehouseId);
+        billOfMaterialLine.setWarehouseId(warehouse.getId());
 
         // 1. item Id
         if(Objects.isNull(billOfMaterialLine.getItemId())) {
             billOfMaterialLine.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
-                            warehouseId, dbBasedBillOfMaterialLine.getItemName()
+                            warehouse.getCompany().getId(), warehouse.getId(), dbBasedBillOfMaterialLine.getItemName()
                     ).getId()
             );
         }
@@ -280,7 +283,7 @@ public class DBBasedBillOfMaterialIntegration {
         if(Objects.isNull(billOfMaterialLine.getInventoryStatusId())) {
             billOfMaterialLine.setInventoryStatusId(
                     inventoryServiceRestemplateClient.getInventoryStatusByName(
-                            warehouseId, dbBasedBillOfMaterialLine.getInventoryStatusName()
+                            warehouse.getId(), dbBasedBillOfMaterialLine.getInventoryStatusName()
                     ).getId()
             );
         }
@@ -288,16 +291,17 @@ public class DBBasedBillOfMaterialIntegration {
     }
 
 
-    private void setupMissingField(Long warehouseId, BillOfMaterialByProduct billOfMaterialByProduct,
+    private void setupMissingField(Warehouse warehouse, BillOfMaterialByProduct billOfMaterialByProduct,
                                    DBBasedBillOfMaterialByProduct dbBasedBillOfMaterialByProduct){
 
-        billOfMaterialByProduct.setWarehouseId(warehouseId);
+        billOfMaterialByProduct.setWarehouseId(warehouse.getId());
 
         // 1. item Id
         if(Objects.isNull(billOfMaterialByProduct.getItemId())) {
             billOfMaterialByProduct.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
-                            warehouseId, dbBasedBillOfMaterialByProduct.getItemName()
+                            warehouse.getCompany().getId(),
+                            warehouse.getId(), dbBasedBillOfMaterialByProduct.getItemName()
                     ).getId()
             );
         }
@@ -308,7 +312,7 @@ public class DBBasedBillOfMaterialIntegration {
         if(Objects.isNull(billOfMaterialByProduct.getInventoryStatusId())) {
             billOfMaterialByProduct.setInventoryStatusId(
                     inventoryServiceRestemplateClient.getInventoryStatusByName(
-                            warehouseId, dbBasedBillOfMaterialByProduct.getInventoryStatusName()
+                            warehouse.getId(), dbBasedBillOfMaterialByProduct.getInventoryStatusName()
                     ).getId()
             );
         }

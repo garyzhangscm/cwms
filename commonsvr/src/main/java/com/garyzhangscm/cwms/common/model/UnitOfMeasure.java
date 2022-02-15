@@ -41,6 +41,13 @@ public class UnitOfMeasure extends AuditibleEntity<String> implements Serializab
     @Transient
     private Warehouse warehouse;
 
+
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Transient
+    private Company company;
+
     @Column(name = "name", unique = true)
     private String name;
 
@@ -90,5 +97,19 @@ public class UnitOfMeasure extends AuditibleEntity<String> implements Serializab
         this.description = description;
     }
 
+    public Long getCompanyId() {
+        return companyId;
+    }
 
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
 }

@@ -24,7 +24,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -139,13 +141,33 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     *
     * */
     public OrderLine convertToOrderLine(Order order,
+                                        WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
                                         InventoryServiceRestemplateClient inventoryServiceRestemplateClient
                                         ) {
+
+        // company ID or company code is required
+        if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
+
+            throw MissingInformationException.raiseException("company information is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            setCompanyId(
+                    warehouseLayoutServiceRestemplateClient
+                            .getCompanyByCode(companyCode).getId()
+            );
+        }
+
+
         OrderLine orderLine = new OrderLine();
 
         String[] fieldNames = {
                 "number", "itemId",  "expectedQuantity", "openQuantity",
-                "inprocessQuantity", "shippedQuantity", "inventoryStatusId", "carrierId", "carrierServiceLevelId"
+                "inprocessQuantity", "shippedQuantity", "inventoryStatusId",
+                "carrierId", "carrierServiceLevelId",
+                "warehouseId","warehouseName",
+                "companyId","companyCode"
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
@@ -155,6 +177,7 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
             orderLine.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
+                            orderLine.getCompanyId(),
                             orderLine.getWarehouseId(), getItemName()
                     ).getId()
             );

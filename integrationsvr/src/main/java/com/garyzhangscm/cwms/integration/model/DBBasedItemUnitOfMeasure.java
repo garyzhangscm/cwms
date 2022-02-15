@@ -25,8 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.DBBasedItemUnitOfMeasureIntegration;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +126,22 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
             boolean attachedToItemPackageTypeTransaction
     ) {
+
+        // company ID or company code is required
+        if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
+
+            throw MissingInformationException.raiseException("company information is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            setCompanyId(
+                    warehouseLayoutServiceRestemplateClient
+                            .getCompanyByCode(companyCode).getId()
+            );
+        }
+
+
         ItemUnitOfMeasure itemUnitOfMeasure = new ItemUnitOfMeasure();
 
         String[] fieldNames = {
@@ -132,7 +150,8 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
                 "unitOfMeasureId", "unitOfMeasureName",
                 "quantity","weight",
                 "length","width","height",
-                "warehouseId","warehouseName"
+                "warehouseId","warehouseName",
+                "companyId","companyCode"
         };
 
         ObjectCopyUtil.copyValue( this, itemUnitOfMeasure,  fieldNames);
@@ -146,22 +165,25 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
         itemUnitOfMeasure.setWarehouseId(warehouseId);
 
         if (!attachedToItemPackageTypeTransaction) {
-            logger.debug("Will get item by warehouse id {}, item name: {}",
-                    warehouseId, getItemName());
+            logger.debug("Will get item by company id {}, warehouse id {}, item name: {}",
+                    companyId, warehouseId, getItemName());
             if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
                 itemUnitOfMeasure.setItemId(
-                        inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                        inventoryServiceRestemplateClient.getItemByName(
+                                companyId,
+                                warehouseId,
                                 getItemName()).getId()
                 );
             }
 
 
-            logger.debug("Will get item package type by id by warehouse id {}, item id: {}, package type name {}",
-                    warehouseId, getItemId(), getItemPackageTypeName());
+            logger.debug("Will get item package type by id by company id {}, warehouse id {}, item id: {}, package type name {}",
+                    companyId, warehouseId, getItemId(), getItemPackageTypeName());
 
             if (Objects.isNull(getItemPackageTypeId()) && Objects.nonNull(getItemPackageTypeName())) {
                 itemUnitOfMeasure.setItemPackageTypeId(
                         inventoryServiceRestemplateClient.getItemPackageTypeByName(
+                                companyId,
                                 warehouseId,
                                 getItemId(),
                                 getItemPackageTypeName()).getId()
@@ -171,7 +193,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
         if (Objects.isNull(getUnitOfMeasureId()) && Objects.nonNull(getUnitOfMeasureName())) {
             itemUnitOfMeasure.setUnitOfMeasureId(
                     commonServiceRestemplateClient.getUnitOfMeasureByName(
-                            warehouseId, getUnitOfMeasureName()
+                            companyId, warehouseId, getUnitOfMeasureName()
                     ).getId()
             );
         }

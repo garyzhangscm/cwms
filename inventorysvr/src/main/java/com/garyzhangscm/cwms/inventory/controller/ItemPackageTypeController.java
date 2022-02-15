@@ -18,23 +18,43 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.ItemPackageType;
 import com.garyzhangscm.cwms.inventory.service.ItemPackageTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class ItemPackageTypeController {
     @Autowired
     ItemPackageTypeService itemPackageTypeService;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
     @RequestMapping(value="/itemPackageTypes", method = RequestMethod.GET)
     public List<ItemPackageType> findAllItemPackageTypes(@RequestParam(name = "name", required = false, defaultValue = "")  String name,
                                                          @RequestParam(name = "itemId", required = false, defaultValue = "")  Long itemId,
-                                                         @RequestParam Long warehouseId) {
-        return itemPackageTypeService.findAll(warehouseId, name, itemId);
+                                                         @RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
+                                                         @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId) {
+
+        // company ID or warehouse id is required
+        if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
+
+            throw MissingInformationException.raiseException("company information or warehouse id is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            companyId =
+                    warehouseLayoutServiceRestemplateClient
+                            .getWarehouseById(warehouseId).getCompanyId();
+        }
+
+        return itemPackageTypeService.findAll(companyId, warehouseId, name, itemId);
     }
 
 

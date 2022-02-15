@@ -230,6 +230,7 @@ public class DBBasedReceiptIntegration {
             );
         }
 
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(receipt.getWarehouseId());
         receipt.getReceiptLines().forEach(receiptLine -> {
             // Get the matched receipt line and setup the missing field
             // for
@@ -237,7 +238,7 @@ public class DBBasedReceiptIntegration {
             // 2. warehouse Id
             dbBasedReceipt.getReceiptLines().forEach(dbBasedReceiptLine -> {
                 if (receiptLine.getNumber().equals(dbBasedReceiptLine.getNumber())) {
-                    setupMissingField(receipt.getWarehouseId(), receiptLine, dbBasedReceiptLine);
+                    setupMissingField(warehouse, receiptLine, dbBasedReceiptLine);
                 }
             });
 
@@ -252,17 +253,18 @@ public class DBBasedReceiptIntegration {
      * translate to id so that the correspondent service can recognize it     *
      * 1. item Id
      * 2. warehouse Id
-     * @param warehouseId      Warehouse id
+     * @param warehouse      Warehouse
      * @param receiptLine
      * @param dbBasedReceiptLine
      */
-    private void setupMissingField(Long warehouseId, ReceiptLine receiptLine, DBBasedReceiptLine dbBasedReceiptLine){
+    private void setupMissingField(Warehouse warehouse, ReceiptLine receiptLine, DBBasedReceiptLine dbBasedReceiptLine){
 
         // 1. item Id
         if(Objects.isNull(receiptLine.getItemId())) {
             receiptLine.setItemId(
                         inventoryServiceRestemplateClient.getItemByName(
-                                warehouseId, dbBasedReceiptLine.getItemName()
+                                warehouse.getCompany().getId(),
+                                warehouse.getId(), dbBasedReceiptLine.getItemName()
                         ).getId()
                 );
         }
@@ -277,7 +279,7 @@ public class DBBasedReceiptIntegration {
         // 2. warehouse Id
 
         if(Objects.isNull(receiptLine.getItemId())) {
-            receiptLine.setWarehouseId(warehouseId);
+            receiptLine.setWarehouseId(warehouse.getId());
         }
 
 

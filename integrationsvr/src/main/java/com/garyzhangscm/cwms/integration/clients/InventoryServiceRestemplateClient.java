@@ -122,7 +122,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    public Item getItemByName(Long warehouseId, String name)  {
+    public Item getItemByName(Long companyId, Long warehouseId, String name)  {
         logger.debug("Start to get item by name");
         try {
             UriComponentsBuilder builder =
@@ -130,7 +130,8 @@ public class InventoryServiceRestemplateClient {
                             .scheme("http").host("zuulserver").port(5555)
                             .path("/api/inventory/items")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"))
-                            .queryParam("warehouseId", warehouseId);
+                            .queryParam("warehouseId", warehouseId)
+                            .queryParam("companyId", companyId);
 
 
             ResponseBodyWrapper<List<Item>> responseBodyWrapper
@@ -182,7 +183,7 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
-    public ItemPackageType getItemPackageTypeByName(Long warehouseId, Long itemId, String name) {
+    public ItemPackageType getItemPackageTypeByName(Long companyId, Long warehouseId, Long itemId, String name) {
         try{
 
             UriComponentsBuilder builder =
@@ -190,6 +191,7 @@ public class InventoryServiceRestemplateClient {
                             .scheme("http").host("zuulserver").port(5555)
                             .path("/api/inventory/itemPackageTypes")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("companyId", companyId)
                             .queryParam("warehouseId", warehouseId)
                             .queryParam("itemId", itemId);
 

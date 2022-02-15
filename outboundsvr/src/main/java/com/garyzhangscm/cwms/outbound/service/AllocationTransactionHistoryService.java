@@ -93,22 +93,52 @@ public class AllocationTransactionHistoryService   {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(number)) {
-                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
                     }
                     if (StringUtils.isNotBlank(transactionGroupId)) {
-                        predicates.add(criteriaBuilder.equal(root.get("transactionGroupId"), transactionGroupId));
+                        if (transactionGroupId.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("transactionGroupId"), transactionGroupId));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("transactionGroupId"), transactionGroupId));
+                        }
                     }
                     if (StringUtils.isNotBlank(orderNumber)) {
-                        predicates.add(criteriaBuilder.equal(root.get("orderNumber"), orderNumber));
+                        if (orderNumber.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("orderNumber"), orderNumber));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("orderNumber"), orderNumber));
+                        }
                     }
                     if (StringUtils.isNotBlank(workOrderNumber)) {
-                        predicates.add(criteriaBuilder.equal(root.get("workOrderNumber"), workOrderNumber));
+                        if (workOrderNumber.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("workOrderNumber"), workOrderNumber));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("workOrderNumber"), workOrderNumber));
+                        }
                     }
                     if (StringUtils.isNotBlank(itemName)) {
-                        predicates.add(criteriaBuilder.equal(root.get("itemName"), itemName));
+                        if (itemName.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("itemName"), itemName));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("itemName"), itemName));
+                        }
                     }
                     if (StringUtils.isNotBlank(locationName)) {
-                        predicates.add(criteriaBuilder.equal(root.get("locationName"), locationName));
+                        if (locationName.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("locationName"), locationName));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("locationName"), locationName));
+                        }
                     }
 
                     Predicate[] p = new Predicate[predicates.size()];

@@ -234,7 +234,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
 
         // Copy each order line as well
         getOrderLines().forEach(dbBasedOrderLine -> {
-            OrderLine orderLine = dbBasedOrderLine.convertToOrderLine(order, inventoryServiceRestemplateClient);
+            OrderLine orderLine = dbBasedOrderLine.convertToOrderLine(order, warehouseLayoutServiceRestemplateClient,
+                    inventoryServiceRestemplateClient);
             order.getOrderLines().add(orderLine);
         });
 

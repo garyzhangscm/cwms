@@ -19,11 +19,14 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemService;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -35,23 +38,39 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class ItemController {
     @Autowired
     ItemService itemService;
 
+
     @Autowired
-    FileService fileService;
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @RequestMapping(value="/items", method = RequestMethod.GET)
-    public List<Item> findAllItems(@RequestParam Long companyId,
+    public List<Item> findAllItems(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                    @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                    @RequestParam(name="name", required = false, defaultValue = "") String name,
                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
                                    @RequestParam(name="itemFamilyIds", required = false, defaultValue = "") String itemFamilyIds,
                                    @RequestParam(name="itemIdList", required = false, defaultValue = "") String itemIdList,
                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+
+        // company ID or warehouse id is required
+        if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
+
+            throw MissingInformationException.raiseException("company information or warehouse id is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            companyId =
+                    warehouseLayoutServiceRestemplateClient
+                            .getWarehouseById(warehouseId).getCompanyId();
+        }
+
         return itemService.findAll(companyId, warehouseId, name, clientIds, itemFamilyIds, itemIdList, loadDetails);
     }
 

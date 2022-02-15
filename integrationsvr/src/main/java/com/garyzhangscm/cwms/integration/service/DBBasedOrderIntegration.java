@@ -195,6 +195,7 @@ public class DBBasedOrderIntegration {
 
     private void setupMissingField(Order order, DBBasedOrder dbBasedOrder){
 
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId());
         order.getOrderLines().forEach(orderLine -> {
             // Get the matched order line and setup the missing field
             // for
@@ -205,7 +206,7 @@ public class DBBasedOrderIntegration {
             // 5. carrier service level id
             dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine -> {
                 if (orderLine.getNumber().equals(dbBasedOrderLine.getNumber())) {
-                    setupMissingField(order.getWarehouseId(), orderLine, dbBasedOrderLine);
+                    setupMissingField(warehouse, orderLine, dbBasedOrderLine);
                 }
             });
 
@@ -222,17 +223,18 @@ public class DBBasedOrderIntegration {
      * 3. inventory status ID
      * 4. carrier ID
      * 5. carrier service level id
-     * @param warehouseId      Warehouse id
+     * @param warehouse      Warehouse
      * @param orderLine
      * @param dbBasedOrderLine
      */
-    private void setupMissingField(Long warehouseId, OrderLine orderLine, DBBasedOrderLine dbBasedOrderLine){
+    private void setupMissingField(Warehouse warehouse, OrderLine orderLine, DBBasedOrderLine dbBasedOrderLine){
 
         // 1. item Id
         if(Objects.isNull(orderLine.getItemId())) {
                 orderLine.setItemId(
                         inventoryServiceRestemplateClient.getItemByName(
-                                warehouseId, dbBasedOrderLine.getItemName()
+                                warehouse.getCompany().getId(),
+                                warehouse.getId(), dbBasedOrderLine.getItemName()
                         ).getId()
                 );
         }
@@ -241,14 +243,14 @@ public class DBBasedOrderIntegration {
         // 2. warehouse Id
 
         if(Objects.isNull(orderLine.getItemId())) {
-            orderLine.setWarehouseId(warehouseId);
+            orderLine.setWarehouseId(warehouse.getId());
         }
 
         // 3. inventory status ID
         if(Objects.isNull(orderLine.getInventoryStatusId())) {
             orderLine.setInventoryStatusId(
                     inventoryServiceRestemplateClient.getInventoryStatusByName(
-                            warehouseId, dbBasedOrderLine.getInventoryStatusName()
+                            warehouse.getId(), dbBasedOrderLine.getInventoryStatusName()
                     ).getId()
             );
         }
