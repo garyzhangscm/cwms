@@ -134,34 +134,30 @@ public class DBBasedItemUnitOfMeasureIntegration {
     private void process(DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure) {
 
         try {
-            Long warehouseId
-                    = warehouseLayoutServiceRestemplateClient.getWarehouseId(
-                    dbBasedItemUnitOfMeasure.getCompanyId(),
-                    dbBasedItemUnitOfMeasure.getCompanyCode(),
-                    dbBasedItemUnitOfMeasure.getWarehouseId(),
-                    dbBasedItemUnitOfMeasure.getWarehouseName()
-            );
+
+            ItemUnitOfMeasure itemUnitOfMeasure = dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure(inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient);
+
             Item item = new Item();
             item.setName(dbBasedItemUnitOfMeasure.getItemName());
-            item.setWarehouseId(warehouseId);
+            item.setWarehouseId(itemUnitOfMeasure.getWarehouseId());
+            item.setCompanyId(itemUnitOfMeasure.getCompanyId());
 
             ItemPackageType itemPackageType = new ItemPackageType();
-            itemPackageType.setWarehouseId(warehouseId);
+            itemPackageType.setWarehouseId(itemUnitOfMeasure.getWarehouseId());
+            itemPackageType.setCompanyId(itemUnitOfMeasure.getCompanyId());
             itemPackageType.setName(dbBasedItemUnitOfMeasure.getItemPackageTypeName());
 
             item.addItemPackageType(itemPackageType);
 
             logger.debug(">> will process Item:\n{}", item);
 
-            ItemUnitOfMeasure itemUnitOfMeasure = dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure(inventoryServiceRestemplateClient,
-                    commonServiceRestemplateClient,
-                    warehouseLayoutServiceRestemplateClient);
-            itemUnitOfMeasure.setWarehouseId(warehouseId);
 
             if (itemUnitOfMeasure.getUnitOfMeasureId() == null) {
                 UnitOfMeasure unitOfMeasure
                         = commonServiceRestemplateClient.getUnitOfMeasureByName(
-                        warehouseId, dbBasedItemUnitOfMeasure.getUnitOfMeasureName());
+                        itemUnitOfMeasure.getCompanyId(), itemUnitOfMeasure.getWarehouseId(), dbBasedItemUnitOfMeasure.getUnitOfMeasureName());
                 logger.debug("Get id {} from unit of measure name: {}",
                         unitOfMeasure.getId(), dbBasedItemUnitOfMeasure.getUnitOfMeasureName());
                 itemUnitOfMeasure.setUnitOfMeasureId(unitOfMeasure.getId());

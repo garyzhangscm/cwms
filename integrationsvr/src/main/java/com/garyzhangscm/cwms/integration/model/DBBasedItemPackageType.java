@@ -26,7 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,6 +139,20 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
             boolean attachedToItemTransaction)   {
 
+        // company ID or company code is required
+        if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
+
+            throw MissingInformationException.raiseException("company information is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            setCompanyId(
+                    warehouseLayoutServiceRestemplateClient
+                            .getCompanyByCode(companyCode).getId()
+            );
+        }
+
         ItemPackageType itemPackageType = new ItemPackageType();
 
 
@@ -165,7 +181,8 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
             // we will need to make sure the item already exists
             if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
                 itemPackageType.setItemId(
-                        inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                        inventoryServiceRestemplateClient.getItemByName(
+                                companyId, warehouseId,
                                 getItemName()).getId()
                 );
             }

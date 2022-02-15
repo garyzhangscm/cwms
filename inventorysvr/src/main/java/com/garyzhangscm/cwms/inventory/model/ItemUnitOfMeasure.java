@@ -75,6 +75,9 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "company_id")
+    private Long companyId;
+
     @Transient
     private Warehouse warehouse;
 
@@ -175,6 +178,14 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Boolean getDefaultForInboundReceiving() {

@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.MissingInformationException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
@@ -34,19 +36,33 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class UnitOfMeasureController {
     @Autowired
     UnitOfMeasureService unitOfMeasureService;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @RequestMapping(value="/unit-of-measures", method = RequestMethod.GET)
-    public List<UnitOfMeasure> findAllUnitOfMeasures(@RequestParam Long warehouseId,
+    public List<UnitOfMeasure> findAllUnitOfMeasures(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
+                                                     @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                                      @RequestParam(required = false, name = "name", defaultValue = "") String name) {
-        if (StringUtils.isNotBlank(name)) {
-            return Collections.singletonList(unitOfMeasureService.findByName(warehouseId, name));
+
+        // company ID or warehouse id is required
+        if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
+
+            throw MissingInformationException.raiseException("company information or warehouse id is required for item integration");
         }
-        return unitOfMeasureService.findAll(warehouseId);
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            companyId =
+                    warehouseLayoutServiceRestemplateClient
+                            .getWarehouseById(warehouseId).getCompanyId();
+        }
+        return unitOfMeasureService.findAll(companyId, warehouseId, name);
     }
 
 

@@ -42,7 +42,14 @@ public class Supplier extends AuditibleEntity<String>  implements Serializable {
     @Transient
     private Warehouse warehouse;
 
-    @Column(name = "name", unique = true)
+
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Transient
+    private Company company;
+
+    @Column(name = "name")
     private String name;
 
     @Column(name = "description")
@@ -242,5 +249,21 @@ public class Supplier extends AuditibleEntity<String>  implements Serializable {
 
     public void setUserDefinedField5(String userDefinedField5) {
         this.userDefinedField5 = userDefinedField5;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 }

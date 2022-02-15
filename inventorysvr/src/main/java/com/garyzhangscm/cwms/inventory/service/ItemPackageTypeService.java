@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -37,9 +38,7 @@ import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,16 +67,17 @@ public class ItemPackageTypeService implements TestDataInitiableService{
                  .orElseThrow(() -> ResourceNotFoundException.raiseException("item package type not found by id: " + id));
     }
 
-    public List<ItemPackageType> findAll(Long warehouseId,
+    public List<ItemPackageType> findAll(Long companyId,
+                                         Long warehouseId,
                                          String name,
                                          Long itemId) {
 
-        return itemPackageTypeRepository.findAll(
+        List<ItemPackageType> itemPackageTypes = itemPackageTypeRepository.findAll(
                 (Root<ItemPackageType> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
                     if (StringUtils.isNotBlank(name)) {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
@@ -93,9 +93,59 @@ public class ItemPackageTypeService implements TestDataInitiableService{
 
 
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for warehouse id
+                    // if warehouse id is passed in, then return both the warehouse level item
+                    // and the company level item information.
+                    // otherwise, return the company level item information
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+                    if (Objects.nonNull(warehouseId)) {
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.or(
+                                        criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
+                                        criteriaBuilder.isNull(root.get("warehouseId"))));
+                    }
+                    else  {
+                        return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
+                    }
+
                 }
+                ,
+                // we may get duplicated record from the above query when we pass in the warehouse id
+                // if so, we may need to remove the company level item if we have the warehouse level item
+                Sort.by(Sort.Direction.DESC, "warehouseId")
         );
+
+
+        // we may get duplicated record from the above query when we pass in the warehouse id
+        // if so, we may need to remove the company level item if we have the warehouse level item
+        if (Objects.nonNull(warehouseId)) {
+            removeDuplicatedItemPackageTypeRecords(itemPackageTypes);
+        }
+        return itemPackageTypes;
+    }
+    /**
+     * Remove teh duplicated item package type record. If we have 2 record with the same item package type
+     *  name and item name but different warehouse, then we will remove the one without any warehouse information
+     * from the result
+     * @param itemPackageTypes
+     */
+    private void removeDuplicatedItemPackageTypeRecords(List<ItemPackageType> itemPackageTypes) {
+        Iterator<ItemPackageType> itemPackageTypeIterator = itemPackageTypes.listIterator();
+        Set<String> itemPackageTypeProcessed = new HashSet<>();
+        while(itemPackageTypeIterator.hasNext()) {
+            ItemPackageType itemPackageType = itemPackageTypeIterator.next();
+
+            String key = itemPackageType.getItem().getId() + "-" + itemPackageType.getName();
+            if (itemPackageTypeProcessed.contains(key) &&
+                    Objects.isNull(itemPackageType.getWarehouseId())) {
+                // ok, we already processed the item and the current
+                // record is a company level item, then we will remove
+                // this record from the result
+                itemPackageTypeIterator.remove();
+            }
+            itemPackageTypeProcessed.add(key);
+        }
     }
 
     public ItemPackageType save(ItemPackageType itemPackageType) {

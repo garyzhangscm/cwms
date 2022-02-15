@@ -83,6 +83,8 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "company_id")
+    private Long companyId;
 
     @Column(name = "default_flag")
     private Boolean defaultFlag = false;
@@ -260,6 +262,14 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Warehouse getWarehouse() {

@@ -111,13 +111,7 @@ public class ItemService implements TestDataInitiableService{
 
                 predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
-                if (Objects.nonNull(warehouseId)) {
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
-                }
-                else {
-                    // if the user doesn't specify the warehouse id, then
-                    // only return the company level item information
-                }
+
                 if (StringUtils.isNotBlank(itemFamilyIds)) {
 
                     Join<Item, ItemFamily> joinItemFamily = root.join("itemFamily", JoinType.INNER);
@@ -200,6 +194,7 @@ public class ItemService implements TestDataInitiableService{
         Set<String> itemProcessed = new HashSet<>();
         while(itemIterator.hasNext()) {
             Item item = itemIterator.next();
+
             if (itemProcessed.contains(item.getName()) &&
                    Objects.isNull(item.getWarehouseId())) {
                 // ok, we already processed the item and the current
@@ -207,6 +202,7 @@ public class ItemService implements TestDataInitiableService{
                 // this record from the result
                 itemIterator.remove();
             }
+            itemProcessed.add(item.getName());
         }
     }
 

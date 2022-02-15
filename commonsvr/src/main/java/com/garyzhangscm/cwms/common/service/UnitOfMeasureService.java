@@ -30,16 +30,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class UnitOfMeasureService implements  TestDataInitiableService{
@@ -59,18 +57,75 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
         return unitOfMeasureRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("unit of measure not found by id: " + id));}
 
-    public List<UnitOfMeasure> findAll( Long warehouseId) {
-        return unitOfMeasureRepository.findAll(
+    public List<UnitOfMeasure> findAll(Long companyId, Long warehouseId, String name) {
+        List<UnitOfMeasure> unitOfMeasures =  unitOfMeasureRepository.findAll(
                 (Root<UnitOfMeasure> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    if (Objects.nonNull(warehouseId)) {
-                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
+
+                    if (StringUtils.isNotBlank(name)) {
+                        if (name.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                        }
                     }
+
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for warehouse id
+                    // if warehouse id is passed in, then return both the warehouse level item
+                    // and the company level item information.
+                    // otherwise, return the company level item information
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+                    if (Objects.nonNull(warehouseId)) {
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.or(
+                                        criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
+                                        criteriaBuilder.isNull(root.get("warehouseId"))));
+                    }
+                    else  {
+                        return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
+                    }
                 }
+                ,
+                // we may get duplicated record from the above query when we pass in the warehouse id
+                // if so, we may need to remove the company level item if we have the warehouse level item
+                Sort.by(Sort.Direction.DESC, "warehouseId")
         );
+
+        // we may get duplicated record from the above query when we pass in the warehouse id
+        // if so, we may need to remove the company level item if we have the warehouse level item
+        if (Objects.nonNull(warehouseId)) {
+            removeDuplicatedUnitOfMeasureRecords(unitOfMeasures);
+        }
+        return unitOfMeasures;
+
+    }
+
+    /**
+     * Remove teh duplicated unit of measure record. If we have 2 record with the same unit of measure name
+     * but different warehouse, then we will remove the one without any warehouse information
+     * from the result
+     * @param unitOfMeasures
+     */
+    private void removeDuplicatedUnitOfMeasureRecords(List<UnitOfMeasure> unitOfMeasures) {
+        Iterator<UnitOfMeasure> unitOfMeasureIterator = unitOfMeasures.listIterator();
+        Set<String> unitOfMeasureProcessed = new HashSet<>();
+        while(unitOfMeasureIterator.hasNext()) {
+            UnitOfMeasure unitOfMeasure = unitOfMeasureIterator.next();
+
+            if (unitOfMeasureProcessed.contains(unitOfMeasure.getName()) &&
+                    Objects.isNull(unitOfMeasure.getWarehouseId())) {
+                // ok, we already processed the item and the current
+                // record is a company level item, then we will remove
+                // this record from the result
+                unitOfMeasureIterator.remove();
+            }
+            unitOfMeasureProcessed.add(unitOfMeasure.getName());
+        }
     }
 
     public UnitOfMeasure findByName(Long warehouseId, String name){

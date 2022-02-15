@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.exception.MissingInformationException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
@@ -29,16 +31,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class SupplierController {
     @Autowired
     SupplierService supplierService;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @RequestMapping(value="/suppliers", method = RequestMethod.GET)
-    public List<Supplier> findAllSuppliers(@RequestParam Long warehouseId,
+    public List<Supplier> findAllSuppliers(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
+                                           @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                            @RequestParam(name = "name", required = false, defaultValue = "") String name) {
-        return supplierService.findAll(warehouseId, name);
+
+        // company ID or warehouse id is required
+        if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
+
+            throw MissingInformationException.raiseException("company information or warehouse id is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            companyId =
+                    warehouseLayoutServiceRestemplateClient
+                            .getWarehouseById(warehouseId).getCompanyId();
+        }
+
+        return supplierService.findAll(companyId, warehouseId, name);
     }
 
     @RequestMapping(value="/suppliers/{id}", method = RequestMethod.GET)

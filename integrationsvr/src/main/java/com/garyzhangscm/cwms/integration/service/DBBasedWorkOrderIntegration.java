@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.integration.service;
 
 import com.garyzhangscm.cwms.integration.clients.*;
 import com.garyzhangscm.cwms.integration.exception.GenericException;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.*;
@@ -268,6 +269,7 @@ public class DBBasedWorkOrderIntegration {
 
     private void setupMissingField(WorkOrder workOrder, DBBasedWorkOrder dbBasedWorkOrder){
 
+
         Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseId(
                 dbBasedWorkOrder.getCompanyId(),
                 dbBasedWorkOrder.getCompanyCode(),
@@ -285,15 +287,13 @@ public class DBBasedWorkOrderIntegration {
 
 
         workOrder.setWarehouseId(warehouseId);
-        workOrder.setWarehouse(
-                warehouseLayoutServiceRestemplateClient.getWarehouseById(
-                        warehouseId
-                )
-        );
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
+        workOrder.setWarehouse(warehouse);
 
 
         Item item = inventoryServiceRestemplateClient.getItemByName(
-                        warehouseId, dbBasedWorkOrder.getItemName()
+                warehouse.getCompany().getId(), warehouseId, dbBasedWorkOrder.getItemName()
                 );
         if (Objects.isNull(item)) {
             throw ResourceNotFoundException.raiseException("Can't find item   by " +
@@ -315,7 +315,7 @@ public class DBBasedWorkOrderIntegration {
             // 5. carrier service level id
             for (DBBasedWorkOrderLine dbBasedWorkOrderLine: dbBasedWorkOrder.getWorkOrderLines()) {
                 if (workOrderLine.getNumber().equals(dbBasedWorkOrderLine.getNumber())) {
-                    setupMissingField(warehouseId, workOrderLine, dbBasedWorkOrderLine);
+                    setupMissingField(warehouse, workOrderLine, dbBasedWorkOrderLine);
                 }
             }
 
@@ -326,7 +326,7 @@ public class DBBasedWorkOrderIntegration {
 
             dbBasedWorkOrder.getWorkOrderByProduct().forEach(dbBasedWorkOrderByProduct -> {
                 if (workOrderByProduct.getItemName().equals(dbBasedWorkOrderByProduct.getItemName())) {
-                    setupMissingField(warehouseId, workOrderByProduct, dbBasedWorkOrderByProduct);
+                    setupMissingField(warehouse, workOrderByProduct, dbBasedWorkOrderByProduct);
                 }
             });
 
@@ -343,25 +343,25 @@ public class DBBasedWorkOrderIntegration {
      * 1. item Id
      * 2. warehouse Id
      * 3. inventory status ID
-     * @param warehouseId      Warehouse id
+     * @param warehouse       Warehouse
      * @param workOrderLine
      * @param dbBasedWorkOrderLine
      */
-    private void setupMissingField(Long warehouseId, WorkOrderLine workOrderLine, DBBasedWorkOrderLine dbBasedWorkOrderLine){
+    private void setupMissingField(Warehouse warehouse, WorkOrderLine workOrderLine, DBBasedWorkOrderLine dbBasedWorkOrderLine){
 
-        workOrderLine.setWarehouseId(warehouseId);
+        workOrderLine.setWarehouseId(warehouse.getId());
 
         // 1. item Id
 
         if(Objects.isNull(workOrderLine.getItemId())) {
 
             Item item = inventoryServiceRestemplateClient.getItemByName(
-                    warehouseId, dbBasedWorkOrderLine.getItemName()
+                    warehouse.getCompany().getId(), warehouse.getId(), dbBasedWorkOrderLine.getItemName()
             );
             if (Objects.isNull(item)) {
                 throw ResourceNotFoundException.raiseException("Can't find item   by " +
                         "item name: " + dbBasedWorkOrderLine.getItemName() +
-                        "warehouse id: " + warehouseId);
+                        "warehouse id: " + warehouse.getId());
             }
             workOrderLine.setItemId(item.getId());
         }
@@ -372,13 +372,13 @@ public class DBBasedWorkOrderIntegration {
         if(Objects.isNull(workOrderLine.getInventoryStatusId())) {
             InventoryStatus inventoryStatus =
                     inventoryServiceRestemplateClient.getInventoryStatusByName(
-                            warehouseId, dbBasedWorkOrderLine.getInventoryStatusName()
+                            warehouse.getId(), dbBasedWorkOrderLine.getInventoryStatusName()
                     );
 
             if (Objects.isNull(inventoryStatus)) {
                 throw ResourceNotFoundException.raiseException("Can't find inventory status   by " +
                         "inventory status name: " + dbBasedWorkOrderLine.getInventoryStatusName() +
-                        "warehouse id: " + warehouseId);
+                        "warehouse id: " + warehouse.getId());
             }
 
             workOrderLine.setInventoryStatusId(inventoryStatus.getId()
@@ -388,7 +388,7 @@ public class DBBasedWorkOrderIntegration {
     }
 
 
-    private void setupMissingField(Long warehouseId, WorkOrderByProduct workOrderByProduct,
+    private void setupMissingField(Warehouse warehouse, WorkOrderByProduct workOrderByProduct,
                                    DBBasedWorkOrderByProduct dbBasedWorkOrderByProduct){
 
 
@@ -397,7 +397,7 @@ public class DBBasedWorkOrderIntegration {
         if(Objects.isNull(workOrderByProduct.getItemId())) {
             workOrderByProduct.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
-                            warehouseId, dbBasedWorkOrderByProduct.getItemName()
+                            warehouse.getCompany().getId(), warehouse.getId(), dbBasedWorkOrderByProduct.getItemName()
                     ).getId()
             );
         }
@@ -408,7 +408,7 @@ public class DBBasedWorkOrderIntegration {
         if(Objects.isNull(workOrderByProduct.getInventoryStatusId())) {
             workOrderByProduct.setInventoryStatusId(
                     inventoryServiceRestemplateClient.getInventoryStatusByName(
-                            warehouseId, dbBasedWorkOrderByProduct.getInventoryStatusName()
+                            warehouse.getId(), dbBasedWorkOrderByProduct.getInventoryStatusName()
                     ).getId()
             );
         }

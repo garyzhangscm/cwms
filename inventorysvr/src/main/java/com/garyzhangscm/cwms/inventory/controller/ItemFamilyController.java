@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.BillableEndpointAspect;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.ItemFamily;
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class ItemFamilyController {
@@ -37,11 +40,27 @@ public class ItemFamilyController {
             .getLogger(ItemFamilyController.class);
     @Autowired
     ItemFamilyService itemFamilyService;
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @RequestMapping(value="/item-families", method = RequestMethod.GET)
-    public List<ItemFamily> findAllItemFaimlies(@RequestParam Long companyId,
+    public List<ItemFamily> findAllItemFaimlies(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                                 @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
                                                 @RequestParam(name="name", required = false, defaultValue = "") String name) {
+
+        // company ID or warehouse id is required
+        if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
+
+            throw MissingInformationException.raiseException("company information or warehouse id is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            companyId =
+                    warehouseLayoutServiceRestemplateClient
+                            .getWarehouseById(warehouseId).getCompanyId();
+        }
+
         logger.debug("Start to call findAllItemFaimlies with parameters " +
                 "company id: {}, warehouse id: {}, name: {}",
                 companyId, warehouseId, name);
