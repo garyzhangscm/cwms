@@ -56,6 +56,8 @@ public class ItemController {
                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
                                    @RequestParam(name="itemFamilyIds", required = false, defaultValue = "") String itemFamilyIds,
                                    @RequestParam(name="itemIdList", required = false, defaultValue = "") String itemIdList,
+                                   @RequestParam(name="companyItem", required = false, defaultValue = "") Boolean companyItem,
+                                   @RequestParam(name="warehouseSpecificItem", required = false, defaultValue = "") Boolean warehouseSpecificItem,
                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
 
         // company ID or warehouse id is required
@@ -71,7 +73,7 @@ public class ItemController {
                             .getWarehouseById(warehouseId).getCompanyId();
         }
 
-        return itemService.findAll(companyId, warehouseId, name, clientIds, itemFamilyIds, itemIdList, loadDetails);
+        return itemService.findAll(companyId, warehouseId, name, clientIds, itemFamilyIds, itemIdList, companyItem, warehouseSpecificItem,  loadDetails);
     }
 
     @RequestMapping(value="/items/{id}", method = RequestMethod.GET)

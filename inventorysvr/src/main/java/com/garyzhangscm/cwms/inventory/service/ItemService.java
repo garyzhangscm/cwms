@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
@@ -103,6 +104,8 @@ public class ItemService implements TestDataInitiableService{
                               String clientIds,
                               String itemFamilyIds,
                               String itemIdList,
+                              Boolean companyItem,
+                              Boolean warehouseSpecificItem,
                               boolean loadDetails) {
 
         List<Item> items = itemRepository.findAll(
@@ -155,13 +158,20 @@ public class ItemService implements TestDataInitiableService{
                 // and the company level item information.
                 // otherwise, return the company level item information
                 Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
-                if (Objects.nonNull(warehouseId)) {
+                if (Objects.nonNull(warehouseId) && Boolean.TRUE.equals(warehouseSpecificItem)) {
+                        // return the item that specific at the warehouse level
+                        return criteriaBuilder.and(
+                                    predicate,
+                                    criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                }
+                else if (Objects.nonNull(warehouseId) && !Boolean.TRUE.equals(companyItem)) {
                     return criteriaBuilder.and(predicate,
                             criteriaBuilder.or(
                                     criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
                                     criteriaBuilder.isNull(root.get("warehouseId"))));
                 }
-                else  {
+                else {
                     return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
                 }
             }
@@ -387,17 +397,146 @@ public class ItemService implements TestDataInitiableService{
 
 
     public Item addItem(Item item) {
+
         item.getItemPackageTypes().forEach(itemPackageType -> {
             itemPackageType.setItem(item);
+            if(Objects.isNull(item.getItemFamily().getId())) {
+                item.setItemFamily(getOrCreateItemFamily(item.getItemFamily()));
+            }
             itemPackageType.getItemUnitOfMeasures().forEach(
-                    itemUnitOfMeasure -> itemUnitOfMeasure.setItemPackageType(
-                            itemPackageType
-                    )
+                    itemUnitOfMeasure -> {
+                        itemUnitOfMeasure.setItemPackageType(
+                                itemPackageType
+                        );
+                        if (Objects.isNull(itemUnitOfMeasure.getUnitOfMeasureId())) {
+                            //we will need to get the unit of measure. If it doesn't exists yet
+                            // we will create it on the fly
+                            logger.debug("unit of measure id is null when creating item {}, item package type {}, item unit of measure {}",
+                                    item.getName(),
+                                    itemPackageType.getName(),
+                                    itemUnitOfMeasure.getUnitOfMeasure().getName());
+                            UnitOfMeasure unitOfMeasure = null;
+                            try {
+                                unitOfMeasure = getOrCreateUnitOfMeasure(itemUnitOfMeasure.getUnitOfMeasure());
+                            } catch (JsonProcessingException e) {
+                                e.printStackTrace();
+                            }
+                            itemUnitOfMeasure.setUnitOfMeasureId(unitOfMeasure.getId());
+                        }
+                    }
             );
 
         });
 
         return  saveOrUpdate(item);
+    }
+
+    /**
+     * Get item family. If the item family  doesn't exists yet, we will create it
+     * on the fly
+     * use for multi warehouse support
+     * @param itemFamily
+     * @return
+     */
+    private ItemFamily getOrCreateItemFamily(ItemFamily itemFamily) {
+        if (Objects.nonNull(itemFamily.getId())) {
+            return itemFamily;
+        }
+        ItemFamily existingItemFamily = null;
+        if (Objects.nonNull(itemFamily.getWarehouseId())) {
+            // MULTI-warehouse support:
+            // warehouse id is on the unit of measure, let's
+            // get the warehouse specific unit of measure
+            logger.debug("start to get the item family {} by warehouse id {}",
+                    itemFamily.getName(), itemFamily.getWarehouseId());
+            List<ItemFamily> itemFamilies
+                    = itemFamilyService.findAll(
+                                itemFamily.getCompanyId(),
+                                itemFamily.getWarehouseId(),
+                                itemFamily.getName(), false, true, false
+                        );
+            if (!itemFamilies.isEmpty()) {
+                existingItemFamily = itemFamilies.get(0);
+            }
+            logger.debug(">> get existingItemFamily? {}", Objects.nonNull(existingItemFamily) );
+        }
+        else  {
+
+            logger.debug("start to get the item family {} by company id {}",
+                    itemFamily.getName(), itemFamily.getCompanyId());
+            List<ItemFamily> itemFamilies
+                    = itemFamilyService.findAll(
+                    itemFamily.getCompanyId(), null,
+                    itemFamily.getName(), true, false, false
+            );
+            if (!itemFamilies.isEmpty()) {
+                existingItemFamily = itemFamilies.get(0);
+            }
+            logger.debug(">> get existingItemFamily? {}", Objects.nonNull(existingItemFamily) );
+        }
+        if (Objects.isNull(existingItemFamily)) {
+            logger.debug("start to create item family {} ", itemFamily);
+            existingItemFamily = itemFamilyService.save(
+                    itemFamily
+            );
+            logger.debug(">> item family created! {}", Objects.nonNull(existingItemFamily) );
+
+        }
+        return existingItemFamily;
+    }
+
+    /**
+     * Get unit of measure. If the unit of measure doesn't exists yet, we will create it
+     * on the fly
+     * use for multi warehouse support
+     * @param unitOfMeasure
+     * @return
+     */
+    private UnitOfMeasure getOrCreateUnitOfMeasure(UnitOfMeasure unitOfMeasure) throws JsonProcessingException {
+        if (Objects.nonNull(unitOfMeasure.getId())) {
+            logger.debug("getOrCreateUnitOfMeasure: we already have the unit of measure created! id {}, name {}",
+                    unitOfMeasure.getId(), unitOfMeasure.getName());
+            return unitOfMeasure;
+        }
+
+        UnitOfMeasure existingUnitOfMeasure;
+        if (Objects.nonNull(unitOfMeasure.getWarehouseId())) {
+            // MULTI-warehouse support:
+            // warehouse id is on the unit of measure, let's
+            // get the warehouse specific unit of measure
+            logger.debug("start to get the unit of measure {} by warehouse id {}",
+                    unitOfMeasure.getName(), unitOfMeasure.getWarehouseId());
+            existingUnitOfMeasure
+                    = commonServiceRestemplateClient.getUnitOfMeasureByName(
+                        unitOfMeasure.getCompanyId(),
+                        unitOfMeasure.getWarehouseId(),
+                        unitOfMeasure.getName(), false, true
+                    );
+            logger.debug(">> get existingUnitOfMeasure? {}", Objects.nonNull(existingUnitOfMeasure) );
+        }
+        else  {
+
+            logger.debug("start to get the unit of measure {} by company id {}",
+                    unitOfMeasure.getName(), unitOfMeasure.getCompanyId());
+            existingUnitOfMeasure
+                    = commonServiceRestemplateClient.getUnitOfMeasureByName(
+                    unitOfMeasure.getCompanyId(),
+                    null,
+                    unitOfMeasure.getName(), true, false
+            );
+            logger.debug(">> get existingUnitOfMeasure? {}", Objects.nonNull(existingUnitOfMeasure) );
+        }
+        if (Objects.isNull(existingUnitOfMeasure)) {
+            logger.debug("start to create unit of measure {} ", unitOfMeasure);
+            existingUnitOfMeasure = commonServiceRestemplateClient.createUnitOfMeasure(
+                    unitOfMeasure
+            );
+            logger.debug(">> unit of measure created! {}", Objects.nonNull(existingUnitOfMeasure) );
+
+        }
+        return existingUnitOfMeasure;
+
+
     }
 
     public Item changeItem(Long id, Item item) {

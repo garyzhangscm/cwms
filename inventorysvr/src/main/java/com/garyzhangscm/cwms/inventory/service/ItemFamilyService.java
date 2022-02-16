@@ -62,10 +62,14 @@ public class ItemFamilyService implements TestDataInitiableService{
     }
 
     public List<ItemFamily> findAll(Long companyId,
-                                    Long warehouseId, String name) {
-        return findAll(companyId, warehouseId, name, true);
+                                    Long warehouseId, String name,
+                                    Boolean companyItemFamily,
+                                    Boolean warehouseSpecificItemFamily) {
+        return findAll(companyId, warehouseId, name, companyItemFamily, warehouseSpecificItemFamily, true);
     }
-    public List<ItemFamily> findAll(Long companyId, Long warehouseId, String name, boolean loadAttributes) {
+    public List<ItemFamily> findAll(Long companyId, Long warehouseId, String name,
+                                    Boolean companyItem,
+                                    Boolean warehouseSpecificItem, boolean loadAttributes) {
 
 
         List<ItemFamily> itemFamilies = itemFamilyRepository.findAll(
@@ -86,7 +90,15 @@ public class ItemFamilyService implements TestDataInitiableService{
                     // and the company level item information.
                     // otherwise, return the company level item information
                     Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
-                    if (Objects.nonNull(warehouseId)) {
+
+                    if (Objects.nonNull(warehouseId) && Boolean.TRUE.equals(warehouseSpecificItem)) {
+                        // return the item that specific at the warehouse level
+                        return criteriaBuilder.and(
+                                predicate,
+                                criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
+                    else if (Objects.nonNull(warehouseId) && !Boolean.TRUE.equals(companyItem)) {
                         return criteriaBuilder.and(predicate,
                                 criteriaBuilder.or(
                                         criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
@@ -134,6 +146,7 @@ public class ItemFamilyService implements TestDataInitiableService{
                 // this record from the result
                 itemFamilyIterator.remove();
             }
+            itemFamilyProcessed.add(itemFamily.getName());
         }
     }
 
@@ -143,7 +156,7 @@ public class ItemFamilyService implements TestDataInitiableService{
 
     private void loadAttributes(ItemFamily itemFamily) {
         itemFamily.setTotalItemCount(
-                itemFamilyRepository.getItemCount(itemFamily.getId())
+                itemFamilyRepository.getItemCount(itemFamily.getName())
         );
     }
 

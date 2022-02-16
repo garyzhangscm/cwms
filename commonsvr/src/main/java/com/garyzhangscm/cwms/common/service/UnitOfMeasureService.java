@@ -57,7 +57,9 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
         return unitOfMeasureRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("unit of measure not found by id: " + id));}
 
-    public List<UnitOfMeasure> findAll(Long companyId, Long warehouseId, String name) {
+    public List<UnitOfMeasure> findAll(Long companyId, Long warehouseId, String name,
+                                       Boolean companyUnitOfMeasure,
+                                       Boolean warehouseSpecificUnitOfMeasure) {
         List<UnitOfMeasure> unitOfMeasures =  unitOfMeasureRepository.findAll(
                 (Root<UnitOfMeasure> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -80,7 +82,15 @@ public class UnitOfMeasureService implements  TestDataInitiableService{
                     // and the company level item information.
                     // otherwise, return the company level item information
                     Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
-                    if (Objects.nonNull(warehouseId)) {
+
+                    if (Objects.nonNull(warehouseId) && Boolean.TRUE.equals(warehouseSpecificUnitOfMeasure)) {
+                        // return the item that specific at the warehouse level
+                        return criteriaBuilder.and(
+                                predicate,
+                                criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    }
+                    else if (Objects.nonNull(warehouseId) && !Boolean.TRUE.equals(companyUnitOfMeasure)) {
                         return criteriaBuilder.and(predicate,
                                 criteriaBuilder.or(
                                         criteriaBuilder.equal(root.get("warehouseId"), warehouseId),

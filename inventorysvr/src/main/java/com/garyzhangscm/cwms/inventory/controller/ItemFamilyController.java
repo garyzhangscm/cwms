@@ -46,6 +46,8 @@ public class ItemFamilyController {
     @RequestMapping(value="/item-families", method = RequestMethod.GET)
     public List<ItemFamily> findAllItemFaimlies(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                                 @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
+                                                @RequestParam(name="companyItem", required = false, defaultValue = "") Boolean companyItem,
+                                                @RequestParam(name="warehouseSpecificItem", required = false, defaultValue = "") Boolean warehouseSpecificItem,
                                                 @RequestParam(name="name", required = false, defaultValue = "") String name) {
 
         // company ID or warehouse id is required
@@ -64,7 +66,7 @@ public class ItemFamilyController {
         logger.debug("Start to call findAllItemFaimlies with parameters " +
                 "company id: {}, warehouse id: {}, name: {}",
                 companyId, warehouseId, name);
-        return itemFamilyService.findAll(companyId, warehouseId, name);
+        return itemFamilyService.findAll(companyId, warehouseId, name, companyItem, warehouseSpecificItem);
     }
 
     @RequestMapping(value="/item-family/{id}", method = RequestMethod.GET)

@@ -31,4 +31,8 @@ public interface ItemFamilyRepository extends JpaRepository<ItemFamily, Long>, J
 
     @Query("select count(distinct i.name) from Item i where i.itemFamily.id = :id ")
     Integer getItemCount(Long id);
+
+    @Query("select count(distinct i.name) from Item i where i.itemFamily.name = :name ")
+    Integer getItemCount(String name);
+
 }
