@@ -48,6 +48,8 @@ public class UnitOfMeasureController {
     @RequestMapping(value="/unit-of-measures", method = RequestMethod.GET)
     public List<UnitOfMeasure> findAllUnitOfMeasures(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                                      @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
+                                                     @RequestParam(name="companyItem", required = false, defaultValue = "") Boolean companyUnitOfMeasure,
+                                                     @RequestParam(name="warehouseSpecificItem", required = false, defaultValue = "") Boolean warehouseSpecificUnitOfMeasure,
                                                      @RequestParam(required = false, name = "name", defaultValue = "") String name) {
 
         // company ID or warehouse id is required
@@ -62,7 +64,7 @@ public class UnitOfMeasureController {
                     warehouseLayoutServiceRestemplateClient
                             .getWarehouseById(warehouseId).getCompanyId();
         }
-        return unitOfMeasureService.findAll(companyId, warehouseId, name);
+        return unitOfMeasureService.findAll(companyId, warehouseId, name, companyUnitOfMeasure, warehouseSpecificUnitOfMeasure);
     }
 
 

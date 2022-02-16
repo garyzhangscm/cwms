@@ -35,9 +35,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class CommonServiceRestemplateClient {
@@ -154,14 +156,34 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
+        return getUnitOfMeasureByName(null, warehouseId, name, null, null);
+    }
+    public UnitOfMeasure getUnitOfMeasureByName(Long companyId,
+                                                Long warehouseId, String name,
+                                                Boolean companyUnitOfMeasure,
+                                                Boolean warehouseSpecificUnitOfMeasure) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures")
-                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
+
+        if (Objects.nonNull(companyId)) {
+            builder = builder.queryParam("companyId", companyId);
+        }
+        if (Objects.nonNull(warehouseId)) {
+            builder = builder.queryParam("warehouseId", warehouseId);
+        }
+        if (Objects.nonNull(companyUnitOfMeasure)) {
+            builder = builder.queryParam("companyUnitOfMeasure", companyUnitOfMeasure);
+        }
+        if (Objects.nonNull(warehouseSpecificUnitOfMeasure)) {
+            builder = builder.queryParam("warehouseSpecificUnitOfMeasure", warehouseSpecificUnitOfMeasure);
+        }
 
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -178,6 +200,24 @@ public class CommonServiceRestemplateClient {
         else {
             return unitOfMeasures.get(0);
         }
+    }
+
+
+    public UnitOfMeasure createUnitOfMeasure(UnitOfMeasure unitOfMeasure) throws JsonProcessingException {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/unit-of-measures") ;
+
+        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(unitOfMeasure)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
     public WorkTask addWorkTask(WorkTask workTask) {
