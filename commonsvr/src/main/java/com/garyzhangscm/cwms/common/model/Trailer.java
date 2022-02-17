@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.outbound.model;
+package com.garyzhangscm.cwms.common.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -6,44 +6,84 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Trailer  {
+@Entity
+@Table(name = "trailer")
+public class Trailer  extends AuditibleEntity<String>{
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "trailer_id")
+    @JsonProperty(value="id")
     private Long id;
 
+    // the company that the trailer belongs to
+    @Column(name = "company_id")
+    private Long companyId;
+
+    // the warehouse that the trailer is current in
+    @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Transient
     private Warehouse warehouse;
 
-    private List<Stop> stops = new ArrayList<>();
 
+    @Column(name = "driver_first_name")
     private String driverFirstName;
 
+    @Column(name = "driver_last_name")
     private String driverLastName;
 
+    @Column(name = "driver_phone")
     private String driverPhone;
 
 
+    @Column(name = "license_plate_number")
     private String licensePlateNumber;
 
+    @Column(name = "number")
     private String number;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "size")
     private String size;
 
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private TrailerType type;
 
-    private Long carrierId;
+    @Column(name = "category")
+    @Enumerated(EnumType.STRING)
+    private TrailerCategory category;
 
+
+    @ManyToOne
+    @JoinColumn(name="carrier_id")
     private Carrier carrier;
 
-    private Long carrierServiceLevelId;
-
+    @ManyToOne
+    @JoinColumn(name="carrier_service_level_id")
     private CarrierServiceLevel carrierServiceLevel;
 
 
+    @OneToMany(
+            mappedBy = "trailer",
+            orphanRemoval = true,
+            cascade = CascadeType.ALL
+    )
+    private List<TrailerContainer> containers = new ArrayList<>();
+
+    // Where the trailer is parking. Normally it is
+    // either dock or yard
+    @Column(name = "location_id")
     private Long locationId;
 
+    @Transient
     private Location location;
 
+    @Column(name = "status")
     private TrailerStatus status;
 
     public Long getId() {
@@ -54,13 +94,6 @@ public class Trailer  {
         this.id = id;
     }
 
-    public List<Stop> getStops() {
-        return stops;
-    }
-
-    public void setStops(List<Stop> stops) {
-        this.stops = stops;
-    }
 
     public String getDriverFirstName() {
         return driverFirstName;
@@ -94,12 +127,36 @@ public class Trailer  {
         this.licensePlateNumber = licensePlateNumber;
     }
 
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public List<TrailerContainer> getContainers() {
+        return containers;
+    }
+
+    public void setContainers(List<TrailerContainer> containers) {
+        this.containers = containers;
+    }
+
     public String getNumber() {
         return number;
     }
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getSize() {
@@ -118,13 +175,6 @@ public class Trailer  {
         this.type = type;
     }
 
-    public Long getCarrierId() {
-        return carrierId;
-    }
-
-    public void setCarrierId(Long carrierId) {
-        this.carrierId = carrierId;
-    }
 
     public Carrier getCarrier() {
         return carrier;
@@ -134,13 +184,6 @@ public class Trailer  {
         this.carrier = carrier;
     }
 
-    public Long getCarrierServiceLevelId() {
-        return carrierServiceLevelId;
-    }
-
-    public void setCarrierServiceLevelId(Long carrierServiceLevelId) {
-        this.carrierServiceLevelId = carrierServiceLevelId;
-    }
 
     public CarrierServiceLevel getCarrierServiceLevel() {
         return carrierServiceLevel;
@@ -188,5 +231,13 @@ public class Trailer  {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public TrailerCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(TrailerCategory category) {
+        this.category = category;
     }
 }

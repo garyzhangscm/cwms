@@ -20,7 +20,6 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Stop;
-import com.garyzhangscm.cwms.outbound.model.Trailer;
 import com.garyzhangscm.cwms.outbound.service.StopService;
 import com.garyzhangscm.cwms.outbound.service.TrailerService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -30,9 +30,10 @@ public class Stop  extends AuditibleEntity<String> {
     @Transient
     private Warehouse warehouse;
 
-    @ManyToOne
-    @JoinColumn(name = "trailer_id")
-    @JsonIgnore
+    @Column(name = "trailer_id")
+    private Long trailerId;
+
+    @Transient
     private Trailer trailer;
 
     public Long getId() {
@@ -73,5 +74,13 @@ public class Stop  extends AuditibleEntity<String> {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getTrailerId() {
+        return trailerId;
+    }
+
+    public void setTrailerId(Long trailerId) {
+        this.trailerId = trailerId;
     }
 }

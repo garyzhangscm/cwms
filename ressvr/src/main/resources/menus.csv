@@ -46,7 +46,6 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Grid",menu.main.outbound.grid,/outbound/grid,7,Main-Menu-Outbound,Outbound-Grid,,true,false
 "Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,8,Main-Menu-Outbound,Outbound-PickConfirm,,true,false
 "Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,9,Main-Menu-Outbound,Outbound-ShortAllocation,,true,false
-"Trailer",menu.main.outbound.trailer,/outbound/trailer,10,Main-Menu-Outbound,Outbound-Trailer,,true,false
 "Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration,,true,false
 "Order Activity",menu.main.outbound.order-activity,/outbound/order-activity,12,Main-Menu-Outbound,Outbound-OrderActivity,,true,false
 "Allocation Transaction History",menu.main.outbound.allocation-transaction-history,/outbound/allocation-transaction-history,13,Main-Menu-Outbound,Outbound-AllocTransHistory,,true,false
@@ -69,6 +68,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false
 "Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer,,true,false
 "Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure,,true,false
+"Trailer",menu.main.common.trailer,/common/trailer,5,Main-Menu-Common,Common-Trailer,,true,false
 "File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client,,true,false
 "Test Data Initial",menu.main.util.test-data-init,,2,Main-Menu-Util,Util-TestDataInit,,true,true
 "Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester,,true,true

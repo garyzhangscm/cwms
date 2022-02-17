@@ -70,6 +70,63 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+
+    public List<Location> findEmptyDockLocations(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/dock")
+                        .queryParam("empty", true)
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Location>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location checkInTrailerAtDockLocations(Long dockLocationId, Long trailerId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/dock/{id}/check-in-trailer")
+                        .queryParam("trailerId", trailerId);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(dockLocationId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location dispatchTrailerFromDockLocations(Long dockLocationId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/dock/{id}/dispatch-trailer");
+
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(dockLocationId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public Location getTrailerLocation(Long warehouseId, Long trailerId) {
+        String locationName = "TRLR-" + trailerId;
+        return getLocationByName(warehouseId, locationName);
+    }
     @Cacheable(cacheNames = "common_warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =

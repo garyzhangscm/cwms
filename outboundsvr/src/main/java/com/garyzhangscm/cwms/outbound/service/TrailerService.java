@@ -21,12 +21,8 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
-import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.repository.StopRepository;
-import com.garyzhangscm.cwms.outbound.repository.TrailerRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -43,67 +38,16 @@ public class TrailerService {
     private static final Logger logger = LoggerFactory.getLogger(TrailerService.class);
 
     @Autowired
-    private TrailerRepository trailerRepository;
-    @Autowired
     private ShipmentService shipmentService;
-
     @Autowired
     private StopService stopService;
 
     @Autowired
-    private CommonServiceRestemplateClient commonServiceRestemplateClient;
-    @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
-
-
-    public Trailer findById(Long id) {
-        return trailerRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFoundException.raiseException("trailer not found by id: " + id));
-    }
-
-
-    public List<Trailer> findAll(String number) {
-        if (!StringUtils.isBlank(number)) {
-            return findByNumber(number);
-        }
-        else {
-            return trailerRepository.findAll();
-        }
-    }
-
-    public List<Trailer> findByNumber(String number) {
-        return trailerRepository.findByNumber(number);
-
-    }
-
-
-    public Trailer save(Trailer trailer) {
-        return trailerRepository.save(trailer);
-    }
-
-    public Trailer saveAndFlush(Trailer trailer) {
-        return trailerRepository.saveAndFlush(trailer);
-    }
-
-
-    public void delete(Trailer trailer) {
-        trailerRepository.delete(trailer);
-    }
-
-    public void delete(Long id) {
-        trailerRepository.deleteById(id);
-    }
-
-    public void delete(String trailerIds) {
-        if (!trailerIds.isEmpty()) {
-            long[] trailerIdArray = Arrays.asList(trailerIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
-            for (long id : trailerIdArray) {
-                delete(id);
-            }
-        }
-    }
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     public Trailer completeShipment(Shipment shipment) throws IOException {
         Trailer trailer = createFakeTrailer(shipment);
@@ -136,7 +80,8 @@ public class TrailerService {
         else {
             trailer.setStatus(TrailerStatus.LOADED);
         }
-        return save(trailer);
+
+        return trailer;
 
     }
 
@@ -164,8 +109,11 @@ public class TrailerService {
     }
 
     public Trailer checkInTrailer(Long trailerId, Location dockLocation) {
-        return checkInTrailer(findById(trailerId), dockLocation);
+        return checkInTrailer(
+                commonServiceRestemplateClient.getTrailerById(trailerId), dockLocation);
     }
+
+
     // Check in the trailer, when the trailer actually arrives at the warehouse
     // We will create a temporary location for the trailer so when we
     // actually load the inventory onto the trailer, we will systematically move
@@ -174,11 +122,12 @@ public class TrailerService {
 
         warehouseLayoutServiceRestemplateClient.checkInTrailerAtDockLocations(dockLocation.getId(), trailer.getId());
         trailer.setLocationId(dockLocation.getId());
-        return save(trailer);
+        // return save(trailer);
+        return  trailer;
     }
 
     public Trailer dispatchTrailer(Long trailerId) {
-        return dispatchTrailer(findById(trailerId));
+        return dispatchTrailer(commonServiceRestemplateClient.getTrailerById(trailerId));
     }
 
     public Trailer dispatchTrailer(Trailer trailer) {
@@ -188,7 +137,7 @@ public class TrailerService {
         trailer.setStatus(TrailerStatus.DISPATCHED);
 
         // complete all the stops in the trailer
-        trailer = saveAndFlush(trailer);
+        // trailer = saveAndFlush(trailer);
         logger.debug("Start to complete all the {} stops for this trailer {}:",
                 trailer.getStops().size(), trailer.getId());
         trailer.getStops().stream().forEach(
@@ -238,7 +187,7 @@ public class TrailerService {
         trailer.setStatus(TrailerStatus.PENDING);
         trailer.setWarehouseId(shipment.getWarehouseId());
 
-        trailer = save(trailer);
+        // trailer = save(trailer);
         logger.debug("Trailer {} / {} created!", trailer.getId(), trailer.getNumber());
         // Refresh the stop with the new trailer;
         shipment.getStop().setTrailer(trailer);
@@ -258,7 +207,7 @@ public class TrailerService {
                 stopService.findById(shipment.getStop().getId()).getTrailer().getId());
         logger.debug("Now trailer {} has {} stops",
                 trailer.getId(),
-                findById(trailer.getId()).getStops().size());
+                commonServiceRestemplateClient.getTrailerById(trailer.getId()).getStops().size());
 
         return trailer;
     }
