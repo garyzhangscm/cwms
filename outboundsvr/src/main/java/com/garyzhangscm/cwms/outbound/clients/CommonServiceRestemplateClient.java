@@ -39,6 +39,24 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+
+    public Trailer getTrailerById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/trailers/{id}");
+
+        ResponseBodyWrapper<Trailer> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Trailer>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

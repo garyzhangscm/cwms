@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.outbound.controller;
+package com.garyzhangscm.cwms.common.controller;
 
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.Location;
-import com.garyzhangscm.cwms.outbound.model.Trailer;
-import com.garyzhangscm.cwms.outbound.service.TrailerService;
+import com.garyzhangscm.cwms.common.model.BillableEndpoint;
+import com.garyzhangscm.cwms.common.model.Location;
+import com.garyzhangscm.cwms.common.model.Trailer;
+import com.garyzhangscm.cwms.common.service.TrailerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,12 +54,6 @@ public class TrailerController {
     @RequestMapping(value="/trailers/{id}", method = RequestMethod.PUT)
     public Trailer changeTrailer(@RequestBody Trailer trailer){
         return trailerService.save(trailer);
-    }
-
-    @BillableEndpoint
-    @RequestMapping(value="/trailers", method = RequestMethod.DELETE)
-    public void removeTrailers(@RequestParam(name = "trailer_ids", required = false, defaultValue = "") String trailerIds) {
-        trailerService.delete(trailerIds);
     }
 
 

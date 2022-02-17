@@ -6,76 +6,44 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "trailer")
-public class Trailer  extends AuditibleEntity<String>{
+public class Trailer  {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "trailer_id")
-    @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "warehouse_id")
     private Long warehouseId;
 
-    @Transient
     private Warehouse warehouse;
 
-    @OneToMany(
-            mappedBy = "trailer",
-            cascade = CascadeType.REMOVE,
-            fetch = FetchType.EAGER
-
-    )
     private List<Stop> stops = new ArrayList<>();
 
-    @Column(name = "driver_first_name")
     private String driverFirstName;
 
-    @Column(name = "driver_last_name")
     private String driverLastName;
 
-    @Column(name = "driver_phone")
     private String driverPhone;
 
 
-    @Column(name = "license_plate_number")
     private String licensePlateNumber;
 
-    @Column(name = "number")
     private String number;
 
-    @Column(name = "size")
     private String size;
 
-    @Column(name = "type")
-    @Enumerated(EnumType.STRING)
     private TrailerType type;
 
-    @Column(name = "carrier_id")
     private Long carrierId;
 
-    @Transient
     private Carrier carrier;
 
-
-    @Column(name = "carrier_service_level_id")
     private Long carrierServiceLevelId;
 
-    @Transient
     private CarrierServiceLevel carrierServiceLevel;
 
 
-    // Where the trailer is parking. Normally it is
-    // either dock or yard
-    @Column(name = "location_id")
     private Long locationId;
 
-    @Transient
     private Location location;
 
-    @Column(name = "status")
     private TrailerStatus status;
 
     public Long getId() {

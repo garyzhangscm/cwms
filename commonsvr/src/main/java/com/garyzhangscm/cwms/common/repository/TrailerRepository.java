@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.outbound.repository;
+package com.garyzhangscm.cwms.common.repository;
 
 
-import com.garyzhangscm.cwms.outbound.model.Trailer;
+import com.garyzhangscm.cwms.common.model.Trailer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
