@@ -44,4 +44,6 @@ public class KafkaSender {
             send("SYSTEM_ERROR", ex.getMessage());
         }
     }
+
+
 }

@@ -30,5 +30,5 @@ import java.util.List;
 @Repository
 public interface TrailerRepository extends JpaRepository<Trailer, Long>, JpaSpecificationExecutor<Trailer> {
 
-    List<Trailer> findByNumber(String number);
+    List<Trailer> findByWarehouseIdAndNumber(Long warehouseId, String number);
 }

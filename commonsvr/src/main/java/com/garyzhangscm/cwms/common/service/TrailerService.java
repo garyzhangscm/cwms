@@ -57,17 +57,9 @@ public class TrailerService {
     }
 
 
-    public List<Trailer> findAll(String number) {
-        if (!StringUtils.isBlank(number)) {
-            return findByNumber(number);
-        }
-        else {
-            return trailerRepository.findAll();
-        }
-    }
 
-    public List<Trailer> findByNumber(String number) {
-        return trailerRepository.findByNumber(number);
+    public List<Trailer> findByNumber(Long warehouseId, String number) {
+        return trailerRepository.findByWarehouseIdAndNumber(warehouseId, number);
 
     }
 

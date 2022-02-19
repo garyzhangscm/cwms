@@ -31,6 +31,5 @@ import java.util.List;
 @Repository
 public interface StopRepository extends JpaRepository<Stop, Long>, JpaSpecificationExecutor<Stop> {
 
-    @Query("select s from Stop s inner join s.trailer t where t.id = :trailerId")
     List<Stop> findByTrailerId(Long trailerId);
 }

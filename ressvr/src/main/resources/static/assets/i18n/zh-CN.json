@@ -1657,5 +1657,13 @@
   "alreadyAllocatedQuantity": "已分配数量",
   "isSkippedFlag": "跳过",
   "isAllocatedByLPNFlag": "按LPN 分配",
-  "isRoundUpFlag": "允许取整"
+  "isRoundUpFlag": "允许取整",
+  "menu.main.common.trailer": "车辆管理",
+  "company-wide": "公司级别",
+  "menu.main.common.trailer-container": "集装箱",
+  "trailer-container.maintenance": "集装箱维护",
+  "location-group.allowEmptyLocation": "允许清空库位",
+  "location.emptyInProcess": "正在清空库位",
+  "emptyLocation": "清空库位",
+  "empty-location-warning": "该操作将清空当前库位下的所有库存"
 }

@@ -34,6 +34,15 @@ public class KafkaSender {
         kafkaTemplate.send(topic, key, message);
     }
 
+    public <K, V> void send(String topic, K key, V value) {
+        try {
+            send(topic, objectMapper.writeValueAsString(key), objectMapper.writeValueAsString(value));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
 
     public void send(InventoryActivity inventoryActivity) {
         try {
