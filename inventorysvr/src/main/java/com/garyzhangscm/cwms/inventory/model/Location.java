@@ -56,6 +56,7 @@ public class Location {
     private String reservedCode;
 
     private Warehouse warehouse;
+    private Boolean locked;
 
     @Override
     public Object clone() {
@@ -276,5 +277,13 @@ public class Location {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getLocked() {
+        return locked;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
     }
 }

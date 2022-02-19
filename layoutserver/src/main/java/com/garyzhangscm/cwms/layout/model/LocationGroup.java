@@ -60,6 +60,8 @@ public class LocationGroup extends AuditibleEntity<String>{
     private Boolean allowCartonization = false;
     @Column(name = "tracking_volume")
     private Boolean trackingVolume;
+    @Column(name = "allow_empty_location")
+    private Boolean allowEmptyLocation = false;
 
     @Column(name = "volume_tracking_policy")
     @Enumerated(EnumType.STRING)
@@ -189,5 +191,13 @@ public class LocationGroup extends AuditibleEntity<String>{
 
     public void setPickableUnitOfMeasures(List<PickableUnitOfMeasure> pickableUnitOfMeasures) {
         this.pickableUnitOfMeasures = pickableUnitOfMeasures;
+    }
+
+    public Boolean getAllowEmptyLocation() {
+        return allowEmptyLocation;
+    }
+
+    public void setAllowEmptyLocation(Boolean allowEmptyLocation) {
+        this.allowEmptyLocation = allowEmptyLocation;
     }
 }

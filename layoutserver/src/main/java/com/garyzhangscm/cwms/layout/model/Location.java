@@ -284,4 +284,13 @@ public class Location extends AuditibleEntity<String>{
     public void setLocked(Boolean locked) {
         this.locked = locked;
     }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
 }

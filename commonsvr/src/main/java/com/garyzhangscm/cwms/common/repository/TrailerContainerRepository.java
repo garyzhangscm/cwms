@@ -16,20 +16,19 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.outbound.repository;
+package com.garyzhangscm.cwms.common.repository;
 
 
-import com.garyzhangscm.cwms.outbound.model.Stop;
+import com.garyzhangscm.cwms.common.model.Trailer;
+import com.garyzhangscm.cwms.common.model.TrailerContainer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 
 @Repository
-public interface StopRepository extends JpaRepository<Stop, Long>, JpaSpecificationExecutor<Stop> {
+public interface TrailerContainerRepository extends JpaRepository<TrailerContainer, Long>, JpaSpecificationExecutor<TrailerContainer> {
 
-    List<Stop> findByTrailerId(Long trailerId);
 }

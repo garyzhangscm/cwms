@@ -1658,5 +1658,13 @@
   "alreadyAllocatedQuantity": "Already Allocated Quantity",
   "isSkippedFlag": "Skip Flag",
   "isAllocatedByLPNFlag": "Allocated By LPN Flag",
-  "isRoundUpFlag": "Round Up Flag"
+  "isRoundUpFlag": "Round Up Flag",
+  "menu.main.common.trailer": "Trailer",
+  "company-wide": "Company Wide",
+  "menu.main.common.trailer-container": "Trailer Container",
+  "trailer-container.maintenance": "Trailer Container Maintenance",
+  "location-group.allowEmptyLocation": "Allow Empty Location",
+  "location.emptyInProcess": "Empty In Process",
+  "emptyLocation": "Empty Location",
+  "empty-location-warning": "Your action will clear all inventory in the location"
 }

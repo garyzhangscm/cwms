@@ -102,7 +102,9 @@ public class SupplierService implements  TestDataInitiableService{
             removeDuplicatedSupplierRecords(suppliers);
         }
         return suppliers;
-    }/**
+    }
+
+    /**
      * Remove teh duplicated supplier record. If we have 2 record with the same supplier name
      * but different warehouse, then we will remove the one without any warehouse information
      * from the result

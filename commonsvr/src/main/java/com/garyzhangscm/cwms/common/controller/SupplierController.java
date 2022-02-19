@@ -48,7 +48,7 @@ public class SupplierController {
         // company ID or warehouse id is required
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
 
-            throw MissingInformationException.raiseException("company information or warehouse id is required for item integration");
+            throw MissingInformationException.raiseException("company information or warehouse id is required for finding supplier");
         }
         else if (Objects.isNull(companyId)) {
             // if company Id is empty, but we have company code,

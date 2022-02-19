@@ -15,11 +15,16 @@ public class TrailerContainer extends AuditibleEntity<String>{
     @JsonProperty(value="id")
     private Long id;
 
+    // if the container belongs to the company
+    @Column(name = "company_id")
+    private Long companyId;
 
-    @ManyToOne
-    @JoinColumn(name = "trailer_id")
-    @JsonIgnore
-    private Trailer trailer;
+    // if the container belongs to the warehouse
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Transient
+    private Warehouse warehouse;
 
 
     @Column(name = "number")
@@ -29,7 +34,7 @@ public class TrailerContainer extends AuditibleEntity<String>{
     private String description;
 
     @Column(name = "size")
-    private Integer size;
+    private Double size;
 
     public Long getId() {
         return id;
@@ -39,13 +44,6 @@ public class TrailerContainer extends AuditibleEntity<String>{
         this.id = id;
     }
 
-    public Trailer getTrailer() {
-        return trailer;
-    }
-
-    public void setTrailer(Trailer trailer) {
-        this.trailer = trailer;
-    }
 
     public String getNumber() {
         return number;
@@ -63,11 +61,37 @@ public class TrailerContainer extends AuditibleEntity<String>{
         this.description = description;
     }
 
-    public Integer getSize() {
+    public Double getSize() {
         return size;
     }
 
-    public void setSize(Integer size) {
+    public void setSize(Double size) {
         this.size = size;
     }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
+
+
 }

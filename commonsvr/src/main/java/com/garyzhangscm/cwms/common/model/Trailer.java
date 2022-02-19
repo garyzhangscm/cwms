@@ -16,26 +16,14 @@ public class Trailer  extends AuditibleEntity<String>{
     @JsonProperty(value="id")
     private Long id;
 
-    // the company that the trailer belongs to
+
+    // if the trailer is the company's asset
     @Column(name = "company_id")
     private Long companyId;
 
-    // the warehouse that the trailer is current in
+    // if the trailer is the warehouse's asset
     @Column(name = "warehouse_id")
     private Long warehouseId;
-
-    @Transient
-    private Warehouse warehouse;
-
-
-    @Column(name = "driver_first_name")
-    private String driverFirstName;
-
-    @Column(name = "driver_last_name")
-    private String driverLastName;
-
-    @Column(name = "driver_phone")
-    private String driverPhone;
 
 
     @Column(name = "license_plate_number")
@@ -47,33 +35,9 @@ public class Trailer  extends AuditibleEntity<String>{
     @Column(name = "description")
     private String description;
 
-    @Column(name = "size")
-    private String size;
-
-    @Column(name = "type")
-    @Enumerated(EnumType.STRING)
-    private TrailerType type;
-
-    @Column(name = "category")
-    @Enumerated(EnumType.STRING)
-    private TrailerCategory category;
-
-
-    @ManyToOne
-    @JoinColumn(name="carrier_id")
-    private Carrier carrier;
-
-    @ManyToOne
-    @JoinColumn(name="carrier_service_level_id")
-    private CarrierServiceLevel carrierServiceLevel;
-
-
-    @OneToMany(
-            mappedBy = "trailer",
-            orphanRemoval = true,
-            cascade = CascadeType.ALL
-    )
-    private List<TrailerContainer> containers = new ArrayList<>();
+    @OneToOne
+    @JoinColumn(name="trailer_appointment_id")
+    private TrailerAppointment currentAppointment;
 
     // Where the trailer is parking. Normally it is
     // either dock or yard
@@ -86,45 +50,23 @@ public class Trailer  extends AuditibleEntity<String>{
     @Column(name = "status")
     private TrailerStatus status;
 
+
+    // only assigned the permanently attached container
+    @ManyToMany(cascade = {
+            CascadeType.ALL
+    })
+    @JoinTable(name = "trailer_attached_container",
+            joinColumns = @JoinColumn(name = "trailer_id"),
+            inverseJoinColumns = @JoinColumn(name = "trailer_container_id")
+    )
+    private List<TrailerContainer> attachedContainers = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-
-    public String getDriverFirstName() {
-        return driverFirstName;
-    }
-
-    public void setDriverFirstName(String driverFirstName) {
-        this.driverFirstName = driverFirstName;
-    }
-
-    public String getDriverLastName() {
-        return driverLastName;
-    }
-
-    public void setDriverLastName(String driverLastName) {
-        this.driverLastName = driverLastName;
-    }
-
-    public String getDriverPhone() {
-        return driverPhone;
-    }
-
-    public void setDriverPhone(String driverPhone) {
-        this.driverPhone = driverPhone;
-    }
-
-    public String getLicensePlateNumber() {
-        return licensePlateNumber;
-    }
-
-    public void setLicensePlateNumber(String licensePlateNumber) {
-        this.licensePlateNumber = licensePlateNumber;
     }
 
     public Long getCompanyId() {
@@ -135,12 +77,20 @@ public class Trailer  extends AuditibleEntity<String>{
         this.companyId = companyId;
     }
 
-    public List<TrailerContainer> getContainers() {
-        return containers;
+    public Long getWarehouseId() {
+        return warehouseId;
     }
 
-    public void setContainers(List<TrailerContainer> containers) {
-        this.containers = containers;
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public String getLicensePlateNumber() {
+        return licensePlateNumber;
+    }
+
+    public void setLicensePlateNumber(String licensePlateNumber) {
+        this.licensePlateNumber = licensePlateNumber;
     }
 
     public String getNumber() {
@@ -159,46 +109,12 @@ public class Trailer  extends AuditibleEntity<String>{
         this.description = description;
     }
 
-    public String getSize() {
-        return size;
+    public TrailerAppointment getCurrentAppointment() {
+        return currentAppointment;
     }
 
-    public void setSize(String size) {
-        this.size = size;
-    }
-
-    public TrailerType getType() {
-        return type;
-    }
-
-    public void setType(TrailerType type) {
-        this.type = type;
-    }
-
-
-    public Carrier getCarrier() {
-        return carrier;
-    }
-
-    public void setCarrier(Carrier carrier) {
-        this.carrier = carrier;
-    }
-
-
-    public CarrierServiceLevel getCarrierServiceLevel() {
-        return carrierServiceLevel;
-    }
-
-    public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
-        this.carrierServiceLevel = carrierServiceLevel;
-    }
-
-    public TrailerStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TrailerStatus status) {
-        this.status = status;
+    public void setCurrentAppointment(TrailerAppointment currentAppointment) {
+        this.currentAppointment = currentAppointment;
     }
 
     public Long getLocationId() {
@@ -217,27 +133,19 @@ public class Trailer  extends AuditibleEntity<String>{
         this.location = location;
     }
 
-    public Long getWarehouseId() {
-        return warehouseId;
+    public TrailerStatus getStatus() {
+        return status;
     }
 
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
+    public void setStatus(TrailerStatus status) {
+        this.status = status;
     }
 
-    public Warehouse getWarehouse() {
-        return warehouse;
+    public List<TrailerContainer> getAttachedContainers() {
+        return attachedContainers;
     }
 
-    public void setWarehouse(Warehouse warehouse) {
-        this.warehouse = warehouse;
-    }
-
-    public TrailerCategory getCategory() {
-        return category;
-    }
-
-    public void setCategory(TrailerCategory category) {
-        this.category = category;
+    public void setAttachedContainers(List<TrailerContainer> attachedContainers) {
+        this.attachedContainers = attachedContainers;
     }
 }

@@ -38,6 +38,7 @@ public class LocationGroup {
     private Boolean allowCartonization;
     private Boolean trackingVolume;
     private Boolean consolidateLpn;
+    private Boolean allowEmptyLocation = false;
 
     private LocationVolumeTrackingPolicy volumeTrackingPolicy;
 
@@ -137,5 +138,13 @@ public class LocationGroup {
 
     public void setVolumeTrackingPolicy(LocationVolumeTrackingPolicy volumeTrackingPolicy) {
         this.volumeTrackingPolicy = volumeTrackingPolicy;
+    }
+
+    public Boolean getAllowEmptyLocation() {
+        return allowEmptyLocation;
+    }
+
+    public void setAllowEmptyLocation(Boolean allowEmptyLocation) {
+        this.allowEmptyLocation = allowEmptyLocation;
     }
 }
