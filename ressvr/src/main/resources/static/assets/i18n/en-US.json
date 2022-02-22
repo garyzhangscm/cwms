@@ -1670,5 +1670,13 @@
   "tractor": "Tractor",
   "trailer.maintenance": "Trailer Maintenance",
   "tractor.maintenance": "Tractor Maintenance",
-  "menu.main.transport": "Transportation"
+  "menu.main.transport": "Transportation",
+  "current-appointment": "Current Appointment",
+  "add-appointment": "Add Appointment",
+  "TRAILER-APPOINTMENT-TYPE-RECEIVING" :"Receiving",
+  "TRAILER-APPOINTMENT-TYPE-SHIPPING" :"Shipping",
+  "TRAILER-APPOINTMENT-TYPE-STORAGE" :"Storage",
+  "TRACTOR-APPOINTMENT-TYPE-RECEIVING" :"Receiving",
+  "TRACTOR-APPOINTMENT-TYPE-SHIPPING" :"Shipping",
+  "TRACTOR-APPOINTMENT-TYPE-STORAGE" :"Storage"
 }

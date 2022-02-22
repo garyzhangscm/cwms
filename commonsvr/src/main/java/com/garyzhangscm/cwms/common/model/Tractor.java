@@ -35,7 +35,7 @@ public class Tractor  extends AuditibleEntity<String>{
     @Column(name = "description")
     private String description;
 
-    @OneToMany
+    @OneToOne
     @JoinColumn(name="tractor_appointment_id")
     private TractorAppointment currentAppointment;
 
