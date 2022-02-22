@@ -21,8 +21,12 @@ package com.garyzhangscm.cwms.common.service;
 import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.model.*;
-import com.garyzhangscm.cwms.common.repository.TrailerRepository;
+import com.garyzhangscm.cwms.common.exception.TrailerException;
+import com.garyzhangscm.cwms.common.model.Location;
+import com.garyzhangscm.cwms.common.model.Tractor;
+import com.garyzhangscm.cwms.common.model.Trailer;
+import com.garyzhangscm.cwms.common.model.TractorStatus;
+import com.garyzhangscm.cwms.common.repository.TractorRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +42,11 @@ import java.util.*;
 
 
 @Service
-public class TrailerService {
-    private static final Logger logger = LoggerFactory.getLogger(TrailerService.class);
+public class TractorService {
+    private static final Logger logger = LoggerFactory.getLogger(TractorService.class);
 
     @Autowired
-    private TrailerRepository trailerRepository;
+    private TractorRepository tractorRepository;
 
 
     @Autowired
@@ -51,16 +55,16 @@ public class TrailerService {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
-    public Trailer findById(Long id) {
-        return trailerRepository.findById(id)
+    public Tractor findById(Long id) {
+        return tractorRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("trailer not found by id: " + id));
     }
 
 
-    public List<Trailer> findAll(Long companyId, Long warehouseId,
+    public List<Tractor> findAll(Long companyId, Long warehouseId,
                                  String number) {
-        List<Trailer> trailers = trailerRepository.findAll(
-                (Root<Trailer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+        List<Tractor> tractors = tractorRepository.findAll(
+                (Root<Tractor> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
@@ -96,50 +100,94 @@ public class TrailerService {
         // we may get duplicated record from the above query when we pass in the warehouse id
         // if so, we may need to remove the company level item if we have the warehouse level item
         if (Objects.nonNull(warehouseId)) {
-            removeDuplicatedContainerRecords(trailers);
+            removeDuplicatedTractorRecords(tractors);
         }
-        return trailers;
+        return tractors;
     }
-
     /**
-     * Remove the duplicated container record. If we have 2 record with the same container number
+     * Remove the duplicated tractors record. If we have 2 records with the same tractor number
      * but different warehouse, then we will remove the one without any warehouse information
      * from the result
-     * @param trailers
+     * @param tractors
      */
-    private void removeDuplicatedContainerRecords(List<Trailer> trailers) {
-        Iterator<Trailer> containerIterator = trailers.listIterator();
-        Set<String> containerProcessed = new HashSet<>();
-        while(containerIterator.hasNext()) {
-            Trailer container = containerIterator.next();
+    private void removeDuplicatedTractorRecords(List<Tractor> tractors) {
+        Iterator<Tractor> tractorIterator = tractors.listIterator();
+        Set<String> tractorProcessed = new HashSet<>();
+        while(tractorIterator.hasNext()) {
+            Tractor tractor = tractorIterator.next();
 
-            if (containerProcessed.contains(container.getNumber()) &&
-                    Objects.isNull(container.getWarehouseId())) {
+            if (tractorProcessed.contains(tractor.getNumber()) &&
+                    Objects.isNull(tractor.getWarehouseId())) {
                 // ok, we already processed the item and the current
                 // record is a company level item, then we will remove
                 // this record from the result
-                containerIterator.remove();
+                tractorIterator.remove();
             }
-            containerProcessed.add(container.getNumber());
+            tractorProcessed.add(tractor.getNumber());
         }
     }
 
-    public Trailer save(Trailer trailers) {
-        return trailerRepository.save(trailers);
+    public List<Tractor> findByNumber(Long warehouseId, String number) {
+        return tractorRepository.findByWarehouseIdAndNumber(warehouseId, number);
+
+    }
+
+
+    public Tractor save(Tractor tractor) {
+        return tractorRepository.save(tractor);
     }
 
 
 
-    public void delete(Trailer trailers) {
-        trailerRepository.delete(trailers);
+    public void delete(Tractor tractor) {
+        tractorRepository.delete(tractor);
     }
 
     public void delete(Long id) {
-        trailerRepository.deleteById(id);
+        tractorRepository.deleteById(id);
     }
 
 
-    public TrailerAppointment getTrailerCurrentAppointment(Long trailerId) {
-        return findById(trailerId).getCurrentAppointment();
+    // OK, we check in tractor without any suggested dock location. There normally
+    // happens when the trailer is a fake tractor and we don't care about
+    // the actual dock door we check in
+    public Tractor checkInTractor(Tractor tractor) {
+        List<Location> dockLocations = warehouseLayoutServiceRestemplateClient.findEmptyDockLocations(tractor.getWarehouseId());
+        if (dockLocations.size() > 0) {
+            return checkInTractor(tractor, dockLocations.get(0));
+        }
+        throw TrailerException.raiseException(  "Can't find empty dock location to check in");
     }
+
+    public Tractor checkInTractor(Long tractorId, Location dockLocation) {
+        return checkInTractor(findById(tractorId), dockLocation);
+    }
+    // Check in the tractor, when the tractor actually arrives at the warehouse
+    // We will create a temporary location for the tractor so when we
+    // actually load the inventory onto the trailer, we will systematically move
+    // the inventory onto the tractor
+    public Tractor checkInTractor(Tractor tractor, Location dockLocation) {
+
+        warehouseLayoutServiceRestemplateClient.checkInTractorAtDockLocations(dockLocation.getId(), tractor.getId());
+        tractor.setLocationId(dockLocation.getId());
+        return save(tractor);
+    }
+
+    public Tractor dispatchTractor(Long tractorId) {
+        return dispatchTractor(findById(tractorId));
+    }
+
+    public Tractor dispatchTractor(Tractor tractor) {
+
+        warehouseLayoutServiceRestemplateClient.dispatchTractorFromDockLocations(tractor.getLocationId());
+        tractor.setLocationId(null);
+        tractor.setStatus(TractorStatus.DISPATCHED);
+
+        // complete all the stops in the tractor
+        tractor = save(tractor);
+        logger.debug("Set the tractor {}'s status to dispatched", tractor.getNumber());
+        return tractor;
+    }
+
+
 }

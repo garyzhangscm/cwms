@@ -89,12 +89,12 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Location checkInTrailerAtDockLocations(Long dockLocationId, Long trailerId) {
+    public Location checkInTractorAtDockLocations(Long dockLocationId, Long tractorId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/locations/dock/{id}/check-in-trailer")
-                        .queryParam("trailerId", trailerId);
+                        .path("/api/layout/locations/dock/{id}/check-in-tractor")
+                        .queryParam("trailerId", tractorId);
 
         ResponseBodyWrapper<Location> responseBodyWrapper
                 = restTemplate.exchange(
@@ -106,11 +106,11 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Location dispatchTrailerFromDockLocations(Long dockLocationId) {
+    public Location dispatchTractorFromDockLocations(Long dockLocationId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/locations/dock/{id}/dispatch-trailer");
+                        .path("/api/layout/locations/dock/{id}/dispatch-tractor");
 
 
         ResponseBodyWrapper<Location> responseBodyWrapper

@@ -1,14 +1,13 @@
 package com.garyzhangscm.cwms.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "trailer")
-public class Trailer  extends AuditibleEntity<String>{
+public class Trailer extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,18 +15,20 @@ public class Trailer  extends AuditibleEntity<String>{
     @JsonProperty(value="id")
     private Long id;
 
-
-    // if the trailer is the company's asset
+    // if the container belongs to the company
     @Column(name = "company_id")
     private Long companyId;
 
-    // if the trailer is the warehouse's asset
+    // if the container belongs to the warehouse
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Transient
+    private Warehouse warehouse;
 
-    @Column(name = "license_plate_number")
-    private String licensePlateNumber;
+    @OneToOne
+    @JoinColumn(name="trailer_appointment_id")
+    private TrailerAppointment currentAppointment;
 
     @Column(name = "number")
     private String number;
@@ -35,31 +36,8 @@ public class Trailer  extends AuditibleEntity<String>{
     @Column(name = "description")
     private String description;
 
-    @OneToOne
-    @JoinColumn(name="trailer_appointment_id")
-    private TrailerAppointment currentAppointment;
-
-    // Where the trailer is parking. Normally it is
-    // either dock or yard
-    @Column(name = "location_id")
-    private Long locationId;
-
-    @Transient
-    private Location location;
-
-    @Column(name = "status")
-    private TrailerStatus status;
-
-
-    // only assigned the permanently attached container
-    @ManyToMany(cascade = {
-            CascadeType.ALL
-    })
-    @JoinTable(name = "trailer_attached_container",
-            joinColumns = @JoinColumn(name = "trailer_id"),
-            inverseJoinColumns = @JoinColumn(name = "trailer_container_id")
-    )
-    private List<TrailerContainer> attachedContainers = new ArrayList<>();
+    @Column(name = "size")
+    private Double size;
 
     public Long getId() {
         return id;
@@ -67,6 +45,31 @@ public class Trailer  extends AuditibleEntity<String>{
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Double getSize() {
+        return size;
+    }
+
+    public void setSize(Double size) {
+        this.size = size;
     }
 
     public Long getCompanyId() {
@@ -85,28 +88,12 @@ public class Trailer  extends AuditibleEntity<String>{
         this.warehouseId = warehouseId;
     }
 
-    public String getLicensePlateNumber() {
-        return licensePlateNumber;
+    public Warehouse getWarehouse() {
+        return warehouse;
     }
 
-    public void setLicensePlateNumber(String licensePlateNumber) {
-        this.licensePlateNumber = licensePlateNumber;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 
     public TrailerAppointment getCurrentAppointment() {
@@ -115,37 +102,5 @@ public class Trailer  extends AuditibleEntity<String>{
 
     public void setCurrentAppointment(TrailerAppointment currentAppointment) {
         this.currentAppointment = currentAppointment;
-    }
-
-    public Long getLocationId() {
-        return locationId;
-    }
-
-    public void setLocationId(Long locationId) {
-        this.locationId = locationId;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
-    public TrailerStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TrailerStatus status) {
-        this.status = status;
-    }
-
-    public List<TrailerContainer> getAttachedContainers() {
-        return attachedContainers;
-    }
-
-    public void setAttachedContainers(List<TrailerContainer> attachedContainers) {
-        this.attachedContainers = attachedContainers;
     }
 }

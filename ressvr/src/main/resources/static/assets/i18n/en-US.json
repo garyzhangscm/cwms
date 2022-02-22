@@ -1659,12 +1659,16 @@
   "isSkippedFlag": "Skip Flag",
   "isAllocatedByLPNFlag": "Allocated By LPN Flag",
   "isRoundUpFlag": "Round Up Flag",
-  "menu.main.common.trailer": "Trailer",
+  "menu.main.transport.trailer": "Trailer",
   "company-wide": "Company Wide",
-  "menu.main.common.trailer-container": "Trailer Container",
-  "trailer-container.maintenance": "Trailer Container Maintenance",
   "location-group.allowEmptyLocation": "Allow Empty Location",
   "location.emptyInProcess": "Empty In Process",
   "emptyLocation": "Empty Location",
-  "empty-location-warning": "Your action will clear all inventory in the location"
+  "empty-location-warning": "Your action will clear all inventory in the location",
+  "menu.main.transport.tractor": "Tractor",
+  "trailer": "Trailer",
+  "tractor": "Tractor",
+  "trailer.maintenance": "Trailer Maintenance",
+  "tractor.maintenance": "Tractor Maintenance",
+  "menu.main.transport": "Transportation"
 }
