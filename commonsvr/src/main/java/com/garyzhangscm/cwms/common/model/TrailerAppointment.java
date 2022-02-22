@@ -23,10 +23,19 @@ public class TrailerAppointment extends AuditibleEntity<String>{
     @Column(name = "company_id")
     private Long companyId;
 
+    @Column(name = "number")
+    private String number;
+    @Column(name = "description")
+    private String description;
+
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private TrailerAppointmentType type;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private TrailerAppointmentStatus status;
 
     public Long getId() {
         return id;
@@ -58,5 +67,29 @@ public class TrailerAppointment extends AuditibleEntity<String>{
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public TrailerAppointmentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TrailerAppointmentStatus status) {
+        this.status = status;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

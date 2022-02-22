@@ -1669,5 +1669,13 @@
   "tractor": "车辆",
   "trailer.maintenance": "拖车维护",
   "tractor.maintenance": "车辆维护",
-  "menu.main.transport": "运输管理"
+  "menu.main.transport": "运输管理",
+  "current-appointment": "当前任务",
+  "add-appointment": "新增任务",
+  "TRAILER-APPOINTMENT-TYPE-RECEIVING" :"收货",
+  "TRAILER-APPOINTMENT-TYPE-SHIPPING" :"发货",
+  "TRAILER-APPOINTMENT-TYPE-STORAGE" :"存储",
+  "TRACTOR-APPOINTMENT-TYPE-RECEIVING" :"收货",
+  "TRACTOR-APPOINTMENT-TYPE-SHIPPING" :"发货",
+  "TRACTOR-APPOINTMENT-TYPE-STORAGE" :"存储"
 }

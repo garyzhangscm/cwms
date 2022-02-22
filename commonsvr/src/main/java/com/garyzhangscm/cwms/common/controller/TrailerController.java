@@ -78,8 +78,8 @@ public class TrailerController {
 
     @BillableEndpoint
     @RequestMapping(value="/trailers/{id}/current-appointment", method = RequestMethod.GET)
-    public TrailerAppointment getTrailerCurrentAppointment(@PathVariable Long trailerId){
-        return trailerService.getTrailerCurrentAppointment(trailerId);
+    public TrailerAppointment getTrailerCurrentAppointment(@PathVariable Long id){
+        return trailerService.getTrailerCurrentAppointment(id);
     }
 
     @BillableEndpoint
