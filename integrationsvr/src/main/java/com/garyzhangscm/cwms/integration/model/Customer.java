@@ -30,6 +30,9 @@ public class Customer implements Serializable {
     private String description;
 
 
+    private Long warehouseId;
+    private Long companyId;
+
     private String contactorFirstname;
     private String contactorLastname;
 
@@ -144,5 +147,21 @@ public class Customer implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

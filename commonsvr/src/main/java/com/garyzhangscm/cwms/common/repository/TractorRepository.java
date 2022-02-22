@@ -19,8 +19,8 @@
 package com.garyzhangscm.cwms.common.repository;
 
 
+import com.garyzhangscm.cwms.common.model.Tractor;
 import com.garyzhangscm.cwms.common.model.Trailer;
-import com.garyzhangscm.cwms.common.model.TrailerContainer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -29,6 +29,7 @@ import java.util.List;
 
 
 @Repository
-public interface TrailerContainerRepository extends JpaRepository<TrailerContainer, Long>, JpaSpecificationExecutor<TrailerContainer> {
+public interface TractorRepository extends JpaRepository<Tractor, Long>, JpaSpecificationExecutor<Tractor> {
 
+    List<Tractor> findByWarehouseIdAndNumber(Long warehouseId, String number);
 }

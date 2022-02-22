@@ -1,6 +1,6 @@
 package com.garyzhangscm.cwms.common.model;
 
-public enum TrailerStatus {
+public enum TractorStatus {
     CANCELLED,
     PENDING,
     INPROCESS,

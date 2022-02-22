@@ -21,20 +21,20 @@ package com.garyzhangscm.cwms.common.service;
 import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.exception.TrailerException;
-import com.garyzhangscm.cwms.common.model.Location;
-import com.garyzhangscm.cwms.common.model.Trailer;
-import com.garyzhangscm.cwms.common.model.TrailerStatus;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.TrailerRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.*;
 
 
 @Service
@@ -57,21 +57,81 @@ public class TrailerService {
     }
 
 
+    public List<Trailer> findAll(Long companyId, Long warehouseId,
+                                 String number) {
+        List<Trailer> trailers = trailerRepository.findAll(
+                (Root<Trailer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-    public List<Trailer> findByNumber(Long warehouseId, String number) {
-        return trailerRepository.findByWarehouseIdAndNumber(warehouseId, number);
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
+                    if (StringUtils.isNotBlank(number)) {
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
 
+                    // special handling for warehouse id
+                    // if warehouse id is passed in, then return both the warehouse level item
+                    // and the company level item information.
+                    // otherwise, return the company level item information
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+                    if (Objects.nonNull(warehouseId)) {
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.or(
+                                        criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
+                                        criteriaBuilder.isNull(root.get("warehouseId"))));
+                    }
+                    else  {
+                        return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
+                    }
+                }
+                ,
+                Sort.by(Sort.Direction.ASC, "warehouseId", "number")
+        );
+
+        // we may get duplicated record from the above query when we pass in the warehouse id
+        // if so, we may need to remove the company level item if we have the warehouse level item
+        if (Objects.nonNull(warehouseId)) {
+            removeDuplicatedContainerRecords(trailers);
+        }
+        return trailers;
+    }
+
+    /**
+     * Remove the duplicated container record. If we have 2 record with the same container number
+     * but different warehouse, then we will remove the one without any warehouse information
+     * from the result
+     * @param trailers
+     */
+    private void removeDuplicatedContainerRecords(List<Trailer> trailers) {
+        Iterator<Trailer> containerIterator = trailers.listIterator();
+        Set<String> containerProcessed = new HashSet<>();
+        while(containerIterator.hasNext()) {
+            Trailer container = containerIterator.next();
+
+            if (containerProcessed.contains(container.getNumber()) &&
+                    Objects.isNull(container.getWarehouseId())) {
+                // ok, we already processed the item and the current
+                // record is a company level item, then we will remove
+                // this record from the result
+                containerIterator.remove();
+            }
+            containerProcessed.add(container.getNumber());
+        }
+    }
+
+    public Trailer save(Trailer trailers) {
+        return trailerRepository.save(trailers);
     }
 
 
-    public Trailer save(Trailer trailer) {
-        return trailerRepository.save(trailer);
-    }
 
-
-
-    public void delete(Trailer trailer) {
-        trailerRepository.delete(trailer);
+    public void delete(Trailer trailers) {
+        trailerRepository.delete(trailers);
     }
 
     public void delete(Long id) {
@@ -79,46 +139,7 @@ public class TrailerService {
     }
 
 
-    // OK, we check in trailer without any suggested dock location. There normally
-    // happens when the trailer is a fake trailer and we don't care about
-    // the actual dock door we check in
-    public Trailer checkInTrailer(Trailer trailer) {
-        List<Location> dockLocations = warehouseLayoutServiceRestemplateClient.findEmptyDockLocations(trailer.getWarehouseId());
-        if (dockLocations.size() > 0) {
-            return checkInTrailer(trailer, dockLocations.get(0));
-        }
-        throw TrailerException.raiseException(  "Can't find empty dock location to check in");
+    public TrailerAppointment getTrailerCurrentAppointment(Long trailerId) {
+        return findById(trailerId).getCurrentAppointment();
     }
-
-    public Trailer checkInTrailer(Long trailerId, Location dockLocation) {
-        return checkInTrailer(findById(trailerId), dockLocation);
-    }
-    // Check in the trailer, when the trailer actually arrives at the warehouse
-    // We will create a temporary location for the trailer so when we
-    // actually load the inventory onto the trailer, we will systematically move
-    // the inventory onto the trailer
-    public Trailer checkInTrailer(Trailer trailer, Location dockLocation) {
-
-        warehouseLayoutServiceRestemplateClient.checkInTrailerAtDockLocations(dockLocation.getId(), trailer.getId());
-        trailer.setLocationId(dockLocation.getId());
-        return save(trailer);
-    }
-
-    public Trailer dispatchTrailer(Long trailerId) {
-        return dispatchTrailer(findById(trailerId));
-    }
-
-    public Trailer dispatchTrailer(Trailer trailer) {
-
-        warehouseLayoutServiceRestemplateClient.dispatchTrailerFromDockLocations(trailer.getLocationId());
-        trailer.setLocationId(null);
-        trailer.setStatus(TrailerStatus.DISPATCHED);
-
-        // complete all the stops in the trailer
-        trailer = save(trailer);
-        logger.debug("Set the trailer {}'s status to dispatched", trailer.getNumber());
-        return trailer;
-    }
-
-
 }

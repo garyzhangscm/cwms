@@ -26,6 +26,8 @@ public class Client implements Serializable {
 
     private String name;
 
+    private Long warehouseId;
+    private Long companyId;
 
     private String description;
 
@@ -144,5 +146,21 @@ public class Client implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

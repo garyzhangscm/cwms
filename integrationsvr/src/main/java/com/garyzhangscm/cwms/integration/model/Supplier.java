@@ -30,6 +30,7 @@ public class Supplier implements Serializable {
 
 
     private Long warehouseId;
+    private Long companyId;
 
     private String name;
 
@@ -203,5 +204,13 @@ public class Supplier implements Serializable {
 
     public void setUserDefinedField5(String userDefinedField5) {
         this.userDefinedField5 = userDefinedField5;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

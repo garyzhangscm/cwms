@@ -1658,12 +1658,16 @@
   "isSkippedFlag": "跳过",
   "isAllocatedByLPNFlag": "按LPN 分配",
   "isRoundUpFlag": "允许取整",
-  "menu.main.common.trailer": "车辆管理",
+  "menu.main.transport.trailer": "拖车管理",
   "company-wide": "公司级别",
-  "menu.main.common.trailer-container": "集装箱",
-  "trailer-container.maintenance": "集装箱维护",
   "location-group.allowEmptyLocation": "允许清空库位",
   "location.emptyInProcess": "正在清空库位",
   "emptyLocation": "清空库位",
-  "empty-location-warning": "该操作将清空当前库位下的所有库存"
+  "empty-location-warning": "该操作将清空当前库位下的所有库存",
+  "menu.main.transport.tractor": "车辆",
+  "trailer": "拖车",
+  "tractor": "车辆",
+  "trailer.maintenance": "拖车维护",
+  "tractor.maintenance": "车辆维护",
+  "menu.main.transport": "运输管理"
 }

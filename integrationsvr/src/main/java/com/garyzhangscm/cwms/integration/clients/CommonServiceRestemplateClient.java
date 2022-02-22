@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.integration.clients;
 
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,8 @@ public class CommonServiceRestemplateClient {
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
         List<Supplier> suppliers = responseBodyWrapper.getData();
         if (suppliers.size() == 0) {
-            return null;
+            throw MissingInformationException.raiseException("can't find supplier with warehouse id " +
+                    warehouseId + ", name " + name);
         }
         else {
             return suppliers.get(0);

@@ -18,30 +18,49 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
-import com.garyzhangscm.cwms.common.model.BillableEndpoint;
-import com.garyzhangscm.cwms.common.model.Location;
-import com.garyzhangscm.cwms.common.model.Trailer;
+import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.common.exception.MissingInformationException;
+import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.service.TrailerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class TrailerController {
     @Autowired
     TrailerService trailerService;
 
+    @Autowired
+    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @RequestMapping(value="/trailers", method = RequestMethod.GET)
-    public List<Trailer> findAllTrailers(@RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return trailerService.findAll(number);
+    public List<Trailer> findAllTrailers(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
+                                                  @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
+                                                  @RequestParam(name = "number", required = false, defaultValue = "") String number) {
+
+        // company ID or warehouse id is required
+        if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
+
+            throw MissingInformationException.raiseException("company information or warehouse id is required for finding container");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            companyId =
+                    warehouseLayoutServiceRestemplateClient
+                            .getWarehouseById(warehouseId).getCompanyId();
+        }
+
+        return trailerService.findAll(companyId, warehouseId, number);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/trailers", method = RequestMethod.POST)
-    public Trailer addTrailer(@RequestBody Trailer trailer) {
-        return trailerService.save(trailer);
+    public Trailer addTrailer(@RequestBody Trailer trailerContainer) {
+        return trailerService.save(trailerContainer);
     }
 
 
@@ -52,22 +71,23 @@ public class TrailerController {
 
     @BillableEndpoint
     @RequestMapping(value="/trailers/{id}", method = RequestMethod.PUT)
-    public Trailer changeTrailer(@RequestBody Trailer trailer){
-        return trailerService.save(trailer);
+    public Trailer changeTrailer(@RequestBody Trailer trailerContainer){
+        return trailerService.save(trailerContainer);
     }
 
 
     @BillableEndpoint
-    @RequestMapping(value="/trailers/{id}/checkin", method = RequestMethod.POST)
-    public Trailer checkinTrailer(@PathVariable Long id,
-                                  @RequestBody Location dockLocation) {
-        return trailerService.checkInTrailer(id, dockLocation);
+    @RequestMapping(value="/trailers/{id}/current-appointment", method = RequestMethod.GET)
+    public TrailerAppointment getTrailerCurrentAppointment(@PathVariable Long trailerId){
+        return trailerService.getTrailerCurrentAppointment(trailerId);
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/trailers/{id}/dispatch", method = RequestMethod.POST)
-    public Trailer checkinTrailer(@PathVariable Long id) {
-        return trailerService.dispatchTrailer(id);
+    @RequestMapping(value="/trailers/{id}", method = RequestMethod.DELETE)
+    public void removeTrailer(@PathVariable Long id) {
+        trailerService.delete(id);
     }
+
+
 
 }
