@@ -706,6 +706,7 @@ public class OrderService implements TestDataInitiableService {
 
                 }
                 // let's see how many shipments in the same trailer
+                /***
                 if (activeShipment.getStop().getTrailer() != null) {
                     int shipmentInTheSameTrailer = shipmentService.findByTrailer(
                             order.getWarehouseId(),
@@ -716,6 +717,7 @@ public class OrderService implements TestDataInitiableService {
 
                     }
                 }
+                 **/
             }
         }
 
@@ -1536,5 +1538,10 @@ public class OrderService implements TestDataInitiableService {
                 order.getNumber());
         sendOrderConfirmationIntegration(order);
         return order;
+    }
+
+    public List<Order> getOpenOrdersForStop(Long warehouseId) {
+
+        return orderRepository.findOpenOrdersForStop(warehouseId);
     }
 }

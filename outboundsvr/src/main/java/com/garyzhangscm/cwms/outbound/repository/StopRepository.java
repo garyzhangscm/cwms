@@ -31,5 +31,4 @@ import java.util.List;
 @Repository
 public interface StopRepository extends JpaRepository<Stop, Long>, JpaSpecificationExecutor<Stop> {
 
-    List<Stop> findByTrailerId(Long trailerId);
 }

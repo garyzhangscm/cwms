@@ -29,9 +29,15 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -59,14 +65,50 @@ public class StopService {
     }
 
 
-    public List<Stop> findAll() {
-        return stopRepository.findAll();
+    public List<Stop> findAll(Long warehouseId,
+                              String number,
+                              Long trailerAppointmentId,
+                              Long sequence,
+                              Boolean onlyOpenStops) {
+        return stopRepository.findAll(
+                (Root<Stop> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (StringUtils.isNotBlank(number)) {
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
+                    }
+
+                    if (Objects.nonNull(trailerAppointmentId)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("trailerAppointmentId"), trailerAppointmentId));
+
+                    }
+                    if (Objects.nonNull(sequence)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("sequence"), sequence));
+
+                    }
+                    if (Boolean.TRUE.equals(onlyOpenStops)) {
+                        // we will only return the stop that is not assigned
+                        // to any trailer appointment yet
+
+                        predicates.add(criteriaBuilder.isNull( root.get("trailerAppointmentId") ));
+                    }
+
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                },
+                Sort.by(Sort.Direction.DESC, "number")
+        );
     }
 
-    public List<Stop> findByTrailerId(Long trailerId) {
-
-        return stopRepository.findByTrailerId(trailerId);
-    }
 
     public Stop save(Stop stop) {
         return stopRepository.save(stop);
@@ -117,4 +159,7 @@ public class StopService {
                 shipmentService.dispatchShipment(shipment));
     }
 
+    public List<Stop> getOpenStops(Long warehouseId) {
+        return findAll(warehouseId, null, null, null, true);
+    }
 }

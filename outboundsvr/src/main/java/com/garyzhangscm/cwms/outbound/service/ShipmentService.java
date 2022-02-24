@@ -399,10 +399,10 @@ public class ShipmentService {
         // Get the trailer ID. for each trailer, we will create a location for the trailer.
         // The location's name is the same as the trailer.
         // Then we will move the inventory to the location that represent for the trailer
-        if (shipment.getStop() == null || shipment.getStop().getTrailer() == null) {
+        if (shipment.getStop() == null || shipment.getStop().getTrailerAppointment().getTrailer() == null) {
             return new ArrayList<>();
         }
-        Trailer trailer = shipment.getStop().getTrailer();
+        Trailer trailer = shipment.getStop().getTrailerAppointment().getTrailer();
         // Trailer is already dispatched. We will count all inventory in the trailer as
         // shipped, not loaded
         if (trailer.getStatus().equals(TrailerStatus.DISPATCHED)) {
@@ -421,10 +421,10 @@ public class ShipmentService {
         // Get the trailer ID. for each trailer, we will create a location for the trailer.
         // The location's name is the same as the trailer.
         // Then we will move the inventory to the location that represent for the trailer
-        if (shipment.getStop() == null || shipment.getStop().getTrailer() == null) {
+        if (shipment.getStop() == null || shipment.getStop().getTrailerAppointment().getTrailer() == null) {
             return new ArrayList<>();
         }
-        Trailer trailer = shipment.getStop().getTrailer();
+        Trailer trailer = shipment.getStop().getTrailerAppointment().getTrailer();
         // Trailer is not dispatched. We will count all inventory in the trailer as
         // loaded, not shipped
         if (!trailer.getStatus().equals(TrailerStatus.DISPATCHED)) {
@@ -530,19 +530,16 @@ public class ShipmentService {
         // 2. there's only one shipment in this trailer
         // Let's dispatch the trailer
 
-        Trailer trailer = shipment.getStop().getTrailer();
+        Trailer trailer = shipment.getStop().getTrailerAppointment().getTrailer();
         if (trailer.getStops().size() == 0) {
-            // Due to the JPA persistent logic, the trailer.getstops
-            // may be empty, which I don't know why. But we can always
-            // setup the stops manually
 
-            trailer.setStops(stopService.findByTrailerId(trailer.getId()));
+            trailer.addStop(shipment.getStop());
         }
         logger.debug("Start to display trailer with {} stops ", trailer.getStops().size());
         trailerService.dispatchTrailer(trailer);
 
         logger.debug("Update the shipment {}'s status to dispatched", shipment.getNumber());
-        logger.debug("Trailer {} dispatched", shipment.getStop().getTrailer().getId());
+        logger.debug("Trailer {} dispatched", shipment.getStop().getTrailerAppointment().getTrailer().getId());
         return shipment;
     }
     // Check if we can complete the shipment with automatically create all the necessary data structure
@@ -566,10 +563,10 @@ public class ShipmentService {
 
             }
             // let's see how many shipments in the same trailer
-            if (shipment.getStop().getTrailer() != null) {
+            if (shipment.getStop().getTrailerAppointment().getTrailer() != null) {
                 int shipmentInTheSameTrailer = findByTrailer(
                         shipment.getWarehouseId(),
-                        shipment.getStop().getTrailer().getId()).size();
+                        shipment.getStop().getTrailerAppointment().getTrailer().getId()).size();
                 if (shipmentInTheSameTrailer > 1) {
                     throw ShippingException.raiseException(
                             "There's multiple shipments in the same trailer, please process each shipment individually");
@@ -671,7 +668,7 @@ public class ShipmentService {
             logger.debug("Stop {} created!", shipment.getStop().getId());
         }
 
-        Trailer trailer = shipment.getStop().getTrailer();
+        Trailer trailer = shipment.getStop().getTrailerAppointment().getTrailer();
         if (trailer == null) {
             logger.debug("Shipment {} doesn't have any trailer yet, let's create a fake trailer for this shipment",
                     shipment.getNumber());
@@ -991,5 +988,10 @@ public class ShipmentService {
 
 
         delete(shipment);
+    }
+
+    public List<Shipment> getOpenShipmentsForStop(Long warehouseId) {
+
+        return shipmentRepository.findOpenShipmentsForStop(warehouseId);
     }
 }

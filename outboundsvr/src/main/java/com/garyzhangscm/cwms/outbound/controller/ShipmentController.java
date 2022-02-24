@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
+import jdk.nashorn.internal.runtime.SharedPropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -109,5 +110,12 @@ public class ShipmentController {
     public Shipment allocateShipment(@PathVariable Long id){
 
         return shipmentService.allocateShipment(id);
+    }
+
+
+    @RequestMapping(value="/shipments/open-for-stop", method = RequestMethod.GET)
+    public List<Shipment> getOpenShipmentsForStop(@RequestParam Long warehouseId){
+
+        return shipmentService.getOpenShipmentsForStop(warehouseId);
     }
 }

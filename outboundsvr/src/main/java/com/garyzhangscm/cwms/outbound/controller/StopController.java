@@ -33,8 +33,12 @@ public class StopController {
     StopService stopService;
 
     @RequestMapping(value="/stops", method = RequestMethod.GET)
-    public List<Stop> findAllStops() {
-        return stopService.findAll();
+    public List<Stop> findAllStops(@RequestParam Long warehouseId,
+                                   @RequestParam(name = "number", required = false, defaultValue = "") String number,
+                                   @RequestParam(name = "trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
+                                   @RequestParam(name = "sequence", required = false, defaultValue = "") Long sequence,
+                                   @RequestParam(name = "onlyOpenStops", required = false, defaultValue = "") Boolean onlyOpenStops) {
+        return stopService.findAll(warehouseId, number, trailerAppointmentId, sequence, onlyOpenStops);
     }
 
     @BillableEndpoint
@@ -59,6 +63,11 @@ public class StopController {
     @RequestMapping(value="/stops", method = RequestMethod.DELETE)
     public void removeStops(@RequestParam(name = "stop_ids", required = false, defaultValue = "") String stopIds) {
         stopService.delete(stopIds);
+    }
+
+    @RequestMapping(value="/stops/open", method = RequestMethod.GET)
+    public List<Stop> getOpenStops(@RequestParam  Long warehouseId) {
+        return stopService.getOpenStops(warehouseId);
     }
 
 }
