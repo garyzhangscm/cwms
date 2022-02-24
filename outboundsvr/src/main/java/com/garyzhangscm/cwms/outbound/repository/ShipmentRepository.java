@@ -34,4 +34,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long>, JpaSp
     @Query("select distinct s from ShipmentLine sl inner join sl.shipment s " +
            " inner join sl.orderLine ol inner join ol.order o where o.number = :orderNumber ")
     List<Shipment> findByOrderNumber(String orderNumber);
+
+    @Query("select s from Shipment s where s.warehouseId = :warehouseId and  s.stop is null")
+    List<Shipment> findOpenShipmentsForStop(Long warehouseId);
 }

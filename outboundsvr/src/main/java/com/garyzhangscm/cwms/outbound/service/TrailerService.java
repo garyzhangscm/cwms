@@ -59,7 +59,7 @@ public class TrailerService {
 
     }
     public Trailer loadShipment(Shipment shipment) throws IOException {
-        if (shipment.getStop() == null || shipment.getStop().getTrailer() == null) {
+        if (shipment.getStop() == null || shipment.getStop().getTrailerAppointment().getTrailer() == null) {
             throw ShippingException.raiseException( "The shipment is not assigned to any trailer yet");
         }
         return loadShipment(shipment, shipment.getStop().getTrailer());

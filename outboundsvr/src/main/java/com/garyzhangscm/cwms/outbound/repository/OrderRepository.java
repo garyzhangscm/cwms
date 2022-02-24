@@ -20,12 +20,21 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 
 import com.garyzhangscm.cwms.outbound.model.Order;
+import com.garyzhangscm.cwms.outbound.model.Shipment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
     Order findByNumber(String number);
     Order findByWarehouseIdAndNumber(Long warehouseId, String number);
+
+    @Query("select o from Order o where o.warehouseId = :warehouseId " +
+            " and not exists (select 'x' from ShipmentLine sl inner join sl.orderLine ol " +
+            "    where ol.order.number = o.number and ol.order.warehouseId = o.warehouseId)")
+    List<Order> findOpenOrdersForStop(Long warehouseId);
 }

@@ -62,6 +62,9 @@ public class Trailer  {
         this.stops = stops;
     }
 
+    public void addStop(Stop stop) {
+        this.stops.add(stop);
+    }
     public String getDriverFirstName() {
         return driverFirstName;
     }

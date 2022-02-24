@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "shipment")
@@ -168,6 +169,12 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
         return null;
     }
 
+    public List<String> getOrderNumbers() {
+        return getShipmentLines().stream().map(ShipmentLine::getOrderNumber).collect(Collectors.toList());
+    }
+    public String getStopNumber() {
+        return Objects.isNull(stop) ? "" : stop.getNumber();
+    }
     public Long getId() {
         return id;
     }

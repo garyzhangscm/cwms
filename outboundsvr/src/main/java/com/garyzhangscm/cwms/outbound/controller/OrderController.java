@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.OrderLine;
-import com.garyzhangscm.cwms.outbound.model.ReportHistory;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 import com.garyzhangscm.cwms.outbound.service.OrderService;
 import org.slf4j.Logger;
@@ -188,5 +185,11 @@ public class OrderController {
                                                               @PathVariable Long id)  {
 
         return orderService.retriggerOrderConfirmIntegration(id);
+    }
+
+    @RequestMapping(value="/orders/open-for-stop", method = RequestMethod.GET)
+    public List<Order> getOpenOrdersForStop(@RequestParam Long warehouseId){
+
+        return orderService.getOpenOrdersForStop(warehouseId);
     }
 }
