@@ -188,8 +188,9 @@ public class OrderController {
     }
 
     @RequestMapping(value="/orders/open-for-stop", method = RequestMethod.GET)
-    public List<Order> getOpenOrdersForStop(@RequestParam Long warehouseId){
+    public List<Order> getOpenOrdersForStop(@RequestParam Long warehouseId,
+                                            @RequestParam(name="number", required = false, defaultValue = "") String number){
 
-        return orderService.getOpenOrdersForStop(warehouseId);
+        return orderService.getOpenOrdersForStop(warehouseId, number);
     }
 }

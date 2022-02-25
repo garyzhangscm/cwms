@@ -35,6 +35,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long>, JpaSp
            " inner join sl.orderLine ol inner join ol.order o where o.number = :orderNumber ")
     List<Shipment> findByOrderNumber(String orderNumber);
 
-    @Query("select s from Shipment s where s.warehouseId = :warehouseId and  s.stop is null")
+    @Query("select s from Shipment s where s.warehouseId = :warehouseId and  s.stop is null " +
+    " and s.status != com.garyzhangscm.cwms.outbound.model.ShipmentStatus.CANCELLED")
     List<Shipment> findOpenShipmentsForStop(Long warehouseId);
 }

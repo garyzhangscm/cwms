@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import com.garyzhangscm.cwms.outbound.repository.StopRepository;
@@ -137,6 +138,8 @@ public class StopService {
 
     public Stop createStop(Shipment shipment) {
         Stop stop = new Stop();
+        stop.setNumber(commonServiceRestemplateClient.getNextNumber(shipment.getWarehouseId(), "stop"));
+
         List<Shipment> shipments = new ArrayList<>();
         shipments.add(shipment);
         stop.setShipments(shipments);
@@ -162,4 +165,49 @@ public class StopService {
     public List<Stop> getOpenStops(Long warehouseId) {
         return findAll(warehouseId, null, null, null, true);
     }
+
+    public void assignTrailerAppointment(long stopId, TrailerAppointment trailerAppointment) {
+        assignTrailerAppointment(findById(stopId), trailerAppointment);
+    }
+
+    public Long getNextStopSequenceInTrailerAppointment(Long warehouseId, TrailerAppointment trailerAppointment) {
+        if (Objects.isNull(trailerAppointment.getId())) {
+            return 1l;
+        }
+        List<Stop> stops = findAll(warehouseId, null,
+                trailerAppointment.getId(), null, null);
+        return stops.stream().mapToLong(stop -> Objects.isNull(stop.getSequence()) ? 0 : stop.getSequence())
+                .max().orElse(0l) + 1l;
+
+    }
+
+    public void assignTrailerAppointment(Stop stop, TrailerAppointment trailerAppointment) {
+        if (Objects.nonNull(stop.getTrailerAppointmentId())) {
+            // if the stop is already assigned to some trailer appointment,
+
+            if (Objects.equals(trailerAppointment.getId(), stop.getTrailerAppointmentId())) {
+                // the stop is already assigned to the current trailer appointment, we don't need to
+                // do anything
+                return;
+            }
+            else {
+
+                throw ShippingException.raiseException("The stop is already assigned to some other trailer appointment, " +
+                        " please remove the stop from the existing appointment first");
+            }
+        }
+        stop.setTrailerAppointmentId(trailerAppointment.getId());
+        stop.setSequence(getNextStopSequenceInTrailerAppointment(stop.getWarehouseId(), trailerAppointment));
+        save(stop);
+    }
+
+    public Stop findMatchedStop(TrailerAppointment trailerAppointment, Shipment shipment) {
+        if (Objects.isNull(trailerAppointment.getId())) {
+            return null;
+        }
+        List<Stop> stops = findAll(shipment.getWarehouseId(),
+                null,  trailerAppointment.getId(), null, null);
+        return stops.stream().filter(stop -> stop.validateNewShipmentsForStop(shipment)).findFirst().orElse(null);
+    }
+
 }

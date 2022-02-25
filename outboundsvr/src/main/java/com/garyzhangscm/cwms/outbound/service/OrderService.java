@@ -31,6 +31,7 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1540,8 +1541,46 @@ public class OrderService implements TestDataInitiableService {
         return order;
     }
 
-    public List<Order> getOpenOrdersForStop(Long warehouseId) {
+    public List<Order> getOpenOrdersForStop(Long warehouseId, String number) {
 
-        return orderRepository.findOpenOrdersForStop(warehouseId);
+        if (Strings.isNotBlank(number)) {
+            return orderRepository.findOpenOrdersForStopWithNumber(warehouseId, number);
+
+        }
+        else {
+            return orderRepository.findOpenOrdersForStop(warehouseId);
+
+        }
+    }
+
+    public void assignTrailerAppointment(long orderId, TrailerAppointment trailerAppointment) {
+        logger.debug("Start to assign order to trailer appointment");
+        Order order = findById(orderId);
+        logger.debug("order: {}, trailer appointment: {}", order.getNumber(),
+                trailerAppointment.getNumber());
+        // if we already have the shipment created, then raise error, right now we don't
+        // support to create trailer appointment from the order when there's shipment with the order
+        // the user can create trailer appointment from the shipment
+        if (order.getOrderLines().stream().anyMatch(
+                orderLine -> Objects.nonNull(orderLine.getShipmentLines()) &&
+                        !orderLine.getShipmentLines().isEmpty() &&
+                        orderLine.getShipmentLines().stream().anyMatch(
+                                shipmentLine -> !Objects.equals(shipmentLine.getStatus(), ShipmentLineStatus.CANCELLED)
+                        )
+        )) {
+            // ok we found some order line that has shipment line and the shipment line is not cancelled
+            throw OrderOperationException.raiseException("The order has shipment, please assign the trailer to the shipment");
+        }
+
+        // if we are here, we know we have no open shipment for the order,
+        // let's create the shipment so that we can assign the stop and trailer appointment
+
+        List<Shipment> shipments =
+                shipmentService.planShipments(order.getWarehouseId(), order.getOrderLines());
+        // we know for the same order, we should only get one shipment
+        // we will assign the trailer appointment to this shipment
+        shipments.stream().forEach(
+                shipment -> shipmentService.assignTrailerAppointment(shipment.getId(), trailerAppointment)
+        );
     }
 }

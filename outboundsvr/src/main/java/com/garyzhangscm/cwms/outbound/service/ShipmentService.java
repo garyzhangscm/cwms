@@ -27,10 +27,12 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
@@ -100,26 +102,46 @@ public class ShipmentService {
     }
 
 
-    public List<Shipment> findAll(Long warehouseId, String number, String orderNumber, Long stopId, Long trailerId) {
-        return findAll( warehouseId, number, orderNumber, stopId, trailerId, true);
+    public List<Shipment> findAll(Long warehouseId, String number, String orderNumber, Long stopId, Long trailerId,
+                                  Boolean withoutStopOnly,
+                                  String shipmentStatusList) {
+        return findAll( warehouseId, number, orderNumber, stopId, trailerId, withoutStopOnly, shipmentStatusList, true);
     }
-    public List<Shipment> findAll(Long warehouseId, String number, String orderNumber, Long stopId, Long trailerId, boolean includeDetails) {
+    public List<Shipment> findAll(Long warehouseId, String number,
+                                  String orderNumber, Long stopId,
+                                  Long trailerId,
+                                  Boolean withoutStopOnly,
+                                  String shipmentStatusList,
+                                  boolean includeDetails) {
         List<Shipment> shipments =  shipmentRepository.findAll(
                 (Root<Shipment> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
                     if (warehouseId != null) {
                         predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
                     }
-                    if (!StringUtils.isBlank(number)) {
-                        predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                    if (StringUtils.isNotBlank(number)) {
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+
+                        }
                     }
 
-                    if (!StringUtils.isBlank(orderNumber)) {
+                    if (StringUtils.isNotBlank(orderNumber)) {
                         Join<Shipment, ShipmentLine> joinShipmentLine = root.join("shipmentLines", JoinType.INNER);
                         Join<ShipmentLine, OrderLine> joinOrderLine = joinShipmentLine.join("orderLine", JoinType.INNER);
                         Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
 
-                        predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
+                        if (orderNumber.contains("%")) {
+                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber));
+
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
+                        }
                     }
 
                     if (stopId != null) {
@@ -127,10 +149,23 @@ public class ShipmentService {
                         predicates.add(criteriaBuilder.equal(joinStop.get("id"), stopId));
                     }
 
+                    if (Boolean.TRUE.equals(withoutStopOnly)) {
+
+                        predicates.add(criteriaBuilder.isNull(root.get("stop")));
+                    }
                     if (trailerId != null) {
                         Join<Shipment, Stop> joinStop = root.join("stop", JoinType.INNER);
                         Join<Stop, Trailer> joinTrailer = joinStop.join("trailer", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinTrailer.get("id"), trailerId));
+                    }
+
+                    if (Strings.isNotBlank(shipmentStatusList)) {
+
+                        CriteriaBuilder.In<ShipmentStatus> inShipmentStatus = criteriaBuilder.in(root.get("status"));
+                        for(String shipmentStatus : shipmentStatusList.split(",")) {
+                            inShipmentStatus.value(ShipmentStatus.valueOf(shipmentStatus));
+                        }
+                        predicates.add(criteriaBuilder.and(inShipmentStatus));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -161,13 +196,13 @@ public class ShipmentService {
         return findByOrder(order, true);
     }
     public List<Shipment> findByOrder(Order order, boolean includeDetails) {
-        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, includeDetails);
+        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null, null, includeDetails);
     }
     public List<Shipment> findByStop(Long warehouseId, Long stopId) {
-        return findAll(warehouseId, null, null, stopId, null);
+        return findAll(warehouseId, null, null, stopId, null, null,null);
     }
     public List<Shipment> findByTrailer(Long warehouseId, Long trailerId) {
-        return findAll(warehouseId, null, null, null, trailerId);
+        return findAll(warehouseId, null, null, null, trailerId, null,null);
     }
 
 
@@ -990,8 +1025,39 @@ public class ShipmentService {
         delete(shipment);
     }
 
-    public List<Shipment> getOpenShipmentsForStop(Long warehouseId) {
+    public List<Shipment> getOpenShipmentsForStop(Long warehouseId, String number,  String orderNumber) {
+        String shipmentStatusList = Arrays.asList(
+                ShipmentStatus.PENDING,
+                ShipmentStatus.INPROCESS,
+                ShipmentStatus.STAGED
+                ).stream().map(ShipmentStatus::name).collect(Collectors.joining(","));
+        return findAll(warehouseId, number, orderNumber, null, null,
+                true, shipmentStatusList);
 
-        return shipmentRepository.findOpenShipmentsForStop(warehouseId);
+    }
+
+    public void assignTrailerAppointment(long shipmentId, TrailerAppointment trailerAppointment) {
+        Shipment shipment  = findById(shipmentId);
+
+        if (Objects.nonNull(shipment.getStop())) {
+            // the shipment has a stop, let's assign the stop to teh trailer appointment
+            stopService.assignTrailerAppointment(shipment.getStop().getId(), trailerAppointment);
+            return;
+        }
+
+        // see if we can group the shipment into an existing stop
+        Stop stop = stopService.findMatchedStop(trailerAppointment, shipment);
+        if (Objects.isNull(stop)) {
+            // we didn't find any existing stop matches for this shipment
+            // let's create one
+            stop = stopService.createStop(shipment);
+
+        }
+        shipment.setStop(stop);
+        save(shipment);
+
+        stopService.assignTrailerAppointment(stop, trailerAppointment);
+        return;
+
     }
 }

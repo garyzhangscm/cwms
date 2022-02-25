@@ -41,8 +41,10 @@ public class ShipmentController {
                                            @RequestParam(name="number", required = false, defaultValue = "") String number,
                                            @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                            @RequestParam(name="stopId", required = false, defaultValue = "") Long stopId,
-                                           @RequestParam(name="trailerId", required = false, defaultValue = "") Long trailerId) {
-        return shipmentService.findAll(warehouseId, number, orderNumber, stopId, trailerId);
+                                           @RequestParam(name="trailerId", required = false, defaultValue = "") Long trailerId,
+                                           @RequestParam(name="withoutStopOnly", required = false, defaultValue = "") Boolean withoutStopOnly,
+                                           @RequestParam(name="shipmentStatusList", required = false, defaultValue = "") String shipmentStatusList) {
+        return shipmentService.findAll(warehouseId, number, orderNumber, stopId, trailerId, withoutStopOnly, shipmentStatusList);
     }
 
     @BillableEndpoint
@@ -114,8 +116,10 @@ public class ShipmentController {
 
 
     @RequestMapping(value="/shipments/open-for-stop", method = RequestMethod.GET)
-    public List<Shipment> getOpenShipmentsForStop(@RequestParam Long warehouseId){
+    public List<Shipment> getOpenShipmentsForStop(@RequestParam Long warehouseId,
+                                                  @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                                  @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber){
 
-        return shipmentService.getOpenShipmentsForStop(warehouseId);
+        return shipmentService.getOpenShipmentsForStop(warehouseId, number, orderNumber);
     }
 }
