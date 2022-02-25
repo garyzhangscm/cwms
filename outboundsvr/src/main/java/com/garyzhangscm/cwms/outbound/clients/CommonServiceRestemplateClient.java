@@ -231,4 +231,19 @@ public class CommonServiceRestemplateClient {
     }
 
 
+    public TrailerAppointment getTrailerAppointmentById(Long trailerAppointmentId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/trailers/appointments/{id}");
+
+        ResponseBodyWrapper<TrailerAppointment> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(trailerAppointmentId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<TrailerAppointment>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 }

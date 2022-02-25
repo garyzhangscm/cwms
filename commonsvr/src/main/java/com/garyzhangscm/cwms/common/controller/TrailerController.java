@@ -76,10 +76,20 @@ public class TrailerController {
     }
 
 
-    @BillableEndpoint
+    @RequestMapping(value="/trailers/{id}/add-appointment", method = RequestMethod.PUT)
+    public TrailerAppointment addTrailerAppointment(@PathVariable Long id,
+                                                    @RequestBody TrailerAppointment trailerAppointment){
+        return trailerService.addTrailerAppointment(id, trailerAppointment);
+    }
+
     @RequestMapping(value="/trailers/{id}/current-appointment", method = RequestMethod.GET)
     public TrailerAppointment getTrailerCurrentAppointment(@PathVariable Long id){
         return trailerService.getTrailerCurrentAppointment(id);
+    }
+
+    @RequestMapping(value="/trailers/appointments/{id}", method = RequestMethod.GET)
+    public TrailerAppointment getTrailerAppointmentById(@PathVariable Long id){
+        return trailerService.getTrailerAppointmentById(id);
     }
 
     @BillableEndpoint

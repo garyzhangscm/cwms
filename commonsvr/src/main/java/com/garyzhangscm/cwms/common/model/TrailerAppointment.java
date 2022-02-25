@@ -1,10 +1,12 @@
 package com.garyzhangscm.cwms.common.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "trailer_appointment")
@@ -28,6 +30,10 @@ public class TrailerAppointment extends AuditibleEntity<String>{
     @Column(name = "description")
     private String description;
 
+    @OneToOne
+    @JoinColumn(name="trailer_id")
+    @JsonIgnore
+    private Trailer trailer;
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
@@ -91,5 +97,17 @@ public class TrailerAppointment extends AuditibleEntity<String>{
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Trailer getTrailer() {
+        return trailer;
+    }
+
+    public void setTrailer(Trailer trailer) {
+        this.trailer = trailer;
+    }
+
+    public String getCurrentTrailerNumber() {
+        return Objects.isNull(trailer) ? "" : trailer.getNumber();
     }
 }

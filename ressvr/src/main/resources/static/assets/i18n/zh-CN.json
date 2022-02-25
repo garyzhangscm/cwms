@@ -1678,5 +1678,11 @@
   "TRACTOR-APPOINTMENT-TYPE-RECEIVING" :"收货",
   "TRACTOR-APPOINTMENT-TYPE-SHIPPING" :"发货",
   "TRACTOR-APPOINTMENT-TYPE-STORAGE" :"存储",
-  "appointment": "任务"
+  "appointment": "任务",
+  "stop.number": "停靠点名称",
+  "stop.sequence": "停靠点顺序",
+  "assign": "分配",
+  "assign-shipment": "分配发货单",
+  "assign-stop": "分配停靠点",
+  "assign-order": "分配订单"
 }

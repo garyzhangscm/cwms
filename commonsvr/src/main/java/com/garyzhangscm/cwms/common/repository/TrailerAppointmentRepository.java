@@ -16,26 +16,17 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.outbound.repository;
+package com.garyzhangscm.cwms.common.repository;
 
 
-import com.garyzhangscm.cwms.outbound.model.Shipment;
+import com.garyzhangscm.cwms.common.model.Trailer;
+import com.garyzhangscm.cwms.common.model.TrailerAppointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 
 @Repository
-public interface ShipmentRepository extends JpaRepository<Shipment, Long>, JpaSpecificationExecutor<Shipment> {
-    Shipment findByNumber(String number);
+public interface TrailerAppointmentRepository extends JpaRepository<TrailerAppointment, Long>, JpaSpecificationExecutor<TrailerAppointment> {
 
-    @Query("select distinct s from ShipmentLine sl inner join sl.shipment s " +
-           " inner join sl.orderLine ol inner join ol.order o where o.number = :orderNumber ")
-    List<Shipment> findByOrderNumber(String orderNumber);
-
-    @Query("select s from Shipment s where s.warehouseId = :warehouseId and  s.stop is null " +
-    " and s.status != com.garyzhangscm.cwms.outbound.model.ShipmentStatus.CANCELLED")
-    List<Shipment> findOpenShipmentsForStop(Long warehouseId);
 }

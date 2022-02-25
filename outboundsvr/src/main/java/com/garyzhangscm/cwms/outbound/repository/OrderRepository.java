@@ -37,4 +37,10 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
             " and not exists (select 'x' from ShipmentLine sl inner join sl.orderLine ol " +
             "    where ol.order.number = o.number and ol.order.warehouseId = o.warehouseId)")
     List<Order> findOpenOrdersForStop(Long warehouseId);
+
+    @Query("select o from Order o where o.warehouseId = :warehouseId " +
+            " and o.number = :number " +
+            " and not exists (select 'x' from ShipmentLine sl inner join sl.orderLine ol " +
+            "    where ol.order.number = o.number and ol.order.warehouseId = o.warehouseId)")
+    List<Order> findOpenOrdersForStopWithNumber(Long warehouseId, String number);
 }

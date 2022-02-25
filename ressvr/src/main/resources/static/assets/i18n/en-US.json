@@ -1679,5 +1679,11 @@
   "TRACTOR-APPOINTMENT-TYPE-RECEIVING" :"Receiving",
   "TRACTOR-APPOINTMENT-TYPE-SHIPPING" :"Shipping",
   "TRACTOR-APPOINTMENT-TYPE-STORAGE" :"Storage",
-  "appointment": "Appointment"
+  "appointment": "Appointment",
+  "stop.number": "Stop Number",
+  "stop.sequence": "Stop Sequence",
+  "assign": "Assign",
+  "assign-shipment": "Assign Shipment",
+  "assign-stop": "Assign Stop",
+  "assign-order": "Assign Order"
 }

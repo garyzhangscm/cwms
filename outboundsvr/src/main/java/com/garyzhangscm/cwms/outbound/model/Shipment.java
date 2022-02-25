@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -169,8 +170,8 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
         return null;
     }
 
-    public List<String> getOrderNumbers() {
-        return getShipmentLines().stream().map(ShipmentLine::getOrderNumber).collect(Collectors.toList());
+    public Set<String> getOrderNumbers() {
+        return getShipmentLines().stream().map(ShipmentLine::getOrderNumber).collect(Collectors.toSet());
     }
     public String getStopNumber() {
         return Objects.isNull(stop) ? "" : stop.getNumber();

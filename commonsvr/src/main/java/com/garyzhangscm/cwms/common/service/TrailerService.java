@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.*;
+import com.garyzhangscm.cwms.common.repository.TrailerAppointmentRepository;
 import com.garyzhangscm.cwms.common.repository.TrailerRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -43,6 +44,8 @@ public class TrailerService {
 
     @Autowired
     private TrailerRepository trailerRepository;
+    @Autowired
+    private TrailerAppointmentRepository trailerAppointmentRepository;
 
 
     @Autowired
@@ -141,5 +144,21 @@ public class TrailerService {
 
     public TrailerAppointment getTrailerCurrentAppointment(Long trailerId) {
         return findById(trailerId).getCurrentAppointment();
+    }
+
+    public TrailerAppointment getTrailerAppointmentById(Long id) {
+        return trailerAppointmentRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("trailer appointment not found by id: " + id));
+    }
+
+    public TrailerAppointment addTrailerAppointment(Long id, TrailerAppointment trailerAppointment) {
+        Trailer trailer = findById(id);
+        trailerAppointment.setTrailer(trailer);
+        trailerAppointment.setStatus(TrailerAppointmentStatus.PLANNED);
+        trailerAppointment = trailerAppointmentRepository.save(trailerAppointment);
+        trailer.setCurrentAppointment(trailerAppointment);
+        save(trailer);
+
+        return trailerAppointment;
     }
 }
