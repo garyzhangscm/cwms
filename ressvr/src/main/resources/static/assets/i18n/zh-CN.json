@@ -1684,5 +1684,10 @@
   "assign": "分配",
   "assign-shipment": "分配发货单",
   "assign-stop": "分配停靠点",
-  "assign-order": "分配订单"
+  "assign-order": "分配订单",
+  "stop": "停靠点",
+  "licensePlateNumber": "车牌",
+  "hasAttachedTrailer": "自带车厢",
+  "autoCreatedTrailer": "创建车厢",
+  "attachedTrailer": "车厢"
 }

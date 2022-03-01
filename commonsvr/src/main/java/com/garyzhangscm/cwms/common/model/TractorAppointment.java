@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -20,7 +21,14 @@ public class TractorAppointment extends AuditibleEntity<String>{
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @OneToOne
+    @JoinColumn(name="tractor_id")
+    @JsonIgnore
+    private Tractor tractor;
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private TractorAppointmentStatus status;
 
     @Column(name = "driver_first_name")
     private String driverFirstName;
@@ -145,5 +153,21 @@ public class TractorAppointment extends AuditibleEntity<String>{
 
     public void setTrailers(List<Trailer> trailers) {
         this.trailers = trailers;
+    }
+
+    public TractorAppointmentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TractorAppointmentStatus status) {
+        this.status = status;
+    }
+
+    public Tractor getTractor() {
+        return tractor;
+    }
+
+    public void setTractor(Tractor tractor) {
+        this.tractor = tractor;
     }
 }

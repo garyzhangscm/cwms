@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.common.model.Trailer;
 import com.garyzhangscm.cwms.common.model.TractorStatus;
 import com.garyzhangscm.cwms.common.repository.TractorRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,8 @@ public class TractorService {
 
     @Autowired
     private TractorRepository tractorRepository;
+    @Autowired
+    private TrailerService trailerService;
 
 
     @Autowired
@@ -190,4 +193,30 @@ public class TractorService {
     }
 
 
+    public Tractor addTractor(Tractor tractor,
+                              Long companyId, Long warehouseId,
+                              Boolean hasAttachedTrailer,
+                              Boolean autoCreatedTrailer,
+                              String attachedTrailerIds) {
+        // see if there's trailer attached to this tractor. Attached
+        // means the trailer is physically connect to this tractor and
+        // won't break from this tractor so that when we assign appointment
+        // to this tractor, we already know the trailer we will use
+        if (Boolean.TRUE.equals(hasAttachedTrailer)) {
+            List<Trailer> trailers = new ArrayList<>();
+            if (autoCreatedTrailer) {
+                // we will only create one trailer for the tractor
+                Trailer trailer = trailerService.createAttachedTrailer(companyId, warehouseId, tractor);
+                trailers.add(trailer);
+            }
+            else if (Strings.isNotBlank(attachedTrailerIds)) {
+                // if the user specify the trailers to be attached
+                trailers = trailerService.findAll(companyId, warehouseId, null, attachedTrailerIds);
+            }
+            tractor.setAttachedTrailers(trailers);
+        }
+
+        return save(tractor);
+
+    }
 }

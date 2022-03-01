@@ -1685,5 +1685,10 @@
   "assign": "Assign",
   "assign-shipment": "Assign Shipment",
   "assign-stop": "Assign Stop",
-  "assign-order": "Assign Order"
+  "assign-order": "Assign Order",
+  "stop": "Stop",
+  "licensePlateNumber": "License Plate",
+  "hasAttachedTrailer": "Has Attached Trailer",
+  "autoCreatedTrailer": "Auto Create Trailer",
+  "attachedTrailer": "Attached Trailer"
 }
