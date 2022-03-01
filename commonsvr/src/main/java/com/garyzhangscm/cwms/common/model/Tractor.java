@@ -60,7 +60,7 @@ public class Tractor  extends AuditibleEntity<String>{
             joinColumns = @JoinColumn(name = "tractor_id"),
             inverseJoinColumns = @JoinColumn(name = "trailer_id")
     )
-    private List<Trailer> attachedTrailer = new ArrayList<>();
+    private List<Trailer> attachedTrailers = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -142,11 +142,11 @@ public class Tractor  extends AuditibleEntity<String>{
         this.status = status;
     }
 
-    public List<Trailer> getAttachedTrailer() {
-        return attachedTrailer;
+    public List<Trailer> getAttachedTrailers() {
+        return attachedTrailers;
     }
 
-    public void setAttachedTrailer(List<Trailer> attachedTrailer) {
-        this.attachedTrailer = attachedTrailer;
+    public void setAttachedTrailers(List<Trailer> attachedTrailers) {
+        this.attachedTrailers = attachedTrailers;
     }
 }

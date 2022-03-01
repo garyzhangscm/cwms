@@ -54,7 +54,7 @@ public class TrailerController {
                             .getWarehouseById(warehouseId).getCompanyId();
         }
 
-        return trailerService.findAll(companyId, warehouseId, number);
+        return trailerService.findAll(companyId, warehouseId, number, null);
     }
 
     @BillableEndpoint
@@ -67,6 +67,12 @@ public class TrailerController {
     @RequestMapping(value="/trailers/{id}", method = RequestMethod.GET)
     public Trailer findTrailer(@PathVariable Long id) {
         return trailerService.findById(id);
+    }
+
+    @RequestMapping(value="/trailers/open-for-tractor", method = RequestMethod.GET)
+    public List<Trailer> findTrailersOpenForTractor(@RequestParam Long warehouseId,
+                                                    @RequestParam Long companyId) {
+        return trailerService.findTrailersOpenForTractor(companyId, warehouseId);
     }
 
     @BillableEndpoint
@@ -96,6 +102,21 @@ public class TrailerController {
     @RequestMapping(value="/trailers/{id}", method = RequestMethod.DELETE)
     public void removeTrailer(@PathVariable Long id) {
         trailerService.delete(id);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/trailers/{trailerId}/appointments/{trailerAppointmentId}/cancel", method = RequestMethod.POST)
+    public TrailerAppointment cancelTrailerAppointment(@PathVariable Long trailerId,
+                                                       @PathVariable Long trailerAppointmentId) {
+        return  trailerService.cancelTrailerAppointment(trailerId, trailerAppointmentId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/trailers/{trailerId}/appointments/{trailerAppointmentId}/complete", method = RequestMethod.POST)
+    public TrailerAppointment completeTrailerAppointment(@PathVariable Long trailerId,
+                                                         @PathVariable Long trailerAppointmentId) {
+        return  trailerService.completeTrailerAppointment(trailerId, trailerAppointmentId);
     }
 
 

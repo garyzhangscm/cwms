@@ -25,11 +25,13 @@ import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.TrailerAppointmentRepository;
 import com.garyzhangscm.cwms.common.repository.TrailerRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -61,7 +63,8 @@ public class TrailerService {
 
 
     public List<Trailer> findAll(Long companyId, Long warehouseId,
-                                 String number) {
+                                 String number,
+                                 String trailerIds) {
         List<Trailer> trailers = trailerRepository.findAll(
                 (Root<Trailer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -74,6 +77,14 @@ public class TrailerService {
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("number"), number));
                         }
+                    }
+                    if (Strings.isNotBlank(trailerIds)) {
+
+                        CriteriaBuilder.In<Long> inTrailerIds = criteriaBuilder.in(root.get("id"));
+                        for(String trailerId : trailerIds.split(",")) {
+                            inTrailerIds.value(Long.parseLong(trailerId));
+                        }
+                        predicates.add(criteriaBuilder.and(inTrailerIds));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
 
@@ -160,5 +171,55 @@ public class TrailerService {
         save(trailer);
 
         return trailerAppointment;
+    }
+
+    public TrailerAppointment cancelTrailerAppointment(Long trailerId,
+                                                       Long trailerAppointmentId) {
+        TrailerAppointment trailerAppointment = trailerAppointmentRepository.findById(trailerAppointmentId)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("trailer appointment not found by id: " + trailerAppointmentId));
+        trailerAppointment.setStatus(TrailerAppointmentStatus.CANCELLED);
+        trailerAppointment = trailerAppointmentRepository.save(trailerAppointment);
+
+        // remove the current appointment from the trailer
+        Trailer trailer = findById(trailerId);
+        trailer.setCurrentAppointment(null);
+        save(trailer);
+        return trailerAppointment;
+    }
+
+    public TrailerAppointment completeTrailerAppointment(Long trailerId,
+                                                         Long trailerAppointmentId) {
+        TrailerAppointment trailerAppointment = trailerAppointmentRepository.findById(trailerAppointmentId)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("trailer appointment not found by id: " + trailerAppointmentId));
+        trailerAppointment.setStatus(TrailerAppointmentStatus.COMPLETED);
+        trailerAppointment = trailerAppointmentRepository.save(trailerAppointment);
+
+        // remove the current appointment from the trailer
+        Trailer trailer = findById(trailerId);
+        trailer.setCurrentAppointment(null);
+        save(trailer);
+        return trailerAppointment;
+    }
+
+    /**
+     * Find open trailer that has not been assigned to any tractor yet
+     * @param companyId
+     * @param warehouseId
+     * @return
+     */
+    public List<Trailer> findTrailersOpenForTractor(Long companyId, Long warehouseId) {
+        return trailerRepository.findTrailersOpenForTractor(companyId, warehouseId);
+    }
+
+    public Trailer createAttachedTrailer(Long companyId, Long warehouseId,
+                                         Tractor tractor) {
+        Trailer trailer = new Trailer();
+        trailer.setCompanyId(companyId);
+        trailer.setWarehouseId(warehouseId);
+        trailer.setNumber(tractor.getNumber());
+        trailer.setDescription("AUTO created for tractor: " + tractor.getNumber());
+        trailer.setSize(0.0);
+
+        return save(trailer);
     }
 }

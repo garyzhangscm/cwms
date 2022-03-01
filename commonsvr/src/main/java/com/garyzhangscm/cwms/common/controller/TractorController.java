@@ -60,8 +60,13 @@ public class TractorController {
 
     @BillableEndpoint
     @RequestMapping(value="/tractors", method = RequestMethod.POST)
-    public Tractor addTractor(@RequestBody Tractor tractor) {
-        return tractorService.save(tractor);
+    public Tractor addTractor(@RequestBody Tractor tractor,
+                              @RequestParam Long companyId,
+                              @RequestParam Long warehouseId,
+                              @RequestParam Boolean hasAttachedTrailer,
+                              @RequestParam Boolean autoCreatedTrailer,
+                              @RequestParam(name="attachedTrailerIds", required = false, defaultValue = "")  String attachedTrailerIds) {
+        return tractorService.addTractor(tractor, companyId, warehouseId, hasAttachedTrailer, autoCreatedTrailer, attachedTrailerIds);
     }
 
 
