@@ -1689,5 +1689,9 @@
   "licensePlateNumber": "车牌",
   "hasAttachedTrailer": "自带车厢",
   "autoCreatedTrailer": "创建车厢",
-  "attachedTrailer": "车厢"
+  "attachedTrailer": "车厢",
+  "field_required": "{{requiredFieldName}} - 字段必填",
+  "tractor.schedule": "车辆计划",
+  "checkInTime": "到达时间",
+  "dispatchTime": "发车时间"
 }
