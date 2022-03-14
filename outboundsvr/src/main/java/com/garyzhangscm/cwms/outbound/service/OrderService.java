@@ -726,14 +726,29 @@ public class OrderService implements TestDataInitiableService {
 
 
     @Transactional
-    public Order completeOrder(Long orderId) {
-        Order order = findById(orderId);
+    public Order completeOrder(Long orderId, Order completedOrder) {
+        Order existingOrder = findById(orderId);
         // Let's make sure the order is still open
-        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
-            throw  OrderOperationException.raiseException(
-                    "Complete the order " + order.getNumber() + " as it is already completed");
+        if (existingOrder.getStatus().equals(OrderStatus.COMPLETE)) {
+            throw OrderOperationException.raiseException(
+                    "Complete the order " + existingOrder.getNumber() + " as it is already completed");
         }
 
+        if (existingOrder.getCategory().isOutsourcingOrder()) {
+            return completeOutsourcingOrder(existingOrder, completedOrder);
+        }
+        else {
+            return completeWarehouseOrder(existingOrder);
+        }
+    }
+
+    /**
+     * Complete the order that is fulfilled by the warehouse
+     * @param order
+     * @return
+     */
+    @Transactional
+    private Order completeWarehouseOrder(Order order) {
         // Let's complete all the shipments related to this
         // order
         order.getOrderLines()
@@ -762,6 +777,45 @@ public class OrderService implements TestDataInitiableService {
 
 
         return saveOrUpdate(order);
+
+    }
+
+    /**
+     * Complete the order that is fulfilled by the 3rd party
+     * @param existingOrder order informaiton saved in our database
+     * @param completedOrder the order with shipped quantity information from 3rd party
+     * @return
+     */
+    @Transactional
+    private Order completeOutsourcingOrder(Order existingOrder, Order completedOrder) {
+
+        existingOrder.getOrderLines()
+                .forEach(
+                        orderLine -> {
+                            // find the matched quantity from the completed order
+                            Optional<OrderLine> matchedOrderLine = completedOrder.getOrderLines()
+                                    .stream().filter(
+                                            completedOrderLine -> StringUtils.equals(
+                                                    orderLine.getNumber(),
+                                                    completedOrderLine.getNumber()
+                                            )
+                                    ).findFirst();
+                            if (matchedOrderLine.isPresent()) {
+                                orderLine.setShippedQuantity(
+                                        matchedOrderLine.get().getShippedQuantity()
+                                );
+                            }
+                        }
+                );
+        existingOrder.setStatus(OrderStatus.COMPLETE);
+        existingOrder.setCompleteTime(LocalDateTime.now());
+
+        logger.debug("Start to send order confirmation after the order {} is marked as completed",
+                existingOrder.getNumber());
+        sendOrderConfirmationIntegration(existingOrder);
+
+
+        return saveOrUpdate(existingOrder);
 
     }
 

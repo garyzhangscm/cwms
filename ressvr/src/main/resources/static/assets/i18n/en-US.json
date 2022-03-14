@@ -1694,5 +1694,9 @@
   "field_required": "{{requiredFieldName}} - is required",
   "tractor.schedule": "Tractor Schedule",
   "checkInTime": "Check In Time",
-  "dispatchTime": "Dispatch Time"
+  "dispatchTime": "Dispatch Time",
+  "ORDER-CATEGORY-OUTSOURCING_ORDER": "Outsourcing Order",
+  "order.line.oldShippedQuantity": "Old Shipped Quantity",
+  "order.line.newShippedQuantity": "New Shipped Quantity",
+  "quantity-changed": "Quantity Changed"
 }

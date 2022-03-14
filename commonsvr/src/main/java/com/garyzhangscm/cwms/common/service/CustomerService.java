@@ -125,8 +125,15 @@ public class CustomerService implements  TestDataInitiableService{
             customerProcessed.add(customer.getName());
         }
     }
-    public Customer findByName(Long warehouseId, String name){
-        return customerRepository.findByName(warehouseId, name);
+    public Customer findByName(Long companyId, Long warehouseId, String name){
+        List<Customer> customers = findAll(companyId, warehouseId, name);
+        // we should only get one customer with specific company and name combination
+        if (customers.isEmpty()) {
+            return null;
+        }
+        else {
+            return customers.get(0);
+        }
     }
 
     @Transactional
@@ -138,8 +145,8 @@ public class CustomerService implements  TestDataInitiableService{
     // update when the supplier already exists
     @Transactional
     public Customer saveOrUpdate(Customer customer) {
-        if (customer.getId() == null && findByName(customer.getWarehouseId(), customer.getName()) != null) {
-            customer.setId(findByName(customer.getWarehouseId(), customer.getName()).getId());
+        if (customer.getId() == null && findByName(customer.getWarehouseId(), customer.getWarehouseId(), customer.getName()) != null) {
+            customer.setId(findByName(customer.getWarehouseId(), customer.getWarehouseId(), customer.getName()).getId());
         }
         return save(customer);
     }
