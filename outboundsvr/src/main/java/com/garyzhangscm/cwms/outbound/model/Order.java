@@ -126,6 +126,15 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "complete_time")
     private LocalDateTime completeTime;
 
+
+    // used by out sourcing orders
+    // when the order is completed by a 3rd party
+    // the supplier will be the party that
+    // fulfill the order
+    @Column(name = "supplier_id")
+    private Long supplierId;
+
+
     @Column(name = "carrier_id")
     private Long carrierId;
 
@@ -292,6 +301,14 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setShipToAddressCountry(String shipToAddressCountry) {
         this.shipToAddressCountry = shipToAddressCountry;
+    }
+
+    public Long getSupplierId() {
+        return supplierId;
+    }
+
+    public void setSupplierId(Long supplierId) {
+        this.supplierId = supplierId;
     }
 
     public String getShipToAddressState() {

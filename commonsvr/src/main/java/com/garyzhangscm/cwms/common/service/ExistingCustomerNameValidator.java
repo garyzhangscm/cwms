@@ -25,11 +25,11 @@ public class ExistingCustomerNameValidator implements Validator {
     @Override
     public String validate(Long companyId, Long warehouseId, String value) {
 
-        logger.debug("Start to validate customer against {} / {}",
-                warehouseId, value);
+        logger.debug("Start to validate customer against {} / {} / {}",
+                companyId, warehouseId, value);
         // make sure the customer name already exists
         Customer customer = customerService.findByName(
-                warehouseId, value
+                companyId, warehouseId, value
         );
         // Check if this is a new customer. If this is a new customer,
         // the above call should return an empty string.

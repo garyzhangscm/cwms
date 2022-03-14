@@ -102,8 +102,9 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/complete", method = RequestMethod.POST)
-    public Order completeOrder(@PathVariable Long id){
-        return orderService.completeOrder(id);
+    public Order completeOrder(@PathVariable Long id,
+                               @RequestBody Order order){
+        return orderService.completeOrder(id, order);
     }
 
     @BillableEndpoint

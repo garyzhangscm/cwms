@@ -127,8 +127,15 @@ public class SupplierService implements  TestDataInitiableService{
         }
     }
 
-    public Supplier findByName(Long warehouseId, String name){
-        return supplierRepository.findByName(warehouseId, name);
+    public Supplier findByName(Long companyId, Long warehouseId, String name){
+        List<Supplier> suppliers = findAll(companyId, warehouseId, name);
+        // we should only get one customer with specific company and name combination
+        if (suppliers.isEmpty()) {
+            return null;
+        }
+        else {
+            return suppliers.get(0);
+        }
     }
 
     @Transactional
@@ -140,8 +147,8 @@ public class SupplierService implements  TestDataInitiableService{
     // update when the supplier already exists
     @Transactional
     public Supplier saveOrUpdate(Supplier supplier) {
-        if (supplier.getId() == null && findByName(supplier.getWarehouseId(), supplier.getName()) != null) {
-            supplier.setId(findByName(supplier.getWarehouseId(), supplier.getName()).getId());
+        if (supplier.getId() == null && findByName(supplier.getCompanyId(), supplier.getWarehouseId(), supplier.getName()) != null) {
+            supplier.setId(findByName(supplier.getCompanyId(), supplier.getWarehouseId(), supplier.getName()).getId());
         }
         return save(supplier);
     }

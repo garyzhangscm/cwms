@@ -1693,5 +1693,9 @@
   "field_required": "{{requiredFieldName}} - 字段必填",
   "tractor.schedule": "车辆计划",
   "checkInTime": "到达时间",
-  "dispatchTime": "发车时间"
+  "dispatchTime": "发车时间",
+  "ORDER-CATEGORY-OUTSOURCING_ORDER": "外发",
+  "order.line.oldShippedQuantity": "原发货数量",
+  "order.line.newShippedQuantity": "新发货数量",
+  "quantity-changed": "修改数量"
 }
