@@ -49,12 +49,13 @@ public class OrderController {
     public List<Order> findAllOrders(@RequestParam Long warehouseId,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
                                      @RequestParam(name="status", required = false, defaultValue = "") String status,
+                                     @RequestParam(name="category", required = false, defaultValue = "") String category,
                                      @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                      @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startCompleteTime,
                                      @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endCompleteTime,
                                      @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate) {
         logger.debug("Start to find order by number {}", number);
-        return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,   loadDetails);
+        return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,  category,  loadDetails);
     }
 
     @BillableEndpoint

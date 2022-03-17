@@ -35,6 +35,7 @@ public class Supplier implements Serializable {
     private String contactorLastname;
 
     private String addressCountry;
+    private String addressState;
     private String addressCounty;
     private String addressCity;
     private String addressDistrict;
@@ -88,6 +89,14 @@ public class Supplier implements Serializable {
 
     public void setAddressCountry(String addressCountry) {
         this.addressCountry = addressCountry;
+    }
+
+    public String getAddressState() {
+        return addressState;
+    }
+
+    public void setAddressState(String addressState) {
+        this.addressState = addressState;
     }
 
     public String getAddressCounty() {
