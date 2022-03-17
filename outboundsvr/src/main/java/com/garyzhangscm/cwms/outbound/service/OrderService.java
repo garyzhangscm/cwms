@@ -113,6 +113,7 @@ public class OrderService implements TestDataInitiableService {
                                LocalDateTime startCompleteTime,
                                LocalDateTime endCompleteTime,
                                LocalDate specificCompleteDate,
+                               String category,
                                Boolean loadDetails) {
 
         List<Order> orders =  orderRepository.findAll(
@@ -137,6 +138,11 @@ public class OrderService implements TestDataInitiableService {
 
                     }
 
+                    if (StringUtils.isNotBlank(category)) {
+                        OrderCategory orderCategory = OrderCategory.valueOf(category);
+                        predicates.add(criteriaBuilder.equal(root.get("category"), orderCategory));
+
+                    }
                     if (Objects.nonNull(startCompleteTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
                                 root.get("completeTime"), startCompleteTime));
@@ -175,9 +181,9 @@ public class OrderService implements TestDataInitiableService {
 
     public List<Order> findAll(Long warehouseId, String number, String status,
                                LocalDateTime startCompleteTime, LocalDateTime endCompleteTime,
-                               LocalDate specificCompleteDate) {
+                               LocalDate specificCompleteDate, String category) {
         return findAll(warehouseId, number, status, startCompleteTime, endCompleteTime,
-                specificCompleteDate, true);
+                specificCompleteDate, category, true);
     }
 
 
@@ -814,6 +820,12 @@ public class OrderService implements TestDataInitiableService {
                 existingOrder.getNumber());
         sendOrderConfirmationIntegration(existingOrder);
 
+        // release the location that is reserved by order
+
+        warehouseLayoutServiceRestemplateClient.releaseLocations(existingOrder.getWarehouseId(), existingOrder);
+        existingOrder.setStageLocationId(null);
+        existingOrder.setStageLocationGroupId(null);
+
 
         return saveOrUpdate(existingOrder);
 
@@ -1196,23 +1208,46 @@ public class OrderService implements TestDataInitiableService {
         report.addParameter("order_number",
                 order.getNumber());
 
-        // get the warehouse address as the ship from address
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
-                order.getWarehouseId()
-        );
-        if (Objects.nonNull(warehouse)) {
-            report.addParameter("ship_from_address_line1",
-                    warehouse.getAddressLine1());
-            report.addParameter("ship_from_address_city_state_zipcode",
-                    warehouse.getAddressCity() + ", " +
-                    warehouse.getAddressState() + " " +
-                    warehouse.getAddressPostcode());
+        // for outsourcing order we will get supplier's address
+        // as the shipping from address, otherwise,
+        // we will get the warehouse address as the ship from address
+        if (order.getCategory().isOutsourcingOrder()) {
+            Supplier supplier = commonServiceRestemplateClient.getSupplierById(order.getSupplierId());
+            if (Objects.nonNull(supplier)) {
+
+                report.addParameter("ship_from_address_line1",
+                        supplier.getAddressLine1());
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        supplier.getAddressCity() + ", " +
+                                supplier.getAddressState() + " " +
+                                supplier.getAddressPostcode());
+            }
+            else {
+                report.addParameter("ship_from_address_line1",
+                        "N/A");
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        "N/A");
+            }
         }
         else {
-            report.addParameter("ship_from_address_line1",
-                    "N/A");
-            report.addParameter("ship_from_address_city_state_zipcode",
-                    "N/A");
+
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                    order.getWarehouseId()
+            );
+            if (Objects.nonNull(warehouse)) {
+                report.addParameter("ship_from_address_line1",
+                        warehouse.getAddressLine1());
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        warehouse.getAddressCity() + ", " +
+                                warehouse.getAddressState() + " " +
+                                warehouse.getAddressPostcode());
+            }
+            else {
+                report.addParameter("ship_from_address_line1",
+                        "N/A");
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        "N/A");
+            }
         }
 
         // get the ship to address
@@ -1227,8 +1262,63 @@ public class OrderService implements TestDataInitiableService {
 
     }
 
+    /**
+     * Setup order's packing list data
+     * @param report
+     * @param order
+     */
     private void setupOrderPackingListData(Report report, Order order) {
+        logger.debug("setup packing list data for order {}, category {}, is outsourcing order? {}",
+                order.getNumber(),
+                order.getCategory(),
+                order.getCategory().isOutsourcingOrder());
+        if (order.getCategory().isOutsourcingOrder()) {
+            setupOutsourcingOrderPackingListData(report, order);
+        }
+        else {
+            setupWarehouseOrderPackingListData(report, order);
+        }
 
+    }
+    /**
+     * Setup the order packing list data for order that fulfilled by 3rd party
+     * @param report
+     * @param order
+     */
+    private void setupOutsourcingOrderPackingListData(Report report, Order order) {
+
+        // for outsourcing orders, we will printing whatever the 3rd party
+        // told us that is shipped
+        logger.debug("Start to setup packing list data for outsourcing order");
+        List<PackingSlipData> packingSlipDataList = new ArrayList<>();
+
+        Long totalShippedQuantity = 0l;
+        for(OrderLine orderLine : order.getOrderLines()) {
+
+            packingSlipDataList.add(new PackingSlipData(
+                    orderLine.getItem().getName(),
+                    orderLine.getItem().getDescription(),
+                    orderLine.getShippedQuantity(),
+                    0
+            ));
+            totalShippedQuantity += orderLine.getShippedQuantity();
+        }
+        report.setData(packingSlipDataList);
+
+        report.addParameter("total_shipped_quantity",
+                totalShippedQuantity);
+        report.addParameter("total_pallet_count",
+                0);
+    }
+
+    /**
+     * Setup the order's packing list's data for order that fulfilled by warehouse
+     * @param report
+     * @param order
+     */
+    private void setupWarehouseOrderPackingListData(Report report, Order order) {
+
+        logger.debug("Start to setup packing list data for warehouse order");
         long totalShippedQuantity = 0l;
         int totalPalletCount = 0;
 
@@ -1354,27 +1444,52 @@ public class OrderService implements TestDataInitiableService {
         report.addParameter("order_number",
                 order.getNumber());
 
-        // get the warehouse address as the ship from address
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
-                order.getWarehouseId()
-        );
-        if (Objects.nonNull(warehouse)) {
-            report.addParameter("ship_from_name",
-                    warehouse.getName());
-            report.addParameter("ship_from_address_line1",
-                    warehouse.getAddressLine1());
-            report.addParameter("ship_from_address_city_state_zipcode",
-                    warehouse.getAddressCity() + ", " +
-                            warehouse.getAddressState() + " " +
-                            warehouse.getAddressPostcode());
+        // for outsourcing order we will get supplier's address
+        // as the shipping from address, otherwise,
+        // we will get the warehouse address as the ship from address
+        if (order.getCategory().isOutsourcingOrder()) {
+            Supplier supplier = commonServiceRestemplateClient.getSupplierById(order.getSupplierId());
+            if (Objects.nonNull(supplier)) {
+                report.addParameter("ship_from_name",
+                        supplier.getName());
+                report.addParameter("ship_from_address_line1",
+                        supplier.getAddressLine1());
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        supplier.getAddressCity() + ", " +
+                                supplier.getAddressState() + " " +
+                                supplier.getAddressPostcode());
+            }
+            else {
+                report.addParameter("ship_from_address_line1",
+                        "N/A");
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        "N/A");
+            }
         }
         else {
-            report.addParameter("ship_from_name",
-                    "N/A");
-            report.addParameter("ship_from_address_line1",
-                    "N/A");
-            report.addParameter("ship_from_address_city_state_zipcode",
-                    "N/A");
+            // get the warehouse address as the ship from address
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                    order.getWarehouseId()
+            );
+            if (Objects.nonNull(warehouse)) {
+                report.addParameter("ship_from_name",
+                        warehouse.getName());
+                report.addParameter("ship_from_address_line1",
+                        warehouse.getAddressLine1());
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        warehouse.getAddressCity() + ", " +
+                                warehouse.getAddressState() + " " +
+                                warehouse.getAddressPostcode());
+            }
+            else {
+                report.addParameter("ship_from_name",
+                        "N/A");
+                report.addParameter("ship_from_address_line1",
+                        "N/A");
+                report.addParameter("ship_from_address_city_state_zipcode",
+                        "N/A");
+            }
+
         }
 
         // if we can get the customer's name, then display it
@@ -1417,6 +1532,61 @@ public class OrderService implements TestDataInitiableService {
     }
 
     private void setupOrderBillOfLadingData(Report report, Order order) {
+        if (order.getCategory().isOutsourcingOrder()) {
+            setupOutsourcingOrderBillOfLadingData(report, order);
+        }
+        else {
+            setupWarehouseOrderBillOfLadingData(report, order);
+        }
+    }
+
+    /**
+     * Setup BOL data for order fulfilled by 3rd party
+     * @param report
+     * @param order
+     */
+    private void setupOutsourcingOrderBillOfLadingData(Report report, Order order) {
+
+        List<BillOfLadingData> billOfLadingDataList = new ArrayList<>();
+        // for orders that fulfilled by 3rd party, we will just use the data that whatever
+        // the 3rd party tell us
+        Long totalShippedQuantity = 0l;
+        for(OrderLine orderLine : order.getOrderLines()) {
+            String itemFamily = Objects.nonNull(orderLine.getItem().getItemFamily()) ?
+                    orderLine.getItem().getItemFamily().getName() : "N/A";
+            String stockUOM =
+                    Objects.isNull(orderLine.getItem()) ? "N/A" :
+                            Objects.isNull(orderLine.getItem().getDefaultItemPackageType()) ? "N/A" :
+                                    Objects.isNull(orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures()) ? "N/A" :
+                                            Objects.isNull(orderLine.getItem().getDefaultItemPackageType()
+                                                    .getStockItemUnitOfMeasures().getUnitOfMeasure()) ? "N/A" :
+                                                        orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+            billOfLadingDataList.add(new BillOfLadingData(
+                    orderLine.getItem().getName(),
+                    orderLine.getItem().getDescription(),
+                    orderLine.getShippedQuantity(),
+                    0,
+                    stockUOM,
+                    itemFamily,
+                    "N/A"
+            ));
+            totalShippedQuantity += orderLine.getShippedQuantity();
+        }
+
+        report.setData(billOfLadingDataList);
+
+        report.addParameter("total_shipped_quantity",
+            totalShippedQuantity);
+        report.addParameter("total_pallet_count",
+        0);
+    }
+
+    /**
+     * Setup BOL data for order fulfilled by warehouse
+     * @param report
+     * @param order
+     */
+    private void setupWarehouseOrderBillOfLadingData(Report report, Order order) {
 
         long totalShippedQuantity = 0l;
         int totalPalletCount = 0;
