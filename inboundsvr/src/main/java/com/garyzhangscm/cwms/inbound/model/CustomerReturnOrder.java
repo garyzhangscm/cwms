@@ -29,7 +29,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "customer_return_order")
-public class CustomerReturnOrder {
+public class CustomerReturnOrder  extends AuditibleEntity<String>{
 
 
     @Id
@@ -55,7 +55,7 @@ public class CustomerReturnOrder {
     private Client client;
 
     @Column(name = "rma_number")
-    private String RMANumber;
+    private String rmaNumber;
 
     @Column(name = "tracking_number")
     private String trackingNumber;
@@ -146,12 +146,12 @@ public class CustomerReturnOrder {
         this.client = client;
     }
 
-    public String getRMANumber() {
-        return RMANumber;
+    public String getRmaNumber() {
+        return rmaNumber;
     }
 
-    public void setRMANumber(String RMANumber) {
-        this.RMANumber = RMANumber;
+    public void setRmaNumber(String rmaNumber) {
+        this.rmaNumber = rmaNumber;
     }
 
     public Long getCustomerId() {

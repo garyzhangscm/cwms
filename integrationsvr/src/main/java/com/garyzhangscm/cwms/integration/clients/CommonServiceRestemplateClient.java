@@ -147,7 +147,7 @@ public class CommonServiceRestemplateClient {
             }
             ResponseBodyWrapper<List<Customer>> responseBodyWrapper
                     = restTemplate.exchange(
-                    builder.toUriString(),
+                    builder.build(true).toUri(),
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<ResponseBodyWrapper<List<Customer>>>() {

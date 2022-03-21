@@ -88,8 +88,6 @@ public class CustomerReturnOrderService{
 
     public List<CustomerReturnOrder> findAll(Long warehouseId, String number, String statusList, boolean loadDetails) {
 
-
-
         List<CustomerReturnOrder> customerReturnOrders =  customerReturnOrderRepository.findAll(
                 (Root<CustomerReturnOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -166,8 +164,8 @@ public class CustomerReturnOrderService{
 
 
     @Transactional
-    public CustomerReturnOrder save(CustomerReturnOrder receipt, boolean loadAttribute) {
-        CustomerReturnOrder newCustomerReturnOrder = customerReturnOrderRepository.save(receipt);
+    public CustomerReturnOrder save(CustomerReturnOrder customerReturnOrder, boolean loadAttribute) {
+        CustomerReturnOrder newCustomerReturnOrder = customerReturnOrderRepository.save(customerReturnOrder);
         if (loadAttribute) {
             loadAttribute(newCustomerReturnOrder);
         }
@@ -508,6 +506,9 @@ public class CustomerReturnOrderService{
 
         existingCustomerReturnOrder.setClientId(customerReturnOrder.getClientId());
         existingCustomerReturnOrder.setAllowUnexpectedItem(customerReturnOrder.getAllowUnexpectedItem());
+        for (CustomerReturnOrderLine customerReturnOrderLine : customerReturnOrder.getCustomerReturnOrderLines()) {
+            customerReturnOrderLine.setCustomerReturnOrder(customerReturnOrder);
+        }
 
         return saveOrUpdate(customerReturnOrder);
     }
@@ -517,6 +518,8 @@ public class CustomerReturnOrderService{
             customerReturnOrderLine.setCustomerReturnOrder(customerReturnOrder);
 
         }
+        logger.debug("addCustomerReturnOrder:\n {}",
+                customerReturnOrder);
         return saveOrUpdate(customerReturnOrder);
     }
 }

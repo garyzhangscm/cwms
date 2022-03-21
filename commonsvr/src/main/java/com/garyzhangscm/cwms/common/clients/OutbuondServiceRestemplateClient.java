@@ -68,7 +68,7 @@ public class OutbuondServiceRestemplateClient {
 
             ResponseBodyWrapper<String> responseBodyWrapper
                     = restTemplate.exchange(
-                    builder.toUriString(),
+                    builder.build(true).toUri(),
                     HttpMethod.POST,
                     null,
                     new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();

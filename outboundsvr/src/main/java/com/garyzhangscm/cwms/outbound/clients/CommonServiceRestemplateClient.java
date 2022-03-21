@@ -168,6 +168,7 @@ public class CommonServiceRestemplateClient {
     }
     public Customer getCustomerByName(Long companyId, Long warehouseId, String name) {
 
+        logger.debug("Start to find customer by name {}", name);
         try {
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
@@ -183,7 +184,7 @@ public class CommonServiceRestemplateClient {
             }
             ResponseBodyWrapper<List<Customer>> responseBodyWrapper
                     = restTemplate.exchange(
-                    builder.toUriString(),
+                    builder.build(true).toUri(),
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<ResponseBodyWrapper<List<Customer>>>() {
