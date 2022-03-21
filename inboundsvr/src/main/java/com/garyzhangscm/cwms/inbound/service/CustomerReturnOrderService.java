@@ -494,4 +494,22 @@ public class CustomerReturnOrderService{
 
         saveOrUpdate(existingCustomerReturnOrder, false);
     }
+
+
+    /**
+     * Wo will only change the customer return's attribute here. We will not process
+     * line
+     * @param customerReturnOrder
+     * @return
+     */
+    public CustomerReturnOrder changeCustomerReturnOrder(Long id, CustomerReturnOrder customerReturnOrder) {
+
+        CustomerReturnOrder existingCustomerReturnOrder = findById(id);
+
+        existingCustomerReturnOrder.setClientId(customerReturnOrder.getClientId());
+        existingCustomerReturnOrder.setAllowUnexpectedItem(customerReturnOrder.getAllowUnexpectedItem());
+
+        return saveOrUpdate(customerReturnOrder);
+    }
+
 }

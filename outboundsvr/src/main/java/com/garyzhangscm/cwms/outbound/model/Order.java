@@ -134,6 +134,8 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "supplier_id")
     private Long supplierId;
 
+    @Transient
+    private Supplier supplier;
 
     @Column(name = "carrier_id")
     private Long carrierId;
@@ -285,6 +287,14 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setShipToContactorFirstname(String shipToContactorFirstname) {
         this.shipToContactorFirstname = shipToContactorFirstname;
+    }
+
+    public Supplier getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Supplier supplier) {
+        this.supplier = supplier;
     }
 
     public String getShipToContactorLastname() {

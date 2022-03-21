@@ -252,6 +252,13 @@ public class OrderService implements TestDataInitiableService {
             order.setShipToCustomer(commonServiceRestemplateClient.getCustomerById(order.getShipToCustomerId()));
         }
 
+        if (Objects.nonNull(order.getSupplierId()) && Objects.isNull(order.getSupplier())) {
+            order.setSupplier(
+                    commonServiceRestemplateClient.getSupplierById(
+                            order.getSupplierId()
+                    )
+            );
+        }
         if (order.getWarehouseId() != null && order.getWarehouse() == null) {
             order.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId()));
         }

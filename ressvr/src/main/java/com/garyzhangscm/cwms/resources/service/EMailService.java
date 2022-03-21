@@ -22,7 +22,6 @@ public class EMailService {
 
     private static final Logger logger = LoggerFactory.getLogger(DepartmentService.class);
 
-    private Map<Long, JavaMailSender> javaMailSenders = new HashMap<>();
 
     @Autowired
     private EmailAlertConfigurationService emailAlertConfigurationService;
@@ -41,7 +40,7 @@ public class EMailService {
         if (Objects.isNull(emailAlertConfiguration)) {
             throw EmailException.raiseException("email confirmation for the company " + companyId + " is not setup");
         }
-        JavaMailSender javaMailSender = getJavaMailSender(companyId);
+        JavaMailSender javaMailSender = emailAlertConfigurationService.getJavaMailSender(companyId);
         if (Objects.isNull(javaMailSender)) {
             throw EmailException.raiseException("email server for the company " + companyId + "  is not setup");
         }
@@ -56,16 +55,5 @@ public class EMailService {
         javaMailSender.send(message);
     }
 
-    private JavaMailSender getJavaMailSender(Long companyId) {
-        if (!javaMailSenders.containsKey(companyId)) {
-            // load the email configuration
-            JavaMailSender javaMailSender =
-                    emailAlertConfigurationService.reloadJavaMailSender(companyId);
-            if (Objects.nonNull(javaMailSender)) {
-                javaMailSenders.put(companyId, javaMailSender);
-            }
-        }
-        return javaMailSenders.get(companyId);
-    }
 
 }
