@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.clients;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,10 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
 
 
 @Component
@@ -162,28 +166,41 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public Customer getCustomerByName(Long warehouseId, String name) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/customers")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("name", name);
+    public Customer getCustomerByName(Long companyId, Long warehouseId, String name) {
 
-        ResponseBodyWrapper<List<Customer>> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/common/customers")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+
+            if (Objects.nonNull(companyId)) {
+                builder = builder.queryParam("companyId", companyId);
+            }
+            if (Objects.nonNull(warehouseId)) {
+                builder = builder.queryParam("warehouseId", warehouseId);
+            }
+            ResponseBodyWrapper<List<Customer>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
                     null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Customer>>>() {}).getBody();
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<Customer>>>() {
+                    }).getBody();
 
-        List<Customer> customers = responseBodyWrapper.getData();
-        if (customers.size() == 0) {
-            return null;
+            List<Customer> customers = responseBodyWrapper.getData();
+            if (customers.size() == 0) {
+                return null;
+            } else {
+                return customers.get(0);
+            }
         }
-        else {
-            return customers.get(0);
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the customer by name " + name);
         }
+
     }
 
 
