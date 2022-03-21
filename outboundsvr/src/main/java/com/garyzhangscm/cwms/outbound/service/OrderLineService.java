@@ -204,14 +204,10 @@ public class OrderLineService implements TestDataInitiableService{
                     }
                     if (!StringUtils.isBlank(customerName)) {
                         Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
-                        Customer customer = commonServiceRestemplateClient.getCustomerByName(warehouseId,
+                        Customer customer = commonServiceRestemplateClient.getCustomerByName(null, warehouseId,
                                 customerName);
-                        if (customer != null) {
-                            predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), customer.getId()));
-                        }
-                        else {
-                            predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), -999L));
-                        }
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), customer.getId()));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

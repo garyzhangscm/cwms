@@ -1698,5 +1698,11 @@
   "ORDER-CATEGORY-OUTSOURCING_ORDER": "Outsourcing Order",
   "order.line.oldShippedQuantity": "Old Shipped Quantity",
   "order.line.newShippedQuantity": "New Shipped Quantity",
-  "quantity-changed": "Quantity Changed"
+  "quantity-changed": "Quantity Changed",
+  "customer-return-order-maintenance": "Customer Return Order Maintenance",
+  "allowUnexpectedItem": "Allow Unexpected Item",
+  "line.number": "Line Number",
+  "customer-return-order.line": "Customer Return Order Line",
+  "RMANumber": "RMA Number",
+  "trackingNumber": "Tracking Number"
 }

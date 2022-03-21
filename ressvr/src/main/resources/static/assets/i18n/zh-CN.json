@@ -1697,5 +1697,11 @@
   "ORDER-CATEGORY-OUTSOURCING_ORDER": "外发",
   "order.line.oldShippedQuantity": "原发货数量",
   "order.line.newShippedQuantity": "新发货数量",
-  "quantity-changed": "修改数量"
+  "quantity-changed": "修改数量",
+  "customer-return-order-maintenance": "退货订单维护",
+  "allowUnexpectedItem": "允许不在单据上的商品",
+  "line.number": "行号",
+  "customer-return-order.line": "退货订单行",
+  "RMANumber": "退货单据号",
+  "trackingNumber": "快递单号"
 }

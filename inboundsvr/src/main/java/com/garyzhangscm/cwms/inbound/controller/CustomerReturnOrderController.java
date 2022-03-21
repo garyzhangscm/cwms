@@ -52,7 +52,7 @@ public class CustomerReturnOrderController {
     @BillableEndpoint
     @RequestMapping(value="/customer-return-orders", method = RequestMethod.POST)
     public CustomerReturnOrder addCustomerReturnOrder(@RequestBody CustomerReturnOrder customerReturnOrder) {
-        return customerReturnOrderService.save(customerReturnOrder);
+        return customerReturnOrderService.addCustomerReturnOrder(customerReturnOrder);
     }
 
 

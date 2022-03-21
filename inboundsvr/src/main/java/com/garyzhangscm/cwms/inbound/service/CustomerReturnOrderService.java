@@ -512,4 +512,11 @@ public class CustomerReturnOrderService{
         return saveOrUpdate(customerReturnOrder);
     }
 
+    public CustomerReturnOrder addCustomerReturnOrder(CustomerReturnOrder customerReturnOrder) {
+        for (CustomerReturnOrderLine customerReturnOrderLine : customerReturnOrder.getCustomerReturnOrderLines()) {
+            customerReturnOrderLine.setCustomerReturnOrder(customerReturnOrder);
+
+        }
+        return saveOrUpdate(customerReturnOrder);
+    }
 }

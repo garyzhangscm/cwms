@@ -114,6 +114,8 @@ public class OrderService implements TestDataInitiableService {
                                LocalDateTime endCompleteTime,
                                LocalDate specificCompleteDate,
                                String category,
+                               String customerName,
+                               Long customerId,
                                Boolean loadDetails) {
 
         List<Order> orders =  orderRepository.findAll(
@@ -161,6 +163,18 @@ public class OrderService implements TestDataInitiableService {
                                 root.get("completeTime"), dateStartTime, dateEndTime));
 
                     }
+                    if (Objects.nonNull(customerId)) {
+
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("shipToCustomerId"), customerId));
+                    }
+                    else  if (Strings.isNotBlank(customerName)) {
+
+                        Customer customer = commonServiceRestemplateClient.getCustomerByName(null, warehouseId, customerName);
+
+                            predicates.add(criteriaBuilder.equal(
+                                    root.get("shipToCustomerId"), customer.getId()));
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -181,9 +195,9 @@ public class OrderService implements TestDataInitiableService {
 
     public List<Order> findAll(Long warehouseId, String number, String status,
                                LocalDateTime startCompleteTime, LocalDateTime endCompleteTime,
-                               LocalDate specificCompleteDate, String category) {
+                               LocalDate specificCompleteDate, String category, String customerName, Long customerId) {
         return findAll(warehouseId, number, status, startCompleteTime, endCompleteTime,
-                specificCompleteDate, category, true);
+                specificCompleteDate, category, customerName, customerId, true);
     }
 
 
@@ -453,7 +467,7 @@ public class OrderService implements TestDataInitiableService {
 
         // if we specify the ship to customer, we load information with the customer
         if (!StringUtils.isBlank(orderCSVWrapper.getShipToCustomer())) {
-            Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(
+            Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(),
                     warehouse.getId(), orderCSVWrapper.getShipToCustomer());
 
             order.setShipToCustomer(shipToCustomer);
@@ -483,7 +497,7 @@ public class OrderService implements TestDataInitiableService {
         }
 
         if (!StringUtils.isBlank(orderCSVWrapper.getBillToCustomer())) {
-            Customer billToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getId(),
+            Customer billToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(), warehouse.getId(),
                     orderCSVWrapper.getBillToCustomer());
 
             order.setBillToCustomer(billToCustomer);
