@@ -24,8 +24,11 @@ import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.service.AlertService;
 import com.garyzhangscm.cwms.resources.service.AlertSubscriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -38,8 +41,11 @@ public class AlertController {
     public List<Alert> findAllAlerts(@RequestParam Long companyId,
                                      @RequestParam(value = "type", defaultValue = "", required = false) String type,
                                      @RequestParam(value = "status", defaultValue = "", required = false) String status,
-                                     @RequestParam(value = "keyWords", defaultValue = "", required = false) String keyWords) {
-        return alertService.findAll(companyId, type, status, keyWords);
+                                     @RequestParam(value = "keyWords", defaultValue = "", required = false) String keyWords,
+                                     @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
+                                     @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+                                     @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return alertService.findAll(companyId, type, status, keyWords, startTime, endTime, date);
     }
 
 

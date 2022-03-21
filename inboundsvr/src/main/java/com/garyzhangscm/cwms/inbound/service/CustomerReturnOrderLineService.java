@@ -459,4 +459,16 @@ public class CustomerReturnOrderLineService {
 
         return saveOrUpdate(customerReturnOrderLine);
     }
+
+
+    @Transactional
+    public CustomerReturnOrderLine addCustomerReturnOrderLine(Long customerReturnOderid, CustomerReturnOrderLine customerReturnOrderLine) {
+        CustomerReturnOrder customerReturnOrder = customerReturnOrderService.findById(customerReturnOderid);
+        customerReturnOrderLine.setCustomerReturnOrder(customerReturnOrder);
+        customerReturnOrderLine.setWarehouseId(customerReturnOrder.getWarehouseId());
+        if (customerReturnOrderLine.getItemId() == null && customerReturnOrderLine.getItem() != null) {
+            customerReturnOrderLine.setItemId(customerReturnOrderLine.getItem().getId());
+        }
+        return saveOrUpdate(customerReturnOrderLine);
+    }
 }

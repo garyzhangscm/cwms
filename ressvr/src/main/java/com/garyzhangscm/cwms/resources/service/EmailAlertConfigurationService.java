@@ -35,16 +35,15 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 @Service
 public class EmailAlertConfigurationService {
     private static final Logger logger = LoggerFactory.getLogger(EmailAlertConfigurationService.class);
     @Autowired
     private EmailAlertConfigurationRepository emailAlertConfigurationRepository;
+
+    private Map<Long, JavaMailSender> javaMailSenders = new HashMap<>();
 
     public EmailAlertConfiguration findById(Long id) {
         EmailAlertConfiguration emailAlertConfiguration =  emailAlertConfigurationRepository.findById(id)
@@ -78,7 +77,8 @@ public class EmailAlertConfigurationService {
 
         // everytime we change the email configuration, we will change the
         // javaMailSender bean to read the new configuration
-        reloadJavaMailSender(newEmailAlertConfiguration);
+        javaMailSenders.put(emailAlertConfiguration.getCompanyId(),
+                reloadJavaMailSender(newEmailAlertConfiguration));
         return newEmailAlertConfiguration;
     }
 
@@ -136,5 +136,18 @@ public class EmailAlertConfigurationService {
     public void delete(Long id) {
         emailAlertConfigurationRepository.deleteById(id);
 
+    }
+
+
+    public JavaMailSender getJavaMailSender(Long companyId) {
+        if (!javaMailSenders.containsKey(companyId)) {
+            // load the email configuration
+            JavaMailSender javaMailSender =
+                    reloadJavaMailSender(companyId);
+            if (Objects.nonNull(javaMailSender)) {
+                javaMailSenders.put(companyId, javaMailSender);
+            }
+        }
+        return javaMailSenders.get(companyId);
     }
 }

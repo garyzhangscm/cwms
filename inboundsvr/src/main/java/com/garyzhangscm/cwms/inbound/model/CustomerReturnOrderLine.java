@@ -87,6 +87,8 @@ public class CustomerReturnOrderLine {
     private Long customerReturnOrderId;
     @Transient
     private String customerReturnOrderNumber;
+    @Transient
+    private String outboundOrderNumber;
 
     @Override
     public String toString() {
@@ -232,5 +234,13 @@ public class CustomerReturnOrderLine {
 
     public void setCustomerReturnOrderNumber(String customerReturnOrderNumber) {
         this.customerReturnOrderNumber = customerReturnOrderNumber;
+    }
+
+    public String getOutboundOrderNumber() {
+        return outboundOrderNumber;
+    }
+
+    public void setOutboundOrderNumber(String outboundOrderNumber) {
+        this.outboundOrderNumber = outboundOrderNumber;
     }
 }

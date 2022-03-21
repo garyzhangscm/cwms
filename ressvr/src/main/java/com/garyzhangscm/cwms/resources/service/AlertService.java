@@ -33,6 +33,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +58,8 @@ public class AlertService {
     public List<Alert> findAll(Long companyId,
                                String type,
                                String status,
-                               String keyWords) {
+                               String keyWords,
+                               LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
 
         return alertRepository.findAll(
                 (Root<Alert> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -83,6 +85,24 @@ public class AlertService {
 
                             predicates.add(criteriaBuilder.equal(root.get("keyWords"), keyWords));
                         }
+                    }
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("createdTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("createdTime"), endTime));
+
+                    }
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("createdTime"), dateStartTime, dateEndTime));
+
                     }
 
                     Predicate[] p = new Predicate[predicates.size()];

@@ -86,7 +86,6 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Alert",menu.main.alert.alert,/alert/alert,1,Main-Menu-Alert,Alert-Alert,,true,true
 "Alert Configuration",menu.main.alert.config,/alert/configuration,2,Main-Menu-Alert,Alert-Config,,true,true
 "Alert Subscription",menu.main.alert.subscription,/alert/subscription,3,Main-Menu-Alert,Alert-Subscription,,true,false
-"Alert Subscription Maintenance",menu.main.alert.subscription-maintenance,/alert/subscription-maintenance,4,Main-Menu-Alert,Alert-Subscription-Maint,,true,true
 "Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,,true,false
 "Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,,true,false
 "Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,,true,false
