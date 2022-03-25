@@ -50,6 +50,8 @@ public class LocationGroupType extends AuditibleEntity<String>{
 
     @Column(name = "receiving_stage_locations")
     private Boolean receivingStage;
+    @Column(name = "customer_return_stage_locations")
+    private Boolean customerReturnStageLocation;
     @Column(name = "shipping_stage_locations")
     private Boolean shippingStage;
     @Column(name = "production_line_locations")
@@ -220,6 +222,14 @@ public class LocationGroupType extends AuditibleEntity<String>{
 
     public void setProductionLineOutbound(Boolean productionLineOutbound) {
         this.productionLineOutbound = productionLineOutbound;
+    }
+
+    public Boolean getCustomerReturnStageLocation() {
+        return customerReturnStageLocation;
+    }
+
+    public void setCustomerReturnStageLocation(Boolean customerReturnStageLocation) {
+        this.customerReturnStageLocation = customerReturnStageLocation;
     }
 
     public Boolean getGrid() {

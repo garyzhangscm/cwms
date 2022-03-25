@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.inbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.inbound.clients.ResourceServiceRestemplateClient;
-import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inbound.clients.*;
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
@@ -64,6 +61,10 @@ public class CustomerReturnOrderService{
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
     
@@ -517,9 +518,21 @@ public class CustomerReturnOrderService{
         for (CustomerReturnOrderLine customerReturnOrderLine : customerReturnOrder.getCustomerReturnOrderLines()) {
             customerReturnOrderLine.setCustomerReturnOrder(customerReturnOrder);
 
+
+            outboundServiceRestemplateClient.addRequestReturnQuantity(
+                    customerReturnOrder.getWarehouseId(),
+                    customerReturnOrderLine.getOutboundOrderLineId(),
+                    customerReturnOrderLine.getExpectedQuantity()
+            );
+
         }
         logger.debug("addCustomerReturnOrder:\n {}",
                 customerReturnOrder);
-        return saveOrUpdate(customerReturnOrder);
+
+
+        logger.debug("create the location for the customer return order");
+        CustomerReturnOrder newCustomerReturnOrder = saveOrUpdate(customerReturnOrder);
+        warehouseLayoutServiceRestemplateClient.createLocationForCustomerReturnOrder(newCustomerReturnOrder);
+        return newCustomerReturnOrder;
     }
 }

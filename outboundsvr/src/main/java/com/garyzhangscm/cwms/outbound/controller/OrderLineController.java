@@ -86,4 +86,28 @@ public class OrderLineController {
                 itemId);
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/orders/lines/{id}/add-request-return-quantity", method = RequestMethod.POST)
+    public OrderLine addRequestReturnQuantity(
+            @RequestParam Long warehouseId,
+            @PathVariable Long orderLineId,
+            @RequestParam Long requestReturnQuantity) {
+
+        return orderLineService.addRequestReturnQuantity(warehouseId, orderLineId,
+                requestReturnQuantity);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/orders/lines/{id}/add-actual-return-quantity", method = RequestMethod.POST)
+    public OrderLine addActualReturnQuantity(
+            @RequestParam Long warehouseId,
+            @PathVariable Long orderLineId,
+            @RequestParam Long actualReturnQuantity) {
+
+        return orderLineService.addActualReturnQuantity(warehouseId, orderLineId,
+                actualReturnQuantity);
+    }
+
+
 }

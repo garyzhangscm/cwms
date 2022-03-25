@@ -805,4 +805,33 @@ public class LocationService implements TestDataInitiableService {
             return null;
         }
     }
+
+    /**
+     * Create a location for customer return order. The name will be the same as
+     * the customer return order number. The inventory will be received into this
+     * location first before it will be further checked
+     * @param warehouseId
+     * @param name
+     * @return
+     */
+    public Location addCustomerReturnOrderStageLocation(Long warehouseId, String name) {
+        // see if we already hava the location
+        logger.debug("will add customer return order stage location {} / {}",
+                warehouseId, name);
+        Location location = findByName(name, warehouseId);
+        if (Objects.nonNull(location)) {
+            logger.debug("customer return order stage location {} already exists",
+                    location.getName());
+            return location;
+        }
+        else {
+
+            location = new Location(warehouseService.findById(warehouseId),
+                    name, locationGroupService.getCustomerReturnStageLocationGroup(warehouseId));
+
+            logger.debug("Created a new location {} for the customer return order",
+                    location.getName());
+            return saveOrUpdate(location);
+        }
+    }
 }

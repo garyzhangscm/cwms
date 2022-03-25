@@ -254,6 +254,14 @@ public class LocationController {
     }
 
     @BillableEndpoint
+    @RequestMapping(method=RequestMethod.PUT, value="/locations/customer-return-order-stage-locations")
+    public Location addCustomerReturnOrderStageLocation(@RequestParam Long warehouseId,
+                                  @RequestParam String name) {
+
+        return locationService.addCustomerReturnOrderStageLocation(warehouseId, name);
+    }
+
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locations/rf")
     public Location removeRFLocation(@RequestParam Long warehouseId,
                                   @RequestParam String rfCode) {

@@ -419,4 +419,26 @@ public class OrderLineService implements TestDataInitiableService{
 
         return orderLines;
     }
+
+    public OrderLine addRequestReturnQuantity(Long warehouseId, Long orderLineId, Long requestReturnQuantity) {
+        OrderLine orderLine = findById(orderLineId);
+        orderLine.setRequestedReturnQuantity(
+                Objects.isNull(orderLine.getRequestedReturnQuantity()) ?
+                        0l : orderLine.getRequestedReturnQuantity()
+                +
+                        requestReturnQuantity
+        );
+        return saveOrUpdate(orderLine);
+    }
+
+    public OrderLine addActualReturnQuantity(Long warehouseId, Long orderLineId, Long actualReturnQuantity) {
+        OrderLine orderLine = findById(orderLineId);
+        orderLine.setActualReturnQuantity(
+                Objects.isNull(orderLine.getActualReturnQuantity()) ?
+                        0l : orderLine.getActualReturnQuantity()
+                        +
+                        actualReturnQuantity
+        );
+        return saveOrUpdate(orderLine);
+    }
 }

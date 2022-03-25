@@ -351,6 +351,23 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Location createLocationForCustomerReturnOrder(CustomerReturnOrder customerReturnOrder) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/customer-return-order-stage-locations")
+                .queryParam("name", customerReturnOrder.getNumber())
+                .queryParam("warehouseId", customerReturnOrder.getWarehouseId());
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.PUT,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+        return responseBodyWrapper.getData();
+    }
 
     public Location allocateLocation(Location location, Inventory inventory) {
         // if the location is not volume tracking, do nothing

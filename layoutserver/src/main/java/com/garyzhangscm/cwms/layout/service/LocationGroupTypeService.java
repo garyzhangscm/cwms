@@ -143,6 +143,8 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("shippedParcel").
                 addColumn("shippedOrder").
                 addColumn("rf").
+                addColumn("qcArea").
+                addColumn("customerReturnStageLocation").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupType.class);
     }
@@ -169,6 +171,8 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("shippedParcel").
                 addColumn("shippedOrder").
                 addColumn("rf").
+                addColumn("qcArea").
+                addColumn("customerReturnStageLocation").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupType.class);
@@ -178,7 +182,8 @@ public class LocationGroupTypeService implements TestDataInitiableService {
         logger.debug(">>Start to init location group type for warehouse {}", warehouseName);
         try {
 
-            String companyCode = companyService.findById(companyId).getCode();
+            String companyCode = companyId == null ?
+                    "" : companyService.findById(companyId).getCode();
 
             String testDataFileName = StringUtils.isBlank(warehouseName) ?
                     testDataFile + ".csv" :
