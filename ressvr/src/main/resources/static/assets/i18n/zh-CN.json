@@ -1703,5 +1703,8 @@
   "line.number": "行号",
   "customer-return-order.line": "退货订单行",
   "RMANumber": "退货单据号",
-  "trackingNumber": "快递单号"
+  "trackingNumber": "快递单号",
+  "customer-return-order-receiving": "退货入库",
+  "receive": "收货",
+  "customer-return-order": "退货入库单号"
 }

@@ -117,6 +117,13 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     private CarrierServiceLevel carrierServiceLevel;
 
 
+    // return quantity
+    // request and actual
+    @Column(name = "requested_return_quantity")
+    private Long requestedReturnQuantity = 0L;
+    @Column(name = "actual_return_quantity")
+    private Long actualReturnQuantity = 0L;
+
     @Override
     public String toString() {
         try {
@@ -301,5 +308,21 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setOrderNumber(String orderNumber) {
         this.orderNumber = orderNumber;
+    }
+
+    public Long getRequestedReturnQuantity() {
+        return requestedReturnQuantity;
+    }
+
+    public void setRequestedReturnQuantity(Long requestedReturnQuantity) {
+        this.requestedReturnQuantity = requestedReturnQuantity;
+    }
+
+    public Long getActualReturnQuantity() {
+        return actualReturnQuantity;
+    }
+
+    public void setActualReturnQuantity(Long actualReturnQuantity) {
+        this.actualReturnQuantity = actualReturnQuantity;
     }
 }

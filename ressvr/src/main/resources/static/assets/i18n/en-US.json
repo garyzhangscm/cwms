@@ -1704,5 +1704,8 @@
   "line.number": "Line Number",
   "customer-return-order.line": "Customer Return Order Line",
   "RMANumber": "RMA Number",
-  "trackingNumber": "Tracking Number"
+  "trackingNumber": "Tracking Number",
+  "customer-return-order-receiving": "Customer Return Order Receive",
+  "receive": "Receive",
+  "customer-return-order": "Customer Return Order"
 }

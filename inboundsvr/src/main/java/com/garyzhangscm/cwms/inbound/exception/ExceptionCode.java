@@ -24,7 +24,8 @@ public enum ExceptionCode {
     REQUEST_VALIDATION_FAILED(25001, HttpStatus.BAD_REQUEST, "Validation Fail"),
     MISSING_INFORMATION(25002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"),
     RECEIPT_OPERATION_EXCEPTION(25003, HttpStatus.BAD_REQUEST, "Can't process the receipt"),
-    PUTAWAY_EXCEPTION(25004, HttpStatus.BAD_REQUEST, "Putaway error");
+    PUTAWAY_EXCEPTION(25004, HttpStatus.BAD_REQUEST, "Putaway error"),
+    CUSTOMER_RETURN_ORDER(25005, HttpStatus.BAD_REQUEST, "Customer Return Order error");
 
     private final int code;
 
