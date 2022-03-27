@@ -1707,5 +1707,12 @@
   "trackingNumber": "Tracking Number",
   "customer-return-order-receiving": "Customer Return Order Receive",
   "receive": "Receive",
-  "customer-return-order": "Customer Return Order"
+  "customer-return-order": "Customer Return Order",
+  "menu.main.inventory.location-util": "Location Utilization Snapshot",
+  "location-utilization-snapshot": "Location Utilization Snapshot",
+  "netVolume": "Net Volume",
+  "grossVolume": "Gross Volume",
+  "totalLocations": "Total Locations",
+  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-PROCESSING": "In Processing",
+  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-DONE": "Done"
 }

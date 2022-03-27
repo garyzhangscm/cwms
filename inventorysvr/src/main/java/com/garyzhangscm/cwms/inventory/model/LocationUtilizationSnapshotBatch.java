@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +42,25 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
     private String number;
 
 
+    @Column(name = "net_volume")
+    private Double netVolume;
+
+    @Column(name = "gross_volume")
+    private Double grossVolume;
+
+
+    @Column(name = "total_locations")
+    private Integer totalLocations;
+
+    @Column(name = "start_time")
+    private LocalDateTime startTime;
+
+    @Column(name = "complete_time")
+    private LocalDateTime completeTime;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    LocationUtilizationSnapshotStatus status;
 
     @OneToMany(
             mappedBy = "locationUtilizationSnapshotBatch",
@@ -48,8 +68,26 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<LocationUtilizationSnapshot> locationUtilizationSnapshots= new ArrayList<>();
+    private List<ClientLocationUtilizationSnapshotBatch> clientLocationUtilizationSnapshotBatches = new ArrayList<>();
+    public LocationUtilizationSnapshotBatch(){}
 
+    public LocationUtilizationSnapshotBatch(Long warehouseId, String number) {
+        this(warehouseId, number, 0.0, 0.0, 0, LocationUtilizationSnapshotStatus.PROCESSING,
+                LocalDateTime.now());
+    }
+
+    public LocationUtilizationSnapshotBatch(Long warehouseId, String number, Double netVolume,
+                                            Double grossVolume, Integer totalLocations,
+                                            LocationUtilizationSnapshotStatus status,
+                                            LocalDateTime startTime) {
+        this.warehouseId = warehouseId;
+        this.number = number;
+        this.netVolume = netVolume;
+        this.grossVolume = grossVolume;
+        this.totalLocations = totalLocations;
+        this.status = status;
+        this.startTime = startTime;
+    }
 
     public Long getId() {
         return id;
@@ -67,12 +105,39 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
         this.warehouseId = warehouseId;
     }
 
-    public List<LocationUtilizationSnapshot> getLocationUtilizationSnapshots() {
-        return locationUtilizationSnapshots;
+    public Double getNetVolume() {
+        return netVolume;
     }
 
-    public void setLocationUtilizationSnapshots(List<LocationUtilizationSnapshot> locationUtilizationSnapshots) {
-        this.locationUtilizationSnapshots = locationUtilizationSnapshots;
+    public void setNetVolume(Double netVolume) {
+        this.netVolume = netVolume;
+    }
+
+    public Double getGrossVolume() {
+        return grossVolume;
+    }
+
+    public void setGrossVolume(Double grossVolume) {
+        this.grossVolume = grossVolume;
+    }
+
+    public Integer getTotalLocations() {
+        return totalLocations;
+    }
+
+    public void setTotalLocations(Integer totalLocations) {
+        this.totalLocations = totalLocations;
+    }
+
+    public List<ClientLocationUtilizationSnapshotBatch> getClientLocationUtilizationSnapshotBatches() {
+        return clientLocationUtilizationSnapshotBatches;
+    }
+
+    public void setClientLocationUtilizationSnapshotBatches(List<ClientLocationUtilizationSnapshotBatch> clientLocationUtilizationSnapshotBatches) {
+        this.clientLocationUtilizationSnapshotBatches = clientLocationUtilizationSnapshotBatches;
+    }
+    public void addClientLocationUtilizationSnapshotBatch(ClientLocationUtilizationSnapshotBatch clientLocationUtilizationSnapshotBatch) {
+        this.clientLocationUtilizationSnapshotBatches.add(clientLocationUtilizationSnapshotBatch);
     }
 
     public String getNumber() {
@@ -81,5 +146,29 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getCompleteTime() {
+        return completeTime;
+    }
+
+    public void setCompleteTime(LocalDateTime completeTime) {
+        this.completeTime = completeTime;
+    }
+
+    public LocationUtilizationSnapshotStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(LocationUtilizationSnapshotStatus status) {
+        this.status = status;
     }
 }

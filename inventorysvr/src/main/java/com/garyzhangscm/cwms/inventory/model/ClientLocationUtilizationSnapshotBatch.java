@@ -24,23 +24,18 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
-@Table(name = "location_utilization_snapshot")
-public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
+@Table(name = "client_location_utilization_snapshot_batch")
+public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "location_utilization_snapshot_id")
+    @Column(name = "client_location_utilization_snapshot_batch_id")
     @JsonProperty(value="id")
     private Long id;
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
-
-    @ManyToOne
-    @JoinColumn(name="item_id")
-    private Item item;
 
     @Column(name = "client_id")
     private Long clientId;
@@ -57,26 +52,23 @@ public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
     @Column(name = "total_locations")
     private Integer totalLocations;
 
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_utilization_snapshot_batch_id")
+    private LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch;
 
     @OneToMany(
-            mappedBy = "locationUtilizationSnapshot",
+            mappedBy = "clientLocationUtilizationSnapshotBatch",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    @JsonIgnore
-    private List<LocationUtilizationSnapshotDetail> locationUtilizationSnapshotDetails= new ArrayList<>();
+    private List<LocationUtilizationSnapshot> locationUtilizationSnapshots= new ArrayList<>();
 
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_location_utilization_snapshot_batch_id")
-    private ClientLocationUtilizationSnapshotBatch clientLocationUtilizationSnapshotBatch;
-
-    public LocationUtilizationSnapshot() {}
-    public LocationUtilizationSnapshot(Long warehouseId, Item item, Long clientId, Double netVolume, Double grossVolume, Integer totalLocations) {
+    public ClientLocationUtilizationSnapshotBatch(){}
+    public ClientLocationUtilizationSnapshotBatch(Long warehouseId, Long clientId, Double netVolume, Double grossVolume, Integer totalLocations) {
         this.warehouseId = warehouseId;
-        this.item = item;
         this.clientId = clientId;
         this.netVolume = netVolume;
         this.grossVolume = grossVolume;
@@ -99,6 +91,17 @@ public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
         this.warehouseId = warehouseId;
     }
 
+    public List<LocationUtilizationSnapshot> getLocationUtilizationSnapshots() {
+        return locationUtilizationSnapshots;
+    }
+
+    public void setLocationUtilizationSnapshots(List<LocationUtilizationSnapshot> locationUtilizationSnapshots) {
+        this.locationUtilizationSnapshots = locationUtilizationSnapshots;
+    }
+    public void addLocationUtilizationSnapshot(LocationUtilizationSnapshot locationUtilizationSnapshot) {
+        this.locationUtilizationSnapshots.add(locationUtilizationSnapshot);
+    }
+
 
     public Long getClientId() {
         return clientId;
@@ -106,6 +109,14 @@ public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
 
     public void setClientId(Long clientId) {
         this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     public Double getNetVolume() {
@@ -132,39 +143,11 @@ public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
         this.totalLocations = totalLocations;
     }
 
-    public Item getItem() {
-        return item;
+    public LocationUtilizationSnapshotBatch getLocationUtilizationSnapshotBatch() {
+        return locationUtilizationSnapshotBatch;
     }
 
-    public void setItem(Item item) {
-        this.item = item;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public List<LocationUtilizationSnapshotDetail> getLocationUtilizationSnapshotDetails() {
-        return locationUtilizationSnapshotDetails;
-    }
-
-    public void setLocationUtilizationSnapshotDetails(List<LocationUtilizationSnapshotDetail> locationUtilizationSnapshotDetails) {
-        this.locationUtilizationSnapshotDetails = locationUtilizationSnapshotDetails;
-    }
-
-    public void addLocationUtilizationSnapshotDetail(LocationUtilizationSnapshotDetail locationUtilizationSnapshotDetail) {
-        this.locationUtilizationSnapshotDetails.add(locationUtilizationSnapshotDetail);
-    }
-
-    public ClientLocationUtilizationSnapshotBatch getClientLocationUtilizationSnapshotBatch() {
-        return clientLocationUtilizationSnapshotBatch;
-    }
-
-    public void setClientLocationUtilizationSnapshotBatch(ClientLocationUtilizationSnapshotBatch clientLocationUtilizationSnapshotBatch) {
-        this.clientLocationUtilizationSnapshotBatch = clientLocationUtilizationSnapshotBatch;
+    public void setLocationUtilizationSnapshotBatch(LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch) {
+        this.locationUtilizationSnapshotBatch = locationUtilizationSnapshotBatch;
     }
 }

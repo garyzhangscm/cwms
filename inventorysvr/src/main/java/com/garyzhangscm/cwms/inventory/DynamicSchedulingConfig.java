@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.inventory;
 import com.garyzhangscm.cwms.inventory.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.service.InventorySnapshotConfigurationService;
 import com.garyzhangscm.cwms.inventory.service.InventorySnapshotService;
+import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -48,6 +49,8 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
     Map<Long, String> lastCronExpressions = new HashMap<>();
     @Autowired
     private InventorySnapshotService inventorySnapshotService;
+    @Autowired
+    private LocationUtilizationSnapshotService locationUtilizationSnapshotService;
 
     @Autowired
     AuthServiceRestemplateClient authServiceRestemplateClient;
