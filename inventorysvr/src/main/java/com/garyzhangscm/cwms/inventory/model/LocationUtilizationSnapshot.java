@@ -64,13 +64,14 @@ public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<LocationUtilizationSnapshotDetail> locationUtilizationSnapshotDetails= new ArrayList<>();
 
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_utilization_snapshot_batch_id")
-    private LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch;
+    @JoinColumn(name = "client_location_utilization_snapshot_batch_id")
+    private ClientLocationUtilizationSnapshotBatch clientLocationUtilizationSnapshotBatch;
 
     public LocationUtilizationSnapshot() {}
     public LocationUtilizationSnapshot(Long warehouseId, Item item, Long clientId, Double netVolume, Double grossVolume, Integer totalLocations) {
@@ -159,11 +160,11 @@ public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
         this.locationUtilizationSnapshotDetails.add(locationUtilizationSnapshotDetail);
     }
 
-    public LocationUtilizationSnapshotBatch getLocationUtilizationSnapshotBatch() {
-        return locationUtilizationSnapshotBatch;
+    public ClientLocationUtilizationSnapshotBatch getClientLocationUtilizationSnapshotBatch() {
+        return clientLocationUtilizationSnapshotBatch;
     }
 
-    public void setLocationUtilizationSnapshotBatch(LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch) {
-        this.locationUtilizationSnapshotBatch = locationUtilizationSnapshotBatch;
+    public void setClientLocationUtilizationSnapshotBatch(ClientLocationUtilizationSnapshotBatch clientLocationUtilizationSnapshotBatch) {
+        this.clientLocationUtilizationSnapshotBatch = clientLocationUtilizationSnapshotBatch;
     }
 }

@@ -1706,5 +1706,12 @@
   "trackingNumber": "快递单号",
   "customer-return-order-receiving": "退货入库",
   "receive": "收货",
-  "customer-return-order": "退货入库单号"
+  "customer-return-order": "退货入库单号",
+  "menu.main.inventory.location-util": "库位使用率快照",
+  "location-utilization-snapshot": "库位使用率快照",
+  "netVolume": "净容量",
+  "grossVolume": "毛容量",
+  "totalLocations": "总库位数",
+  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-PROCESSING": "处理中",
+  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-DONE": "完成"
 }

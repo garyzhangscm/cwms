@@ -66,7 +66,6 @@ public class LocationGroup extends AuditibleEntity<String>{
     // Whether we tracking location's utilization
     // in this location groupd
     @Column(name = "tracking_location_utilization")
-    @Enumerated(EnumType.STRING)
     private Boolean trackingLocationUtilization = false;
 
     // How we calculate the item's volume in the location
