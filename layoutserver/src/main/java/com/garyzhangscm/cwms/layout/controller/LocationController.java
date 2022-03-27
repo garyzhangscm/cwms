@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class LocationController {
@@ -373,6 +374,18 @@ public class LocationController {
                                              @PathVariable String carrierName,
                                              @PathVariable String serviceLevelName) {
         return locationService.getShippedParcelLocation(warehouseId, carrierName, serviceLevelName);
+
+    }
+
+    /**
+     * Return utilization tracking locations. we normally use those locations to calculate the location
+     * utilization and the storage fee for the client
+     * @param warehouseId
+     * @return A map, key will be the ItemVolumeTrackingLevel, value will be a list of location id separated by comma
+     */
+    @RequestMapping(method=RequestMethod.GET, value="/locations/utilization-tracking")
+    public Map<String, String> getUtilizationTrackingLocations(@RequestParam Long warehouseId) {
+        return locationService.getUtilizationTrackingLocations(warehouseId);
 
     }
 

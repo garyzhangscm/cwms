@@ -145,6 +145,7 @@ public class InventoryService implements TestDataInitiableService{
                                    Long itemId,
                                    String itemName,
                                    String itemPackageTypeName,
+                                   Long clientId,
                                    String clientIds,
                                    String itemFamilyIds,
                                    Long inventoryStatusId,
@@ -163,7 +164,7 @@ public class InventoryService implements TestDataInitiableService{
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory) {
         return findAll(warehouseId, itemId,
-                itemName, itemPackageTypeName, clientIds, itemFamilyIds, inventoryStatusId,
+                itemName, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
                 receiptId, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
@@ -177,6 +178,7 @@ public class InventoryService implements TestDataInitiableService{
                                    Long itemId,
                                    String itemName,
                                    String itemPackageTypeName,
+                                   Long clientId,
                                    String clientIds,
                                    String itemFamilyIds,
                                    Long inventoryStatusId,
@@ -204,6 +206,18 @@ public class InventoryService implements TestDataInitiableService{
                     criteriaQuery.distinct(true);
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(clientId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+                    }
+                    else if (Strings.isNotBlank(clientIds)) {
+
+                        CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+                        for(String id : clientIds.split(",")) {
+                            inClientIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inClientIds));
+                    }
 
                     if (Objects.nonNull(itemId)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
@@ -525,6 +539,39 @@ public class InventoryService implements TestDataInitiableService{
 
     public List<Inventory> findByLocationId(Long locationId) {
         return findByLocationId(locationId, true);
+    }
+
+
+    public List<Inventory> findByLocationGroupId(Long warehouseId, Long clientId,  Long locationGroupId, boolean includeDetails) {
+        return findAll(
+                warehouseId,
+                null,
+                null,
+                null,
+                clientId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                locationGroupId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                includeDetails
+        );
+    }
+
+    public List<Inventory> findByLocationGroupId(Long warehouseId, Long clientId,  Long locationGroupId) {
+        return findByLocationGroupId(warehouseId, clientId, locationGroupId, true);
     }
 
     public Inventory save(Inventory inventory) {
@@ -2000,6 +2047,7 @@ public class InventoryService implements TestDataInitiableService{
                         null,
                         null,
                         null,
+                        null,
                         null, null,
                         pickIds,
                         null,
@@ -2040,6 +2088,7 @@ public class InventoryService implements TestDataInitiableService{
                     null,
                     null,
                     null,
+                    null,
                     inboundLocationId,
                     null,
                     null, null,
@@ -2066,6 +2115,7 @@ public class InventoryService implements TestDataInitiableService{
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
                 pickedInventories = findAll(
                         warehouseId,
+                        null,
                         null,
                         null,
                         null,
@@ -2421,6 +2471,7 @@ public class InventoryService implements TestDataInitiableService{
                 null,
                 null,
                 null,
+                null,
                 locationName,
                 locationId,
                 locationIds,
@@ -2495,4 +2546,6 @@ public class InventoryService implements TestDataInitiableService{
 
 
     }
+
+
 }

@@ -22,7 +22,9 @@ package com.garyzhangscm.cwms.layout.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.InventoryStatus;
+import com.garyzhangscm.cwms.layout.model.Item;
 import com.garyzhangscm.cwms.layout.model.LocationGroup;
 import com.garyzhangscm.cwms.layout.model.ShippingStageAreaConfiguration;
 import org.slf4j.Logger;
@@ -37,6 +39,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.List;
 
 
 @Component
@@ -53,6 +59,57 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
+
+    public Item getItemById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/items/{id}");
+
+        ResponseBodyWrapper<Item> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Item>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+    public Item getItemByName(Long warehouseId, String name) {
+
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/items")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId);
+
+
+            // logger.debug("Start to get item: {} / {}", name, warehouseId);
+            ResponseBodyWrapper<List<Item>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
+
+            List<Item> items = responseBodyWrapper.getData();
+            // logger.debug(">> get {} item", items.size());
+            if (items.size() == 0) {
+                return null;
+            }
+            else {
+                return items.get(0);
+            }
+        }
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by name " + name);
+        }
+    }
 
 
     public Integer getInventoryCountByLocationGroup(Long warehouseId, LocationGroup locationGroup) {
@@ -73,6 +130,7 @@ public class InventoryServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
 
 
     public Integer getInventoryCountByLocations(Long warehouseId, String locationIds) {

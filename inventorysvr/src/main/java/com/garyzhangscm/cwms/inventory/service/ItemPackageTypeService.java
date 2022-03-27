@@ -277,7 +277,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
 
         if (inventoryService.
                 findAll(item.getWarehouseId(), null, item.getName(), itemPackageType.getName(),
-                null,null,null,null,null,
+                null,null,null,null,null, null,
                 null,null,null,null,
                 null,null,null,null,null,null, null, false)
                   .size() > 0) {

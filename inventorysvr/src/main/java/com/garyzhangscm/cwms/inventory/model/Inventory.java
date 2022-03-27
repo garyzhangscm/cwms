@@ -53,6 +53,9 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @NotNull
     private String lpn;
 
+    @Column(name = "client_id")
+    private Long clientId;
+
     @Column(name = "location_id")
     private Long locationId;
 
@@ -156,8 +159,6 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     )
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
-
-
     public Inventory split(String newLpn, Long newQuantity) {
         Inventory inventory = new Inventory();
         if (StringUtils.isBlank(newLpn)) {
@@ -188,6 +189,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setVirtual(getVirtual());
         inventory.setReceiptId(getReceiptId());
         inventory.setReceiptLineId(getReceiptLineId());
+        inventory.setClientId(getClientId());
 
         setQuantity(getQuantity() - newQuantity);
 
@@ -208,6 +210,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         return Objects.hash(id);
     }
 
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
 
     @Override
     public String toString() {

@@ -63,6 +63,18 @@ public class LocationGroup extends AuditibleEntity<String>{
     @Column(name = "allow_empty_location")
     private Boolean allowEmptyLocation = false;
 
+    // Whether we tracking location's utilization
+    // in this location groupd
+    @Column(name = "tracking_location_utilization")
+    @Enumerated(EnumType.STRING)
+    private Boolean trackingLocationUtilization = false;
+
+    // How we calculate the item's volume in the location
+    // either by stock uom or by box
+    @Column(name = "item_volume_tracking_level")
+    @Enumerated(EnumType.STRING)
+    private ItemVolumeTrackingLevel itemVolumeTrackingLevel;
+
     @Column(name = "volume_tracking_policy")
     @Enumerated(EnumType.STRING)
     private LocationVolumeTrackingPolicy volumeTrackingPolicy;
@@ -199,5 +211,21 @@ public class LocationGroup extends AuditibleEntity<String>{
 
     public void setAllowEmptyLocation(Boolean allowEmptyLocation) {
         this.allowEmptyLocation = allowEmptyLocation;
+    }
+
+    public ItemVolumeTrackingLevel getItemVolumeTrackingLevel() {
+        return itemVolumeTrackingLevel;
+    }
+
+    public void setItemVolumeTrackingLevel(ItemVolumeTrackingLevel itemVolumeTrackingLevel) {
+        this.itemVolumeTrackingLevel = itemVolumeTrackingLevel;
+    }
+
+    public Boolean getTrackingLocationUtilization() {
+        return trackingLocationUtilization;
+    }
+
+    public void setTrackingLocationUtilization(Boolean trackingLocationUtilization) {
+        this.trackingLocationUtilization = trackingLocationUtilization;
     }
 }

@@ -689,7 +689,7 @@ public class ItemService implements TestDataInitiableService{
 
         if (inventoryService.
                 findAll(item.getWarehouseId(), null, item.getName(), null,
-                        null,null,null,null,null,
+                        null,null,null,null,null, null,
                         null,null,null,null,
                         null,null,null,null, null,null,null,false)
                 .size() > 0) {

@@ -44,4 +44,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
     @Query("select inv from Inventory inv inner join inv.inventoryMovements im where im.locationId = :locationId")
     List<Inventory> findPendingInventoryByLocationId(Long locationId);
+
+
+    @Query("select count(distinct inv.locationId) from Inventory inv join inv.item i where i.id = :itemId")
+    Integer getLocationCount(Long itemId);
 }

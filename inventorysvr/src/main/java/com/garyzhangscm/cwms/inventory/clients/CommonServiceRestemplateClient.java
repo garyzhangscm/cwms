@@ -95,6 +95,24 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+    public List<Client> getAllClients(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/clients")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Client>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
     public Supplier getSupplierById(Long supplierId) {
 
 

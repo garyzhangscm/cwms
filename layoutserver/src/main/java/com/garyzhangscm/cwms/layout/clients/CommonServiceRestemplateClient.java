@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.layout.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.model.Client;
 import com.garyzhangscm.cwms.layout.model.Policy;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import org.apache.logging.log4j.util.Strings;
@@ -56,6 +57,47 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    public Client getClientByName(Long warehouseId, String name) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/clients")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("name", name);
+
+        ResponseBodyWrapper<List<Client>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
+
+        List<Client> clients = responseBodyWrapper.getData();
+        if (clients.size() == 0) {
+            return null;
+        }
+        else {
+            return clients.get(0);
+        }
+    }
+
+    public Client getClientById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/clients/{id}");
+
+        ResponseBodyWrapper<Client> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
