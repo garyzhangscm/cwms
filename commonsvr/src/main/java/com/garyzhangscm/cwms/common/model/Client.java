@@ -41,7 +41,13 @@ public class Client extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Warehouse warehouse;
 
-    @Column(name = "name", unique = true)
+    @Column(name = "company_id")
+    private Long companyId;
+
+    @Transient
+    private Company company;
+
+    @Column(name = "name")
     private String name;
 
     @Column(name = "description")
@@ -80,6 +86,22 @@ public class Client extends AuditibleEntity<String> implements Serializable {
     private String userDefinedField4;
     @Column(name = "user_defined_field_5")
     private String userDefinedField5;
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
 
     public Long getId() {
         return id;

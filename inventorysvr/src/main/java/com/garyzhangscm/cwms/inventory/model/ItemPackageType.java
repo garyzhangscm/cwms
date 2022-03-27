@@ -92,6 +92,12 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     @Transient
     private Warehouse warehouse;
 
+    public ItemUnitOfMeasure getCaseUnitOfMeasure() {
+        return getItemUnitOfMeasures().stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+        ).findFirst().orElse(null);
+    }
+
     public void setDefaultInboundReceivingUOM(ItemUnitOfMeasure defaultInboundReceivingUOM) {
         this.defaultInboundReceivingUOM = defaultInboundReceivingUOM;
     }

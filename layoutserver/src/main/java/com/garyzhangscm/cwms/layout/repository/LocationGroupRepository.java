@@ -69,4 +69,6 @@ public interface LocationGroupRepository extends JpaRepository<LocationGroup, Lo
     @Query( "delete from LocationGroup lg where lg.warehouse.id = :warehouseId" )
     void deleteByWarehouseId(Long warehouseId);
 
+    @Query( "select lg from LocationGroup lg where lg.trackingLocationUtilization = true lg.warehouse.id = :warehouseId" )
+    List<LocationGroup> getUtilizationTrackingLocationGroups(Long warehouseId);
 }

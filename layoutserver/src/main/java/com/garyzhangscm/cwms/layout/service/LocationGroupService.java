@@ -465,4 +465,9 @@ public class LocationGroupService implements TestDataInitiableService {
         return locationGroupRepository.getQCLocationGroups(warehouseId);
 
     }
+
+    public List<LocationGroup> getUtilizationTrackingLocationGroups(Long warehouseId) {
+
+        return locationGroupRepository.getUtilizationTrackingLocationGroups(warehouseId);
+    }
 }

@@ -42,6 +42,7 @@ public class InventoryController {
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                               @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
+                                              @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
@@ -60,7 +61,7 @@ public class InventoryController {
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
-        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName, clientIds,
+        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,clientId,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId,  receiptId, customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
@@ -73,6 +74,7 @@ public class InventoryController {
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                              @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                              @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
+                                 @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
@@ -90,7 +92,7 @@ public class InventoryController {
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory) {
-        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,  clientIds,
+        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,  clientId, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, customerReturnOrderId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,

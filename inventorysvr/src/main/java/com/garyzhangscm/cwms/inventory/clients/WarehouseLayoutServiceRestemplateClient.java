@@ -671,6 +671,25 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    public Map<String, String> getUtilizationTrackingLocations( Long warehouseId)  {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/utilization-tracking")
+                .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<Map<String, String>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Map<String, String>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
     public boolean isVirtualLocation(Location location) {
 
         if (Objects.isNull(location.getLocationGroup()) ||

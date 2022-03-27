@@ -70,6 +70,12 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Column(name = "tracking_lpn")
     private Boolean trackingLpn = false;
 
+    // whether this is a case(box)
+    // we may calculate the size of the inventory based on the
+    // case UOM
+    @Column(name = "case_flag")
+    private Boolean caseFlag = false;
+
 
 
     @Column(name = "warehouse_id")
@@ -210,5 +216,13 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setTrackingLpn(Boolean trackingLpn) {
         this.trackingLpn = trackingLpn;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
     }
 }

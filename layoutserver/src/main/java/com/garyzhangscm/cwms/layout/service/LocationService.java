@@ -834,4 +834,50 @@ public class LocationService implements TestDataInitiableService {
             return saveOrUpdate(location);
         }
     }
+
+    /**
+     * Return utilization tracking locations. we normally use those locations to calculate the location
+     * utilization and the storage fee for the client
+     * @param warehouseId
+     * @return A map, key will be the ItemVolumeTrackingLevel, value will be a list of location id separated by comma
+     */
+    public Map<String, String> getUtilizationTrackingLocations(Long warehouseId) {
+        List<LocationGroup> locationGroups =
+                locationGroupService.getUtilizationTrackingLocationGroups(warehouseId);
+        Map<String, String> utilizationTrackingLocations = new HashMap<>();
+        for (ItemVolumeTrackingLevel itemVolumeTrackingLevel : ItemVolumeTrackingLevel.values()) {
+            // get all the location groups with certain item volume tracking level
+            String locationGroupIds = locationGroups.stream().filter(
+                    locationGroup -> itemVolumeTrackingLevel.equals(locationGroup.getItemVolumeTrackingLevel())
+            ).map(locationGroup -> String.valueOf(locationGroup.getId())).collect(Collectors.joining(","));
+
+            // get all locations from those location groups
+            if (Strings.isNotBlank(locationGroupIds)) {
+                List<Location> locations = findAll(warehouseId,
+                        null,
+                        locationGroupIds,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                         false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+
+                utilizationTrackingLocations.put(
+                        itemVolumeTrackingLevel.name(),
+                        locations.stream().map(location -> String.valueOf(location.getId())).collect(Collectors.joining(","))
+                        );
+            }
+
+
+        }
+        return utilizationTrackingLocations;
+    }
 }
