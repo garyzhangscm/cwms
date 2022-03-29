@@ -842,8 +842,17 @@ public class LocationService implements TestDataInitiableService {
      * @return A map, key will be the ItemVolumeTrackingLevel, value will be a list of location id separated by comma
      */
     public Map<String, String> getUtilizationTrackingLocations(Long warehouseId) {
+        logger.debug("Start to get utilization tracking locations for warehouse id {}",
+                warehouseId);
         List<LocationGroup> locationGroups =
                 locationGroupService.getUtilizationTrackingLocationGroups(warehouseId);
+        logger.debug("Get {} locations groups that has utilization tracking flag on. They are",
+                locationGroups.size());
+        locationGroups.forEach(
+                locationGroup -> logger.debug(">> {}", locationGroup.getName())
+        );
+        logger.debug("start to get locations from the location groups and group them by " +
+                "how we calculate the inventory's volume(by stock uom or by case uom)");
         Map<String, String> utilizationTrackingLocations = new HashMap<>();
         for (ItemVolumeTrackingLevel itemVolumeTrackingLevel : ItemVolumeTrackingLevel.values()) {
             // get all the location groups with certain item volume tracking level
@@ -851,6 +860,8 @@ public class LocationService implements TestDataInitiableService {
                     locationGroup -> itemVolumeTrackingLevel.equals(locationGroup.getItemVolumeTrackingLevel())
             ).map(locationGroup -> String.valueOf(locationGroup.getId())).collect(Collectors.joining(","));
 
+            logger.debug(">> item volume tracking level: {}", itemVolumeTrackingLevel);
+            logger.debug(">>>> location group ids: {}", locationGroupIds);
             // get all locations from those location groups
             if (Strings.isNotBlank(locationGroupIds)) {
                 List<Location> locations = findAll(warehouseId,
@@ -870,14 +881,23 @@ public class LocationService implements TestDataInitiableService {
                         null,
                         null);
 
+                String locationIds =
+                        locations.stream().map(location -> String.valueOf(location.getId())).collect(Collectors.joining(","));
                 utilizationTrackingLocations.put(
-                        itemVolumeTrackingLevel.name(),
-                        locations.stream().map(location -> String.valueOf(location.getId())).collect(Collectors.joining(","))
+                        itemVolumeTrackingLevel.name(),locationIds
                         );
+
+                logger.debug(">>>> location ids: {}", locationIds);
             }
 
 
         }
+        logger.debug("We get {} groups of locations that has volume tracking flag on",
+                utilizationTrackingLocations.size());
+        utilizationTrackingLocations.entrySet().forEach(
+                entry -> logger.debug("======   {} ======\n >> {}",
+                        entry.getKey(), entry.getValue())
+        );
         return utilizationTrackingLocations;
     }
 }

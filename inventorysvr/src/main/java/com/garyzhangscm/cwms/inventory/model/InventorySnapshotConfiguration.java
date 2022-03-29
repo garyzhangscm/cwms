@@ -55,6 +55,9 @@ public class InventorySnapshotConfiguration extends AuditibleEntity<String> impl
     @Column(name = "cron")
     private String cron;
 
+    @Column(name = "location_utilization_snapshot_cron")
+    private String locationUtilizationSnapshotCron;
+
     public Long getId() {
         return id;
     }
@@ -85,5 +88,13 @@ public class InventorySnapshotConfiguration extends AuditibleEntity<String> impl
 
     public void setCron(String cron) {
         this.cron = cron;
+    }
+
+    public String getLocationUtilizationSnapshotCron() {
+        return locationUtilizationSnapshotCron;
+    }
+
+    public void setLocationUtilizationSnapshotCron(String locationUtilizationSnapshotCron) {
+        this.locationUtilizationSnapshotCron = locationUtilizationSnapshotCron;
     }
 }

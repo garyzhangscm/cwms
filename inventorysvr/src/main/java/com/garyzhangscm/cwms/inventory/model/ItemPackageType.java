@@ -92,6 +92,7 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     @Transient
     private Warehouse warehouse;
 
+    @JsonIgnore
     public ItemUnitOfMeasure getCaseUnitOfMeasure() {
         return getItemUnitOfMeasures().stream().filter(
                 itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())

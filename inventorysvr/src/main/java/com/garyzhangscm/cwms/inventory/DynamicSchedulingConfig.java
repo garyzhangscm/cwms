@@ -1,10 +1,13 @@
 package com.garyzhangscm.cwms.inventory;
 
 import com.garyzhangscm.cwms.inventory.clients.AuthServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.model.InventorySnapshotConfiguration;
 import com.garyzhangscm.cwms.inventory.service.InventorySnapshotConfigurationService;
 import com.garyzhangscm.cwms.inventory.service.InventorySnapshotService;
+import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotBatchService;
 import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +49,13 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
     // string cron express
     // we save the last cron express so that when
     // the express is changed, we will start the task with the new cron express
-    Map<Long, String> lastCronExpressions = new HashMap<>();
+    Map<Long, String> lastInventorySnapshotCronExpressions = new HashMap<>();
+    Map<Long, String> lastLocationUtilizationSnapshotCronExpressions = new HashMap<>();
+
     @Autowired
     private InventorySnapshotService inventorySnapshotService;
     @Autowired
-    private LocationUtilizationSnapshotService locationUtilizationSnapshotService;
+    private LocationUtilizationSnapshotBatchService locationUtilizationSnapshotBatchService;
 
     @Autowired
     AuthServiceRestemplateClient authServiceRestemplateClient;
@@ -73,71 +78,157 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
             inventorySnapshotConfigurationService.findAll(null).forEach(
 
                     inventorySnapshotConfiguration -> {
-                        logger.debug("Start to setup run task for inventorySnapshotConfiguration: >>>> \n {}",
-                                inventorySnapshotConfiguration);
-                        Runnable runnableTask = () -> {
-                            logger.debug("# auto run inventorySnapshotConfiguration:   >>>>  \n {}",
-                                    inventorySnapshotConfiguration);
 
-                            try {
+                        if (Strings.isNotBlank(inventorySnapshotConfiguration.getCron())) {
 
-                                setupOAuth2Context();
-                                inventorySnapshotService.generateInventorySnapshot(
-                                        inventorySnapshotConfiguration.getWarehouseId()
-                                );
-                            } catch (IOException e) {
+                            setupInventorySnapshotTask(inventorySnapshotConfiguration, taskRegistrar);
+                        }
 
-                                e.printStackTrace();
-                            }
-                        };
+                        if (Strings.isNotBlank(inventorySnapshotConfiguration.getLocationUtilizationSnapshotCron())) {
 
-                        Trigger trigger = triggerContext -> {
-
-                            String newCronExpression =
-                                    inventorySnapshotConfiguration.getCron();
-                            String lastCronExpression =
-                                    lastCronExpressions.getOrDefault(
-                                            inventorySnapshotConfiguration.getWarehouseId(),
-                                            inventorySnapshotConfiguration.getCron()
-                                    );
-                            logger.debug("lastCronExpression: {}, newCronExpression: {}",
-                                    lastCronExpression, newCronExpression);
-
-                            lastCronExpressions.put(
-                                    inventorySnapshotConfiguration.getWarehouseId(),
-                                    newCronExpression
-                            );
-
-                            // if the cron schedule is changed, restart the
-                            // task
-                            if (!StringUtils.equalsIgnoreCase(
-                                    newCronExpression, lastCronExpression)) {
-
-                                logger.debug("lastCronExpression: {}, newCronExpression: {} DOESN'T MATCH!",
-                                        lastCronExpression, newCronExpression);
-                                taskRegistrar.setTriggerTasksList(new ArrayList<>());
-
-                                configureTasks(taskRegistrar); // calling recursively.
-
-                                taskRegistrar.destroy(); // destroys previously scheduled tasks.
-
-                                taskRegistrar.setScheduler(executor);
-
-                                taskRegistrar.afterPropertiesSet(); // this will schedule the task with new cron changes.
-
-                                return null; // return null when the cron changed so the trigger will stop.
-
-                            }
-
-                            logger.debug("SETUP NEXT run time: {}",
-                                    newCronExpression);
-                            CronTrigger crontrigger = new CronTrigger(newCronExpression);
-
-                            return crontrigger.nextExecutionTime(triggerContext);
-                        };
-                        taskRegistrar.addTriggerTask(runnableTask, trigger);
+                            setupLocationUtilizationSnapshotTask(inventorySnapshotConfiguration, taskRegistrar);
+                        }
                     }
             );
+    }
+
+    private void setupLocationUtilizationSnapshotTask(
+            InventorySnapshotConfiguration inventorySnapshotConfiguration, ScheduledTaskRegistrar taskRegistrar) {
+
+        // register the tasks for location utilization snapshot,
+        // based on the cron configured
+        Runnable runnableTaskForLocationUtilizationSnapshot = () -> {
+            logger.debug("# auto run inventorySnapshotConfiguration:   >>>>  \n {}",
+                    inventorySnapshotConfiguration);
+
+            try {
+
+                setupOAuth2Context();
+                logger.debug("> generate location utilization snapshot");
+                locationUtilizationSnapshotBatchService.generateLocationUtilizationSnapshotBatch(
+                        inventorySnapshotConfiguration.getWarehouseId()
+                );
+            } catch (IOException e) {
+
+                e.printStackTrace();
+            }
+        };
+
+        Trigger locationUtilizationSnapshotTrigger = triggerContext -> {
+
+            String newCronExpression =
+                    inventorySnapshotConfiguration.getLocationUtilizationSnapshotCron();
+            String lastCronExpression =
+                    lastLocationUtilizationSnapshotCronExpressions.getOrDefault(
+                            inventorySnapshotConfiguration.getWarehouseId(),
+                            inventorySnapshotConfiguration.getLocationUtilizationSnapshotCron()
+                    );
+            logger.debug("Location Utilization Snapshot: lastCronExpression: {}, newCronExpression: {}",
+                    lastCronExpression, newCronExpression);
+
+            lastLocationUtilizationSnapshotCronExpressions.put(
+                    inventorySnapshotConfiguration.getWarehouseId(),
+                    newCronExpression
+            );
+
+            // if the cron schedule is changed, restart the
+            // task
+            if (!StringUtils.equalsIgnoreCase(
+                    newCronExpression, lastCronExpression)) {
+
+                logger.debug("Location Utilization Snapshot: lastCronExpression: {}, newCronExpression: {} DOESN'T MATCH!",
+                        lastCronExpression, newCronExpression);
+                taskRegistrar.setTriggerTasksList(new ArrayList<>());
+
+                configureTasks(taskRegistrar); // calling recursively.
+
+                taskRegistrar.destroy(); // destroys previously scheduled tasks.
+
+                taskRegistrar.setScheduler(executor);
+
+                taskRegistrar.afterPropertiesSet(); // this will schedule the task with new cron changes.
+
+                return null; // return null when the cron changed so the trigger will stop.
+
+            }
+
+            logger.debug("Inventory Snapshot: SETUP NEXT run time: {}",
+                    newCronExpression);
+            CronTrigger crontrigger = new CronTrigger(newCronExpression);
+
+            return crontrigger.nextExecutionTime(triggerContext);
+        };
+        taskRegistrar.addTriggerTask(runnableTaskForLocationUtilizationSnapshot, locationUtilizationSnapshotTrigger);
+    }
+
+    private void setupInventorySnapshotTask(InventorySnapshotConfiguration inventorySnapshotConfiguration,
+                                            ScheduledTaskRegistrar taskRegistrar) {
+
+        // register the tasks for inventory snapshot,
+        // based on the cron configured
+        logger.debug("Start to setup run task for inventorySnapshotConfiguration: >>>> \n {}",
+                inventorySnapshotConfiguration);
+        Runnable runnableTaskForInventorySnapshot = () -> {
+            logger.debug("# auto run inventorySnapshotConfiguration:   >>>>  \n {}",
+                    inventorySnapshotConfiguration);
+
+            try {
+
+                setupOAuth2Context();
+                logger.debug("> generate inventory snapshot");
+                inventorySnapshotService.generateInventorySnapshot(
+                        inventorySnapshotConfiguration.getWarehouseId()
+                );
+            } catch (IOException e) {
+
+                e.printStackTrace();
+            }
+        };
+        Trigger inventorySnapshotTrigger = triggerContext -> {
+
+            String newCronExpression =
+                    inventorySnapshotConfiguration.getCron();
+            String lastCronExpression =
+                    lastInventorySnapshotCronExpressions.getOrDefault(
+                            inventorySnapshotConfiguration.getWarehouseId(),
+                            inventorySnapshotConfiguration.getCron()
+                    );
+            logger.debug("Inventory Snapshot: lastCronExpression: {}, newCronExpression: {}",
+                    lastCronExpression, newCronExpression);
+
+            lastInventorySnapshotCronExpressions.put(
+                    inventorySnapshotConfiguration.getWarehouseId(),
+                    newCronExpression
+            );
+
+            // if the cron schedule is changed, restart the
+            // task
+            if (!StringUtils.equalsIgnoreCase(
+                    newCronExpression, lastCronExpression)) {
+
+                logger.debug("Inventory Snapshot: lastCronExpression: {}, newCronExpression: {} DOESN'T MATCH!",
+                        lastCronExpression, newCronExpression);
+                taskRegistrar.setTriggerTasksList(new ArrayList<>());
+
+                configureTasks(taskRegistrar); // calling recursively.
+
+                taskRegistrar.destroy(); // destroys previously scheduled tasks.
+
+                taskRegistrar.setScheduler(executor);
+
+                taskRegistrar.afterPropertiesSet(); // this will schedule the task with new cron changes.
+
+                return null; // return null when the cron changed so the trigger will stop.
+
+            }
+
+            logger.debug("Inventory Snapshot: SETUP NEXT run time: {}",
+                    newCronExpression);
+            CronTrigger crontrigger = new CronTrigger(newCronExpression);
+
+            return crontrigger.nextExecutionTime(triggerContext);
+        };
+        taskRegistrar.addTriggerTask(runnableTaskForInventorySnapshot, inventorySnapshotTrigger);
     }
 
     @Override
