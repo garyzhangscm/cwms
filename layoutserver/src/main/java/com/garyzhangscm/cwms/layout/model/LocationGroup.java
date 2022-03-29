@@ -64,7 +64,7 @@ public class LocationGroup extends AuditibleEntity<String>{
     private Boolean allowEmptyLocation = false;
 
     // Whether we tracking location's utilization
-    // in this location groupd
+    // in this location group
     @Column(name = "tracking_location_utilization")
     private Boolean trackingLocationUtilization = false;
 

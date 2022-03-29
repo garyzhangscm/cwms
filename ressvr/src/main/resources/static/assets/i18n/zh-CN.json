@@ -1188,7 +1188,7 @@
   "menu.main.inventory.snapshot": "库存快照",
   "inventory-snapshot": "库存快照",
   "inventory-snapshot.configuration": "库存快照配置",
-  "inventory-snapshot.configuration.cron": "任务时间表",
+  "inventory-snapshot.configuration.cron": "库存快照任务时间表",
   "inventory-snapshot.configuration.cron.description": "配置库存快照的执行时间，建议每天晚上执行一次",
   "inventory-snapshot.created.result": "库存快照 {{batchNumber}} 开始创建，请等待一段时间后到库存快照界面查看或者下载",
   "inventory-snapshot.batch-number": "快照号",
@@ -1713,5 +1713,13 @@
   "grossVolume": "毛容量",
   "totalLocations": "总库位数",
   "LOCATION-UTILIZATION-SNAPSHOT-STATUS-PROCESSING": "处理中",
-  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-DONE": "完成"
+  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-DONE": "完成",
+  "location-group.trackingLocationUtilization": "跟踪库位使用率",
+  "location-group.itemVolumeTrackingLevel": "库位使用率计算方式",
+  "ITEM-VOLUME-TRACKING-LEVEL-BY_STOCK_UOM": "按最小存储单位",
+  "ITEM-VOLUME-TRACKING-LEVEL-BY_CASE_UOM": "按箱",
+  "generate-snapshot": "生成快照",
+  "location-utilization-snapshot.configuration.cron.description": "配置库位使用率快照的执行时间，系统将基于该快照来向客户收取仓储费用。建议每天晚上执行一次",
+  "location-utilization-snapshot.generate": "生成库位使用率快照",
+  "location-utilization-snapshot.configuration.cron": "库位使用率快照"
 }

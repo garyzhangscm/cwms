@@ -198,6 +198,9 @@ public class LocationUtilizationSnapshotBatchService {
 
             try {
                 setupOAuth2Context();
+
+                logger.debug("Start to fill in the location utilization snapshot for warehouse {}, number {}",
+                        warehouseId, number);
                 generateLocationUtilizationSnapshotBatch(locationUtilizationSnapshotBatch);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -217,11 +220,16 @@ public class LocationUtilizationSnapshotBatchService {
         Collection<LocationUtilizationSnapshotDetail> locationUtilizationSnapshotDetails =
                 getLocationUtilizationSnapshotDetails(locationUtilizationSnapshotBatch.getWarehouseId());
 
+
         if (locationUtilizationSnapshotDetails.isEmpty()) {
             logger.debug("Nothing returned from the location utilization snapshot");
+            completeLocationUtilizationSnapshotBatch(locationUtilizationSnapshotBatch);
             return;
         }
 
+        logger.debug("get {} details that will we need to fill in the snapshot {}",
+                locationUtilizationSnapshotDetails.size(),
+                locationUtilizationSnapshotBatch.getNumber());
         // group the details into location utilization snapshot
         // group by warehouse id + client id + item id
         Map<String, LocationUtilizationSnapshot> locationUtilizationSnapshotMap
@@ -240,7 +248,11 @@ public class LocationUtilizationSnapshotBatchService {
         locationUtilizationSnapshotBatch = groupClientLocationUtilizationSnapshots(
                 locationUtilizationSnapshotBatch, clientLocationUtilizationSnapshotBatchMap);
 
-        locationUtilizationSnapshotBatch.setStatus(LocationUtilizationSnapshotStatus.DONE.DONE);
+        completeLocationUtilizationSnapshotBatch(locationUtilizationSnapshotBatch);
+    }
+
+    private void completeLocationUtilizationSnapshotBatch(LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch) {
+        locationUtilizationSnapshotBatch.setStatus(LocationUtilizationSnapshotStatus.DONE);
         locationUtilizationSnapshotBatch.setCompleteTime(LocalDateTime.now());
 
         // save the result
@@ -249,7 +261,6 @@ public class LocationUtilizationSnapshotBatchService {
         saveOrUpdate(locationUtilizationSnapshotBatch);
         logger.debug(">>   4 end of save details to batch {}",
                 locationUtilizationSnapshotBatch.getNumber());
-
     }
 
     private LocationUtilizationSnapshotBatch groupClientLocationUtilizationSnapshots(
@@ -340,6 +351,8 @@ public class LocationUtilizationSnapshotBatchService {
      */
     private LocationUtilizationSnapshotBatch initiateLocationUtilizationSnapshotBatch(Long warehouseId, String number) {
 
+        logger.debug("initiate a location utilization snapshot batch with number {}",
+                number);
         LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch =
                 new LocationUtilizationSnapshotBatch(warehouseId, number);
         return saveOrUpdate(locationUtilizationSnapshotBatch);
@@ -522,18 +535,32 @@ public class LocationUtilizationSnapshotBatchService {
         // for the warehouse(client id is null) as well
         List<Client> clients = commonServiceRestemplateClient.getAllClients(warehouseId);
 
+        logger.debug("We get {} clients", clients.size());
         // key: location id
         // value: location size
         // we will cache the location's size
         Map<Long, Double> locationSizes = new HashMap<>();
 
+        logger.debug("Start to get location utilization snapshot for warehouse {}, without any client",
+                warehouseId);
         Collection<LocationUtilizationSnapshotDetail> locationUtilizationSnapshotDetails = getLocationUtilizationSnapshotDetail(
                 warehouseId, null, locationSizes
         );
+        logger.debug(">> We get {} for location utilization snapshot of warehouse {}, no client",
+                locationUtilizationSnapshotDetails.size(), warehouseId);
         clients.forEach(
-                client -> locationUtilizationSnapshotDetails.addAll(
-                        getLocationUtilizationSnapshotDetail(warehouseId, client.getId(), locationSizes)
-                )
+                client -> {
+
+                    logger.debug("Start to get location utilization snapshot for warehouse {}, client {}",
+                            warehouseId, client.getName());
+                    Collection<LocationUtilizationSnapshotDetail> clientLocationUtilizationSnapshotDetails =
+                            getLocationUtilizationSnapshotDetail(warehouseId, client.getId(), locationSizes);
+                    logger.debug(">> We get {} for location utilization snapshot of warehouse {}, client {}",
+                            clientLocationUtilizationSnapshotDetails.size(),  warehouseId,
+                            client.getName());
+                    locationUtilizationSnapshotDetails.addAll(clientLocationUtilizationSnapshotDetails);
+
+                }
         );
         return locationUtilizationSnapshotDetails;
 
@@ -545,6 +572,16 @@ public class LocationUtilizationSnapshotBatchService {
         // value: list of location ids, separated by comma
         Map<String, String> utilizationTrackingLocations = warehouseLayoutServiceRestemplateClient.getUtilizationTrackingLocations(warehouseId);
 
+        logger.debug("we will get utilization for {} location groups," +
+                        " which is grouped by the way how we calculate the inventory's volume" +
+                "(based on stock UOM or case UOM)",
+                utilizationTrackingLocations.size());
+
+        utilizationTrackingLocations.entrySet().forEach(
+                entry -> logger.debug("================  {}      ====================\n>>  {}",
+                        entry.getKey(),
+                        entry.getValue())
+        );
         // for each location, we will load all the inventory and calculate the
         // LocationUtilizationSnapshotDetail structure
         utilizationTrackingLocations.entrySet().forEach(
@@ -684,6 +721,15 @@ public class LocationUtilizationSnapshotBatchService {
     private double getNetVolumeByStockUOM(Inventory inventory) {
         // see how many stock does the inventory have
         ItemUnitOfMeasure stockUOM = inventory.getItemPackageType().getStockItemUnitOfMeasure();
+        if (Objects.isNull(stockUOM)) {
+            logger.debug("!!! inventory {}, lpn {}, item {}, item package type {}'s stock UOM is not defined, " +
+                    "can't get stock UOM for this inventory ",
+                    inventory.getId(),
+                    inventory.getLpn(),
+                    inventory.getItem().getName(),
+                    inventory.getItemPackageType().getName());
+            return 0.0;
+        }
         return stockUOM.getLength() * stockUOM.getWeight() * stockUOM.getHeight() * (
                 inventory.getQuantity() / stockUOM.getQuantity()
         );
@@ -692,6 +738,15 @@ public class LocationUtilizationSnapshotBatchService {
     private double getNetVolumeByCase(Inventory inventory) {
         // see how many cases does the inventory have
         ItemUnitOfMeasure caseUOM = inventory.getItemPackageType().getCaseUnitOfMeasure();
+        if (Objects.isNull(caseUOM)) {
+            logger.debug("!!! inventory {}, lpn {}, item {}, item package type {}'s case UOM is not defined, " +
+                            "can't get stock UOM for this inventory ",
+                    inventory.getId(),
+                    inventory.getLpn(),
+                    inventory.getItem().getName(),
+                    inventory.getItemPackageType().getName());
+            return 0.0;
+        }
 
         if (Objects.nonNull(caseUOM)) {
             return caseUOM.getLength() * caseUOM.getWidth() * caseUOM.getHeight() * (

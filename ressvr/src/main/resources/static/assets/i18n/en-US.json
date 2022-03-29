@@ -1183,7 +1183,7 @@
   "menu.main.inventory.snapshot": "Inventory Snapshot",
   "inventory-snapshot": "Inventory Snapshot",
   "inventory-snapshot.configuration": "Inventory Snapshot Configuration",
-  "inventory-snapshot.configuration.cron": "Schedule",
+  "inventory-snapshot.configuration.cron": "Inventory Snapshot Schedule",
   "inventory-snapshot.configuration.cron.description": "Schedule for inventory snapshot. We suggest to run a snapshot once every night",
   "inventory-snapshot.created.result": "Inventory Snapshot {{batchNumber}} start processing，Please allow the system to take several minutes to create the snapshot and query the result from the Inventory Snapshot page",
   "inventory-snapshot.batch-number": "Batch Number",
@@ -1714,5 +1714,13 @@
   "grossVolume": "Gross Volume",
   "totalLocations": "Total Locations",
   "LOCATION-UTILIZATION-SNAPSHOT-STATUS-PROCESSING": "In Processing",
-  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-DONE": "Done"
+  "LOCATION-UTILIZATION-SNAPSHOT-STATUS-DONE": "Done",
+  "location-group.trackingLocationUtilization": "Tracking Location Utilization",
+  "location-group.itemVolumeTrackingLevel": "Volume Tracking Level",
+  "ITEM-VOLUME-TRACKING-LEVEL-BY_STOCK_UOM": "By Stock UOM",
+  "ITEM-VOLUME-TRACKING-LEVEL-BY_CASE_UOM": "By Case UOM",
+  "generate-snapshot": "Generate Snapshot",
+  "location-utilization-snapshot.configuration.cron.description": "Schedule for location utilization snapshot. The snapshot will be used for billing purpose. We suggest to run a snapshot once every night",
+  "location-utilization-snapshot.generate": "Generate Location Utilization Snapshot",
+  "location-utilization-snapshot.configuration.cron": "Location Utilization Snapshot Schedule"
 }

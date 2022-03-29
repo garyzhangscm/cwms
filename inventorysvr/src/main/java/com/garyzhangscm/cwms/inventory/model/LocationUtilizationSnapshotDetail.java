@@ -64,6 +64,7 @@ public class LocationUtilizationSnapshotDetail extends AuditibleEntity<String>{
     @JoinColumn(name = "location_utilization_snapshot_id")
     private LocationUtilizationSnapshot locationUtilizationSnapshot;
 
+    public LocationUtilizationSnapshotDetail(){}
     public LocationUtilizationSnapshotDetail(Long warehouseId, Long itemId, Long clientId,
                                              Double netVolume, Double grossVolume, Long locationId, Double locationSize) {
         this.warehouseId = warehouseId;
