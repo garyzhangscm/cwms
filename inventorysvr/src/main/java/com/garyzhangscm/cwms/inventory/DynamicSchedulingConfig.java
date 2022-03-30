@@ -16,10 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.config.TriggerTask;
 import org.springframework.scheduling.support.CronTrigger;
@@ -33,10 +35,11 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Dynamically schedule the background job. we will use this class to
- * read the invenotry snapshot configuration and generate the inventory
+ * read the inventory snapshot configuration and generate the inventory
  * snapshot dynamically
  */
 @Configuration
@@ -64,36 +67,71 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
 
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
+    ScheduledTaskRegistrar scheduledTaskRegistrar;
+
+    Map<String, ScheduledFuture> scheduledTaskMap = new HashMap<>();
+
+/**
+    @Bean
+    public ScheduledExecutorService executor(){
+        return executor;
+    }
+ **/
+
+    public ScheduledTaskRegistrar getCurrentScheduledTaskRegistrar(){
+        return scheduledTaskRegistrar;
+    }
+
+    @Bean
+    public TaskScheduler poolScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setThreadNamePrefix("ThreadPoolTaskScheduler");
+        scheduler.setPoolSize(1);
+        scheduler.initialize();
+        return scheduler;
+    }
 
     @Autowired
     @Qualifier("oauth2ClientContext")
     OAuth2ClientContext oauth2ClientContext;
 
-
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        logger.debug("Start to configure scheduled tasks");
+        if (scheduledTaskRegistrar == null) {
+            scheduledTaskRegistrar = taskRegistrar;
+        }
+        if (taskRegistrar.getScheduler() == null) {
+            taskRegistrar.setScheduler(poolScheduler());
+        }
+
+        // clear all the jobs first
+        clearScheduledTasks();
         // Loop through each configuration and
         // generate the inventory snapshot
-
-            inventorySnapshotConfigurationService.findAll(null).forEach(
+        inventorySnapshotConfigurationService.findAll(null).forEach(
 
                     inventorySnapshotConfiguration -> {
 
+                        logger.debug("Start to process inventorySnapshotConfiguration: \n{}",
+                                inventorySnapshotConfiguration);
                         if (Strings.isNotBlank(inventorySnapshotConfiguration.getCron())) {
 
-                            setupInventorySnapshotTask(inventorySnapshotConfiguration, taskRegistrar);
+                            setupInventorySnapshotTask(inventorySnapshotConfiguration);
                         }
 
                         if (Strings.isNotBlank(inventorySnapshotConfiguration.getLocationUtilizationSnapshotCron())) {
 
-                            setupLocationUtilizationSnapshotTask(inventorySnapshotConfiguration, taskRegistrar);
+                            setupLocationUtilizationSnapshotTask(inventorySnapshotConfiguration);
                         }
                     }
             );
+            logger.debug("Now we have {} scheduled task ", taskRegistrar.getTriggerTaskList());
     }
 
     private void setupLocationUtilizationSnapshotTask(
-            InventorySnapshotConfiguration inventorySnapshotConfiguration, ScheduledTaskRegistrar taskRegistrar) {
+
+            InventorySnapshotConfiguration inventorySnapshotConfiguration) {
 
         // register the tasks for location utilization snapshot,
         // based on the cron configured
@@ -116,6 +154,7 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
 
         Trigger locationUtilizationSnapshotTrigger = triggerContext -> {
 
+            /***
             String newCronExpression =
                     inventorySnapshotConfiguration.getLocationUtilizationSnapshotCron();
             String lastCronExpression =
@@ -151,18 +190,23 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
                 return null; // return null when the cron changed so the trigger will stop.
 
             }
-
             logger.debug("Inventory Snapshot: SETUP NEXT run time: {}",
                     newCronExpression);
             CronTrigger crontrigger = new CronTrigger(newCronExpression);
+             **/
+            logger.debug("Location Utilization Snapshot: SETUP NEXT run time: {}",
+                    inventorySnapshotConfiguration.getLocationUtilizationSnapshotCron());
+            CronTrigger crontrigger = new CronTrigger( inventorySnapshotConfiguration.getLocationUtilizationSnapshotCron());
 
             return crontrigger.nextExecutionTime(triggerContext);
         };
-        taskRegistrar.addTriggerTask(runnableTaskForLocationUtilizationSnapshot, locationUtilizationSnapshotTrigger);
+        // taskRegistrar.addTriggerTask(runnableTaskForLocationUtilizationSnapshot, locationUtilizationSnapshotTrigger);
+        String taskName = inventorySnapshotConfiguration.getWarehouseId() + "-" + "location-utilization-snapshot";
+        addTask(taskName, runnableTaskForLocationUtilizationSnapshot, locationUtilizationSnapshotTrigger);
+
     }
 
-    private void setupInventorySnapshotTask(InventorySnapshotConfiguration inventorySnapshotConfiguration,
-                                            ScheduledTaskRegistrar taskRegistrar) {
+    private void setupInventorySnapshotTask(InventorySnapshotConfiguration inventorySnapshotConfiguration) {
 
         // register the tasks for inventory snapshot,
         // based on the cron configured
@@ -186,6 +230,7 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
         };
         Trigger inventorySnapshotTrigger = triggerContext -> {
 
+            /**
             String newCronExpression =
                     inventorySnapshotConfiguration.getCron();
             String lastCronExpression =
@@ -221,14 +266,19 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
                 return null; // return null when the cron changed so the trigger will stop.
 
             }
-
             logger.debug("Inventory Snapshot: SETUP NEXT run time: {}",
                     newCronExpression);
             CronTrigger crontrigger = new CronTrigger(newCronExpression);
+             **/
+            logger.debug("Inventory Snapshot: SETUP NEXT run time: {}",
+                    inventorySnapshotConfiguration.getCron());
+            CronTrigger crontrigger = new CronTrigger(inventorySnapshotConfiguration.getCron());
 
             return crontrigger.nextExecutionTime(triggerContext);
         };
-        taskRegistrar.addTriggerTask(runnableTaskForInventorySnapshot, inventorySnapshotTrigger);
+        // taskRegistrar.addTriggerTask(runnableTaskForInventorySnapshot, inventorySnapshotTrigger);
+        String taskName = inventorySnapshotConfiguration.getWarehouseId() + "-" + "inventory-snapshot";
+        addTask(taskName, runnableTaskForInventorySnapshot, inventorySnapshotTrigger);
     }
 
     @Override
@@ -238,6 +288,42 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
         }
     }
 
+
+    /**
+     * Remove all current scheduled task
+     */
+    private void clearScheduledTasks() {
+        Iterator<Map.Entry<String, ScheduledFuture>> taskIterator = scheduledTaskMap.entrySet().iterator();
+        while(taskIterator.hasNext()) {
+            Map.Entry<String, ScheduledFuture> taskEntry = taskIterator.next();
+            ScheduledFuture future = taskEntry.getValue();
+            future.cancel(true);
+            taskIterator.remove();
+        }
+    }
+    private boolean addTask(String taskName, Runnable runnable, Trigger trigger) {
+        if (scheduledTaskMap.containsKey(taskName)) {
+            return false;
+        }
+
+        ScheduledFuture future =
+                scheduledTaskRegistrar.getScheduler()
+                        .schedule(runnable, trigger);
+
+        // configureTasks(scheduledTaskRegistrar);
+        scheduledTaskMap.put(taskName, future);
+        return true;
+    }
+
+    private boolean removeTask(String name) {
+        if (!scheduledTaskMap.containsKey(name)) {
+            return false;
+        }
+        ScheduledFuture future = scheduledTaskMap.get(name);
+        future.cancel(true);
+        scheduledTaskMap.remove(name);
+        return true;
+    }
 
     /**
      * Setup the OAuth2 token for the background job
