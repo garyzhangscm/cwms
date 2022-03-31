@@ -1722,5 +1722,7 @@
   "generate-snapshot": "Generate Snapshot",
   "location-utilization-snapshot.configuration.cron.description": "Schedule for location utilization snapshot. The snapshot will be used for billing purpose. We suggest to run a snapshot once every night",
   "location-utilization-snapshot.generate": "Generate Location Utilization Snapshot",
-  "location-utilization-snapshot.configuration.cron": "Location Utilization Snapshot Schedule"
+  "location-utilization-snapshot.configuration.cron": "Location Utilization Snapshot Schedule",
+  "menu.main.billing": "Billing",
+
 }

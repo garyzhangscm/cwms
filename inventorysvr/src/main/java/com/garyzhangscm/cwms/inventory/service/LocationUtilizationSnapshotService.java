@@ -28,8 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,6 +61,8 @@ public class LocationUtilizationSnapshotService   {
     public List<LocationUtilizationSnapshot> findAll(Long warehouseId,
                                                      String itemName, Long itemId,
                                                      String clientName, Long clientId,
+                                                     LocalDateTime startTime,
+                                                     LocalDateTime endTime,
                                                      Boolean loadDetails) {
 
         List<LocationUtilizationSnapshot> locationUtilizationSnapshots = locationUtilizationSnapshotRepository.findAll(
@@ -90,6 +94,17 @@ public class LocationUtilizationSnapshotService   {
                     }
                 }
 
+                if (Objects.nonNull(startTime)) {
+
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                            root.get("createdTime"), startTime));
+
+                }
+                if (Objects.nonNull(endTime)) {
+                    predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                            root.get("createdTime"), endTime));
+
+                }
 
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));

@@ -206,6 +206,7 @@ public class DynamicSchedulingConfig implements SchedulingConfigurer, Disposable
 
     }
 
+
     private void setupInventorySnapshotTask(InventorySnapshotConfiguration inventorySnapshotConfiguration) {
 
         // register the tasks for inventory snapshot,

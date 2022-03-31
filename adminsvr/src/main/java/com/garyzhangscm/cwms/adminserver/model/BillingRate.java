@@ -49,6 +49,14 @@ public class BillingRate extends AuditibleEntity<String>{
     @Column(name = "rate")
     private Double rate;
 
+    @Column(name = "billing_cycle")
+    @Enumerated(EnumType.STRING)
+    private BillingCycle billingCycle;
+
+    @Column(name = "enabled")
+    private Boolean enabled;
+
+
     public Long getId() {
         return id;
     }
@@ -119,5 +127,29 @@ public class BillingRate extends AuditibleEntity<String>{
 
     public void setRate(Double rate) {
         this.rate = rate;
+    }
+
+    public BillableCategory getBillableCategory() {
+        return billableCategory;
+    }
+
+    public void setBillableCategory(BillableCategory billableCategory) {
+        this.billableCategory = billableCategory;
+    }
+
+    public BillingCycle getBillingCycle() {
+        return billingCycle;
+    }
+
+    public void setBillingCycle(BillingCycle billingCycle) {
+        this.billingCycle = billingCycle;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }
