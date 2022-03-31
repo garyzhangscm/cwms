@@ -62,7 +62,7 @@ public class TestBasicSalesOrder extends TestScenario{
     @Override
     public void runTest(Warehouse warehouse) {
         // create all receipts by integration downloading
-        Customer customer = commonServiceRestemplateClient.getCustomerByName(customerName);
+        Customer customer = commonServiceRestemplateClient.getCustomerByName(null, warehouse.getId(), customerName);
         InventoryStatus inventoryStatus =
                 inventoryServiceRestemplateClient.getInventoryStatusByName(
                         warehouse.getId(), inventoryStatusName

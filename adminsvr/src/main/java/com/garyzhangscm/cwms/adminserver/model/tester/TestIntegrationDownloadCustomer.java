@@ -88,7 +88,7 @@ public class TestIntegrationDownloadCustomer extends TestScenario{
                 for (String customerName : customerNames) {
 
                     // Get the supplier information
-                    Customer customer = commonServiceRestemplateClient.getCustomerByName(customerName);
+                    Customer customer = commonServiceRestemplateClient.getCustomerByName(null, null, customerName);
                     if (Objects.isNull(customer) || !customer.getName().equals(customerName)) {
                         allProcessed = false;
                         break;
