@@ -1721,5 +1721,6 @@
   "generate-snapshot": "生成快照",
   "location-utilization-snapshot.configuration.cron.description": "配置库位使用率快照的执行时间，系统将基于该快照来向客户收取仓储费用。建议每天晚上执行一次",
   "location-utilization-snapshot.generate": "生成库位使用率快照",
-  "location-utilization-snapshot.configuration.cron": "库位使用率快照"
+  "location-utilization-snapshot.configuration.cron": "库位使用率快照",
+  "menu.main.billing": "计费"
 }

@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.adminserver.model.ClientLocationUtilizationSnapshotBatch;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -794,6 +796,31 @@ public class InventoryServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    public List<ClientLocationUtilizationSnapshotBatch> getLocationUtilizationSnapshotByClient(Long warehouseId, Long clientId) {
+
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/client-location-utilization-snapshots")
+                            .queryParam("warehouseId", warehouseId)
+                            .queryParam("loadDetails", false);
+            if (Objects.nonNull(clientId)) {
+                builder = builder.queryParam("clientId", clientId);
+            }
+
+
+            // logger.debug("Start to get item: {} / {}", name, warehouseId);
+            ResponseBodyWrapper<List<ClientLocationUtilizationSnapshotBatch>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<ClientLocationUtilizationSnapshotBatch>>>() {}).getBody();
+
+            return responseBodyWrapper.getData();
+    }
+
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

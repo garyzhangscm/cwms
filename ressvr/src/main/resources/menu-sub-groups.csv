@@ -14,6 +14,7 @@ text,i18n,icon,shortcutRoot,sequence,link,badge,menuGroup,name
 "Report",menu.main.report,anticon-printer,,12,,,Main-Menu,Main-Menu-Report
 "Util",menu.main.util,anticon-tool,,13,,,Main-Menu,Main-Menu-Util
 "Alert",menu.main.alert,anticon-message,,14,,,Main-Menu,Main-Menu-Alert
+"Billing",menu.main.billing,anticon-shopping-cart,,15,,,Main-Menu,Main-Menu-Billing
 "Inbound",menu.mobile.inbound,menu_subgroup_inbound.png,,1,,,Mobile-Menu,Mobile-Menu-Inbound
 "Outbound",menu.mobile.outbound,menu_subgroup_outbound.png,,2,,,Mobile-Menu,Mobile-Menu-Outbound
 "Inventory",menu.mobile.inventory,menu_subgroup_inventory.png,,3,,,Mobile-Menu,Mobile-Menu-Inventory

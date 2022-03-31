@@ -10,13 +10,13 @@ import javax.persistence.*;
  *
  */
 @Entity
-@Table(name = "invoice_detail")
+@Table(name = "invoice_line")
 public class InvoiceLine extends AuditibleEntity<String>{
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "invoice_detail_id")
+    @Column(name = "invoice_line_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -24,6 +24,12 @@ public class InvoiceLine extends AuditibleEntity<String>{
     @JoinColumn(name="invoice_id")
     @JsonIgnore
     private Invoice invoice;
+
+    @ManyToOne
+    @JoinColumn(name="billing_request_id")
+    @JsonIgnore
+    private BillingRequest billingRequest;
+
 
 
     @Column(name = "billable_category")
@@ -40,6 +46,23 @@ public class InvoiceLine extends AuditibleEntity<String>{
     @Column(name = "total_charge")
     private Double totalCharge;
 
+    public InvoiceLine(){}
+
+
+    public InvoiceLine(Invoice invoice, BillingRequest billingRequest, BillableCategory billableCategory, Double amount, Double rate, Double totalCharge) {
+        this.invoice = invoice;
+        this.billingRequest = billingRequest;
+        this.billableCategory = billableCategory;
+        this.amount = amount;
+        this.rate = rate;
+        this.totalCharge = totalCharge;
+    }
+
+    public InvoiceLine(Invoice invoice, BillingRequest billingRequest) {
+        this(invoice, billingRequest, billingRequest.getBillableCategory(),
+                billingRequest.getTotalAmount(),
+                billingRequest.getRate(), billingRequest.getTotalCharge());
+    }
 
     public Long getId() {
         return id;
@@ -87,5 +110,21 @@ public class InvoiceLine extends AuditibleEntity<String>{
 
     public void setTotalCharge(Double totalCharge) {
         this.totalCharge = totalCharge;
+    }
+
+    public BillingRequest getBillingRequest() {
+        return billingRequest;
+    }
+
+    public void setBillingRequest(BillingRequest billingRequest) {
+        this.billingRequest = billingRequest;
+    }
+
+    public BillableCategory getBillableCategory() {
+        return billableCategory;
+    }
+
+    public void setBillableCategory(BillableCategory billableCategory) {
+        this.billableCategory = billableCategory;
     }
 }

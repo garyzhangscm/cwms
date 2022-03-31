@@ -6,19 +6,21 @@ import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Billable web request call
  *
  */
 @Entity
-@Table(name = "billing_rate")
-public class BillingRate extends AuditibleEntity<String>{
+@Table(name = "billing_request")
+public class BillingRequest extends AuditibleEntity<String>{
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "billing_rate_id")
+    @Column(name = "billing_request_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -41,6 +43,8 @@ public class BillingRate extends AuditibleEntity<String>{
     @Transient
     private Client client;
 
+    @Column(name = "number")
+    private String number;
 
     @Column(name = "billable_category")
     @Enumerated(EnumType.STRING)
@@ -53,8 +57,43 @@ public class BillingRate extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private BillingCycle billingCycle;
 
-    @Column(name = "enabled")
-    private Boolean enabled;
+    @OneToMany(
+            mappedBy = "billingRequest",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<BillingRequestLine> billingRequestLines = new ArrayList<>();
+
+    @Column(name = "total_amount")
+    private Double totalAmount;
+    @Column(name = "total_charge")
+    private Double totalCharge;
+
+    public BillingRequest(){}
+
+    public BillingRequest(Long companyId, Long warehouseId, Long clientId,
+                          String number,
+                          BillableCategory billableCategory,
+                          Double rate, BillingCycle billingCycle,
+                          Double totalAmount, Double totalCharge){
+        this.companyId = companyId;
+        this.warehouseId = warehouseId;
+        this.clientId = clientId;
+
+        this.number = number;
+
+        this.billableCategory = billableCategory;
+
+        this.rate = rate;
+
+        this.billingCycle = billingCycle;
+
+        billingRequestLines = new ArrayList<>();
+
+        this.totalAmount = totalAmount;
+        this.totalCharge = totalCharge;
+    }
 
 
     public Long getId() {
@@ -145,11 +184,30 @@ public class BillingRate extends AuditibleEntity<String>{
         this.billingCycle = billingCycle;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
+    public Double getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public Double getTotalCharge() {
+        return totalCharge;
+    }
+
+    public void setTotalCharge(Double totalCharge) {
+        this.totalCharge = totalCharge;
+    }
+
+    public List<BillingRequestLine> getBillingRequestLines() {
+        return billingRequestLines;
+    }
+
+    public void setBillingRequestLines(List<BillingRequestLine> billingRequestLines) {
+        this.billingRequestLines = billingRequestLines;
+    }
+    public void addBillingRequestLine(BillingRequestLine billingRequestLine) {
+        this.billingRequestLines.add(billingRequestLine);
     }
 }

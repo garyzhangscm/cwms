@@ -53,6 +53,13 @@ public class Invoice extends AuditibleEntity<String>{
     @Transient
     private Client client;
 
+    @Column(name = "number")
+    private String number;
+    @Column(name = "reference_number")
+    private String referenceNumber;
+
+    @Column(name = "comment")
+    private String comment;
 
     @Column(name = "start_time")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -75,6 +82,23 @@ public class Invoice extends AuditibleEntity<String>{
     @Column(name = "total_charge")
     private Double totalCharge;
 
+    public Invoice(){}
+
+    public Invoice(Long companyId, Long warehouseId,
+                   Long clientId, String number, String referenceNumber,
+                   String comment, LocalDateTime startTime, LocalDateTime endTime,
+                   Double totalCharge) {
+        this.companyId = companyId;
+        this.warehouseId = warehouseId;
+        this.clientId = clientId;
+        this.number = number;
+        this.referenceNumber = referenceNumber;
+        this.comment = comment;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.totalCharge = totalCharge;
+        this.lines = new ArrayList<>();
+    }
 
     public Long getId() {
         return id;
@@ -154,6 +178,10 @@ public class Invoice extends AuditibleEntity<String>{
 
     public void setLines(List<InvoiceLine> lines) {
         this.lines = lines;
+    }
+
+    public void addLine(InvoiceLine line) {
+        this.lines.add(line);
     }
 
     public Double getTotalCharge() {

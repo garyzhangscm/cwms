@@ -57,6 +57,7 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
     @JoinColumn(name = "location_utilization_snapshot_batch_id")
     private LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch;
 
+    @JsonIgnore
     @OneToMany(
             mappedBy = "clientLocationUtilizationSnapshotBatch",
             cascade = CascadeType.ALL,

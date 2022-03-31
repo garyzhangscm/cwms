@@ -41,7 +41,7 @@ public class LocationUtilizationSnapshotBatchController {
         return locationUtilizationSnapshotBatchService.generateLocationUtilizationSnapshotBatch(warehouseId);
     }
     @RequestMapping(value="/location-utilization-snapshot-batches", method = RequestMethod.GET)
-    public List<LocationUtilizationSnapshotBatch> getLocationUtilizationSnapshot(
+    public List<LocationUtilizationSnapshotBatch> getLocationUtilizationSnapshotBatches(
             @RequestParam Long warehouseId,
             @RequestParam(name="status", required = false, defaultValue = "") String status,
             @RequestParam(name="number", required = false, defaultValue = "") String number,

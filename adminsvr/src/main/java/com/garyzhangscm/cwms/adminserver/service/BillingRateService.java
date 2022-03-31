@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -51,6 +52,7 @@ public class BillingRateService {
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+
 
     public BillingRate findById(Long id) {
         return findById(id, true);
@@ -82,15 +84,23 @@ public class BillingRateService {
     }
     public BillingRate saveOrUpdate(BillingRate billingRate, boolean loadDetails) {
         if (billingRate.getId() == null &&
-                findByBatchNumber(inventorySnapshot.getWarehouseId(), inventorySnapshot.getBatchNumber()) != null) {
-            inventorySnapshot.setId(
-                    findByBatchNumber(inventorySnapshot.getWarehouseId(), inventorySnapshot.getBatchNumber()).getId());
+                findByCategory(billingRate.getCompanyId(),
+                        billingRate.getWarehouseId(),
+                        billingRate.getClientId(),
+                        billingRate.getBillableCateory(), true) != null) {
+            billingRate.setId(
+                    findByCategory(billingRate.getCompanyId(),
+                            billingRate.getWarehouseId(),
+                            billingRate.getClientId(),
+                            billingRate.getBillableCateory(), true).getId());
         }
-        return save(inventorySnapshot, loadDetails);
+        return save(billingRate, loadDetails);
     }
 
-    private BillingRate findByCategory(Long companyId, Long warehouseId, BillableCategory category) {
-        List<BillingRate> inventorySnapshots = findAll(warehouseId, null, batchNumber);
+    public BillingRate findByCategory(Long companyId, Long warehouseId, Long clientId, BillableCategory category, boolean exactMatch) {
+        List<BillingRate> inventorySnapshots = findAll(companyId,
+                warehouseId, clientId,
+                category.name(), exactMatch);
         if (inventorySnapshots.size() > 0) {
             return inventorySnapshots.get(0);
         }
@@ -109,48 +119,110 @@ public class BillingRateService {
      */
     public List<BillingRate> findAll(Long companyId,
                                      Long warehouseId,
+                                     Long clientId,
                                      String billableCategory,
                                      Boolean exactMatch) {
-        return findAll(companyId, warehouseId, billableCategory, true);
+        return findAll(companyId, warehouseId, clientId, billableCategory, exactMatch, true);
     }
 
 
     public List<BillingRate> findAll(Long companyId,
                                      Long warehouseId,
+                                     Long clientId,
                                      String billableCategory,
+                                     Boolean exactMatch,
                                      boolean includeDetails) {
 
         List<BillingRate> billingRates =  billingRateRepository.findAll(
-                (Root<InventorySnapshot> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                (Root<BillingRate> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
-
-                    if (StringUtils.isNotBlank(status)) {
-
-                        predicates.add(criteriaBuilder.equal(
-                                root.get("status"), InventorySnapshotStatus.valueOf(status)));
+                    predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
+                    if (Objects.isNull(clientId)) {
+                        // if the client id is not passed in, then we will only return the
+                        // rate that defined for the warehouse, not for any client
+                        predicates.add(criteriaBuilder.isNull(root.get("clientId")));
                     }
-
-                    if (StringUtils.isNotBlank(batchNumber)) {
-
-                        predicates.add(criteriaBuilder.equal(root.get("batchNumber"), batchNumber));
+                    else {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
                     }
-
-
+                    if (StringUtils.isNotBlank(billableCategory)) {
+                        predicates.add(criteriaBuilder.equal(root.get("billableCategory"), BillableCategory.valueOf(billableCategory)));
+                    }
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for warehouse id
+                    // if warehouse id is passed in, then return both the warehouse level item
+                    // and the company level item information.
+                    // otherwise, return the company level item information
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+                    if (Objects.nonNull(warehouseId)) {
+                        if (Boolean.TRUE.equals(exactMatch)) {
+
+                            // use requires a exact match. so if warehouse id is passed in,
+                            // we will only return the warehouse level configuration. If the
+                            // rate is not configured at the warehouse level but configured at the company level
+                            // we will not return the configuration for an 'exactMatch'
+                            return criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                        }
+                        else {
+                            return criteriaBuilder.and(predicate,
+                                    criteriaBuilder.or(
+                                            criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
+                                            criteriaBuilder.isNull(root.get("warehouseId"))));
+
+                        }
+                    }
+                    else  {
+                        return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
+                    }
                 }
+                ,
+                Sort.by(Sort.Direction.ASC, "warehouseId", "billableCategory")
         );
 
-        if (inventorySnapshots.size() > 0 && includeDetails) {
-            loadDetails(inventorySnapshots);
+        // we may get duplicated record from the above query when we pass in the warehouse id
+        // if so, we may need to remove the company level item if we have the warehouse level item
+        // we will do so only when
+        if (Objects.nonNull(warehouseId)) {
+            removeDuplicatedRecords(billingRates);
+        }
+        if (!billingRates.isEmpty() && includeDetails) {
+
+            loadDetails(billingRates);
         }
 
-        return inventorySnapshots;
+        return billingRates;
+    }
+    /**
+     * Remove teh duplicated clients record. If we have 2 record with the same clients name
+     * but different warehouse, then we will remove the one without any warehouse information
+     * from the result
+     * @param billingRates
+     */
+    private void removeDuplicatedRecords(List<BillingRate> billingRates) {
+        Iterator<BillingRate> billingRateIterator = billingRates.listIterator();
+        Set<BillableCategory> billingRateProcessed = new HashSet<>();
+        while(billingRateIterator.hasNext()) {
+            BillingRate billingRate = billingRateIterator.next();
+
+            if (billingRateProcessed.contains(billingRate.getBillableCateory()) &&
+                    Objects.isNull(billingRate.getWarehouseId())) {
+                // ok, we already processed the item and the current
+                // record is a company level item, then we will remove
+                // this record from the result
+                billingRateIterator.remove();
+            }
+            billingRateProcessed.add(billingRate.getBillableCateory());
+        }
     }
 
-
+    private void loadDetails(List<BillingRate> billingRates) {
+        billingRates.forEach(
+                this::loadDetails
+        );
+    }
     private void loadDetails(BillingRate billingRate) {
         if (Objects.nonNull(billingRate.getClientId()) &&
                 Objects.isNull(billingRate.getClient())) {
