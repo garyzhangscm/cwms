@@ -1724,5 +1724,6 @@
   "location-utilization-snapshot.generate": "Generate Location Utilization Snapshot",
   "location-utilization-snapshot.configuration.cron": "Location Utilization Snapshot Schedule",
   "menu.main.billing": "Billing",
-
+  "menu.main.billing.rate": "Billing Rate",
+  "menu.main.billing.invoice": "Invoice"
 }
