@@ -43,6 +43,7 @@ import javax.persistence.criteria.Root;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BillingRateService {
@@ -131,7 +132,7 @@ public class BillingRateService {
                                      Long clientId,
                                      String billableCategory,
                                      Boolean exactMatch,
-                                     boolean includeDetails) {
+                                     Boolean includeDetails) {
 
         List<BillingRate> billingRates =  billingRateRepository.findAll(
                 (Root<BillingRate> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -188,7 +189,7 @@ public class BillingRateService {
         if (Objects.nonNull(warehouseId)) {
             removeDuplicatedRecords(billingRates);
         }
-        if (!billingRates.isEmpty() && includeDetails) {
+        if (!billingRates.isEmpty() && Boolean.TRUE.equals(includeDetails)) {
 
             loadDetails(billingRates);
         }
@@ -232,5 +233,13 @@ public class BillingRateService {
                     )
             );
         }
+    }
+
+    public BillingRate saveBillingRate(BillingRate billingRate) {
+        return saveOrUpdate(billingRate);
+    }
+
+    public List<BillingRate> saveBillingRates(List<BillingRate> billingRates) {
+        return billingRates.stream().map(this::saveBillingRate).collect(Collectors.toList());
     }
 }

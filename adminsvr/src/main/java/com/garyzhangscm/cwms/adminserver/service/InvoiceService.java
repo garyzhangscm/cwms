@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.model.*;
 import com.garyzhangscm.cwms.adminserver.repository.BillingRateRepository;
+import com.garyzhangscm.cwms.adminserver.repository.BillingRequestRepository;
 import com.garyzhangscm.cwms.adminserver.repository.InvoiceRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -46,6 +47,9 @@ public class InvoiceService {
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+
+    @Autowired
+    private BillingRequestService billingRequestService;
 
 
     @Autowired
@@ -161,9 +165,26 @@ public class InvoiceService {
                                    Long companyId, Long warehouseId, Long clientId) {
         List<BillingRequest> billingRequests = billingServices.stream().map(
                 billingService -> billingService.generateBillingRequest(
-                        startTime, endTime, companyId, warehouseId, clientId
+                        startTime, endTime, companyId, warehouseId, clientId,
+                        "", true
                 )
         ).collect(Collectors.toList());
+
+        return generateInvoiceFromBillingRequest(
+                number, referenceNumber, comment,
+                startTime, endTime, companyId, warehouseId, clientId,
+                billingRequests
+        );
+
+    }
+    public String getNextNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "invoice-number");
+    }
+
+    public Invoice generateInvoiceFromBillingRequest(
+            String number, String referenceNumber, String comment, LocalDateTime startTime,
+            LocalDateTime endTime, Long companyId, Long warehouseId, Long clientId,
+            List<BillingRequest> billingRequests) {
 
         Invoice invoice = new Invoice(
                 companyId, warehouseId,
@@ -172,15 +193,17 @@ public class InvoiceService {
         );
         billingRequests.forEach(
                 billingRequest -> {
+                    // if we haven't saved the billing request yet, serialize it first
+                    if (Objects.isNull(billingRequest.getId())) {
+                        billingRequest = billingRequestService.addBillingRequest(billingRequest);
+                    }
                     InvoiceLine invoiceLine = new InvoiceLine(invoice, billingRequest);
                     invoice.addLine(invoiceLine);
-
+                    invoice.setTotalCharge(
+                            invoice.getTotalCharge() + invoiceLine.getTotalCharge()
+                    );
                 }
         );
         return save(invoice);
-
-    }
-    public String getNextNumber() {
-        return commonServiceRestemplateClient.getNextNumber("invoice-number");
     }
 }

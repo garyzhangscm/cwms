@@ -43,6 +43,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -797,14 +798,17 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public List<ClientLocationUtilizationSnapshotBatch> getLocationUtilizationSnapshotByClient(Long warehouseId, Long clientId) {
+    public List<ClientLocationUtilizationSnapshotBatch> getLocationUtilizationSnapshotByClient(
+            Long warehouseId, Long clientId, LocalDateTime startTime, LocalDateTime endTime) {
 
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
                             .scheme("http").host("zuulserver").port(5555)
                             .path("/api/inventory/client-location-utilization-snapshots")
                             .queryParam("warehouseId", warehouseId)
-                            .queryParam("loadDetails", false);
+                            .queryParam("loadDetails", false)
+                            .queryParam("startTime", startTime)
+                            .queryParam("endTime", endTime);
             if (Objects.nonNull(clientId)) {
                 builder = builder.queryParam("clientId", clientId);
             }

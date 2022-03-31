@@ -491,7 +491,7 @@ public class TestCycleCount extends TestScenario{
 
     private Inventory createInventoryStructure(Warehouse warehouse, Location location, Item item,
                                                InventoryStatus inventoryStatus, Long quantity) {
-        String lpn = commonServiceRestemplateClient.getNextLpn();
+        String lpn = commonServiceRestemplateClient.getNextLpn(warehouse.getId());
 
         ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
 

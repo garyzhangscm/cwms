@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotServic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,8 +45,8 @@ public class ClientLocationUtilizationSnapshotController {
             @RequestParam Long warehouseId,
             @RequestParam(name="clientName", required = false, defaultValue = "") String clientName,
             @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
-            @RequestParam(name="startTime", required = false, defaultValue = "") LocalDateTime startTime,
-            @RequestParam(name="endTime", required = false, defaultValue = "") LocalDateTime endTime,
+            @RequestParam(name="startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(name="endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
             @RequestParam(name="loadDetails", required = false, defaultValue = "") Boolean loadDetails) {
         return clientLocationUtilizationSnapshotBatchService.findAll(warehouseId,
                 clientName, clientId, startTime, endTime, loadDetails);

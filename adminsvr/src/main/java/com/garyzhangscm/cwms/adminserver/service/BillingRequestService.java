@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.model.BillableCategory;
 import com.garyzhangscm.cwms.adminserver.model.BillingRate;
 import com.garyzhangscm.cwms.adminserver.model.BillingRequest;
+import com.garyzhangscm.cwms.adminserver.model.Invoice;
 import com.garyzhangscm.cwms.adminserver.repository.BillingRateRepository;
 import com.garyzhangscm.cwms.adminserver.repository.BillingRequestRepository;
 import org.apache.commons.lang.StringUtils;
@@ -36,7 +37,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BillingRequestService {
@@ -47,6 +50,8 @@ public class BillingRequestService {
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
+    @Autowired
+    private List<BillingService> billingServices;
 
     public BillingRequest findById(Long id) {
         return findById(id, true);
@@ -150,7 +155,28 @@ public class BillingRequestService {
             );
         }
     }
-    public String getNextNumber() {
-        return commonServiceRestemplateClient.getNextNumber("billing-request-number");
+    public String getNextNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "billing-request-number");
+    }
+
+    public List<BillingRequest> generateBillingRequest(
+            LocalDateTime startTime, LocalDateTime endTime,
+            Long companyId, Long warehouseId, Long clientId,
+            String number, Boolean serialize) {
+        return billingServices.stream().map(
+                billingService -> billingService.generateBillingRequest(
+                        startTime, endTime, companyId, warehouseId,
+                        clientId, number, serialize
+                )
+        ).filter(billingRequest -> Objects.nonNull(billingRequest)).collect(Collectors.toList());
+    }
+
+    public BillingRequest addBillingRequest(BillingRequest billingRequest) {
+        billingRequest.getBillingRequestLines().forEach(
+                billingRequestLine -> billingRequestLine.setBillingRequest(
+                        billingRequest
+                )
+        );
+        return save(billingRequest);
     }
 }
