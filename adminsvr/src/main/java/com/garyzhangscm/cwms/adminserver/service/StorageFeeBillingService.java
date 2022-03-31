@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.model.*;
 import com.garyzhangscm.cwms.adminserver.repository.BillingRateRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,10 @@ public abstract class StorageFeeBillingService implements BillingService {
     public abstract BillableCategory getBillableCategory();
 
 
-    public BillingRequest generateBillingRequest(LocalDateTime startTime, LocalDateTime endTime, Long companyId, Long warehouseId, Long clientId) {
+    @Override
+    public BillingRequest generateBillingRequest(LocalDateTime startTime, LocalDateTime endTime,
+                                                 Long companyId, Long warehouseId, Long clientId,
+                                                 String number, Boolean serialize) {
 
         // Get the rate first
         BillingRate billingRate = billingRateService.findByCategory(companyId, warehouseId, clientId, getBillableCategory(), false);
@@ -71,7 +75,8 @@ public abstract class StorageFeeBillingService implements BillingService {
 
         switch (billingRate.getBillingCycle()) {
             case DAILY:
-                return generateBillingRequestByDailyBillingCycle(billingRate, startTime, endTime, companyId, warehouseId, clientId);
+                return generateBillingRequestByDailyBillingCycle(billingRate, startTime, endTime,
+                        companyId, warehouseId, clientId, number, serialize);
             default:
                 return null;
         }
@@ -80,7 +85,8 @@ public abstract class StorageFeeBillingService implements BillingService {
     private BillingRequest generateBillingRequestByDailyBillingCycle(
             BillingRate billingRate,
             LocalDateTime startTime, LocalDateTime endTime,
-            Long companyId, Long warehouseId, Long clientId
+            Long companyId, Long warehouseId, Long clientId,
+            String number, Boolean serialize
     ) {
         // let's get the location utilization snapshot first
         // since it is for daily billing cycle, we will get the
@@ -91,17 +97,21 @@ public abstract class StorageFeeBillingService implements BillingService {
         startTime = startTime.toLocalDate().atStartOfDay();
         endTime = endTime.toLocalDate().plusDays(1).atStartOfDay().minusNanos(1);
 
+        logger.debug("Start to generate daily billing request for storage fee, time span: {} -- {}",
+                startTime, endTime);
         if (startTime.isAfter(endTime)) {
             // the user passed in the wrong date range
             return null;
         }
         List<ClientLocationUtilizationSnapshotBatch> clientLocationUtilizationSnapshotBatches =
-                inventoryServiceRestemplateClient.getLocationUtilizationSnapshotByClient(warehouseId, clientId);
+                inventoryServiceRestemplateClient.getLocationUtilizationSnapshotByClient(warehouseId, clientId, startTime, endTime);
+        logger.debug("we get {} clientLocationUtilizationSnapshotBatches",
+                clientLocationUtilizationSnapshotBatches.size());
         if (clientLocationUtilizationSnapshotBatches.isEmpty()) {
             // ok, nothing needs to be billed for the client but we will still
             // generate a billing request with 0 charge
             return new BillingRequest(companyId, warehouseId, clientId,
-                    billingRequestService.getNextNumber(),
+                    Strings.isNotBlank(number) ? number : billingRequestService.getNextNumber(warehouseId),
                     getBillableCategory(),
                     billingRate.getRate(), BillingCycle.DAILY,
                     0.0, 0.0);
@@ -126,6 +136,8 @@ public abstract class StorageFeeBillingService implements BillingService {
                     dailyAmountMap.put(date, existingAmounts);
                 }
         );
+        logger.debug("after processed the clientLocationUtilizationSnapshotBatches map, we get daily number: \n {} ",
+                dailyAmountMap);
         // OK, now let's get the average amount for each day
         Map<LocalDate, Double> dailyAverageAmountMap = new HashMap<>();
         dailyAmountMap.entrySet().stream().forEach(
@@ -138,9 +150,11 @@ public abstract class StorageFeeBillingService implements BillingService {
                 }
         );
 
+        logger.debug("after processed the daily number, we get daily average number \n {} ",
+                dailyAverageAmountMap);
         // we will generate billing request from the daily average amount
         BillingRequest billingRequest = new BillingRequest(companyId, warehouseId, clientId,
-                billingRequestService.getNextNumber(),
+                Strings.isNotBlank(number) ? number : billingRequestService.getNextNumber(warehouseId),
                 getBillableCategory(),
                 billingRate.getRate(), BillingCycle.DAILY,
                 0.0, 0.0);
@@ -155,7 +169,16 @@ public abstract class StorageFeeBillingService implements BillingService {
                     billingRequest.addBillingRequestLine(billingRequestLine);
                 }
         );
-        return billingRequestService.save(billingRequest);
+        logger.debug("we get billing request: \n{}", billingRequest);
+        logger.debug("we will serialize it? {}", serialize);
+        // by default, we will save the result into the database
+        if (Boolean.FALSE.equals(serialize)) {
+            return billingRequest;
+        }
+        else {
+
+            return billingRequestService.save(billingRequest);
+        }
 
     }
 

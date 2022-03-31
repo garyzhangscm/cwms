@@ -204,7 +204,7 @@ public class TestAdjustInventory extends TestScenario{
                                  Item item, Long quantity,
                                  InventoryStatus inventoryStatus) {
 
-        String lpn = commonServiceRestemplateClient.getNextLpn();
+        String lpn = commonServiceRestemplateClient.getNextLpn(warehouse.getId());
 
         ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
 

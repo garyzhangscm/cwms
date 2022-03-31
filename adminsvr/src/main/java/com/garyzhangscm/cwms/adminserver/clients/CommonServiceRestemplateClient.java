@@ -299,12 +299,13 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    public String getNextNumber(String variable) {
+    public String getNextNumber(Long warehouseId, String variable) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/system-controlled-number/{variable}/next");
+                        .path("/api/common/system-controlled-number/{variable}/next")
+                        .queryParam("warehouseId", warehouseId);;
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(variable).toUriString(),
@@ -351,8 +352,8 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    public String getNextLpn() {
-        return getNextNumber("lpn");
+    public String getNextLpn(Long warehouseId) {
+        return getNextNumber(warehouseId, "lpn");
     }
 
     public List<Policy> getPoliciesByWarehouseId(Long warehouseId) {

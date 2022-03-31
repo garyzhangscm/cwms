@@ -8,7 +8,9 @@ import java.time.LocalDateTime;
 
 @Service
 public interface BillingService {
-    public BillingRequest generateBillingRequest(LocalDateTime startTime, LocalDateTime endTime, Long companyId, Long warehouseId, Long clientId);
+    public BillingRequest generateBillingRequest(LocalDateTime startTime, LocalDateTime endTime,
+                                                 Long companyId, Long warehouseId, Long clientId,
+                                                 String number, Boolean serialize);
 
     public BillableCategory getBillableCategory();
 

@@ -209,5 +209,21 @@ public class BillingRequest extends AuditibleEntity<String>{
     }
     public void addBillingRequestLine(BillingRequestLine billingRequestLine) {
         this.billingRequestLines.add(billingRequestLine);
+        // we will update the total amount and charge based on the
+        // newly added line
+        setTotalAmount(
+                getTotalAmount() + billingRequestLine.getTotalAmount()
+        );
+        setTotalCharge(
+                getTotalCharge() + billingRequestLine.getTotalCharge()
+        );
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
     }
 }
