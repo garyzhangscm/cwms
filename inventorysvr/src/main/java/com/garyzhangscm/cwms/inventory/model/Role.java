@@ -19,18 +19,11 @@ public class Role {
 
     private Boolean enabled;
 
-    @Transient
     private List<User> users = new ArrayList<>();
 
-    @Override
-    public String toString() {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+    private List<RoleClientAccess> clientAccesses = new ArrayList<>();
+
+    private Boolean nonClientDataAccessible;
 
     public Long getId() {
         return id;
@@ -70,5 +63,21 @@ public class Role {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    public List<RoleClientAccess> getClientAccesses() {
+        return clientAccesses;
+    }
+
+    public void setClientAccesses(List<RoleClientAccess> clientAccesses) {
+        this.clientAccesses = clientAccesses;
+    }
+
+    public Boolean getNonClientDataAccessible() {
+        return nonClientDataAccessible;
+    }
+
+    public void setNonClientDataAccessible(Boolean nonClientDataAccessible) {
+        this.nonClientDataAccessible = nonClientDataAccessible;
     }
 }

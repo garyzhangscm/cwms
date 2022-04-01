@@ -41,6 +41,21 @@ public class Role extends AuditibleEntity<String>  {
     )
     private List<Menu> menus = new ArrayList<>();
 
+
+    @OneToMany(
+            mappedBy = "role",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<RoleClientAccess> clientAccesses = new ArrayList<>();
+
+
+    // whether the role has access to the non client data
+    // by default, the role has access to any non client data
+    @Column(name = "non_client_data_accessible")
+    private Boolean nonClientDataAccessible;
+
     // Place holder to accept the JSON object from the web client
     // when creating a new role with assigned menu
     // and users
@@ -146,5 +161,21 @@ public class Role extends AuditibleEntity<String>  {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    public List<RoleClientAccess> getClientAccesses() {
+        return clientAccesses;
+    }
+
+    public void setClientAccesses(List<RoleClientAccess> clientAccesses) {
+        this.clientAccesses = clientAccesses;
+    }
+
+    public Boolean getNonClientDataAccessible() {
+        return nonClientDataAccessible;
+    }
+
+    public void setNonClientDataAccessible(Boolean nonClientDataAccessible) {
+        this.nonClientDataAccessible = nonClientDataAccessible;
     }
 }

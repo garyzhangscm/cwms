@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.RoleRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class RoleService implements TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("role  not found by id: " + id));
     }
 
-    public List<Role> findAll(Long companyId, String name, Boolean enabled) {
+    public List<Role> findAll(Long companyId, String name,  Boolean enabled) {
 
         return roleRepository.findAll(
                 (Root<Role> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {

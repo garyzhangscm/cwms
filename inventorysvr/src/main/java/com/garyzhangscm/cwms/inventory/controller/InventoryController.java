@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,6 +38,11 @@ public class InventoryController {
     @Autowired
     InventoryService inventoryService;
 
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
+    @ClientValidationEndpoint
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
     public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
@@ -60,15 +66,23 @@ public class InventoryController {
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
-                                              @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
+                                              @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
+                                              ClientRestriction clientRestriction) {
+
+
+
         return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,clientId,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId,  receiptId, customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn, inventoryIds, notPutawayInventoryOnly,
-                includeVirturalInventory,
+                includeVirturalInventory, clientRestriction,
                 includeDetails);
+
+
     }
+
+    @ClientValidationEndpoint
     @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
     public int getInventoryCount(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
@@ -91,12 +105,13 @@ public class InventoryController {
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
-                                              @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory) {
+                                              @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
+                                 ClientRestriction clientRestriction) {
         return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,  clientId, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, customerReturnOrderId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, false).size();
+                pickIds, lpn, inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)

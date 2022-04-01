@@ -1759,5 +1759,7 @@
   "generate-new-invoice": "生成账单",
   "endTime": "结束时间",
   "billing-request.line": "收费请求明细",
-  "invoice.line": "账单明细"
+  "invoice.line": "账单明细",
+  "menu.main.layout.warehouse-configuration": "仓库配置",
+  "threePartyLogisticsFlag": "第三方物流"
 }

@@ -162,7 +162,8 @@ public class InventoryService implements TestDataInitiableService{
                                    String lpn,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
-                                   Boolean includeVirturalInventory) {
+                                   Boolean includeVirturalInventory,
+                                   ClientRestriction clientRestriction) {
         return findAll(warehouseId, itemId,
                 itemName, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
@@ -170,6 +171,7 @@ public class InventoryService implements TestDataInitiableService{
                 workOrderByProductIds,
                 pickIds, lpn,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
+                clientRestriction,
                 true);
     }
 
@@ -196,6 +198,7 @@ public class InventoryService implements TestDataInitiableService{
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
+                                   ClientRestriction clientRestriction,
                                    boolean includeDetails) {
 
         LocalDateTime currentLocalDateTime = LocalDateTime.now();
@@ -219,6 +222,15 @@ public class InventoryService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.and(inClientIds));
                     }
 
+                    // add the client restriction by the current user
+                    // this will only apply when the warehouse is setup as a
+                    // 3pl warehouse
+                    if (Objects.nonNull(clientRestriction) &&
+                            Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag())) {
+                        if (Boolean.TRUE.equals(clientRestriction.getNonClientDataAccessible())) {
+
+                        }
+                    }
                     if (Objects.nonNull(itemId)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinItem.get("id"), itemId));
@@ -2052,7 +2064,7 @@ public class InventoryService implements TestDataInitiableService{
                         pickIds,
                         null,
                         null,
-                        null, null
+                        null, null, null
                 );
                 // Let's remove those inventories
                 pickedInventories.forEach(inventory -> removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL));
@@ -2099,7 +2111,7 @@ public class InventoryService implements TestDataInitiableService{
                     null,
                     lpn,
                     null,
-                    null, null
+                    null, null, null
             );
             // we will only return the inventory without any pick attached to it
             return inventories.stream().filter(inventory -> Objects.isNull(inventory.getPickId())).collect(Collectors.toList());
@@ -2133,7 +2145,7 @@ public class InventoryService implements TestDataInitiableService{
                         pickIds,
                         null,
                         null,
-                        null, null
+                        null, null, null
                 );
             }
             return pickedInventories;
@@ -2484,7 +2496,7 @@ public class InventoryService implements TestDataInitiableService{
                 null,
                 null,
                 null,
-                null);
+                null, null);
 
 
     }
