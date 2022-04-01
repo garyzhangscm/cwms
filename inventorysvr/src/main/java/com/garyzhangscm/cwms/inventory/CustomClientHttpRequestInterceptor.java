@@ -19,6 +19,7 @@ public class CustomClientHttpRequestInterceptor implements ClientHttpRequestInte
             ClientHttpRequestExecution execution) throws IOException {
 
         logRequestDetails(request);
+
         return execution.execute(request, body);
     }
     private void logRequestDetails(HttpRequest request) {

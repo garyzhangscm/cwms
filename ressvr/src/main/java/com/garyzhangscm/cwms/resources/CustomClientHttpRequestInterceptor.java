@@ -25,5 +25,6 @@ public class CustomClientHttpRequestInterceptor implements ClientHttpRequestInte
         LOGGER.info("Headers: {}", request.getHeaders());
         LOGGER.info("Request Method: {}", request.getMethod());
         LOGGER.info("Request URI: {}", request.getURI());
+
     }
 }

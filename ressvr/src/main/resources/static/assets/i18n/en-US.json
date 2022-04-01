@@ -1760,5 +1760,7 @@
   "generate-new-invoice": "Generate New Invoice",
   "endTime": "End Time",
   "billing-request.line": "Billing Request Line",
-  "invoice.line": "Invoice Line"
+  "invoice.line": "Invoice Line",
+  "menu.main.layout.warehouse-configuration": "Warehouse Configuration",
+  "threePartyLogisticsFlag": "3pl"
 }

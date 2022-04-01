@@ -169,11 +169,29 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/warehouses/{id}");
 
         ResponseBodyWrapper<Warehouse> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout//warehouse-configuration/by-warehouse/{id}");
+
+        ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
              = restTemplate.exchange(
                    builder.buildAndExpand(warehouseId).toUriString(),
                    HttpMethod.GET,
                  null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
+                new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }

@@ -143,6 +143,8 @@ public class ResourceServiceRestemplateClient {
     }
 
 
+
+
     public ReportHistory generateReport(Long warehouseId, ReportType type,
                                         Report reportData, String locale )
             throws JsonProcessingException {
