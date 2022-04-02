@@ -48,6 +48,8 @@ public class ClientValidationEndpointAspect {
 
             if (arguments[i] instanceof ClientRestriction) {
                 arguments[i] = getClientAccessRestriction();
+                logger.debug("will apply client access restriction: {}",
+                        arguments[i]);
             }
         }
 
