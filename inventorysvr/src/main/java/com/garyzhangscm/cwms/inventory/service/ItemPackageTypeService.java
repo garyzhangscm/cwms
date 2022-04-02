@@ -279,7 +279,8 @@ public class ItemPackageTypeService implements TestDataInitiableService{
                 findAll(item.getWarehouseId(), null, item.getName(), itemPackageType.getName(),
                 null,null,null,null,null, null,
                 null,null,null,null,
-                null,null,null,null,null,null, null, false)
+                null,null,null,null,null,null,
+                        null, false, null)
                   .size() > 0) {
             logger.debug("There's inventory attached to this item package type {} / {}, can't remove it",
                     item.getName(), itemPackageType.getName());

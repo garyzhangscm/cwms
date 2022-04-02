@@ -222,15 +222,6 @@ public class InventoryService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.and(inClientIds));
                     }
 
-                    // add the client restriction by the current user
-                    // this will only apply when the warehouse is setup as a
-                    // 3pl warehouse
-                    if (Objects.nonNull(clientRestriction) &&
-                            Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag())) {
-                        if (Boolean.TRUE.equals(clientRestriction.getNonClientDataAccessible())) {
-
-                        }
-                    }
                     if (Objects.nonNull(itemId)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinItem.get("id"), itemId));
@@ -383,7 +374,53 @@ public class InventoryService implements TestDataInitiableService{
 
 
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for warehouse id
+                    // if warehouse id is passed in, then return both the warehouse level item
+                    // and the company level item information.
+                    // otherwise, return the company level item information
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    if (Objects.isNull(clientRestriction) ||
+                            !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag())) {
+                        // not a 3pl warehouse, let's not put any restriction on the client
+                        // (unless the client restriction is from the web request, which we already
+                        // handled previously
+                        return predicate;
+                    }
+
+
+                    // build the accessible client list predicated based on the
+                    // client ID that the user has access
+                    Predicate accessibleClientListPredicate;
+                    if (clientRestriction.getClientAccesses().trim().isEmpty()) {
+                        // the user can't access any client, then the user
+                        // can only access the non 3pl data
+                        accessibleClientListPredicate = criteriaBuilder.isNull(root.get("clientId"));
+                    }
+                    else {
+                        CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+                        for(String id : clientRestriction.getClientAccesses().trim().split(",")) {
+                            inClientIds.value(Long.parseLong(id));
+                        }
+                        accessibleClientListPredicate = criteriaBuilder.and(inClientIds);
+                    }
+
+                    if (Boolean.TRUE.equals(clientRestriction.getNonClientDataAccessible())) {
+                        // the user can access the non 3pl data
+                        return criteriaBuilder.and(predicate,
+                                    criteriaBuilder.or(
+                                            criteriaBuilder.isNull(root.get("clientId")),
+                                            accessibleClientListPredicate));
+                    }
+                    else {
+
+                        // the user can NOT access the non 3pl data
+                        return criteriaBuilder.and(predicate,
+                                    criteriaBuilder.and(
+                                            criteriaBuilder.isNotNull(root.get("clientId")),
+                                            accessibleClientListPredicate));
+                    }
                 }
         );
         inventories.sort((inventory1, inventory2) -> {
@@ -577,7 +614,7 @@ public class InventoryService implements TestDataInitiableService{
                 null,
                 null,
                 null,
-                null,
+                null, null,
                 includeDetails
         );
     }
