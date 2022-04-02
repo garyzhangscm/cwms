@@ -1762,5 +1762,6 @@
   "billing-request.line": "Billing Request Line",
   "invoice.line": "Invoice Line",
   "menu.main.layout.warehouse-configuration": "Warehouse Configuration",
-  "threePartyLogisticsFlag": "3pl"
+  "threePartyLogisticsFlag": "3pl",
+  "3pl-not-enabled-for-this-warehouse": "third party logistics is not enable for current warehouse"
 }

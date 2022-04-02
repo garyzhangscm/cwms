@@ -1761,5 +1761,6 @@
   "billing-request.line": "收费请求明细",
   "invoice.line": "账单明细",
   "menu.main.layout.warehouse-configuration": "仓库配置",
-  "threePartyLogisticsFlag": "第三方物流"
+  "threePartyLogisticsFlag": "第三方物流",
+  "3pl-not-enabled-for-this-warehouse": "当前仓库未启用第三方物流功能"
 }
