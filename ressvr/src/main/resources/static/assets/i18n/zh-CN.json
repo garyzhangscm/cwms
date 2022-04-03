@@ -1762,5 +1762,11 @@
   "invoice.line": "账单明细",
   "menu.main.layout.warehouse-configuration": "仓库配置",
   "threePartyLogisticsFlag": "第三方物流",
-  "3pl-not-enabled-for-this-warehouse": "当前仓库未启用第三方物流功能"
+  "3pl-not-enabled-for-this-warehouse": "当前仓库未启用第三方物流功能",
+  "steps.role.assign-clients.title": "分配客户（第三方物流）",
+  "steps.role.assign-clients.description": "分配客户（第三方物流）",
+  "assign-clients": "分配客户（第三方物流）",
+  "page.auth.role.clients":"客户维护（第三方物流）",
+  "unassigned-clients": "未分配客户（第三方物流）",
+  "assigned-clients": "已分配客户（第三方物流）"
 }
