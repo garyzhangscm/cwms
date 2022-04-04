@@ -55,6 +55,9 @@ public class RoleService implements TestDataInitiableService{
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
+    private RoleClientAccessService roleClientAccessService;
+
+    @Autowired
     private FileService fileService;
 
     @Value("${fileupload.test-data.roles:roles}")
@@ -198,6 +201,22 @@ public class RoleService implements TestDataInitiableService{
                 });
             });
         }
+        // setup the client access, if not done yet
+        logger.debug("start to setup client access");
+        role.getClientAccesses().forEach(
+                clientAccess -> {
+
+                    if (Objects.nonNull(role.getId())) {
+                        // this is an existing role, let's setup the
+                        RoleClientAccess existingRoleClientAccess =
+                                roleClientAccessService.findByRoleAndClient(role.getId(), clientAccess.getClientId());
+                        if (Objects.nonNull(existingRoleClientAccess)) {
+                            clientAccess.setId(existingRoleClientAccess.getId());
+                        }
+                    }
+                    clientAccess.setRole(role);
+                }
+        );
 
         // create the role with menus
         Role newRole = save(role);
