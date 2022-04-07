@@ -64,6 +64,12 @@ public class WarehouseConfigurationController {
 
     @BillableEndpoint
     @RequestMapping(value="/warehouse-configuration", method=RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "inventory_warehouse_configuration", allEntries = true),
+                    @CacheEvict(cacheNames = "common_warehouse_configuration", allEntries = true)
+            }
+    )
     public WarehouseConfiguration changeWarehouseConfiguration(@RequestParam Long companyId,
                                    @RequestBody WarehouseConfiguration warehouseConfiguration) throws JsonProcessingException {
         return warehouseConfigurationService.changeWarehouseConfiguration(companyId, warehouseConfiguration);

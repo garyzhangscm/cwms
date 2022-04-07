@@ -54,6 +54,7 @@ public class RoleService implements TestDataInitiableService{
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
+
     @Autowired
     private RoleClientAccessService roleClientAccessService;
 
@@ -249,4 +250,44 @@ public class RoleService implements TestDataInitiableService{
     }
 
 
+    public Role processClients(Long roleId, String assignedClientIds, String deassignedClientIds, Boolean nonClientDataAccessible) {
+        Role role = findById(roleId);
+        role.setNonClientDataAccessible(nonClientDataAccessible);
+
+
+        Iterator<RoleClientAccess> existingRoleClientAccessIterator = role.getClientAccesses().iterator();
+        Set<Long> deassignedClientIdSet = new HashSet<>();
+
+        if (Strings.isNotBlank(deassignedClientIds)) {
+            Arrays.stream(deassignedClientIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(clientId -> {
+                        logger.debug("We will remove client {} for role {}",
+                                clientId, roleId);
+                        deassignedClientIdSet.add(clientId);
+                    });
+            // remove the deassigned clients
+            while(existingRoleClientAccessIterator.hasNext()) {
+                RoleClientAccess roleClientAccess = existingRoleClientAccessIterator.next();
+                if (deassignedClientIdSet.contains(roleClientAccess.getClientId())) {
+                    existingRoleClientAccessIterator.remove();
+                }
+            }
+        }
+
+
+        // add the assigned client id;
+        if (Strings.isNotBlank(assignedClientIds)) {
+            Arrays.stream(assignedClientIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(clientId -> {
+                        RoleClientAccess roleClientAccess = new RoleClientAccess(
+                                role,clientId
+                        );
+                        role.addClientAccess(roleClientAccess);
+                    });
+        }
+        return saveOrUpdate(role);
+
+    }
 }

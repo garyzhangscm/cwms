@@ -15,6 +15,9 @@ public class Role extends AuditibleEntity<String>  {
 
     private Boolean enabled;
 
+    private List<RoleClientAccess> clientAccesses = new ArrayList<>();
+
+    private Boolean nonClientDataAccessible;
 
     @Override
     public boolean equals(Object o) {
@@ -57,4 +60,19 @@ public class Role extends AuditibleEntity<String>  {
         this.enabled = enabled;
     }
 
+    public List<RoleClientAccess> getClientAccesses() {
+        return clientAccesses;
+    }
+
+    public void setClientAccesses(List<RoleClientAccess> clientAccesses) {
+        this.clientAccesses = clientAccesses;
+    }
+
+    public Boolean getNonClientDataAccessible() {
+        return nonClientDataAccessible;
+    }
+
+    public void setNonClientDataAccessible(Boolean nonClientDataAccessible) {
+        this.nonClientDataAccessible = nonClientDataAccessible;
+    }
 }

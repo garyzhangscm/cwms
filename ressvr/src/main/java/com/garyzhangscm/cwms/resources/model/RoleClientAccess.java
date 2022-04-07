@@ -31,6 +31,11 @@ public class RoleClientAccess extends AuditibleEntity<String>  {
     @Transient
     private Client client;
 
+    public RoleClientAccess() {}
+    public RoleClientAccess(Role role, Long clientId) {
+        this.role = role;
+        this.clientId = clientId;
+    }
 
     public Long getId() {
         return id;

@@ -61,7 +61,8 @@ public class ClientService implements  TestDataInitiableService{
     }
 
     public List<Client> findAll(Long companyId, Long warehouseId,
-                                String name) {
+                                String name,
+                                ClientRestriction clientRestriction) {
         List<Client> clients = clientRepository.findAll(
                 (Root<Client> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -83,14 +84,41 @@ public class ClientService implements  TestDataInitiableService{
                     // otherwise, return the company level item information
                     Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
                     if (Objects.nonNull(warehouseId)) {
-                        return criteriaBuilder.and(predicate,
+                        predicate = criteriaBuilder.and(predicate,
                                 criteriaBuilder.or(
                                         criteriaBuilder.equal(root.get("warehouseId"), warehouseId),
                                         criteriaBuilder.isNull(root.get("warehouseId"))));
                     }
                     else  {
-                        return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
+                        predicate = criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
                     }
+
+                    // special handling for client id
+
+                    // if there's no restriction for the client id, or it is not a 3pl environment,
+                    // then put NO restriction on the query
+                    if (Objects.isNull(clientRestriction) ||
+                            !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag())) {
+                        // not a 3pl warehouse, let's not put any restriction on the client
+                        // (unless the client restriction is from the web request, which we already
+                        // handled previously
+                        return predicate;
+                    }
+                    // there's client restirction but the user has no client access
+                    if (clientRestriction.getClientAccesses().trim().isEmpty()) {
+                        // the user can't access any client, then the user
+                        // can only access the non 3pl data
+                        return criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("id")));
+                    }
+                    else {
+                        CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : clientRestriction.getClientAccesses().trim().split(",")) {
+                            inClientIds.value(Long.parseLong(id));
+                        }
+                        return criteriaBuilder.and(predicate, criteriaBuilder.and(inClientIds));
+                    }
+
+
                 }
                 ,
                 Sort.by(Sort.Direction.ASC, "warehouseId", "name")
