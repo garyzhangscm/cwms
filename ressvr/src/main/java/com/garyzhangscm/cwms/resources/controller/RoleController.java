@@ -99,5 +99,16 @@ public class RoleController {
         return ResponseBodyWrapper.success("success");
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/roles/{id}/clients", method = RequestMethod.POST)
+    public ResponseBodyWrapper processClients(@PathVariable Long id,
+                                              @RequestParam Boolean nonClientDataAccessible,
+                                            @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedClientIds,
+                                            @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedClientIds) {
+
+        roleService.processClients(id, assignedClientIds, deassignedClientIds, nonClientDataAccessible);
+        return ResponseBodyWrapper.success("success");
+    }
+
 
 }

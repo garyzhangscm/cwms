@@ -24,6 +24,8 @@ import com.garyzhangscm.cwms.common.exception.MissingInformationException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.Client;
+import com.garyzhangscm.cwms.common.model.ClientRestriction;
+import com.garyzhangscm.cwms.common.model.ClientValidationEndpoint;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -39,9 +41,11 @@ public class ClientController {
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @RequestMapping(value="/clients", method = RequestMethod.GET)
+    @ClientValidationEndpoint
     public List<Client> findAllClients(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                        @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
-                                       @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+                                       @RequestParam(name = "name", required = false, defaultValue = "") String name,
+                                       ClientRestriction clientRestriction) {
 
         // company ID or warehouse id is required
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
@@ -56,7 +60,7 @@ public class ClientController {
                             .getWarehouseById(warehouseId).getCompanyId();
         }
 
-        return clientService.findAll(companyId, warehouseId, name);
+        return clientService.findAll(companyId, warehouseId, name, clientRestriction);
     }
 
     @RequestMapping(value="/clients/{id}", method = RequestMethod.GET)

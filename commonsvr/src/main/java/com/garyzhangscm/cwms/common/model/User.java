@@ -36,6 +36,7 @@ public class User extends AuditibleEntity<String>  {
     private String firstname;
     private String lastname;
     private Boolean isAdmin = false;
+    private Boolean isSystemAdmin = false;
 
 
     private String email;
@@ -44,15 +45,8 @@ public class User extends AuditibleEntity<String>  {
     private boolean enabled;
     private boolean locked;
 
-    @Override
-    public String toString() {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
+    private List<Role> roles = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -122,4 +116,19 @@ public class User extends AuditibleEntity<String>  {
 
     public String getName() {return username;}
 
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
+
+    public Boolean getSystemAdmin() {
+        return isSystemAdmin;
+    }
+
+    public void setSystemAdmin(Boolean systemAdmin) {
+        isSystemAdmin = systemAdmin;
+    }
 }

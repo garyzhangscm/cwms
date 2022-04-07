@@ -1769,5 +1769,6 @@
   "assign-clients": "Assign Clients(3pl)",
   "page.auth.role.clients":"Client Maintenance",
   "unassigned-clients": "Unassigned Clients(3pl)",
-  "assigned-clients": "Assigned Clients(3pl)"
+  "assigned-clients": "Assigned Clients(3pl)",
+  "nonClientDataAccessible": "Non Client Data Accessible"
 }

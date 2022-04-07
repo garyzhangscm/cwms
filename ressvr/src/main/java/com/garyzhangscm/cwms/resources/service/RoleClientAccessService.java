@@ -53,4 +53,31 @@ public class RoleClientAccessService{
         return roleClientAccessRepository.findByRoleAndClient(role.getId(), clientId);
     }
 
+    public void removeRoleClientAccess(Long roleId, Long clientId) {
+        RoleClientAccess roleClientAccess = findByRoleAndClient(roleId, clientId);
+
+        logger.debug("remove role client access for role {}, client {}",
+                roleId, clientId);
+        logger.debug("Objects.nonNull(roleClientAccess)?: {}", Objects.nonNull(roleClientAccess));
+        if (Objects.nonNull(roleClientAccess)) {
+            logger.debug("Will remove role client access for role {}, client id {}, role client access id {}",
+                    roleClientAccess.getRole().getName(),
+                    clientId,
+                    roleClientAccess.getId());
+            roleClientAccessRepository.delete(roleClientAccess);
+        }
+    }
+
+    public RoleClientAccess save(RoleClientAccess roleClientAccess) {
+        return roleClientAccessRepository.save(roleClientAccess);
+    }
+
+    public RoleClientAccess addRoleClientAccess(Role role, Long clientId) {
+        logger.debug("Will add role client access for role {}, client id {}",
+                role.getName(),
+                clientId);
+        RoleClientAccess roleClientAccess = new RoleClientAccess(role, clientId);
+        return save(roleClientAccess);
+    }
+
 }

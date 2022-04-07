@@ -170,6 +170,9 @@ public class Role extends AuditibleEntity<String>  {
     public void setClientAccesses(List<RoleClientAccess> clientAccesses) {
         this.clientAccesses = clientAccesses;
     }
+    public void addClientAccess(RoleClientAccess clientAccess) {
+        this.clientAccesses.add(clientAccess);
+    }
 
     public Boolean getNonClientDataAccessible() {
         return nonClientDataAccessible;
