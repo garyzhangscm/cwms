@@ -70,14 +70,18 @@ public class ClientValidationEndpointAspect {
                         Long.parseLong(httpServletRequest.getParameter("warehouseId")) :
                             null;
 
-        logger.debug("get warehouse id {}", warehouseId);
+        logger.debug("get warehouse id {}", Objects.isNull(warehouseId) ? "N/A" : warehouseId);
 
-        Long companyId = Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
-                Long.parseLong(httpServletRequest.getHeader("companyId")) :
-                Strings.isNotBlank(httpServletRequest.getParameter("companyId")) ?
-                        Long.parseLong(httpServletRequest.getParameter("companyId")) : null;
+        Long companyId =
+                Objects.isNull(httpServletRequest.getHeader("companyId")) ||
+                        Objects.isNull(httpServletRequest.getParameter("companyId")) ?
+                        null :
+                        Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
+                            Long.parseLong(httpServletRequest.getHeader("companyId")) :
+                            Strings.isNotBlank(httpServletRequest.getParameter("companyId")) ?
+                                    Long.parseLong(httpServletRequest.getParameter("companyId")) : null;
 
-        logger.debug("get company id {}", warehouseId);
+        logger.debug("get company id {}", Objects.isNull(companyId) ? "N/A" : companyId);
 
         // for some reason we can't get the warehouse id from the http request,
         // then we will allow the user to access non 3pl data(client id is null)
