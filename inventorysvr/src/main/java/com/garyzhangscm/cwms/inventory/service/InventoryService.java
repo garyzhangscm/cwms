@@ -528,6 +528,8 @@ public class InventoryService implements TestDataInitiableService{
             loadInventoryAttribute(pickableInventories);
         }
 
+        logger.debug("We found {} pickable inventory for item id {}, inventory status id {}",
+                pickableInventories.size(), itemId, inventoryStatusId);
         // only return inventory in the pickable location;
         return pickableInventories;
     }
@@ -1453,7 +1455,7 @@ public class InventoryService implements TestDataInitiableService{
                 inventoryMovement.setLocationId(inventoryMovement.getLocation().getId());
             }
         });
-        logger.debug(">> movement path: {}", inventoryMovements);
+        // logger.debug(">> movement path: {}", inventoryMovements);
         List<InventoryMovement> newInventoryMovements = inventoryMovementService.save(inventoryMovements);
         logger.debug(">> reload inventory informaiton after movement path is saved!");
 
