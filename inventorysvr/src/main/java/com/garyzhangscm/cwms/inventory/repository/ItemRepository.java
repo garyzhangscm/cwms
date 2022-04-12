@@ -21,9 +21,25 @@ package com.garyzhangscm.cwms.inventory.repository;
 import com.garyzhangscm.cwms.inventory.model.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
     Item findByWarehouseIdAndName(Long warehouseId, String name);
+
+    /**
+     * Override a item family in the warehouse level. We will change the item's item family id to the new warehouse level
+     * item family. We will only change the item in the specific warehouse
+     * @param oldItemFamilyId
+     * @param newItemFamilyId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update item set item_family_id = :newItemFamilyId where item_family_id = :oldItemFamilyId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemFamilyOverride(Long oldItemFamilyId, Long newItemFamilyId, Long warehouseId);
 }

@@ -427,8 +427,39 @@ public class ItemService implements TestDataInitiableService{
             );
 
         });
+        // check if we are adding a new item at the warehouse level
+        // and override the global one. If so, we may need to update the
+        // item id on the inventory, cycle count, receipt and order to point to
+        // the new item id instead of the global one, for those document in the
+        // specific warehouse
+        boolean newWarehouseItem = false;
+        Long globalItemId = null;
+        if (Objects.nonNull(item.getWarehouseId()) &&
+                Objects.isNull(findByName(item.getWarehouseId(), item.getName()))) {
+            newWarehouseItem = true;
+            // see if we can find the global item with the same name
+            Item globalItem = findByName(null, item.getName(), false);
+            if (Objects.nonNull(globalItem)) {
+                globalItemId = globalItem.getId();
+            }
+        }
 
-        return  saveOrUpdate(item);
+        Item newItem =  saveOrUpdate(item);
+
+
+        if (newWarehouseItem &&
+                Objects.nonNull(globalItemId)) {
+
+            logger.debug("we create a new item {} in the warehouse {} to override the global one(id: {})",
+                    newItem.getName(), newItem.getWarehouseId(), globalItemId);
+            logger.debug("we will update the item id in the order line, receipt line, inventory " +
+                    " and cycle count request to reflect the item id change and point them to the new item id");
+
+            inventoryService.handleItemOverride(globalItemId, newItem.getId(), newItem.getWarehouseId());
+
+        }
+
+        return newItem;
     }
 
     /**
@@ -476,7 +507,7 @@ public class ItemService implements TestDataInitiableService{
         }
         if (Objects.isNull(existingItemFamily)) {
             logger.debug("start to create item family {} ", itemFamily);
-            existingItemFamily = itemFamilyService.save(
+            existingItemFamily = itemFamilyService.addItemFamily(
                     itemFamily
             );
             logger.debug(">> item family created! {}", Objects.nonNull(existingItemFamily) );
@@ -844,5 +875,12 @@ public class ItemService implements TestDataInitiableService{
                     }
                 }
         );
+    }
+
+    public void handleItemFamilyOverride(Long oldItemFamilyId, Long newItemFamilyId, Long warehouseId) {
+
+        logger.debug("start to process item family override, current warehouse {}, from item family id {} to item family id {}",
+                warehouseId, oldItemFamilyId, newItemFamilyId);
+        itemRepository.processItemFamilyOverride(oldItemFamilyId, newItemFamilyId, warehouseId);
     }
 }

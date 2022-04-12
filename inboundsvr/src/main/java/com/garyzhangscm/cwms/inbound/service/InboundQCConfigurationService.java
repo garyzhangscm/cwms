@@ -450,4 +450,10 @@ public class InboundQCConfigurationService {
                 inboundQCConfiguration
         );
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for inbound qc configuration, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        inboundQCConfigurationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
 }
