@@ -263,4 +263,35 @@ public class ItemFamilyService implements TestDataInitiableService{
         }
         delete(itemFamilyIds);
     }
+
+    public ItemFamily addItemFamily(ItemFamily itemFamily) {
+
+
+        boolean newWarehouseItemFamily = false;
+        Long globalItemFamilyId = null;
+        if (Objects.nonNull(itemFamily.getWarehouseId()) &&
+                Objects.isNull(findByName(itemFamily.getWarehouseId(), itemFamily.getName()))) {
+            newWarehouseItemFamily = true;
+            // see if we can find the global item family with the same name
+            ItemFamily globalItemFamily = findByName(null, itemFamily.getName());
+            if (Objects.nonNull(globalItemFamily)) {
+                globalItemFamilyId = globalItemFamily.getId();
+            }
+        }
+
+        ItemFamily newItemFamily = saveOrUpdate(itemFamily);
+
+
+        if (newWarehouseItemFamily &&
+                Objects.nonNull(globalItemFamilyId)) {
+
+            logger.debug("we create a new item family {} in the warehouse {} to override the global one(id: {})",
+                    newItemFamily.getName(), newItemFamily.getWarehouseId(), globalItemFamilyId);
+            logger.debug("we will update the item family id on the item");
+
+            itemService.handleItemFamilyOverride(globalItemFamilyId, newItemFamily.getId(), newItemFamily.getWarehouseId());
+        }
+
+        return newItemFamily;
+    }
 }

@@ -499,4 +499,10 @@ public class PutawayConfigurationService implements TestDataInitiableService{
 
         inventoryServiceRestemplateClient.clearMovementPath(inventory.getId());
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for putaway configuration, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        putawayConfigurationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
 }

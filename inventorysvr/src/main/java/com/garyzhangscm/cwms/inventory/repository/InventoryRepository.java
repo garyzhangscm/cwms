@@ -21,9 +21,11 @@ package com.garyzhangscm.cwms.inventory.repository;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -48,4 +50,16 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
     @Query("select count(distinct inv.locationId) from Inventory inv join inv.item i where i.id = :itemId")
     Integer getLocationCount(Long itemId);
+
+    /**
+     * Override a item in the warehouse level. We will change the inventory's item id to the new warehouse level
+     * item. We will only change the inventory in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update inventory set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }

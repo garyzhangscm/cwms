@@ -2598,5 +2598,11 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
+    public void handleItemOverride(Long oldItemId, Long newItemId, Long warehouseId) {
+        logger.debug("start to process item override, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        inventoryRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
+
 
 }

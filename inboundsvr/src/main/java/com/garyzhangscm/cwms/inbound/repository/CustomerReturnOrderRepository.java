@@ -22,13 +22,16 @@ import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrder;
 import com.garyzhangscm.cwms.inbound.model.Receipt;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
 public interface CustomerReturnOrderRepository extends JpaRepository<CustomerReturnOrder, Long>, JpaSpecificationExecutor<CustomerReturnOrder> {
 
     CustomerReturnOrder findByWarehouseIdAndNumber(Long warehouseId, String number);
+
 }

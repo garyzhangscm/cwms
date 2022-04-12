@@ -471,4 +471,10 @@ public class CustomerReturnOrderLineService {
         }
         return saveOrUpdate(customerReturnOrderLine);
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for receipt line, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        customerReturnOrderLineRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
 }

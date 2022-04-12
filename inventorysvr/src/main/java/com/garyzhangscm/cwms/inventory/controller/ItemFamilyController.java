@@ -77,7 +77,7 @@ public class ItemFamilyController {
     @BillableEndpoint
     @RequestMapping(value="/item-family", method = RequestMethod.POST)
     public ItemFamily createItemFamily(@RequestBody ItemFamily itemFamily) {
-        return itemFamilyService.save(itemFamily);
+        return itemFamilyService.addItemFamily(itemFamily);
     }
 
     @BillableEndpoint

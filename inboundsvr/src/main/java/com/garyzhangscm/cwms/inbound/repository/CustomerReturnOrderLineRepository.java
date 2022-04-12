@@ -22,8 +22,11 @@ import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrderLine;
 import com.garyzhangscm.cwms.inbound.model.ReceiptLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface CustomerReturnOrderLineRepository extends JpaRepository<CustomerReturnOrderLine, Long>, JpaSpecificationExecutor<CustomerReturnOrderLine> {
@@ -31,4 +34,15 @@ public interface CustomerReturnOrderLineRepository extends JpaRepository<Custome
     @Query("select cl from CustomerReturnOrderLine cl where customerReturnOrder.id = :customerReturnOrderId and number = :number and warehouseId = :warehouseId")
     CustomerReturnOrderLine findByNaturalKey(Long warehouseId, Long customerReturnOrderId, String number);
 
+    /**
+     * Override a item in the warehouse level. We will change the receipt line's item id to the new warehouse level
+     * item. We will only change the receipt line in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update customer_return_order_line set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }

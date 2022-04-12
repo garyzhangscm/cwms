@@ -31,6 +31,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
@@ -87,6 +88,25 @@ public class InboundServiceRestemplateClient {
 
     }
 
+
+    public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inbound/inbound-configuration/item-override")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("oldItemId", oldItemId)
+                        .queryParam("newItemId", newItemId);
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 
 
 }

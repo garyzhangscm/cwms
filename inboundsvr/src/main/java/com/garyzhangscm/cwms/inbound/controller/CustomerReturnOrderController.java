@@ -175,5 +175,4 @@ public class CustomerReturnOrderController {
         return customerReturnOrderService.generatePutawayDocument(id, locale, inventoryIds, notPutawayInventoryOnly);
     }
 
-
 }
