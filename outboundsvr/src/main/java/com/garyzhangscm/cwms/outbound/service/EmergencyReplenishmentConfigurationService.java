@@ -600,4 +600,9 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
                 pick.getInventoryStatus().equals(inventory.getInventoryStatus());
     }
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for order line, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        emergencyReplenishmentConfigurationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
 }

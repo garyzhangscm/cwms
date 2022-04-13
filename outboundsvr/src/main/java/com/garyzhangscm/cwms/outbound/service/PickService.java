@@ -1333,4 +1333,9 @@ public class PickService {
         return cancelPick(pick, unpickedQuantity);
     }
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for order line, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        pickRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
 }

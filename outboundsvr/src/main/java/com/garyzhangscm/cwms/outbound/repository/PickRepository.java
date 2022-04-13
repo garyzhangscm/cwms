@@ -22,9 +22,11 @@ package com.garyzhangscm.cwms.outbound.repository;
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -49,4 +51,15 @@ public interface PickRepository extends JpaRepository<Pick, Long>, JpaSpecificat
     @Query("select p from Pick p inner join p.shipmentLine s where s.id = :shipmentLineId")
     List<Pick> getPicksByShipmentLineId(Long shipmentLineId);
 
+    /**
+     * Override a item in the warehouse level. We will change the pick's item id to the new warehouse level
+     * item. We will only change the pick in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update pick set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }

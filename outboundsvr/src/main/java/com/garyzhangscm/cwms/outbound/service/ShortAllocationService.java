@@ -568,4 +568,10 @@ public class ShortAllocationService {
             );
         }
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for order line, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        shortAllocationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
 }
