@@ -24,12 +24,27 @@ import com.garyzhangscm.cwms.outbound.model.AllocationConfigurationType;
 import com.garyzhangscm.cwms.outbound.model.PickConfirmStrategy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
 public interface PickConfirmStrategyRepository extends JpaRepository<PickConfirmStrategy, Long>, JpaSpecificationExecutor<PickConfirmStrategy> {
 
     PickConfirmStrategy findByWarehouseIdAndSequence(Long warehouseId, int sequence);
+
+    /**
+     * Override a item in the warehouse level. We will change the pick confirm strategy's item id to the new warehouse level
+     * item. We will only change the pick confirm strategy in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update pick_confirm_strategy set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }

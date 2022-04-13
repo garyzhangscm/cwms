@@ -24,9 +24,11 @@ import com.garyzhangscm.cwms.outbound.model.AllocationConfigurationType;
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -35,4 +37,16 @@ public interface AllocationConfigurationRepository extends JpaRepository<Allocat
     AllocationConfiguration findByWarehouseIdAndSequence(Long warehouseId, int sequence);
 
     List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType);
+
+    /**
+     * Override a item in the warehouse level. We will change the allocation configuration's item id to the new warehouse level
+     * item. We will only change the allocation configuration in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update allocation_configuration set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }

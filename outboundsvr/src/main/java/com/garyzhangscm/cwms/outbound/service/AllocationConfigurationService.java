@@ -1088,4 +1088,9 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return saveOrUpdate(allocationConfiguration);
     }
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for order line, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        allocationConfigurationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
 }

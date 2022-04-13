@@ -23,11 +23,25 @@ import com.garyzhangscm.cwms.outbound.model.ShortAllocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
 public interface ShortAllocationRepository extends JpaRepository<ShortAllocation, Long>, JpaSpecificationExecutor<ShortAllocation> {
 
+    /**
+     * Override a item in the warehouse level. We will change the short allocation's item id to the new warehouse level
+     * item. We will only change the short allocation in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update short_allocation set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }
