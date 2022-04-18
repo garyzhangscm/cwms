@@ -156,6 +156,76 @@ public class InventoryController {
         return inventoryService.removeInventory(id, "", "");
     }
 
+
+    /**
+     * Remove inventory from a warehouse and meet certain criteria
+     * @param warehouseId
+     * @param itemId
+     * @param itemName
+     * @param itemPackageTypeName
+     * @param clientId
+     * @param clientIds
+     * @param itemFamilyIds
+     * @param inventoryStatusId
+     * @param locationName
+     * @param locationId
+     * @param locationIds
+     * @param locationGroupId
+     * @param receiptId
+     * @param customerReturnOrderId
+     * @param workOrderId
+     * @param workOrderLineIds
+     * @param workOrderByProductIds
+     * @param pickIds
+     * @param lpn
+     * @param inventoryIds
+     * @param notPutawayInventoryOnly
+     * @param includeVirturalInventory
+     * @param includeDetails
+     * @param clientRestriction
+     * @return
+     */
+    @ClientValidationEndpoint
+    @BillableEndpoint
+    @RequestMapping(value="/inventories", method = RequestMethod.GET)
+    public ResponseBodyWrapper<String> removeAllInventories(@RequestParam Long warehouseId,
+                                              @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                              @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
+                                              @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
+                                              @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
+                                              @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
+                                              @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
+                                              @RequestParam(name="location", required = false, defaultValue = "") String locationName,
+                                              @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
+                                              @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
+                                              @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                              @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="customerReturnOrderId", required = false, defaultValue = "") String customerReturnOrderId,
+                                              @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
+                                              @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
+                                              @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
+                                              @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
+                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                              @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                              @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+                                              @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
+                                              ClientRestriction clientRestriction) {
+
+
+
+        inventoryService.removeAllInventories(warehouseId, itemId, itemName, itemPackageTypeName,clientId,  clientIds,
+                itemFamilyIds,inventoryStatusId,  locationName,
+                locationId, locationIds, locationGroupId,  receiptId, customerReturnOrderId,  workOrderId,
+                workOrderLineIds, workOrderByProductIds,
+                pickIds, lpn, inventoryIds, notPutawayInventoryOnly,
+                includeVirturalInventory, clientRestriction);
+
+        return ResponseBodyWrapper.success("success");
+
+
+    }
+
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory")
     public List<Inventory> removeInventories(@RequestParam String inventoryIds) {

@@ -48,7 +48,7 @@ public interface OrderLineRepository extends JpaRepository<OrderLine, Long>, Jpa
      */
     @Transactional
     @Modifying
-    @Query(value = "update order_line set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+    @Query(value = "update outbound_order_line set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
             nativeQuery = true)
     void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }

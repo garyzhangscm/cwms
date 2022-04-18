@@ -36,6 +36,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -43,6 +44,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
 
 
 @Component
@@ -182,4 +184,40 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    /**
+     * Remove inventory from a warehouse, location group and location. Location group and location
+     * id are optional. This is a function to be called when we remove the warehouse, a location group
+     * or location
+     * @param warehouseId
+     * @param locationGroupId
+     * @param locationId
+     * @return
+     */
+    @Async("asyncExecutor")
+    public String removeInventory(Long warehouseId, Long locationGroupId, Long locationId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId);
+
+        if (Objects.nonNull(locationGroupId)) {
+            builder = builder.queryParam("locationGroupId", locationGroupId);
+        }
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
+        }
+
+        logger.debug("start to remove inventory from {}", builder.toUriString());
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.DELETE,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        logger.debug("Inventory removal request sent to {}", builder.toUriString());
+        return responseBodyWrapper.getData();
+    }
 }

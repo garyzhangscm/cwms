@@ -21,23 +21,21 @@ package com.garyzhangscm.cwms.inventory.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
-import com.google.common.base.Predicates;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,10 +43,6 @@ import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -66,6 +60,11 @@ public class ItemService implements TestDataInitiableService{
     InventoryService inventoryService;
     @Autowired
     ImageService imageService;
+
+    @Autowired
+    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
+    @Autowired
+    private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -456,6 +455,10 @@ public class ItemService implements TestDataInitiableService{
                     " and cycle count request to reflect the item id change and point them to the new item id");
 
             inventoryService.handleItemOverride(globalItemId, newItem.getId(), newItem.getWarehouseId());
+            inboundServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
+                    globalItemId, newItem.getId());
+            outbuondServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
+                    globalItemId, newItem.getId());
 
         }
 
