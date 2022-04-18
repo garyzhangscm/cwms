@@ -50,8 +50,11 @@ public class WarehouseService implements TestDataInitiableService {
 
     private static final Logger logger = LoggerFactory.getLogger(WarehouseService.class);
 
+
     @Autowired
     private WarehouseRepository warehouseRepository;
+    @Autowired
+    private WarehouseConfigurationService warehouseConfigurationService;
     @Autowired
     private LocationGroupService locationGroupService;
     @Autowired
@@ -651,8 +654,15 @@ public class WarehouseService implements TestDataInitiableService {
 
     public Warehouse removeWarehouses(long id) {
         Warehouse warehouse = findById(id);
+
+        // remove the inventory first
+        removeInventoryAtWarehouse(warehouse.getId());
+
+
         // remove the location and location group
 
+
+        warehouseConfigurationService.removeWarehouseConfiguration(warehouse);
         locationService.removeLocations(warehouse);
         locationGroupService.removeLocationGroups(warehouse);
 
@@ -662,5 +672,10 @@ public class WarehouseService implements TestDataInitiableService {
         delete(id);
 
         return warehouse;
+    }
+
+    private void removeInventoryAtWarehouse(Long warehouseId) {
+        inventoryServiceRestemplateClient.removeInventory(warehouseId, null, null);
+
     }
 }

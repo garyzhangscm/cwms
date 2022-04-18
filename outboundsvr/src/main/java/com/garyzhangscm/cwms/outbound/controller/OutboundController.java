@@ -54,8 +54,8 @@ public class OutboundController {
     ShortAllocationService shortAllocationService;
 
 
-    @RequestMapping(value="/inbound-configuration/item-override", method = RequestMethod.POST)
-    public String handleItemOverride(
+    @RequestMapping(value="/outbound-configuration/item-override", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> handleItemOverride(
             @RequestParam Long warehouseId,
             @RequestParam Long oldItemId,
             @RequestParam Long newItemId
@@ -74,6 +74,6 @@ public class OutboundController {
         shortAllocationService.handleItemOverride(warehouseId,
                 oldItemId, newItemId);
 
-        return "success";
+        return ResponseBodyWrapper.success("success");
     }
 }

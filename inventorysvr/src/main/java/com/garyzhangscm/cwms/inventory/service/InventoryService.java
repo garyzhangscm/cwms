@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.*;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.exception.InventoryException;
@@ -2605,4 +2606,70 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
+
+    public void removeAllInventories(Long warehouseId,
+                                                            Long itemId,
+                                                            String itemName,
+                                                            String itemPackageTypeName,
+                                                            Long clientId,
+                                                            String clientIds,
+                                                            String itemFamilyIds,
+                                                            Long inventoryStatusId,
+                                                            String locationName,
+                                                            Long locationId,
+                                                            String locationIds,
+                                                            Long locationGroupId,
+                                                            String receiptId,
+                                                            String customerReturnOrderId,
+                                                            Long workOrderId,
+                                                            String workOrderLineIds,
+                                                            String workOrderByProductIds,
+                                                            String pickIds,
+                                                            String lpn,
+                                                            String inventoryIds,
+                                                            Boolean notPutawayInventoryOnly,
+                                                            Boolean includeVirturalInventory,
+                                                            ClientRestriction clientRestriction) {
+        List<Inventory> inventories = findAll(warehouseId, itemId,
+                itemName, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
+                locationName, locationId, locationIds, locationGroupId,
+                receiptId, customerReturnOrderId,  workOrderId, workOrderLineIds,
+                workOrderByProductIds,
+                pickIds, lpn,
+                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
+                clientRestriction,
+                false);
+
+        logger.debug("find {} inventory to REMOVE by criteria {}",
+                inventories.size(),
+                new StringBuilder()
+                        .append("warehouseId: ").append(warehouseId)
+                        .append("itemId: ").append(itemId)
+                        .append("itemName: ").append(itemName)
+                        .append("itemPackageTypeName: ").append(itemPackageTypeName)
+                        .append("clientId: ").append(clientId)
+                        .append("clientIds: ").append(clientIds)
+                        .append("itemFamilyIds: ").append(itemFamilyIds)
+                        .append("inventoryStatusId: ").append(inventoryStatusId)
+                        .append("receiptId: ").append(receiptId)
+                        .append("customerReturnOrderId: ").append(customerReturnOrderId)
+                        .append("workOrderId: ").append(workOrderId)
+                        .append("workOrderLineIds: ").append(workOrderLineIds)
+                        .append("workOrderByProductIds: ").append(workOrderByProductIds)
+                        .append("pickIds: ").append(pickIds)
+                        .append("lpn: ").append(lpn)
+                        .append("inventoryIds: ").append(inventoryIds)
+                        .append("notPutawayInventoryOnly: ").append(notPutawayInventoryOnly)
+                        .append("includeVirturalInventory: ").append(includeVirturalInventory)
+                        .append("clientRestriction: ").append(clientRestriction));
+
+        inventories.forEach(inventory -> {
+            logger.debug("start to remove inventory {}, lpn {}", inventory.getId(), inventory.getLpn());
+            delete(inventory.getId());
+            logger.debug("inventory {} / {} is removed", inventory.getId(), inventory.getLpn());
+        });
+
+        logger.debug("{} inventory is removed", inventories.size());
+
+    }
 }

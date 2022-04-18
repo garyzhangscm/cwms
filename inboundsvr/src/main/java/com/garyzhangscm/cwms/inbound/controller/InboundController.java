@@ -46,7 +46,7 @@ public class InboundController {
 
 
     @RequestMapping(value="/inbound-configuration/item-override", method = RequestMethod.POST)
-    public String handleItemOverride(
+    public ResponseBodyWrapper<String> handleItemOverride(
             @RequestParam Long warehouseId,
             @RequestParam Long oldItemId,
             @RequestParam Long newItemId
@@ -62,6 +62,6 @@ public class InboundController {
 
         putawayConfigurationService.handleItemOverride(warehouseId,
                 oldItemId, newItemId);
-        return "success";
+        return ResponseBodyWrapper.success("success");
     }
 }

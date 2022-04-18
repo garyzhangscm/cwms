@@ -788,6 +788,7 @@ public class LocationService implements TestDataInitiableService {
 
     }
 
+
     public Location removeRFLocation(Long warehouseId, String rfCode) {
         logger.debug("will add RF location {} / {}",
                 warehouseId, rfCode);

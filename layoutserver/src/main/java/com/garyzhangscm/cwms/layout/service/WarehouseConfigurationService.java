@@ -133,4 +133,12 @@ public class WarehouseConfigurationService   {
     public WarehouseConfiguration changeWarehouseConfiguration(Long companyId, WarehouseConfiguration warehouseConfiguration) {
         return saveOrUpdate(warehouseConfiguration);
     }
+
+    public void removeWarehouseConfiguration(Warehouse warehouse) {
+        WarehouseConfiguration warehouseConfiguration = findByWarehouse(warehouse.getId());
+
+        if (Objects.nonNull(warehouseConfiguration)) {
+            delete(warehouseConfiguration.getId());
+        }
+    }
 }
