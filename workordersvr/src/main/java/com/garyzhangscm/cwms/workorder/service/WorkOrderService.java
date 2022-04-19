@@ -839,7 +839,7 @@ public class WorkOrderService implements TestDataInitiableService {
                 workOrderId, productionLineId);
         ProductionLine productionLine = null;
         if (Objects.nonNull(productionLineId)) {
-            logger.debug("will get production line by id： {}", productionLineId);
+            logger.debug("will get production line by id: {}", productionLineId);
             productionLine = productionLineService.findById(productionLineId);
         }
         return getDeliveredInventory(workOrderId, productionLine);

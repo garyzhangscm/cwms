@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -134,11 +135,20 @@ public class OutboundServiceRestemplateClient {
     }
     public List<Pick> getWorkOrderPicks(WorkOrder workOrder)   {
 
+        // make sure the work order has at least one line
+        String workOrderLineIds = getWorkOrderLineIds(workOrder);
+        if (Strings.isBlank(workOrderLineIds) ||
+               workOrderLineIds.trim().equals(",")) {
+            // there's no line in the work order
+            // let's return empty list as there's no
+            // picks as long as there's no work order line
+            return new ArrayList<>();
+        }
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks")
-                        .queryParam("workOrderLineIds", getWorkOrderLineIds(workOrder))
+                        .queryParam("workOrderLineIds", workOrderLineIds)
                         .queryParam("warehouseId", workOrder.getWarehouseId());
 
         ResponseBodyWrapper<List<Pick>> responseBodyWrapper
