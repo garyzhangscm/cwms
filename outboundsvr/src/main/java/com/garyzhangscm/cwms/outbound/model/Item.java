@@ -68,7 +68,7 @@ public class Item implements Serializable {
             return true;
         }
         return this.getName().equals(((Item)anotherItem).getName()) &&
-                this.getWarehouseId().equals(((Item) anotherItem).getWarehouseId());
+                Objects.equals(this.getWarehouseId(), ((Item) anotherItem).getWarehouseId());
     }
 
     @Override
