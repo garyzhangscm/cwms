@@ -28,5 +28,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DBBasedItemPackageTypeRepository extends JpaRepository<DBBasedItemPackageType, Long>, JpaSpecificationExecutor<DBBasedItemPackageType> {
 
+    long count();
 
 }

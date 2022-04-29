@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.dblink.controller;
 
 import com.garyzhangscm.cwms.dblink.model.DBBasedItem;
 import com.garyzhangscm.cwms.dblink.model.DBBasedWorkOrder;
+import com.garyzhangscm.cwms.dblink.service.DBBasedCustomerService;
 import com.garyzhangscm.cwms.dblink.service.DBBasedItemService;
 import com.garyzhangscm.cwms.dblink.service.DBBasedWorkOrderService;
 import org.slf4j.Logger;
@@ -45,6 +46,8 @@ public class Welcome {
     DBBasedItemService dbBasedItemService;
     @Autowired
     DBBasedWorkOrderService dbBasedWorkOrderService;
+    @Autowired
+    DBBasedCustomerService dbBasedCustomerService;
 
 
     //
@@ -71,5 +74,25 @@ public class Welcome {
         return dbBasedWorkOrders.size();
     }
 
+    @RequestMapping(value = "/live-probe", method = RequestMethod.GET)
+    public String testLive() {
+
+        logger.debug("start test live by dbBasedItemService");
+        dbBasedItemService.testLive();
+        logger.debug("dbBasedItemService is live");
+
+        logger.debug("start test live by dbBasedWorkOrderService");
+        dbBasedWorkOrderService.testLive();
+        logger.debug("dbBasedWorkOrderService is live");
+
+        // logger.debug("start test live by dbBasedCustomerService");
+        // dbBasedCustomerService.testLive();
+        // logger.debug("dbBasedCustomerService is live");
+
+
+
+        logger.debug("=====>>>>>   Everything is live");
+        return "live";
+    }
 
 }

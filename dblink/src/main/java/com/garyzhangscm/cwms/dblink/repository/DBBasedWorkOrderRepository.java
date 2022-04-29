@@ -27,5 +27,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DBBasedWorkOrderRepository extends JpaRepository<DBBasedWorkOrder, Long>, JpaSpecificationExecutor<DBBasedWorkOrder> {
 
+    long count();
 
 }

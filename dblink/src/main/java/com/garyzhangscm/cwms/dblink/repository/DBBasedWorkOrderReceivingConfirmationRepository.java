@@ -29,5 +29,6 @@ import org.springframework.stereotype.Repository;
 public interface DBBasedWorkOrderReceivingConfirmationRepository
         extends JpaRepository<DBBasedWorkOrderReceivingConfirmation, Long>, JpaSpecificationExecutor<DBBasedWorkOrderReceivingConfirmation> {
 
+    long count();
 
 }

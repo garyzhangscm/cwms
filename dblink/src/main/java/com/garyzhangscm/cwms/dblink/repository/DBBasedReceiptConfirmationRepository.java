@@ -30,4 +30,5 @@ public interface DBBasedReceiptConfirmationRepository
         extends JpaRepository<DBBasedReceiptConfirmation, Long>, JpaSpecificationExecutor<DBBasedReceiptConfirmation> {
 
 
+    long count();
 }

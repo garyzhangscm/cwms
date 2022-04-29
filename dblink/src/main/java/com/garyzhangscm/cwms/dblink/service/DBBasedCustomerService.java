@@ -107,6 +107,12 @@ public class DBBasedCustomerService {
                 ChronoUnit.MILLIS.between(startProcessingDateTime.get(), LocalDateTime.now()));
     }
 
+    public boolean testLive() {
+        long totalCount = dbBasedCustomerRepository.count();
+        logger.debug("Test probe in DBBasedCustomerService, total count of DBBasedCustomer record: {}", totalCount);
+        return true;
+    }
+
 
 
 }
