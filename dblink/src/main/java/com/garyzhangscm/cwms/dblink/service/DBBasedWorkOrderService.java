@@ -104,5 +104,10 @@ public class DBBasedWorkOrderService {
                 ChronoUnit.MILLIS.between(startProcessingDateTime.get(), LocalDateTime.now()));
     }
 
+    public boolean testLive() {
+        long totalCount = dbBasedWorkOrderRepository.count();
+        logger.debug("Test probe in DBBasedWorkOrderService, total count of DBBasedWorkOrder record: {}", totalCount);
+        return true;
+    }
 
 }

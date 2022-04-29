@@ -105,6 +105,11 @@ public class DBBasedItemService {
                 ChronoUnit.MILLIS.between(startProcessingDateTime.get(), LocalDateTime.now()));
     }
 
+    public boolean testLive() {
+        long totalCount = dbBasedItemRepository.count();
+        logger.debug("Test probe in DBBasedItemService, total count of DBBasedItem record: {}", totalCount);
+        return true;
+    }
 
 
 }

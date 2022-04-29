@@ -29,4 +29,5 @@ import org.springframework.stereotype.Repository;
 public interface DBBasedReceiptRepository extends JpaRepository<DBBasedReceipt, Long>, JpaSpecificationExecutor<DBBasedReceipt> {
 
 
+    long count();
 }

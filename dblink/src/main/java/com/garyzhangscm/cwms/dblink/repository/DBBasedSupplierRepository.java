@@ -28,4 +28,5 @@ import org.springframework.stereotype.Repository;
 public interface DBBasedSupplierRepository extends JpaRepository<DBBasedSupplier, Long>, JpaSpecificationExecutor<DBBasedSupplier> {
 
 
+    long count();
 }

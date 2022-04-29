@@ -28,5 +28,6 @@ import org.springframework.stereotype.Repository;
 public interface DBBasedOrderConfirmationRepository
         extends JpaRepository<DBBasedOrderConfirmation, Long>, JpaSpecificationExecutor<DBBasedOrderConfirmation> {
 
+    long count();
 
 }
