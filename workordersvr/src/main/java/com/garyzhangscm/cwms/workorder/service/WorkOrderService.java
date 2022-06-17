@@ -1590,4 +1590,68 @@ public class WorkOrderService implements TestDataInitiableService {
         return workOrderRepository.findOpenWorkOrderByItem(itemId);
 
     }
+
+    /**
+     * Process manual pick for work order
+     * @param workOrderId
+     * @param lpn
+     * @return
+     */
+    public List<Pick> processManualPick(Long workOrderId, String lpn, Long productionLineId,
+                                        String rfCode) {
+        WorkOrder workOrder = findById(workOrderId);
+        // Make sure the production line passed in is valid
+        if (workOrder.getProductionLineAssignments().stream().noneMatch(
+                productionLineAssignment ->
+                        productionLineId.equals(productionLineAssignment.getProductionLine().getId())
+                 )) {
+            throw WorkOrderException.raiseException("production line id " + productionLineId +
+                    " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
+
+        }
+
+        // make sure the LPN is valid LPN
+        List<Inventory> inventories = inventoryServiceRestemplateClient.findInventoryByLPN(
+                workOrder.getWarehouseId(), lpn
+        );
+        if (inventories.isEmpty()) {
+
+            throw WorkOrderException.raiseException("LPN " + lpn +
+                    " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
+        }
+
+        List<Pick> picks = new ArrayList<>();
+        try {
+
+            picks = outboundServiceRestemplateClient.processManualPick(
+                    workOrder.getWarehouseId(),
+                    workOrder.getId(),
+                    lpn,
+                    productionLineId,
+                    rfCode
+            );
+            if (picks.size() > 0) {
+
+                // we should only get the picks from the allocation
+                AllocationResult allocationResult = new AllocationResult();
+                allocationResult.setPicks(picks);
+
+                // process the quantity in the work order and work order line
+                // to reflect the allocation
+                processAllocateResult(workOrder, allocationResult);
+                Long pickedQuantity = picks.stream().map(Pick::getQuantity).mapToLong(Long::longValue).sum();
+
+                processProductionLineAssignment(workOrder, productionLineId, pickedQuantity);
+            }
+
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            throw WorkOrderException.raiseException("Can't do manual pick from LPN " + lpn +
+                    " for the work order " + workOrder.getNumber());
+        }
+
+
+        return picks;
+    }
 }

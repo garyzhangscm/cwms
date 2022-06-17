@@ -121,10 +121,11 @@ public class InventoryController {
 
     @RequestMapping(value="/inventories/pickable", method = RequestMethod.GET)
     public List<Inventory> findPickableInventories(@RequestParam Long itemId,
-                                                   @RequestParam Long inventoryStatusId) {
+                                                   @RequestParam Long inventoryStatusId,
+                                                   @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId) {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
-        return inventoryService.findPickableInventories(itemId, inventoryStatusId);
+        return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId);
     }
 
 
@@ -181,13 +182,12 @@ public class InventoryController {
      * @param inventoryIds
      * @param notPutawayInventoryOnly
      * @param includeVirturalInventory
-     * @param includeDetails
      * @param clientRestriction
      * @return
      */
     @ClientValidationEndpoint
     @BillableEndpoint
-    @RequestMapping(value="/inventories", method = RequestMethod.GET)
+    @RequestMapping(value="/inventories", method = RequestMethod.DELETE)
     public ResponseBodyWrapper<String> removeAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,

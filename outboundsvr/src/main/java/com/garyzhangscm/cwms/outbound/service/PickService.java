@@ -75,6 +75,8 @@ public class PickService {
     @Autowired
     private OrderActivityService orderActivityService;
 
+    @Autowired
+    private AllocationService allocationService;
 
     @Autowired
     private PickListService pickListService;
@@ -466,10 +468,40 @@ public class PickService {
         pickRepository.deleteById(id);
     }
 
+
+
+    public List<Pick> getOpenPicksByItemIdAndSourceLocation(Long itemId, Location sourceLocation){
+        return getOpenPicksByItemIdAndSourceLocation(itemId, sourceLocation, true);
+    }
+
+
+    public List<Pick> getOpenPicksByItemIdAndSourceLocation(Long itemId, Location sourceLocation, boolean loadDetails){
+        return Objects.isNull(sourceLocation) ?
+                getOpenPicksByItemId(itemId, loadDetails) :
+                getOpenPicksByItemIdAndSourceLocationId(itemId, sourceLocation.getId(), loadDetails);
+    }
+
+    public List<Pick> getOpenPicksByItemIdAndSourceLocationId(Long itemId, Long sourceLocationId){
+
+        return getOpenPicksByItemIdAndSourceLocationId(itemId, sourceLocationId, true);
+    }
+
+
+    public List<Pick> getOpenPicksByItemIdAndSourceLocationId(Long itemId, Long sourceLocationId, boolean loadDetails){
+
+        List<Pick> picks = pickRepository.getOpenPicksByItemIdAndSourceLocationId(itemId, sourceLocationId);
+        if (picks.size() > 0 && loadDetails) {
+            loadAttribute(picks);
+        }
+        return picks;
+    }
+
+
     public List<Pick> getOpenPicksByItemId(Long itemId){
 
         return getOpenPicksByItemId(itemId, true);
     }
+
     public List<Pick> getOpenPicksByItemId(Long itemId, boolean loadDetails){
 
         List<Pick> picks = pickRepository.getOpenPicksByItemId(itemId);
@@ -1338,4 +1370,199 @@ public class PickService {
                 warehouseId, oldItemId, newItemId);
         pickRepository.processItemOverride(oldItemId, newItemId, warehouseId);
     }
+
+    /**
+     *
+     * Manually pick an LPN for certain work order. The LPN has to have only one item number
+     * @param warehouseId
+     * @param workOrderId
+     * @param lpn
+     * @return
+     */
+    @Transactional
+    public List<Pick> processManualPickForWorkOrder(Long warehouseId, Long workOrderId, Long productionLineId,
+                                                    String lpn, String rfCode) {
+        WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(workOrderId);
+        return processManualPickForWorkOrder(warehouseId, workOrder, productionLineId, lpn, rfCode);
+    }
+    /**
+     * Manually pick an LPN for certain work order. The LPN has to have only one item number
+     * @param workOrder
+     * @param lpn
+     * @return
+     */
+    @Transactional
+    public List<Pick> processManualPickForWorkOrder(Long warehouseId, WorkOrder workOrder, Long productionLineId,
+                                                    String lpn, String rfCode) {
+        if (Strings.isBlank(lpn)) {
+            throw PickingException.raiseException("Can't generate the manual pick as LPN is empty");
+        }
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(warehouseId, lpn);
+        if (inventories.size() == 0) {
+            throw PickingException.raiseException("Can't find the LPN. Fail to generate the manual pick");
+
+        }
+        // let's make sure there's only one item number
+        List<Long> itemIdList = inventories.stream().map(inventory -> inventory.getItem().getId()).distinct().collect(Collectors.toList());
+        if (itemIdList.size() > 1) {
+            throw PickingException.raiseException("The LPN is mixed with different item. Fail to generate the manual pick");
+        }
+
+
+        // let's get the item id and find the matched work order line. We will create the pick against the
+        // work order line
+        Long itemId = itemIdList.get(0);
+        WorkOrderLine matchedWorkOrderLine = workOrder.getWorkOrderLines().stream().filter(
+                workOrderLine -> itemId.equals(workOrderLine.getItemId())).findFirst()
+                .orElseThrow(() ->
+                        PickingException.raiseException("can't find the matched work order line with item id " + itemId));
+
+
+        Location sourceLocation = inventories.get(0).getLocation();
+        if (Objects.isNull(sourceLocation)) {
+            sourceLocation = warehouseLayoutServiceRestemplateClient.getLocationById(
+                    inventories.get(0).getLocationId()
+            );
+        }
+        if (Objects.isNull(sourceLocation)) {
+            throw PickingException.raiseException("Error finding the location for LPN " + lpn + ". Fail to generate the manual pick");
+        }
+
+        Long quantity = inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+
+        // let's see if we can generate the manual pick
+        AllocationResult allocationResult = generateManualPickForWorkOrder(workOrder,
+                matchedWorkOrderLine, productionLineId, sourceLocation, quantity);
+
+        if (allocationResult.getShortAllocations().size() > 0) {
+            // ok, we get short allocation. Something seems goes wrong.
+
+            // cancel all the short allocation and pick and then
+            allocationResult.getShortAllocations().forEach(
+                    shortAllocation -> shortAllocationService.delete(shortAllocation)
+            );
+            allocationResult.getPicks().forEach(
+                    pick -> delete(pick)
+            );
+            throw PickingException.raiseException("Error! can't allocate from this LPN " + lpn);
+        }
+
+        List<Pick> confirmedPicks = new ArrayList<>();
+
+        // let's confirm all the picks with the single LPN
+        logger.debug("We get {} picks generated to manually pick for this work order {} from the LPN {}",
+                allocationResult.getPicks().size(),
+                workOrder.getNumber(), lpn);
+        logger.debug("start to confirm those picks by rf {}", rfCode);
+        // we will pick to the RF
+        Location rfLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                warehouseId, rfCode);
+        for(Pick pick: allocationResult.getPicks()) {
+            confirmedPicks.add(
+                    confirmPick(pick, pick.getQuantity(), rfLocation, lpn));
+        }
+
+        return confirmedPicks;
+
+
+
+    }
+
+    @Transactional
+    public AllocationResult generateManualPickForWorkOrder(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                                           Long productionLineId,
+                                                           Location sourceLocation, Long quantity) {
+
+        // we will need to make sure there's only one production line assigned to the work order
+        // so that we can know the destination for the pick
+        if (workOrder.getProductionLineAssignments().size() != 1) {
+            throw PickingException.raiseException("We can only manually pick the LPN for a work order that " +
+                    " has one and only one assigned production line, so as to know the destination for this " +
+                    " picked LPN");
+        }
+
+        // Make sure the production line passed in is valid
+        if (workOrder.getProductionLineAssignments().stream().noneMatch(
+                productionLineAssignment ->
+                        productionLineId.equals(productionLineAssignment.getProductionLine().getId())
+        )) {
+            throw PickingException.raiseException("production line id " + productionLineId +
+                    " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
+
+        }
+
+
+        AllocationResult allocationResult
+                = allocationService.allocate(workOrder, workOrderLine, productionLineId,
+                0l, quantity, sourceLocation, true);
+
+
+        return allocationResult;
+
+    }
+
+
+    /**
+     *
+     * Generate manual pick work. This happens when the user manually generate the pick and finish the pick
+     * by specify the LPN. The other way to generate the pick is by allocation, which the source location is
+     * calculated by the system
+     * @param allocationRequest
+     * @param sourceLocation
+     * @return
+     */
+    public AllocationResult generateManualPick(AllocationRequest allocationRequest, Location sourceLocation) {
+
+        // check if we can generate manual pick from the location
+        // for now we will always consider the existing picks from the location
+        // TO-DO: Allow the user to ignore existing pick so that they may not be able to finish
+        // the existing pick, if after the manual pick there's nothing left
+        if (!validateGeneratingManualPick(allocationRequest, sourceLocation, false)) {
+            throw PickingException.raiseException("can't generate a manual pick from location " +
+                    sourceLocation.getName() + " by item: " + allocationRequest.getItem().getName() +
+                    " quantity: " + allocationRequest.getQuantity());
+        }
+
+        // ok we should be able to generate picks from the location, let's try generate the pick
+        return allocationService.tryAllocate(allocationRequest, sourceLocation);
+
+
+    }
+
+    @Transactional
+    private boolean validateGeneratingManualPick(AllocationRequest allocationRequest, Location sourceLocation, boolean ignoreExistingPick) {
+
+        Item item = allocationRequest.getItem();
+        Long openQuantity = allocationRequest.getQuantity();
+        InventoryStatus inventoryStatus = allocationRequest.getInventoryStatus();
+
+        Long existingPickQuantity = 0l;
+        if (!ignoreExistingPick) {
+
+            List<Pick> existingPicks =
+                    getOpenPicksByItemIdAndSourceLocation(item.getId(), sourceLocation);
+            existingPickQuantity = existingPicks.stream().map(pick -> pick.getQuantity() - pick.getPickedQuantity())
+                    .filter(quantity -> quantity >=0 ).mapToLong(Long::longValue).sum();
+
+        }
+
+        List<Inventory> pickableInventory
+                = inventoryServiceRestemplateClient.getPickableInventory(
+                item.getId(), inventoryStatus.getId(),
+                Objects.isNull(sourceLocation) ?  null : sourceLocation.getId());
+
+        long pickableInventoryQuantity = pickableInventory.stream().map(inventory -> inventory.getQuantity())
+                .filter(quantity -> quantity >=0 ).mapToLong(Long::longValue).sum();
+
+        // see if we can still pick x amount of quantity from the location
+        if (pickableInventoryQuantity >= existingPickQuantity + allocationRequest.getQuantity()) {
+            // ok we can pick from this location with requested quantity
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
 }

@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.resources.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class MenuCSVWrapper {
 
 
@@ -39,6 +42,17 @@ public class MenuCSVWrapper {
 
     private Boolean enabled;
     private Boolean systemAdminMenuFlag;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public String getName() {
         return name;

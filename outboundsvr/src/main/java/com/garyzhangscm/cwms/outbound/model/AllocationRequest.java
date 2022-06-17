@@ -39,6 +39,8 @@ public class AllocationRequest {
 
     private Long destinationLocationId;
 
+    private boolean manualAllocation = false;
+
     public AllocationRequest() {}
 
     public AllocationRequest(Item item,
@@ -215,5 +217,13 @@ public class AllocationRequest {
 
     public void setDestinationLocationId(Long destinationLocationId) {
         this.destinationLocationId = destinationLocationId;
+    }
+
+    public boolean isManualAllocation() {
+        return manualAllocation;
+    }
+
+    public void setManualAllocation(boolean manualAllocation) {
+        this.manualAllocation = manualAllocation;
     }
 }

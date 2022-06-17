@@ -510,9 +510,25 @@ public class InventoryService implements TestDataInitiableService{
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
                                                    boolean includeDetails) {
+        return findPickableInventories(itemId, inventoryStatusId, null, includeDetails);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
+                                                   Long locationId) {
+        return findPickableInventories(itemId, inventoryStatusId, locationId, true);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
+                                                   Long locationId,
+                                                   boolean includeDetails) {
+        List<Inventory> availableInventories =
+                Objects.isNull(locationId) ?
+                        inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId)
+                        :
+                        inventoryRepository.findByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId);
 
-        List<Inventory> pickableInventories
-                =  inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId)
+        List<Inventory>  pickableInventories
+                =  availableInventories
                         .stream()
                 .filter(this::isInventoryPickable)
                 .map(inventory -> {

@@ -1769,5 +1769,6 @@
   "page.auth.role.clients":"客户维护（第三方物流）",
   "unassigned-clients": "未分配客户（第三方物流）",
   "assigned-clients": "已分配客户（第三方物流）",
-  "nonClientDataAccessible": "可以操作非第三方客户的数据"
+  "nonClientDataAccessible": "可以操作非第三方客户的数据",
+  "menu.mobile.work-order.manual-pick": "人工拣货"
 }

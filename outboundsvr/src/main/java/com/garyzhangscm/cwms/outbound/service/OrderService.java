@@ -802,8 +802,13 @@ public class OrderService implements TestDataInitiableService {
         order.setStageLocationId(null);
         order.setStageLocationGroupId(null);
 
+        Order completedOrder =  saveOrUpdate(order);
+        orderActivityService.saveOrderActivity(
+                orderActivityService.createOrderActivity(
+                        completedOrder.getWarehouseId(), completedOrder, OrderActivityType.ORDER_COMPLETE
+                ));
 
-        return saveOrUpdate(order);
+        return completedOrder;
 
     }
 
@@ -847,8 +852,13 @@ public class OrderService implements TestDataInitiableService {
         existingOrder.setStageLocationId(null);
         existingOrder.setStageLocationGroupId(null);
 
+        existingOrder = saveOrUpdate(existingOrder);
+        orderActivityService.saveOrderActivity(
+                orderActivityService.createOrderActivity(
+                        existingOrder.getWarehouseId(), existingOrder, OrderActivityType.ORDER_COMPLETE
+                ));
 
-        return saveOrUpdate(existingOrder);
+        return existingOrder;
 
     }
 
