@@ -7,6 +7,7 @@ public interface AllocationStrategy {
 
     public AllocationStrategyType getType();
     public AllocationResult allocate(AllocationRequest allocationRequest);
+    public AllocationResult allocate(AllocationRequest allocationRequest, Location sourceLocation);
 
     public boolean isDefault();
 }

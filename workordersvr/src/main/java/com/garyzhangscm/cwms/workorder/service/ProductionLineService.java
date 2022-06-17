@@ -220,6 +220,10 @@ public class ProductionLineService implements TestDataInitiableService {
                 return false;
             }
         }
+        logger.debug("GOOD, we found production line {} can be used by itemId: {}",
+                productionLine.getName(),
+                itemId);
+
         return true;
     }
 

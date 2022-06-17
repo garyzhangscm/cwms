@@ -112,6 +112,7 @@ public class MenuService  implements TestDataInitiableService{
     }
 
     private Menu convertFromCSVWrapper(MenuCSVWrapper menuCSVWrapper) {
+        logger.debug("Start to process menuCSVWrapper\n {}", menuCSVWrapper);
         Menu menu = new Menu();
         menu.setText(menuCSVWrapper.getText());
         menu.setI18n(menuCSVWrapper.getI18n());
@@ -124,6 +125,8 @@ public class MenuService  implements TestDataInitiableService{
 
         // Setup the parent menu group for this subgroup
         menu.setMenuSubGroup(menuSubGroupService.findByName(menuCSVWrapper.getMenuSubGroup()));
+        logger.debug("will save menu \n {}", menuCSVWrapper);
+
         return menu;
 
 

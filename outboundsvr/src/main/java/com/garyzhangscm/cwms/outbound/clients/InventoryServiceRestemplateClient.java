@@ -202,7 +202,7 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
-    public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId) {
+    public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -210,6 +210,10 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("includeDetails", false)
                         .queryParam("itemId", itemId)
                         .queryParam("inventoryStatusId", inventoryStatusId);
+
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
+        }
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(

@@ -134,4 +134,19 @@ public class PickController {
     }
 
 
+    @BillableEndpoint
+    @RequestMapping(value="/picks/process-manual-pick-for-work-order", method = RequestMethod.POST)
+    public List<Pick> processManualPick(@RequestParam Long warehouseId,
+                                        @RequestParam Long workOrderId,
+                                        @RequestParam Long productionLineId,
+                                        @RequestParam String lpn,
+                                        @RequestParam(name="rfCode", defaultValue = "", required = false) String rfCode) {
+        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("=> warehouseId: {}", warehouseId);
+        logger.debug("=> workOrderId: {}", workOrderId);
+        logger.debug("=> productionLineId: {}", productionLineId);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> rfCode: {}", rfCode);
+        return pickService.processManualPickForWorkOrder(warehouseId, workOrderId, productionLineId, lpn, rfCode);
+    }
 }

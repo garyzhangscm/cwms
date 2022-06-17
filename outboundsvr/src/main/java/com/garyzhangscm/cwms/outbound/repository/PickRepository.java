@@ -39,6 +39,12 @@ public interface PickRepository extends JpaRepository<Pick, Long>, JpaSpecificat
     List<Pick> getOpenPicksByItemId(Long itemId);
 
     @Query("select p from Pick p " +
+            " where p.itemId = :itemId and sourceLocationId = :sourceLocationId " +
+            " and p.pickedQuantity < p.quantity " +
+            " and p.quantity > 0")
+    List<Pick> getOpenPicksByItemIdAndSourceLocationId(Long itemId, Long sourceLocationId);
+
+    @Query("select p from Pick p " +
             " where p.warehouseId = :warehouseId and p.pickedQuantity < p.quantity " +
             " and p.quantity > 0")
     List<Pick> getOpenPicks(Long warehouseId);

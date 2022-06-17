@@ -111,3 +111,4 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "QC Sampling",menu.mobile.work-order.qc-sampling,work_order_qc_sampling,4,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC-Sampling,menu_work_order_qc_sampling.png,true,false
 "Production Line Check In",menu.mobile.work-order.production_line_check_in,production_line_check_in,5,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckIn,menu_workorder_checkin.png,true,false
 "Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,6,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,menu_workorder_checkout.png,true,false
+"Manual Pick",menu.mobile.work-order.manual-pick,work_order_manual_pick,7,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Manual-Pick,menu_workorder_manual_pick.png,true,false

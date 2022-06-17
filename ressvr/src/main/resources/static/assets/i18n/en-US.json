@@ -1770,5 +1770,6 @@
   "page.auth.role.clients":"Client Maintenance",
   "unassigned-clients": "Unassigned Clients(3pl)",
   "assigned-clients": "Assigned Clients(3pl)",
-  "nonClientDataAccessible": "Non Client Data Accessible"
+  "nonClientDataAccessible": "Non Client Data Accessible",
+  "menu.mobile.work-order.manual-pick": "Manual Pick"
 }

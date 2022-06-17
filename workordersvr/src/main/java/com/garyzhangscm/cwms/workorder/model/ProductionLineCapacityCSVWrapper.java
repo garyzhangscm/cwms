@@ -21,7 +21,7 @@ public class ProductionLineCapacityCSVWrapper  {
     private Long capacity;
     private String unitOfMeasure;
     private String capacityUnit;
-    private int staffCount;
+    private double staffCount;
 
     @Override
     public String toString() {
@@ -97,11 +97,11 @@ public class ProductionLineCapacityCSVWrapper  {
         this.capacityUnit = capacityUnit;
     }
 
-    public int getStaffCount() {
+    public double getStaffCount() {
         return staffCount;
     }
 
-    public void setStaffCount(int staffCount) {
+    public void setStaffCount(double staffCount) {
         this.staffCount = staffCount;
     }
 }

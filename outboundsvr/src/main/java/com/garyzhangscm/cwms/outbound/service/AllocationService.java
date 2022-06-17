@@ -153,9 +153,17 @@ public class AllocationService {
      * @param allocatingWorkingOrderLineQuantity
      * @return
      */
+
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
                                      Long productionLineId, Long allocatingWorkOrderQuantity,
                                      Long allocatingWorkingOrderLineQuantity){
+        return allocate(workOrder, workOrderLine, productionLineId,
+                allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity, null, false);
+    }
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                     Long productionLineId, Long allocatingWorkOrderQuantity,
+                                     Long allocatingWorkingOrderLineQuantity,
+                                     Location sourceLocation, boolean manualAllocation){
 
         // for work order, we may have multiple production lines assign to this work order
         // in order to generate picks for each production line, we may have to allocate
@@ -171,24 +179,27 @@ public class AllocationService {
         productionLineAssignmentStream.forEach(
                 productionLineAssignment -> {
 
-                    logger.debug("start to allocate work order {} / {} for production line {} / {} / {}",
+                    logger.debug("start to allocate work order {} / {} for production line {} / {} / {}, from location {}",
                             workOrder.getNumber(),
                             workOrderLine.getItem().getName(),
                             productionLineAssignment.getProductionLine().getName(),
                             productionLineAssignment.getProductionLine().getInboundStageLocationId(),
                             productionLineAssignment.getProductionLine().getInboundStageLocation() == null ?
-                                    "N/A" : productionLineAssignment.getProductionLine().getInboundStageLocation().getId());
+                                    "N/A" : productionLineAssignment.getProductionLine().getInboundStageLocation().getId(),
+                            Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
 
 
                     AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, productionLineAssignment
                             , allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity);
+                    allocationRequest.setManualAllocation(manualAllocation);
+
                     logger.debug("will allocate the work order to destination location id {} for quantity {}",
                             allocationRequest.getDestinationLocationId(),
                             allocationRequest.getQuantity());
                     // If we specify the allocation strategy type, then override the one
                     // from the shipment line(order line)
 
-                    AllocationResult allocationResult = tryAllocate(allocationRequest);
+                    AllocationResult allocationResult = tryAllocate(allocationRequest, sourceLocation);
 
                     logger.debug("We got {} picks, {} short allocations for work order line {} / {}, ",
                             allocationResult.getPicks().size(),
@@ -216,6 +227,12 @@ public class AllocationService {
      */
     public AllocationResult tryAllocate(AllocationRequest allocationRequest) {
 
+        return tryAllocate(allocationRequest, null);
+    }
+
+
+    public AllocationResult tryAllocate(AllocationRequest allocationRequest, Location sourceLocation) {
+
         logger.debug("Start to allocate request: \n " +
                         "Item: {} \n" +
                         "Quantity: {}",
@@ -235,7 +252,7 @@ public class AllocationService {
                         :
                         allocationStrategyService.getDefaultAllocationStrategy();
         logger.debug("Will allocate with strategy: {}", allocationStrategy.getClass());
-        return allocationStrategy.allocate(allocationRequest);
+        return allocationStrategy.allocate(allocationRequest, sourceLocation);
 
 
     }
