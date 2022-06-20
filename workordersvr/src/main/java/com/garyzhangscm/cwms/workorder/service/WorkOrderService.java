@@ -1592,43 +1592,30 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     /**
-     * Process manual pick for work order
+     * generate manual pick for work order
      * @param workOrderId
      * @param lpn
      * @return
      */
-    public List<Pick> processManualPick(Long workOrderId, String lpn, Long productionLineId,
-                                        String rfCode) {
+    public List<Pick> generateManualPick(Long workOrderId, String lpn, Long productionLineId) {
         WorkOrder workOrder = findById(workOrderId);
-        // Make sure the production line passed in is valid
-        if (workOrder.getProductionLineAssignments().stream().noneMatch(
-                productionLineAssignment ->
-                        productionLineId.equals(productionLineAssignment.getProductionLine().getId())
-                 )) {
-            throw WorkOrderException.raiseException("production line id " + productionLineId +
-                    " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
 
+        // make sure we can manual pick the LPN for the work order
+        Long pickableQuantity = getPickableQuantityForManualPick(workOrder, lpn, productionLineId);
+
+        if (pickableQuantity <= 0 ) {
+            throw WorkOrderException.raiseException("there's nothing left to be picked from this LPN " + lpn
+                + ", Fail to generate manual pick for the work order " + workOrder.getNumber());
         }
-
-        // make sure the LPN is valid LPN
-        List<Inventory> inventories = inventoryServiceRestemplateClient.findInventoryByLPN(
-                workOrder.getWarehouseId(), lpn
-        );
-        if (inventories.isEmpty()) {
-
-            throw WorkOrderException.raiseException("LPN " + lpn +
-                    " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
-        }
-
         List<Pick> picks = new ArrayList<>();
         try {
 
-            picks = outboundServiceRestemplateClient.processManualPick(
+            picks = outboundServiceRestemplateClient.generateManualPick(
                     workOrder.getWarehouseId(),
                     workOrder.getId(),
                     lpn,
                     productionLineId,
-                    rfCode
+                    pickableQuantity
             );
             if (picks.size() > 0) {
 
@@ -1654,4 +1641,79 @@ public class WorkOrderService implements TestDataInitiableService {
 
         return picks;
     }
+
+    public Long getPickableQuantityForManualPick(Long workOrderId, String lpn, Long productionLineId) {
+        return getPickableQuantityForManualPick(findById(workOrderId), lpn, productionLineId);
+    }
+
+    /**
+     * Check how mnuch we can pick from this LPN for manual pick with the work order
+     * @param workOrder
+     * @param lpn
+     * @param productionLineId
+     * @return
+     */
+    public Long getPickableQuantityForManualPick(WorkOrder workOrder, String lpn, Long productionLineId) {
+
+        // Make sure the production line passed in is valid
+        if (workOrder.getProductionLineAssignments().stream().noneMatch(
+                productionLineAssignment ->
+                        productionLineId.equals(productionLineAssignment.getProductionLine().getId())
+        )) {
+            throw WorkOrderException.raiseException("production line id " + productionLineId +
+                    " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
+
+        }
+        // make sure the LPN is valid LPN
+        List<Inventory> inventories = inventoryServiceRestemplateClient.findInventoryByLPN(
+                workOrder.getWarehouseId(), lpn
+        );
+        if (inventories.isEmpty()) {
+
+            throw WorkOrderException.raiseException("LPN " + lpn +
+                    " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
+        }
+
+        // make sure there's only one item in the LPN
+        List<Long> itemIdList = inventories.stream().map(Inventory::getItem).map(Item::getId).distinct().collect(Collectors.toList());
+        if (itemIdList.size() > 1) {
+
+            throw WorkOrderException.raiseException("LPN " + lpn +
+                    " is mixed with different items. Fail to generate manual pick for the work order " + workOrder.getNumber());
+        }
+
+        // get the matched work order line by the item id
+        Long itemId = itemIdList.get(0);
+
+        WorkOrderLine matchedWorkOrderLine = workOrder.getWorkOrderLines().stream().filter(
+                workOrderLine -> workOrderLine.getItemId().equals(itemId)
+        ).findFirst().orElseThrow(() -> WorkOrderException.raiseException("can't find work order line with item id " + itemId +
+                ". Fail to generate manual pick for the work order " + workOrder.getNumber()));
+
+        // if the open quantity is 0, which means the work order line is fully allocated,
+        // we either have pick or short allocation against the work order line
+        // we will not allow the user to manual pick
+        if (matchedWorkOrderLine.getOpenQuantity() <= 0) {
+            throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
+                    ", line " + matchedWorkOrderLine.getNumber() + " is fully processed." +
+                    "Fail to generate manual pick");
+        }
+
+        // get the pickable inventory
+        List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
+                itemId, matchedWorkOrderLine.getInventoryStatusId(), inventories.get(0).getLocationId(),
+                lpn
+        );
+        if (pickableInventory.isEmpty()) {
+
+            throw WorkOrderException.raiseException("LPN " + lpn +
+                    " is not pickable. Fail to generate manual pick for the work order " + workOrder.getNumber());
+        }
+
+        // check if how much we can pick from this LPN
+        Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        return Math.min(inventoryQuantity, matchedWorkOrderLine.getOpenQuantity());
+    }
+
+
 }

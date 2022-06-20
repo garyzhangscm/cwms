@@ -37,6 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -74,6 +76,8 @@ public class PickService {
     private PickConfirmStrategyService pickConfirmStrategyService;
     @Autowired
     private OrderActivityService orderActivityService;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private AllocationService allocationService;
@@ -446,12 +450,14 @@ public class PickService {
     }
 
 
+    @Transactional
     public Pick save(Pick pick) {
         Pick newPick = pickRepository.save(pick);
         loadAttribute(newPick);
         return newPick;
     }
 
+    @Transactional
     public Pick saveOrUpdate(Pick pick) {
         if (pick.getId() == null && findByNumber(pick.getNumber()) != null) {
             pick.setId(findByNumber(pick.getNumber()).getId());
@@ -699,7 +705,7 @@ public class PickService {
                 warehouseId, inventorySummary, quantity, null, lpn);
     }
 
-
+    @Transactional
     private Pick setupShipmentInformation(Pick pick, ShipmentLine shipmentLine) {
         pick.setShipmentLine(shipmentLine);
         pick.setWarehouseId(shipmentLine.getWarehouseId());
@@ -717,6 +723,7 @@ public class PickService {
 
     }
 
+    @Transactional
     private Pick processPick(Pick pick) {
         // Setup the pick movement
         logger.debug("start to setup movement path for pick {}", pick.getNumber());
@@ -768,6 +775,7 @@ public class PickService {
 
 
 
+    @Transactional
     private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder,
                                            WorkOrderLine workOrderLine,
                                            Long destinationLocationId) {
@@ -809,6 +817,7 @@ public class PickService {
         return processPick(pick);
     }
 
+    @Transactional
     private void processCartonization(Pick pick) {
         logger.debug(">> Start to process cartonization for pick: {}", pick.getNumber());
         Cartonization cartonization = cartonizationService.processCartonization(pick);
@@ -820,6 +829,7 @@ public class PickService {
 
 
     }
+    @Transactional
     private void processPickList(Pick pick) {
         try {
             logger.debug("Start to find pick list candidate");
@@ -853,6 +863,7 @@ public class PickService {
      * @param pickableUnitOfMeasure
      * @return
      */
+    @Transactional
     public Pick generatePick(InventorySummary inventorySummary, ShortAllocation shortAllocation,
                              Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
         Pick pick = generateBasicPickInformation(
@@ -974,6 +985,7 @@ public class PickService {
         }
 
     }
+    @Transactional
     private boolean setupMovementPath(Pick pick, MovementPath movementPath) {
         logger.debug("Try movement path configuration: {} with {} details",
                 movementPath, movementPath.getMovementPathDetails().size());
@@ -1002,6 +1014,7 @@ public class PickService {
         pickMovements.stream().forEach(pickMovement -> savePickMove(pickMovement));
         return  true;
     }
+    @Transactional
     private void savePickMove(PickMovement pickMovement) {
         pickMovement = pickMovementService.save(pickMovement);
 
@@ -1252,6 +1265,7 @@ public class PickService {
     public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation)   {
         return confirmPick(inventory, pick, quantityToBePicked, nextLocation, "");
     }
+    @Transactional
     public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation, String newLpn)  {
         if (!match(inventory, pick)) {
             throw PickingException.raiseException( "inventory can't be picked for the pick. Attribute discrepancy found");
@@ -1380,10 +1394,10 @@ public class PickService {
      * @return
      */
     @Transactional
-    public List<Pick> processManualPickForWorkOrder(Long warehouseId, Long workOrderId, Long productionLineId,
-                                                    String lpn, String rfCode) {
+    public List<Pick> generateManualPickForWorkOrder(Long warehouseId, Long workOrderId, Long productionLineId,
+                                                    String lpn, Long pickableQuantity) {
         WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(workOrderId);
-        return processManualPickForWorkOrder(warehouseId, workOrder, productionLineId, lpn, rfCode);
+        return generateManualPickForWorkOrder(warehouseId, workOrder, productionLineId, lpn, pickableQuantity);
     }
     /**
      * Manually pick an LPN for certain work order. The LPN has to have only one item number
@@ -1392,8 +1406,8 @@ public class PickService {
      * @return
      */
     @Transactional
-    public List<Pick> processManualPickForWorkOrder(Long warehouseId, WorkOrder workOrder, Long productionLineId,
-                                                    String lpn, String rfCode) {
+    public List<Pick> generateManualPickForWorkOrder(Long warehouseId, WorkOrder workOrder, Long productionLineId,
+                                                    String lpn, Long pickableQuantity) {
         if (Strings.isBlank(lpn)) {
             throw PickingException.raiseException("Can't generate the manual pick as LPN is empty");
         }
@@ -1406,6 +1420,14 @@ public class PickService {
         List<Long> itemIdList = inventories.stream().map(inventory -> inventory.getItem().getId()).distinct().collect(Collectors.toList());
         if (itemIdList.size() > 1) {
             throw PickingException.raiseException("The LPN is mixed with different item. Fail to generate the manual pick");
+        }
+
+        // make sure we can pick enough quantity from the LPN
+        Long inventoryQuantity = inventories.stream().mapToLong(Inventory::getQuantity).sum();
+        if (inventoryQuantity < pickableQuantity) {
+
+            throw PickingException.raiseException("Can't pick quantity " + pickableQuantity + " from LPN " + lpn +
+                    ". The LPN only have quantity " + inventoryQuantity + ". Fail to generate the manual pick");
         }
 
 
@@ -1428,11 +1450,10 @@ public class PickService {
             throw PickingException.raiseException("Error finding the location for LPN " + lpn + ". Fail to generate the manual pick");
         }
 
-        Long quantity = inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
 
         // let's see if we can generate the manual pick
         AllocationResult allocationResult = generateManualPickForWorkOrder(workOrder,
-                matchedWorkOrderLine, productionLineId, sourceLocation, quantity);
+                matchedWorkOrderLine, productionLineId, sourceLocation, pickableQuantity);
 
         if (allocationResult.getShortAllocations().size() > 0) {
             // ok, we get short allocation. Something seems goes wrong.
@@ -1447,22 +1468,8 @@ public class PickService {
             throw PickingException.raiseException("Error! can't allocate from this LPN " + lpn);
         }
 
-        List<Pick> confirmedPicks = new ArrayList<>();
 
-        // let's confirm all the picks with the single LPN
-        logger.debug("We get {} picks generated to manually pick for this work order {} from the LPN {}",
-                allocationResult.getPicks().size(),
-                workOrder.getNumber(), lpn);
-        logger.debug("start to confirm those picks by rf {}", rfCode);
-        // we will pick to the RF
-        Location rfLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
-                warehouseId, rfCode);
-        for(Pick pick: allocationResult.getPicks()) {
-            confirmedPicks.add(
-                    confirmPick(pick, pick.getQuantity(), rfLocation, lpn));
-        }
-
-        return confirmedPicks;
+        return allocationResult.getPicks();
 
 
 

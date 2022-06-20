@@ -42,6 +42,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
     }
 
     @Override
+    @Transactional
     public AllocationResult allocate(AllocationRequest allocationRequest) {
         return allocate(allocationRequest, null);
     }
@@ -53,6 +54,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
      * @return
      */
     @Override
+    @Transactional
     public AllocationResult allocate(AllocationRequest allocationRequest, Location sourceLocation) {
         Item item = allocationRequest.getItem();
         Long openQuantity = allocationRequest.getQuantity();
@@ -121,6 +123,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
      * @param existingPicks open picks from those inventory candidate
      * @return
      */
+    @Transactional
     protected AllocationResult allocate(AllocationRequest allocationRequest,
                                         Item item, Long totalQuantity,
                                          List<InventorySummary> inventorySummaries,

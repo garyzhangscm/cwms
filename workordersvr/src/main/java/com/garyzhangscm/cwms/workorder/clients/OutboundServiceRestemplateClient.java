@@ -266,21 +266,18 @@ public class OutboundServiceRestemplateClient {
     }
 
 
-    public List<Pick> processManualPick(Long warehouseId, Long workOrderId, String lpn,
-                                        long productionLineId, String rfCode){
+    public List<Pick> generateManualPick(Long warehouseId, Long workOrderId, String lpn,
+                                        long productionLineId,  long pickableQuantity){
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/picks/process-manual-pick-for-work-order")
+                        .path("/api/outbound/picks/generate-manual-pick-for-work-order")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("workOrderId", workOrderId)
                         .queryParam("productionLineId", productionLineId)
+                        .queryParam("pickableQuantity", pickableQuantity)
                         .queryParam("lpn", lpn);
-
-        if (Strings.isNotBlank(rfCode)) {
-            builder.queryParam("rfCode", rfCode);
-        }
 
         ResponseBodyWrapper<List<Pick>> responseBodyWrapper
                 = restTemplate.exchange(
