@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.transaction.Transactional;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -160,6 +161,8 @@ public class AllocationService {
         return allocate(workOrder, workOrderLine, productionLineId,
                 allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity, null, false);
     }
+
+    @Transactional
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
                                      Long productionLineId, Long allocatingWorkOrderQuantity,
                                      Long allocatingWorkingOrderLineQuantity,
@@ -231,6 +234,7 @@ public class AllocationService {
     }
 
 
+    @Transactional
     public AllocationResult tryAllocate(AllocationRequest allocationRequest, Location sourceLocation) {
 
         logger.debug("Start to allocate request: \n " +

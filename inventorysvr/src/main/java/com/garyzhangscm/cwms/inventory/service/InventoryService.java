@@ -510,16 +510,18 @@ public class InventoryService implements TestDataInitiableService{
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
                                                    boolean includeDetails) {
-        return findPickableInventories(itemId, inventoryStatusId, null, includeDetails);
-    }
-    public List<Inventory> findPickableInventories(Long itemId,
-                                                   Long inventoryStatusId,
-                                                   Long locationId) {
-        return findPickableInventories(itemId, inventoryStatusId, locationId, true);
+        return findPickableInventories(itemId, inventoryStatusId, null, null, includeDetails);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
                                                    Long locationId,
+                                                   String lpn) {
+        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn, true);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
+                                                   Long locationId,
+                                                   String lpn,
                                                    boolean includeDetails) {
         List<Inventory> availableInventories =
                 Objects.isNull(locationId) ?
@@ -539,6 +541,15 @@ public class InventoryService implements TestDataInitiableService{
                     }
                     return inventory;
                 }).filter(this::isLocationPickable)
+                .filter(inventory -> {
+                    // if LPN is passed in, only return the inventory that match with the LPN
+                    if(Strings.isNotBlank(lpn)) {
+                        return inventory.getLpn().equals(lpn);
+                    }
+                    else {
+                        return true;
+                    }
+                })
                 .collect(Collectors.toList());
 
         if (includeDetails && pickableInventories.size() > 0) {
@@ -1127,8 +1138,10 @@ public class InventoryService implements TestDataInitiableService{
     public Inventory moveInventory(Inventory inventory, Location destination) {
         return moveInventory(inventory, destination, null, true, null);
     }
-    public Inventory moveInventory(Long inventoryId, Location destination, Long pickId, boolean immediateMove, String destinationLpn) {
-        return moveInventory(findById(inventoryId), destination, pickId, immediateMove, destinationLpn);
+    public Inventory moveInventory(Long inventoryId, Location destination, Long pickId, boolean immediateMove,
+                                   String destinationLpn) {
+        return moveInventory(findById(inventoryId), destination, pickId, immediateMove,
+                destinationLpn);
 
     }
 
@@ -1142,7 +1155,8 @@ public class InventoryService implements TestDataInitiableService{
      * @return inventory after the movement(can be consolidated with the existing invenotry in the destination)
      */
     @Transactional
-    public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove, String destinationLpn) {
+    public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove,
+                                   String destinationLpn) {
         if (immediateMove) {
             return processImmediateMoveInventory(inventory, destination, pickId, destinationLpn);
         }
@@ -1164,7 +1178,8 @@ public class InventoryService implements TestDataInitiableService{
      * @return inventory after the movement(can be consolidated with the existing invenotry in the destination)
      */
     @Transactional
-    public Inventory processImmediateMoveInventory(Inventory inventory, Location destination, Long pickId, String destinationLpn) {
+    public Inventory processImmediateMoveInventory(Inventory inventory, Location destination, Long pickId,
+                                                   String destinationLpn) {
         logger.debug("Start to move inventory {} to destination {}, pickId: {} is null? {}, new LPN? {}, movement path record: {}",
                 inventory.getLpn(),
                 destination.getName(),

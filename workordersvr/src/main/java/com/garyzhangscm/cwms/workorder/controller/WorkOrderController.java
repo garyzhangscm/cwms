@@ -302,17 +302,27 @@ public class WorkOrderController {
 
 
     @BillableEndpoint
-    @RequestMapping(value="/work-orders/{workOrderId}/process-manual-pick", method = RequestMethod.POST)
-    public List<Pick> processManualPick(@PathVariable  Long workOrderId,
+    @RequestMapping(value="/work-orders/{workOrderId}/generate-manual-pick", method = RequestMethod.POST)
+    public List<Pick> generateManualPick(@PathVariable  Long workOrderId,
                                         @RequestParam String lpn,
-                                        @RequestParam Long productionLineId,
-                                        @RequestParam(name="rfCode", defaultValue = "", required = false) String rfCode) {
+                                        @RequestParam Long productionLineId) {
         logger.debug("======        Start to processManualPick pick   ========");
         logger.debug("=> workOrderId: {}", workOrderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> productionLineId: {}", productionLineId);
-        logger.debug("=> rfCode: {}", rfCode);
-        return workOrderService.processManualPick(workOrderId, lpn, productionLineId, rfCode);
+        return workOrderService.generateManualPick(workOrderId, lpn, productionLineId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/{workOrderId}/get-manual-pick-quantity", method = RequestMethod.GET)
+    public Long getPickableQuantityForManualPick(@PathVariable  Long workOrderId,
+                                        @RequestParam String lpn,
+                                        @RequestParam Long productionLineId) {
+        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("=> workOrderId: {}", workOrderId);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> productionLineId: {}", productionLineId);
+        return workOrderService.getPickableQuantityForManualPick(workOrderId, lpn, productionLineId);
     }
 
 }

@@ -122,10 +122,11 @@ public class InventoryController {
     @RequestMapping(value="/inventories/pickable", method = RequestMethod.GET)
     public List<Inventory> findPickableInventories(@RequestParam Long itemId,
                                                    @RequestParam Long inventoryStatusId,
+                                                   @RequestParam(name = "lpn", defaultValue = "", required = false) String lpn,
                                                    @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId) {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
-        return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId);
+        return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn);
     }
 
 
