@@ -72,6 +72,9 @@ public class WorkOrderService implements TestDataInitiableService {
     private WorkOrderReverseProductionInventoryService workOrderReverseProductionInventoryService;
 
     @Autowired
+    private KafkaSender kafkaSender;
+
+    @Autowired
     private WorkOrderInstructionService workOrderInstructionService;
     @Autowired
     private WorkOrderKPIService workOrderKPIService;
@@ -248,7 +251,16 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
     public WorkOrder save(WorkOrder workOrder) {
-        return save(workOrder, true);
+        boolean sendNewWorkOrderAlertFlag = false;
+        if (Objects.isNull(workOrder.getId())) {
+            sendNewWorkOrderAlertFlag = true;
+        }
+
+        WorkOrder newWorkOrder =  save(workOrder, true);
+        if (sendNewWorkOrderAlertFlag) {
+            sendAlertForNewWorkOrder(newWorkOrder);
+        }
+        return newWorkOrder;
     }
 
     public WorkOrder save(WorkOrder workOrder, boolean loadDetails) {
@@ -1716,4 +1728,19 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
 
+    /**
+     * Send new work order alert
+     * @param workOrder
+     */
+    private void sendAlertForNewWorkOrder(WorkOrder workOrder) {
+
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId()).getCompanyId();
+        Alert alert = new Alert(companyId,
+                AlertType.NEW_WORK_ORDER,
+                "NEW-WORK-ORDER-" + companyId + "-" + workOrder.getWarehouseId() + "-" + workOrder.getNumber(),
+                "work order " + workOrder.getNumber() + " created!",
+                "Work Order: " + workOrder.getNumber() + "\n"
+                );
+        kafkaSender.send(alert);
+    }
 }

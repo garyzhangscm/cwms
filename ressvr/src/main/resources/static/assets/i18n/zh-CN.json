@@ -1770,5 +1770,10 @@
   "unassigned-clients": "未分配客户（第三方物流）",
   "assigned-clients": "已分配客户（第三方物流）",
   "nonClientDataAccessible": "可以操作非第三方客户的数据",
-  "menu.mobile.work-order.manual-pick": "人工拣货"
+  "menu.mobile.work-order.manual-pick": "人工拣货",
+  "ALERT-DELIVERY-CHANNEL-BY_WEB_MESSAGE": "通过网站收件箱发送",
+  "ALERT-DELIVERY-CHANNEL-BY_RF_MESSAGE": "通过RF信息发送",
+  "ALERT-TYPE-NEW_ORDER": "新订单",
+  "ALERT-TYPE-NEW_WORK_ORDER": "新工单",
+  "ALERT-TYPE-NEW_RECEIPT": "新入库单"
 }
