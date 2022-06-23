@@ -1771,5 +1771,10 @@
   "unassigned-clients": "Unassigned Clients(3pl)",
   "assigned-clients": "Assigned Clients(3pl)",
   "nonClientDataAccessible": "Non Client Data Accessible",
-  "menu.mobile.work-order.manual-pick": "Manual Pick"
+  "menu.mobile.work-order.manual-pick": "Manual Pick",
+  "ALERT-DELIVERY-CHANNEL-BY_WEB_MESSAGE": "By Web Message",
+  "ALERT-DELIVERY-CHANNEL-BY_RF_MESSAGE": "By RF Message",
+  "ALERT-TYPE-NEW_ORDER": "New Order",
+  "ALERT-TYPE-NEW_WORK_ORDER": "New Work Order",
+  "ALERT-TYPE-NEW_RECEIPT": "New Receipt"
 }

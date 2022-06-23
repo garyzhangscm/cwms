@@ -60,6 +60,8 @@ public class Alert extends AuditibleEntity<String>  {
     @Column(name = "message")
     private String message;
 
+
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private AlertStatus status;

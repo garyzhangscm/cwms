@@ -41,6 +41,8 @@ public class AlertSubscriptionService {
     private AlertSubscriptionRepository alertSubscriptionRepository;
 
     @Autowired
+    private WebMessageAlertService webMessageAlertService;
+    @Autowired
     private EMailService eMailService;
     @Autowired
     private UserService userService;
@@ -152,10 +154,23 @@ public class AlertSubscriptionService {
                 // throw new UnsupportedOperationException("alert by SMS is not support yet");
                 logger.debug("alert by SMS is not support yet");
                 break;
+            case BY_WEB_MESSAGE:
+                sendWebMessageAlert(alert, alertSubscription);
+                break;
             default:
                 sendEmailAlert(alert, alertSubscription);
                 break;
         }
+    }
+
+    /**
+     * Send alert by web message
+     * @param alert
+     * @param alertSubscription
+     */
+    private void sendWebMessageAlert(Alert alert, AlertSubscription alertSubscription) {
+
+        webMessageAlertService.addWebMessageAlert(alert, alertSubscription.getUser());
     }
 
     private void sendEmailAlert(Alert alert, AlertSubscription alertSubscription) {
