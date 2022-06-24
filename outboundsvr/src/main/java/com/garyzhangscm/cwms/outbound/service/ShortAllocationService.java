@@ -574,4 +574,25 @@ public class ShortAllocationService {
                 warehouseId, oldItemId, newItemId);
         shortAllocationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
     }
+
+    /**
+     * Create the work order for short allocation
+     * @param id
+     * @param bomId
+     * @param workOrderNumber
+     * @param workOrderQuantity
+     * @return
+     */
+    public ShortAllocation createWorkOrder(Long id, Long bomId, String workOrderNumber, Long workOrderQuantity) {
+        ShortAllocation shortAllocation = findById(id);
+        // create work order
+        workOrderServiceRestemplateClient.createWorkOrderForShortAllocation(
+                id, bomId, workOrderNumber, workOrderQuantity
+        );
+        shortAllocation.setWorkOrderQuantity(
+                (Objects.nonNull(shortAllocation.getWorkOrderQuantity()) ? shortAllocation.getWorkOrderQuantity() : 0)
+                        + workOrderQuantity
+        );
+        return save(shortAllocation);
+    }
 }

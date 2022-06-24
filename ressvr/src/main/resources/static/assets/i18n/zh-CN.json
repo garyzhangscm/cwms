@@ -1775,5 +1775,9 @@
   "ALERT-DELIVERY-CHANNEL-BY_RF_MESSAGE": "通过RF信息发送",
   "ALERT-TYPE-NEW_ORDER": "新订单",
   "ALERT-TYPE-NEW_WORK_ORDER": "新工单",
-  "ALERT-TYPE-NEW_RECEIPT": "新入库单"
+  "ALERT-TYPE-NEW_RECEIPT": "新入库单",
+  "web-message-alert": "收件箱",
+  "ERROR-NO-ITEM-INFO-FOR-SHORT-ALLOCATION": "无法加载商品信息",
+  "ERROR-NO-BOM-INFO-FOR-ITEM": "无法加载BOM信息",
+  "create-work-order": "创建工单"
 }

@@ -36,10 +36,19 @@ public class WebMessageAlertController {
 
     @RequestMapping(value="/web-message-alerts", method = RequestMethod.GET)
     public List<WebMessageAlert> findAllWebMessageAlert(@RequestParam Long companyId,
-                                                          @RequestParam(value = "alertId", defaultValue = "", required = false) Long alertId,
+                                                        @RequestParam(value = "alertId", defaultValue = "", required = false) Long alertId,
                                                         @RequestParam(value = "username", defaultValue = "", required = false) String username,
-                                                          @RequestParam(value = "readFlag", defaultValue = "", required = false) Boolean readFlag) {
-        return webMessageAlertService.findAll(companyId, username, alertId, readFlag);
+                                                        @RequestParam(value = "readFlag", defaultValue = "", required = false) Boolean readFlag,
+                                                        @RequestParam(value = "pi", defaultValue = "", required = false) Integer pageNumber,
+                                                        @RequestParam(value = "ps", defaultValue = "", required = false) Integer pageSize) {
+        return webMessageAlertService.findAll(companyId, username, alertId, readFlag, pageNumber, pageSize);
+    }
+
+
+    @RequestMapping(value="/web-message-alerts/new-message-count", method = RequestMethod.GET)
+    public Integer getNewWebMessageAlertCount(@RequestParam Long companyId,
+                                           String username) {
+        return webMessageAlertService.getUserUnreadWebMessageAlert(companyId, username).size();
     }
 
     @RequestMapping(value="/web-message-alerts/{id}/read", method = RequestMethod.POST)

@@ -77,6 +77,10 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
     @Column(name = "allocation_count")
     private Long allocationCount;
 
+
+    @Column(name = "work_order_quantity")
+    private Long workOrderQuantity;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private ShortAllocationStatus status;
@@ -230,5 +234,13 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
 
     public void setWorkOrderNumber(String workOrderNumber) {
         this.workOrderNumber = workOrderNumber;
+    }
+
+    public Long getWorkOrderQuantity() {
+        return workOrderQuantity;
+    }
+
+    public void setWorkOrderQuantity(Long workOrderQuantity) {
+        this.workOrderQuantity = workOrderQuantity;
     }
 }

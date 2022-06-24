@@ -141,6 +141,27 @@ public class WorkOrderServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public WorkOrder createWorkOrderForShortAllocation(Long id, Long bomId, String workOrderNumber, Long workOrderQuantity) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/work-orders/create-for-short-allocation")
+                        .queryParam("shortAllocationId", id)
+                        .queryParam("billOfMaterialId", bomId)
+                        .queryParam("workOrderNumber", workOrderNumber)
+                        .queryParam("expectedQuantity", workOrderQuantity);
+
+        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     public WorkOrderLine inventoryPickedForWorkOrderLine(Long workOrderLineId,
                                                          Long quantityBeingPicked,
                                                          Long deliveredLocationId) {
@@ -161,4 +182,5 @@ public class WorkOrderServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
 }

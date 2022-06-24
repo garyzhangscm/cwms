@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.Column;
+
 public class Alert    {
 
 
@@ -35,14 +37,17 @@ public class Alert    {
 
     private String message;
 
+    private String parameters;
+
     public Alert(){}
 
-    public Alert(Long companyId, AlertType type, String keyWords, String title, String message) {
+    public Alert(Long companyId, AlertType type, String keyWords, String title, String message, String parameters) {
         this.companyId = companyId;
         this.type = type;
         this.keyWords = keyWords;
         this.title = title;
         this.message = message;
+        this.parameters = parameters;
     }
 
     @Override

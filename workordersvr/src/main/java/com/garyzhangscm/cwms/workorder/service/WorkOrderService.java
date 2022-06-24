@@ -1735,12 +1735,24 @@ public class WorkOrderService implements TestDataInitiableService {
     private void sendAlertForNewWorkOrder(WorkOrder workOrder) {
 
         Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId()).getCompanyId();
+        StringBuilder alertParameters = new StringBuilder();
+        alertParameters.append("number=").append(workOrder.getNumber())
+                .append("&lineCount=").append(workOrder.getWorkOrderLines().size());
+
         Alert alert = new Alert(companyId,
                 AlertType.NEW_WORK_ORDER,
                 "NEW-WORK-ORDER-" + companyId + "-" + workOrder.getWarehouseId() + "-" + workOrder.getNumber(),
                 "work order " + workOrder.getNumber() + " created!",
-                "Work Order: " + workOrder.getNumber() + "\n"
-                );
+                "", alertParameters.toString());
         kafkaSender.send(alert);
+    }
+
+    public WorkOrder createWorkOrderForShortAllocation(
+            Long shortAllocationId, Long billOfMaterialId, String workOrderNumber, Long expectedQuantity, Long productionLineId) {
+        WorkOrder workOrder = createWorkOrderFromBOM(billOfMaterialId, workOrderNumber,
+                expectedQuantity, productionLineId);
+        workOrder.setShortAllocationId(shortAllocationId);
+        return saveOrUpdate(workOrder);
+
     }
 }
