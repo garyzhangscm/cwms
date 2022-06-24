@@ -80,4 +80,13 @@ public class ShortAllocationController {
         return shortAllocationService.cancelShortAllocations(shortAllocationIds);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/shortAllocations/{id}/create-work-order", method = RequestMethod.POST)
+    public ShortAllocation createWorkOrder(@PathVariable Long id,
+                                           @RequestParam Long bomId,
+                                           @RequestParam String workOrderNumber,
+                                           @RequestParam Long workOrderQuantity ){
+        return shortAllocationService.createWorkOrder(id, bomId, workOrderNumber, workOrderQuantity);
+    }
+
 }

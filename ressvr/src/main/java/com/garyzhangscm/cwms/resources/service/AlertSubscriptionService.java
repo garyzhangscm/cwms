@@ -41,6 +41,9 @@ public class AlertSubscriptionService {
     private AlertSubscriptionRepository alertSubscriptionRepository;
 
     @Autowired
+    private AlertTemplateService alertTemplateService;
+
+    @Autowired
     private WebMessageAlertService webMessageAlertService;
     @Autowired
     private EMailService eMailService;
@@ -149,6 +152,12 @@ public class AlertSubscriptionService {
     }
     public void sendAlert(Alert alert, AlertSubscription alertSubscription) {
 
+        // setup the message
+        // if it is setup already, then do nothing
+        // else check if there's a template defined
+        // -- if so, fill the template with parameters
+        setupAlertMessage(alert, alertSubscription);
+
         switch (alertSubscription.getDeliveryChannel()) {
             case BY_SMS:
                 // throw new UnsupportedOperationException("alert by SMS is not support yet");
@@ -161,6 +170,25 @@ public class AlertSubscriptionService {
                 sendEmailAlert(alert, alertSubscription);
                 break;
         }
+    }
+
+    /**
+     * Setup the message for the alert
+     * if the alert already have the message, then do nothing
+     * else if the alert have a template, then fill the message with template
+     *
+     * @param alert
+     */
+    private void setupAlertMessage(Alert alert, AlertSubscription alertSubscription) {
+        if (Strings.isNotBlank(alert.getMessage())) {
+            return;
+        }
+        // check if we have a template associated with the alert and subscripion type
+
+        alertTemplateService.processAlertTemplate(alert, alertSubscription);
+
+
+
     }
 
     /**

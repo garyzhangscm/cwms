@@ -70,6 +70,11 @@ public class WorkOrder extends AuditibleEntity<String>{
     private Long itemId;
 
 
+    // if the work order is created from short allocation
+    @Column(name = "short_allocation_id")
+    private Long shortAllocationId;
+
+
     // When the work order is created by
     // following a specific BOM
     @ManyToOne
@@ -456,5 +461,13 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setBtoCustomerId(Long btoCustomerId) {
         this.btoCustomerId = btoCustomerId;
+    }
+
+    public Long getShortAllocationId() {
+        return shortAllocationId;
+    }
+
+    public void setShortAllocationId(Long shortAllocationId) {
+        this.shortAllocationId = shortAllocationId;
     }
 }

@@ -25,10 +25,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "alert")
@@ -60,6 +63,9 @@ public class Alert extends AuditibleEntity<String>  {
     @Column(name = "message")
     private String message;
 
+
+    @Column(name = "parameters")
+    private String parameters;
 
 
     @Enumerated(EnumType.STRING)
@@ -157,5 +163,30 @@ public class Alert extends AuditibleEntity<String>  {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public Map<String, String> getParameterMap() {
+        Map<String, String> parameterMap = new HashMap<>();
+        if (Strings.isBlank(parameters)) {
+            return parameterMap;
+        }
+        // parameters should be in the format of
+        // param1=value1&param2=value2..
+        String[] valuePairs = parameters.split("&");
+        for(String valuePair : valuePairs) {
+            String[] nameValue = valuePair.split("=");
+            if (nameValue.length == 2) {
+                parameterMap.put(nameValue[0], nameValue[1]);
+            }
+        }
+        return parameterMap;
+    }
+
+    public String getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
     }
 }

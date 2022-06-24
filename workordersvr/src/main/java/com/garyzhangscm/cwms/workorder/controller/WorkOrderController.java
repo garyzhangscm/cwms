@@ -91,6 +91,20 @@ public class WorkOrderController {
                 workOrderNumber, expectedQuantity, productionLineId);
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/create-for-short-allocation", method = RequestMethod.POST)
+    public WorkOrder createWorkOrderForShortAllocation(
+            @RequestParam Long shortAllocationId,
+            @RequestParam Long billOfMaterialId,
+            @RequestParam String workOrderNumber,
+            @RequestParam Long expectedQuantity,
+            @RequestParam(name="productionLineId", required = false) Long productionLineId) {
+        return workOrderService.createWorkOrderForShortAllocation(shortAllocationId, billOfMaterialId,
+                workOrderNumber, expectedQuantity, productionLineId);
+    }
+
+
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/allocate", method = RequestMethod.POST)
     public WorkOrder allocateWorkOrder(@PathVariable Long id,

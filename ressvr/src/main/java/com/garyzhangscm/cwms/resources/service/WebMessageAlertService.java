@@ -27,6 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
@@ -41,6 +45,7 @@ public class WebMessageAlertService {
     @Autowired
     private WebMessageAlertRepository webMessageAlertRepository;
 
+    private static  final int pageSize = 10;
 
     public WebMessageAlert findById(Long id) {
         WebMessageAlert webMessageAlert =  webMessageAlertRepository.findById(id)
@@ -53,9 +58,32 @@ public class WebMessageAlertService {
                                          String username,
                                          Long alertId,
                                          Boolean readFlag) {
+        return findAll(companyId, username, alertId, readFlag, 0, Integer.MAX_VALUE);
+    }
 
-        return webMessageAlertRepository.findAll(
+    public List<WebMessageAlert> findAll(Long companyId,
+                                         String username,
+                                         Long alertId,
+                                         Boolean readFlag,
+                                         Integer pageNumber) {
+        return findAll(companyId, username, alertId, readFlag, pageNumber, pageSize);
+    }
+
+    public List<WebMessageAlert> findAll(Long companyId,
+                                         String username,
+                                         Long alertId,
+                                         Boolean readFlag,
+                                         Integer pageNumber,
+                                         Integer pageSize) {
+
+        Pageable pageable = PageRequest.of(
+                Objects.isNull(pageNumber) ? 0 : pageNumber,
+                Objects.isNull(pageSize) ? pageSize : Integer.MAX_VALUE,
+                Sort.by(Sort.Direction.DESC, "createdTime", "id"));
+
+        Page<WebMessageAlert> webMessageAlerts =  webMessageAlertRepository.findAll(
                 (Root<WebMessageAlert> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
@@ -79,8 +107,12 @@ public class WebMessageAlertService {
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
-                }
+                },
+                pageable
         );
+
+        return webMessageAlerts.getContent();
+
     }
 
 
@@ -144,5 +176,9 @@ public class WebMessageAlertService {
         webMessageAlert.setReadFlag(true);
         webMessageAlert.setReadDate(LocalDateTime.now());
         return saveOrUpdate(webMessageAlert);
+    }
+
+    public List<WebMessageAlert> getUserUnreadWebMessageAlert(Long companyId, String username) {
+        return findAll(companyId, username, null, false );
     }
 }
