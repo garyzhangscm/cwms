@@ -339,4 +339,12 @@ public class WorkOrderController {
         return workOrderService.getPickableQuantityForManualPick(workOrderId, lpn, productionLineId);
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/lines/{id}/spare-parts", method = RequestMethod.POST)
+    public WorkOrderLine changeSpareParts(@PathVariable Long id,
+                                          @RequestBody List<WorkOrderLineSparePart> workOrderLineSpareParts) {
+        return workOrderLineService.changeSpareParts(id, workOrderLineSpareParts);
+    }
+
 }

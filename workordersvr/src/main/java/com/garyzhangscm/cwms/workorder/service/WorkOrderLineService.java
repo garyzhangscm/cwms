@@ -38,10 +38,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -58,6 +55,9 @@ public class WorkOrderLineService implements TestDataInitiableService {
     private ProductionLineAssignmentService productionLineAssignmentService;
     @Autowired
     private WorkOrderConfigurationService workOrderConfigurationService;
+
+    @Autowired
+    private WorkOrderLineSparePartService workOrderLineSparePartService;
 
     @Autowired
     EntityManager entityManager;
@@ -705,5 +705,40 @@ public class WorkOrderLineService implements TestDataInitiableService {
         }
 
         saveOrUpdate(workOrderLine);
+    }
+
+    public WorkOrderLine changeSpareParts(Long id, List<WorkOrderLineSparePart> workOrderLineSpareParts) {
+        WorkOrderLine workOrderLine = findById(id);
+
+        // see if we may need to remove any spare part
+        List<WorkOrderLineSparePart> existingWorkOrderLineSpareParts = workOrderLine.getWorkOrderLineSpareParts();
+
+        Set<Long> sparePartToBeRemoved = new HashSet<>();
+        Set<String> newSparePartNames = new HashSet<>();
+        workOrderLineSpareParts.forEach(
+                newWorkOrderLineSparePart -> newSparePartNames.add(newWorkOrderLineSparePart.getName())
+        );
+        existingWorkOrderLineSpareParts.forEach(
+                existingWorkOrderLineSparePart -> {
+                    // if the new spare parts list doesn't have the name any more, we will remove it from
+                    // the database
+                    if (!newSparePartNames.contains(existingWorkOrderLineSparePart.getName())) {
+                        sparePartToBeRemoved.add(existingWorkOrderLineSparePart.getId());
+                    }
+                }
+        );
+
+        workOrderLineSpareParts.forEach(
+                newWorkOrderLineSparePart -> {
+                    newWorkOrderLineSparePart.setWorkOrderLine(workOrderLine);
+                    workOrderLineSparePartService.saveOrUpdate(newWorkOrderLineSparePart);
+                }
+        );
+        sparePartToBeRemoved.forEach(
+                workOrderLineSparePartId -> workOrderLineSparePartService.delete(workOrderLineSparePartId)
+        );
+
+        // return the new work order line;
+        return findById(id);
     }
 }

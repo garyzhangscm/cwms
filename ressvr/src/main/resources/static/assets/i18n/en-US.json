@@ -1780,5 +1780,9 @@
   "web-message-alert": "Alert",
   "ERROR-NO-ITEM-INFO-FOR-SHORT-ALLOCATION": "can't get item information for this short allocation",
   "ERROR-NO-BOM-INFO-FOR-ITEM": "can't get bill of material information for this item",
-  "create-work-order": "Create Work Order"
+  "create-work-order": "Create Work Order",
+  "work-order-line.spare-part": "Spare Part",
+  "spare-part": "Spare Part",
+  "spare-part-detail": "Spare Part Detail",
+  "spare-part-maintenance": "Spare Part Maintenance"
 }
