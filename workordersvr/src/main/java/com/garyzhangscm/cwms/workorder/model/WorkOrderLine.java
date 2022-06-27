@@ -86,6 +86,16 @@ public class WorkOrderLine extends AuditibleEntity<String>{
     @Transient
     List<ShortAllocation> shortAllocations = new ArrayList<>();
 
+
+
+    @OneToMany(
+            mappedBy = "workOrderLine",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<WorkOrderLineSparePart> workOrderLineSpareParts = new ArrayList<>();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -259,5 +269,13 @@ public class WorkOrderLine extends AuditibleEntity<String>{
 
     public void setAllocationStrategyType(AllocationStrategyType allocationStrategyType) {
         this.allocationStrategyType = allocationStrategyType;
+    }
+
+    public List<WorkOrderLineSparePart> getWorkOrderLineSpareParts() {
+        return workOrderLineSpareParts;
+    }
+
+    public void setWorkOrderLineSpareParts(List<WorkOrderLineSparePart> workOrderLineSpareParts) {
+        this.workOrderLineSpareParts = workOrderLineSpareParts;
     }
 }

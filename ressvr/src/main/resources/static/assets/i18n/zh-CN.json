@@ -1779,5 +1779,9 @@
   "web-message-alert": "收件箱",
   "ERROR-NO-ITEM-INFO-FOR-SHORT-ALLOCATION": "无法加载商品信息",
   "ERROR-NO-BOM-INFO-FOR-ITEM": "无法加载BOM信息",
-  "create-work-order": "创建工单"
+  "create-work-order": "创建工单",
+  "work-order-line.spare-part": "替代料",
+  "spare-part": "替代料",
+  "spare-part-detail": "替代料明细",
+  "spare-part-maintenance": "替代料维护"
 }

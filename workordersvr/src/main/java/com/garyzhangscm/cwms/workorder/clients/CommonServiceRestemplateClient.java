@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.clients;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.workorder.model.Client;
 import com.garyzhangscm.cwms.workorder.model.Inventory;
 import com.garyzhangscm.cwms.workorder.model.SystemControlledNumber;
 import com.garyzhangscm.cwms.workorder.model.UnitOfMeasure;
@@ -65,6 +66,26 @@ public class CommonServiceRestemplateClient {
     }
     public String getNextWorkOrderNumber(Long warehouseId) {
         return getNextNumber(warehouseId, "work-order-number");
+    }
+
+    @Cacheable(cacheNames = "workorder_client", unless="#result == null")
+    public Client getClientById(Long id) {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/clients/{id}");
+
+
+        ResponseBodyWrapper<Client> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
 
