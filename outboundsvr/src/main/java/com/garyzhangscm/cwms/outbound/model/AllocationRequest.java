@@ -72,12 +72,12 @@ public class AllocationRequest {
 
 
 
-    public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine,
+    public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine, Item item,
                              ProductionLineAssignment productionLineAssignment,
                              Long allocatingWorkOrderQuantity,
                              Long allocatingWorkingOrderLineQuantity) {
         this.workOrder = workOrder;
-        this.item = workOrderLine.getItem();
+        this.item = Objects.isNull(item) ? workOrderLine.getItem() : item;
         this.warehouse = workOrderLine.getWarehouse();
         this.shipmentLines =  new ArrayList<>();
         this.workOrderLines =Collections.singletonList(workOrderLine);

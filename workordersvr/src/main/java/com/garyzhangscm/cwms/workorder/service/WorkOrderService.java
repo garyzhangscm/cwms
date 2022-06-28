@@ -73,6 +73,10 @@ public class WorkOrderService implements TestDataInitiableService {
 
     @Autowired
     private KafkaSender kafkaSender;
+    @Autowired
+    private WorkOrderLineSparePartDetailService workOrderLineSparePartDetailService;
+    @Autowired
+    private WorkOrderLineSparePartService workOrderLineSparePartService;
 
     @Autowired
     private WorkOrderInstructionService workOrderInstructionService;
@@ -674,7 +678,9 @@ public class WorkOrderService implements TestDataInitiableService {
     private Map<Long, Long> getInprocessQuantities(AllocationResult allocationResult) {
         Map<Long, Long> inprocessQuantities = new HashMap<>();
 
-        allocationResult.getPicks().forEach(pick -> {
+        allocationResult.getPicks().stream().filter(
+                pick -> !isPickSparePart(pick.getWorkOrderLineId(), pick)
+        ).forEach(pick -> {
             Long workOrderLineId = pick.getWorkOrderLineId();
             Long inprocessQuantity = inprocessQuantities.getOrDefault(workOrderLineId, 0L);
             inprocessQuantities.put(workOrderLineId, (inprocessQuantity + pick.getQuantity()));
@@ -686,6 +692,34 @@ public class WorkOrderService implements TestDataInitiableService {
             inprocessQuantities.put(workOrderLineId, (inprocessQuantity + shortAllocation.getQuantity()));
         });
         return inprocessQuantities;
+    }
+
+
+    /**
+     * See if the pick is to pick spare part
+     * @param workOrderLineId
+     * @param pick
+     * @return
+     */
+    private boolean isPickSparePart(Long workOrderLineId, Pick pick) {
+        WorkOrderLine workOrderLine = workOrderLineService.findById(workOrderLineId);
+        if (pick.getItemId().equals(workOrderLine.getItemId())) {
+            return false;
+        }
+        else {
+            Stream<WorkOrderLineSparePartDetail> workOrderLineSparePartDetailStream =
+                    workOrderLine.getWorkOrderLineSpareParts().stream()
+                    .map(workOrderLineSparePart -> workOrderLineSparePart.getWorkOrderLineSparePartDetails())
+                    .flatMap(List::stream);
+            if (workOrderLineSparePartDetailStream.anyMatch(
+                    workOrderLineSparePartDetail -> workOrderLineSparePartDetail.getItemId().equals(pick.getItemId()))) {
+                return true;
+            }
+            else {
+                throw WorkOrderException.raiseException("the pick " + pick.getNumber() +
+                        "doesn't match with the work order line " + workOrderLineId);
+            }
+        }
     }
 
     private void processAllocateResult(WorkOrder workOrder, WorkOrderLine workOrderLine, AllocationResult allocationResult) {
@@ -724,7 +758,41 @@ public class WorkOrderService implements TestDataInitiableService {
         }
 
     }
+    private void processAllocationResultForSpareParts(AllocationResult allocationResult) {
+
+        allocationResult.getPicks().stream().filter(
+                pick -> isPickSparePart(pick.getWorkOrderLineId(), pick)
+        ).forEach(
+                pick -> {
+                    // for spare part, get the information first
+                    WorkOrderLine workOrderLine = workOrderLineService.findById(
+                            pick.getWorkOrderLineId()
+                    );
+                    WorkOrderLineSparePartDetail matchedWorkOrderLineSparePartDetail =
+                            workOrderLine.getWorkOrderLineSpareParts().stream().map(
+                                    workOrderLineSparePart -> workOrderLineSparePart.getWorkOrderLineSparePartDetails()
+                            ).flatMap(List::stream).filter(
+                                    workOrderLineSparePartDetail -> workOrderLineSparePartDetail.getItemId().equals(pick.getItemId())
+                            ).findFirst().orElse(null);
+
+                    if (Objects.nonNull(matchedWorkOrderLineSparePartDetail)) {
+                        // we should always be able to find the matched work order line spare part detail with the pick
+                        Long newOpenQuantity = Math.max(0, matchedWorkOrderLineSparePartDetail.getOpenQuantity() - pick.getQuantity());
+                        Long newInprocessQuantity = matchedWorkOrderLineSparePartDetail.getInprocessQuantity() + pick.getQuantity();
+                        matchedWorkOrderLineSparePartDetail.setInprocessQuantity(newInprocessQuantity);
+                        matchedWorkOrderLineSparePartDetail.setOpenQuantity(newOpenQuantity);
+                        workOrderLineSparePartDetailService.saveOrUpdate(matchedWorkOrderLineSparePartDetail);
+
+                        // everytime we changed the in process quantity of the spare part details,
+                        // we will need to refresh the spare part head's quantity as well
+                        workOrderLineSparePartService.refreshInprocessQuantity(matchedWorkOrderLineSparePartDetail.getWorkOrderLineSparePart());
+
+                    }
+                }
+        );
+    }
     private void processAllocateResult(WorkOrder workOrder, AllocationResult allocationResult) {
+
 
         // A map to store the quantities
         // Key: work order line id
@@ -1638,9 +1706,20 @@ public class WorkOrderService implements TestDataInitiableService {
                 // process the quantity in the work order and work order line
                 // to reflect the allocation
                 processAllocateResult(workOrder, allocationResult);
-                Long pickedQuantity = picks.stream().map(Pick::getQuantity).mapToLong(Long::longValue).sum();
+                // process the spare part, if needed
+                processAllocationResultForSpareParts(allocationResult);
 
-                processProductionLineAssignment(workOrder, productionLineId, pickedQuantity);
+                Long pickedQuantity = picks.stream()
+                        .filter(pick -> !isPickSparePart(pick.getWorkOrderLineId(), pick))
+                        .map(Pick::getQuantity).mapToLong(Long::longValue).sum();
+
+                // only process the production line assignment if the pick is not for spare part
+                if (pickableQuantity > 0) {
+                    processProductionLineAssignment(workOrder, productionLineId, pickedQuantity);
+
+                }
+
+
             }
 
         }
@@ -1697,23 +1776,82 @@ public class WorkOrderService implements TestDataInitiableService {
         // get the matched work order line by the item id
         Long itemId = itemIdList.get(0);
 
-        WorkOrderLine matchedWorkOrderLine = workOrder.getWorkOrderLines().stream().filter(
-                workOrderLine -> workOrderLine.getItemId().equals(itemId)
-        ).findFirst().orElseThrow(() -> WorkOrderException.raiseException("can't find work order line with item id " + itemId +
-                ". Fail to generate manual pick for the work order " + workOrder.getNumber()));
 
-        // if the open quantity is 0, which means the work order line is fully allocated,
-        // we either have pick or short allocation against the work order line
-        // we will not allow the user to manual pick
-        if (matchedWorkOrderLine.getOpenQuantity() <= 0) {
-            throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
-                    ", line " + matchedWorkOrderLine.getNumber() + " is fully processed." +
-                    "Fail to generate manual pick");
+        // inventory status required, either from the work order line
+        // or from the work order line's spare part
+        Long inventoryStatusId;
+
+        // total quantity required, either from the work order line
+        // or from the work order line's spare part
+        Long quantityRequiredByWorkOrderLine = 0l;
+
+        // make sure the item matches with the work order line, or any spare part of the work order line
+        Optional<WorkOrderLine> matchedWorkOrderLineOptional = workOrder.getWorkOrderLines().stream().filter(
+                workOrderLine -> workOrderLine.getItemId().equals(itemId)
+        ).findFirst();
+
+        // if there's no matched work order line with the item id, see if this item is a
+        // spare part
+        if (!matchedWorkOrderLineOptional.isPresent()) {
+            Optional<WorkOrderLineSparePartDetail> matchedWorkOrderLineSparePartDetailOptional =
+                    workOrder.getWorkOrderLines().stream().map(
+                    workOrderLine -> workOrderLine.getWorkOrderLineSpareParts())
+                            .flatMap(List::stream).map(workOrderLineSparePart -> workOrderLineSparePart.getWorkOrderLineSparePartDetails())
+                            .flatMap(List::stream).filter(workOrderLineSparePartDetail -> workOrderLineSparePartDetail.getItemId().equals(itemId))
+                    .findFirst();
+            if (!matchedWorkOrderLineSparePartDetailOptional.isPresent()) {
+
+                throw WorkOrderException.raiseException("Can't find any work order line matched with item id ." + itemId +
+                        "Fail to generate manual pick");
+            }
+            else {
+                WorkOrderLineSparePartDetail matchedWorkOrderLineSparePartDetail
+                        = matchedWorkOrderLineSparePartDetailOptional.get();
+
+                WorkOrderLine matchedWorkOrderLine = matchedWorkOrderLineSparePartDetail.getWorkOrderLineSparePart().getWorkOrderLine();
+
+                // if the open quantity is 0, which means the work order line is fully allocated,
+                // we either have pick or short allocation against the work order line
+                // we will not allow the user to manual pick
+                if (matchedWorkOrderLine.getOpenQuantity() <= 0) {
+                    throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
+                            ", line " + matchedWorkOrderLine.getNumber() + " is fully processed." +
+                            "Fail to generate manual pick");
+                }
+
+                inventoryStatusId = matchedWorkOrderLineSparePartDetail.getInventoryStatusId();
+                quantityRequiredByWorkOrderLine = matchedWorkOrderLine.getOpenQuantity() -
+                        ((Objects.isNull(matchedWorkOrderLine.getSparePartQuantity())) ? 0 : matchedWorkOrderLine.getSparePartQuantity());
+                // we will need to apply the ratio to the required quantity of the work order line
+                // as we are processing the spare part
+                double ratio = matchedWorkOrderLineSparePartDetail.getQuantity() * 1.0 /
+                        matchedWorkOrderLineSparePartDetail.getWorkOrderLineSparePart().getQuantity();
+                quantityRequiredByWorkOrderLine = (long)(quantityRequiredByWorkOrderLine * ratio);
+            }
         }
+        else {
+            WorkOrderLine matchedWorkOrderLine = matchedWorkOrderLineOptional.get();
+
+            // if the open quantity is 0, which means the work order line is fully allocated,
+            // we either have pick or short allocation against the work order line
+            // we will not allow the user to manual pick
+            if (matchedWorkOrderLine.getOpenQuantity() <= 0) {
+                throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
+                        ", line " + matchedWorkOrderLine.getNumber() + " is fully processed." +
+                        "Fail to generate manual pick");
+            }
+            inventoryStatusId = matchedWorkOrderLine.getInventoryStatusId();
+            quantityRequiredByWorkOrderLine = matchedWorkOrderLine.getOpenQuantity() -
+                    ((Objects.isNull(matchedWorkOrderLine.getSparePartQuantity())) ? 0 : matchedWorkOrderLine.getSparePartQuantity());
+
+        }
+
+
+
 
         // get the pickable inventory
         List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
-                itemId, matchedWorkOrderLine.getInventoryStatusId(), inventories.get(0).getLocationId(),
+                itemId, inventoryStatusId, inventories.get(0).getLocationId(),
                 lpn
         );
         if (pickableInventory.isEmpty()) {
@@ -1724,7 +1862,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
         // check if how much we can pick from this LPN
         Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
-        return Math.min(inventoryQuantity, matchedWorkOrderLine.getOpenQuantity());
+        return Math.min(inventoryQuantity, quantityRequiredByWorkOrderLine);
     }
 
 

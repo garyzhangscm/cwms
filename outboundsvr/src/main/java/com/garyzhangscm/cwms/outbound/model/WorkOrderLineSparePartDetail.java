@@ -1,52 +1,31 @@
-package com.garyzhangscm.cwms.workorder.model;
+package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 
-@Entity
-@Table(name = "work_order_line_spare_part_detail")
 public class WorkOrderLineSparePartDetail extends AuditibleEntity<String>{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "work_order_line_spare_part_detail_id")
-    @JsonProperty(value="id")
+
     private Long id;
 
-
-    @Column(name = "client_id")
     private Long clientId;
 
-    @Transient
     private Client client;
 
-    @Column(name = "item_id")
     private Long itemId;
 
-    @Transient
     private Item item;
 
-    @Column(name = "inventory_status_id")
     private Long inventoryStatusId;
 
-    @Transient
     private InventoryStatus inventoryStatus;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_order_line_spare_part_id")
-    private WorkOrderLineSparePart workOrderLineSparePart;
-
-
-    @Column(name="quantity")
     private Long quantity;
 
 
-    @Column(name = "open_quantity")
     private Long openQuantity;
 
-    @Column(name = "inprocess_quantity")
     private Long inprocessQuantity;
 
 
@@ -89,14 +68,6 @@ public class WorkOrderLineSparePartDetail extends AuditibleEntity<String>{
 
     public void setItem(Item item) {
         this.item = item;
-    }
-
-    public WorkOrderLineSparePart getWorkOrderLineSparePart() {
-        return workOrderLineSparePart;
-    }
-
-    public void setWorkOrderLineSparePart(WorkOrderLineSparePart workOrderLineSparePart) {
-        this.workOrderLineSparePart = workOrderLineSparePart;
     }
 
     public InventoryStatus getInventoryStatus() {

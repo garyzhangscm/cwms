@@ -1434,11 +1434,43 @@ public class PickService {
         // let's get the item id and find the matched work order line. We will create the pick against the
         // work order line
         Long itemId = itemIdList.get(0);
-        WorkOrderLine matchedWorkOrderLine = workOrder.getWorkOrderLines().stream().filter(
-                workOrderLine -> itemId.equals(workOrderLine.getItemId())).findFirst()
-                .orElseThrow(() ->
-                        PickingException.raiseException("can't find the matched work order line with item id " + itemId));
+        Optional<WorkOrderLine> matchedWorkOrderLineOptional = workOrder.getWorkOrderLines().stream().filter(
+                workOrderLine -> itemId.equals(workOrderLine.getItemId())).findFirst();
 
+        WorkOrderLine matchedWorkOrderLine = null;
+        Item itemToBeAllocated = null;
+        if (matchedWorkOrderLineOptional.isPresent()) {
+            matchedWorkOrderLine = matchedWorkOrderLineOptional.get();
+            itemToBeAllocated = matchedWorkOrderLine.getItem();
+        }
+        else {
+            // let's see if we may need to pick spare part
+
+            outerLoop:
+            for (WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
+                for (WorkOrderLineSparePart workOrderLineSparePart : workOrderLine.getWorkOrderLineSpareParts()) {
+                    for (WorkOrderLineSparePartDetail workOrderLineSparePartDetail : workOrderLineSparePart.getWorkOrderLineSparePartDetails()) {
+                        if (itemId.equals(workOrderLineSparePartDetail.getItemId())) {
+                            logger.debug("Get spare part based on the item id {}, item {} is a spare part for work order line {}",
+                                    itemId, workOrderLineSparePartDetail.getItem().getName(),
+                                    workOrderLine.getId());
+                            matchedWorkOrderLine = workOrderLine;
+                            itemToBeAllocated = workOrderLineSparePartDetail.getItem();
+                            break  outerLoop;
+                        }
+                    }
+                }
+            }
+
+        }
+        if (Objects.isNull(matchedWorkOrderLine) || Objects.isNull(itemToBeAllocated)) {
+            throw  PickingException.raiseException("can't find the matched work order line with item id " + itemId);
+        }
+
+        logger.debug("we will pick item {} for work order line {} / {}",
+                itemToBeAllocated.getName(),
+                workOrder.getNumber(),
+                matchedWorkOrderLine.getNumber());
 
         Location sourceLocation = inventories.get(0).getLocation();
         if (Objects.isNull(sourceLocation)) {
@@ -1453,7 +1485,7 @@ public class PickService {
 
         // let's see if we can generate the manual pick
         AllocationResult allocationResult = generateManualPickForWorkOrder(workOrder,
-                matchedWorkOrderLine, productionLineId, sourceLocation, pickableQuantity);
+                matchedWorkOrderLine, itemToBeAllocated,  productionLineId, sourceLocation, pickableQuantity);
 
         if (allocationResult.getShortAllocations().size() > 0) {
             // ok, we get short allocation. Something seems goes wrong.
@@ -1477,6 +1509,7 @@ public class PickService {
 
     @Transactional
     public AllocationResult generateManualPickForWorkOrder(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                                           Item item,
                                                            Long productionLineId,
                                                            Location sourceLocation, Long quantity) {
 
@@ -1500,7 +1533,7 @@ public class PickService {
 
 
         AllocationResult allocationResult
-                = allocationService.allocate(workOrder, workOrderLine, productionLineId,
+                = allocationService.allocate(workOrder, workOrderLine, item,  productionLineId,
                 0l, quantity, sourceLocation, true);
 
 

@@ -130,6 +130,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
                     inventoryServiceRestemplateClient.getInventoryStatusById(workOrderLine.getInventoryStatusId()));
          }
 
+        workOrderLineSparePartService.loadAttribute(workOrderLine.getWorkOrderLineSpareParts());
+
         if (loadPicks) {
 
 
@@ -713,11 +715,19 @@ public class WorkOrderLineService implements TestDataInitiableService {
         // see if we may need to remove any spare part
         List<WorkOrderLineSparePart> existingWorkOrderLineSpareParts = workOrderLine.getWorkOrderLineSpareParts();
 
+
+        logger.debug("existing order line spare part \n {}",
+                existingWorkOrderLineSpareParts);
+
+        logger.debug("new order line spare part \n {}",
+                workOrderLineSpareParts);
         Set<Long> sparePartToBeRemoved = new HashSet<>();
         Set<String> newSparePartNames = new HashSet<>();
+
         workOrderLineSpareParts.forEach(
                 newWorkOrderLineSparePart -> newSparePartNames.add(newWorkOrderLineSparePart.getName())
         );
+
         existingWorkOrderLineSpareParts.forEach(
                 existingWorkOrderLineSparePart -> {
                     // if the new spare parts list doesn't have the name any more, we will remove it from
@@ -731,14 +741,36 @@ public class WorkOrderLineService implements TestDataInitiableService {
         workOrderLineSpareParts.forEach(
                 newWorkOrderLineSparePart -> {
                     newWorkOrderLineSparePart.setWorkOrderLine(workOrderLine);
+                    newWorkOrderLineSparePart.getWorkOrderLineSparePartDetails().forEach(
+                            workOrderLineSparePartDetail -> workOrderLineSparePartDetail.setWorkOrderLineSparePart(
+                                    newWorkOrderLineSparePart
+                            )
+                    );
                     workOrderLineSparePartService.saveOrUpdate(newWorkOrderLineSparePart);
                 }
         );
-        sparePartToBeRemoved.forEach(
-                workOrderLineSparePartId -> workOrderLineSparePartService.delete(workOrderLineSparePartId)
-        );
+        // get the work order line spare part again with latest change. We will remove the spare part
+        // information is necessary
+        WorkOrderLine newWorkOrderLine = findById(id);
 
-        // return the new work order line;
-        return findById(id);
+        // see if we may need to remove any spare part
+        existingWorkOrderLineSpareParts = newWorkOrderLine.getWorkOrderLineSpareParts();
+        Iterator<WorkOrderLineSparePart> workOrderLineSparePartIterator = existingWorkOrderLineSpareParts.iterator();
+        while(workOrderLineSparePartIterator.hasNext()) {
+            WorkOrderLineSparePart workOrderLineSparePart = workOrderLineSparePartIterator.next();
+            if (sparePartToBeRemoved.contains(workOrderLineSparePart.getId())) {
+                workOrderLineSparePartIterator.remove();
+            }
+        }
+
+        return saveOrUpdate(newWorkOrderLine);
+    }
+
+    public void refreshSparePartQuantity(WorkOrderLine workOrderLine, long sparePartQuantityAdded) {
+        workOrderLine.setSparePartQuantity(
+                Objects.isNull(workOrderLine.getSparePartQuantity()) ? 0 : workOrderLine.getSparePartQuantity()
+                + sparePartQuantityAdded
+        );
+        saveOrUpdate(workOrderLine);
     }
 }

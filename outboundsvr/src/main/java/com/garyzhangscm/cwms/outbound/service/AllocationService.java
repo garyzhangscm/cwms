@@ -141,7 +141,16 @@ public class AllocationService {
      */
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
                                      Long productionLineId, Long allocatingWorkOrderQuantity){
-        return allocate(workOrder, workOrderLine, productionLineId, allocatingWorkOrderQuantity, 0L);
+        return allocate(workOrder, workOrderLine, workOrderLine.getItem(), productionLineId, allocatingWorkOrderQuantity, 0L);
+
+    }
+
+
+
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                     Item item,
+                                     Long productionLineId, Long allocatingWorkOrderQuantity){
+        return allocate(workOrder, workOrderLine, item, productionLineId, allocatingWorkOrderQuantity, 0L);
 
     }
 
@@ -158,12 +167,21 @@ public class AllocationService {
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
                                      Long productionLineId, Long allocatingWorkOrderQuantity,
                                      Long allocatingWorkingOrderLineQuantity){
-        return allocate(workOrder, workOrderLine, productionLineId,
+        return allocate(workOrder, workOrderLine, workOrderLine.getItem(), productionLineId,
+                allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity, null, false);
+    }
+
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                     Item item,
+                                     Long productionLineId, Long allocatingWorkOrderQuantity,
+                                     Long allocatingWorkingOrderLineQuantity){
+        return allocate(workOrder, workOrderLine, item, productionLineId,
                 allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity, null, false);
     }
 
     @Transactional
     public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                     Item item,
                                      Long productionLineId, Long allocatingWorkOrderQuantity,
                                      Long allocatingWorkingOrderLineQuantity,
                                      Location sourceLocation, boolean manualAllocation){
@@ -182,9 +200,9 @@ public class AllocationService {
         productionLineAssignmentStream.forEach(
                 productionLineAssignment -> {
 
-                    logger.debug("start to allocate work order {} / {} for production line {} / {} / {}, from location {}",
+                    logger.debug("start to allocate work order {} / {} / {} for production line {} / {} / {}, from location {}",
                             workOrder.getNumber(),
-                            workOrderLine.getItem().getName(),
+                            workOrderLine.getItem().getName(), item.getName(),
                             productionLineAssignment.getProductionLine().getName(),
                             productionLineAssignment.getProductionLine().getInboundStageLocationId(),
                             productionLineAssignment.getProductionLine().getInboundStageLocation() == null ?
@@ -192,7 +210,7 @@ public class AllocationService {
                             Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
 
 
-                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, productionLineAssignment
+                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, item, productionLineAssignment
                             , allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity);
                     allocationRequest.setManualAllocation(manualAllocation);
 
