@@ -55,6 +55,9 @@ public class WorkOrderLineSparePartService {
     @Autowired
     private WorkOrderLineSparePartDetailService workOrderLineSparePartDetailService;
 
+    @Autowired
+    private WorkOrderLineService workOrderLineService;
+
 
 
     public WorkOrderLineSparePart findById(Long id) {
@@ -107,11 +110,11 @@ public class WorkOrderLineSparePartService {
 
     }
 
-    private void loadAttribute(List<WorkOrderLineSparePart> workOrderLineSpareParts) {
+    public void loadAttribute(List<WorkOrderLineSparePart> workOrderLineSpareParts) {
         workOrderLineSpareParts.forEach(this::loadAttribute);
     }
 
-    private void loadAttribute(WorkOrderLineSparePart workOrderLineSparePart) {
+    public void loadAttribute(WorkOrderLineSparePart workOrderLineSparePart) {
         workOrderLineSparePartDetailService.loadAttribute(workOrderLineSparePart.getWorkOrderLineSparePartDetails());
     }
 
@@ -167,9 +170,41 @@ public class WorkOrderLineSparePartService {
     }
 
     public void delete(Long id) {
+        logger.debug("workOrderLineSparePartRepository.deleteById(id): {}",
+                id);
         workOrderLineSparePartRepository.deleteById(id);
     }
 
 
+    // refresh the inprocess quantity based on the inprocess quantity
+    // from the details and the ratio
+    public void refreshInprocessQuantity(WorkOrderLineSparePart workOrderLineSparePart) {
+        logger.debug("refresh the in process quantity for work order line {} - {}'s spare part ",
+                workOrderLineSparePart.getWorkOrderLine().getWorkOrder().getNumber(),
+                workOrderLineSparePart.getWorkOrderLine().getNumber());
+        long oldInprocessQuantity = workOrderLineSparePart.getInprocessQuantity();
+        long newInprocessQuantity = Long.MAX_VALUE;
 
+        for (WorkOrderLineSparePartDetail workOrderLineSparePartDetail : workOrderLineSparePart.getWorkOrderLineSparePartDetails()) {
+            double ratio = workOrderLineSparePart.getQuantity() * 1.0 / workOrderLineSparePartDetail.getQuantity();
+            logger.debug("based on spare part detail {}, ratio is {}",
+                    workOrderLineSparePartDetail.getItemId(), ratio);
+            // we will get the mininum in process quantity from the details, based on the ratio
+            newInprocessQuantity = (long)Math.min(workOrderLineSparePartDetail.getInprocessQuantity() * ratio, newInprocessQuantity);
+            logger.debug("> new in process quantity should be {}", newInprocessQuantity);
+        }
+        workOrderLineSparePart.setInprocessQuantity(newInprocessQuantity);
+
+
+        logger.debug("====> refresh in process quantity to {}", newInprocessQuantity);
+        saveOrUpdate(workOrderLineSparePart);
+
+        // we will refresh work order line's quantity as well
+        logger.debug("====> refresh WORK ORDER LINE's spare part quantity by adding quantity {}",
+                (newInprocessQuantity - oldInprocessQuantity));
+        workOrderLineService.refreshSparePartQuantity(workOrderLineSparePart.getWorkOrderLine(), newInprocessQuantity - oldInprocessQuantity);
+
+
+
+    }
 }

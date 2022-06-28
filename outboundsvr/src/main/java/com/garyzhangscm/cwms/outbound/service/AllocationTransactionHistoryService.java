@@ -249,7 +249,8 @@ public class AllocationTransactionHistoryService   {
             Boolean isRoundUpFlag,
             String message
     ) {
-        // logger.debug("Start to build allocation transaction history from the allocation request: ====> \n {}", allocationRequest);
+
+        logger.debug("Start to build allocation transaction history from the allocation request: ====> \n {}", allocationRequest);
         ShipmentLine shipmentLine =
                 Objects.nonNull(allocationRequest.getShipmentLines()) &&
                     !allocationRequest.getShipmentLines().isEmpty() ?
@@ -259,8 +260,11 @@ public class AllocationTransactionHistoryService   {
                         !allocationRequest.getWorkOrderLines().isEmpty() ?
                         allocationRequest.getWorkOrderLines().get(0) : null;
 
-        Long warehouseId = Objects.nonNull(shipmentLine) ? shipmentLine.getWarehouseId() :
-                workOrderLine.getWarehouseId();
+        Long warehouseId = Objects.nonNull(allocationRequest.getWarehouse()) ?
+                allocationRequest.getWarehouse().getId() :
+                    Objects.nonNull(shipmentLine) ?
+                            shipmentLine.getWarehouseId() :
+                            workOrderLine.getWarehouseId();
 
 
 

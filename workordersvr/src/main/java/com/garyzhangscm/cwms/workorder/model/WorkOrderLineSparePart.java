@@ -29,6 +29,9 @@ public class WorkOrderLineSparePart extends AuditibleEntity<String>{
     @Column(name="quantity")
     private Long quantity;
 
+    @Column(name = "inprocess_quantity")
+    private Long inprocessQuantity;
+
     @OneToMany(
             mappedBy = "workOrderLineSparePart",
             cascade = CascadeType.ALL,
@@ -83,5 +86,13 @@ public class WorkOrderLineSparePart extends AuditibleEntity<String>{
 
     public void setWorkOrderLineSparePartDetails(List<WorkOrderLineSparePartDetail> workOrderLineSparePartDetails) {
         this.workOrderLineSparePartDetails = workOrderLineSparePartDetails;
+    }
+
+    public Long getInprocessQuantity() {
+        return inprocessQuantity;
+    }
+
+    public void setInprocessQuantity(Long inprocessQuantity) {
+        this.inprocessQuantity = inprocessQuantity;
     }
 }

@@ -43,6 +43,14 @@ public class WorkOrderLineSparePartDetail extends AuditibleEntity<String>{
     private Long quantity;
 
 
+    @Column(name = "open_quantity")
+    private Long openQuantity;
+
+    @Column(name = "inprocess_quantity")
+    private Long inprocessQuantity;
+
+
+
     public Long getId() {
         return id;
     }
@@ -113,5 +121,21 @@ public class WorkOrderLineSparePartDetail extends AuditibleEntity<String>{
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    public Long getOpenQuantity() {
+        return openQuantity;
+    }
+
+    public void setOpenQuantity(Long openQuantity) {
+        this.openQuantity = openQuantity;
+    }
+
+    public Long getInprocessQuantity() {
+        return inprocessQuantity;
+    }
+
+    public void setInprocessQuantity(Long inprocessQuantity) {
+        this.inprocessQuantity = inprocessQuantity;
     }
 }

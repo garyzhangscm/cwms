@@ -1784,5 +1784,6 @@
   "work-order-line.spare-part": "Spare Part",
   "spare-part": "Spare Part",
   "spare-part-detail": "Spare Part Detail",
-  "spare-part-maintenance": "Spare Part Maintenance"
+  "spare-part-maintenance": "Spare Part Maintenance",
+  "work-order.line.sparePartQuantity": "Spare Part Quantity"
 }

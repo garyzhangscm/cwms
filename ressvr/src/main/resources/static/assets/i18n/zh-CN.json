@@ -1783,5 +1783,6 @@
   "work-order-line.spare-part": "替代料",
   "spare-part": "替代料",
   "spare-part-detail": "替代料明细",
-  "spare-part-maintenance": "替代料维护"
+  "spare-part-maintenance": "替代料维护",
+  "work-order.line.sparePartQuantity": "替代料数量"
 }

@@ -66,6 +66,10 @@ public class WorkOrderLine extends AuditibleEntity<String>{
     @Column(name = "returned_quantity")
     private Long returnedQuantity = 0L;
 
+    @Column(name = "spare_part_quantity")
+    private Long sparePartQuantity = 0L;
+
+
     // Specific the inventory status that
     // user ordered. For example, when return
     // to vendor, we may return DAMAGED inventory
@@ -277,5 +281,13 @@ public class WorkOrderLine extends AuditibleEntity<String>{
 
     public void setWorkOrderLineSpareParts(List<WorkOrderLineSparePart> workOrderLineSpareParts) {
         this.workOrderLineSpareParts = workOrderLineSpareParts;
+    }
+
+    public Long getSparePartQuantity() {
+        return sparePartQuantity;
+    }
+
+    public void setSparePartQuantity(Long sparePartQuantity) {
+        this.sparePartQuantity = sparePartQuantity;
     }
 }

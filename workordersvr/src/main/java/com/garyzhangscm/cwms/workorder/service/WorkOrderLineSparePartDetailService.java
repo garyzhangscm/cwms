@@ -117,7 +117,7 @@ public class WorkOrderLineSparePartDetailService {
 
     public void loadAttribute(WorkOrderLineSparePartDetail workOrderLineSparePartDetail) {
         if (Objects.nonNull(workOrderLineSparePartDetail.getClientId()) &&
-                Objects.nonNull(workOrderLineSparePartDetail.getClient())) {
+                Objects.isNull(workOrderLineSparePartDetail.getClient())) {
 
             workOrderLineSparePartDetail.setClient(
                     commonServiceRestemplateClient.getClientById(
@@ -127,7 +127,7 @@ public class WorkOrderLineSparePartDetailService {
         }
 
         if (Objects.nonNull(workOrderLineSparePartDetail.getItemId()) &&
-                Objects.nonNull(workOrderLineSparePartDetail.getItem())) {
+                Objects.isNull(workOrderLineSparePartDetail.getItem())) {
 
             workOrderLineSparePartDetail.setItem(
                     inventoryServiceRestemplateClient.getItemById(
@@ -137,7 +137,7 @@ public class WorkOrderLineSparePartDetailService {
         }
 
         if (Objects.nonNull(workOrderLineSparePartDetail.getInventoryStatusId()) &&
-                Objects.nonNull(workOrderLineSparePartDetail.getInventoryStatus())) {
+                Objects.isNull(workOrderLineSparePartDetail.getInventoryStatus())) {
 
             workOrderLineSparePartDetail.setInventoryStatus(
                     inventoryServiceRestemplateClient.getInventoryStatusById(

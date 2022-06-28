@@ -60,11 +60,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         Long openQuantity = allocationRequest.getQuantity();
         InventoryStatus inventoryStatus = allocationRequest.getInventoryStatus();
 
-        logger.debug("Start to allocate request with FIFO. \n item: {} / {} \n quantity: {} \n inventory status: {}",
+        logger.debug("Start to allocate request with FIFO. \n item: {} / {} \n quantity: {} \n inventory status: {}, from location {}",
                 item.getId(),
                 allocationRequest.getItem().getName(),
                 allocationRequest.getQuantity(),
-                inventoryStatus.getName());
+                inventoryStatus.getName(),
+                Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
 
 
         List<Pick> existingPicks =
@@ -86,7 +87,9 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId());
 
         // Let's get all the pickable inventory and existing picks to the trace file
-        logger.debug("We have {} pickable inventory of this item", pickableInventory.size());
+        logger.debug("We have {} pickable inventory of this item, location specified? {}",
+                pickableInventory.size(),
+                Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
 
         List<InventorySummary> inventorySummaries = sort(inventorySummaryService.getInventorySummaryForAllocation(pickableInventory));
 

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorkOrderLine {
     private Long id;
@@ -31,6 +33,7 @@ public class WorkOrderLine {
     private Long warehouseId;
 
     private Warehouse warehouse;
+    private List<WorkOrderLineSparePart> workOrderLineSpareParts = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -129,6 +132,14 @@ public class WorkOrderLine {
 
     public void setAllocationStrategyType(AllocationStrategyType allocationStrategyType) {
         this.allocationStrategyType = allocationStrategyType;
+    }
+
+    public List<WorkOrderLineSparePart> getWorkOrderLineSpareParts() {
+        return workOrderLineSpareParts;
+    }
+
+    public void setWorkOrderLineSpareParts(List<WorkOrderLineSparePart> workOrderLineSpareParts) {
+        this.workOrderLineSpareParts = workOrderLineSpareParts;
     }
 
     public Long getWarehouseId() {
