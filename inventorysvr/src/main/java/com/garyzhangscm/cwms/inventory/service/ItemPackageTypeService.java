@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemPackageTypeRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,6 +241,10 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         itemPackageType.setName(itemPackageTypeCSVWrapper.getName());
         itemPackageType.setDescription(itemPackageTypeCSVWrapper.getDescription());
 
+        Company company = warehouseLayoutServiceRestemplateClient.getCompanyByCode(
+                itemPackageTypeCSVWrapper.getCompany()
+        );
+        itemPackageType.setCompanyId(company.getId());
         // warehouse is mandate
         Warehouse warehouse =
                 warehouseLayoutServiceRestemplateClient.getWarehouseByName(
@@ -247,19 +252,39 @@ public class ItemPackageTypeService implements TestDataInitiableService{
                         itemPackageTypeCSVWrapper.getWarehouse());
         itemPackageType.setWarehouseId(warehouse.getId());
 
-        if (!itemPackageTypeCSVWrapper.getClient().isEmpty()) {
+        if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(warehouse.getId(), itemPackageTypeCSVWrapper.getClient());
             itemPackageType.setClientId(client.getId());
         }
-        if (!itemPackageTypeCSVWrapper.getSupplier().isEmpty()) {
+        if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getSupplier())) {
             Supplier supplier = commonServiceRestemplateClient.getSupplierByName(warehouse.getId(),itemPackageTypeCSVWrapper.getSupplier());
             itemPackageType.setSupplierId(supplier.getId());
         }
-        if (!itemPackageTypeCSVWrapper.getItem().isEmpty()) {
+        if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getItem())) {
             Item item = itemService.findByName(warehouse.getId(), itemPackageTypeCSVWrapper.getItem());
             itemPackageType.setItem(item);
         }
         return itemPackageType;
+
+    }
+
+    /**
+     * Create item package type when uploading item unit of measure. We allow the user to upload the
+     * item unit of measure and if the item package type doesn't exists yet, create it during uploading
+     * @param itemUnitOfMeasureCSVWrapper
+     * @return
+     */
+    public ItemPackageType createItemPackageType(ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
+        ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper = new ItemPackageTypeCSVWrapper();
+        itemPackageTypeCSVWrapper.setName(itemUnitOfMeasureCSVWrapper.getItemPackageType());
+        itemPackageTypeCSVWrapper.setDescription(itemUnitOfMeasureCSVWrapper.getItemPackageTypeDescription());
+        itemPackageTypeCSVWrapper.setItem(itemUnitOfMeasureCSVWrapper.getItem());
+        itemPackageTypeCSVWrapper.setWarehouse(itemUnitOfMeasureCSVWrapper.getWarehouse());
+        itemPackageTypeCSVWrapper.setCompany(itemUnitOfMeasureCSVWrapper.getCompany());
+        itemPackageTypeCSVWrapper.setClient(itemUnitOfMeasureCSVWrapper.getClient());
+
+
+        return saveOrUpdate(convertFromWrapper(itemPackageTypeCSVWrapper));
 
     }
 

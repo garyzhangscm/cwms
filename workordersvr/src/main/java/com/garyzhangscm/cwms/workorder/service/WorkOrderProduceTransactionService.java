@@ -439,8 +439,8 @@ public class WorkOrderProduceTransactionService  {
                         workOrderLine.getItem().getName());
             }
             BillOfMaterialLine billOfMaterialLine = billOfMaterialLines.get(0);
-            Long billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
-            Long consumingQuantity = billOfMaterialLineConsumeQuantity * totalProducedQuantity / billOfMaterial.getExpectedQuantity();
+            Double billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
+            Long consumingQuantity = (long)(billOfMaterialLineConsumeQuantity * totalProducedQuantity / billOfMaterial.getExpectedQuantity());
             logger.debug("Start to check if we can consume {} of item {} by BOM {}, in order to create {} of item {}",
                     consumingQuantity,
                     workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName(),
@@ -673,8 +673,8 @@ public class WorkOrderProduceTransactionService  {
         BillOfMaterial finalBillOfMaterial = billOfMaterial;
         billOfMaterial.getBillOfMaterialLines().forEach(billOfMaterialLine -> {
             if(billOfMaterialLineService.match(billOfMaterialLine, workOrderLine)) {
-                Long billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
-                Long consumedQuantity = billOfMaterialLineConsumeQuantity * totalProducedQuantity / finalBillOfMaterial.getExpectedQuantity();
+                Double billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
+                Long consumedQuantity = (long)(billOfMaterialLineConsumeQuantity * totalProducedQuantity / finalBillOfMaterial.getExpectedQuantity());
 
                 workOrderLineService.consume(workOrderLine, consumedQuantity, workOrderProduceTransaction.getProductionLine());
             }

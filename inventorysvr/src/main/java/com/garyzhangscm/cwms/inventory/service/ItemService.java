@@ -278,7 +278,13 @@ public class ItemService implements TestDataInitiableService{
 
     public List<Item> loadItemData(File  file) throws IOException {
         List<ItemCSVWrapper> itemCSVWrappers = loadData(file);
-        return itemCSVWrappers.stream().map(itemCSVWrapper -> convertFromWrapper(itemCSVWrapper)).collect(Collectors.toList());
+        return itemCSVWrappers.stream()
+                .map(itemCSVWrapper -> convertFromWrapper(itemCSVWrapper)).collect(Collectors.toList());
+    }
+
+    public List<Item> saveItemData(File  file) throws IOException {
+        List<Item> items = loadItemData(file);
+        return items.stream().map(this::saveOrUpdate).collect(Collectors.toList());
     }
 
     public List<ItemCSVWrapper> loadData(File file) throws IOException {
@@ -289,8 +295,6 @@ public class ItemService implements TestDataInitiableService{
 
 
     public List<ItemCSVWrapper> loadData(InputStream inputStream) throws IOException {
-
-
 
         return fileService.loadData(inputStream, getCsvSchema(), ItemCSVWrapper.class);
     }
@@ -350,6 +354,9 @@ public class ItemService implements TestDataInitiableService{
         item.setTrackingExpirationDateFlag(itemCSVWrapper.isTrackingExpirationDateFlag());
         item.setShelfLifeDays(itemCSVWrapper.getShelfLifeDays());
 **/
+        Company company = warehouseLayoutServiceRestemplateClient.getCompanyByCode(
+                itemCSVWrapper.getCompany());
+        item.setCompanyId(company.getId());
         // warehouse
         Warehouse warehouse =
                     warehouseLayoutServiceRestemplateClient.getWarehouseByName(

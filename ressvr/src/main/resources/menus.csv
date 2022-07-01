@@ -94,6 +94,8 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,,true,false
 "Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,,true,false
 "Report Printer Configuration",menu.main.report.report-printer-configuration,/report/report-printer-configuration,3,Main-Menu-Report,Report-Report-PRINTER-CONFIGURATION,,true,false
+"Printer",menu.main.report.printer,/report/printer,4,Main-Menu-Report,Report-Report-Printer,,true,false
+"Printer Type",menu.main.report.printer-type,/report/printer-type,5,Main-Menu-Report,Report-Report-PrinterType,,true,false
 "Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,menu_inbound_receive.png,true,false
 "Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,menu_outbound_pick_order.png,true,false
 "Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,menu_outbound_pick_list.png,true,false

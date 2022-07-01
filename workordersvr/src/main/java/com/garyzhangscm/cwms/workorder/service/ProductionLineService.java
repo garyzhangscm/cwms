@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
 import org.apache.commons.lang.StringUtils;
@@ -572,5 +573,17 @@ public class ProductionLineService implements TestDataInitiableService {
             loadAttribute(productionLines);
         }
         return productionLines;
+    }
+
+    public ProductionLine removeProductionLine(Long id) {
+        ProductionLine productionLine = findById(id);
+
+        // make sure it doesn't have any work order assigned
+        if (!productionLine.getProductionLineAssignments().isEmpty()) {
+            throw WorkOrderException.raiseException("Can't remove the production line as there's " +
+                    "work order on it");
+        }
+        delete(id);
+        return productionLine;
     }
 }

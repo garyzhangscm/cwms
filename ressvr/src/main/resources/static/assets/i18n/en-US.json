@@ -1785,5 +1785,10 @@
   "spare-part": "Spare Part",
   "spare-part-detail": "Spare Part Detail",
   "spare-part-maintenance": "Spare Part Maintenance",
-  "work-order.line.sparePartQuantity": "Spare Part Quantity"
+  "work-order.line.sparePartQuantity": "Spare Part Quantity",
+  "menu.main.report.printer": "Printer",
+  "menu.main.report.printer-type": "Printer Type",
+  "printer-type": "Printer Type",
+  "page.report.printer.new": "Add Printer",
+  "page.report.printer.modify": "Modify Printer"
 }

@@ -53,7 +53,8 @@ public class ProductionLine extends AuditibleEntity<String>{
     private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "productionLine", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "productionLine", cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<ProductionLineCapacity> productionLineCapacities = new ArrayList<>();
 
     // Whether there's only one work order can be worked on

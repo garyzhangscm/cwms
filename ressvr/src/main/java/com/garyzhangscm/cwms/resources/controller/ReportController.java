@@ -58,8 +58,9 @@ public class ReportController {
     public List<Report> findAllReports(
             @RequestParam(name="companyId", required = false ) Long companyId,
             @RequestParam(name="warehouseId", required = false ) Long warehouseId,
-            @RequestParam(name="type", required = false, defaultValue = "") String type) {
-        return reportService.findAll(companyId, warehouseId, type);
+            @RequestParam(name="type", required = false, defaultValue = "") String type,
+            @RequestParam(name="printerType", required = false, defaultValue = "") String printerType) {
+        return reportService.findAll(companyId, warehouseId, type, printerType);
     }
 
     @BillableEndpoint
@@ -99,6 +100,7 @@ public class ReportController {
     public ReportHistory generateReport(@PathVariable Long warehouseId,
                                         @PathVariable String type,
                                         @RequestBody Report reportData,
+                                        @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
                                         @RequestParam(name = "locale", defaultValue = "en", required = false) String locale) throws IOException, JRException {
 
         // logger.debug("####   Report   Data  / 1  ######");
@@ -107,7 +109,7 @@ public class ReportController {
                 warehouseId,
                 ReportType.valueOf(type),
                 reportData,
-                locale);
+                locale, printerName);
     }
 
 

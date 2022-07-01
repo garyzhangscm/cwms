@@ -13,6 +13,12 @@ public class LocationFileUpload extends FileUploadType {
     }
 
     private void setupColumns() {
+
+        addColumn(new FileUploadTemplateColumn(
+                "company", "Company Code",
+                String.class, 100, false
+        ));
+
         addColumn(new FileUploadTemplateColumn(
                 "warehouse", "Warehouse Name",
                 String.class, 100, false

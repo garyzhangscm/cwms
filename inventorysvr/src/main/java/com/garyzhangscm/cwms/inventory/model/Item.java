@@ -252,7 +252,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         this.shelfLifeDays = shelfLifeDays;
     }
 
-    public int getShelfLifeDays() {
+    public Integer getShelfLifeDays() {
         return shelfLifeDays;
     }
 

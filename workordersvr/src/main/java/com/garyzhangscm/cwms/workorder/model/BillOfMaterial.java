@@ -61,7 +61,7 @@ public class BillOfMaterial extends AuditibleEntity<String>{
 
 
     @Column(name = "expected_quantity")
-    private Long expectedQuantity;
+    private Double expectedQuantity;
 
     @Override
     public String toString() {
@@ -113,11 +113,11 @@ public class BillOfMaterial extends AuditibleEntity<String>{
         this.item = item;
     }
 
-    public Long getExpectedQuantity() {
+    public Double getExpectedQuantity() {
         return expectedQuantity;
     }
 
-    public void setExpectedQuantity(Long expectedQuantity) {
+    public void setExpectedQuantity(Double expectedQuantity) {
         this.expectedQuantity = expectedQuantity;
     }
 
