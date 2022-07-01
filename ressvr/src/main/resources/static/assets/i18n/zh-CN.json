@@ -1784,5 +1784,10 @@
   "spare-part": "替代料",
   "spare-part-detail": "替代料明细",
   "spare-part-maintenance": "替代料维护",
-  "work-order.line.sparePartQuantity": "替代料数量"
+  "work-order.line.sparePartQuantity": "替代料数量",
+  "menu.main.report.printer": "打印机",
+  "menu.main.report.printer-type": "打印机类型",
+  "printer-type":  "打印机类型",
+  "page.report.printer.new": "新增打印机",
+  "page.report.printer.modify": "修改打印机"
 }

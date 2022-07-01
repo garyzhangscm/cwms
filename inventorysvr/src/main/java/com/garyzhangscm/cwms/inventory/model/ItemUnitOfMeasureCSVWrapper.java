@@ -25,8 +25,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 
 public class ItemUnitOfMeasureCSVWrapper implements Serializable {
+
+    private String company;
+    private String warehouse;
+
+    private String client;
     private String item;
+
     private String itemPackageType;
+    private String itemPackageTypeDescription;
+    private Boolean defaultItemPackageType;
+
     private String unitOfMeasure;
     private Integer quantity;
     private Double weight;
@@ -34,8 +43,12 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
     private Double width;
     private Double height;
 
-    private String warehouse;
-    private String company;
+
+    private Boolean defaultForInboundReceiving;
+    private Boolean defaultForWorkOrderReceiving;
+    private Boolean trackingLpn;
+    private Boolean caseFlag;
+
 
     @Override
     public String toString() {
@@ -119,11 +132,67 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
         this.height = height;
     }
 
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
     public String getWarehouse() {
         return warehouse;
     }
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getItemPackageTypeDescription() {
+        return itemPackageTypeDescription;
+    }
+
+    public void setItemPackageTypeDescription(String itemPackageTypeDescription) {
+        this.itemPackageTypeDescription = itemPackageTypeDescription;
+    }
+
+    public Boolean getDefaultItemPackageType() {
+        return defaultItemPackageType;
+    }
+
+    public void setDefaultItemPackageType(Boolean defaultItemPackageType) {
+        this.defaultItemPackageType = defaultItemPackageType;
+    }
+
+    public Boolean getDefaultForInboundReceiving() {
+        return defaultForInboundReceiving;
+    }
+
+    public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
+        this.defaultForInboundReceiving = defaultForInboundReceiving;
+    }
+
+    public Boolean getDefaultForWorkOrderReceiving() {
+        return defaultForWorkOrderReceiving;
+    }
+
+    public void setDefaultForWorkOrderReceiving(Boolean defaultForWorkOrderReceiving) {
+        this.defaultForWorkOrderReceiving = defaultForWorkOrderReceiving;
+    }
+
+    public Boolean getTrackingLpn() {
+        return trackingLpn;
+    }
+
+    public void setTrackingLpn(Boolean trackingLpn) {
+        this.trackingLpn = trackingLpn;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
     }
 }

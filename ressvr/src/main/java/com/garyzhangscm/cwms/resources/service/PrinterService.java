@@ -18,12 +18,22 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
+import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.resources.model.Printer;
+import com.garyzhangscm.cwms.resources.model.PrinterType;
 import com.garyzhangscm.cwms.resources.model.ReportType;
+import com.garyzhangscm.cwms.resources.repository.PrinterRepository;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.persistence.criteria.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -32,6 +42,89 @@ public class PrinterService  {
 
     @Autowired
     private ReportPrinterConfigurationService reportPrinterConfigurationService;
+
+    @Autowired
+    private PrinterRepository printerRepository;
+
+
+
+    public Printer findById(Long id) {
+        Printer printer =  printerRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("printer not found by id: " + id));
+        return printer;
+    }
+
+    public List<Printer> findAll(Long warehouseId,
+                                 String name,
+                                 String printerType) {
+
+        return printerRepository.findAll(
+                (Root<Printer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Strings.isNotBlank(name)) {
+
+                        if (name.contains("%")) {
+
+                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                        }
+
+                    }
+                    if (Strings.isNotBlank(printerType)) {
+                        Join<Printer, PrinterType> joinPrinterType= root.join("reportType", JoinType.INNER);
+
+                        if (printerType.contains("%")) {
+
+                            predicates.add(criteriaBuilder.like(joinPrinterType.get("name"), printerType));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(joinPrinterType.get("name"), printerType));
+                        }
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+        );
+
+
+
+    }
+
+    public Printer findByName(Long warehouseId, String name) {
+        return printerRepository.findByWarehouseIdAndName(warehouseId, name);
+    }
+
+    public Printer save(Printer printer) {
+        return printerRepository.save(printer);
+    }
+
+    public Printer saveOrUpdate(Printer printer) {
+        if (Objects.isNull(printer.getId()) &&
+                !Objects.isNull(findByName(printer.getWarehouseId(), printer.getName()))) {
+            printer.setId(findByName(printer.getWarehouseId(), printer.getName()).getId());
+        }
+        return save(printer);
+    }
+
+    public Printer addPrinter(Printer printer) {
+        return saveOrUpdate(printer);
+
+    }
+
+    public void delete(Long id) {
+        printerRepository.deleteById(id);
+
+    }
+
+
+
     public String getPrinter(Long companyId, Long warehouseId, ReportType reportType, String findPrinterByValue, String printerName) {
         // if the printer name is passed it, return it
         if (Strings.isNotBlank(printerName)) {

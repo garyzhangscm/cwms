@@ -28,6 +28,8 @@ public class FileUploadType {
         List<FileUploadType> fileUploadTypes = new ArrayList<>();
 
         fileUploadTypes.add(new LocationFileUpload());
+        fileUploadTypes.add(new ItemFileUpload());
+        fileUploadTypes.add(new ItemUnitOfMeasureFileUpload());
 
 
         return fileUploadTypes;

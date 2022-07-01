@@ -12,6 +12,7 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -21,10 +22,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,7 +51,6 @@ public class ReportService implements TestDataInitiableService{
     private String reportResultFolder;
 
 
-
     @Autowired
     private ReportRepository reportRepository;
     @Autowired
@@ -61,6 +58,8 @@ public class ReportService implements TestDataInitiableService{
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
+    @Autowired
+    private PrinterService printerService;
 
     @Autowired
     private UserService userService;
@@ -89,12 +88,14 @@ public class ReportService implements TestDataInitiableService{
 
     public List<Report> findAll(Long companyId,
                                 Long warehouseId,
-                                String type) {
-        return findAll(companyId, warehouseId, type, true);
+                                String type,
+                                String printerType) {
+        return findAll(companyId, warehouseId, type, printerType,true);
     }
     public List<Report> findAll(Long companyId,
                                 Long warehouseId,
                                 String type,
+                                String printerType,
                                 boolean includeDetails) {
 
         List<Report> reports =  reportRepository.findAll(
@@ -116,6 +117,13 @@ public class ReportService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.equal(root.get("type"),
                                 ReportType.valueOf(type)));
                     }
+
+                    if (!StringUtils.isBlank(printerType)) {
+                        Join<Report, PrinterType> joinPrinterType= root.join("reportType", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinPrinterType.get("name"), printerType));
+                    }
+
+
 
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -151,48 +159,214 @@ public class ReportService implements TestDataInitiableService{
 
     public Report findByType(Long companyId,
                              Long warehouseId,
-                             ReportType type) {
-        return findByType(companyId, warehouseId, type, true);
+                             ReportType type,
+                             String printerName) {
+        PrinterType printerType = null;
+        if(Strings.isNotBlank(printerName)) {
+            Printer printer = printerService.findByName(warehouseId, printerName);
+            if (Objects.nonNull(printer)) {
+                printerType = printer.getPrinterType();
+            }
+        }
+        return findByType(companyId, warehouseId, type, printerType, true);
+    }
+
+    public Report findByType(Long companyId,
+                             Long warehouseId,
+                             ReportType type,
+                             PrinterType printerType) {
+        return findByType(companyId, warehouseId, type, printerType, true);
     }
     public Report findByType(Long companyId,
                              Long warehouseId,
                              ReportType type,
+                             PrinterType printerType,
                              boolean includeDetails) {
-        // check if we already have a customized report
-        // 1. warehouse customized report
-        // 2. company custmoized report
-        if (Objects.nonNull(warehouseId)) {
 
-            Report warehouseReport = reportRepository.findByWarehouseIdAndType(
-                    warehouseId, type
-            );
-            if (Objects.nonNull(warehouseReport)) {
-                if (includeDetails) {
-                    loadDetail(warehouseReport);
+        // we will get all the report of certain type first
+        // then we will filter out the report and get the most specific
+        // report according to the parameters of company id, warehouse id
+        // and printer name(from printer name, we can get the printer type,
+        // with the printer type, we can get the specific report with the
+        // type)
+        List<Report> reports = findAll(null, null, type.name(), null);
+
+        Report mostSpecificReport = getMostSpecificReport(reports, companyId, warehouseId,
+                type, printerType);
+
+        if (Objects.nonNull(mostSpecificReport) && includeDetails) {
+            loadDetail(mostSpecificReport);
+        }
+        return mostSpecificReport;
+
+    }
+
+    private Report getMostSpecificReport(List<Report> reports,
+                                         Long companyId,
+                                         Long warehouseId,
+                                         ReportType type,
+                                         String printerName) {
+        PrinterType printerType = null;
+        if (Strings.isNotBlank(printerName)) {
+            Printer printer = printerService.findByName(warehouseId, printerName);
+            printerType = printer.getPrinterType();
+        }
+        return getMostSpecificReport(reports, companyId, warehouseId,
+                type, printerType);
+
+    }
+    private Report getMostSpecificReport(List<Report> reports,
+                                         Long companyId,
+                                         Long warehouseId,
+                                         ReportType type,
+                                         PrinterType printerType) {
+        List<Report> sortedReports = sortAndFilterReport(
+                reports, companyId, warehouseId, type, printerType
+        );
+        if (sortedReports.isEmpty()) {
+            return null;
+        }
+        return sortedReports.get(0);
+    }
+
+    /**
+     * Sort the reports from most specific to most general based on the report's
+     * attribute:
+     * 1. printer type
+     * 2. warehouse
+     * 3. company
+     * @param reports
+     * @return
+     */
+    private List<Report> sortAndFilterReport(List<Report> reports,
+                                             Long companyId,
+                                             Long warehouseId,
+                                             ReportType type,
+                                             PrinterType printerType) {
+        List<Report> filterReports = reports.stream().filter(
+                report -> {
+                    // not the right type
+                    if (Objects.nonNull(type) && !type.equals(report.getType())) {
+                        logger.debug("Current report {}'s type is {}, doesn't match with the required type {}",
+                                report.getId(), report.getType(),
+                                type);
+                        return false;
+                    }
+
+                    // =========   Company   ====================
+                    // if company ID is passed in, then only return the report
+                    // with the specific company, or the one without company(global)
+                    if (Objects.isNull(companyId) && Objects.nonNull(report.getCompanyId())) {
+                        // we need a global default report but the current report is assigned
+                        // to certain company
+                        logger.debug("required company is null but the report belongs to company {}",
+                                report.getCompanyId());
+                        return false;
+                    }
+                    if (Objects.nonNull(companyId) && Objects.nonNull(report.getCompanyId())
+                        && !companyId.equals(report.getCompanyId())) {
+                        // we need a company specific report or a default report but the
+                        // current report is assigned to another company
+                        logger.debug("required company is {} but the report belongs to company {}",
+                                companyId, report.getCompanyId());
+                        return false;
+                    }
+                    // =========   Warehouse   ====================
+                    // if warehouse ID is passed in, then only return the report
+                    // with the specific warehouse, or the one without warehouse(global)
+                    if (Objects.isNull(warehouseId) && Objects.nonNull(report.getWarehouseId())) {
+                        // we need a global default report but the current report is assigned
+                        // to certain warehouse
+                        logger.debug("required warehouse is null but the report belongs to warehouse {}",
+                                report.getWarehouseId());
+                        return false;
+                    }
+                    if (Objects.nonNull(warehouseId) && Objects.nonNull(report.getWarehouseId())
+                            && !warehouseId.equals(report.getWarehouseId())) {
+                        // we need a warehouse specific report or a default report but the
+                        // current report is assigned to another warehouse
+                        logger.debug("required warehouse is {} but the report belongs to warehouse {}",
+                                warehouseId, report.getWarehouseId());
+                        return false;
+                    }
+
+                    // =========   Printer type   ====================
+                    // if printer name is passed in, we will get the printer type from it
+                    // if there's no printer type define for it, then we will only return the
+                    // report that not specific to any printer type. Otherwise, we will only
+                    // return the report that is defined for the specific printer
+                    if (Objects.isNull(printerType) && Objects.nonNull(report.getPrinterType())) {
+                        // we need a global default report but the current report is assigned
+                        // to certain printer type
+                        logger.debug("required printer name is null but the report belongs to printer type {}",
+                                 report.getPrinterType());
+                        return false;
+                    }
+                    if (Objects.nonNull(printerType) && Objects.nonNull(report.getPrinterType()) &&
+                            !printerType.equals(report.getPrinterType())) {
+                        logger.debug("required printer type is {} but the report belongs to printer type {}",
+                                printerType.getName(), report.getPrinterType().getName());
+                        return false;
+
+                    }
+
+                    logger.debug("The report with id {}, type {}, company {}, warehouse {}" +
+                            ", printer type {} passed all the validation against the requirement:" +
+                            " company id {}, warehouse id {}, type {}, printer type {}",
+                            report.getId(), report.getType(),
+                            Objects.isNull(report.getCompanyId()) ? "N/A" : report.getCompanyId(),
+                            Objects.isNull(report.getWarehouseId()) ? "N/A" : report.getWarehouseId(),
+                            Objects.isNull(report.getPrinterType()) ? "N/A" : report.getPrinterType(),
+                            Objects.isNull(companyId) ? "N/A" : companyId,
+                            Objects.isNull(warehouseId) ? "N/A" : warehouseId,
+                            Objects.isNull(type) ? "N/A" : type,
+                            Objects.isNull(printerType) ? "N/A" : printerType.getName());
+
+                    return true;
                 }
-                return warehouseReport;
-            }
-        }
-        if (Objects.nonNull(companyId)) {
-            Report companyReport = reportRepository.findByCompanyIdAndType(
-                    companyId, type
-            );
-            if (Objects.nonNull(companyReport)) {
-                if (includeDetails) {
-                    loadDetail(companyReport);
-                }
-                return companyReport;
-            }
-        }
+        ).collect(Collectors.toList());
 
-        // we don't have any customized version, let's
-        // return the standard version
-        Report standardReport =  findByType(type);
-        if (Objects.nonNull(standardReport) && includeDetails) {
-            loadDetail(standardReport);
-        }
-        return standardReport;
+        // let's sort from most specific to most general
+        logger.debug("=======   Before sort  the report =======");
+        logger.debug(filterReports.toString());
+        filterReports.sort((report1, report2) -> {
 
+            if (Objects.nonNull(report1.getPrinterType()) &&
+                    Objects.isNull(report2.getPrinterType())) {
+                return -1;
+            }
+            if (Objects.isNull(report1.getPrinterType()) &&
+                    Objects.nonNull(report2.getPrinterType())) {
+                return 1;
+            }
+
+            if (Objects.nonNull(report1.getWarehouseId()) &&
+                    Objects.isNull(report2.getWarehouseId())) {
+                return -1;
+            }
+            if (Objects.isNull(report1.getWarehouseId()) &&
+                    Objects.nonNull(report2.getWarehouseId())) {
+                return 1;
+            }
+
+            if (Objects.nonNull(report1.getCompanyId()) &&
+                    Objects.isNull(report2.getCompanyId())) {
+                return -1;
+            }
+            if (Objects.isNull(report1.getCompanyId()) &&
+                    Objects.nonNull(report2.getCompanyId())) {
+                return 1;
+            }
+
+            return 1;
+
+
+        });
+
+        logger.debug("=======   After sort  the report =======");
+        logger.debug(filterReports.toString());
+
+        return filterReports;
     }
 
     public  Report findByType(ReportType type) {
@@ -246,7 +420,7 @@ public class ReportService implements TestDataInitiableService{
             // but there's no such report, then the findByName may return
             // a company customized report, or a standard report
             Report matchedReport = findByType(report.getCompanyId(),
-                    report.getWarehouseId(), report.getType());
+                    report.getWarehouseId(), report.getType(), report.getPrinterType());
             // Let's see if this is a exact match
             if (report.equals(matchedReport)) {
                 report.setId(matchedReport.getId());
@@ -336,7 +510,7 @@ public class ReportService implements TestDataInitiableService{
     public ReportHistory generateReport(Long warehouseId,
                                  ReportType type,
                                  Report reportData,
-                                 String locale)
+                                 String locale, String printerName)
             throws IOException, JRException {
         Warehouse warehouse
                 = layoutServiceRestemplateClient.getWarehouseById(warehouseId);
@@ -348,7 +522,7 @@ public class ReportService implements TestDataInitiableService{
                         warehouseId,
                         type,
                         reportData,
-                        locale);
+                        locale, printerName);
             }
             else {
 
@@ -358,7 +532,7 @@ public class ReportService implements TestDataInitiableService{
                         warehouseId,
                         type,
                         reportData,
-                        locale);
+                        locale, printerName);
             }
         }
         else {
@@ -368,10 +542,10 @@ public class ReportService implements TestDataInitiableService{
     }
 
     private ReportHistory generateLabel(Long companyId, Long warehouseId, ReportType type,
-                                        Report reportData, String locale) throws IOException {
+                                        Report reportData, String locale, String printerName) throws IOException {
 
         // Meta data without any content
-        Report reportMetaData = findByType(companyId, warehouseId, type);
+        Report reportMetaData = findByType(companyId, warehouseId, type, printerName);
 
         if (Objects.isNull(reportMetaData)) {
             throw ReportFileMissingException.raiseException(
@@ -464,14 +638,15 @@ public class ReportService implements TestDataInitiableService{
     }
 
     public ReportHistory generateReport(Long companyId,
-                                 Long warehouseId,
-                                 ReportType type,
-                                 Report reportData,
-                                 String locale)
+                                         Long warehouseId,
+                                         ReportType type,
+                                         Report reportData,
+                                         String locale,
+                                        String printerName)
             throws IOException, JRException {
 
         // Meta data without any content
-        Report reportMetaData = findByType(companyId, warehouseId, type);
+        Report reportMetaData = findByType(companyId, warehouseId, type, printerName);
 
         if (Objects.isNull(reportMetaData)) {
             throw ReportFileMissingException.raiseException(

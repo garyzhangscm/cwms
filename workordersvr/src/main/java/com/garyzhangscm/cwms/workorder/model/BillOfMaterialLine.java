@@ -25,7 +25,7 @@ public class BillOfMaterialLine extends AuditibleEntity<String>{
     private BillOfMaterial billOfMaterial;
 
     @Column(name = "expected_quantity")
-    private Long expectedQuantity;
+    private Double expectedQuantity;
 
     @Column(name = "item_id")
     private Long itemId;
@@ -75,11 +75,11 @@ public class BillOfMaterialLine extends AuditibleEntity<String>{
         this.billOfMaterial = billOfMaterial;
     }
 
-    public Long getExpectedQuantity() {
+    public Double getExpectedQuantity() {
         return expectedQuantity;
     }
 
-    public void setExpectedQuantity(Long expectedQuantity) {
+    public void setExpectedQuantity(Double expectedQuantity) {
         this.expectedQuantity = expectedQuantity;
     }
 

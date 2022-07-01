@@ -45,6 +45,8 @@ public class ItemController {
     @Autowired
     ItemService itemService;
 
+    @Autowired
+    FileService fileService;
 
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -143,6 +145,17 @@ public class ItemController {
                                                       @RequestParam String itemName)  {
 
         return ResponseBodyWrapper.success(itemService.validateNewItemName(warehouseId, itemName));
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/items/upload")
+    public ResponseBodyWrapper uploadItems(@RequestParam("file") MultipartFile file) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+        List<Item> items = itemService.saveItemData(localFile);
+        return  ResponseBodyWrapper.success(items.size() + "");
     }
 
 

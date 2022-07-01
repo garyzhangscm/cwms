@@ -311,8 +311,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
         workOrderLine.setItemId(billOfMaterialLine.getItemId());
         workOrderLine.setInventoryStatusId(billOfMaterialLine.getInventoryStatusId());
 
-        workOrderLine.setExpectedQuantity(billOfMaterialLine.getExpectedQuantity() * workOrderCount);
-        workOrderLine.setOpenQuantity(billOfMaterialLine.getExpectedQuantity() * workOrderCount);
+        workOrderLine.setExpectedQuantity((long)(billOfMaterialLine.getExpectedQuantity() * workOrderCount));
+        workOrderLine.setOpenQuantity((long)(billOfMaterialLine.getExpectedQuantity() * workOrderCount));
         workOrderLine.setInprocessQuantity(0L);
         workOrderLine.setDeliveredQuantity(0L);
         workOrderLine.setConsumedQuantity(0L);

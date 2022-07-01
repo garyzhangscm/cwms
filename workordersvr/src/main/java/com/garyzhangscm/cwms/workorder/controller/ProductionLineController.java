@@ -81,9 +81,7 @@ public class ProductionLineController {
     @RequestMapping(value="/production-lines/{id}", method = RequestMethod.DELETE)
     public ProductionLine removeProductionLine(@PathVariable Long id) {
 
-        ProductionLine productionLine = productionLineService.findById(id);
-        productionLineService.delete(id);
-        return productionLine;
+        return productionLineService.removeProductionLine(id);
     }
 
     @BillableEndpoint

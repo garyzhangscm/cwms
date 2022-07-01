@@ -41,6 +41,12 @@ public class Report extends AuditibleEntity<String> {
     private String fileName;
 
 
+    // if the report format is only for
+    // a specific printer type
+    @ManyToOne
+    @JoinColumn(name="printer_type_id")
+    private PrinterType printerType;
+
     @Column(name = "orientation")
     @Enumerated(EnumType.STRING)
     private ReportOrientation reportOrientation ;
@@ -172,5 +178,13 @@ public class Report extends AuditibleEntity<String> {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public PrinterType getPrinterType() {
+        return printerType;
+    }
+
+    public void setPrinterType(PrinterType printerType) {
+        this.printerType = printerType;
     }
 }

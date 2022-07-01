@@ -9,7 +9,7 @@ public class BillOfMaterialLineCSVWrapper {
     private String warehouse;
     private String company;
 
-    private Long expectedQuantity;
+    private Double expectedQuantity;
 
     private String item;
 
@@ -39,11 +39,11 @@ public class BillOfMaterialLineCSVWrapper {
         this.billOfMaterial = billOfMaterial;
     }
 
-    public Long getExpectedQuantity() {
+    public Double getExpectedQuantity() {
         return expectedQuantity;
     }
 
-    public void setExpectedQuantity(Long expectedQuantity) {
+    public void setExpectedQuantity(Double expectedQuantity) {
         this.expectedQuantity = expectedQuantity;
     }
 

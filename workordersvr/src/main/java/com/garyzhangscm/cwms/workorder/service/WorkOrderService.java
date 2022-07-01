@@ -458,7 +458,7 @@ public class WorkOrderService implements TestDataInitiableService {
                     workOrder.getExpectedQuantity());
         }
 
-        Long workOrderCount = expectedQuantity / billOfMaterial.getExpectedQuantity();
+        Long workOrderCount = (long)(expectedQuantity / billOfMaterial.getExpectedQuantity());
         // Start to create work order line
         billOfMaterial.getBillOfMaterialLines()
                 .forEach(billOfMaterialLine ->
@@ -1402,7 +1402,7 @@ public class WorkOrderService implements TestDataInitiableService {
                 if (matchedBomLineOptional.isPresent()) {
                     BillOfMaterialLine matchedBomLine = matchedBomLineOptional.get();
                     // get the quantity we consumed
-                    Long consumedQuantity = quantity * matchedBomLine.getExpectedQuantity() / matchedBOM.getExpectedQuantity();
+                    Long consumedQuantity = (long)(quantity * matchedBomLine.getExpectedQuantity() / matchedBOM.getExpectedQuantity());
                     logger.debug("Will return {} quantity back to work order {}, item {}",
                             consumedQuantity, workOrderProduceTransaction.getWorkOrder().getNumber(),
                             workOrderLine.getItem().getName());
