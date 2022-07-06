@@ -162,9 +162,15 @@ public class ReportService implements TestDataInitiableService{
                              ReportType type,
                              String printerName) {
         PrinterType printerType = null;
+        logger.debug("Start to find the right report by company id {}, warehouse id {}, report type {}, printer name {}",
+                companyId, warehouseId, type, printerName);
         if(Strings.isNotBlank(printerName)) {
             Printer printer = printerService.findByName(warehouseId, printerName);
+            logger.debug("We found printer by name {}? {}",
+                    printerName, Objects.nonNull(printer) ? "Yes" : "N/A");
             if (Objects.nonNull(printer)) {
+                logger.debug(">> the printer {}'s type is {}",
+                        printer.getName(), printer.getPrinterType().getName());
                 printerType = printer.getPrinterType();
             }
         }
@@ -183,20 +189,21 @@ public class ReportService implements TestDataInitiableService{
                              PrinterType printerType,
                              boolean includeDetails) {
 
+        logger.debug("Start to find the right report by company id {}, warehouse id {}, report type {}, printer type {}",
+                companyId, warehouseId, type,
+                Objects.isNull(printerType) ? "N/A" : printerType.getName());
+
         // we will get all the report of certain type first
         // then we will filter out the report and get the most specific
         // report according to the parameters of company id, warehouse id
         // and printer name(from printer name, we can get the printer type,
         // with the printer type, we can get the specific report with the
         // type)
-        List<Report> reports = findAll(null, null, type.name(), null);
+        List<Report> reports = findAll(null, null, type.name(), null, includeDetails);
 
         Report mostSpecificReport = getMostSpecificReport(reports, companyId, warehouseId,
                 type, printerType);
 
-        if (Objects.nonNull(mostSpecificReport) && includeDetails) {
-            loadDetail(mostSpecificReport);
-        }
         return mostSpecificReport;
 
     }
@@ -220,6 +227,12 @@ public class ReportService implements TestDataInitiableService{
                                          Long warehouseId,
                                          ReportType type,
                                          PrinterType printerType) {
+
+        logger.debug("Start to get most specific report by company id {}, warehouse id {}, report type {}, printer type {}, from {} reports",
+                companyId, warehouseId, type,
+                Objects.isNull(printerType) ? "N/A" : printerType.getName(),
+                reports.size());
+
         List<Report> sortedReports = sortAndFilterReport(
                 reports, companyId, warehouseId, type, printerType
         );
@@ -413,6 +426,7 @@ public class ReportService implements TestDataInitiableService{
     public Report save(Report report) {
         return reportRepository.save(report);
     }
+
     public Report saveOrUpdate(Report report) {
         if (Objects.isNull(report.getId())) {
             // get the matched report. Not this may not be a exact match
@@ -420,7 +434,7 @@ public class ReportService implements TestDataInitiableService{
             // but there's no such report, then the findByName may return
             // a company customized report, or a standard report
             Report matchedReport = findByType(report.getCompanyId(),
-                    report.getWarehouseId(), report.getType(), report.getPrinterType());
+                    report.getWarehouseId(), report.getType(), report.getPrinterType(), false);
             // Let's see if this is a exact match
             if (report.equals(matchedReport)) {
                 report.setId(matchedReport.getId());
@@ -555,8 +569,8 @@ public class ReportService implements TestDataInitiableService{
         }
 
 
-        logger.debug("Find report meta data by company: {}, warehouse: {}, type: {}",
-                companyId, warehouseId, type);
+        logger.debug("Find report meta data by company: {}, warehouse: {}, type: {}, printerName: {}",
+                companyId, warehouseId, type, printerName);
         logger.debug(reportMetaData.toString());
 
 
@@ -1076,6 +1090,8 @@ public class ReportService implements TestDataInitiableService{
                     report.getFileName().substring(0, report.getFileName().length() - 6)
             );
         }
+
+
 
         return saveOrUpdate(report);
 

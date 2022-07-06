@@ -447,13 +447,14 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
 
-    public ReportHistory generateReceivingDocument(Long receiptId, String locale)
+    public ReportHistory generateReceivingDocument(Long receiptId, String locale, String printerName)
             throws JsonProcessingException {
 
 
-        return generateReceivingDocument(findById(receiptId), locale);
+        return generateReceivingDocument(findById(receiptId), locale, printerName);
     }
-    public ReportHistory generateReceivingDocument(Receipt receipt, String locale)
+    public ReportHistory generateReceivingDocument(Receipt receipt, String locale,
+                                                   String printerName)
             throws JsonProcessingException {
 
 
@@ -474,7 +475,8 @@ public class ReceiptService implements TestDataInitiableService{
         // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.RECEIVING_DOCUMENT, reportData, locale
+                        warehouseId, ReportType.RECEIVING_DOCUMENT, reportData, locale,
+                        printerName
                 );
 
 
@@ -551,17 +553,19 @@ public class ReceiptService implements TestDataInitiableService{
 
     public ReportHistory generatePutawayDocument(Long receiptId, String locale,
                                                  String inventoryIds,
-                                                 Boolean notPutawayInventoryOnly)
+                                                 Boolean notPutawayInventoryOnly,
+                                                 String printerName)
             throws JsonProcessingException {
         logger.debug("Start to generate putaway document for receipt id: {}",
                 receiptId);
 
         return generatePutawayDocument(findById(receiptId), locale,
-                inventoryIds, notPutawayInventoryOnly);
+                inventoryIds, notPutawayInventoryOnly, printerName);
     }
     public ReportHistory generatePutawayDocument(Receipt receipt, String locale,
                                                  String inventoryIds,
-                                                 Boolean notPutawayInventoryOnly)
+                                                 Boolean notPutawayInventoryOnly,
+                                                 String printerName)
             throws JsonProcessingException {
 
         Long warehouseId = receipt.getWarehouseId();
@@ -583,7 +587,8 @@ public class ReceiptService implements TestDataInitiableService{
         // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.PUTAWAY_DOCUMENT, reportData, locale
+                        warehouseId, ReportType.PUTAWAY_DOCUMENT, reportData, locale,
+                        printerName
                 );
 
 
@@ -678,12 +683,13 @@ public class ReceiptService implements TestDataInitiableService{
         return commonServiceRestemplateClient.getNextNumber(warehouseId, "receipt-number");
     }
 
-    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity, String locale)
+    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity, String locale, String printerName)
             throws JsonProcessingException {
-        return generatePrePrintLPNLabel(receiptLineService.findById(id), lpnNumber, lpnQuantity, locale);
+        return generatePrePrintLPNLabel(receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
     }
 
-    public ReportHistory generatePrePrintLPNLabel(ReceiptLine receiptLine, String lpnNumber, Long lpnQuantity, String locale)
+    public ReportHistory generatePrePrintLPNLabel(ReceiptLine receiptLine, String lpnNumber, Long lpnQuantity, String locale,
+                                                  String printerName)
             throws JsonProcessingException {
         Long warehouseId = receiptLine.getWarehouseId();
 
@@ -699,7 +705,8 @@ public class ReceiptService implements TestDataInitiableService{
         logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale
+                        warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale,
+                        printerName
                 );
 
 
@@ -802,15 +809,17 @@ public class ReceiptService implements TestDataInitiableService{
      * @return
      */
     public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long lpnQuantity, Integer count,
-                                                         Integer copies, String locale) throws JsonProcessingException {
+                                                         Integer copies, String locale,
+                                                         String printerName) throws JsonProcessingException {
         return generatePrePrintLPNLabelInBatch(
                 receiptLineService.findById(id),
-                lpn, lpnQuantity, count, copies, locale
+                lpn, lpnQuantity, count, copies, locale, printerName
         );
     }
 
     public ReportHistory generatePrePrintLPNLabelInBatch(ReceiptLine receiptLine, String lpn, Long lpnQuantity, Integer count,
-                                                         Integer copies, String locale) throws JsonProcessingException {
+                                                         Integer copies, String locale,
+                                                         String printerName) throws JsonProcessingException {
 
         Long warehouseId = receiptLine.getWarehouseId();
         List<String> lpnNumbers;
@@ -837,7 +846,8 @@ public class ReceiptService implements TestDataInitiableService{
             logger.debug(reportData.toString());
             ReportHistory reportHistory =
                     resourceServiceRestemplateClient.generateReport(
-                            warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale
+                            warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale,
+                            printerName
                     );
 
 

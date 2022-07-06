@@ -159,9 +159,10 @@ public class CustomerReturnOrderController {
     @RequestMapping(value="/customer-return-orders/{id}/document", method = RequestMethod.POST)
     public ReportHistory generateDocument(
             @PathVariable Long id,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName) throws JsonProcessingException {
 
-        return customerReturnOrderService.generateReceivingDocument(id, locale);
+        return customerReturnOrderService.generateReceivingDocument(id, locale, printerName);
     }
 
     @BillableEndpoint
@@ -170,9 +171,10 @@ public class CustomerReturnOrderController {
             @PathVariable Long id,
             @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
             @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName) throws JsonProcessingException {
 
-        return customerReturnOrderService.generatePutawayDocument(id, locale, inventoryIds, notPutawayInventoryOnly);
+        return customerReturnOrderService.generatePutawayDocument(id, locale, inventoryIds, notPutawayInventoryOnly, printerName);
     }
 
 }

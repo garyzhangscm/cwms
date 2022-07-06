@@ -178,9 +178,10 @@ public class ReceiptController {
     @RequestMapping(value="/receipts/{id}/receiving-document", method = RequestMethod.POST)
     public ReportHistory generateReceivingDocument(
             @PathVariable Long id,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName) throws JsonProcessingException {
 
-        return receiptService.generateReceivingDocument(id, locale);
+        return receiptService.generateReceivingDocument(id, locale, printerName);
     }
 
     @BillableEndpoint
@@ -189,9 +190,10 @@ public class ReceiptController {
             @PathVariable Long id,
             @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
             @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName) throws JsonProcessingException {
 
-        return receiptService.generatePutawayDocument(id, locale, inventoryIds, notPutawayInventoryOnly);
+        return receiptService.generatePutawayDocument(id, locale, inventoryIds, notPutawayInventoryOnly, printerName);
     }
 
 
@@ -201,11 +203,12 @@ public class ReceiptController {
             @PathVariable Long id,
             @RequestParam String lpn,
             @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabel(id, lpn, quantity, locale);
+        return receiptService.generatePrePrintLPNLabel(id, lpn, quantity, locale, printerName);
     }
 
     @BillableEndpoint
@@ -216,11 +219,12 @@ public class ReceiptController {
             @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
             @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, locale);
+        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, locale, printerName);
     }
 
 

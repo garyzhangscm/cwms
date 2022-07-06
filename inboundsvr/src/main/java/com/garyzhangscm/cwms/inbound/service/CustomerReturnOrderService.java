@@ -296,13 +296,14 @@ public class CustomerReturnOrderService{
 
 
 
-    public ReportHistory generateReceivingDocument(Long customerReturnOrderId, String locale)
+    public ReportHistory generateReceivingDocument(Long customerReturnOrderId, String locale, String printerName)
             throws JsonProcessingException {
 
 
-        return generateReceivingDocument(findById(customerReturnOrderId), locale);
+        return generateReceivingDocument(findById(customerReturnOrderId), locale, printerName);
     }
-    public ReportHistory generateReceivingDocument(CustomerReturnOrder customerReturnOrder, String locale)
+    public ReportHistory generateReceivingDocument(CustomerReturnOrder customerReturnOrder, String locale,
+                                                   String printerName)
             throws JsonProcessingException {
 
 
@@ -323,7 +324,7 @@ public class CustomerReturnOrderService{
         // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.RECEIVING_DOCUMENT, reportData, locale
+                        warehouseId, ReportType.RECEIVING_DOCUMENT, reportData, locale, printerName
                 );
 
 
@@ -399,17 +400,19 @@ public class CustomerReturnOrderService{
 
     public ReportHistory generatePutawayDocument(Long customerReturnOrderId, String locale,
                                                  String inventoryIds,
-                                                 Boolean notPutawayInventoryOnly)
+                                                 Boolean notPutawayInventoryOnly,
+                                                 String printerName)
             throws JsonProcessingException {
         logger.debug("Start to generate putaway document for customer return order id: {}",
                 customerReturnOrderId);
 
         return generatePutawayDocument(findById(customerReturnOrderId), locale,
-                inventoryIds, notPutawayInventoryOnly);
+                inventoryIds, notPutawayInventoryOnly, printerName);
     }
     public ReportHistory generatePutawayDocument(CustomerReturnOrder customerReturnOrder, String locale,
                                                  String inventoryIds,
-                                                 Boolean notPutawayInventoryOnly)
+                                                 Boolean notPutawayInventoryOnly,
+                                                 String printerName)
             throws JsonProcessingException {
 
         Long warehouseId = customerReturnOrder.getWarehouseId();
@@ -431,7 +434,7 @@ public class CustomerReturnOrderService{
         // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.PUTAWAY_DOCUMENT, reportData, locale
+                        warehouseId, ReportType.PUTAWAY_DOCUMENT, reportData, locale, printerName
                 );
 
 

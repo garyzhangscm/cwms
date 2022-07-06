@@ -189,7 +189,7 @@ public class ReportHistoryService {
         // 2. company specific report: reportResultFolder/companyId
         // 3. warehouse specific report: reportResultFolder/companyId/warehouseId
         Report reportMetaData = reportService.findByType(companyId, warehouseId,
-                ReportType.valueOf(type), false);
+                ReportType.valueOf(type), null, false);
 
         String fileUrl = getReportResultFolder(reportMetaData) + filename;
 

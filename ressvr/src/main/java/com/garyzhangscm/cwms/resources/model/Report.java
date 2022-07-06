@@ -79,7 +79,8 @@ public class Report extends AuditibleEntity<String> {
         }
         return  Objects.equals(warehouseId, that.warehouseId) &&
                 Objects.equals(companyId, that.companyId) &&
-                Objects.equals(type, that.type);
+                Objects.equals(type, that.type) &&
+                Objects.equals(printerType, that.getPrinterType());
     }
 
 

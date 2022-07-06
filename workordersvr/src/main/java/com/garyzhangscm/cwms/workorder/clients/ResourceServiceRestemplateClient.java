@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.workorder.model.Report;
 import com.garyzhangscm.cwms.workorder.model.ReportHistory;
 import com.garyzhangscm.cwms.workorder.model.ReportType;
 import com.garyzhangscm.cwms.workorder.model.User;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,13 +56,16 @@ public class ResourceServiceRestemplateClient {
     private ObjectMapper objectMapper;
 
     public ReportHistory generateReport(Long warehouseId, ReportType type,
-                                        Report reportData, String locale)
+                                        Report reportData, String locale, String printerName)
             throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
+        if (Strings.isNotBlank(printerName)) {
+            builder = builder.queryParam("printerName", printerName);
+        }
 
         ResponseBodyWrapper<ReportHistory> responseBodyWrapper
                 = restTemplate.exchange(
