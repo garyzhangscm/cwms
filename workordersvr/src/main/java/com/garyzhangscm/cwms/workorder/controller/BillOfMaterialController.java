@@ -21,17 +21,27 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
+import com.garyzhangscm.cwms.workorder.model.BillOfMaterialLine;
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
+import com.garyzhangscm.cwms.workorder.service.BillOfMaterialLineService;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
+import com.garyzhangscm.cwms.workorder.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
 public class BillOfMaterialController {
     @Autowired
     BillOfMaterialService billOfMaterialService;
+    @Autowired
+    private BillOfMaterialLineService billOfMaterialLineService;
+    @Autowired
+    FileService fileService;
 
 
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.GET)
@@ -83,6 +93,16 @@ public class BillOfMaterialController {
     public ResponseBodyWrapper<String> validateNewBOMNumber(@RequestParam Long warehouseId,
                                                             @RequestParam String number) {
         return ResponseBodyWrapper.success(billOfMaterialService.validateNewBOMNumber(warehouseId, number));
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/bill-of-materials/upload")
+    public ResponseBodyWrapper uploadBillOfMaterials(@RequestParam("file") MultipartFile file) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+        List<BillOfMaterialLine> billOfMaterialLines = billOfMaterialLineService.saveBOMLineData(localFile);
+        return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
     }
 
 }

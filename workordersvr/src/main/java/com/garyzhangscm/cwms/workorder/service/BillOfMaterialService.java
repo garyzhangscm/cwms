@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -228,7 +229,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
         }
     }
 
-    private BillOfMaterial convertFromWrapper(BillOfMaterialCSVWrapper billOfMaterialCSVWrapper) {
+    public BillOfMaterial convertFromWrapper(BillOfMaterialCSVWrapper billOfMaterialCSVWrapper) {
 
         BillOfMaterial billOfMaterial = new BillOfMaterial();
         billOfMaterial.setNumber(billOfMaterialCSVWrapper.getNumber());
@@ -500,4 +501,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
         return Objects.isNull(billOfMaterial) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
 
     }
+
+
+
 }

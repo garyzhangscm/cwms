@@ -1790,5 +1790,7 @@
   "menu.main.report.printer-type": "Printer Type",
   "printer-type": "Printer Type",
   "page.report.printer.new": "Add Printer",
-  "page.report.printer.modify": "Modify Printer"
+  "page.report.printer.modify": "Modify Printer",
+  "mark-as-read": "Mark As Read",
+  "web-message-alert": "Alert"
 }
