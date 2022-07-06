@@ -22,15 +22,21 @@ import com.garyzhangscm.cwms.resources.model.AlertSubscription;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.WebMessageAlert;
 import com.garyzhangscm.cwms.resources.service.AlertSubscriptionService;
+import com.garyzhangscm.cwms.resources.service.DepartmentService;
 import com.garyzhangscm.cwms.resources.service.WebMessageAlertService;
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class WebMessageAlertController {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebMessageAlertController.class);
     @Autowired
     WebMessageAlertService webMessageAlertService;
 
@@ -41,6 +47,15 @@ public class WebMessageAlertController {
                                                         @RequestParam(value = "readFlag", defaultValue = "", required = false) Boolean readFlag,
                                                         @RequestParam(value = "pi", defaultValue = "", required = false) Integer pageNumber,
                                                         @RequestParam(value = "ps", defaultValue = "", required = false) Integer pageSize) {
+
+        logger.debug("Start to get web message alert by company id {}, alert id {}, " +
+                "username {}, read flag {}, page number {}, page size {}",
+                companyId,
+                Objects.isNull(alertId) ? "N/A" : alertId,
+                Strings.isBlank(username) ? "N/A" : username,
+                Objects.isNull(readFlag) ? "N/A" : readFlag,
+                Objects.isNull(pageNumber) ? "N/A" : pageNumber,
+                Objects.isNull(pageSize) ? "N/A" : pageSize);
         return webMessageAlertService.findAll(companyId, username, alertId, readFlag, pageNumber, pageSize);
     }
 

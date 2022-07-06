@@ -30,6 +30,7 @@ public class FileUploadType {
         fileUploadTypes.add(new LocationFileUpload());
         fileUploadTypes.add(new ItemFileUpload());
         fileUploadTypes.add(new ItemUnitOfMeasureFileUpload());
+        fileUploadTypes.add(new BillOfMaterialFileUpload());
 
 
         return fileUploadTypes;

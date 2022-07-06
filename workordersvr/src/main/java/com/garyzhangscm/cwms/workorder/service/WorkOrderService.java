@@ -444,6 +444,7 @@ public class WorkOrderService implements TestDataInitiableService {
         workOrder.setExpectedQuantity(expectedQuantity);
         workOrder.setProducedQuantity(0L);
         workOrder.setStatus(WorkOrderStatus.PENDING);
+        workOrder.setBillOfMaterial(billOfMaterial);
 
 
         WorkOrder savedWorkOrder = save(workOrder);

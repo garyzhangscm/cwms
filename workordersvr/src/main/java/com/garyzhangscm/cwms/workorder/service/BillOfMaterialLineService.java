@@ -32,10 +32,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -156,19 +159,29 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
     }
 
 
-    public List<BillOfMaterialLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
-
-        CsvSchema schema = CsvSchema.builder().
+    private CsvSchema getCsvSchema() {
+        return  CsvSchema.builder().
                 addColumn("company").
-                addColumn("number").
                 addColumn("warehouse").
                 addColumn("billOfMaterial").
+                addColumn("bomItem").
+                addColumn("bomExpectedQuantity").
+                addColumn("number").
                 addColumn("item").
                 addColumn("inventoryStatus").
                 addColumn("expectedQuantity").
                 build().withHeader();
+    }
 
-        return fileService.loadData(inputStream, schema, BillOfMaterialLineCSVWrapper.class);
+    public List<BillOfMaterialLineCSVWrapper> loadData(File file) throws IOException {
+
+
+        return fileService.loadData(file, getCsvSchema(), BillOfMaterialLineCSVWrapper.class);
+    }
+
+    public List<BillOfMaterialLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
+
+        return fileService.loadData(inputStream, getCsvSchema(), BillOfMaterialLineCSVWrapper.class);
     }
 
     public void initTestData(Long companyId, String warehouseName) {
@@ -190,6 +203,7 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
     private BillOfMaterialLine convertFromWrapper(BillOfMaterialLineCSVWrapper billOfMaterialLineCSVWrapper) {
 
         BillOfMaterialLine billOfMaterialLine = new BillOfMaterialLine();
+
         billOfMaterialLine.setNumber(billOfMaterialLineCSVWrapper.getNumber());
         billOfMaterialLine.setExpectedQuantity(billOfMaterialLineCSVWrapper.getExpectedQuantity());
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
@@ -197,8 +211,15 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
                 billOfMaterialLineCSVWrapper.getWarehouse()
         );
 
-        billOfMaterialLine.setBillOfMaterial(
-                billOfMaterialService.findByNumber(warehouse.getId(), billOfMaterialLineCSVWrapper.getBillOfMaterial()));
+        // let's check if already have the BOM header
+        BillOfMaterial billOfMaterial =
+                billOfMaterialService.findByNumber(warehouse.getId(), billOfMaterialLineCSVWrapper.getBillOfMaterial());
+        if (Objects.isNull(billOfMaterial)) {
+            // BOM is not created yet, let's create it on the fly
+            billOfMaterial = createBillOfMaterial(billOfMaterialLineCSVWrapper);
+        }
+
+        billOfMaterialLine.setBillOfMaterial(billOfMaterial);
 
         billOfMaterialLine.setItemId(
                 inventoryServiceRestemplateClient.getItemByName(
@@ -214,6 +235,19 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
         return billOfMaterialLine;
     }
 
+    private BillOfMaterial createBillOfMaterial(BillOfMaterialLineCSVWrapper billOfMaterialLineCSVWrapper) {
+        BillOfMaterialCSVWrapper billOfMaterialCSVWrapper = new BillOfMaterialCSVWrapper();
+        billOfMaterialCSVWrapper.setCompany(billOfMaterialLineCSVWrapper.getCompany());
+        billOfMaterialCSVWrapper.setExpectedQuantity(billOfMaterialLineCSVWrapper.getBomExpectedQuantity());
+        billOfMaterialCSVWrapper.setNumber(billOfMaterialLineCSVWrapper.getBillOfMaterial());
+        billOfMaterialCSVWrapper.setItem(billOfMaterialLineCSVWrapper.getBomItem());
+        billOfMaterialCSVWrapper.setWarehouse(billOfMaterialLineCSVWrapper.getWarehouse());
+
+        return billOfMaterialService.saveOrUpdate(
+                billOfMaterialService.convertFromWrapper(billOfMaterialCSVWrapper)
+        );
+    }
+
 
     public boolean match(BillOfMaterialLine billOfMaterialLine, WorkOrderLine workOrderLine) {
 
@@ -223,5 +257,18 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
         else {
             return false;
         }
+    }
+    public List<BillOfMaterialLine> saveBOMLineData(File localFile) throws IOException {
+        List<BillOfMaterialLine> billOfMaterialLines = loadBOMLineData(localFile);
+        return billOfMaterialLines.stream().map(this::saveOrUpdate).collect(Collectors.toList());
+    }
+
+    public List<BillOfMaterialLine> loadBOMLineData(File  file) throws IOException {
+        List<BillOfMaterialLineCSVWrapper> billOfMaterialLineCSVWrappers = loadData(file);
+
+        logger.debug("loadBOMLineData / billOfMaterialLineCSVWrappers >>\n{}", billOfMaterialLineCSVWrappers);
+
+        return billOfMaterialLineCSVWrappers.stream()
+                .map(billOfMaterialLineCSVWrapper -> convertFromWrapper(billOfMaterialLineCSVWrapper)).collect(Collectors.toList());
     }
 }

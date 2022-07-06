@@ -101,7 +101,7 @@ public class WebMessageAlertService {
 
                         predicates.add(criteriaBuilder.equal(joinUser.get("username"), username));
                     }
-                    if (Objects.isNull(readFlag)) {
+                    if (Objects.nonNull(readFlag)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("readFlag"), readFlag));
                     }

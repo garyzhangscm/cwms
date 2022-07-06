@@ -373,7 +373,7 @@ public class WorkOrderProduceTransactionService  {
         if (workOrderConfigurationService.getWorkOrderMaterialConsumeTiming(
                 workOrderProduceTransaction.getWorkOrder()).equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)) {
 
-            if(workOrderProduceTransaction.getWorkOrder().getConsumeByBomOnly() == true) {
+            if(Boolean.TRUE.equals(workOrderProduceTransaction.getWorkOrder().getConsumeByBomOnly())) {
                 validateWorkOrderLineConsumeTransactionByBom(workOrderProduceTransaction);
             }
             else {
@@ -579,7 +579,7 @@ public class WorkOrderProduceTransactionService  {
 
             throw  WorkOrderException.raiseException(
                     "Can't consume the quantity for work order line " +
-                            workOrderLine.getWorkOrder().getNumber() +
+                            workOrderLine.getWorkOrderNumber() +
                             " / " + workOrderLine.getItem().getName() +
                             " from Production line " + productionLine.getName() +
                             ". Not enough quantity left. we can only consume quantity " + (totalDeliveredQuantity - totalConsumedQuantity));
