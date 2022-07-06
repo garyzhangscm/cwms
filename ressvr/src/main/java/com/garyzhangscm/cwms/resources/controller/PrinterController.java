@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.Printer;
 import com.garyzhangscm.cwms.resources.model.PrinterType;
@@ -43,6 +44,16 @@ public class PrinterController {
     PrinterService printerService;
 
 
+    /**
+     * Return the printers that already installed in the server
+     * @return a list of printer name return from the server
+     */
+    @RequestMapping(value="/server-printers", method = RequestMethod.GET)
+    public List<String> getServerPrinters() {
+
+        return printerService.getServerPrinters();
+    }
+
 
     @RequestMapping(value="/printers", method = RequestMethod.GET)
     public List<Printer> findAllPrinters(Long warehouseId,
@@ -59,6 +70,17 @@ public class PrinterController {
         printer.setWarehouseId(warehouseId);
         return printerService.addPrinter(printer);
     }
+
+    @BillableEndpoint
+    @RequestMapping(value="/printers/{id}", method = RequestMethod.POST)
+    public Printer changePrinter(@PathVariable Long id,
+                                 @RequestParam Long warehouseId,
+                                 @RequestBody Printer printer) throws IOException {
+
+        printer.setWarehouseId(warehouseId);
+        return printerService.changePrinter(id, printer);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/printers/{id}", method = RequestMethod.DELETE)

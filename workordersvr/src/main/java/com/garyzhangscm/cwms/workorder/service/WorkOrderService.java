@@ -1194,12 +1194,15 @@ public class WorkOrderService implements TestDataInitiableService {
         return Objects.isNull(workOrder) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
 
-    public ReportHistory generatePickReportByWorkOrder(Long workOrderId, String locale) throws IOException {
+    public ReportHistory generatePickReportByWorkOrder(Long workOrderId, String locale,
+                                                       String printerName) throws IOException {
 
-        return generatePickReportByWorkOrder(findById(workOrderId), locale);
+        return generatePickReportByWorkOrder(findById(workOrderId), locale,
+                printerName);
     }
 
-    public ReportHistory generatePickReportByWorkOrder(WorkOrder workOrder, String locale)
+    public ReportHistory generatePickReportByWorkOrder(WorkOrder workOrder, String locale,
+                                                       String printerName)
             throws IOException {
 
         Long warehouseId = workOrder.getWarehouseId();
@@ -1219,7 +1222,8 @@ public class WorkOrderService implements TestDataInitiableService {
         // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.WORK_ORDER_PICK_SHEET, reportData, locale
+                        warehouseId, ReportType.WORK_ORDER_PICK_SHEET, reportData, locale,
+                        printerName
                 );
 
 
@@ -1420,14 +1424,16 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity,
                                                   String productionLineName,
-                                                  String locale) throws JsonProcessingException {
+                                                  String locale,
+                                                  String printerName) throws JsonProcessingException {
 
-        return generatePrePrintLPNLabel(findById(id), lpnNumber, lpnQuantity, productionLineName, locale);
+        return generatePrePrintLPNLabel(findById(id), lpnNumber, lpnQuantity,
+                productionLineName, locale, printerName);
     }
 
     public ReportHistory generatePrePrintLPNLabel(WorkOrder workOrder, String lpnNumber, Long lpnQuantity,
                                                   String productionLineName,
-                                                  String locale)
+                                                  String locale, String printerName)
             throws JsonProcessingException {
 
         Long warehouseId = workOrder.getWarehouseId();
@@ -1445,7 +1451,9 @@ public class WorkOrderService implements TestDataInitiableService {
         // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL, reportData, locale
+                        warehouseId, ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL,
+                        reportData, locale, printerName
+
                 );
 
 
@@ -1534,10 +1542,13 @@ public class WorkOrderService implements TestDataInitiableService {
     public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpnNumber,
                                                          Long lpnQuantity, Integer count,
                                                          Integer copies,
-                                                         String productionLineName, String locale) throws JsonProcessingException {
+                                                         String productionLineName,
+                                                         String locale,
+                                                         String printerName) throws JsonProcessingException {
         return generatePrePrintLPNLabelInBatch(
                 findById(id),
-                lpnNumber, lpnQuantity, count, copies, productionLineName, locale
+                lpnNumber, lpnQuantity, count, copies, productionLineName,
+                locale, printerName
         );
     }
 
@@ -1545,7 +1556,8 @@ public class WorkOrderService implements TestDataInitiableService {
                                                          Integer count,
                                                          Integer copies,
                                                          String productionLineName,
-                                                         String locale) throws JsonProcessingException {
+                                                         String locale,
+                                                         String printerName) throws JsonProcessingException {
 
         Long warehouseId = workOrder.getWarehouseId();
         List<String> lpnNumbers;
@@ -1572,7 +1584,9 @@ public class WorkOrderService implements TestDataInitiableService {
             logger.debug(reportData.toString());
             ReportHistory reportHistory =
                     resourceServiceRestemplateClient.generateReport(
-                            warehouseId, ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL, reportData, locale
+                            warehouseId, ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL,
+                            reportData, locale,
+                            printerName
                     );
 
 

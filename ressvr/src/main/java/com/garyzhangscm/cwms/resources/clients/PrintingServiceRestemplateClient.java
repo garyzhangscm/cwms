@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.resources.clients;
 
+import com.garyzhangscm.cwms.resources.PrinterConfiguration;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.ReportType;
 import com.garyzhangscm.cwms.resources.service.ReportHistoryService;
@@ -26,6 +27,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
@@ -47,11 +49,14 @@ public class PrintingServiceRestemplateClient  {
     private static final Logger logger
             = LoggerFactory.getLogger(PrintingServiceRestemplateClient.class);
 
-    private final String PRINTING_SERVER_URL = "http://10.0.10.5:10888";
+    @Autowired
+    private PrinterConfiguration printerConfiguration;
 
     public List<String> getPrinters() {
-        String url = PRINTING_SERVER_URL + "/printers";
 
+        String url = printerConfiguration.getUrl() + "/printers";
+
+        logger.debug("Start to get printers from {}", url);
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -68,11 +73,11 @@ public class PrintingServiceRestemplateClient  {
     }
     public void sendPrintingRequest(File file, ReportType reportType, String printer, int copies) {
         logger.debug("Start to send file {} to printing server: {}, copies: {}",
-                file.getName(), PRINTING_SERVER_URL, copies);
+                file.getName(), printerConfiguration.getUrl(), copies);
 
         logger.debug("Report type {} is label? {}",
                 reportType, reportType.isLabel());
-        String url = PRINTING_SERVER_URL + "/printing/" +
+        String url = printerConfiguration.getUrl() + "/printing/" +
                 (reportType.isLabel() ? "label" : "pdf") +
                 "?copies=" + copies;
         // if printer is specified, add printer to the parameters

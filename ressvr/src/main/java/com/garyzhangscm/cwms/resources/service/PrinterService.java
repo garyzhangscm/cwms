@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
+import com.garyzhangscm.cwms.resources.PrinterConfiguration;
+import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.Printer;
 import com.garyzhangscm.cwms.resources.model.PrinterType;
@@ -28,12 +30,14 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -44,9 +48,14 @@ public class PrinterService  {
     private ReportPrinterConfigurationService reportPrinterConfigurationService;
 
     @Autowired
+    PrintingServiceRestemplateClient printingServiceRestemplateClient;
+
+    @Autowired
     private PrinterRepository printerRepository;
 
 
+    @Autowired
+    private PrinterConfiguration printerConfiguration;
 
     public Printer findById(Long id) {
         Printer printer =  printerRepository.findById(id)
@@ -122,7 +131,12 @@ public class PrinterService  {
         printerRepository.deleteById(id);
 
     }
-
+    public List<String> getServerPrinters() {
+        if (Boolean.TRUE.equals(printerConfiguration.getTestPrintersOnly())) {
+            return printerConfiguration.getTestPrinters().stream().map(printer -> printer.getName()).collect(Collectors.toList());
+        }
+        return printingServiceRestemplateClient.getPrinters();
+    }
 
 
     public String getPrinter(Long companyId, Long warehouseId, ReportType reportType, String findPrinterByValue, String printerName) {
@@ -134,5 +148,10 @@ public class PrinterService  {
         return reportPrinterConfigurationService.getPrinterName(
                 warehouseId, reportType, findPrinterByValue
         );
+    }
+
+    public Printer changePrinter(Long id, Printer printer) {
+        printer.setId(id);
+        return saveOrUpdate(printer);
     }
 }

@@ -232,10 +232,11 @@ public class WorkOrderController {
     @RequestMapping(value="/work-orders/{id}/pick-report", method = RequestMethod.POST)
     public ReportHistory generateOrderPickReport(
             @PathVariable Long id,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws IOException {
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName) throws IOException {
 
         logger.debug("start print pick sheet for order with id: {}", id);
-        return workOrderService.generatePickReportByWorkOrder(id, locale);
+        return workOrderService.generatePickReportByWorkOrder(id, locale, printerName);
     }
 
 
@@ -262,13 +263,14 @@ public class WorkOrderController {
     public ReportHistory generatePrePrintLPNLabel(
             @PathVariable Long id,
             @RequestParam String lpn,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
             @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
             @RequestParam(name = "productionLineName", defaultValue = "", required = false) String productionLineName,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale
             ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return workOrderService.generatePrePrintLPNLabel(id, lpn, quantity, productionLineName, locale);
+        return workOrderService.generatePrePrintLPNLabel(id, lpn, quantity, productionLineName, locale, printerName);
     }
 
     @BillableEndpoint
@@ -280,11 +282,13 @@ public class WorkOrderController {
             @RequestParam(name = "productionLineName", defaultValue = "", required = false) String productionLineName,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
             @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return workOrderService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, productionLineName, locale);
+        return workOrderService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity,
+                count, copies, productionLineName, locale, printerName);
     }
 
 

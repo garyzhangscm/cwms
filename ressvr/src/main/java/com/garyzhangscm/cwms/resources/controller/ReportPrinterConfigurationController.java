@@ -49,8 +49,6 @@ public class ReportPrinterConfigurationController {
 
     @Autowired
     ReportPrinterConfigurationService reportPrinterConfigurationService;
-    @Autowired
-    PrintingServiceRestemplateClient printingServiceRestemplateClient;
 
 
     @RequestMapping(value="/report-printer-configuration", method = RequestMethod.GET)
@@ -87,12 +85,6 @@ public class ReportPrinterConfigurationController {
     ) {
 
         return reportPrinterConfigurationService.addReportPrinterConfiguration(reportPrinterConfiguration);
-    }
-
-    @RequestMapping(value="/printers", method = RequestMethod.GET)
-    public List<String> getPrinters() {
-
-        return printingServiceRestemplateClient.getPrinters();
     }
 
     @BillableEndpoint

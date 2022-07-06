@@ -481,7 +481,7 @@ public class ProductionLineAssignmentService   {
 
 
     public ReportHistory generateProductionLineAssignmentLabel(
-            Long productionLineAssignmentId, String locale) throws JsonProcessingException {
+            Long productionLineAssignmentId, String locale, String printerName) throws JsonProcessingException {
         ProductionLineAssignment productionLineAssignment =
                 findById(productionLineAssignmentId);
 
@@ -497,7 +497,8 @@ public class ProductionLineAssignmentService   {
                 resourceServiceRestemplateClient.generateReport(
                         productionLineAssignment.getWorkOrder().getWarehouseId(),
                         ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL,
-                        reportData, locale
+                        reportData, locale,
+                        printerName
                 );
 
 
@@ -506,7 +507,7 @@ public class ProductionLineAssignmentService   {
     }
 
     public ReportHistory generateProductionLineAssignmentReport(
-            Long productionLineAssignmentId, String locale) throws JsonProcessingException {
+            Long productionLineAssignmentId, String locale, String printerName) throws JsonProcessingException {
         ProductionLineAssignment productionLineAssignment =
                 findById(productionLineAssignmentId);
 
@@ -522,7 +523,7 @@ public class ProductionLineAssignmentService   {
                 resourceServiceRestemplateClient.generateReport(
                         productionLineAssignment.getWorkOrder().getWarehouseId(),
                         ReportType.PRODUCTION_LINE_ASSIGNMENT_REPORT,
-                        reportData, locale
+                        reportData, locale, printerName
                 );
 
 

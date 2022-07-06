@@ -105,6 +105,8 @@ public class ReportController {
 
         // logger.debug("####   Report   Data  / 1  ######");
         // logger.debug(reportData.toString());
+        logger.debug("start to generate report with warehouse id {}, type {}, printer name {}, locale {}",
+                warehouseId, type, printerName, locale);
         return reportService.generateReport(
                 warehouseId,
                 ReportType.valueOf(type),

@@ -84,10 +84,12 @@ public class ProductionLineAssignmentController {
     @RequestMapping(value="/production-line-assignments/{id}/report", method = RequestMethod.POST)
     public ReportHistory generateProductionLineAssignmentReport(
             @PathVariable Long id,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
     ) throws JsonProcessingException {
 
-        return productionLineAssignmentService.generateProductionLineAssignmentReport(id, locale);
+        return productionLineAssignmentService.generateProductionLineAssignmentReport(id, locale,
+                printerName);
     }
 
 
@@ -95,10 +97,12 @@ public class ProductionLineAssignmentController {
     @RequestMapping(value="/production-line-assignments/{id}/label", method = RequestMethod.POST)
     public ReportHistory generateProductionLineAssignmentLabel(
             @PathVariable Long id,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
     ) throws JsonProcessingException {
 
-        return productionLineAssignmentService.generateProductionLineAssignmentLabel(id, locale);
+        return productionLineAssignmentService.generateProductionLineAssignmentLabel(id, locale,
+                printerName);
     }
 
 
