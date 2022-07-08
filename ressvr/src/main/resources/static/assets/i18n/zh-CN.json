@@ -1791,5 +1791,8 @@
   "page.report.printer.new": "新增打印机",
   "page.report.printer.modify": "修改打印机",
   "mark-as-read": "标记为已读",
-  "web-message-alert": "站内信息"
+  "web-message-alert": "站内信息",
+  "check-in-time": "到达时间",
+  "check-in-time-range": "到达时间范围",
+  "check-in-date": "到达日期"
 }

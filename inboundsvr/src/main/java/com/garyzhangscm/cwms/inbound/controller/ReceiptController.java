@@ -27,9 +27,12 @@ import com.garyzhangscm.cwms.inbound.service.ReceiptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -44,9 +47,13 @@ public class ReceiptController {
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
     public List<Receipt> findAllReceipts(@RequestParam Long warehouseId,
                                          @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                         @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
                                          @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList,
+                                         @RequestParam(name = "check_in_start_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkInStartTime,
+                                         @RequestParam(name = "check_in_end_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime checkInEndTime,
+                                         @RequestParam(name = "check_in_date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
                                          @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
-        return receiptService.findAll(warehouseId, number, receiptStatusList, loadDetails);
+        return receiptService.findAll(warehouseId, number, receiptStatusList, supplierName, checkInStartTime, checkInEndTime, checkInDate, loadDetails);
     }
 
     @BillableEndpoint

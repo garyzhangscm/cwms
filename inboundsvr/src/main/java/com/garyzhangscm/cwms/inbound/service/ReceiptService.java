@@ -36,15 +36,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -92,11 +92,21 @@ public class ReceiptService implements TestDataInitiableService{
     }
 
 
-    public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList) {
-        return findAll(warehouseId, number, receiptStatusList, true);
+    public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
+                                 String supplierName,
+                                 LocalDateTime checkInStartTime,
+                                 LocalDateTime checkInEndTime,
+                                 LocalDate checkInDate) {
+        return findAll(warehouseId, number, receiptStatusList, supplierName,
+                checkInStartTime, checkInEndTime, checkInDate, true);
     }
 
-    public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList, boolean loadDetails) {
+    public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
+                                 String supplierName,
+                                 LocalDateTime checkInStartTime,
+                                 LocalDateTime checkInEndTime,
+                                 LocalDate checkInDate,
+                                 boolean loadDetails) {
 
 
 
@@ -116,6 +126,20 @@ public class ReceiptService implements TestDataInitiableService{
                         }
                     }
 
+                    if (StringUtils.isNotBlank(supplierName)) {
+
+                        Supplier supplier = commonServiceRestemplateClient.getSupplierByName(warehouseId, supplierName);
+                        if (Objects.nonNull(supplier)) {
+                            predicates.add(criteriaBuilder.equal(root.get("supplierId"), supplier.getId()));
+
+                        }
+                        else {
+
+                            // we can't find the supplier by name,
+                            predicates.add(criteriaBuilder.equal(root.get("supplierId"), -1));
+                        }
+                    }
+
                     if (StringUtils.isNotBlank(receiptStatusList)) {
                         CriteriaBuilder.In<ReceiptStatus> inReceiptStatuses = criteriaBuilder.in(root.get("receiptStatus"));
                         for(String receiptStatus : receiptStatusList.split(",")) {
@@ -124,6 +148,25 @@ public class ReceiptService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.and(inReceiptStatuses));
                     }
 
+                    if (Objects.nonNull(checkInStartTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("checkInTime"), checkInStartTime));
+
+                    }
+
+                    if (Objects.nonNull(checkInEndTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("checkInTime"), checkInEndTime));
+
+                    }
+                    logger.debug(">> Check In Date is passed in {}", checkInDate);
+                    if (Objects.nonNull(checkInDate)) {
+                        LocalDateTime dateStartTime = checkInDate.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = checkInDate.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("checkInTime"), dateStartTime, dateEndTime));
+
+                    }
 
 
                     Predicate[] p = new Predicate[predicates.size()];

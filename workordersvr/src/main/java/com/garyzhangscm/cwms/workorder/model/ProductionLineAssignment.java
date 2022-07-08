@@ -104,6 +104,7 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
         this.workOrder = workOrder;
         this.productionLine = productionLine;
         this.quantity = quantity;
+        this.openQuantity = quantity;
         this.startTime = LocalDateTime.now();
         this.estimatedReservedTimespan = 0L;
 
