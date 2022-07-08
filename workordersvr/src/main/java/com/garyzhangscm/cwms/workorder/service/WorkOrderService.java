@@ -1692,11 +1692,20 @@ public class WorkOrderService implements TestDataInitiableService {
      * @param lpn
      * @return
      */
-    public List<Pick> generateManualPick(Long workOrderId, String lpn, Long productionLineId) {
+    public List<Pick> generateManualPick(Long workOrderId, String lpn,
+                                         Long productionLineId,
+                                         Boolean pickWholeLPN) {
         WorkOrder workOrder = findById(workOrderId);
 
+        validateWorkOrderStatusForManualPick(workOrder);
+
+        // make the work order to be in process
+        workOrder.setStatus(WorkOrderStatus.INPROCESS);
+        workOrder = saveOrUpdate(workOrder);
+
+
         // make sure we can manual pick the LPN for the work order
-        Long pickableQuantity = getPickableQuantityForManualPick(workOrder, lpn, productionLineId);
+        Long pickableQuantity = getPickableQuantityForManualPick(workOrder, lpn, productionLineId, pickWholeLPN);
 
         if (pickableQuantity <= 0 ) {
             throw WorkOrderException.raiseException("there's nothing left to be picked from this LPN " + lpn
@@ -1744,12 +1753,24 @@ public class WorkOrderService implements TestDataInitiableService {
                     " for the work order " + workOrder.getNumber());
         }
 
+        // if the work order is still in PENDING process, then
+
 
         return picks;
     }
 
-    public Long getPickableQuantityForManualPick(Long workOrderId, String lpn, Long productionLineId) {
-        return getPickableQuantityForManualPick(findById(workOrderId), lpn, productionLineId);
+    private void validateWorkOrderStatusForManualPick(WorkOrder workOrder) {
+        if (workOrder.getStatus().equals(WorkOrderStatus.CANCELLED) ||
+            workOrder.getStatus().equals(WorkOrderStatus.COMPLETED) ||
+            workOrder.getStatus().equals(WorkOrderStatus.CLOSED)) {
+            throw WorkOrderException.raiseException("Can't generate manual pick for work order " +
+                    workOrder.getNumber() + " as its status is " +
+                    workOrder.getStatus() + " and not suitable for pick");
+        }
+    }
+
+    public Long getPickableQuantityForManualPick(Long workOrderId, String lpn, Long productionLineId, Boolean pickWholeLPN) {
+        return getPickableQuantityForManualPick(findById(workOrderId), lpn, productionLineId, pickWholeLPN);
     }
 
     /**
@@ -1759,7 +1780,9 @@ public class WorkOrderService implements TestDataInitiableService {
      * @param productionLineId
      * @return
      */
-    public Long getPickableQuantityForManualPick(WorkOrder workOrder, String lpn, Long productionLineId) {
+    public Long getPickableQuantityForManualPick(WorkOrder workOrder, String lpn,
+                                                 Long productionLineId,
+                                                 Boolean pickWholeLPN) {
 
         // Make sure the production line passed in is valid
         if (workOrder.getProductionLineAssignments().stream().noneMatch(
@@ -1850,7 +1873,8 @@ public class WorkOrderService implements TestDataInitiableService {
             // if the open quantity is 0, which means the work order line is fully allocated,
             // we either have pick or short allocation against the work order line
             // we will not allow the user to manual pick
-            if (matchedWorkOrderLine.getOpenQuantity() <= 0) {
+            if (matchedWorkOrderLine.getExpectedQuantity() > 0 &&
+                    matchedWorkOrderLine.getOpenQuantity() <= 0) {
                 throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
                         ", line " + matchedWorkOrderLine.getNumber() + " is fully processed." +
                         "Fail to generate manual pick");
@@ -1877,6 +1901,11 @@ public class WorkOrderService implements TestDataInitiableService {
 
         // check if how much we can pick from this LPN
         Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        if (Boolean.TRUE.equals(pickWholeLPN)) {
+            // if the user specify to pick the whole LPN
+            // then return the pickable quantity from this LPN
+            return inventoryQuantity;
+        }
         return Math.min(inventoryQuantity, quantityRequiredByWorkOrderLine);
     }
 

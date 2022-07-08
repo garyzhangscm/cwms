@@ -1792,5 +1792,8 @@
   "page.report.printer.new": "Add Printer",
   "page.report.printer.modify": "Modify Printer",
   "mark-as-read": "Mark As Read",
-  "web-message-alert": "Alert"
+  "web-message-alert": "Alert",
+  "check-in-time": "Check In Time",
+  "check-in-time-range": "Check In Time Range",
+  "check-in-date": "Check In date"
 }

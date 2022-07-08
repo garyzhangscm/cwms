@@ -28,6 +28,14 @@ public class KafkaSender {
                      ,topic, message);
         kafkaTemplate.send(topic, message);
     }
+
+    private void send(String topic, String key, String message) {
+
+        logger.debug("====> Start to send to kafka: {} / {} / {}"
+                ,topic, key, message);
+        kafkaTemplate.send(topic, key, message);
+    }
+
     public <K, V> void send(String topic, K key, V value) {
         try {
             send(topic, objectMapper.writeValueAsString(key), objectMapper.writeValueAsString(value));

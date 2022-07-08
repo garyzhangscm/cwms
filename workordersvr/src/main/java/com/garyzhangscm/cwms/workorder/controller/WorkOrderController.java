@@ -322,25 +322,29 @@ public class WorkOrderController {
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{workOrderId}/generate-manual-pick", method = RequestMethod.POST)
     public List<Pick> generateManualPick(@PathVariable  Long workOrderId,
-                                        @RequestParam String lpn,
-                                        @RequestParam Long productionLineId) {
+                                         @RequestParam String lpn,
+                                         @RequestParam Long productionLineId,
+                                         @RequestParam Boolean pickWholeLPN) {
         logger.debug("======        Start to processManualPick pick   ========");
         logger.debug("=> workOrderId: {}", workOrderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> productionLineId: {}", productionLineId);
-        return workOrderService.generateManualPick(workOrderId, lpn, productionLineId);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        return workOrderService.generateManualPick(workOrderId, lpn, productionLineId, pickWholeLPN);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{workOrderId}/get-manual-pick-quantity", method = RequestMethod.GET)
     public Long getPickableQuantityForManualPick(@PathVariable  Long workOrderId,
-                                        @RequestParam String lpn,
-                                        @RequestParam Long productionLineId) {
+                                                 @RequestParam String lpn,
+                                                 @RequestParam Long productionLineId,
+                                                 @RequestParam(name = "pickWholeLPN", required = false, defaultValue = "") Boolean pickWholeLPN) {
         logger.debug("======        Start to processManualPick pick   ========");
         logger.debug("=> workOrderId: {}", workOrderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> productionLineId: {}", productionLineId);
-        return workOrderService.getPickableQuantityForManualPick(workOrderId, lpn, productionLineId);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        return workOrderService.getPickableQuantityForManualPick(workOrderId, lpn, productionLineId, pickWholeLPN);
     }
 
 
