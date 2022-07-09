@@ -178,19 +178,20 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                   locationGroupId, locationGroupTypeId, allocationStrategy, true);
     }
 
-    public List<AllocationConfiguration> findAllocationConfigurationForPicking() {
-        return findByType(AllocationConfigurationType.PICKING);
+    public List<AllocationConfiguration> findAllocationConfigurationForPicking(Long warehouseId) {
+        return findByType(warehouseId, AllocationConfigurationType.PICKING);
     }
 
-    public List<AllocationConfiguration> findAllocationConfigurationForReplenishment() {
-        return findByType(AllocationConfigurationType.REPLENISHMENT);
+    public List<AllocationConfiguration> findAllocationConfigurationForReplenishment(Long warehouseId) {
+        return findByType(warehouseId, AllocationConfigurationType.REPLENISHMENT);
     }
-    public List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType) {
-        return findByType(allocationConfigurationType, true);
+    public List<AllocationConfiguration> findByType(Long warehouseId, AllocationConfigurationType allocationConfigurationType) {
+        return findByType(warehouseId, allocationConfigurationType, true);
 
     }
-    public List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType, boolean loadDetails) {
-        List<AllocationConfiguration> allocationConfigurations = allocationConfigurationRepository.findByType(allocationConfigurationType);
+    public List<AllocationConfiguration> findByType(Long warehouseId, AllocationConfigurationType allocationConfigurationType, boolean loadDetails) {
+        List<AllocationConfiguration> allocationConfigurations = allocationConfigurationRepository.findByWarehouseIdAndType(
+                warehouseId, allocationConfigurationType);
 
         if (allocationConfigurations.size() > 0 && loadDetails) {
             loadAttribute(allocationConfigurations);
@@ -424,7 +425,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         }
 
         // Get all allocation configuration that match with the item
-        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(item, AllocationConfigurationType.PICKING);
+        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(
+                shipmentLine.getWarehouseId(), item, AllocationConfigurationType.PICKING);
         logger.debug("We got {} allocation configuration by item {} / allocation type: {}",
                 matchedAllocationConfiguration.size(), item.getName(),
                 AllocationConfigurationType.PICKING);
@@ -598,7 +600,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 shortAllocation.getId(), item.getName(), openQuantity );
 
         // Get all allocation configuration that match with the item
-        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(item, allocationConfigurationType);
+        List<AllocationConfiguration> matchedAllocationConfiguration = getMatchedAllocationConfiguration(
+                shortAllocation.getWarehouseId(), item, allocationConfigurationType);
         logger.debug("We got {} allocation configuration by item {} / allocation type: {}",
                 matchedAllocationConfiguration.size(), item.getName(),
                 allocationConfigurationType);
@@ -989,9 +992,10 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         return true;
     }
 
-    private List<AllocationConfiguration> getMatchedAllocationConfiguration(Item item, AllocationConfigurationType allocationConfigurationType) {
+    private List<AllocationConfiguration> getMatchedAllocationConfiguration(Long warehouseId,
+                                                                            Item item, AllocationConfigurationType allocationConfigurationType) {
         List<AllocationConfiguration> allocationConfigurations = new ArrayList<>();
-        List<AllocationConfiguration> allAllocationConfigurations = findByType(allocationConfigurationType);
+        List<AllocationConfiguration> allAllocationConfigurations = findByType(warehouseId, allocationConfigurationType);
         logger.debug("We have {} allocation configuration defined in the system", allAllocationConfigurations.size());
 
         allAllocationConfigurations.forEach(allocationConfiguration -> {

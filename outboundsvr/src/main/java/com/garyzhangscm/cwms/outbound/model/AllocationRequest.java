@@ -41,6 +41,10 @@ public class AllocationRequest {
 
     private boolean manualAllocation = false;
 
+    // will be setup if the allocation request is a
+    // manual allocation for a specific LPN
+    private String lpn = "";
+
     public AllocationRequest() {}
 
     public AllocationRequest(Item item,
@@ -71,6 +75,15 @@ public class AllocationRequest {
     }
 
 
+    public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine, Item item,
+                             ProductionLineAssignment productionLineAssignment,
+                             Long allocatingWorkOrderQuantity,
+                             Long allocatingWorkingOrderLineQuantity,
+                             String lpn) {
+        this(workOrder, workOrderLine, item, productionLineAssignment,
+                allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity);
+        this.lpn = lpn;
+    }
 
     public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine, Item item,
                              ProductionLineAssignment productionLineAssignment,
@@ -225,5 +238,13 @@ public class AllocationRequest {
 
     public void setManualAllocation(boolean manualAllocation) {
         this.manualAllocation = manualAllocation;
+    }
+
+    public String getLpn() {
+        return lpn;
+    }
+
+    public void setLpn(String lpn) {
+        this.lpn = lpn;
     }
 }

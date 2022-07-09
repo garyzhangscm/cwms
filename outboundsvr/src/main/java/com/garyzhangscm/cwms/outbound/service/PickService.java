@@ -631,22 +631,48 @@ public class PickService {
 
 
     public Pick generateBasicPickInformation(Long warehouseId,
+                                             Inventory inventory,
+                                             Long quantity,
+                                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                                             String lpn) {
+        return generateBasicPickInformation(warehouseId,
+                inventory.getItem(),
+                inventory.getLocation(),
+                inventory.getInventoryStatus(),
+                quantity,
+                pickableUnitOfMeasure, lpn);
+    }
+    public Pick generateBasicPickInformation(Long warehouseId,
                                              InventorySummary inventorySummary,
+                                             Long quantity,
+                                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                                             String lpn) {
+        return generateBasicPickInformation(warehouseId,
+                inventorySummary.getItem(),
+                inventorySummary.getLocation(),
+                inventorySummary.getInventoryStatus(),
+                quantity,
+                pickableUnitOfMeasure, lpn);
+    }
+    public Pick generateBasicPickInformation(Long warehouseId,
+                                             Item item,
+                                             Location sourceLocation,
+                                             InventoryStatus inventoryStatus,
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
                                              String lpn) {
 
         Pick pick = new Pick();
         pick.setWarehouseId(warehouseId);
-        pick.setItem(inventorySummary.getItem());
-        pick.setItemId(inventorySummary.getItem().getId());
-        pick.setSourceLocation(inventorySummary.getLocation());
-        pick.setSourceLocationId(inventorySummary.getLocationId());
+        pick.setItem(item);
+        pick.setItemId(item.getId());
+        pick.setSourceLocation(sourceLocation);
+        pick.setSourceLocationId(sourceLocation.getId());
         pick.setQuantity(quantity);
         pick.setPickedQuantity(0L);
-        pick.setNumber(getNextPickNumber(inventorySummary.getLocation().getWarehouse().getId()));
+        pick.setNumber(getNextPickNumber(sourceLocation.getWarehouse().getId()));
         pick.setStatus(PickStatus.PENDING);
-        pick.setInventoryStatusId(inventorySummary.getInventoryStatus().getId());
+        pick.setInventoryStatusId(inventoryStatus.getId());
 
 
         if (Objects.nonNull(pickableUnitOfMeasure)) {
@@ -697,6 +723,13 @@ public class PickService {
 
         return generateBasicPickInformation(
                 warehouseId, inventorySummary, quantity, pickableUnitOfMeasure, null);
+    }
+    public Pick generateBasicPickInformation(Long warehouseId, Inventory inventory,
+                                             Long quantity,
+                                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+
+        return generateBasicPickInformation(
+                warehouseId, inventory, quantity, pickableUnitOfMeasure, null);
     }
 
     public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary, Long quantity, String lpn) {
@@ -803,6 +836,18 @@ public class PickService {
         pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick);
     }
+
+    @Transactional
+    public Pick generatePick(WorkOrder workOrder, Inventory inventory,
+                             WorkOrderLine workOrderLine, Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             Long destinationLocationId) {
+        Pick pick = generateBasicPickInformation(
+                workOrder.getWarehouseId(), inventory, quantity, pickableUnitOfMeasure);
+        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
+        return processPick(pick);
+    }
+
 
     @Transactional
     public Pick generatePick(WorkOrder workOrder,
@@ -1485,7 +1530,8 @@ public class PickService {
 
         // let's see if we can generate the manual pick
         AllocationResult allocationResult = generateManualPickForWorkOrder(workOrder,
-                matchedWorkOrderLine, itemToBeAllocated,  productionLineId, sourceLocation, pickableQuantity);
+                matchedWorkOrderLine, itemToBeAllocated,  productionLineId, sourceLocation,
+                pickableQuantity, lpn);
 
         if (allocationResult.getShortAllocations().size() > 0) {
             // ok, we get short allocation. Something seems goes wrong.
@@ -1511,7 +1557,9 @@ public class PickService {
     public AllocationResult generateManualPickForWorkOrder(WorkOrder workOrder, WorkOrderLine workOrderLine,
                                                            Item item,
                                                            Long productionLineId,
-                                                           Location sourceLocation, Long quantity) {
+                                                           Location sourceLocation,
+                                                           Long quantity,
+                                                           String lpn) {
 
         // we will need to make sure there's only one production line assigned to the work order
         // so that we can know the destination for the pick
@@ -1534,7 +1582,7 @@ public class PickService {
 
         AllocationResult allocationResult
                 = allocationService.allocate(workOrder, workOrderLine, item,  productionLineId,
-                0l, quantity, sourceLocation, true);
+                0l, quantity, sourceLocation, true, lpn);
 
 
         return allocationResult;

@@ -1838,4 +1838,30 @@ public class OrderService implements TestDataInitiableService {
                 shipment -> shipmentService.assignTrailerAppointment(shipment.getId(), trailerAppointment)
         );
     }
+
+    /**
+     * Generate manual pick for the order
+     * @param orderId
+     * @param lpn
+     * @param pickWholeLPN
+     * @return
+     */
+    public List<Pick> generateManualPick(Long orderId, String lpn, Boolean pickWholeLPN) {
+
+        Order order = findById(orderId);
+
+        validateOrderStatusForManualPick(order);
+
+        List<Pick> picks = new ArrayList<>();
+        ///// TO-DO
+        return picks;
+    }
+
+    private void validateOrderStatusForManualPick(Order order) {
+        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+            throw OrderOperationException.raiseException("Can't generate manual pick for order " +
+                    order.getNumber() + " as its status is " +
+                    order.getStatus() + " and not suitable for pick");
+        }
+    }
 }

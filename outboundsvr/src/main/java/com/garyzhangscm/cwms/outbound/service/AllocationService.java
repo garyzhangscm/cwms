@@ -184,7 +184,20 @@ public class AllocationService {
                                      Item item,
                                      Long productionLineId, Long allocatingWorkOrderQuantity,
                                      Long allocatingWorkingOrderLineQuantity,
-                                     Location sourceLocation, boolean manualAllocation){
+                                     Location sourceLocation,
+                                     boolean manualAllocation) {
+        return allocate(workOrder, workOrderLine, item, productionLineId,
+                allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity,
+                sourceLocation, manualAllocation, "");
+    }
+    @Transactional
+    public AllocationResult allocate(WorkOrder workOrder, WorkOrderLine workOrderLine,
+                                     Item item,
+                                     Long productionLineId, Long allocatingWorkOrderQuantity,
+                                     Long allocatingWorkingOrderLineQuantity,
+                                     Location sourceLocation,
+                                     boolean manualAllocation,
+                                     String lpn){
 
         // for work order, we may have multiple production lines assign to this work order
         // in order to generate picks for each production line, we may have to allocate
@@ -213,6 +226,7 @@ public class AllocationService {
                     AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, item, productionLineAssignment
                             , allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity);
                     allocationRequest.setManualAllocation(manualAllocation);
+                    allocationRequest.setLpn(lpn);
 
                     logger.debug("will allocate the work order to destination location id {} for quantity {}",
                             allocationRequest.getDestinationLocationId(),
