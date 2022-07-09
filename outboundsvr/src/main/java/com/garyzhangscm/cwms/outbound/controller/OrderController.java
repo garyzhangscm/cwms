@@ -197,4 +197,17 @@ public class OrderController {
 
         return orderService.getOpenOrdersForStop(warehouseId, number);
     }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/orders/{orderId}/generate-manual-pick", method = RequestMethod.POST)
+    public List<Pick> generateManualPick(@PathVariable  Long orderId,
+                                         @RequestParam String lpn,
+                                         @RequestParam Boolean pickWholeLPN) {
+        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("=> orderId: {}", orderId);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        return orderService.generateManualPick(orderId, lpn, pickWholeLPN);
+    }
 }

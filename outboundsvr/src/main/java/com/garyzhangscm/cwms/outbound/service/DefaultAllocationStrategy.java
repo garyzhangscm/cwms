@@ -5,6 +5,7 @@ import com.garyzhangscm.cwms.outbound.exception.AllocationException;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.ShortAllocationException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +86,14 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 = inventoryServiceRestemplateClient.getPickableInventory(
                 item.getId(), inventoryStatus.getId(),
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId());
+
+        // for manual pick, we will filter out the inventory to specific LPN
+        if (Boolean.TRUE.equals(allocationRequest.isManualAllocation()) &&
+                Strings.isNotBlank(allocationRequest.getLpn())) {
+            pickableInventory = pickableInventory.stream().filter(
+                    inventory -> allocationRequest.getLpn().equals(inventory.getLpn())
+            ).collect(Collectors.toList());
+        }
 
         // Let's get all the pickable inventory and existing picks to the trace file
         logger.debug("We have {} pickable inventory of this item, location specified? {}",

@@ -36,7 +36,7 @@ public interface AllocationConfigurationRepository extends JpaRepository<Allocat
 
     AllocationConfiguration findByWarehouseIdAndSequence(Long warehouseId, int sequence);
 
-    List<AllocationConfiguration> findByType(AllocationConfigurationType allocationConfigurationType);
+    List<AllocationConfiguration> findByWarehouseIdAndType(Long warehouseId, AllocationConfigurationType allocationConfigurationType);
 
     /**
      * Override a item in the warehouse level. We will change the allocation configuration's item id to the new warehouse level
