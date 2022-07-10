@@ -39,6 +39,7 @@ public class AllocationRequest {
 
     private Long destinationLocationId;
 
+
     private boolean manualAllocation = false;
 
     // will be setup if the allocation request is a

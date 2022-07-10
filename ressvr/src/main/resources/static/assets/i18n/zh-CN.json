@@ -1794,5 +1794,9 @@
   "web-message-alert": "站内信息",
   "check-in-time": "到达时间",
   "check-in-time-range": "到达时间范围",
-  "check-in-date": "到达日期"
+  "check-in-date": "到达日期",
+  "menu.main.outbound.allocation-configuration-maintenance": "分配策略维护",
+  "ALLOCATION-CONFIGURATION-TYPE-PICKING": "拣货",
+  "ALLOCATION-CONFIGURATION-TYPE-REPLENISHMENT": "补货",
+  "allocation-configuration": "分配策略"
 }
