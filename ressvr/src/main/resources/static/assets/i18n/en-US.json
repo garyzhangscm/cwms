@@ -1795,5 +1795,9 @@
   "web-message-alert": "Alert",
   "check-in-time": "Check In Time",
   "check-in-time-range": "Check In Time Range",
-  "check-in-date": "Check In date"
+  "check-in-date": "Check In date",
+  "menu.main.outbound.allocation-configuration-maintenance": "Allocation Configuration Maintenance",
+  "ALLOCATION-CONFIGURATION-TYPE-PICKING": "Picking",
+  "ALLOCATION-CONFIGURATION-TYPE-REPLENISHMENT": "Replenishment",
+  "allocation-configuration": "Allocation Configuration"
 }

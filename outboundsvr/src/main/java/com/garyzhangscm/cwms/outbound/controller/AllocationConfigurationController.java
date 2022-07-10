@@ -53,9 +53,17 @@ public class AllocationConfigurationController {
 
 
     @BillableEndpoint
-    @RequestMapping(value="/allocation-configuration", method = RequestMethod.POST)
+    @RequestMapping(value="/allocation-configuration", method = RequestMethod.PUT)
     public AllocationConfiguration addAllocationConfiguration(@RequestBody AllocationConfiguration allocationConfiguration) {
-        return allocationConfigurationService.saveOrUpdate(allocationConfiguration);
+        return allocationConfigurationService.addAllocationConfiguration(allocationConfiguration);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/allocation-configuration/{id}", method = RequestMethod.POST)
+    public AllocationConfiguration changeAllocationConfiguration(
+            @PathVariable Long id,
+            @RequestBody AllocationConfiguration allocationConfiguration) {
+        return allocationConfigurationService.changeAllocationConfiguration(id, allocationConfiguration);
     }
 
 

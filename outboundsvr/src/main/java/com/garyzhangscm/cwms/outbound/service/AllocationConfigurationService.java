@@ -1097,4 +1097,13 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 warehouseId, oldItemId, newItemId);
         allocationConfigurationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
     }
+
+    public AllocationConfiguration addAllocationConfiguration(AllocationConfiguration allocationConfiguration) {
+        return saveOrUpdate(allocationConfiguration);
+    }
+
+    public AllocationConfiguration changeAllocationConfiguration(Long id, AllocationConfiguration allocationConfiguration) {
+        allocationConfiguration.setId(id);
+        return saveOrUpdate(allocationConfiguration);
+    }
 }

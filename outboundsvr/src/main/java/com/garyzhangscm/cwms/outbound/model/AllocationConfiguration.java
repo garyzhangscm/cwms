@@ -81,6 +81,11 @@ public class AllocationConfiguration  extends AuditibleEntity<String> implements
     @Transient
     private LocationGroupType locationGroupType;
 
+    @Column(name = "inventory_status_id")
+    private Long inventoryStatusId;
+
+    @Transient
+    private InventoryStatus inventoryStatus;
 
     @OneToMany(
             mappedBy = "allocationConfiguration",
@@ -219,5 +224,21 @@ public class AllocationConfiguration  extends AuditibleEntity<String> implements
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
     }
 }
