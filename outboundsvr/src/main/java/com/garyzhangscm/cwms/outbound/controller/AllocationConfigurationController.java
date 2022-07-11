@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.AllocationConfiguration;
 import com.garyzhangscm.cwms.outbound.model.AllocationConfigurationPickableUnitOfMeasure;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
@@ -58,6 +59,13 @@ public class AllocationConfigurationController {
         return allocationConfigurationService.addAllocationConfiguration(allocationConfiguration);
     }
 
+    @RequestMapping(value="/allocation-configuration/{id}", method = RequestMethod.GET)
+    public AllocationConfiguration getAllocationConfiguration(
+                                @PathVariable Long id,
+                                @RequestParam Long warehouseId) {
+        return allocationConfigurationService.findById(id);
+    }
+
     @BillableEndpoint
     @RequestMapping(value="/allocation-configuration/{id}", method = RequestMethod.POST)
     public AllocationConfiguration changeAllocationConfiguration(
@@ -74,4 +82,12 @@ public class AllocationConfigurationController {
         return allocationConfigurationService.addPickableUnitOfMeasure(id, allocationConfigurationPickableUnitOfMeasure);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/allocation-configuration/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeAllocationConfiguration(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        allocationConfigurationService.removeAllocationConfiguration(id, warehouseId);
+        return ResponseBodyWrapper.success("allocation configuration " + id + " removed!");
+    }
 }
