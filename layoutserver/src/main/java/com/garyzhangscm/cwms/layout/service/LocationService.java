@@ -94,7 +94,8 @@ public class LocationService implements TestDataInitiableService {
                                   Boolean pickableLocationOnly,
                                   String reservedCode,
                                   Boolean includeDisabledLocation,
-                                  Boolean emptyReservedCodeOnly) {
+                                  Boolean emptyReservedCodeOnly,
+                                  String code) {
 
         List<Location> locations = locationRepository.findAll(
             (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -140,6 +141,9 @@ public class LocationService implements TestDataInitiableService {
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
                     }
+                }
+                if (StringUtils.isNotBlank(code)) {
+                        predicates.add(criteriaBuilder.equal(root.get("code"), code));
                 }
                 if (Objects.nonNull(beginSequence)  && Objects.nonNull(endSequence)) {
                     logger.debug("Will filter the location by {} sequence [{}, {}]",
@@ -680,6 +684,7 @@ public class LocationService implements TestDataInitiableService {
                 null,
                 null,
                 null,
+                null,
                 null);
 
     }
@@ -757,6 +762,7 @@ public class LocationService implements TestDataInitiableService {
                 null,
                 null,
                 reservedCode,
+                null,
                 null,
                 null);
     }
@@ -875,6 +881,7 @@ public class LocationService implements TestDataInitiableService {
                         null,
                         null,
                          false,
+                        null,
                         null,
                         null,
                         null,

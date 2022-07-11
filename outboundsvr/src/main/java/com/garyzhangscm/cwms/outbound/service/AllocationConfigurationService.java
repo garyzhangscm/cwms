@@ -1099,11 +1099,23 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     }
 
     public AllocationConfiguration addAllocationConfiguration(AllocationConfiguration allocationConfiguration) {
+        allocationConfiguration.getAllocationConfigurationPickableUnitOfMeasures().forEach(
+                allocationConfigurationPickableUnitOfMeasure ->
+                        allocationConfigurationPickableUnitOfMeasure.setAllocationConfiguration(allocationConfiguration)
+        );
         return saveOrUpdate(allocationConfiguration);
     }
 
     public AllocationConfiguration changeAllocationConfiguration(Long id, AllocationConfiguration allocationConfiguration) {
         allocationConfiguration.setId(id);
+        allocationConfiguration.getAllocationConfigurationPickableUnitOfMeasures().forEach(
+                allocationConfigurationPickableUnitOfMeasure ->
+                        allocationConfigurationPickableUnitOfMeasure.setAllocationConfiguration(allocationConfiguration)
+        );
         return saveOrUpdate(allocationConfiguration);
+    }
+
+    public void removeAllocationConfiguration(Long id, Long warehouseId) {
+        delete(id);
     }
 }

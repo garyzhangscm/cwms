@@ -84,6 +84,7 @@ public class LocationController {
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
+                                        @RequestParam(name = "code", required = false, defaultValue = "") String code,
                                         @RequestParam(name = "beginSequence", required = false, defaultValue = "") Long beginSequence,
                                         @RequestParam(name = "endSequence", required = false, defaultValue = "") Long endSequence,
                                         @RequestParam(name = "beginAisle", required = false, defaultValue = "") String beginAisle,
@@ -105,6 +106,7 @@ public class LocationController {
                 .append("\nlocationGroupTypeIds: ").append(locationGroupTypeIds)
                 .append("\nlocationGroupIds: ").append(locationGroupIds)
                 .append("\nname: ").append(name)
+                .append("\ncode: ").append(code)
                 .append("\nbeginSequence: ").append(beginSequence)
                 .append("\nendSequence: ").append(endSequence)
                 .append("\nbeginAisle: ").append(beginAisle)
@@ -125,7 +127,7 @@ public class LocationController {
                 locationGroupTypeIds, locationGroupIds, name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
-                includeDisabledLocation, emptyReservedCodeOnly);
+                includeDisabledLocation, emptyReservedCodeOnly, code);
 
         logger.debug(">> Find {} locations", locations.size());
         if (locations.size() == 0) {
