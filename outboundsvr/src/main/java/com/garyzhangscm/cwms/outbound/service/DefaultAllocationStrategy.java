@@ -303,10 +303,14 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             // pickByQuantityPicksTotalOpenQuantity will return all open quantity that allocated
             // by NON LPN picks
+            // if we are working on a manual picking process, then we will ignore the existing picks
+            // as the manual picking will always be the highest priority
             // getAvailableInventoryQuantity will return all available quantity that excludes
             // the LPN that has been allocated by LPN picks.
             // the balance of those 2 number is the available quantity that can be allocated at this moment
-            long pickByQuantityPicksTotalOpenQuantity = pickByQuantityPicksTotalOpenQuantity(existingPicksByInventorySummary);
+            long pickByQuantityPicksTotalOpenQuantity =
+                    Boolean.TRUE.equals(allocationRequest.isManualAllocation()) ?
+                            0 : pickByQuantityPicksTotalOpenQuantity(existingPicksByInventorySummary);
             long totalInventoryQuantity =
                     inventorySummary.getInventories().values().stream().flatMap(List::stream).mapToLong(Inventory::getQuantity).sum();
             long availableInventoryQuantity = getAvailableInventoryQuantity(inventorySummary);
@@ -321,7 +325,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             logger.debug("We can allocate {} from location {}, item {}", allocatibleQuantity,
                     inventorySummary.getLocation().getName(), inventorySummary.getItem().getName());
 
-            if (allocatibleQuantity ==0) {
+            if (allocatibleQuantity <= 0) {
                 // we can't allocate anything from this location
                 allocationTransactionHistoryService.createAndSendEmptyAllocationTransactionHistory(
                         allocationRequest,
