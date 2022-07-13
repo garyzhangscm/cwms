@@ -128,11 +128,12 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/inventory-being-delivered", method = RequestMethod.POST)
-    public WorkOrderLine changeDeliveredQuantity(@PathVariable Long id,
+    public WorkOrderMaterialConsumeTiming changeDeliveredQuantity(@PathVariable Long id,
                                                  @RequestParam Long quantityBeingDelivered,
                                                  @RequestParam Long deliveredLocationId) {
         return workOrderLineService.changeDeliveredQuantity(id, quantityBeingDelivered, deliveredLocationId);
     }
+
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/pick-cancelled", method = RequestMethod.POST)

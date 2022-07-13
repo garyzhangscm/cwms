@@ -1238,6 +1238,13 @@ public class InventoryService implements TestDataInitiableService{
                     inventory.getInventoryMovements().size(), inventory.getLpn());
         }
 
+
+        // Log a inventory movement activity before we can log
+        // another possible inventory consolidation activity
+
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_MOVEMENT,
+                "location", sourceLocation.getName(), destination.getName());
+
         // if we are moving inventory to a production line inbound area, let's update the delivery
         // quantity of the work order
 
@@ -1248,11 +1255,21 @@ public class InventoryService implements TestDataInitiableService{
 
                 logger.debug("will check if we will need to update the delivery quantity for work order line {}",
                         inventory.getPick().getWorkOrderLineId());
-                workOrderServiceRestemplateClient.inventoryDeliveredForWorkOrderLine(
+                WorkOrderMaterialConsumeTiming workOrderMaterialConsumeTiming =
+                        workOrderServiceRestemplateClient.inventoryDeliveredForWorkOrderLine(
                         inventory.getPick().getWorkOrderLineId(),
                         inventory.getQuantity(),
                         destination.getId()
                 );
+                if (workOrderMaterialConsumeTiming.equals(
+                        WorkOrderMaterialConsumeTiming.WHEN_DELIVER
+                )) {
+                    // ok the work order's consume time is when delivered
+                    // the inventory being delivered should already be consumed.
+                    // by the above call,
+                    // we can simply return here
+                    return inventory;
+                }
             }
 
         }
@@ -1260,11 +1277,6 @@ public class InventoryService implements TestDataInitiableService{
         // Reset the destination location's size
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
 
-        // Log a inventory movement activity before we can log
-        // another possible inventory consolidation activity
-
-        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_MOVEMENT,
-                                        "location", sourceLocation.getName(), destination.getName());
 
         if (Objects.nonNull(inventory.getPickId())) {
             outbuondServiceRestemplateClient.refreshPickMovement(inventory.getPickId(), destination.getId(), inventory.getQuantity());

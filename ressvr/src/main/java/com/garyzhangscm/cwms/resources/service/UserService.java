@@ -183,20 +183,22 @@ public class UserService  implements TestDataInitiableService{
         List<UserAuth> userAuths = authServiceRestemplateClient.getUserAuthByUsernames(companyId, usernames);
         Map<String, UserAuth> userAuthMap = new HashMap<>();
         userAuths.stream().forEach(userAuth -> userAuthMap.put(userAuth.getUsername(), userAuth));
-
         users.stream().forEach(user -> setUserAuthInformation(user, userAuthMap.get(user.getUsername())));
 
     }
     public void loadAttribute(User user) {
         // load the auth information for each user
-        logger.debug("Will start to get auth information for user {} / {}",
-                user.getCompanyId(), user.getUsername());
         UserAuth userAuth = authServiceRestemplateClient.getUserAuthByUsername(
                 user.getCompanyId(), user.getUsername());
 
         setUserAuthInformation(user, userAuth);
     }
     private void setUserAuthInformation(User user, UserAuth userAuth) {
+        if (Objects.isNull(userAuth)) {
+            logger.debug("!!!Error!!!, user {} doesn't have auth information",
+                    user.getUsername());
+            return;
+        }
         // user.setEmail(userAuth.getEmail());
         user.setPassword(userAuth.getPassword());
         user.setLocked(userAuth.isLocked());
