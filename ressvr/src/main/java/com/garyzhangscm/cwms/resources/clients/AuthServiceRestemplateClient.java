@@ -36,6 +36,9 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -52,44 +55,60 @@ public class AuthServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
-    public List<UserAuth> getUserAuthByUsernames(Long companyId, String usernames) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/auth/users")
-                        .queryParam("companyId", companyId)
-                        .queryParam("usernames", usernames);
 
+    public List<UserAuth> getUserAuthByUsernames(Long companyId, String usernames)   {
 
-        List<UserAuth> userAuths
-                = restTemplate.exchange(
-                            builder.toUriString(),
-                            HttpMethod.GET,
-                            null,
-                            new ParameterizedTypeReference<List<UserAuth>>() {}).getBody();
+        try {
 
-        return userAuths;
+            UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/auth/users")
+                    .queryParam("companyId", companyId)
+                    .queryParam("usernames", URLEncoder.encode(usernames, "UTF-8"));
 
+            List<UserAuth> userAuths
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<UserAuth>>() {}).getBody();
+
+            return userAuths;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    public UserAuth getUserAuthByUsername(Long companyId, String username) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/auth/users")
-                        .queryParam("companyId", companyId)
-                        .queryParam("usernames", username);
-        List<UserAuth> userAuths
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<List<UserAuth>>() {}).getBody();
 
-        if (userAuths.size() == 0) {
+    public UserAuth getUserAuthByUsername(Long companyId, String username)   {
+
+        try {
+
+            UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/auth/users")
+                    .queryParam("companyId", companyId)
+                    .queryParam("usernames", URLEncoder.encode(username, "UTF-8"));
+
+            List<UserAuth> userAuths
+                    = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<UserAuth>>() {}).getBody();
+
+            if (userAuths.isEmpty()) {
+                return null;
+            }
+            return userAuths.get(0);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
             return null;
         }
-        return userAuths.get(0);
+        catch (Exception ex) {
+            return  null;
+        }
     }
 
     public UserAuth changeUserAuth(UserAuth userAuth)  {

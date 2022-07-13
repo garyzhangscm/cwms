@@ -21,21 +21,28 @@ package com.garyzhangscm.cwms.auth.controller;
 import com.garyzhangscm.cwms.auth.model.BillableEndpoint;
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "/users")
 public class UserController {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     UserService userService;
 
     @RequestMapping(method =  RequestMethod.GET)
     public List<User> findUsers(@RequestParam Long companyId,
-                                @RequestParam(name="usernames", defaultValue = "", required = false) String usernames) {
+                                @RequestParam(name="usernames", defaultValue = "", required = false) String usernames)   {
+
         return userService.findAll(companyId, usernames);
     }
 

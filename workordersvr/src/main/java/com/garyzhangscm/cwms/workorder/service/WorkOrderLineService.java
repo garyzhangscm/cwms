@@ -556,9 +556,9 @@ public class WorkOrderLineService implements TestDataInitiableService {
      * @param workOrderLineId
      * @param quantityBeingDelivered
      * @param deliveredLocationId
-     * @return
+     * @return the consume time so we know whether the inventory being delivered needs to be consumed
      */
-    synchronized public WorkOrderLine changeDeliveredQuantity(Long workOrderLineId,
+    synchronized public WorkOrderMaterialConsumeTiming changeDeliveredQuantity(Long workOrderLineId,
                                                  Long quantityBeingDelivered,
                                                  Long deliveredLocationId) {
         // clear the cache. We may have scenario that when confirm
@@ -606,8 +606,10 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
             // if we configure to consume the quantity right after deliver, then
             // consume the inventory
-            if (workOrderConfigurationService.getWorkOrderMaterialConsumeTiming(
-                    workOrderLine.getWorkOrder()).equals(WorkOrderMaterialConsumeTiming.WHEN_DELIVER)) {
+            WorkOrderMaterialConsumeTiming workOrderMaterialConsumeTiming =
+                    workOrderConfigurationService.getWorkOrderMaterialConsumeTiming(
+                            workOrderLine.getWorkOrder());
+            if (workOrderMaterialConsumeTiming.equals(WorkOrderMaterialConsumeTiming.WHEN_DELIVER)) {
                 logger.debug("# Configuration is setup to consume the inventory right after delivery, will consume the inventory");
                 consume(workOrderLine, quantityBeingDelivered, productionLineAssignment.getProductionLine());
             }
@@ -621,10 +623,10 @@ public class WorkOrderLineService implements TestDataInitiableService {
                     newWorkOrderLine.getWorkOrder().getNumber(),
                     newWorkOrderLine.getNumber(),
                     newWorkOrderLine.getDeliveredQuantity());
-            return newWorkOrderLine;
+            return workOrderMaterialConsumeTiming;
         }
         else {
-            return workOrderLine;
+            return null;
         }
     }
 

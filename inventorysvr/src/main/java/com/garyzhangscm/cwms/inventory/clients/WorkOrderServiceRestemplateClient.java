@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.inventory.clients;
 
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.inventory.model.Company;
-import com.garyzhangscm.cwms.inventory.model.WorkOrder;
-import com.garyzhangscm.cwms.inventory.model.WorkOrderLine;
-import com.garyzhangscm.cwms.inventory.model.WorkOrderQCSample;
+import com.garyzhangscm.cwms.inventory.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +108,7 @@ public class WorkOrderServiceRestemplateClient {
     }
 
 
-    public WorkOrderLine inventoryDeliveredForWorkOrderLine(Long workOrderLineId,
+    public WorkOrderMaterialConsumeTiming inventoryDeliveredForWorkOrderLine(Long workOrderLineId,
                                                          Long quantityBeingPicked,
                                                          Long deliveredLocationId) {
         UriComponentsBuilder builder =
@@ -121,12 +118,12 @@ public class WorkOrderServiceRestemplateClient {
                         .queryParam("quantityBeingDelivered", quantityBeingPicked)
                         .queryParam("deliveredLocationId", deliveredLocationId);
 
-        ResponseBodyWrapper<WorkOrderLine> responseBodyWrapper
+        ResponseBodyWrapper<WorkOrderMaterialConsumeTiming> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(workOrderLineId).toUriString(),
                 HttpMethod.POST,
                 null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderLine>>() {}).getBody();
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderMaterialConsumeTiming>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
