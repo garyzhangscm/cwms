@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Component
@@ -109,8 +110,25 @@ public class WorkOrderServiceRestemplateClient {
 
 
     public WorkOrderMaterialConsumeTiming inventoryDeliveredForWorkOrderLine(Long workOrderLineId,
+                                                                             Long quantityBeingPicked,
+                                                                             Long deliveredLocationId) {
+        return inventoryDeliveredForWorkOrderLine(workOrderLineId, quantityBeingPicked,
+                deliveredLocationId, null);
+    }
+
+    /**
+     * Notify the work order service when the inventory is delivered in the production line's stage
+     * for the work order
+     * @param workOrderLineId inventory is picked for the work order line
+     * @param quantityBeingPicked total quantity being picked
+     * @param deliveredLocationId id of the production line's stage location
+     * @param inventoryId optional. ID of the inventory being deposit
+     * @return when the inventory will be consumed(when deliver / by transaction / when work order close)
+     */
+    public WorkOrderMaterialConsumeTiming inventoryDeliveredForWorkOrderLine(Long workOrderLineId,
                                                          Long quantityBeingPicked,
-                                                         Long deliveredLocationId) {
+                                                         Long deliveredLocationId,
+                                                                             Long inventoryId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -118,6 +136,9 @@ public class WorkOrderServiceRestemplateClient {
                         .queryParam("quantityBeingDelivered", quantityBeingPicked)
                         .queryParam("deliveredLocationId", deliveredLocationId);
 
+        if (Objects.nonNull(inventoryId)) {
+            builder = builder.queryParam("inventoryId", inventoryId);
+        }
         ResponseBodyWrapper<WorkOrderMaterialConsumeTiming> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(workOrderLineId).toUriString(),

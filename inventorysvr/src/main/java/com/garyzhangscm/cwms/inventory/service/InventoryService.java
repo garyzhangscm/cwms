@@ -1259,7 +1259,7 @@ public class InventoryService implements TestDataInitiableService{
                         workOrderServiceRestemplateClient.inventoryDeliveredForWorkOrderLine(
                         inventory.getPick().getWorkOrderLineId(),
                         inventory.getQuantity(),
-                        destination.getId()
+                        destination.getId(), inventory.getId()
                 );
                 if (workOrderMaterialConsumeTiming.equals(
                         WorkOrderMaterialConsumeTiming.WHEN_DELIVER
@@ -1268,6 +1268,7 @@ public class InventoryService implements TestDataInitiableService{
                     // the inventory being delivered should already be consumed.
                     // by the above call,
                     // we can simply return here
+                    logger.debug("Inventory is moved to the production line and consumed right after");
                     return inventory;
                 }
             }

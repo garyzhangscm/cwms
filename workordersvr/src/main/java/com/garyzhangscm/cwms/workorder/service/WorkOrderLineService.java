@@ -504,6 +504,11 @@ public class WorkOrderLineService implements TestDataInitiableService {
 
     @Transactional
     public void consume(WorkOrderLine workOrderLine, Long consumedQuantity, ProductionLine productionLine) {
+        consume(workOrderLine, consumedQuantity, productionLine, null);
+    }
+    @Transactional
+    public void consume(WorkOrderLine workOrderLine, Long consumedQuantity, ProductionLine productionLine,
+                        Long inventoryId) {
 
         // make sure the total consumed quantity won't exceed total delivered quantity
         /**
@@ -533,7 +538,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
                 workOrderLine.getWorkOrder().getWarehouseId(),
                 consumedQuantity,
                 productionLine.getInboundStageLocationId(),
-                null, "", null
+                inventoryId, "", null
         );
 
         // setup the consume quantity on the production line delivery record
@@ -560,7 +565,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
      */
     synchronized public WorkOrderMaterialConsumeTiming changeDeliveredQuantity(Long workOrderLineId,
                                                  Long quantityBeingDelivered,
-                                                 Long deliveredLocationId) {
+                                                 Long deliveredLocationId,
+                                                                               Long inventoryId) {
         // clear the cache. We may have scenario that when confirm
         // picks for the same work order line, we will update the same work order line
         // and production line delivery entity at the same time. Even we add the
@@ -574,10 +580,11 @@ public class WorkOrderLineService implements TestDataInitiableService {
         WorkOrderLine workOrderLine = findById(workOrderLineId);
 
         logger.debug("Will check if we need to update the delivered quantity");
-        logger.debug("Current work order line {} / {} 's delivered quantity: {}",
+        logger.debug("Current work order line {} / {} 's delivered quantity: {}, delivered inventory id {}",
                 workOrderLine.getWorkOrder().getNumber(),
                 workOrderLine.getNumber(),
-                workOrderLine.getDeliveredQuantity());
+                workOrderLine.getDeliveredQuantity(),
+                Objects.isNull(inventoryId) ? "N/A" : inventoryId);
 
         logger.debug("quantity delivered: {}", quantityBeingDelivered);
         // Make sure the inventory was delivered to the right location,
@@ -611,7 +618,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
                             workOrderLine.getWorkOrder());
             if (workOrderMaterialConsumeTiming.equals(WorkOrderMaterialConsumeTiming.WHEN_DELIVER)) {
                 logger.debug("# Configuration is setup to consume the inventory right after delivery, will consume the inventory");
-                consume(workOrderLine, quantityBeingDelivered, productionLineAssignment.getProductionLine());
+                consume(workOrderLine, quantityBeingDelivered, productionLineAssignment.getProductionLine(),
+                        inventoryId);
             }
 
             logger.debug("# will update work order line {} / {} 's delivered quantity to {}",

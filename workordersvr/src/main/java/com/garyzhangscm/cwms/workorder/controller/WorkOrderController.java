@@ -130,8 +130,9 @@ public class WorkOrderController {
     @RequestMapping(value="/work-orders/lines/{id}/inventory-being-delivered", method = RequestMethod.POST)
     public WorkOrderMaterialConsumeTiming changeDeliveredQuantity(@PathVariable Long id,
                                                  @RequestParam Long quantityBeingDelivered,
-                                                 @RequestParam Long deliveredLocationId) {
-        return workOrderLineService.changeDeliveredQuantity(id, quantityBeingDelivered, deliveredLocationId);
+                                                 @RequestParam Long deliveredLocationId,
+                                                                  @RequestParam(name="inventoryId", required = false) Long inventoryId) {
+        return workOrderLineService.changeDeliveredQuantity(id, quantityBeingDelivered, deliveredLocationId, inventoryId);
     }
 
 
