@@ -315,8 +315,13 @@ public class ProductionLineAssignmentService   {
         // allocate from the work order on this production line. When this number
         // become 0, it means we have fully allocated this work order
         productionLineAssignment.setOpenQuantity(productionLineAssignment.getQuantity());
-        logger.debug("Save production line assignment\n{}",
-                productionLineAssignment);
+        // logger.debug("Save production line assignment\n{}",
+        //         productionLineAssignment);
+        productionLineAssignment.getLines().forEach(
+                productionLineAssignmentLine -> productionLineAssignmentLine.setProductionLineAssignment(
+                        productionLineAssignment
+                )
+        );
         saveOrUpdate(productionLineAssignment);
     }
 
