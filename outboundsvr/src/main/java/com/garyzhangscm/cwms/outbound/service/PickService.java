@@ -1563,12 +1563,14 @@ public class PickService {
 
         // we will need to make sure there's only one production line assigned to the work order
         // so that we can know the destination for the pick
+        /***
+         * ignore the validation since we will always pass in the production line
         if (workOrder.getProductionLineAssignments().size() != 1) {
             throw PickingException.raiseException("We can only manually pick the LPN for a work order that " +
                     " has one and only one assigned production line, so as to know the destination for this " +
                     " picked LPN");
         }
-
+**/
         // Make sure the production line passed in is valid
         if (workOrder.getProductionLineAssignments().stream().noneMatch(
                 productionLineAssignment ->
