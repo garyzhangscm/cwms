@@ -48,12 +48,23 @@ public class ReceiptController {
     public List<Receipt> findAllReceipts(@RequestParam Long warehouseId,
                                          @RequestParam(name="number", required = false, defaultValue = "") String number,
                                          @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
+                                         @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
                                          @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList,
                                          @RequestParam(name = "check_in_start_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkInStartTime,
                                          @RequestParam(name = "check_in_end_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime checkInEndTime,
                                          @RequestParam(name = "check_in_date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
                                          @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
-        return receiptService.findAll(warehouseId, number, receiptStatusList, supplierName, checkInStartTime, checkInEndTime, checkInDate, loadDetails);
+        return receiptService.findAll(warehouseId, number, receiptStatusList, supplierId,
+                supplierName, checkInStartTime, checkInEndTime, checkInDate, loadDetails);
+    }
+
+
+    @RequestMapping(value="/receipts/count-by-supplier", method = RequestMethod.GET)
+    public Integer getReceiptCountBySupplier(@RequestParam Long warehouseId,
+                                         @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
+                                         @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId) {
+        return receiptService.getReceiptCountBySupplier(warehouseId,  supplierId,
+                supplierName);
     }
 
     @BillableEndpoint

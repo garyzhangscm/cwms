@@ -1798,5 +1798,6 @@
   "menu.main.outbound.allocation-configuration-maintenance": "分配策略维护",
   "ALLOCATION-CONFIGURATION-TYPE-PICKING": "拣货",
   "ALLOCATION-CONFIGURATION-TYPE-REPLENISHMENT": "补货",
-  "allocation-configuration": "分配策略"
+  "allocation-configuration": "分配策略",
+  "page.supplier.modal.delete.content": "删除供应商.\n如果该供应商有关联的入库单据，则您无法删除该供应商数据"
 }

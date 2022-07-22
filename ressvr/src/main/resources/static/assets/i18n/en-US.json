@@ -1799,5 +1799,6 @@
   "menu.main.outbound.allocation-configuration-maintenance": "Allocation Configuration Maintenance",
   "ALLOCATION-CONFIGURATION-TYPE-PICKING": "Picking",
   "ALLOCATION-CONFIGURATION-TYPE-REPLENISHMENT": "Replenishment",
-  "allocation-configuration": "Allocation Configuration"
+  "allocation-configuration": "Allocation Configuration",
+  "page.supplier.modal.delete.content": "Are you sure to delete the supplier. \n You will be able to delete the supplier only when there's no existing receipt against this supplier"
 }

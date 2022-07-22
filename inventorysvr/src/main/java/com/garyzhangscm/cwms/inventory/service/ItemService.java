@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
@@ -105,6 +106,7 @@ public class ItemService implements TestDataInitiableService{
                               String itemIdList,
                               Boolean companyItem,
                               Boolean warehouseSpecificItem,
+                              String description,
                               boolean loadDetails) {
 
         List<Item> items = itemRepository.findAll(
@@ -131,6 +133,18 @@ public class ItemService implements TestDataInitiableService{
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
                     }
+                }
+                // for description, we will always query by wild card
+                if (StringUtils.isNotBlank(description)) {
+                    String queryByDescription = description;
+                    if (!queryByDescription.startsWith("%")) {
+                        queryByDescription = "%" + queryByDescription;
+                    }
+                    if (!queryByDescription.endsWith("%")) {
+                        queryByDescription = queryByDescription + "%";
+
+                    }
+                    predicates.add(criteriaBuilder.like(root.get("description"), queryByDescription));
                 }
 
                 if (StringUtils.isNotBlank(clientIds)) {
@@ -892,5 +906,22 @@ public class ItemService implements TestDataInitiableService{
         logger.debug("start to process item family override, current warehouse {}, from item family id {} to item family id {}",
                 warehouseId, oldItemFamilyId, newItemFamilyId);
         itemRepository.processItemFamilyOverride(oldItemFamilyId, newItemFamilyId, warehouseId);
+    }
+
+    public List<Item> findByKeyword(Long companyId,  Long warehouseId, String keyword, Boolean loadDetails) {
+        // query by name with wildcard first
+        logger.debug("Start to query item by keyword: {}", keyword);
+
+        logger.debug("start to get item by name equals to the keyword");
+        List<Item> items = findAll(companyId, warehouseId,
+                "%" + keyword + "%",  null, null,null,
+                null,null, null, loadDetails);
+        // query by description
+        logger.debug("start to get item by description equals to the keyword");
+        items.addAll(findAll(companyId, warehouseId, null,null, null,null,
+                null,null, keyword, loadDetails));
+
+        return items;
+
     }
 }

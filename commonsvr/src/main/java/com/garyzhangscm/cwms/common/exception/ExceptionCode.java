@@ -25,7 +25,8 @@ public enum ExceptionCode {
     MISSING_INFORMATION(15002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"),
     SYSTEM_CONTROLLED_NUMBER_EXCEPTION(15003, HttpStatus.BAD_REQUEST, "System controlled number exception"),
     WORK_TASK_EXCEPTION(15004, HttpStatus.BAD_REQUEST, "Work Task Exception"),
-    TRAILER_EXCEPTION(15005, HttpStatus.BAD_REQUEST, "Trailer Exception");
+    TRAILER_EXCEPTION(15005, HttpStatus.BAD_REQUEST, "Trailer Exception"),
+    SUPPLIER_EXCEPTION(15006, HttpStatus.BAD_REQUEST, "Supplier Exception");
 
     private final int code;
 

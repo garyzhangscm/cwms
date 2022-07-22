@@ -93,16 +93,16 @@ public class ReceiptService implements TestDataInitiableService{
 
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
-                                 String supplierName,
+                                 Long supplierId, String supplierName,
                                  LocalDateTime checkInStartTime,
                                  LocalDateTime checkInEndTime,
                                  LocalDate checkInDate) {
-        return findAll(warehouseId, number, receiptStatusList, supplierName,
+        return findAll(warehouseId, number, receiptStatusList, supplierId, supplierName,
                 checkInStartTime, checkInEndTime, checkInDate, true);
     }
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
-                                 String supplierName,
+                                 Long supplierId, String supplierName,
                                  LocalDateTime checkInStartTime,
                                  LocalDateTime checkInEndTime,
                                  LocalDate checkInDate,
@@ -126,6 +126,10 @@ public class ReceiptService implements TestDataInitiableService{
                         }
                     }
 
+                    if (Objects.nonNull(supplierId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("supplierId"), supplierId));
+
+                    }
                     if (StringUtils.isNotBlank(supplierName)) {
 
                         Supplier supplier = commonServiceRestemplateClient.getSupplierByName(warehouseId, supplierName);
@@ -802,10 +806,10 @@ public class ReceiptService implements TestDataInitiableService{
             lpnLabelContent.put("supplier",
                     Objects.nonNull(supplier) ? supplier.getDescription() : "");
         }
-        lpnLabelContent.put("supplier",
-                Objects.nonNull(receiptLine.getReceipt()) &&
-                        Objects.nonNull(receiptLine.getReceipt().getSupplier()) ?
-                        receiptLine.getReceipt().getSupplier().getDescription() : "");
+        else {
+
+            lpnLabelContent.put("supplier",  "");
+        }
 
         if (Objects.nonNull(lpnQuantity)) {
             logger.debug("LPN Quantity is passed in: {}", lpnQuantity);
@@ -960,5 +964,15 @@ public class ReceiptService implements TestDataInitiableService{
         }
 
         saveOrUpdate(receipt, false);
+    }
+
+    public Integer getReceiptCountBySupplier(Long warehouseId, Long supplierId, String supplierName) {
+        if (Objects.isNull(supplierId) && Strings.isBlank(supplierName)) {
+            throw ReceiptOperationException.raiseException(
+                    "Either supplier id or supplier name must be passed in " +
+                            " to get the receipt count for the supplier");
+        }
+        return findAll(warehouseId, null, null, supplierId,
+                supplierName, null, null, null, false).size();
     }
 }
