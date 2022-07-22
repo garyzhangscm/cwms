@@ -55,6 +55,7 @@ public class ItemController {
     public List<Item> findAllItems(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                    @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                    @RequestParam(name="name", required = false, defaultValue = "") String name,
+                                   @RequestParam(name="description", required = false, defaultValue = "") String description,
                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
                                    @RequestParam(name="itemFamilyIds", required = false, defaultValue = "") String itemFamilyIds,
                                    @RequestParam(name="itemIdList", required = false, defaultValue = "") String itemIdList,
@@ -75,9 +76,20 @@ public class ItemController {
                             .getWarehouseById(warehouseId).getCompanyId();
         }
 
-        return itemService.findAll(companyId, warehouseId, name, clientIds, itemFamilyIds, itemIdList, companyItem, warehouseSpecificItem,  loadDetails);
+        return itemService.findAll(companyId, warehouseId, name, clientIds, itemFamilyIds, itemIdList, companyItem,
+                warehouseSpecificItem, description,  loadDetails);
     }
 
+
+    @RequestMapping(value="/items-query/by-keyword", method = RequestMethod.GET)
+    public List<Item> findByKeyword(@RequestParam Long companyId,
+                                    @RequestParam Long warehouseId,
+                                    @RequestParam String keyword,
+                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+
+        return itemService.findByKeyword(companyId, warehouseId, keyword, loadDetails);
+
+    }
     @RequestMapping(value="/items/{id}", method = RequestMethod.GET)
     public Item findItem(@PathVariable Long id) {
         return itemService.findById(id);

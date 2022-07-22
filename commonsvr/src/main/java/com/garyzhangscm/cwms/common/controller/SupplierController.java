@@ -85,7 +85,8 @@ public class SupplierController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/suppliers")
-    public void deleteSuppliers(@RequestParam(name = "supplierIds", required = false, defaultValue = "") String supplierIds) {
-        supplierService.delete(supplierIds);
+    public void deleteSuppliers(@RequestParam Long warehouseId,
+                                @RequestParam(name = "supplierIds", required = false, defaultValue = "") String supplierIds) {
+        supplierService.delete(warehouseId, supplierIds);
     }
 }

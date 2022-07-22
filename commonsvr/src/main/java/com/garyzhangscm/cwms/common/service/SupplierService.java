@@ -19,8 +19,11 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.common.exception.SupplierException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.SupplierRepository;
 import org.apache.commons.lang.StringUtils;
@@ -51,6 +54,8 @@ public class SupplierService implements  TestDataInitiableService{
     private FileService fileService;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
 
     @Value("${fileupload.test-data.clients:suppliers}")
     String testDataFile;
@@ -163,13 +168,37 @@ public class SupplierService implements  TestDataInitiableService{
     }
 
     @Transactional
-    public void delete(String supplierIds) {
+    public void delete(Long warehouseId, String supplierIds) {
         // remove a list of suppliers based upon the id passed in
+        logger.debug("start to remove suppliers with id list {}", supplierIds);
         if (!supplierIds.isEmpty()) {
             long[] supplierIdArray = Arrays.asList(supplierIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
+            validateSuppliersForDelete(warehouseId, supplierIdArray);
             for(long id : supplierIdArray) {
+                logger.debug("will remove supplier with id {}", supplierIds);
                 delete(id);
             }
+        }
+
+    }
+
+    /**
+     * If there's receipt against the supplier, we won't allow the user to remove the supplier
+     * @param supplierId
+     */
+    private void validateSupplierForDelete(Long warehouseId,Long supplierId) {
+        int receiptCountBySupplier = inboundServiceRestemplateClient.getReceiptCountBySupplier(warehouseId, supplierId);
+        if (receiptCountBySupplier > 0) {
+            // show the name to the user
+            Supplier supplier = findById(supplierId);
+            throw SupplierException.raiseException("There's existing receipt against this supplier "
+             +  supplier.getId() + " / " + supplier.getName() + ", fail to remove it");
+        }
+
+    }
+    private void validateSuppliersForDelete(Long warehouseId, long[] supplierIdArray) {
+        for (long supplierId : supplierIdArray) {
+            validateSupplierForDelete(warehouseId, supplierId);
         }
 
     }
