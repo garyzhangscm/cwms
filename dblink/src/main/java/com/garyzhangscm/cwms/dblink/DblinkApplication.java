@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 public class DblinkApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(DblinkApplication.class, args);
 	}
 

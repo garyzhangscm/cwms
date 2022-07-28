@@ -25,6 +25,7 @@
     <option name="ignoredFiles">
       <set>
         <option value="$PROJECT_DIR$/authserver/pom.xml" />
+        <option value="$PROJECT_DIR$/quickbook/pom.xml" />
       </set>
     </option>
   </component>

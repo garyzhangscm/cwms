@@ -43,6 +43,7 @@
         <!-- Integration Service: Integration -->
         <module>integrationsvr</module>
         <module>dblink</module>
+        <module>QuickBook</module>
         <!--
         <module>licensing-service</module>
         -->

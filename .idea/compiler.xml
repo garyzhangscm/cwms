@@ -21,6 +21,7 @@
         <module name="layoutserver" />
         <module name="commonserver" />
         <module name="outboundsvr" />
+        <module name="quickbook" />
         <module name="confsvr" />
         <module name="outboundserver" />
         <module name="workorderserver" />
@@ -61,6 +62,7 @@
       <module name="layoutserver" options="-parameters" />
       <module name="outboundserver" options="-parameters" />
       <module name="outboundsvr" options="-parameters" />
+      <module name="quickbook" options="-parameters" />
       <module name="resources" options="-parameters" />
       <module name="resourceserver" options="-parameters" />
       <module name="ressvr" options="-parameters" />
