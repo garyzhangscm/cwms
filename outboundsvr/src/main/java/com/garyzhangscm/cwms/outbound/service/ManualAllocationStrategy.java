@@ -145,7 +145,7 @@ public class ManualAllocationStrategy implements AllocationStrategy {
             return pickService.generatePick(allocationRequest.getWorkOrder() ,
                     inventory, allocationRequest.getWorkOrderLines().get(0),
                     inventory.getQuantity(), inventory.getItemPackageType().getStockItemUnitOfMeasures(),
-                    allocationRequest.getDestinationLocationId());
+                    allocationRequest.getDestinationLocationId(), false);
         }
         else {
             throw AllocationException.raiseException("now we only support new allocation for single shipment line or single work order line");
