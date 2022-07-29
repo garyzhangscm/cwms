@@ -452,8 +452,15 @@ public class PickService {
 
     @Transactional
     public Pick save(Pick pick) {
+        return save(pick, true);
+    }
+    @Transactional
+    public Pick save(Pick pick, boolean loadDetails) {
         Pick newPick = pickRepository.save(pick);
-        loadAttribute(newPick);
+        if (loadDetails) {
+
+            loadAttribute(newPick);
+        }
         return newPick;
     }
 
@@ -758,6 +765,11 @@ public class PickService {
 
     @Transactional
     private Pick processPick(Pick pick) {
+
+        return processPick(pick, true);
+    }
+    @Transactional
+    private Pick processPick(Pick pick, boolean loadDetails) {
         // Setup the pick movement
         logger.debug("start to setup movement path for pick {}", pick.getNumber());
         setupMovementPath(pick);
@@ -775,7 +787,7 @@ public class PickService {
 
         logger.debug("pick {} is processed. we are good to go",
                 pick.getNumber());
-        return findById(pick.getId());
+        return findById(pick.getId(), loadDetails);
     }
 
     @Transactional
@@ -812,6 +824,15 @@ public class PickService {
     private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder,
                                            WorkOrderLine workOrderLine,
                                            Long destinationLocationId) {
+        return setupWorkOrderInformation(pick,
+                workOrder, workOrderLine, destinationLocationId, true);
+
+    }
+    @Transactional
+    private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder,
+                                           WorkOrderLine workOrderLine,
+                                           Long destinationLocationId,
+                                           boolean loadDetails) {
 
         pick.setWorkOrderLineId(workOrderLine.getId());
         pick.setWarehouseId(workOrder.getWarehouseId());
@@ -822,7 +843,7 @@ public class PickService {
         // Long stagingLocationId = getDestinationLocationIdForPick(workOrder);
         pick.setDestinationLocationId(destinationLocationId);
 
-        return save(pick);
+        return save(pick, loadDetails);
     }
 
 
@@ -842,10 +863,19 @@ public class PickService {
                              WorkOrderLine workOrderLine, Long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure,
                              Long destinationLocationId) {
+        return generatePick(workOrder, inventory,
+                workOrderLine, quantity, pickableUnitOfMeasure, destinationLocationId, true);
+    }
+    @Transactional
+    public Pick generatePick(WorkOrder workOrder, Inventory inventory,
+                             WorkOrderLine workOrderLine, Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             Long destinationLocationId,
+                             boolean loadDetails) {
         Pick pick = generateBasicPickInformation(
                 workOrder.getWarehouseId(), inventory, quantity, pickableUnitOfMeasure);
-        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
-        return processPick(pick);
+        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId, loadDetails);
+        return processPick(pick, loadDetails);
     }
 
 
