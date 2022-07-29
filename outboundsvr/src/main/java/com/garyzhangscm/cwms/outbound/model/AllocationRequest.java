@@ -241,6 +241,11 @@ public class AllocationRequest {
 
     public void setManualAllocation(boolean manualAllocation) {
         this.manualAllocation = manualAllocation;
+        if (Boolean.TRUE.equals(this.isManualAllocation())) {
+            // for manual allocation, setup the
+            // allocation strategy type to MANUAL_ALLOCATION
+            allocationStrategyTypes = Collections.singletonList(AllocationStrategyType.MANUAL_ALLOCATION);
+        }
     }
 
     public String getLpn() {

@@ -250,7 +250,7 @@ public class AllocationTransactionHistoryService   {
             String message
     ) {
 
-        logger.debug("Start to build allocation transaction history from the allocation request: ====> \n {}", allocationRequest);
+        // logger.debug("Start to build allocation transaction history from the allocation request: ====> \n {}", allocationRequest);
         ShipmentLine shipmentLine =
                 Objects.nonNull(allocationRequest.getShipmentLines()) &&
                     !allocationRequest.getShipmentLines().isEmpty() ?
@@ -385,8 +385,8 @@ public class AllocationTransactionHistoryService   {
 
 
     public void send(AllocationTransactionHistory allocationTransactionHistory) {
-        logger.debug("Start to send allocation transaction history: \n {}",
-                allocationTransactionHistory);
+        // logger.debug("Start to send allocation transaction history: \n {}",
+        //        allocationTransactionHistory);
         kafkaSender.send(allocationTransactionHistory);
     }
 

@@ -730,12 +730,31 @@ public class ReceiptService implements TestDataInitiableService{
         return commonServiceRestemplateClient.getNextNumber(warehouseId, "receipt-number");
     }
 
+
+    public ReportHistory generatePrePrintLPNReport(Long id, String lpnNumber, Long lpnQuantity, String locale, String printerName)
+            throws JsonProcessingException {
+        return generatePrePrintLPNDocument(ReportType.RECEIVING_LPN_REPORT, receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
+    }
     public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity, String locale, String printerName)
             throws JsonProcessingException {
-        return generatePrePrintLPNLabel(receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
+        return generatePrePrintLPNDocument(ReportType.RECEIVING_LPN_LABEL, receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
+    }
+    /**
+     * Print LPN label or document
+     * @param id
+     * @param lpnNumber
+     * @param lpnQuantity
+     * @param locale
+     * @param printerName
+     * @return
+     * @throws JsonProcessingException
+     */
+    public ReportHistory generatePrePrintLPNDocument(ReportType reportType, Long id, String lpnNumber, Long lpnQuantity, String locale, String printerName)
+            throws JsonProcessingException {
+        return generatePrePrintLPNDocument(reportType, receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
     }
 
-    public ReportHistory generatePrePrintLPNLabel(ReceiptLine receiptLine, String lpnNumber, Long lpnQuantity, String locale,
+    public ReportHistory generatePrePrintLPNDocument(ReportType reportType, ReceiptLine receiptLine, String lpnNumber, Long lpnQuantity, String locale,
                                                   String printerName)
             throws JsonProcessingException {
         Long warehouseId = receiptLine.getWarehouseId();
@@ -752,7 +771,7 @@ public class ReceiptService implements TestDataInitiableService{
         logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale,
+                        warehouseId, reportType, reportData, locale,
                         printerName
                 );
 
@@ -761,11 +780,14 @@ public class ReceiptService implements TestDataInitiableService{
         return reportHistory;
     }
 
+
+
+
     private void setupPrePrintLPNLabelParameters(
             Report report, ReceiptLine receiptLine, String lpnNumber,
             Long lpnQuantity) {
 
-        Map<String, Object> lpnLabelContent =   getLPNLabelContent(
+        Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
                 receiptLine, lpnNumber, lpnQuantity
         );
         for(Map.Entry<String, Object> entry : lpnLabelContent.entrySet()) {
@@ -777,7 +799,7 @@ public class ReceiptService implements TestDataInitiableService{
 
     }
 
-    private Map<String, Object> getLPNLabelContent(ReceiptLine receiptLine, String lpnNumber,
+    private Map<String, Object> getLPNDocumentContent(ReceiptLine receiptLine, String lpnNumber,
                                                    Long lpnQuantity) {
 
         Map<String, Object> lpnLabelContent = new HashMap<>();
@@ -846,6 +868,26 @@ public class ReceiptService implements TestDataInitiableService{
         return lpnLabelContent;
 
     }
+
+    public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long lpnQuantity, Integer count,
+                                                         Integer copies, String locale,
+                                                         String printerName) throws JsonProcessingException {
+        return generatePrePrintLPNDocumentInBatch(
+                ReportType.RECEIVING_LPN_LABEL, id,
+                lpn, lpnQuantity, count, copies, locale, printerName
+        );
+    }
+
+
+    public ReportHistory generatePrePrintLPNReportInBatch(Long id, String lpn, Long lpnQuantity, Integer count,
+                                                         Integer copies, String locale,
+                                                         String printerName) throws JsonProcessingException {
+        return generatePrePrintLPNDocumentInBatch(
+                ReportType.RECEIVING_LPN_REPORT, id,
+                lpn, lpnQuantity, count, copies, locale, printerName
+        );
+    }
+
     /**
      * Generate multiple labels in a batch, one for each lpn
      * @param id
@@ -855,16 +897,18 @@ public class ReceiptService implements TestDataInitiableService{
      * @param locale
      * @return
      */
-    public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long lpnQuantity, Integer count,
+    public ReportHistory generatePrePrintLPNDocumentInBatch(ReportType reportType,
+                                                         Long id, String lpn, Long lpnQuantity, Integer count,
                                                          Integer copies, String locale,
                                                          String printerName) throws JsonProcessingException {
-        return generatePrePrintLPNLabelInBatch(
-                receiptLineService.findById(id),
+        return generatePrePrintLPNDocumentInBatch(
+                reportType, receiptLineService.findById(id),
                 lpn, lpnQuantity, count, copies, locale, printerName
         );
     }
 
-    public ReportHistory generatePrePrintLPNLabelInBatch(ReceiptLine receiptLine, String lpn, Long lpnQuantity, Integer count,
+    public ReportHistory generatePrePrintLPNDocumentInBatch(ReportType reportType,
+                                                         ReceiptLine receiptLine, String lpn, Long lpnQuantity, Integer count,
                                                          Integer copies, String locale,
                                                          String printerName) throws JsonProcessingException {
 
@@ -877,23 +921,33 @@ public class ReceiptService implements TestDataInitiableService{
         else {
             lpnNumbers = commonServiceRestemplateClient.getNextNumberInBatch(warehouseId, "receiving-lpn-number", count);
         }
-        logger.debug("we will print labels for lpn : {}", lpnNumbers);
+        logger.debug("we will print document for lpn : {}, by document type {}",
+                lpnNumbers, reportType);
         if (lpnNumbers.size() > 0) {
 
 
             Report reportData = new Report();
             // setup the parameters for the label;
             // for label, we don't need the actual data.
-            setupPrePrintLPNLabelData(
-                    reportData, receiptLine, lpnNumbers, lpnQuantity, copies
-            );
+            if (reportType.isLabel()) {
+
+                setupPrePrintLPNLabelData(
+                        reportData, receiptLine, lpnNumbers, lpnQuantity, copies
+                );
+            }
+            else {
+
+                setupPrePrintLPNDocumentData(
+                        reportData, receiptLine, lpnNumbers, lpnQuantity, copies
+                );
+            }
             logger.debug("will call resource service to print the report with locale: {}",
                     locale);
             logger.debug("####   Report   Data  ######");
             logger.debug(reportData.toString());
             ReportHistory reportHistory =
                     resourceServiceRestemplateClient.generateReport(
-                            warehouseId, ReportType.RECEIVING_LPN_LABEL, reportData, locale,
+                            warehouseId, reportType, reportData, locale,
                             printerName
                     );
 
@@ -911,7 +965,7 @@ public class ReceiptService implements TestDataInitiableService{
         lpnNumbers.forEach(
                 lpnNumber -> {
 
-                    Map<String, Object> lpnLabelContent =   getLPNLabelContent(
+                    Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
                             receiptLine, lpnNumber, lpnQuantity
                     );
                     for (int i = 0; i < copies; i++) {
@@ -924,6 +978,34 @@ public class ReceiptService implements TestDataInitiableService{
 
     }
 
+    private void setupPrePrintLPNDocumentData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
+                                           Long lpnQuantity, Integer copies) {
+
+        List<ReceivingLPNReportData> receivingLPNReportData = new ArrayList<>();
+        lpnNumbers.forEach(
+                lpnNumber -> {
+
+                    Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
+                            receiptLine, lpnNumber, lpnQuantity
+                    );
+                    for (int i = 0; i < copies; i++) {
+
+                        receivingLPNReportData.add(
+                                new ReceivingLPNReportData(
+                                        lpnLabelContent.get("item_family").toString(),
+                                        lpnLabelContent.get("item_name").toString(),
+                                        lpnLabelContent.get("receipt_number").toString(),
+                                        lpnLabelContent.get("supplier").toString(),
+                                        lpnLabelContent.get("check_in_date").toString(),
+                                        lpnLabelContent.get("quantity").toString(),
+                                        lpnLabelContent.get("lpn").toString()));
+
+                    }
+                }
+        );
+        reportData.setData(receivingLPNReportData);
+
+    }
     private List<String> getNextLPNNumbers(String lpn, Integer count) {
 
 

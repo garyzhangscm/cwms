@@ -230,6 +230,21 @@ public class ReceiptController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/receipts/receipt-lines/{id}/pre-print-lpn-report", method = RequestMethod.POST)
+    public ReportHistory generatePrePrintLPNReport(
+            @PathVariable Long id,
+            @RequestParam String lpn,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
+    ) throws JsonProcessingException {
+
+        logger.debug("start generate pre-printed lpn report with id: {}", id);
+        return receiptService.generatePrePrintLPNReport(id, lpn, quantity, locale, printerName);
+    }
+
+
+    @BillableEndpoint
     @RequestMapping(value="/receipts/receipt-lines/{id}/pre-print-lpn-label/batch", method = RequestMethod.POST)
     public ReportHistory generatePrePrintLPNLabelInBatch(
             @PathVariable Long id,
@@ -243,6 +258,22 @@ public class ReceiptController {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
         return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, locale, printerName);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/receipt-lines/{id}/pre-print-lpn-report/batch", method = RequestMethod.POST)
+    public ReportHistory generatePrePrintLPNReportInBatch(
+            @PathVariable Long id,
+            @RequestParam String lpn,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
+            @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
+            @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
+    ) throws JsonProcessingException {
+
+        logger.debug("start generate pre-printed lpn report with id: {}", id);
+        return receiptService.generatePrePrintLPNReportInBatch(id, lpn, lpnQuantity, count, copies, locale, printerName);
     }
 
 
