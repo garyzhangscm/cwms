@@ -131,7 +131,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     // update when the client already exists
     @Transactional
     public SystemControlledNumber saveOrUpdate(SystemControlledNumber systemControlledNumber) {
-        systemControlledNumber.setVariable(systemControlledNumber.getVariable().toLowerCase());
+        systemControlledNumber.setVariable(systemControlledNumber.getVariable().trim().toLowerCase());
         if (systemControlledNumber.getId() == null &&
                 findByVariable(systemControlledNumber.getWarehouseId(), systemControlledNumber.getVariable()) != null) {
             systemControlledNumber.setId(
