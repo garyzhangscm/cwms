@@ -874,7 +874,7 @@ public class PickService {
                              boolean loadDetails) {
         Pick pick = generateBasicPickInformation(
                 workOrder.getWarehouseId(), inventory, quantity, pickableUnitOfMeasure);
-        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId, loadDetails);
+        pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick, loadDetails);
     }
 
@@ -1575,6 +1575,8 @@ public class PickService {
             );
             throw PickingException.raiseException("Error! can't allocate from this LPN " + lpn);
         }
+        logger.debug("We finished manual allocation, will return {} picks",
+                allocationResult.getPicks().size());
 
 
         return allocationResult.getPicks();
