@@ -375,6 +375,51 @@ public class IntegrationDataController {
     }
 
     //
+    // Purchase Order Related
+    //
+    @RequestMapping(value="/purchase-orders", method = RequestMethod.GET)
+    public List<? extends IntegrationPurchaseOrderData> getIntegrationPurchaseOrderData(
+            @RequestParam String companyCode,
+            @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
+            @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
+            @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
+
+        return integrationDataService.getPurchaseOrderData(
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
+    }
+
+    @RequestMapping(value="/purchase-orders/{id}", method = RequestMethod.GET)
+    public IntegrationPurchaseOrderData getIntegrationPurchaseOrderData(@PathVariable Long id) {
+
+        return integrationDataService.getPurchaseOrderData(id);
+    }
+
+    @RequestMapping(value="/purchase-orders/{id}/resend", method = RequestMethod.POST)
+    public IntegrationPurchaseOrderData resendIntegrationPurchaseOrderData(@PathVariable Long id) {
+
+        return integrationDataService.resendPurchaseOrderData(id);
+    }
+    @RequestMapping(value="/purchase-orders", method = RequestMethod.PUT)
+    public IntegrationPurchaseOrderData addIntegrationPurchaseOrderData(@RequestBody PurchaseOrder purchaseOrder) {
+
+        logger.debug("Start to add purchase order: \n{}", purchaseOrder);
+        return integrationDataService.addPurchaseOrderData(purchaseOrder);
+    }
+
+    @RequestMapping(value="/dblink/purchase-orders", method = RequestMethod.PUT)
+    public ResponseBodyWrapper addIntegrationPurchaseOrderData(
+            @RequestBody DBBasedPurchaseOrder dbBasedPurchaseOrder
+    ){
+        logger.debug("Start to save dbbased purchase order into database \n{}",
+                dbBasedPurchaseOrder);
+        integrationDataService.addPurchaseOrderData(dbBasedPurchaseOrder);
+        return ResponseBodyWrapper.success("success");
+    }
+
+    //
     // Order Confirmation Related
     //
     @RequestMapping(value="/order-confirmations", method = RequestMethod.GET)

@@ -61,6 +61,8 @@ public class ReceiptService implements TestDataInitiableService{
     private ReceiptRepository receiptRepository;
     @Autowired
     private ReceiptLineService receiptLineService;
+    @Autowired
+    private PurchaseOrderService purchaseOrderService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -467,8 +469,15 @@ public class ReceiptService implements TestDataInitiableService{
         receipt = saveOrUpdate(receipt);
 
         integrationService.sendReceiptCompleteData(receipt);
+        if (Objects.nonNull(receipt.getPurchaseOrder())) {
+            refreshReceivedQuantity(receipt);
+        }
 
         return receipt;
+    }
+
+    private void refreshReceivedQuantity(Receipt receipt) {
+        purchaseOrderService.refreshReceivedQuantity(receipt);
     }
 
     public Receipt completeReceipt(Long receiptId) {
@@ -1056,5 +1065,57 @@ public class ReceiptService implements TestDataInitiableService{
         }
         return findAll(warehouseId, null, null, supplierId,
                 supplierName, null, null, null, false).size();
+    }
+
+    /**
+     * Create a new receipt from purchase order
+     * @param purchaseOrder
+     * @param receiptNumber
+     * @param allowUnexpectedItem
+     * @param receiptQuantityMap
+     * @return
+     */
+    public Receipt createReceiptFromPurchaseOrder(PurchaseOrder purchaseOrder,
+                                                  String receiptNumber, Boolean allowUnexpectedItem,
+                                                  Map<Long, Long> receiptQuantityMap,
+                                                  Map<Long, PurchaseOrderLine> matchedPurchaseOrderLineMap) {
+        Receipt receipt = new Receipt();
+        receipt.setNumber(receiptNumber);
+        receipt.setPurchaseOrder(purchaseOrder);
+        receipt.setReceiptStatus(ReceiptStatus.OPEN);
+        receipt.setCategory(ReceiptCategory.PURCHASE_ORDER);
+        receipt.setWarehouseId(purchaseOrder.getWarehouseId());
+        receipt.setAllowUnexpectedItem(Objects.isNull(allowUnexpectedItem) ? false : allowUnexpectedItem);
+        receipt.setClientId(purchaseOrder.getClientId());
+        receipt.setSupplierId(purchaseOrder.getSupplierId());
+
+
+        for(Map.Entry<Long, Long> receiptQuantityMapEntry : receiptQuantityMap.entrySet()) {
+            Long purchaseOrderLineId = receiptQuantityMapEntry.getKey();
+            Long receiptQuantity = receiptQuantityMapEntry.getValue();
+            PurchaseOrderLine purchaseOrderLine
+                    = matchedPurchaseOrderLineMap.get( purchaseOrderLineId );
+
+            ReceiptLine receiptLine = new ReceiptLine();
+            receiptLine.setReceipt(receipt);
+            receiptLine.setNumber(purchaseOrderLine.getNumber());
+            receiptLine.setWarehouseId(purchaseOrderLine.getWarehouseId());
+            receiptLine.setItemId(purchaseOrderLine.getItemId());
+            receiptLine.setExpectedQuantity(receiptQuantity);
+            receiptLine.setPurchaseOrderLine(purchaseOrderLine);
+            receipt.addReceiptLines(receiptLine);
+
+        }
+        Receipt newReceipt =  saveOrUpdate(receipt);
+
+        for (ReceiptLine receiptLine : newReceipt.getReceiptLines()) {
+
+            if (Objects.nonNull(receiptLine.getPurchaseOrderLine())) {
+
+                purchaseOrderService.addReceiptQuantity(
+                        receiptLine.getPurchaseOrderLine(), receiptLine.getExpectedQuantity());
+            }
+        }
+        return newReceipt;
     }
 }

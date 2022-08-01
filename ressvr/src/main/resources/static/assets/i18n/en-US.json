@@ -1801,5 +1801,18 @@
   "ALLOCATION-CONFIGURATION-TYPE-REPLENISHMENT": "Replenishment",
   "allocation-configuration": "Allocation Configuration",
   "page.supplier.modal.delete.content": "Are you sure to delete the supplier. \n You will be able to delete the supplier only when there's no existing receipt against this supplier",
-  "menu.main.util.quickbook-auth": "QuickBook Auth"
+  "menu.main.util.quickbook-auth": "QuickBook Auth",
+  "menu.main.inbound.purchaseOrder": "Purchase Order",
+  "REPORT-TYPE-QC_INSPECTION_REQUEST_REPORT": "QC Inspection Request Report",
+  "REPORT-TYPE-RECEIVING_LPN_REPORT": "Receiving LPN Report",
+  "purchase-order.number": "Purchase Order Number",
+  "PURCHASE-ORDER-STATUS-OPEN":"Open",
+  "PURCHASE-ORDER-STATUS-CLOSED":"Closed",
+  "purchase-order.line": "Purchase Order Line",
+  "expectedQuantity": "Expected Quantity",
+  "receiptQuantity": "Receipt Quantity",
+  "receivedQuantity": "Received Quantity",
+  "totalExpectedQuantity": "Total Expected Quantity",
+  "totalReceiptQuantity": "Total Receipt Quantity",
+  "totalReceivedQuantity": "Total Received Quantity"
 }

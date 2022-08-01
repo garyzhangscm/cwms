@@ -22,28 +22,19 @@ package com.garyzhangscm.cwms.integration.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
-public class Receipt {
+public class PurchaseOrderLine {
 
     private String number;
 
     private Long warehouseId;
     private String warehouseName;
 
-    private Warehouse warehouse;
+    private Long itemId;
+    private String itemName;
+    private Item item;
 
-    private Long clientId;
-    private String clientName;
+    private Long expectedQuantity;
 
-    private Long supplierId;
-    private String supplierName;
-
-    private List<ReceiptLine> receiptLines = new ArrayList<>();
-
-    private Boolean allowUnexpectedItem;
 
     @Override
     public String toString() {
@@ -53,13 +44,6 @@ public class Receipt {
             e.printStackTrace();
         }
         return null;
-    }
-    public Warehouse getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(Warehouse warehouse) {
-        this.warehouse = warehouse;
     }
 
     public String getNumber() {
@@ -78,36 +62,29 @@ public class Receipt {
         this.warehouseId = warehouseId;
     }
 
-    public Long getClientId() {
-        return clientId;
+    public Long getItemId() {
+        return itemId;
     }
 
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 
-    public Long getSupplierId() {
-        return supplierId;
+    public Long getExpectedQuantity() {
+        return expectedQuantity;
     }
 
-    public void setSupplierId(Long supplierId) {
-        this.supplierId = supplierId;
+    public void setExpectedQuantity(Long expectedQuantity) {
+        this.expectedQuantity = expectedQuantity;
     }
 
-    public List<ReceiptLine> getReceiptLines() {
-        return receiptLines;
+
+    public Item getItem() {
+        return item;
     }
 
-    public void setReceiptLines(List<ReceiptLine> receiptLines) {
-        this.receiptLines = receiptLines;
-    }
-
-    public Boolean getAllowUnexpectedItem() {
-        return allowUnexpectedItem;
-    }
-
-    public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
-        this.allowUnexpectedItem = allowUnexpectedItem;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public String getWarehouseName() {
@@ -118,19 +95,11 @@ public class Receipt {
         this.warehouseName = warehouseName;
     }
 
-    public String getClientName() {
-        return clientName;
+    public String getItemName() {
+        return itemName;
     }
 
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
-    }
-
-    public String getSupplierName() {
-        return supplierName;
-    }
-
-    public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName;
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 }

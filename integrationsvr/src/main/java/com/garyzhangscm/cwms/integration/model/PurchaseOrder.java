@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Receipt {
+public class PurchaseOrder {
 
     private String number;
 
@@ -41,7 +41,7 @@ public class Receipt {
     private Long supplierId;
     private String supplierName;
 
-    private List<ReceiptLine> receiptLines = new ArrayList<>();
+    private List<PurchaseOrderLine> purchaseOrderLines = new ArrayList<>();
 
     private Boolean allowUnexpectedItem;
 
@@ -94,13 +94,6 @@ public class Receipt {
         this.supplierId = supplierId;
     }
 
-    public List<ReceiptLine> getReceiptLines() {
-        return receiptLines;
-    }
-
-    public void setReceiptLines(List<ReceiptLine> receiptLines) {
-        this.receiptLines = receiptLines;
-    }
 
     public Boolean getAllowUnexpectedItem() {
         return allowUnexpectedItem;
@@ -132,5 +125,13 @@ public class Receipt {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public List<PurchaseOrderLine> getPurchaseOrderLines() {
+        return purchaseOrderLines;
+    }
+
+    public void setPurchaseOrderLines(List<PurchaseOrderLine> purchaseOrderLines) {
+        this.purchaseOrderLines = purchaseOrderLines;
     }
 }

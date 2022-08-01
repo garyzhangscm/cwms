@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -26,6 +27,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
@@ -36,7 +39,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "receipt")
-public class Receipt {
+public class Receipt extends AuditibleEntity{
 
 
     @Id
@@ -73,6 +76,14 @@ public class Receipt {
     @Column(name = "category")
     @Enumerated(EnumType.STRING)
     private ReceiptCategory category = ReceiptCategory.PURCHASE_ORDER;
+
+
+    // When the receipt is created by
+    // following a specific Purchase Order
+    @ManyToOne
+    @JoinColumn(name = "purchase_order_id")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private PurchaseOrder purchaseOrder;
 
     @Transient
     private Supplier supplier;
@@ -148,6 +159,12 @@ public class Receipt {
     public void setReceiptLines(List<ReceiptLine> receiptLines) {
         this.receiptLines = receiptLines;
     }
+    public void addReceiptLines(ReceiptLine receiptLine) {
+        if (this.receiptLines == null) {
+            this.receiptLines = new ArrayList<>();
+        }
+        this.receiptLines.add(receiptLine);
+    }
 
     public Long getSupplierId() {
         return supplierId;
@@ -211,6 +228,14 @@ public class Receipt {
 
     public void setTransferOrderNumber(String transferOrderNumber) {
         this.transferOrderNumber = transferOrderNumber;
+    }
+
+    public PurchaseOrder getPurchaseOrder() {
+        return purchaseOrder;
+    }
+
+    public void setPurchaseOrder(PurchaseOrder purchaseOrder) {
+        this.purchaseOrder = purchaseOrder;
     }
 
     public Long getTransferOrderWarehouseId() {

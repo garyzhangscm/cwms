@@ -1,10 +1,7 @@
 package com.garyzhangscm.cwms.inbound.service;
 
 import com.garyzhangscm.cwms.inbound.clients.KafkaSender;
-import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrder;
-import com.garyzhangscm.cwms.inbound.model.CustomerReturnOrderConfirmation;
-import com.garyzhangscm.cwms.inbound.model.Receipt;
-import com.garyzhangscm.cwms.inbound.model.ReceiptConfirmation;
+import com.garyzhangscm.cwms.inbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +15,8 @@ public class IntegrationService {
 
     @Autowired
     private ReceiptService receiptService;
+    @Autowired
+    private PurchaseOrderService purchaseOrderService;
     @Autowired
     private KafkaSender kafkaSender;
     // Add/ change item
@@ -35,6 +34,16 @@ public class IntegrationService {
         logger.debug(">> receipt information saved!");
     }
 
+    public void process(PurchaseOrder purchaseOrder) {
+
+
+        // Setup the receipt line so it can be serialized along with the receipt
+        purchaseOrder.getPurchaseOrderLines().forEach(purchaseOrderLine -> {
+            purchaseOrderLine.setPurchaseOrder(purchaseOrder);
+        });
+        purchaseOrderService.processIntegration(purchaseOrder);
+        logger.debug(">> purchase order information saved!");
+    }
     public void sendReceiptCompleteData(Receipt receipt) {
 
 

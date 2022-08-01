@@ -106,6 +106,19 @@ public interface Integration {
     IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt);
 
     //
+    // Integration - Purchase Order and Purchase Order Line
+    //
+    List<? extends IntegrationPurchaseOrderData> getPurchaseOrderData(
+            String companyCode,
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList,
+            Long id);
+    IntegrationPurchaseOrderData getPurchaseOrderData(Long id);
+    IntegrationPurchaseOrderData addPurchaseOrderData(PurchaseOrder purchaseOrder);
+    IntegrationPurchaseOrderData addPurchaseOrderData(DBBasedPurchaseOrder dbBasedPurchaseOrder);
+
+
+    //
     // Integration - Order and Order Line
     //
     List<? extends IntegrationOrderData> getOrderData(
@@ -195,6 +208,7 @@ public interface Integration {
 
     // resend the integration data
     IntegrationReceiptData resendReceiptData(Long id);
+    IntegrationPurchaseOrderData resendPurchaseOrderData(Long id);
     IntegrationBillOfMaterialData resendBillOfMaterialData(Long id);
     IntegrationClientData resendClientData(Long id);
     IntegrationCustomerData resendCustomerData(Long id);
