@@ -24,7 +24,7 @@ public class SecurityService {
 
     private static final Logger logger = LoggerFactory.getLogger(QuickBookOnlineTokenController.class);
 
-    private static final String VERIFIER_KEY = "webhooks.verifier.token";
+    private static final String VERIFIER_KEY = "quickbook.webhooks.verifier.token";
     private static final String ENCRYPTION_KEY = "encryption.key";
 
     @Autowired
@@ -54,6 +54,8 @@ public class SecurityService {
 
         // set custom config
         Config.setProperty(Config.WEBHOOKS_VERIFIER_TOKEN, getVerifierKey());
+        logger.debug("get webhook verify key: {}",
+                Config.getProperty(Config.WEBHOOKS_VERIFIER_TOKEN));
 
         // create webhooks service
         WebhooksService service = webhooksServiceFactory.getWebhooksService();
@@ -66,8 +68,8 @@ public class SecurityService {
      */
     public String getVerifierKey() {
 
-        //return env.getProperty(VERIFIER_KEY);
-        return "3c9ea2d4-bdc2-464d-ad44-aa12e412f694";
+        return env.getProperty(VERIFIER_KEY);
+        // return "3c9ea2d4-bdc2-464d-ad44-aa12e412f694";
     }
 
     /**

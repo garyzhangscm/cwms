@@ -104,7 +104,7 @@ public class DBBasedReceiptIntegration {
 
     public DBBasedReceipt findById(Long id) {
         return dbBasedReceiptRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFoundException.raiseException("order data not found by id: " + id));
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("receipt data not found by id: " + id));
     }
 
 
@@ -278,7 +278,7 @@ public class DBBasedReceiptIntegration {
 
         // 2. warehouse Id
 
-        if(Objects.isNull(receiptLine.getItemId())) {
+        if(Objects.isNull(receiptLine.getWarehouseId())) {
             receiptLine.setWarehouseId(warehouse.getId());
         }
 

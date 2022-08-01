@@ -1800,5 +1800,18 @@
   "ALLOCATION-CONFIGURATION-TYPE-REPLENISHMENT": "补货",
   "allocation-configuration": "分配策略",
   "page.supplier.modal.delete.content": "删除供应商.\n如果该供应商有关联的入库单据，则您无法删除该供应商数据",
-  "menu.main.util.quickbook-auth": "QuickBook 认证"
+  "menu.main.util.quickbook-auth": "QuickBook 认证",
+  "menu.main.inbound.purchaseOrder": "采购订单",
+  "REPORT-TYPE-QC_INSPECTION_REQUEST_REPORT": "QC申请表",
+  "REPORT-TYPE-RECEIVING_LPN_REPORT": "入库LPN报表",
+  "purchase-order.number": "采购订单号",
+  "PURCHASE-ORDER-STATUS-OPEN":"新建",
+  "PURCHASE-ORDER-STATUS-CLOSED":"已关闭",
+  "purchase-order.line": "采购单行",
+  "expectedQuantity": "预期数量",
+  "receiptQuantity": "已生成入库单数量",
+  "receivedQuantity": "已入库数量",
+  "totalExpectedQuantity": "总预期数量",
+  "totalReceiptQuantity": "已生成入库单总数量",
+  "totalReceivedQuantity": "已入库总数量"
 }

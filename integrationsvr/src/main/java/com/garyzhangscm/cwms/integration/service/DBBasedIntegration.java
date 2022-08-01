@@ -48,6 +48,9 @@ public class DBBasedIntegration implements Integration{
     DBBasedReceiptIntegration dbBasedReceiptIntegration;
 
     @Autowired
+    DBBasedPurchaseOrderIntegration dbBasedPurchaseOrderIntegration;
+
+    @Autowired
     DBBasedOrderIntegration dbBasedOrderIntegration;
 
 
@@ -110,6 +113,9 @@ public class DBBasedIntegration implements Integration{
 
         logger.debug("#11 Bill Of Material");
         dbBasedBillOfMaterialIntegration.listen();
+
+        logger.debug("#12 Purchase Order");
+        dbBasedPurchaseOrderIntegration.listen();
 
     }
 
@@ -343,6 +349,29 @@ public class DBBasedIntegration implements Integration{
         return dbBasedReceiptIntegration.addIntegrationReceiptData(dbBasedReceipt);
 
     }
+    //
+    // Integration - Purchase Order and Purchase Order line
+    //
+    public List<? extends IntegrationPurchaseOrderData> getPurchaseOrderData(String companyCode,
+                                                                 Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+                                                                 String statusList,
+                                                                 Long id) {
+        return dbBasedPurchaseOrderIntegration.findAll(
+                companyCode, warehouseId, startTime, endTime, date, statusList, id);
+    }
+    public IntegrationPurchaseOrderData getPurchaseOrderData(Long id) {
+        return dbBasedPurchaseOrderIntegration.findById(id);
+    }
+    public IntegrationPurchaseOrderData addPurchaseOrderData(PurchaseOrder purchaseOrder) {
+
+        return dbBasedPurchaseOrderIntegration.addIntegrationPurchaseOrderData(new DBBasedPurchaseOrder(purchaseOrder));
+
+    }
+    public IntegrationPurchaseOrderData addPurchaseOrderData(DBBasedPurchaseOrder dbBasedPurchaseOrder) {
+
+        return dbBasedPurchaseOrderIntegration.addIntegrationPurchaseOrderData(dbBasedPurchaseOrder);
+
+    }
 
     //
     // Integration - Order and Order Line
@@ -571,6 +600,9 @@ public class DBBasedIntegration implements Integration{
             case INTEGRATION_WORK_ORDER:
                 dbBasedWorkOrderIntegration.saveIntegrationResult(integrationResult);
                 break;
+            case INTEGRATION_PURCHASE_ORDER:
+                dbBasedPurchaseOrderIntegration.saveIntegrationResult(integrationResult);
+                break;
         }
     }
 
@@ -578,6 +610,11 @@ public class DBBasedIntegration implements Integration{
     @Override
     public IntegrationReceiptData resendReceiptData(Long id) {
         return dbBasedReceiptIntegration.resendReceiptData(id);
+    }
+
+    @Override
+    public IntegrationPurchaseOrderData resendPurchaseOrderData(Long id) {
+        return dbBasedPurchaseOrderIntegration.resendPurchaseOrderData(id);
     }
 
     @Override

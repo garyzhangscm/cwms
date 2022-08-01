@@ -20,13 +20,15 @@ package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 
 
 @Entity
 @Table(name = "receipt_line")
-public class ReceiptLine {
+public class ReceiptLine extends AuditibleEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +38,14 @@ public class ReceiptLine {
 
     @Column(name = "number")
     private String number;
+
+    // When the receipt is created by
+    // following a specific Purchase Order
+    @ManyToOne
+    @JoinColumn(name = "purchase_order_line_id")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private PurchaseOrderLine purchaseOrderLine;
+
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -129,6 +139,14 @@ public class ReceiptLine {
 
     public void setReceivedQuantity(Long receivedQuantity) {
         this.receivedQuantity = receivedQuantity;
+    }
+
+    public PurchaseOrderLine getPurchaseOrderLine() {
+        return purchaseOrderLine;
+    }
+
+    public void setPurchaseOrderLine(PurchaseOrderLine purchaseOrderLine) {
+        this.purchaseOrderLine = purchaseOrderLine;
     }
 
     public Receipt getReceipt() {

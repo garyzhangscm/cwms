@@ -76,6 +76,47 @@ public class KafkaReceiver {
         }
 
     }
+    /*
+     * Integration process
+     * -- Receipt
+     * */
+    @KafkaListener(topics = {"INTEGRATION_PURCHASE_ORDER"})
+    public void processPurchaseOrder(@Payload String purchaseOrderJsonRepresent,
+                               @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
+        logger.info("# received integration - purchase order data:\n {}", purchaseOrderJsonRepresent);
+        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+
+        String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
+        logger.debug("keys: {}", key);
+        Long warehouseId = Long.parseLong(key[0]);
+        Long integrationId = Long.parseLong(key[1]);
+
+        try {
+            PurchaseOrder purchaseOrder = objectMapper.readValue(purchaseOrderJsonRepresent, PurchaseOrder.class);
+            logger.info("purchase order: {}", purchaseOrder);
+
+            integrationService.process(purchaseOrder);
+
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    null, warehouseId, integrationId,
+                    IntegrationType.INTEGRATION_PURCHASE_ORDER,
+                    true, ""
+            );
+            kafkaSender.send(integrationResult);
+        }
+        catch (Exception ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    null, warehouseId, integrationId,
+                    IntegrationType.INTEGRATION_PURCHASE_ORDER,
+                    false, ex.getMessage()
+            );
+            kafkaSender.send(integrationResult);
+        }
+
+    }
 
     /*
      * Receipt for warehouse transfer

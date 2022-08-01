@@ -195,6 +195,27 @@ public class IntegrationDataService {
     }
 
     //
+    // Integration - Receipt and Receipt Line
+    //
+    public List<? extends IntegrationPurchaseOrderData> getPurchaseOrderData(
+            String companyCode,
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            String statusList,
+            Long id) {
+        return integration.getPurchaseOrderData(
+                companyCode,  warehouseId, startTime, endTime, date, statusList, id);
+    }
+    public IntegrationPurchaseOrderData getPurchaseOrderData(Long id) {
+        return integration.getPurchaseOrderData(id);
+    }
+    public IntegrationPurchaseOrderData addPurchaseOrderData(PurchaseOrder purchaseOrder) {
+        return integration.addPurchaseOrderData(purchaseOrder);
+    }
+    public IntegrationPurchaseOrderData addPurchaseOrderData(DBBasedPurchaseOrder dbBasedPurchaseOrder) {
+        return integration.addPurchaseOrderData(dbBasedPurchaseOrder);
+    }
+
+    //
     // Integration - Order and Order Line
     //
     public List<? extends IntegrationOrderData> getOrderData(
@@ -321,6 +342,10 @@ public class IntegrationDataService {
     public IntegrationReceiptData resendReceiptData(Long id) {
         return integration.resendReceiptData(id);
     }
+    public IntegrationPurchaseOrderData resendPurchaseOrderData(Long id) {
+        return integration.resendPurchaseOrderData(id);
+    }
+
 
     public IntegrationBillOfMaterialData resendBillOfMaterialData(Long id) {
         return integration.resendBillOfMaterialData(id);
