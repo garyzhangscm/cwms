@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.quickbook.clients.IntegrationServiceRestemplateClient;
 import com.garyzhangscm.cwms.quickbook.controller.QuickBookOnlineTokenController;
 import com.garyzhangscm.cwms.quickbook.model.*;
+import com.garyzhangscm.cwms.quickbook.service.CustomerIntegrationService;
 import com.garyzhangscm.cwms.quickbook.service.ItemIntegrationService;
 import com.garyzhangscm.cwms.quickbook.service.PurchaseOrderIntegrationService;
 import com.garyzhangscm.cwms.quickbook.service.VendorIntegrationService;
@@ -50,6 +51,8 @@ public class CDCService implements QBODataService {
 	private VendorIntegrationService vendorIntegrationService;
 	@Autowired
 	private PurchaseOrderIntegrationService purchaseOrderIntegrationService;
+	@Autowired
+	private CustomerIntegrationService customerIntegrationService;
 
 	private static final String WEBHOOKS_SUBSCRIBED_ENTITES = "Invoice,Customer,Vendor,Item,PurchaseOrder";
 
@@ -222,6 +225,8 @@ public class CDCService implements QBODataService {
 								, Customer.class);
 
 						logger.debug("start to process customer \n{}", customer);
+						customerIntegrationService.sendIntegrationData(customer,
+								companyId, warehouseId);
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 					}
