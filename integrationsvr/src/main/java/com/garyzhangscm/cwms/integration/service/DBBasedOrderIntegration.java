@@ -203,6 +203,36 @@ public class DBBasedOrderIntegration {
     private void setupMissingField(Order order, DBBasedOrder dbBasedOrder){
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId());
+
+        if (Objects.isNull(order.getShipToCustomerId()) &&
+            Strings.isNotBlank(dbBasedOrder.getShipToCustomerName())) {
+            Customer customer = commonServiceRestemplateClient.getCustomerByName(
+                    warehouse.getCompany().getId(),
+                    warehouse.getId(),
+                    dbBasedOrder.getShipToCustomerName()
+            );
+            if (Objects.nonNull(customer)) {
+                order.setShipToCustomerId(customer.getId());
+                // setup the bill to address as well if it is the same as the ship to address
+                if (dbBasedOrder.getShipToCustomerName().equals(
+                        dbBasedOrder.getBillToCustomerName()
+                )) {
+                    order.setBillToCustomerId(customer.getId());
+                }
+            }
+        }
+
+        if (Objects.isNull(order.getBillToCustomerId()) &&
+                Strings.isNotBlank(dbBasedOrder.getBillToCustomerName())) {
+            Customer customer = commonServiceRestemplateClient.getCustomerByName(
+                    warehouse.getCompany().getId(),
+                    warehouse.getId(),
+                    dbBasedOrder.getBillToCustomerName()
+            );
+            if (Objects.nonNull(customer)) {
+                order.setBillToCustomerId(customer.getId());
+            }
+        }
         order.getOrderLines().forEach(orderLine -> {
             // Get the matched order line and setup the missing field
             // for

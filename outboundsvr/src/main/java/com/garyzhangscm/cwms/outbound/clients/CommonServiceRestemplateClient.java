@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
@@ -261,8 +262,8 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/system-controlled-number/{variable}/next")
                 .queryParam("warehouseId", warehouseId);
 
-        if (Objects.nonNull(restTemplate.getAccessToken())) {
-            logger.debug("restTemplate's access token is NOT empty, will use OAuth2 for the new http call ");
+        try{
+            logger.debug("We will try the rest template with OAuth first");
 
             ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                     = restTemplate.exchange(
@@ -273,8 +274,9 @@ public class CommonServiceRestemplateClient {
 
             return responseBodyWrapper.getData().getNextNumber();
         }
-        else {
-            logger.debug("restTemplate's access token is EMPTY, will use auto login user for the new http call ");
+        catch (BeanCreationException ex) {
+            ex.printStackTrace();
+            logger.debug("We are not able to create the OAuth2 rest template bean, login by predefined name");
 
             ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                     = autoLoginRestTemplate.exchange(
