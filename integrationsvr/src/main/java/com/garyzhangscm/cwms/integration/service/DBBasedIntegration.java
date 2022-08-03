@@ -389,6 +389,9 @@ public class DBBasedIntegration implements Integration{
     public IntegrationOrderData addOrderData(Order order) {
         return dbBasedOrderIntegration.addIntegrationOrderData(new DBBasedOrder(order));
     }
+    public IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder) {
+        return dbBasedOrderIntegration.addIntegrationOrderData(dbBasedOrder);
+    }
 
 
     //

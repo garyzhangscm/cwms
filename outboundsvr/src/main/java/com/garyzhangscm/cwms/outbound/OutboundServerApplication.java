@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.garyzhangscm.cwms.outbound.usercontext.UserContextInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -53,12 +54,6 @@ public class OutboundServerApplication {
 		SpringApplication.run(OutboundServerApplication.class, args);
 	}
 
-	/**
-	 * no token Rest Template, a rest tempalte without the user auth token
-	 * We will use this rest template to log in a default user for background job
-	 * that is not running inside a web request
-	 * @return
-	 */
 
 	@Bean
 	@Qualifier("noTokenRestTemplate")
@@ -96,6 +91,16 @@ public class OutboundServerApplication {
 		return restTemplate;
 	}
 
+	// To support scheduled job with OAuth2
+	/***
+	@Bean
+	public RequestContextListener requestContextListener() {
+		return new RequestContextListener();
+	}
+	***/
+
+	// setup the configuration for redis cache
+
 	@Bean
 	@Primary
 	public ObjectMapper getObjMapper(){
@@ -109,16 +114,6 @@ public class OutboundServerApplication {
 				.registerModule(new JavaTimeModule())
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
-	// To support scheduled job with OAuth2
-	/***
-	@Bean
-	public RequestContextListener requestContextListener() {
-		return new RequestContextListener();
-	}
-	***/
-
-	// setup the configuration for redis cache
-
 	/****
 	 *
 	 * @return

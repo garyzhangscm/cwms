@@ -25,6 +25,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 
@@ -34,6 +35,7 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
@@ -46,6 +48,9 @@ public class WarehouseLayoutServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(WarehouseLayoutServiceRestemplateClient.class);
     @Autowired
     OAuth2RestOperations restTemplate;
+    @Autowired
+    @Qualifier("autoLoginRestTemplate")
+    RestTemplate autoLoginRestTemplate;
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
@@ -382,14 +387,28 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("pendingQuantity", pendingQuantity)
                         .queryParam("pendingPalletQuantity", pendingPalletQuantity);
 
-        ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(locationId).toUriString(),
-                        HttpMethod.PUT,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+        if (Objects.nonNull(restTemplate.getAccessToken())) {
+
+            ResponseBodyWrapper<Location> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.buildAndExpand(locationId).toUriString(),
+                    HttpMethod.PUT,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+            return responseBodyWrapper.getData();
+        }
+        else {
+            ResponseBodyWrapper<Location> responseBodyWrapper
+                    = autoLoginRestTemplate.exchange(
+                    builder.buildAndExpand(locationId).toUriString(),
+                    HttpMethod.PUT,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+            return responseBodyWrapper.getData();
+        }
     }
 
 
@@ -563,4 +582,5 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
 }

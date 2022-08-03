@@ -369,17 +369,26 @@ public class OrderService implements TestDataInitiableService {
 
 
     public Order save(Order order) {
+        return save(order, true);
+    }
+    public Order save(Order order, boolean loadDetails) {
         Order newOrder = orderRepository.save(order);
-        loadOrderAttribute(newOrder);
+        if (loadDetails) {
+
+            loadOrderAttribute(newOrder);
+        }
         return newOrder;
     }
 
     public Order saveOrUpdate(Order order) {
+        return saveOrUpdate(order, true);
+    }
+    public Order saveOrUpdate(Order order, boolean loadDetails) {
         if (Objects.isNull(order.getId()) &&
-                Objects.nonNull(findByNumber(order.getWarehouseId(),order.getNumber()))) {
-            order.setId(findByNumber(order.getWarehouseId(),order.getNumber()).getId());
+                Objects.nonNull(findByNumber(order.getWarehouseId(),order.getNumber(), false))) {
+            order.setId(findByNumber(order.getWarehouseId(),order.getNumber(), false).getId());
         }
-        return save(order);
+        return save(order, loadDetails);
     }
 
 
@@ -1009,7 +1018,7 @@ public class OrderService implements TestDataInitiableService {
         );
 
 
-        Order newOrder =  saveOrUpdate(order);
+        Order newOrder =  saveOrUpdate(order, false);
 
         orderActivityService.saveOrderActivity(
                 orderActivityService.createOrderActivity(

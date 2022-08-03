@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class WMSPurchaseOrderWrapper {
@@ -52,11 +53,13 @@ public class WMSPurchaseOrderWrapper {
         setNumber(purchaseOrder.getDocNumber());
         setSupplierName(purchaseOrder.getVendorRef().getName());
         setAllowUnexpectedItem(false);
-
-        for (PurchaseOrderLine purchaseOrderLine : purchaseOrder.getLine()) {
-            addPurchaseOrderLines(new WMSPurchaseOrderLineWrapper(warehouseId, purchaseOrderLine));
-
-        }
+        purchaseOrderLines = new ArrayList<>();
+        purchaseOrder.getLine().stream().filter(
+                purchaseOrderLine -> Objects.nonNull(purchaseOrderLine.getLineNum())
+                        && Objects.nonNull(purchaseOrderLine.getItemBasedExpenseLineDetail())
+        ).forEach(
+                purchaseOrderLine -> addPurchaseOrderLines(new WMSPurchaseOrderLineWrapper(warehouseId, purchaseOrderLine))
+        );
     }
     @Override
     public String toString() {

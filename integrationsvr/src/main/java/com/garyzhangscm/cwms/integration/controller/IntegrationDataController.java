@@ -328,6 +328,13 @@ public class IntegrationDataController {
         return integrationDataService.addOrderData(order);
     }
 
+    @RequestMapping(value="/dblink/orders", method = RequestMethod.PUT)
+    public ResponseBodyWrapper addIntegrationOrderData(@RequestBody DBBasedOrder dbBasedOrder) {
+
+        integrationDataService.addOrderData(dbBasedOrder);
+        return ResponseBodyWrapper.success("success");
+    }
+
 
     //
     // Receipt Related

@@ -21,7 +21,7 @@ public class PurchaseOrderIntegrationService {
 
     public void sendIntegrationData(PurchaseOrder purchaseOrder, Long companyId, Long warehouseId) {
 
-        logger.debug("start to send integration data for purchase order {} - {} {}",
+        logger.debug("start to send integration data for purchase order {}",
                 purchaseOrder.getDocNumber());
 
         // setup the missing field

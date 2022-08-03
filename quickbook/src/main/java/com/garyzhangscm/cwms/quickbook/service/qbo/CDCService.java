@@ -9,10 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.quickbook.clients.IntegrationServiceRestemplateClient;
 import com.garyzhangscm.cwms.quickbook.controller.QuickBookOnlineTokenController;
 import com.garyzhangscm.cwms.quickbook.model.*;
-import com.garyzhangscm.cwms.quickbook.service.CustomerIntegrationService;
-import com.garyzhangscm.cwms.quickbook.service.ItemIntegrationService;
-import com.garyzhangscm.cwms.quickbook.service.PurchaseOrderIntegrationService;
-import com.garyzhangscm.cwms.quickbook.service.VendorIntegrationService;
+import com.garyzhangscm.cwms.quickbook.service.*;
 import com.intuit.ipp.data.EventNotification;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.services.CDCQueryResult;
@@ -53,6 +50,8 @@ public class CDCService implements QBODataService {
 	private PurchaseOrderIntegrationService purchaseOrderIntegrationService;
 	@Autowired
 	private CustomerIntegrationService customerIntegrationService;
+	@Autowired
+	private OutboundOrderIntegrationService outboundOrderIntegrationService;
 
 	private static final String WEBHOOKS_SUBSCRIBED_ENTITES = "Invoice,Customer,Vendor,Item,PurchaseOrder";
 
@@ -248,6 +247,8 @@ public class CDCService implements QBODataService {
 								    , Invoice.class);
 
 						logger.debug("start to process invoice \n {}", invoice);
+						outboundOrderIntegrationService.sendIntegrationData(invoice,
+								companyId, warehouseId);
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 					}

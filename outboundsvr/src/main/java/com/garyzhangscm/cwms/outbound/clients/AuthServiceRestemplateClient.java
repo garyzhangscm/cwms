@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -60,9 +62,15 @@ public class AuthServiceRestemplateClient {
     @Qualifier("noTokenRestTemplate")
     RestTemplate restTemplate;
 
+    @Value("${outbound.login.username}")
+    private String outboundUsername;
+
+    @Value("${outbound.login.password}")
+    private String outboundPassword;
+
 
     public User login() throws IOException {
-        LoginCredential loginCredential = new LoginCredential(1L,"GZHANG", "GZHANG");
+        LoginCredential loginCredential = new LoginCredential(1L,outboundUsername, outboundPassword);
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/auth/login?")
