@@ -90,11 +90,13 @@ public class DBBasedSupplierIntegration {
 
     public IntegrationSupplierData addIntegrationSupplierData(DBBasedSupplier dbBasedSupplier) {
 
+        dbBasedSupplier.setStatus(IntegrationStatus.PENDING);
         setupMissingField(dbBasedSupplier);
         return dbBasedSupplierRepository.save(dbBasedSupplier);
     }
 
     private void setupMissingField(DBBasedSupplier dbBasedSupplier) {
+
         if (Strings.isBlank(dbBasedSupplier.getDescription())) {
             dbBasedSupplier.setDescription(dbBasedSupplier.getName());
         }

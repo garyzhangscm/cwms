@@ -6,12 +6,17 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.quickbook.clients.IntegrationServiceRestemplateClient;
 import com.garyzhangscm.cwms.quickbook.controller.QuickBookOnlineTokenController;
 import com.garyzhangscm.cwms.quickbook.model.*;
+import com.garyzhangscm.cwms.quickbook.service.ItemIntegrationService;
+import com.garyzhangscm.cwms.quickbook.service.PurchaseOrderIntegrationService;
+import com.garyzhangscm.cwms.quickbook.service.VendorIntegrationService;
 import com.intuit.ipp.data.EventNotification;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.services.CDCQueryResult;
 import com.intuit.ipp.services.QueryResult;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +43,14 @@ public class CDCService implements QBODataService {
 	@Qualifier("getObjMapper")
 	private ObjectMapper objectMapper;
 
+	@Autowired
+	private ItemIntegrationService itemIntegrationService;
+
+	@Autowired
+	private VendorIntegrationService vendorIntegrationService;
+	@Autowired
+	private PurchaseOrderIntegrationService purchaseOrderIntegrationService;
+
 	private static final String WEBHOOKS_SUBSCRIBED_ENTITES = "Invoice,Customer,Vendor,Item,PurchaseOrder";
 
 	@Override
@@ -62,7 +75,9 @@ public class CDCService implements QBODataService {
 							QueryResult queryResult = service.executeQuery(intuitQuery);
 
 							processCDCQueryResults(EntityChangeOperation.valueOf(changedEntity.getOperation()),
-									changedEntity.getName(), queryResult);
+									changedEntity.getName(),
+									queryResult, quickBookOnlineToken.getCompanyId(),
+									quickBookOnlineToken.getWarehouseId());
 						} catch (FMSException e) {
 							e.printStackTrace();
 						}
@@ -89,34 +104,13 @@ public class CDCService implements QBODataService {
 		
 	}
 
-	private void processCDCQueryResults(List<CDCQueryResult> cdcQueryResults) {
-		cdcQueryResults.forEach(
-				cdcQueryResult -> {
-					processCDCQueryResults(cdcQueryResult);
-				}
-		);
-	}
-
-	private void processCDCQueryResults(CDCQueryResult cdcQueryResult) {
-		cdcQueryResult.getQueryResults().forEach(
-				(type, queryResult) -> {
-					switch (type) {
-						case "Invoice":
-							processCDCQueryInvoiceResult(queryResult);
-							break;
-
-						case "Customer":
-							processCDCQueryCustomerResult(queryResult);
-							break;
-
-					}
-				}
-		);
-	}
-
-	private void processCDCQueryResults(EntityChangeOperation operation, String type, QueryResult queryResult)   {
-		logger.debug("start to porecess query result with type {}, operation {}", type,
-				operation);
+	private void processCDCQueryResults(EntityChangeOperation operation, String type, QueryResult queryResult,
+										Long companyId, Long warehouseId)   {
+		logger.debug("start to porecess query result with type {}, operation {}, companyId: {}, warehouseId: {}",
+				type,
+				operation,
+				companyId,
+				warehouseId);
 		try {
 			logger.debug("content: \n {}",
 					new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(queryResult));
@@ -125,23 +119,50 @@ public class CDCService implements QBODataService {
 		}
 		switch (type) {
 			case "Invoice":
-				processCDCQueryInvoiceResult(queryResult);
+				processCDCQueryInvoiceResult(queryResult, companyId, warehouseId);
 				break;
 
 			case "Customer":
-				processCDCQueryCustomerResult(queryResult);
+				processCDCQueryCustomerResult(queryResult, companyId, warehouseId);
 				break;
 
 			case "Item":
-				processCDCQueryItemResult(queryResult);
+				processCDCQueryItemResult(queryResult, companyId, warehouseId);
 				break;
 			case "PurchaseOrder":
-				processCDCQueryPurchaseOrderResult(queryResult);
+				processCDCQueryPurchaseOrderResult(queryResult, companyId, warehouseId);
+				break;
+			case "Vendor":
+				processCDCQueryVendorResult(queryResult, companyId, warehouseId);
 				break;
 		}
 	}
 
-	private void processCDCQueryPurchaseOrderResult(QueryResult queryResult) {
+	private void processCDCQueryVendorResult(QueryResult queryResult,
+													Long companyId, Long warehouseId) {
+
+		queryResult.getEntities().forEach(
+				iEntity -> {
+
+					try {
+						Vendor vendor
+								= objectMapper.readValue(
+								new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(iEntity)
+								, Vendor.class);
+
+						logger.debug("start to process vendor \n{}", vendor);
+						vendorIntegrationService.sendIntegrationData(vendor, companyId, warehouseId);
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+
+				}
+
+		);
+	}
+
+	private void processCDCQueryPurchaseOrderResult(QueryResult queryResult,
+													Long companyId, Long warehouseId) {
 
 		queryResult.getEntities().forEach(
 				iEntity -> {
@@ -153,6 +174,9 @@ public class CDCService implements QBODataService {
 								, PurchaseOrder.class);
 
 						logger.debug("start to process purchase order \n{}", purchaseOrder);
+						purchaseOrderIntegrationService.sendIntegrationData(
+								purchaseOrder, companyId, warehouseId
+						);
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 					}
@@ -161,7 +185,8 @@ public class CDCService implements QBODataService {
 
 		);
 	}
-	private void processCDCQueryItemResult(QueryResult queryResult) {
+	private void processCDCQueryItemResult(QueryResult queryResult,
+										   Long companyId, Long warehouseId) {
 
 		queryResult.getEntities().forEach(
 				iEntity -> {
@@ -172,7 +197,9 @@ public class CDCService implements QBODataService {
 								new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(iEntity)
 								, Item.class);
 
+						// setup the missing field
 						logger.debug("start to process item \n{}", item);
+						itemIntegrationService.sendIntegrationData(item, companyId, warehouseId);
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 					}
@@ -182,7 +209,8 @@ public class CDCService implements QBODataService {
 		);
 	}
 
-	private void processCDCQueryCustomerResult(QueryResult queryResult) {
+	private void processCDCQueryCustomerResult(QueryResult queryResult,
+											   Long companyId, Long warehouseId) {
 
 		queryResult.getEntities().forEach(
 				iEntity -> {
@@ -203,7 +231,8 @@ public class CDCService implements QBODataService {
 		);
 	}
 
-	private void processCDCQueryInvoiceResult(QueryResult queryResult) {
+	private void processCDCQueryInvoiceResult(QueryResult queryResult,
+											  Long companyId, Long warehouseId) {
 		queryResult.getEntities().forEach(
 				iEntity -> {
 

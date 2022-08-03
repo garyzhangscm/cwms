@@ -21,6 +21,8 @@ public class PurchaseOrder implements Serializable {
 
     private Address shipAddr;
 
+    private Long warehouseId;
+    private Long companyId;
 
     @Override
     public String toString() {
@@ -78,5 +80,21 @@ public class PurchaseOrder implements Serializable {
 
     public void setShipAddr(Address shipAddr) {
         this.shipAddr = shipAddr;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

@@ -28,6 +28,7 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -61,6 +62,12 @@ public class QuickBookApplication {
 		return new CustomRestTemplateCustomizer();
 	}
 
+
+	@Bean
+	public RestTemplate restTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		return restTemplate;
+	}
 
 	@Bean
 	@LoadBalanced

@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.quickbook.service;
 
 import com.garyzhangscm.cwms.quickbook.exception.MissingInformationException;
+import com.garyzhangscm.cwms.quickbook.exception.OAuthFailException;
 import com.garyzhangscm.cwms.quickbook.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineToken;
 import com.garyzhangscm.cwms.quickbook.repository.QuickBookOnlineTokenRepository;
@@ -173,41 +174,46 @@ public class QuickBookOnlineTokenService  {
 		OAuth2PlatformClient client  = new OAuth2PlatformClient(oauth2Config);
 
 		//Get the bearer token (OAuth2 tokens)
-		BearerTokenResponse bearerTokenResponse = client.retrieveBearerTokens(
-				authCode,
-				"https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl");
+		try {
+			BearerTokenResponse bearerTokenResponse = client.retrieveBearerTokens(
+					authCode,
+					"https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl");
 
-		//retrieve the token using the variables below
-		logger.debug("access token: {}", bearerTokenResponse.getAccessToken());
-		logger.debug("refresh token: {}", bearerTokenResponse.getRefreshToken());
-		logger.debug("token expired in : {}", bearerTokenResponse.getExpiresIn());
-		logger.debug("refresh token expired in : {}", bearerTokenResponse.getXRefreshTokenExpiresIn());
+			//retrieve the token using the variables below
+			logger.debug("access token: {}", bearerTokenResponse.getAccessToken());
+			logger.debug("refresh token: {}", bearerTokenResponse.getRefreshToken());
+			logger.debug("token expired in : {}", bearerTokenResponse.getExpiresIn());
+			logger.debug("refresh token expired in : {}", bearerTokenResponse.getXRefreshTokenExpiresIn());
 
-		// see if we already have the token information saved for this realmId
-		QuickBookOnlineToken quickBookOnlineToken = getByRealmId(realmId);
-		if (Objects.isNull(quickBookOnlineToken)) {
-			quickBookOnlineToken = new QuickBookOnlineToken();
-			quickBookOnlineToken.setCompanyId(companyId);
-			quickBookOnlineToken.setWarehouseId(warehouseId);
-			quickBookOnlineToken.setRealmId(realmId);
-			quickBookOnlineToken.setAuthorizationCode(authCode);
-			quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
-			quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-			quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+			// see if we already have the token information saved for this realmId
+			QuickBookOnlineToken quickBookOnlineToken = getByRealmId(realmId);
+			if (Objects.isNull(quickBookOnlineToken)) {
+				quickBookOnlineToken = new QuickBookOnlineToken();
+				quickBookOnlineToken.setCompanyId(companyId);
+				quickBookOnlineToken.setWarehouseId(warehouseId);
+				quickBookOnlineToken.setRealmId(realmId);
+				quickBookOnlineToken.setAuthorizationCode(authCode);
+				quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
+				quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
+				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+			} else {
+				quickBookOnlineToken.setAuthorizationCode(authCode);
+				quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
+				quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
+				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+			}
+			saveOrUpdate(quickBookOnlineToken);
+
+			String jsonString = new JSONObject()
+					.put("access_token", bearerTokenResponse.getAccessToken())
+					.put("refresh_token", bearerTokenResponse.getRefreshToken()).toString();
+
+			return jsonString;
 		}
-		else {
-			quickBookOnlineToken.setAuthorizationCode(authCode);
-			quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
-			quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-			quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+		catch (OAuthException exception) {
+			exception.printStackTrace();
+			throw OAuthFailException.raiseException(exception.getMessage());
 		}
-		saveOrUpdate(quickBookOnlineToken);
-
-		String jsonString = new JSONObject()
-				.put("access_token", bearerTokenResponse.getAccessToken())
-				.put("refresh_token", bearerTokenResponse.getRefreshToken()).toString();
-
-		return jsonString;
     }
 
 	public String requestRefreshToken(Long companyId,
