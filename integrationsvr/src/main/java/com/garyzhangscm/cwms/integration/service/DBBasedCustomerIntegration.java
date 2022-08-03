@@ -87,7 +87,7 @@ public class DBBasedCustomerIntegration {
     }
 
     public IntegrationCustomerData addIntegrationCustomerData(DBBasedCustomer dbBasedCustomer) {
-
+        dbBasedCustomer.setStatus(IntegrationStatus.PENDING);
         setupMissingField(dbBasedCustomer);
         return dbBasedCustomerRepository.save(dbBasedCustomer);
     }

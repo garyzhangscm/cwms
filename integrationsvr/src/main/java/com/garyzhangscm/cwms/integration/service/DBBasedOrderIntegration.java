@@ -108,6 +108,13 @@ public class DBBasedOrderIntegration {
 
 
     public IntegrationOrderData addIntegrationOrderData(DBBasedOrder dbBasedOrder) {
+        dbBasedOrder.setStatus(IntegrationStatus.PENDING);
+        dbBasedOrder.getOrderLines().forEach(
+                dbBasedOrderLine -> {
+                    dbBasedOrderLine.setOrder(dbBasedOrder);
+                    dbBasedOrderLine.setStatus(IntegrationStatus.ATTACHED);
+                }
+        );
         return dbBasedOrderRepository.save(dbBasedOrder);
     }
 
