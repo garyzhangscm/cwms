@@ -117,13 +117,16 @@ public class DBBasedItemIntegration {
     @Transactional
     public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem) {
 
+        dbBasedItem.setStatus(IntegrationStatus.PENDING);
         dbBasedItem.getItemPackageTypes().forEach(
                 dbBasedItemPackageType -> {
                     dbBasedItemPackageType.setItem(dbBasedItem);
+                    dbBasedItemPackageType.setStatus(IntegrationStatus.ATTACHED);
                     dbBasedItemPackageType.setId(null);
                     dbBasedItemPackageType.getItemUnitOfMeasures().forEach(
                             dbBasedItemUnitOfMeasure -> {
                                 dbBasedItemUnitOfMeasure.setItemPackageType(dbBasedItemPackageType);
+                                dbBasedItemUnitOfMeasure.setStatus(IntegrationStatus.ATTACHED);
                                 dbBasedItemUnitOfMeasure.setId(null);
                             }
                     );

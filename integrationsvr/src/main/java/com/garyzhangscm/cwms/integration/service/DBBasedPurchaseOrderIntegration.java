@@ -109,12 +109,14 @@ public class DBBasedPurchaseOrderIntegration {
 
     public IntegrationPurchaseOrderData addIntegrationPurchaseOrderData(DBBasedPurchaseOrder dbBasedPurchaseOrder) {
         int index = 0;
+        dbBasedPurchaseOrder.setStatus(IntegrationStatus.PENDING);
 
         if (Objects.isNull(dbBasedPurchaseOrder.getAllowUnexpectedItem())) {
             dbBasedPurchaseOrder.setAllowUnexpectedItem(false);
         }
         for (DBBasedPurchaseOrderLine dbBasedPurchaseOrderLine : dbBasedPurchaseOrder.getPurchaseOrderLines()) {
 
+            dbBasedPurchaseOrderLine.setStatus(IntegrationStatus.ATTACHED);
             dbBasedPurchaseOrderLine.setPurchaseOrder(dbBasedPurchaseOrder);
             dbBasedPurchaseOrderLine.setId(null);
             if (Strings.isBlank(dbBasedPurchaseOrderLine.getNumber())) {

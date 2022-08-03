@@ -174,7 +174,13 @@ public class ReportHistoryService {
         return new File(fileUrl);
     }
 
-    public File getReportFile(Long companyId, Long warehouseId, String type, String filename) {
+    public File getReportFile(Long companyId, Long warehouseId, String type,
+                              String filename) {
+        return getReportFile(companyId, warehouseId, type,
+                filename, "");
+    }
+    public File getReportFile(Long companyId, Long warehouseId, String type,
+                              String filename, String printerName) {
         if (!verifyReportResultFileAccess(filename)) {
             throw ReportAccessPermissionException.raiseException(
                     "Current user doesn't have access to the report file"
@@ -188,8 +194,12 @@ public class ReportHistoryService {
         // 1. standard report: reportResultFolder
         // 2. company specific report: reportResultFolder/companyId
         // 3. warehouse specific report: reportResultFolder/companyId/warehouseId
+
+        // Report reportMetaData = reportService.findByType(companyId, warehouseId,
+        //        ReportType.valueOf(type), null, false);
+
         Report reportMetaData = reportService.findByType(companyId, warehouseId,
-                ReportType.valueOf(type), null, false);
+                ReportType.valueOf(type), printerName);
 
         String fileUrl = getReportResultFolder(reportMetaData) + filename;
 
@@ -238,7 +248,8 @@ public class ReportHistoryService {
         throws  IOException{
 
 
-        File reportResultFile = getReportFile(companyId, warehouseId, type, filename);
+        File reportResultFile = getReportFile(companyId, warehouseId, type,
+                filename, printerName);
 
         // String printer = printerService.getPrinter(companyId, warehouseId, ReportType.valueOf(type), findPrinterBy, printerName);
 

@@ -21,7 +21,8 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionCode {
     SYSTEM_FATAL_ERROR(1, HttpStatus.REQUEST_TIMEOUT, "System Fatal Error"),
     RESOURCE_NOT_FOUND(25000, HttpStatus.NOT_FOUND, "Can't Find the Resource"),
-    MISSING_INFORMATION(25002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"), ;
+    MISSING_INFORMATION(25002, HttpStatus.BAD_REQUEST, "Can't proceed due to missing information"),
+    OAUTH_FAIL(25003, HttpStatus.NOT_FOUND, "OAuth fail") ;
 
     private final int code;
 

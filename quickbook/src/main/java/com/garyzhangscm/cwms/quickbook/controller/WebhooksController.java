@@ -70,6 +70,8 @@ public class WebhooksController {
         //if request valid - push to queue
         if (securityService.isRequestValid(signature, payload)) {
             logger.debug("webhook request passed validation, push payload to queue");
+            // add the payload to the queue
+            // QueueProcessor will dequeue the message and process
             queueService.add(payload);
         } else {
             return new ResponseEntity<>(new WebhookResponseWrapper(ERROR), HttpStatus.FORBIDDEN);

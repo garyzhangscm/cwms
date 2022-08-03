@@ -18,6 +18,9 @@ public class Item implements Serializable {
 
     private String fullyQualifiedName;
 
+    private Long warehouseId;
+    private Long companyId;
+
     @Override
     public String toString() {
         try {
@@ -74,5 +77,21 @@ public class Item implements Serializable {
 
     public void setFullyQualifiedName(String fullyQualifiedName) {
         this.fullyQualifiedName = fullyQualifiedName;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }
