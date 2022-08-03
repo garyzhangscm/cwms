@@ -127,6 +127,7 @@ public interface Integration {
             Long id);
     IntegrationOrderData getOrderData(Long id);
     IntegrationOrderData addOrderData(Order order);
+    IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder);
 
     //
     // Integration - Work Order and Work Order Line

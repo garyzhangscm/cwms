@@ -231,6 +231,9 @@ public class IntegrationDataService {
     public IntegrationOrderData addOrderData(Order order) {
         return integration.addOrderData(order);
     }
+    public IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder) {
+        return integration.addOrderData(dbBasedOrder);
+    }
 
 
     // Outbound

@@ -23,10 +23,12 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
@@ -43,6 +45,10 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    // Rest template when the http request is outside DispatchSevelet
+    @Autowired
+    @Qualifier("autoLoginRestTemplate")
+    RestTemplate autoLoginRestTemplate;
 
     public Trailer getTrailerById(Long id) {
         UriComponentsBuilder builder =
@@ -254,14 +260,32 @@ public class CommonServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/system-controlled-number/{variable}/next")
                 .queryParam("warehouseId", warehouseId);
-        ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(variable).toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
 
-        return responseBodyWrapper.getData().getNextNumber();
+        if (Objects.nonNull(restTemplate.getAccessToken())) {
+            logger.debug("restTemplate's access token is NOT empty, will use OAuth2 for the new http call ");
+
+            ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.buildAndExpand(variable).toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
+
+            return responseBodyWrapper.getData().getNextNumber();
+        }
+        else {
+            logger.debug("restTemplate's access token is EMPTY, will use auto login user for the new http call ");
+
+            ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
+                    = autoLoginRestTemplate.exchange(
+                    builder.buildAndExpand(variable).toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
+
+            return responseBodyWrapper.getData().getNextNumber();
+
+        }
     }
 
 

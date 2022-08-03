@@ -17,6 +17,11 @@ public class Invoice implements Serializable {
 
     private List<InvoiceLine> line;
 
+    // for quickbook, if we have the customer ref
+    // then it will become the ship to customer
+    // and the bill to customer of the invoice but
+    // the customer may have different bill to and ship to
+    // address
     private CustomerRef customerRef;
 
     private Address shipAddr;
@@ -24,6 +29,9 @@ public class Invoice implements Serializable {
     private Address billAddr;
 
     private String dueDate;
+
+    private Long warehouseId;
+    private Long companyId;
 
     @Override
     public String toString() {
@@ -97,5 +105,21 @@ public class Invoice implements Serializable {
 
     public void setDueDate(String dueDate) {
         this.dueDate = dueDate;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }
