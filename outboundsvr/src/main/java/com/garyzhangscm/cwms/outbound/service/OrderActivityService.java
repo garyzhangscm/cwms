@@ -29,7 +29,9 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
@@ -55,6 +57,11 @@ public class OrderActivityService {
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
+    @Value("${outbound.login.username}")
+    private String outboundUsername;
+
+    @Value("${outbound.login.password}")
+    private String outboundPassword;
 
     public OrderActivity findById(Long id) {
         return orderActivityRepository.findById(id)
@@ -233,15 +240,24 @@ public class OrderActivityService {
 
     private String getTransactionGroupId(Long warehouseId) {
         String transactionGroupId;
-        if (Objects.isNull(httpSession.getAttribute("order-activity-transaction-group-id"))) {
-            logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
-            transactionGroupId = getNextTransactionGroupId(warehouseId);
-            httpSession.setAttribute("order-activity-transaction-group-id", transactionGroupId);
-            logger.debug(">> {}", transactionGroupId);
+        try {
+            if (Objects.isNull(httpSession.getAttribute("order-activity-transaction-group-id"))) {
+                logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
+                transactionGroupId = getNextTransactionGroupId(warehouseId);
+                httpSession.setAttribute("order-activity-transaction-group-id", transactionGroupId);
+                logger.debug(">> {}", transactionGroupId);
+            }
+            else {
+                transactionGroupId = httpSession.getAttribute("order-activity-transaction-group-id").toString();
+                logger.debug("Get transaction ID {} from current session", transactionGroupId);
+            }
         }
-        else {
-            transactionGroupId = httpSession.getAttribute("order-activity-transaction-group-id").toString();
-            logger.debug("Get transaction ID {} from current session", transactionGroupId);
+        catch (IllegalStateException ex) {
+            ex.printStackTrace();
+
+            logger.debug("We are not in a http session");
+            transactionGroupId = getNextTransactionGroupId(warehouseId);
+            logger.debug(">> {}", transactionGroupId);
         }
         return transactionGroupId;
     }
@@ -252,7 +268,8 @@ public class OrderActivityService {
     }
     private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
                                              Order order, OrderActivityType orderActivityType) {
-        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId,
+                getNextNumber(warehouseId), getCurrentUsername())
                 .withOrder(order)
                 .withOrderActivityType(orderActivityType);
         return orderActivity;
@@ -265,7 +282,8 @@ public class OrderActivityService {
     }
     private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
                                              Order order, Shipment shipment, OrderActivityType orderActivityType) {
-        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId,
+                getNextNumber(warehouseId), getCurrentUsername())
                 .withOrder(order)
                 .withShipment(shipment).withOrderActivityType(orderActivityType);
         return orderActivity;
@@ -280,7 +298,8 @@ public class OrderActivityService {
     private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
                                              Order order, Shipment shipment,
                                              ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
-        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId,
+                getNextNumber(warehouseId), getCurrentUsername())
                 .withOrder(order)
                 .withShipment(shipment)
                 .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
@@ -300,7 +319,8 @@ public class OrderActivityService {
     }
     private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
                                              Order order, ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
-        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId,
+                getNextNumber(warehouseId), getCurrentUsername())
                 .withOrder(order)
                 .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
 
@@ -321,7 +341,8 @@ public class OrderActivityService {
     private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
                                              ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
         OrderActivity orderActivity =
-                OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                OrderActivity.build(warehouseId, transactionId,
+                        getNextNumber(warehouseId), getCurrentUsername())
                 .withShipmentLine(shipmentLine).withOrderActivityType(orderActivityType);
         if (Objects.nonNull(shipmentLine.getOrderLine())) {
             orderActivity = orderActivity.withOrderLine(shipmentLine.getOrderLine());
@@ -352,7 +373,8 @@ public class OrderActivityService {
                                               Pick pick,
                                               OrderActivityType orderActivityType) {
         OrderActivity orderActivity =
-                OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                OrderActivity.build(warehouseId, transactionId,
+                        getNextNumber(warehouseId), getCurrentUsername())
                         .withPick(pick).withOrderActivityType(orderActivityType);
         if (Objects.nonNull(shipmentLine)) {
             orderActivity = orderActivity.withShipmentLine(shipmentLine);
@@ -387,7 +409,8 @@ public class OrderActivityService {
                                               ShortAllocation shortAllocation,
                                               OrderActivityType orderActivityType) {
         OrderActivity orderActivity =
-                OrderActivity.build(warehouseId, transactionId, getNextNumber(warehouseId))
+                OrderActivity.build(warehouseId, transactionId,
+                        getNextNumber(warehouseId), getCurrentUsername())
                         .withShortAllocation(shortAllocation).withOrderActivityType(orderActivityType);
 
         if (Objects.nonNull(shipmentLine)) {
@@ -411,5 +434,21 @@ public class OrderActivityService {
 
     public void saveOrderActivity(OrderActivity orderActivity) {
         kafkaSender.send(orderActivity);
+    }
+
+    // if this is the activity from web user, then return the username
+    // if this is from integration or other activity that is initiated by system
+    // then get the default user
+    private String getCurrentUsername() {
+        if (Objects.isNull(SecurityContextHolder.getContext())  ||
+                Objects.isNull(SecurityContextHolder.getContext().getAuthentication())  ||
+                Objects.isNull(SecurityContextHolder.getContext().getAuthentication().getName())) {
+            return outboundUsername;
+        }
+        else {
+            return SecurityContextHolder.getContext().getAuthentication().getName();
+        }
+
+
     }
 }

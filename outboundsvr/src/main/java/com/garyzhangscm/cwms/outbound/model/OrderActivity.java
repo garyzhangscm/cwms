@@ -190,6 +190,12 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
                 .withActivityDateTime(LocalDateTime.now());
     }
 
+    public static OrderActivity build(Long warehouseId, String transactionGroupId, String number, String username) {
+
+        return new OrderActivity(warehouseId, transactionGroupId, number)
+                .withUsername(username)
+                .withActivityDateTime(LocalDateTime.now());
+    }
     public OrderActivity withActivityDateTime(LocalDateTime activityDateTime) {
         setActivityDateTime(activityDateTime);
         return this;
