@@ -161,6 +161,13 @@ public class ReportService implements TestDataInitiableService{
                              Long warehouseId,
                              ReportType type,
                              String printerName) {
+        return  findByType(companyId, warehouseId, type, printerName, true);
+    }
+    public Report findByType(Long companyId,
+                             Long warehouseId,
+                             ReportType type,
+                             String printerName,
+                             boolean includeDetails) {
         PrinterType printerType = null;
         logger.debug("Start to find the right report by company id {}, warehouse id {}, report type {}, printer name {}",
                 companyId, warehouseId, type, printerName);
@@ -174,7 +181,7 @@ public class ReportService implements TestDataInitiableService{
                 printerType = printer.getPrinterType();
             }
         }
-        return findByType(companyId, warehouseId, type, printerType, true);
+        return findByType(companyId, warehouseId, type, printerType, includeDetails);
     }
 
     public Report findByType(Long companyId,

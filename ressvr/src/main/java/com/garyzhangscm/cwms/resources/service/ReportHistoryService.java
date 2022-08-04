@@ -199,7 +199,7 @@ public class ReportHistoryService {
         //        ReportType.valueOf(type), null, false);
 
         Report reportMetaData = reportService.findByType(companyId, warehouseId,
-                ReportType.valueOf(type), printerName);
+                ReportType.valueOf(type), printerName, false);
 
         String fileUrl = getReportResultFolder(reportMetaData) + filename;
 
