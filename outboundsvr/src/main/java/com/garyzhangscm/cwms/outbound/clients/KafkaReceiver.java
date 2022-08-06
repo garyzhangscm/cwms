@@ -181,5 +181,43 @@ public class KafkaReceiver {
 
     }
 
+    @KafkaListener(topics = {"INTEGRATION_TRAILER_APPOINTMENT"})
+    public void listenForStop(@Payload String stopJsonRepresent,
+                              @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
+        logger.info("# received stop data: {}", stopJsonRepresent);
+        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+
+        String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
+        Long companyId = Long.parseLong(key[0]);
+        Long warehouseId = Long.parseLong(key[1]);
+        Long integrationId = Long.parseLong(key[2]);
+
+
+        try {
+
+            Stop stop = objectMapper.readValue(stopJsonRepresent, Stop.class);
+            logger.info("# stop data after parsing: {}", stop);
+            integrationService.process(stop);
+
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    null, warehouseId, integrationId,
+                    IntegrationType.INTEGRATION_TRAILER_APPOINTMENT,
+                    true, ""
+            );
+            kafkaSender.send(integrationResult);
+        }
+        catch (Exception ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    null, warehouseId, integrationId,
+                    IntegrationType.INTEGRATION_TRAILER_APPOINTMENT,
+                    false, ex.getMessage()
+            );
+            kafkaSender.send(integrationResult);
+        }
+
+    }
 
 }

@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.common.service;
 import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Customer;
 import com.garyzhangscm.cwms.common.model.Supplier;
+import com.garyzhangscm.cwms.common.model.TrailerAppointment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,8 @@ public class IntegrationService {
     ClientService clientService;
     @Autowired
     SupplierService supplierService;
+    @Autowired
+    TrailerAppointmentService trailerAppointmentService;
 
     public void save(Customer customer) {
 
@@ -29,5 +32,10 @@ public class IntegrationService {
     public void save(Supplier supplier) {
 
         supplierService.saveOrUpdate(supplier);
+    }
+
+    public void save(TrailerAppointment trailerAppointment, long integrationId) {
+
+        trailerAppointmentService.processIntegration(trailerAppointment, integrationId);
     }
 }

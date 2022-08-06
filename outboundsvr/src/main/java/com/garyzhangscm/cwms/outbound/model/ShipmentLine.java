@@ -64,6 +64,14 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     @JoinColumn(name = "outbound_order_line_id")
     private OrderLine orderLine;
 
+    // order line id and number, used by integration only
+    @Transient
+    @JsonIgnore
+    private Long orderLineId;
+    @Transient
+    @JsonIgnore
+    private String orderLineNumber;
+
     @Column(name = "quantity")
     private Long quantity;
 
@@ -191,6 +199,22 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
         return Objects.nonNull(orderLine.getOrder()) ?
                     orderLine.getOrder().getNumber() :
                     "";
+    }
+
+    public Long getOrderLineId() {
+        return orderLineId;
+    }
+
+    public void setOrderLineId(Long orderLineId) {
+        this.orderLineId = orderLineId;
+    }
+
+    public String getOrderLineNumber() {
+        return orderLineNumber;
+    }
+
+    public void setOrderLineNumber(String orderLineNumber) {
+        this.orderLineNumber = orderLineNumber;
     }
 
     public String getShipmentNumber() {return Objects.nonNull(shipment) ? shipment.getNumber() : "";}
