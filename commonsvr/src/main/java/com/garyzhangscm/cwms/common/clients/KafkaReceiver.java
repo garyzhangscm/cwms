@@ -148,4 +148,48 @@ public class KafkaReceiver {
 
     }
 
+
+    @KafkaListener(topics = {"INTEGRATION_TRAILER_APPOINTMENT"})
+    public void listenForTrailerAppointment(@Payload String trailerAppointmentJsonRepresent,
+                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
+        logger.info("# received trailer appointment data: {}", trailerAppointmentJsonRepresent);
+        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+
+        String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
+        Long companyId = Long.parseLong(key[0]);
+        Long warehouseId = Long.parseLong(key[1]);
+        Long integrationId = Long.parseLong(key[2]);
+
+
+        try {
+
+            TrailerAppointment trailerAppointment = objectMapper.readValue(trailerAppointmentJsonRepresent, TrailerAppointment.class);
+            logger.info("# trailer appointment data after parsing: {}", trailerAppointment);
+            // WE WILL need to pass in the integration id as well since it will issue
+            // a stop integration to outbound service in the same session and if the stop
+            // integration fail, we would like the integration logic to update the
+            // original trailer appointment integration record to fail with the right reason
+            integrationService.save(trailerAppointment, integrationId);
+
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    null, warehouseId, integrationId,
+                    IntegrationType.INTEGRATION_TRAILER_APPOINTMENT,
+                    true, ""
+            );
+            kafkaSender.send(integrationResult);
+        }
+        catch (Exception ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // SEND the integration result back
+            IntegrationResult integrationResult = new IntegrationResult(
+                    null, warehouseId, integrationId,
+                    IntegrationType.INTEGRATION_TRAILER_APPOINTMENT,
+                    false, ex.getMessage()
+            );
+            kafkaSender.send(integrationResult);
+        }
+
+    }
+
 }

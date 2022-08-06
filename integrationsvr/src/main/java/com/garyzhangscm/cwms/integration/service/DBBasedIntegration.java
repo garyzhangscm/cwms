@@ -40,6 +40,8 @@ public class DBBasedIntegration implements Integration{
     DBBasedItemPackageTypeIntegration dbBasedItemPackageTypeIntegration;
     @Autowired
     DBBasedItemUnitOfMeasureIntegration dbBasedItemUnitOfMeasureIntegration;
+    @Autowired
+    DBBasedTrailerAppointmentIntegration dbBasedTrailerAppointmentIntegration;
 
     @Autowired
     DBBasedSupplierIntegration dbBasedSupplierIntegration;
@@ -116,6 +118,10 @@ public class DBBasedIntegration implements Integration{
 
         logger.debug("#12 Purchase Order");
         dbBasedPurchaseOrderIntegration.listen();
+
+        logger.debug("#13 Trailer Appointment");
+        dbBasedTrailerAppointmentIntegration.listen();
+
 
     }
 

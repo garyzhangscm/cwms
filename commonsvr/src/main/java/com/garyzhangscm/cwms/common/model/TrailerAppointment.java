@@ -30,10 +30,16 @@ public class TrailerAppointment extends AuditibleEntity<String>{
     @Column(name = "description")
     private String description;
 
+
     @OneToOne
     @JoinColumn(name="trailer_id")
     @JsonIgnore
     private Trailer trailer;
+
+
+    @ManyToOne
+    @JoinColumn(name="tractor_id")
+    private Tractor tractor;
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
@@ -109,5 +115,13 @@ public class TrailerAppointment extends AuditibleEntity<String>{
 
     public String getCurrentTrailerNumber() {
         return Objects.isNull(trailer) ? "" : trailer.getNumber();
+    }
+
+    public Tractor getTractor() {
+        return tractor;
+    }
+
+    public void setTractor(Tractor tractor) {
+        this.tractor = tractor;
     }
 }

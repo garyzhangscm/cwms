@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderConfirmation;
+import com.garyzhangscm.cwms.outbound.model.Stop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,12 @@ public class IntegrationService {
 
         kafkaSender.send(orderConfirmation);
         logger.debug(">> order confirmation sent!");
+
+    }
+
+    // process stops
+    public void process(Stop stop) {
+        logger.debug(">> stop is processed");
 
     }
 
