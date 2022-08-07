@@ -3,6 +3,9 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TrailerAppointment extends AuditibleEntity<String>{
 
     private Long id;
@@ -20,6 +23,7 @@ public class TrailerAppointment extends AuditibleEntity<String>{
 
     @JsonIgnore
     private Trailer trailer;
+    private List<Stop> stops = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -83,5 +87,13 @@ public class TrailerAppointment extends AuditibleEntity<String>{
 
     public void setTrailer(Trailer trailer) {
         this.trailer = trailer;
+    }
+
+    public List<Stop> getStops() {
+        return stops;
+    }
+
+    public void setStops(List<Stop> stops) {
+        this.stops = stops;
     }
 }

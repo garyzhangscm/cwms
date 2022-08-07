@@ -111,12 +111,14 @@ public class TrailerAppointmentService {
 
     public void processIntegration(TrailerAppointment trailerAppointment,
                                    long integrationId) {
+        trailerAppointment.setStatus(TrailerAppointmentStatus.PLANNED);
         TrailerAppointment newTrailerAppointment = save(trailerAppointment);
 
         // we will only process the trailer appointment portion
         // here. The stop / shipment / order assignment will be processed
         // by outbound service
         trailerAppointment.setId(newTrailerAppointment.getId());
+
 
 
         kafkaSender.send(IntegrationType.INTEGRATION_STOP,

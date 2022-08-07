@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 public class OrderLine implements Serializable {
 
+    private Long id;
     private String number;
 
     private Long itemId;
@@ -47,6 +48,14 @@ public class OrderLine implements Serializable {
 
     private Long carrierServiceLevelId;
     private String carrierServiceLevelName;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getNumber() {
         return number;

@@ -167,11 +167,12 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    public Carrier getCarrierByName(String name) {
+    public Carrier getCarrierByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carriers")
+                        .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Carrier>> responseBodyWrapper
@@ -197,5 +198,28 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public CarrierServiceLevel getCarrierServiceLevelByName(Long warehouseId, String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/carrier-service-levels")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("name", name);
+
+        ResponseBodyWrapper<List<CarrierServiceLevel>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<CarrierServiceLevel>>>() {}).getBody();
+
+        List<CarrierServiceLevel> carrierServiceLevels = responseBodyWrapper.getData();
+        if (carrierServiceLevels.size() == 0) {
+            return null;
+        }
+        else {
+            return carrierServiceLevels.get(0);
+        }
+    }
 
 }

@@ -4,6 +4,7 @@ import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderConfirmation;
 import com.garyzhangscm.cwms.outbound.model.Stop;
+import com.garyzhangscm.cwms.outbound.model.TrailerAppointment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class IntegrationService {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private TrailerAppointmentService trailerAppointmentService;
 
     @Autowired
     private KafkaSender kafkaSender;
@@ -47,8 +50,11 @@ public class IntegrationService {
     }
 
     // process stops
-    public void process(Stop stop) {
-        logger.debug(">> stop is processed");
+    public void process(TrailerAppointment trailerAppointment) {
+        logger.debug(">> trailerAppointment is processed");
+
+
+        trailerAppointmentService.processIntegration(trailerAppointment);
 
     }
 

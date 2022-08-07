@@ -22,10 +22,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.outbound.model.Shipment;
-import com.garyzhangscm.cwms.outbound.model.ShipmentStatus;
-import com.garyzhangscm.cwms.outbound.model.Stop;
-import com.garyzhangscm.cwms.outbound.model.TrailerAppointment;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.StopRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -56,6 +53,10 @@ public class TrailerAppointmentService {
     private ShipmentService shipmentService;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private OrderLineService orderLineService;
+    @Autowired
+    private WaveService waveService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -113,5 +114,27 @@ public class TrailerAppointmentService {
                     stopService.assignTrailerAppointment(Long.parseLong(stopId), trailerAppointment);
                 }
         );
+    }
+
+    /**
+     * Process trailer appointment integration
+     * @param trailerAppointment
+     */
+    public void processIntegration(TrailerAppointment trailerAppointment) {
+
+        // first let's create a wave with the trailer appointment's number
+        // we will only have one wave for the entire trailer appointment
+
+        Wave wave = waveService.createWave(
+                trailerAppointment.getWarehouseId(),
+                trailerAppointment.getNumber());
+
+        // second, let's plan a shipment for each order in the stops
+
+        for (Stop stop : trailerAppointment.getStops()) {
+            stopService.processIntegration(wave, stop, trailerAppointment.getId());
+
+        }
+
     }
 }

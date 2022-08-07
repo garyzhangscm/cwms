@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.integration.model;
+package com.garyzhangscm.cwms.common.model;
 
 import java.io.Serializable;
 

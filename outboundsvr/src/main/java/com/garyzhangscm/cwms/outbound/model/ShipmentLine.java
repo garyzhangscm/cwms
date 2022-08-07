@@ -66,10 +66,8 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
 
     // order line id and number, used by integration only
     @Transient
-    @JsonIgnore
     private Long orderLineId;
     @Transient
-    @JsonIgnore
     private String orderLineNumber;
 
     @Column(name = "quantity")
@@ -196,7 +194,7 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
 
     public String getOrderNumber() {
 
-        return Objects.nonNull(orderLine.getOrder()) ?
+        return Objects.nonNull(orderLine) && Objects.nonNull(orderLine.getOrder()) ?
                     orderLine.getOrder().getNumber() :
                     "";
     }

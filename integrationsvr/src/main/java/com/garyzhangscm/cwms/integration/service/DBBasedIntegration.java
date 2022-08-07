@@ -612,6 +612,9 @@ public class DBBasedIntegration implements Integration{
             case INTEGRATION_PURCHASE_ORDER:
                 dbBasedPurchaseOrderIntegration.saveIntegrationResult(integrationResult);
                 break;
+            case INTEGRATION_TRAILER_APPOINTMENT:
+                dbBasedTrailerAppointmentIntegration.saveIntegrationResult(integrationResult);
+                break;
         }
     }
 

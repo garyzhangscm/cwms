@@ -33,8 +33,9 @@ public class CarrierServiceLevelController {
     CarrierServiceLevelService carrierServiceLevelService;
 
     @RequestMapping(value="/carrier-service-levels", method = RequestMethod.GET)
-    public List<CarrierServiceLevel> findAllCarrierServiceLevels() {
-        return carrierServiceLevelService.findAll();
+    public List<CarrierServiceLevel> findAllCarrierServiceLevels(@RequestParam Long warehouseId,
+                                                                 @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+        return carrierServiceLevelService.findAll(warehouseId, name);
     }
 
     @RequestMapping(value="/carrier-service-levels/{id}", method = RequestMethod.GET)

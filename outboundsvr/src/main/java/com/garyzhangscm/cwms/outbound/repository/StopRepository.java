@@ -31,4 +31,5 @@ import java.util.List;
 @Repository
 public interface StopRepository extends JpaRepository<Stop, Long>, JpaSpecificationExecutor<Stop> {
 
+    Stop findByWarehouseIdAndNumber(Long warehouseId, String number);
 }
