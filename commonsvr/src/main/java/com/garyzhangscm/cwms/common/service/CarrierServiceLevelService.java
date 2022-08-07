@@ -29,14 +29,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CarrierServiceLevelService implements  TestDataInitiableService{
@@ -60,8 +67,27 @@ public class CarrierServiceLevelService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("carrier service level not found by id: " + id));
     }
 
-    public List<CarrierServiceLevel> findAll( ) {
-        return carrierServiceLevelRepository.findAll();
+    public List<CarrierServiceLevel> findAll(Long warehouseId, String name ) {
+
+        return carrierServiceLevelRepository.findAll(
+                (Root<CarrierServiceLevel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+
+                    if (Objects.nonNull(warehouseId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    }
+
+
+                    if (StringUtils.isNotBlank(name)) {
+                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+                ,
+                Sort.by(Sort.Direction.ASC, "name")
+        );
     }
 
     // Natural Key: carrier and service level name

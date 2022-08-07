@@ -29,7 +29,6 @@ public class ShipmentLine   implements Serializable {
 
 
     private Long orderLineId;
-    private String orderLineNumber;
 
 
     public Long getWarehouseId() {
@@ -56,11 +55,4 @@ public class ShipmentLine   implements Serializable {
         this.orderLineId = orderLineId;
     }
 
-    public String getOrderLineNumber() {
-        return orderLineNumber;
-    }
-
-    public void setOrderLineNumber(String orderLineNumber) {
-        this.orderLineNumber = orderLineNumber;
-    }
 }

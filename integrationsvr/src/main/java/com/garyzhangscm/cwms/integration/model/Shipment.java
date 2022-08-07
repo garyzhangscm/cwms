@@ -38,6 +38,8 @@ public class Shipment   implements Serializable {
 
     private Long shipToCustomerId;
 
+    private Long orderId;
+
 
     private String shipToContactorFirstname;
     private String shipToContactorLastname;
@@ -121,6 +123,14 @@ public class Shipment   implements Serializable {
 
     public void setShipToContactorLastname(String shipToContactorLastname) {
         this.shipToContactorLastname = shipToContactorLastname;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 
     public String getShipToAddressCountry() {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,7 +24,7 @@ public class TrailerAppointment  {
     private Tractor tractor;
 
     private TrailerAppointmentType type;
-    private List<Stop> stops;
+    private List<Stop> stops = new ArrayList<>();
 
 
     public Long getWarehouseId() {

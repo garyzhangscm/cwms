@@ -27,6 +27,7 @@ import java.util.List;
 public class Order implements Serializable {
 
 
+    private Long id;
     private String number;
 
 
@@ -96,6 +97,22 @@ public class Order implements Serializable {
 
     private Long stageLocationGroupId;
     private String stageLocationGroupName;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTransferReceiptWarehouseName() {
+        return transferReceiptWarehouseName;
+    }
+
+    public void setTransferReceiptWarehouseName(String transferReceiptWarehouseName) {
+        this.transferReceiptWarehouseName = transferReceiptWarehouseName;
+    }
 
     public String getNumber() {
         return number;

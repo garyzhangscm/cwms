@@ -1,9 +1,6 @@
 package com.garyzhangscm.cwms.integration.service;
 
-import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.integration.clients.KafkaSender;
-import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.*;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.*;
@@ -49,6 +46,8 @@ public class DBBasedTrailerAppointmentIntegration {
     InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
 
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
@@ -180,7 +179,8 @@ public class DBBasedTrailerAppointmentIntegration {
         try {
 
             TrailerAppointment trailerAppointment = dbBasedTrailerAppointment.convertToTrailerAppointment(
-                    warehouseLayoutServiceRestemplateClient);
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient, outbuondServiceRestemplateClient);
             // setup the warehouse
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process trailerAppointment:\n{}", trailerAppointment);

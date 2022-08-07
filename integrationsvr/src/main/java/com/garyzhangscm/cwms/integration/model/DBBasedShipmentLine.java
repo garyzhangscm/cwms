@@ -26,6 +26,8 @@ import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -37,9 +39,10 @@ import java.util.Objects;
 public class DBBasedShipmentLine extends AuditibleEntity<String> implements Serializable, IntegrationShipmentLineData {
 
 
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedShipment.class);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_stop")
+    @Column(name = "integration_shipment_line_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -78,7 +81,9 @@ public class DBBasedShipmentLine extends AuditibleEntity<String> implements Seri
     @Column(name = "error_message")
     private String errorMessage;
 
-    public ShipmentLine convertToShipmentLine(WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+    public ShipmentLine convertToShipmentLine(
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+            Order order) {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
@@ -104,9 +109,21 @@ public class DBBasedShipmentLine extends AuditibleEntity<String> implements Seri
             setWarehouseId(warehouseId);
         }
 
+        if (Objects.isNull(getOrderLineId()) &&
+                Strings.isNotBlank(getOrderLineNumber())) {
+            setOrderLineId(
+                    order.getOrderLines().stream().filter(
+                            orderLine -> orderLine.getNumber().equals(
+                                    getOrderLineNumber()
+                            )
+                    ).map(orderLine -> orderLine.getId()).findFirst().orElse(null)
+            );
+        }
+
+
         String[] fieldNames = {
                 "warehouseId",
-                "number","orderLineId","orderLineNumber"
+                "number","orderLineId"
         };
 
         ObjectCopyUtil.copyValue(this, shipmentLine,  fieldNames);

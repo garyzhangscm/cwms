@@ -299,6 +299,7 @@ public class DBBasedOrderIntegration {
         if(Objects.isNull(orderLine.getCarrierId()) &&
                 Objects.nonNull(dbBasedOrderLine.getCarrierName())) {
             carrier = commonServiceRestemplateClient.getCarrierByName(
+                    warehouse.getId(),
                     dbBasedOrderLine.getCarrierName());
             orderLine.setCarrierId(carrier.getId());
         }

@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
@@ -67,8 +68,9 @@ public class DBBasedTrailerAppointment extends AuditibleEntity<String> implement
     private String errorMessage;
 
 
-    public TrailerAppointment convertToTrailerAppointment(
-            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+    public TrailerAppointment convertToTrailerAppointment(CommonServiceRestemplateClient commonServiceRestemplateClient,
+                                                          WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+                                                          OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
@@ -109,7 +111,9 @@ public class DBBasedTrailerAppointment extends AuditibleEntity<String> implement
                 getStops().size(), getNumber());
         getStops().forEach(dbBasedStop -> {
             trailerAppointment.addStop(dbBasedStop.convertToStop(
-                    warehouseLayoutServiceRestemplateClient));
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient,
+                    outbuondServiceRestemplateClient));
         });
 
         return trailerAppointment;

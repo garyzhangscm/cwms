@@ -314,6 +314,14 @@ public class ShipmentService {
     }
 
     @Transactional
+    public Shipment planShipments(Long warehouseId, String waveNumber, String shipmentNumber, List<OrderLine> orderLines){
+
+        Wave wave = waveService.createWave(warehouseId, waveNumber);
+        return planShipments(wave, shipmentNumber, orderLines);
+
+    }
+
+    @Transactional
     public Shipment planShipments(Long warehouseId, String shipmentNumber, List<OrderLine> orderLines){
 
         Wave wave = waveService.createWave(warehouseId, shipmentNumber);

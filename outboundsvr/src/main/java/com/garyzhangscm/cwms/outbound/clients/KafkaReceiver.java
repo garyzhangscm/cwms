@@ -181,10 +181,10 @@ public class KafkaReceiver {
 
     }
 
-    @KafkaListener(topics = {"INTEGRATION_TRAILER_APPOINTMENT"})
-    public void listenForStop(@Payload String stopJsonRepresent,
+    @KafkaListener(topics = {"INTEGRATION_STOP"})
+    public void listenForStop(@Payload String trailerAppointmentJsonRepresent,
                               @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
-        logger.info("# received stop data: {}", stopJsonRepresent);
+        logger.info("# received trailer appointment data: {}", trailerAppointmentJsonRepresent);
         logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 
         String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
@@ -195,9 +195,10 @@ public class KafkaReceiver {
 
         try {
 
-            Stop stop = objectMapper.readValue(stopJsonRepresent, Stop.class);
-            logger.info("# stop data after parsing: {}", stop);
-            integrationService.process(stop);
+            TrailerAppointment trailerAppointment =
+                    objectMapper.readValue(trailerAppointmentJsonRepresent, TrailerAppointment.class);
+            logger.info("# trailer appointment data after parsing: {}", trailerAppointment);
+            integrationService.process(trailerAppointment);
 
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(

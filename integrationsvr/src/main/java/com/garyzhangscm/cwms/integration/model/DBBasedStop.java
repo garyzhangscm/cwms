@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.integration.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
@@ -22,7 +23,7 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_stop")
+    @Column(name = "integration_stop_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -93,7 +94,9 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
     @Column(name = "error_message")
     private String errorMessage;
 
-    public Stop convertToStop(WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+    public Stop convertToStop(CommonServiceRestemplateClient commonServiceRestemplateClient,
+                              WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+                              OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) {
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
 
@@ -131,7 +134,9 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
 
         getShipments().forEach(dbBasedShipment -> {
             stop.addShipment(dbBasedShipment.convertToShipment(
-                    warehouseLayoutServiceRestemplateClient
+                    commonServiceRestemplateClient,
+                    warehouseLayoutServiceRestemplateClient,
+                    outbuondServiceRestemplateClient
             ));
         });
 

@@ -50,6 +50,8 @@ public class StopService {
     private StopRepository stopRepository;
     @Autowired
     private ShipmentService shipmentService;
+    @Autowired
+    private OrderLineService orderLineService;
 
 
     @Autowired
@@ -110,6 +112,10 @@ public class StopService {
         );
     }
 
+    public Stop findByNumber(Long warehouseId, String number) {
+        return stopRepository.findByWarehouseIdAndNumber(warehouseId,
+                number);
+    }
 
     public Stop save(Stop stop) {
         return stopRepository.save(stop);
@@ -118,6 +124,15 @@ public class StopService {
         return stopRepository.saveAndFlush(stop);
     }
 
+    public Stop saveOrUpdate(Stop stop) {
+        if (Objects.isNull(stop.getId()) &&
+                Objects.nonNull(findByNumber(stop.getWarehouseId(), stop.getNumber()))) {
+            stop.setId(
+                    findByNumber(stop.getWarehouseId(), stop.getNumber()).getId()
+            );
+        }
+        return save(stop);
+    }
 
     public void delete(Stop stop) {
         stopRepository.delete(stop);
@@ -210,4 +225,50 @@ public class StopService {
         return stops.stream().filter(stop -> stop.validateNewShipmentsForStop(shipment)).findFirst().orElse(null);
     }
 
+    /**
+     * Process integration for stop. We will create the stop and add the shipment into the stops
+     * @param stop
+     * @param trailerAppointmentId
+     */
+    public Stop processIntegration(Wave wave, Stop stop, Long trailerAppointmentId) {
+        // we will plan the orders into the shipment
+        // and then add the shipment into the stop
+        // after that we will save the stop
+        List<Shipment> plannedShipments = new ArrayList<>();
+        for (Shipment shipment : stop.getShipments()) {
+            // we will plan every order line in the same order into the same
+            // shipment
+            List<OrderLine> orderLines = new ArrayList<>();
+
+            shipment.getShipmentLines().stream().filter(
+                    shipmentLine -> Objects.nonNull(shipmentLine.getOrderLineId())
+            ).forEach(
+                    shipmentLine -> {
+                        orderLines.add(
+                                orderLineService.findById(
+                                        shipmentLine.getOrderLineId()
+                                )
+                        );
+
+                    }
+            );
+            Shipment plannedShipment = shipmentService.planShipments(
+                    wave, shipment.getNumber(), orderLines
+            );
+            logger.debug("shipment {} planned for order lines ",
+                    plannedShipment.getNumber());
+            orderLines.forEach(
+                    orderLine ->
+                            logger.debug("> order line {} / {}",
+                                    orderLine.getOrderNumber(), orderLine.getNumber())
+            );
+            plannedShipments.add(plannedShipment);
+
+        }
+        logger.debug("add totally {} shipments into the stop {}",
+                plannedShipments.size(), stop.getNumber());
+        stop.setShipments(plannedShipments);
+        stop.setTrailerAppointmentId(trailerAppointmentId);
+        return saveOrUpdate(stop);
+    }
 }

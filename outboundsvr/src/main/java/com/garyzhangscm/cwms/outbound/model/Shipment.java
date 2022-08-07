@@ -117,6 +117,10 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
     @JsonIgnore
     private Stop stop;
 
+    // order id, used by stop integration
+    @Transient
+    private Long orderId;
+
     public Shipment() {}
 
     public Shipment(String number, Order order) {
@@ -206,6 +210,14 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
 
     public void setShipmentLines(List<ShipmentLine> shipmentLines) {
         this.shipmentLines = shipmentLines;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 
     public ShipmentStatus getStatus() {

@@ -21,11 +21,16 @@ package com.garyzhangscm.cwms.integration.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.integration.service.DBBasedTrailerAppointmentIntegration;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -38,9 +43,10 @@ import java.util.Objects;
 @Table(name = "integration_shipment")
 public class DBBasedShipment extends AuditibleEntity<String> implements Serializable, IntegrationShipmentData {
 
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedShipment.class);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_stop")
+    @Column(name = "integration_shipment_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -62,16 +68,33 @@ public class DBBasedShipment extends AuditibleEntity<String> implements Serializ
 
 
 
-    @Column(name = "number")
+    @Column(name = "carrier_id")
     private Long carrierId;
+    @Column(name = "carrier_name")
+    private String carrierName;
 
 
-    @Column(name = "number")
+    @Column(name = "carrier_service_level_id")
     private Long carrierServiceLevelId;
+    @Column(name = "carrier_service_level_name")
+    private String carrierServiceLevelName;
 
 
     @Column(name = "ship_to_customer_id")
     private Long shipToCustomerId;
+    @Column(name = "ship_to_customer_name")
+    private String shipToCustomerName;
+
+    @Column(name = "client_id")
+    private Long clientId;
+    @Column(name = "client_name")
+    private String clientName;
+
+    @Column(name = "order_id")
+    private Long orderId;
+    @Column(name = "order_number")
+    private String orderNumber;
+
 
 
     @Column(name = "ship_to_contactor_firstname")
@@ -96,9 +119,6 @@ public class DBBasedShipment extends AuditibleEntity<String> implements Serializ
     @Column(name = "ship_to_address_postcode")
     private String shipToAddressPostcode;
 
-    @Column(name = "client_id")
-    private Long clientId;
-
 
     @OneToMany(
             mappedBy = "shipment",
@@ -122,7 +142,9 @@ public class DBBasedShipment extends AuditibleEntity<String> implements Serializ
     private String errorMessage;
 
 
-    public Shipment convertToShipment(WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+    public Shipment convertToShipment(CommonServiceRestemplateClient commonServiceRestemplateClient,
+                                      WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+                                      OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
@@ -148,6 +170,83 @@ public class DBBasedShipment extends AuditibleEntity<String> implements Serializ
             setWarehouseId(warehouseId);
         }
 
+        // setup the ids
+        if (Objects.isNull(getCarrierId()) &&
+                Strings.isNotBlank(getCarrierName())) {
+            Carrier carrier = commonServiceRestemplateClient.getCarrierByName(
+                    getWarehouseId(),
+                    getCarrierName()
+            );
+            if (Objects.nonNull(carrier)) {
+                setCarrierId(carrier.getId());
+            }
+        }
+
+        if (Objects.isNull(getCarrierServiceLevelId()) &&
+                Strings.isNotBlank(getCarrierServiceLevelName())) {
+            CarrierServiceLevel carrierServiceLevel
+                    = commonServiceRestemplateClient.getCarrierServiceLevelByName(
+                    getWarehouseId(),
+                    getCarrierServiceLevelName()
+            );
+            if (Objects.nonNull(carrierServiceLevel)) {
+                setCarrierServiceLevelId(carrierServiceLevel.getId());
+            }
+        }
+
+
+        if (Objects.isNull(getShipToCustomerId()) &&
+                Strings.isNotBlank(getShipToCustomerName())) {
+            Customer customer
+                    = commonServiceRestemplateClient.getCustomerByName(
+                            getCompanyId(),
+                        getWarehouseId(),
+                    getShipToCustomerName()
+            );
+            if (Objects.nonNull(customer)) {
+                setShipToCustomerId(customer.getId());
+            }
+        }
+        if (Objects.isNull(getCarrierId()) &&
+                Strings.isNotBlank(getClientName())) {
+            Client client
+                    = commonServiceRestemplateClient.getClientByName(
+                    getWarehouseId(),
+                    getShipToCustomerName()
+            );
+            if (Objects.nonNull(client)) {
+                setClientId(client.getId());
+            }
+        }
+
+        Order order = null;
+        if (Objects.nonNull(getOrderId())) {
+            order = outbuondServiceRestemplateClient.getOrderById(
+                    getOrderId()
+            );
+        }
+        else if (Strings.isNotBlank(getOrderNumber())) {
+            logger.debug("start to get order by number {} , {}",
+                    getWarehouseId(), getOrderNumber());
+            order
+                    = outbuondServiceRestemplateClient.getOrderByNumber(
+                    getWarehouseId(),
+                    getOrderNumber()
+            );
+
+            logger.debug("order exists? {}",
+                    Objects.nonNull(order));
+            if (Objects.nonNull(order)) {
+                setOrderId(order.getId());
+            }
+        }
+
+        if (Objects.isNull(order)) {
+            throw ResourceNotFoundException.raiseException("order by id " +
+                            (Objects.nonNull(getOrderId()) ? String.valueOf(getOrderId()) : "N/A") +
+                            ", number " + (Strings.isNotBlank(getOrderNumber()) ? getOrderNumber() : "N/A") +
+                            " not exists");
+        }
         String[] fieldNames = {
                 "warehouseId",
                 "number","carrierId","carrierServiceLevelId",
@@ -155,16 +254,18 @@ public class DBBasedShipment extends AuditibleEntity<String> implements Serializ
                 "shipToAddressCountry","shipToAddressState",
                 "shipToAddressCounty","shipToAddressCity","shipToAddressDistrict",
                 "shipToAddressLine1","shipToAddressLine2","shipToAddressPostcode",
-                "clientId"
+                "clientId",
+                "orderId"
         };
 
         ObjectCopyUtil.copyValue(this, shipment,  fieldNames);
 
-        getShipmentLines().forEach(dbBasedShipmentLine -> {
+        for (DBBasedShipmentLine dbBasedShipmentLine : getShipmentLines()) {
+
             shipment.addShipmentLine(dbBasedShipmentLine.convertToShipmentLine(
-                     warehouseLayoutServiceRestemplateClient
+                    warehouseLayoutServiceRestemplateClient, order
             ));
-        });
+        }
 
         return shipment;
     }
@@ -376,4 +477,51 @@ public class DBBasedShipment extends AuditibleEntity<String> implements Serializ
         this.errorMessage = errorMessage;
     }
 
+    public String getCarrierName() {
+        return carrierName;
+    }
+
+    public void setCarrierName(String carrierName) {
+        this.carrierName = carrierName;
+    }
+
+    public String getCarrierServiceLevelName() {
+        return carrierServiceLevelName;
+    }
+
+    public void setCarrierServiceLevelName(String carrierServiceLevelName) {
+        this.carrierServiceLevelName = carrierServiceLevelName;
+    }
+
+    public String getShipToCustomerName() {
+        return shipToCustomerName;
+    }
+
+    public void setShipToCustomerName(String shipToCustomerName) {
+        this.shipToCustomerName = shipToCustomerName;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
 }

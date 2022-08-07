@@ -49,6 +49,10 @@ public class TrailerAppointment extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private TrailerAppointmentStatus status;
 
+
+    @Transient
+    private List<Stop> stops = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
@@ -123,5 +127,13 @@ public class TrailerAppointment extends AuditibleEntity<String>{
 
     public void setTractor(Tractor tractor) {
         this.tractor = tractor;
+    }
+
+    public List<Stop> getStops() {
+        return stops;
+    }
+
+    public void setStops(List<Stop> stops) {
+        this.stops = stops;
     }
 }
