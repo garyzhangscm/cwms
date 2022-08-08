@@ -1814,5 +1814,8 @@
   "receivedQuantity": "Received Quantity",
   "totalExpectedQuantity": "Total Expected Quantity",
   "totalReceiptQuantity": "Total Receipt Quantity",
-  "totalReceivedQuantity": "Total Received Quantity"
+  "totalReceivedQuantity": "Total Received Quantity",
+  "menu.main.outbound.load": "Load",
+  "date-time-range": "Date Time Range",
+  "complete-date-time-range": "Completed Date Time Range"
 }

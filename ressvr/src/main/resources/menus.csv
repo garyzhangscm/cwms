@@ -42,16 +42,17 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,,true,false
 "Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick,,true,false
 "Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList,,true,false
-"Carton",menu.main.outbound.carton,/outbound/carton,5,Main-Menu-Outbound,Outbound-Carton,,true,false
-"Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,5,Main-Menu-Outbound,Outbound-CartonizationConfiguration,,true,false
-"Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,5,Main-Menu-Outbound,Outbound-Cartonization,,true,false
-"Shipping Cartonization",menu.main.outbound.shipping-cartonization,/outbound/shipping-cartonization,6,Main-Menu-Outbound,Outbound-ShippingCartonization,,true,false
-"Grid",menu.main.outbound.grid,/outbound/grid,7,Main-Menu-Outbound,Outbound-Grid,,true,false
-"Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,8,Main-Menu-Outbound,Outbound-PickConfirm,,true,false
-"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,9,Main-Menu-Outbound,Outbound-ShortAllocation,,true,false
-"Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,11,Main-Menu-Outbound,Outbound-AllocationConfiguration,,true,false
-"Order Activity",menu.main.outbound.order-activity,/outbound/order-activity,12,Main-Menu-Outbound,Outbound-OrderActivity,,true,false
-"Allocation Transaction History",menu.main.outbound.allocation-transaction-history,/outbound/allocation-transaction-history,13,Main-Menu-Outbound,Outbound-AllocTransHistory,,true,false
+"Carton",menu.main.outbound.carton,/outbound/carton,6,Main-Menu-Outbound,Outbound-Carton,,true,false
+"Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,7,Main-Menu-Outbound,Outbound-CartonizationConfiguration,,true,false
+"Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,8,Main-Menu-Outbound,Outbound-Cartonization,,true,false
+"Shipping Cartonization",menu.main.outbound.shipping-cartonization,/outbound/shipping-cartonization,9,Main-Menu-Outbound,Outbound-ShippingCartonization,,true,false
+"Grid",menu.main.outbound.grid,/outbound/grid,10,Main-Menu-Outbound,Outbound-Grid,,true,false
+"Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,11,Main-Menu-Outbound,Outbound-PickConfirm,,true,false
+"Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,12,Main-Menu-Outbound,Outbound-ShortAllocation,,true,false
+"Load",menu.main.outbound.load,/outbound/load,13,Main-Menu-Outbound,Outbound-Load,,true,false
+"Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,14,Main-Menu-Outbound,Outbound-AllocationConfiguration,,true,false
+"Order Activity",menu.main.outbound.order-activity,/outbound/order-activity,15,Main-Menu-Outbound,Outbound-OrderActivity,,true,false
+"Allocation Transaction History",menu.main.outbound.allocation-transaction-history,/outbound/allocation-transaction-history,16,Main-Menu-Outbound,Outbound-AllocTransHistory,,true,false
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,,true,false
 "Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,,true,false
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,,true,false

@@ -246,15 +246,25 @@ public class StopService {
                     shipmentLine -> {
                         orderLines.add(
                                 orderLineService.findById(
-                                        shipmentLine.getOrderLineId()
+                                        shipmentLine.getOrderLineId(), false
                                 )
                         );
 
                     }
             );
+            logger.debug("start to plan shipment for order {}, with {} order lines, " +
+                    "shipment number: {}",
+                    shipment.getOrderId(),
+                    orderLines.size(),
+                    shipment.getNumber());
             Shipment plannedShipment = shipmentService.planShipments(
                     wave, shipment.getNumber(), orderLines
             );
+            if (Objects.isNull(plannedShipment)) {
+                throw ShippingException.raiseException("Not able to plan shipment for stop " +
+                                stop.getNumber() + ", shipment " + shipment.getNumber()+ ", " +
+                                " order id " + shipment.getOrderId() + ", there's no available order lines");
+            }
             logger.debug("shipment {} planned for order lines ",
                     plannedShipment.getNumber());
             orderLines.forEach(

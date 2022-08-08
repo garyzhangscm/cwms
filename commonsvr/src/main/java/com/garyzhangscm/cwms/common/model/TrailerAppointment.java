@@ -1,9 +1,16 @@
 package com.garyzhangscm.cwms.common.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +55,13 @@ public class TrailerAppointment extends AuditibleEntity<String>{
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private TrailerAppointmentStatus status;
+
+    @Column(name = "completed_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime completedTime;
+
 
 
     @Transient
@@ -135,5 +149,13 @@ public class TrailerAppointment extends AuditibleEntity<String>{
 
     public void setStops(List<Stop> stops) {
         this.stops = stops;
+    }
+
+    public LocalDateTime getCompletedTime() {
+        return completedTime;
+    }
+
+    public void setCompletedTime(LocalDateTime completedTime) {
+        this.completedTime = completedTime;
     }
 }
