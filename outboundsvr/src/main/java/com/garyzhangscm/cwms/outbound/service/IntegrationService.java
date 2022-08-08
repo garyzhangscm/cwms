@@ -51,7 +51,7 @@ public class IntegrationService {
 
     // process stops
     public void process(TrailerAppointment trailerAppointment) {
-        logger.debug(">> trailerAppointment is processed");
+        logger.debug(">> start to process trailer appointment integration");
 
 
         trailerAppointmentService.processIntegration(trailerAppointment);

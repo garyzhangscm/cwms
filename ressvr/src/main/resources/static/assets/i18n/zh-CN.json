@@ -1813,5 +1813,8 @@
   "receivedQuantity": "已入库数量",
   "totalExpectedQuantity": "总预期数量",
   "totalReceiptQuantity": "已生成入库单总数量",
-  "totalReceivedQuantity": "已入库总数量"
+  "totalReceivedQuantity": "已入库总数量",
+  "menu.main.outbound.load": "发运计划",
+  "date-time-range": "时间范围",
+  "complete-date-time-range": "完成时间范围"
 }

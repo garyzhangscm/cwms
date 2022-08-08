@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.common.repository;
 
 
+import com.garyzhangscm.cwms.common.model.Customer;
 import com.garyzhangscm.cwms.common.model.Trailer;
 import com.garyzhangscm.cwms.common.model.TrailerAppointment;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,5 +29,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TrailerAppointmentRepository extends JpaRepository<TrailerAppointment, Long>, JpaSpecificationExecutor<TrailerAppointment> {
+
+    TrailerAppointment findByWarehouseIdAndNumber(Long warehouseId, String number);
 
 }

@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.KafkaSender;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.common.exception.TrailerException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.TrailerAppointmentRepository;
 import com.garyzhangscm.cwms.common.repository.TrailerRepository;
@@ -37,6 +38,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -63,9 +66,13 @@ public class TrailerAppointmentService {
     }
 
 
-    public List<TrailerAppointment> findAll(  Long warehouseId,
-                                 String number,
-                                 String status) {
+    public List<TrailerAppointment> findAll(Long warehouseId,
+                                            String number,
+                                            String type,
+                                            String status,
+                                            LocalDateTime startTime,
+                                            LocalDateTime endTime,
+                                            LocalDate date) {
         List<TrailerAppointment> trailerAppointments = trailerAppointmentRepository.findAll(
                 (Root<TrailerAppointment> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -79,9 +86,31 @@ public class TrailerAppointmentService {
                             predicates.add(criteriaBuilder.equal(root.get("number"), number));
                         }
                     }
+                    if (Strings.isNotBlank(type)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("type"), TrailerAppointmentType.valueOf(type)));
+                    }
                     if (Strings.isNotBlank(status)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("status"), TrailerAppointmentStatus.valueOf(status)));
+                    }
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("completedTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("completedTime"), endTime));
+
+                    }
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("completedTime"), dateStartTime, dateEndTime));
+
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -98,6 +127,26 @@ public class TrailerAppointmentService {
     public TrailerAppointment save(TrailerAppointment trailerAppointment) {
         return trailerAppointmentRepository.save(trailerAppointment);
     }
+    public TrailerAppointment saveOrUpdate(TrailerAppointment trailerAppointment) {
+        if (Objects.isNull(trailerAppointment.getId()) &&
+            Objects.nonNull(findByNumber(
+                    trailerAppointment.getWarehouseId(), trailerAppointment.getNumber()
+            ))) {
+            trailerAppointment.setId(
+                    findByNumber(
+                            trailerAppointment.getWarehouseId(),
+                            trailerAppointment.getNumber()
+                    ).getId()
+            );
+        }
+        return save(trailerAppointment);
+    }
+
+    public TrailerAppointment findByNumber(Long warehouseId, String number) {
+
+        return trailerAppointmentRepository.findByWarehouseIdAndNumber(warehouseId, number);
+    }
+
 
 
 
@@ -129,5 +178,14 @@ public class TrailerAppointmentService {
     }
 
 
-
+    public TrailerAppointment completeTrailerAppointment(Long id) {
+        TrailerAppointment trailerAppointment = findById(id);
+        if (!trailerAppointment.getStatus().equals(TrailerAppointmentStatus.PLANNED)&&
+            !trailerAppointment.getStatus().equals(TrailerAppointmentStatus.INPROCESS)) {
+            throw TrailerException.raiseException("Trailer is not ready for complete");
+        }
+        trailerAppointment.setStatus(TrailerAppointmentStatus.COMPLETED);
+        trailerAppointment.setCompletedTime(LocalDateTime.now());
+        return save(trailerAppointment);
+    }
 }
