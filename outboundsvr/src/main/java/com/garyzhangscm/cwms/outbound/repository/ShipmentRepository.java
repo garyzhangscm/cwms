@@ -22,8 +22,10 @@ package com.garyzhangscm.cwms.outbound.repository;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -38,4 +40,9 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long>, JpaSp
     @Query("select s from Shipment s where s.warehouseId = :warehouseId and  s.stop is null " +
     " and s.status != com.garyzhangscm.cwms.outbound.model.ShipmentStatus.CANCELLED")
     List<Shipment> findOpenShipmentsForStop(Long warehouseId);
+
+    @Transactional
+    @Modifying
+    @Query( value = "update shipment set stop_id = :stopId where shipment_id = :shipmentId", nativeQuery = true)
+    void assignShipmentToStop(Long stopId, Long shipmentId);
 }

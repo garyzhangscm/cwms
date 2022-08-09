@@ -1,21 +1,21 @@
-name, description, fourWallInventory, virtual, receivingStage,shippingStage,dock,yard,storage,pickupAndDeposit,trailer,productionLine,productionLineInbound,productionLineOutbound,grid,container,packingStation,shippedParcel,shippedOrder,rf,qcArea,customerReturnStageLocation
-Storage,Storage Locations, true, false,false, false, false, false, true, false,false,false,false,false,false,false,false,false,false,false,false,false
-Damaged,Damaged Inventory Locations, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-Receive_Stage,Receiving Stage, true, false, true,false, false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false
-Receipt,Receipt, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-Receive_Dock,Receiving Dock, true, false, false,false, true, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-Shipping_Stage,Shipping Stage, true, false, false,true, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-Shipping_Dock,Shipping Dock, true, false, false,false, true, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-Dispatched,Dispatched Shipment, false, true, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-RF,RF device, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,true,false,false
-Grid,Grid, true, false, false,false, false, false, false, false,false,false,false,false,true,false,false,false,false,false,false,false
-Yard,Yard, true, false, false,false, false, true, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-PickupDeposit,Pickup and Deposit, true, false, false,false, false, false, false, true,false,false,false,false,false,false,false,false,false,false,false,false
-Removed_Inventory,Removed Inventory,false,true, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
-Trailer,Trailer, false, false, false,false, false, false, false, false,true,false,false,false,false,false,false,false,false,false,false,false
-ProductionLine,Production Line, true, false, false,false, false, false, false, false,false,true,false,false,false,false,false,false,false,false,false,false
-ProductionLineInbound,Production Line Inbound Stage, true, false, false,false, false, false, false, false,false,false,true,false,false,false,false,false,false,false,false,false
-ProductionLineOutbound,Production Line Outbound Stage, true, false, false,false, false, false, false, false,false,false,false,true,false,false,false,false,false,false,false,false
-Shipped_Order,Order that already shipped, false, true, false,false, false, false, false, false,true,false,false,false,false,false,false,false,true,false,false,false
-QC,QC Area, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,true,false
-Customer_Return_Stage,Customer Return stage area, true, false, false,false, false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,true
+name, description, fourWallInventory, virtual, receivingStage,shippingStage,dock,yard,storage,pickupAndDeposit,trailer,productionLine,productionLineInbound,productionLineOutbound,grid,container,packingStation,shippedParcel,shippedOrder,rf,qcArea,customerReturnStageLocation,shippedInventory
+Storage,Storage Locations, true, false,false, false, false, false, true, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+Damaged,Damaged Inventory Locations, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+Receive_Stage,Receiving Stage, true, false, true,false, false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false
+Receipt,Receipt, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+Receive_Dock,Receiving Dock, true, false, false,false, true, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+Shipping_Stage,Shipping Stage, true, false, false,true, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+Shipping_Dock,Shipping Dock, true, false, false,false, true, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+Dispatched,Dispatched Shipment, false, true, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,true
+RF,RF device, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,true,false,false,false
+Grid,Grid, true, false, false,false, false, false, false, false,false,false,false,false,true,false,false,false,false,false,false,false,false
+Yard,Yard, true, false, false,false, false, true, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+PickupDeposit,Pickup and Deposit, true, false, false,false, false, false, false, true,false,false,false,false,false,false,false,false,false,false,false,false,false
+Removed_Inventory,Removed Inventory,false,true, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false
+Trailer,Trailer, false, false, false,false, false, false, false, false,true,false,false,false,false,false,false,false,false,false,false,false,false
+ProductionLine,Production Line, true, false, false,false, false, false, false, false,false,true,false,false,false,false,false,false,false,false,false,false,false
+ProductionLineInbound,Production Line Inbound Stage, true, false, false,false, false, false, false, false,false,false,true,false,false,false,false,false,false,false,false,false,false
+ProductionLineOutbound,Production Line Outbound Stage, true, false, false,false, false, false, false, false,false,false,false,true,false,false,false,false,false,false,false,false,false
+Shipped_Order,Order that already shipped, false, true, false,false, false, false, false, false,true,false,false,false,false,false,false,false,true,false,false,false,false
+QC,QC Area, true, false, false,false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,true,false,false
+Customer_Return_Stage,Customer Return stage area, true, false, false,false, false, false, false, false, false,false,false,false,false,false,false,false,false,false,false,true,false

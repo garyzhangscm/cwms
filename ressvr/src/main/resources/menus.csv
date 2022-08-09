@@ -50,6 +50,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Pick Confirm",menu.main.outbound.pick-confirm,/outbound/pick/confirm,11,Main-Menu-Outbound,Outbound-PickConfirm,,true,false
 "Short Allocation",menu.main.outbound.short-allocation,/outbound/short-allocation,12,Main-Menu-Outbound,Outbound-ShortAllocation,,true,false
 "Load",menu.main.outbound.load,/outbound/load,13,Main-Menu-Outbound,Outbound-Load,,true,false
+"Stop",menu.main.outbound.stop,/outbound/stop,13,Main-Menu-Outbound,Outbound-Stop,,true,false
 "Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,14,Main-Menu-Outbound,Outbound-AllocationConfiguration,,true,false
 "Order Activity",menu.main.outbound.order-activity,/outbound/order-activity,15,Main-Menu-Outbound,Outbound-OrderActivity,,true,false
 "Allocation Transaction History",menu.main.outbound.allocation-transaction-history,/outbound/allocation-transaction-history,16,Main-Menu-Outbound,Outbound-AllocTransHistory,,true,false

@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import com.garyzhangscm.cwms.outbound.repository.StopRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,7 @@ public class StopService {
                               String number,
                               Long trailerAppointmentId,
                               Long sequence,
+                              String status,
                               Boolean onlyOpenStops) {
         return stopRepository.findAll(
                 (Root<Stop> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -96,6 +98,11 @@ public class StopService {
                     if (Objects.nonNull(sequence)) {
                         predicates.add(criteriaBuilder.equal(
                                 root.get("sequence"), sequence));
+
+                    }
+                    if (Strings.isNotBlank(status)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("status"), StopStatus.valueOf(status)));
 
                     }
                     if (Boolean.TRUE.equals(onlyOpenStops)) {
@@ -172,13 +179,39 @@ public class StopService {
         return shipmentUnloaded == 0;
     }
 
-    public void completeStop(Stop stop) {
+    public Stop completeStop(Long id) {
+        return completeStop(findById(id));
+    }
+    public Stop completeStop(Stop stop) {
+        if (stop.getStatus() == StopStatus.CANCELLED) {
+            logger.debug("Can't complete the stop {} as its status is {}",
+                    stop.getNumber(), stop.getStatus());
+            throw ShippingException.raiseException("Fail to allocate the stop " +
+                    stop.getNumber() + " due to its current status " + stop.getStatus());
+        }
+        if (stop.getStatus() == StopStatus.COMPLETED) {
+            logger.debug("The stop {} is already completed, do nothing",
+                    stop.getNumber());
+            return stop;
+        }
+
+        if (Objects.isNull(stop.getTrailerAppointment())) {
+            stop.setTrailerAppointment(
+                    commonServiceRestemplateClient.getTrailerAppointmentById(
+                            stop.getTrailerAppointmentId()
+                    )
+            );
+        }
+
+        stop.setStatus(StopStatus.COMPLETED);
+        saveOrUpdate(stop);
         stop.getShipments().stream().forEach(shipment ->
-                shipmentService.dispatchShipment(shipment));
+                shipmentService.completeShipment(shipment));
+        return stop;
     }
 
     public List<Stop> getOpenStops(Long warehouseId) {
-        return findAll(warehouseId, null, null, null, true);
+        return findAll(warehouseId, null, null, null, null,true);
     }
 
     public void assignTrailerAppointment(long stopId, TrailerAppointment trailerAppointment) {
@@ -190,7 +223,7 @@ public class StopService {
             return 1l;
         }
         List<Stop> stops = findAll(warehouseId, null,
-                trailerAppointment.getId(), null, null);
+                trailerAppointment.getId(), null, null,null);
         return stops.stream().mapToLong(stop -> Objects.isNull(stop.getSequence()) ? 0 : stop.getSequence())
                 .max().orElse(0l) + 1l;
 
@@ -221,7 +254,7 @@ public class StopService {
             return null;
         }
         List<Stop> stops = findAll(shipment.getWarehouseId(),
-                null,  trailerAppointment.getId(), null, null);
+                null,  trailerAppointment.getId(), null, null,null);
         return stops.stream().filter(stop -> stop.validateNewShipmentsForStop(shipment)).findFirst().orElse(null);
     }
 
@@ -234,6 +267,7 @@ public class StopService {
         // we will plan the orders into the shipment
         // and then add the shipment into the stop
         // after that we will save the stop
+        stop.setStatus(StopStatus.PLANNED);
         List<Shipment> plannedShipments = new ArrayList<>();
         for (Shipment shipment : stop.getShipments()) {
             // we will plan every order line in the same order into the same
@@ -277,8 +311,33 @@ public class StopService {
         }
         logger.debug("add totally {} shipments into the stop {}",
                 plannedShipments.size(), stop.getNumber());
-        stop.setShipments(plannedShipments);
         stop.setTrailerAppointmentId(trailerAppointmentId);
-        return saveOrUpdate(stop);
+        // clear the stop's shipment for now. We will assign the shipment to the stop
+        // later on
+        stop.setShipments(Collections.emptyList());
+        Stop newStop = saveOrUpdate(stop);
+
+        shipmentService.assignShipmentToStop(newStop, plannedShipments);
+        return newStop;
+    }
+
+    public Stop allocateStop(Long id) {
+        return allocateStop(findById(id));
+    }
+    public Stop allocateStop(Stop stop) {
+        if (stop.getStatus() == StopStatus.CANCELLED || stop.getStatus() == StopStatus.COMPLETED) {
+            logger.debug("Can't allocate the stop {} as its status is {}",
+                    stop.getNumber(), stop.getStatus());
+            throw ShippingException.raiseException("Fail to allocate the stop " +
+                    stop.getNumber() + " due to its current status " + stop.getStatus());
+        }
+        stop.setStatus(StopStatus.INPROCESS);
+        saveOrUpdate(stop);
+
+        stop.getShipments().forEach(
+                shipment -> shipmentService.allocateShipment(shipment.getId())
+        );
+        return stop;
+
     }
 }

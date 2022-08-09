@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Stop;
+import com.garyzhangscm.cwms.outbound.model.TrailerAppointment;
 import com.garyzhangscm.cwms.outbound.service.StopService;
 import com.garyzhangscm.cwms.outbound.service.TrailerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,9 @@ public class StopController {
                                    @RequestParam(name = "number", required = false, defaultValue = "") String number,
                                    @RequestParam(name = "trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
                                    @RequestParam(name = "sequence", required = false, defaultValue = "") Long sequence,
+                                   @RequestParam(name = "status", required = false, defaultValue = "") String status,
                                    @RequestParam(name = "onlyOpenStops", required = false, defaultValue = "") Boolean onlyOpenStops) {
-        return stopService.findAll(warehouseId, number, trailerAppointmentId, sequence, onlyOpenStops);
+        return stopService.findAll(warehouseId, number, trailerAppointmentId, sequence, status, onlyOpenStops);
     }
 
     @BillableEndpoint
@@ -68,6 +70,23 @@ public class StopController {
     @RequestMapping(value="/stops/open", method = RequestMethod.GET)
     public List<Stop> getOpenStops(@RequestParam  Long warehouseId) {
         return stopService.getOpenStops(warehouseId);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/stops/{id}/allocate", method = RequestMethod.POST)
+    public Stop allocateStop(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        return stopService.allocateStop(id);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/stops/{id}/complete", method = RequestMethod.POST)
+    public Stop completeStop(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        return stopService.completeStop(id);
     }
 
 }

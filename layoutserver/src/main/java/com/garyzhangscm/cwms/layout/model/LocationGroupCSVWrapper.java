@@ -35,6 +35,7 @@ public class LocationGroupCSVWrapper {
     private Boolean adjustable;
     private Boolean allowCartonization;
     private Boolean trackingVolume;
+    private Boolean shippedInventory;
 
     private String volumeTrackingPolicy;
     private String inventoryConsolidationStrategy;
@@ -119,6 +120,14 @@ public class LocationGroupCSVWrapper {
 
     public void setVolumeTrackingPolicy(String volumeTrackingPolicy) {
         this.volumeTrackingPolicy = volumeTrackingPolicy;
+    }
+
+    public Boolean getShippedInventory() {
+        return shippedInventory;
+    }
+
+    public void setShippedInventory(Boolean shippedInventory) {
+        this.shippedInventory = shippedInventory;
     }
 
     public String getWarehouse() {

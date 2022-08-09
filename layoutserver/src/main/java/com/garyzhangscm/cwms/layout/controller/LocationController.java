@@ -158,6 +158,21 @@ public class LocationController {
     }
 
     @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/shipped-inventory/trailer/{trailerNumber}")
+    public Location findShippedTrailerLocation(@RequestParam Long warehouseId,
+                                      @PathVariable String trailerNumber) {
+
+        return locationService.createShippedTrailerLocation(warehouseId, trailerNumber);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/shipped-inventory/trailer-appointment/{trailerAppointmentNumber}")
+    public Location findShippedTrailerAppointmentLocation(@RequestParam Long warehouseId,
+                                               @PathVariable String trailerAppointmentNumber) {
+
+        return locationService.createShippedTrailerAppointmentLocation(warehouseId, trailerAppointmentNumber);
+    }
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/dock/{id}/dispatch-trailer")
     public Location dispatchTrailerFromDock(@PathVariable Long id){
         return locationService.moveTrailerFromDock(id);

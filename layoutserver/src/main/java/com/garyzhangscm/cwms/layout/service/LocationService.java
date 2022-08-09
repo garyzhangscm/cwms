@@ -569,6 +569,35 @@ public class LocationService implements TestDataInitiableService {
         return saveOrUpdate(location);
     }
 
+    public Location createShippedInventoryLocation(Long warehouseId, String locationName) {
+
+        Location location = findByName(locationName, warehouseId);
+        if (Objects.nonNull(location)) {
+            return location;
+        }
+        // create the location if it doesn't exists yet
+        location = new Location();
+        location.setName(locationName);
+        location.setLocationGroup(locationGroupService.getDockLocationGroup(warehouseId));
+        location.setEnabled(true);
+        location.setWarehouse(warehouseService.findById(warehouseId));
+        return saveOrUpdate(location);
+    }
+
+    public Location createShippedTrailerLocation(Long warehouseId, String trailerNumber) {
+        String locationName = "TRLR-" + trailerNumber;
+        return createShippedInventoryLocation(
+                warehouseId, locationName
+        );
+    }
+    public Location createShippedTrailerAppointmentLocation(Long warehouseId, String trailerAppointmentNumber) {
+        String locationName = "TRLR-APT-" + trailerAppointmentNumber;
+        return createShippedInventoryLocation(
+                warehouseId, locationName
+        );
+
+    }
+
     @Transactional
     public void removeLocationByGroup(LocationGroup locationGroup) {
         // make sure the location is empty

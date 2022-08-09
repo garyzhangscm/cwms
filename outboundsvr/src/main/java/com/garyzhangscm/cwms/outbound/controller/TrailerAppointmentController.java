@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Stop;
 import com.garyzhangscm.cwms.outbound.model.TrailerAppointment;
@@ -46,6 +47,21 @@ public class TrailerAppointmentController {
         );
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/trailer-appointments/{id}/allocate", method = RequestMethod.POST)
+    public TrailerAppointment allocateTrailerAppointment(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        return trailerAppointmentService.allocateTrailerAppointment(warehouseId, id);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/trailer-appointments/{id}/complete", method = RequestMethod.POST)
+    public TrailerAppointment completeTrailerAppointment(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        return trailerAppointmentService.completeTrailerAppointment(warehouseId, id);
+    }
 
 
 

@@ -145,6 +145,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("rf").
                 addColumn("qcArea").
                 addColumn("customerReturnStageLocation").
+                addColumn("shippedInventory").
                 build().withHeader();
         return fileService.loadData(file, schema, LocationGroupType.class);
     }
@@ -173,6 +174,7 @@ public class LocationGroupTypeService implements TestDataInitiableService {
                 addColumn("rf").
                 addColumn("qcArea").
                 addColumn("customerReturnStageLocation").
+                addColumn("shippedInventory").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, LocationGroupType.class);

@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.StopRepository;
 import org.apache.commons.lang.StringUtils;
@@ -36,10 +37,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -136,5 +135,72 @@ public class TrailerAppointmentService {
 
         }
 
+    }
+
+    /**
+     * Allocate the shipments in the trailer appointment
+     * @param id
+     */
+    public TrailerAppointment allocateTrailerAppointment(Long warehouseId, Long id) {
+        // get the stops from the trailer appointment by sequence and
+        // allocate stop by stop
+        List<Stop> stops = stopService.findAll(warehouseId, null, id, null, null, null )
+                .stream().filter(stop -> stop.getStatus() != StopStatus.CANCELLED && stop.getStatus() != StopStatus.COMPLETED)
+                .collect(Collectors.toList());
+
+        if (stops.isEmpty()) {
+            // all stops are completed / cancelled, let's complete this trailer appointment
+            logger.debug("all stops for this trailer appointment is either completed or cancelled, " +
+                    "let's just mark this trailer appointment as in process");
+            return commonServiceRestemplateClient.changeTrailerAppointmentStatus(id, TrailerAppointmentStatus.INPROCESS);
+        }
+        Collections.sort(stops, Comparator.comparing(Stop::getSequence));
+        stops.forEach(stop ->   stopService.allocateStop(stop) );
+        // set the trailer appointment's status to in process
+        return commonServiceRestemplateClient.changeTrailerAppointmentStatus(id, TrailerAppointmentStatus.INPROCESS);
+    }
+
+    public TrailerAppointment completeTrailerAppointment(Long warehouseId, Long id) {
+
+        List<Stop> stops = stopService.findAll(warehouseId, null, id, null, null,null )
+                .stream().filter(stop -> stop.getStatus() != StopStatus.CANCELLED && stop.getStatus() != StopStatus.COMPLETED)
+                .collect(Collectors.toList());
+        if (stops.isEmpty()) {
+            // all stops are completed / cancelled, let's complete this trailer appointment
+            logger.debug("all stops for this trailer appointment is either completed or cancelled, " +
+                    "let's complete this trailer appointment");
+            return commonServiceRestemplateClient.changeTrailerAppointmentStatus(id, TrailerAppointmentStatus.COMPLETED);
+        }
+        // the trailer appointment is ready for complete when
+        // all the shipment in the trailer is ready for complete
+
+        validateTrailerAppointmentReadyForComplete(stops);
+
+        TrailerAppointment trailerAppointment =
+                commonServiceRestemplateClient.getTrailerAppointmentById(id);
+
+        // let's complete all the stops
+        for (Stop stop : stops) {
+            stop.setTrailerAppointment(trailerAppointment);
+            stopService.completeStop(stop);
+        }
+
+
+        // set the trailer appointment's status to in process
+        return commonServiceRestemplateClient.changeTrailerAppointmentStatus(id, TrailerAppointmentStatus.COMPLETED);
+
+
+    }
+
+    private void validateTrailerAppointmentReadyForComplete(List<Stop> stops) {
+        for (Stop stop : stops) {
+            for (Shipment shipment : stop.getShipments()) {
+                if (!shipmentService.validateShipmentReadyForComplete(shipment)) {
+                    throw ShippingException.raiseException("Shipment " + shipment.getNumber() +
+                            " is not ready for complete yet" +
+                            " please check if there's open pick and short allocation");
+                }
+            }
+        }
     }
 }

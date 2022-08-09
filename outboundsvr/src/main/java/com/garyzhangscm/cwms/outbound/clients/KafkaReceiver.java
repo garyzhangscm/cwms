@@ -210,6 +210,7 @@ public class KafkaReceiver {
         }
         catch (Exception ex) {
             logger.debug("JsonProcessingException: {}", ex.getMessage());
+            ex.printStackTrace();
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(
                     null, warehouseId, integrationId,

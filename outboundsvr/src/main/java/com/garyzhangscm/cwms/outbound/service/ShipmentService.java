@@ -79,6 +79,8 @@ public class ShipmentService {
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private IntegrationService integrationService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -746,14 +748,16 @@ public class ShipmentService {
     // When a stop complete, we will complete all the shipments in this
     // stop
     public Shipment dispatchShipment(Shipment shipment) {
-        shipment.setStatus(ShipmentStatus.DISPATCHED);
-        shipment = save(shipment);
 
         // Complete the shipment lines
         shipment.getShipmentLines().stream().forEach(
                 shipmentLine ->
                         shipmentLineService.completeShipmentLine(shipmentLine)
         );
+
+        shipment.setStatus(ShipmentStatus.DISPATCHED);
+        shipment = save(shipment);
+
         return shipment;
 
     }
@@ -787,52 +791,69 @@ public class ShipmentService {
         }
     }
 
-    public void completeShipment(Shipment shipment, Order order) {
+    public void completeShipment(Shipment shipment) {
         if (!validateShipmentReadyForComplete(shipment)) {
-            throw ShippingException.raiseException("Shipment for order " + order.getNumber() +
+            throw ShippingException.raiseException("Shipment  " + shipment.getNumber() +
                     " is not ready for complete yet" +
                     " please check if there's open pick and short allocation");
         }
-        if (Objects.isNull(shipment.getStop())) {
-            completeShipmentByOrder(shipment, order);
+        if (Objects.isNull(shipment.getStop()) && Objects.isNull(shipment.getOrder())) {
+
+            throw ShippingException.raiseException("System error when closing Shipment  "
+                    + shipment.getNumber() +
+                    ". NOT able to get trailer or order from the shipment");
+        }
+        else if (Objects.nonNull(shipment.getOrder())) {
+            completeShipmentByOrder(shipment, shipment.getOrder());
         }
         else {
-            completeShipmentByTrailer(shipment, order);
+            completeShipmentByTrailerAppointment(shipment,
+                    shipment.getStop().getTrailerAppointment());
         }
 
         // print delivery note after we complete the order
         try {
 
-            printDeliveryNote(order);
+            printDeliveryNote(shipment);
         }
         catch (Exception ex) {
             logger.debug("Error while printing delivery note during complete shipment {} of order {}",
-                    shipment.getNumber(), order.getNumber());
+                    shipment.getNumber());
             ex.printStackTrace();
             logger.debug("We will ignore this error and let the user reprint the document");
         }
 
 
 
-        if (order.getCategory().isAutoGenerateReceipt()) {
+        if (Objects.nonNull(shipment.getOrder()) && shipment.getOrder().getCategory().isAutoGenerateReceipt()) {
             logger.debug("Start to create receipt {} for the order {}, into warehouse {}",
-                    order.getTransferReceiptNumber(),
-                    order.getNumber(),
-                    order.getTransferReceiptWarehouseId());
+                    shipment.getOrder().getTransferReceiptNumber(),
+                    shipment.getOrder().getNumber(),
+                    shipment.getOrder().getTransferReceiptWarehouseId());
             // for every shipment, we will need to generate a correspondent
             // receipt for it
-            generateReceipt(shipment, order);
+            generateReceipt(shipment, shipment.getOrder());
         }
 
+
+        logger.debug("Start to send order confirmation after the order {} is marked as completed",
+                shipment.getNumber());
+        sendOrderConfirmationIntegration(shipment);
+
+        warehouseLayoutServiceRestemplateClient.releaseLocations(shipment.getWarehouseId(), shipment);
     }
 
+    private void sendOrderConfirmationIntegration(Shipment shipment) {
+
+        integrationService.process(new OrderConfirmation(shipment));
+    }
     /**
      * Check if we are ready to complete a shipment when
      * there's no open pick / short allocation
      * @param shipment
      * @return
      */
-    private boolean validateShipmentReadyForComplete(Shipment shipment) {
+    public boolean validateShipmentReadyForComplete(Shipment shipment) {
         List<Pick> picks = pickService.getPicksByShipment(shipment.getId());
         if (picks.stream()
                 .anyMatch(pick -> pick.getPickedQuantity() < pick.getQuantity())) {
@@ -897,6 +918,25 @@ public class ShipmentService {
         );
         logger.debug(">> print result: {}", result);
     }
+
+    private void printDeliveryNote(Shipment shipment) throws JsonProcessingException, UnsupportedEncodingException {
+        ReportHistory reportHistory
+                = generateDeliveryNote(shipment);
+        Long companyId = shipment.getWarehouse().getCompanyId();
+        if (Objects.isNull(companyId)) {
+            companyId = shipment.getWarehouse().getCompany().getId();
+        }
+        logger.debug("Start to print delivery note for company {} / warehouse {}",
+                companyId, shipment.getWarehouseId());
+        logger.debug("report file: {}", reportHistory.getFileName());
+        String result = resourceServiceRestemplateClient.printReport(
+                companyId, shipment.getWarehouseId(),
+                ReportType.DELIVERY_NOTE, reportHistory.getFileName(),
+                shipment.getNumber(), ""
+        );
+        logger.debug(">> print result: {}", result);
+    }
+
     private ReportHistory generateDeliveryNote(Order order) throws JsonProcessingException {
         Long warehouseId = order.getWarehouseId();
 
@@ -910,7 +950,7 @@ public class ShipmentService {
 
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.ORDER_PICK_SHEET, reportData, ""
+                        warehouseId, ReportType.DELIVERY_NOTE, reportData, ""
                 );
 
 
@@ -918,6 +958,26 @@ public class ShipmentService {
         return reportHistory;
     }
 
+    private ReportHistory generateDeliveryNote(Shipment shipment) throws JsonProcessingException {
+        Long warehouseId = shipment.getWarehouseId();
+
+        Report reportData = new Report();
+        setupDelieryNoteParameters(
+                reportData, shipment
+        );
+        setupDelieryNoteReportData(
+                reportData, shipment
+        );
+
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.DELIVERY_NOTE, reportData, ""
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
 
     private void setupDelieryNoteParameters(
             Report report, Order order) {
@@ -942,10 +1002,44 @@ public class ShipmentService {
         report.addParameter("totalQuantity", totalQuantity);
     }
 
+    private void setupDelieryNoteParameters(
+            Report report, Shipment shipment) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("order_number", shipment.getOrderNumber());
+
+        report.addParameter("customer_name",
+                shipment.getShipToContactorFirstname() + " " +
+                        shipment.getShipToContactorLastname());
+/**
+        Integer totalLineCount = shipment.getTotalLineCount();
+        Integer totalItemCount = shipment.getTotalItemCount();
+        Long totalQuantity =
+                pickService.findByOrder(order).stream()
+                        .mapToLong(Pick::getQuantity).sum();
+
+        report.addParameter("totalLineCount", totalLineCount);
+        report.addParameter("totalItemCount", totalItemCount);
+        report.addParameter("totalQuantity", totalQuantity);
+ **/
+        report.addParameter("totalLineCount", 0);
+        report.addParameter("totalItemCount", 0);
+        report.addParameter("totalQuantity", 0);
+    }
+
+
     private void setupDelieryNoteReportData(Report report, Order order) {
 
         // set data to be all picks
         List<Pick> picks = pickService.findByOrder(order);
+        report.setData(picks);
+    }
+    private void setupDelieryNoteReportData(Report report, Shipment shipment) {
+
+        // set data to be all picks
+        List<Pick> picks = pickService.findByShipment(shipment);
         report.setData(picks);
     }
 
@@ -956,13 +1050,39 @@ public class ShipmentService {
      */
     @Transactional
     public void completeShipmentByOrder(Shipment shipment, Order order) {
-
-        List<Inventory> stagedInventory = getStagedInventory(shipment);
-
         // Move all the staged inventory to a location
         // that stands for the order
         Location location
                 = warehouseLayoutServiceRestemplateClient.createOrderLocation(order.getWarehouseId(), order);
+        completeShipment(shipment, location);
+
+    }
+    /**
+     * Complete shipment by trailer appointment
+     * structure(trailer / stop / truck / etc)
+     * @param shipment
+     */
+    @Transactional
+    public void completeShipmentByTrailerAppointment(Shipment shipment, TrailerAppointment trailerAppointment) {
+        // Move all the staged inventory to a location
+        // that stands for the order
+        Location location
+                = warehouseLayoutServiceRestemplateClient.createTrailerAppointmentLocation(
+                        shipment.getWarehouseId(), trailerAppointment.getNumber());
+        completeShipment(shipment, location);
+
+    }
+    /**
+     * Complete shipment by order, without any outbound
+     * structure(trailer / stop / truck / etc)
+     * @param shipment
+     * @param inventoryDestination inventory's destination when loading the inventory onto
+     */
+    @Transactional
+    public void completeShipment(Shipment shipment, Location inventoryDestination) {
+
+        List<Inventory> stagedInventory = getStagedInventory(shipment);
+
 
 
         // move inventory to the location and update the shipment line's quantity
@@ -971,12 +1091,14 @@ public class ShipmentService {
             ShipmentLine shipmentLine = pickService.findById(inventory.getPickId()).getShipmentLine();
 
             logger.debug("Start to move inventory {} onto order {} ",
-                    inventory.getLpn(), location.getName());
+                    inventory.getLpn(), inventoryDestination.getName());
             try {
-                inventory = inventoryServiceRestemplateClient.moveInventory(inventory, location);
+                inventory = inventoryServiceRestemplateClient.moveInventory(inventory, inventoryDestination);
             } catch (IOException e) {
                 e.printStackTrace();
-                throw OrderOperationException.raiseException("Error when moving inventory onto the order: " + order.getNumber());
+                throw OrderOperationException.raiseException("Error when loading inventory  for shipment: "
+                        + shipment.getNumber() + " onto destination " +
+                        inventoryDestination.getName());
             }
             shipmentLine.setLoadedQuantity(shipmentLine.getLoadedQuantity() + inventory.getQuantity());
             shipmentLine.setShippedQuantity(shipmentLine.getShippedQuantity() + inventory.getQuantity());
@@ -1002,7 +1124,7 @@ public class ShipmentService {
 
     }
 
-    public void completeShipmentByTrailer(Shipment shipment, Order order) {}
+    public void completeShipmentByTrailerAppointment(Shipment shipment, Order order) {}
 
     @Transactional
     public void removeShipment(Long shipmentId) {
@@ -1065,7 +1187,21 @@ public class ShipmentService {
         save(shipment);
 
         stopService.assignTrailerAppointment(stop, trailerAppointment);
-        return;
 
+    }
+
+    public void assignShipmentToStop(Stop newStop, List<Shipment> plannedShipments) {
+        logger.debug("start to assignment shipment to stop {}",
+                newStop.getNumber());
+        plannedShipments.forEach(
+                shipment -> {
+                    logger.debug("start to assign shipment {} / {} to stop {}",
+                            shipment.getId(),
+                            shipment.getNumber(),
+                            newStop.getNumber());
+                    shipmentRepository.assignShipmentToStop(newStop.getId(), shipment.getId());
+
+                }
+        );
     }
 }

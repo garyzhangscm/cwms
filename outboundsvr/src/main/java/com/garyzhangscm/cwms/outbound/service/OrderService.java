@@ -792,24 +792,29 @@ public class OrderService implements TestDataInitiableService {
                 .flatMap(orderLine -> orderLine.getShipmentLines().stream())
                 .map(shipmentLine -> shipmentLine.getShipment())
                 .distinct()
-                .forEach(shipment ->
-                        shipmentService.completeShipment(shipment, order));
+                .filter(shipment -> shipment.getStatus() != ShipmentStatus.CANCELLED &&
+                        shipment.getStatus() != ShipmentStatus.DISPATCHED)
+                .forEach(shipment -> {
+                            shipment.setOrder(order);
+
+                            shipmentService.completeShipment(shipment);
+                        });
 
         order.setStatus(OrderStatus.COMPLETE);
         order.setCompleteTime(LocalDateTime.now());
 
 
 
-        logger.debug("Start to send order confirmation after the order {} is marked as completed",
-                order.getNumber());
-        sendOrderConfirmationIntegration(order);
+        // we will on longer send order confirmation integration when we complete the order
+        // instead, we will send order configmration integration when we complete the shipment
+        // logger.debug("Start to send order confirmation after the order {} is marked as completed",
+        //         order.getNumber());
+        // sendOrderConfirmationIntegration(order);
 
 
         // release the location that is reserved by order
+        releaseLocationsAfterOrderComplete(order);
 
-        warehouseLayoutServiceRestemplateClient.releaseLocations(order.getWarehouseId(), order);
-        order.setStageLocationId(null);
-        order.setStageLocationGroupId(null);
 
         Order completedOrder =  saveOrUpdate(order);
         orderActivityService.saveOrderActivity(
@@ -819,6 +824,13 @@ public class OrderService implements TestDataInitiableService {
 
         return completedOrder;
 
+    }
+
+    private void releaseLocationsAfterOrderComplete(Order order) {
+
+        warehouseLayoutServiceRestemplateClient.releaseLocations(order.getWarehouseId(), order);
+        order.setStageLocationId(null);
+        order.setStageLocationGroupId(null);
     }
 
     /**
@@ -852,8 +864,8 @@ public class OrderService implements TestDataInitiableService {
         existingOrder.setCompleteTime(LocalDateTime.now());
 
         logger.debug("Start to send order confirmation after the order {} is marked as completed",
-                existingOrder.getNumber());
-        sendOrderConfirmationIntegration(existingOrder);
+                 existingOrder.getNumber());
+         sendOrderConfirmationIntegration(existingOrder);
 
         // release the location that is reserved by order
 
@@ -875,6 +887,7 @@ public class OrderService implements TestDataInitiableService {
 
         integrationService.process(new OrderConfirmation(order));
     }
+
 
     public ReportHistory generatePickReportByOrder(Long orderId, String locale)
             throws JsonProcessingException {

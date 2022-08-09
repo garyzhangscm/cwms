@@ -272,7 +272,7 @@ public class AllocationService {
         logger.debug("Start to allocate request: \n " +
                         "Item: {} \n" +
                         "Quantity: {}",
-                allocationRequest.getItem().getName(),
+                    allocationRequest.getItem().getName(),
                 allocationRequest.getQuantity());
 
         // Let's get the allocation strategy that assigned to the request

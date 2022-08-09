@@ -77,6 +77,8 @@ public class LocationGroupType extends AuditibleEntity<String>{
     private Boolean trailer;
     @Column(name = "shipped_parcel_locations")
     private Boolean shippedParcel;
+    @Column(name = "shipped_inventory_locations")
+    private Boolean shippedInventory;
     @Column(name = "shipped_order_locations")
     private Boolean shippedOrder;
     @Column(name = "container_locations")
@@ -278,5 +280,13 @@ public class LocationGroupType extends AuditibleEntity<String>{
 
     public void setQcArea(Boolean qcArea) {
         this.qcArea = qcArea;
+    }
+
+    public Boolean getShippedInventory() {
+        return shippedInventory;
+    }
+
+    public void setShippedInventory(Boolean shippedInventory) {
+        this.shippedInventory = shippedInventory;
     }
 }

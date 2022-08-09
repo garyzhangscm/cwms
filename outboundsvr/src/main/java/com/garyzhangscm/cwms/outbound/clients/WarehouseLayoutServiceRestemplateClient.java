@@ -542,6 +542,23 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Location createTrailerAppointmentLocation(Long warehouseId, String trailerAppointmentNumber) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/shipped-inventory/trailer-appointment/{trailerAppointmentNumber}")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(trailerAppointmentNumber).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
     public List<Location> releaseLocations(Long warehouseId, Shipment shipment) {
         return unreserveLocation(warehouseId, null, shipment.getNumber(),null);
 
