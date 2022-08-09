@@ -107,6 +107,21 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     @Enumerated(EnumType.STRING)
     private ShipmentLineStatus status = ShipmentLineStatus.PENDING;
 
+    // staging location group
+    @Column(name="stage_location_group_id")
+    private Long stageLocationGroupId;
+
+    @Transient
+    private LocationGroup stageLocationGroup;
+
+    // staging location group
+    @Column(name="stage_location_id")
+    private Long stageLocationId;
+
+    @Transient
+    private Location stageLocation;
+
+
 
     @Override
     public String toString() {
@@ -279,5 +294,36 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
 
     public void setStatus(ShipmentLineStatus status) {
         this.status = status;
+    }
+    public Long getStageLocationGroupId() {
+        return stageLocationGroupId;
+    }
+
+    public void setStageLocationGroupId(Long stageLocationGroupId) {
+        this.stageLocationGroupId = stageLocationGroupId;
+    }
+
+    public LocationGroup getStageLocationGroup() {
+        return stageLocationGroup;
+    }
+
+    public void setStageLocationGroup(LocationGroup stageLocationGroup) {
+        this.stageLocationGroup = stageLocationGroup;
+    }
+
+    public Long getStageLocationId() {
+        return stageLocationId;
+    }
+
+    public void setStageLocationId(Long stageLocationId) {
+        this.stageLocationId = stageLocationId;
+    }
+
+    public Location getStageLocation() {
+        return stageLocation;
+    }
+
+    public void setStageLocation(Location stageLocation) {
+        this.stageLocation = stageLocation;
     }
 }

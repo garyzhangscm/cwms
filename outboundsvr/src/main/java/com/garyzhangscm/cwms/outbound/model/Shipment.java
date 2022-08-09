@@ -18,18 +18,16 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonIgnore;
+
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -120,6 +118,8 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
     // order id, used by stop integration
     @Transient
     private Long orderId;
+    @Transient
+    private Order order;
 
     public Shipment() {}
 
@@ -175,7 +175,26 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
     }
 
     public Set<String> getOrderNumbers() {
+        if (Objects.nonNull(getOrder())) {
+            return Collections.singleton(getOrder().getNumber());
+        }
         return getShipmentLines().stream().map(ShipmentLine::getOrderNumber).collect(Collectors.toSet());
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    /**
+     * Right now, we normally have one order for each shipment
+     * @return
+     */
+    public String getOrderNumber() {
+        return getShipmentLines().stream().map(ShipmentLine::getOrderNumber).findFirst().orElse("");
     }
     public String getStopNumber() {
         return Objects.isNull(stop) ? "" : stop.getNumber();
@@ -395,4 +414,6 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
     public void setClient(Client client) {
         this.client = client;
     }
+
+
 }

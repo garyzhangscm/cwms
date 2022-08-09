@@ -47,6 +47,7 @@ public class OrderLineConfirmation implements Serializable {
     private Long inprocessQuantity;
 
     private Long shippedQuantity;
+    private Long orderShippedQuantity;
 
     private Long inventoryStatusId;
     private String inventoryStatusName;
@@ -108,6 +109,51 @@ public class OrderLineConfirmation implements Serializable {
 
     }
 
+    public OrderLineConfirmation(ShipmentLine shipmentLine) {
+        OrderLine orderLine = shipmentLine.getOrderLine();
+
+        this.number = orderLine.getNumber();
+
+        this.itemId = orderLine.getItemId();
+        if (Objects.nonNull(orderLine.getItem())) {
+            this.itemName = orderLine.getItem().getName();
+        }
+
+
+        this.warehouseId = orderLine.getWarehouseId();
+        if (Objects.nonNull(orderLine.getWarehouse())) {
+            this.warehouseName = orderLine.getWarehouse().getName();
+        }
+
+        this.expectedQuantity = orderLine.getExpectedQuantity();
+
+        this.openQuantity = orderLine.getOpenQuantity();
+
+        this.inprocessQuantity = orderLine.getInprocessQuantity();
+
+        this.shippedQuantity = shipmentLine.getShippedQuantity();
+        this.orderShippedQuantity = orderLine.getShippedQuantity();
+
+        this.inventoryStatusId = orderLine.getInventoryStatusId();
+        if (Objects.nonNull(orderLine.getInventoryStatus())) {
+
+            this.inventoryStatusName = orderLine.getInventoryStatus().getName();
+        }
+
+
+        this.carrierId = orderLine.getCarrierId();
+        if (Objects.nonNull(orderLine.getCarrier())) {
+
+            this.carrierName = orderLine.getCarrier().getName();
+        }
+
+        this.carrierServiceLevelId = orderLine.getCarrierServiceLevelId();
+        if (Objects.nonNull(orderLine.getCarrierServiceLevel())) {
+
+            this.carrierServiceLevelName = orderLine.getCarrierServiceLevel().getName();
+        }
+
+    }
 
     @Override
     public String toString() {
@@ -247,5 +293,11 @@ public class OrderLineConfirmation implements Serializable {
         this.carrierServiceLevelName = carrierServiceLevelName;
     }
 
+    public Long getOrderShippedQuantity() {
+        return orderShippedQuantity;
+    }
 
+    public void setOrderShippedQuantity(Long orderShippedQuantity) {
+        this.orderShippedQuantity = orderShippedQuantity;
+    }
 }

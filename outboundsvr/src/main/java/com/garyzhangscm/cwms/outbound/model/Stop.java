@@ -26,7 +26,7 @@ public class Stop  extends AuditibleEntity<String> {
 
     @OneToMany(
             mappedBy = "stop",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<Shipment> shipments = new ArrayList<>();
@@ -36,6 +36,10 @@ public class Stop  extends AuditibleEntity<String> {
 
     @Column(name = "number")
     private String number;
+
+    @Column(name="status")
+    @Enumerated(EnumType.STRING)
+    private StopStatus status;
 
     @Transient
     private Warehouse warehouse;
@@ -115,6 +119,13 @@ public class Stop  extends AuditibleEntity<String> {
 
     }
 
+    public StopStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(StopStatus status) {
+        this.status = status;
+    }
 
     private void setupAddressInformation(List<Shipment> shipments) {
         if (shipments.size() == 0) {

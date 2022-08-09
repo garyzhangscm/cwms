@@ -29,6 +29,7 @@ import com.garyzhangscm.cwms.adminserver.model.tester.TestScenarioSuit;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import com.garyzhangscm.cwms.adminserver.repository.DataInitialRequestRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,78 +169,8 @@ public class DataService {
         // 36. work-task / WORK / 10 / 0 / true
 
 
-        SystemControlledNumber[] systemControlledNumbers = new SystemControlledNumber[]{
-                new SystemControlledNumber(warehouse.getId(), "allocation-transaction-history-group-id",
-                        "ATHG", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "allocation-transaction-history-number",
-                        "ATH", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "bill-of-material",
-                        "BOM", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "billing-request-number",
-                        "BR", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "cancelled-pick-number",
-                        "CPK", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "cartonization-number",
-                        "CTN", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "csr-order-number",
-                        "CSR", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "cycle-count-batch-id",
-                        "CB", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "inventory-activity-transaction-group-id",
-                        "INVACTGRP", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "inventory-activity-transaction-id",
-                        "INVACT", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "invoice-number",
-                        "INVOICE", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "item-sampling-number",
-                        "IS", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "list-pick",
-                        "LPICK", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "location-utilization-snapshot-number",
-                        "LUS", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "lpn",
-                        "L", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "mps-number",
-                        "MPS", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "mrp-number",
-                        "MRP", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "order-activity-number",
-                        "OA", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "order-activity-transaction-group-id",
-                        "OAG", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "order-number",
-                        "ORDER", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "pick-number",
-                        "PICK", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "production-plan",
-                        "PRP", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "qc-inspection-request",
-                        "QCR", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "receipt-number",
-                        "RECPT", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "receiving-lpn-number",
-                        "R1", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "shipment-line-number",
-                        "SL", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "shipment-number",
-                        "SHIP", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "shipping-cartonization-number",
-                        "SCTN", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "stop",
-                        "STP", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "trailer-appointment-number",
-                        "TAP", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "wave-number",
-                        "WAV", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "work-order-lpn-number",
-                        "W1", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "work-order-number",
-                        "WO", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "work-order-qc-sample-number",
-                        "WQC", "", 10, 0, true),
-                new SystemControlledNumber(warehouse.getId(), "work-task",
-                        "WORK", "", 10, 0, true)
-        };
+        SystemControlledNumber[] systemControlledNumbers =
+                getPredefinedSystemControllerNumber(warehouse.getId());
         for (SystemControlledNumber systemControlledNumber : systemControlledNumbers) {
             logger.debug("Start to init system controlled number: {}",
                     systemControlledNumber);
@@ -255,6 +186,81 @@ public class DataService {
         }
 
 
+    }
+
+    public SystemControlledNumber[] getPredefinedSystemControllerNumber(Long warehouseId) {
+        return new SystemControlledNumber[]{
+                new SystemControlledNumber(warehouseId, "allocation-transaction-history-group-id",
+                        "ATHG", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "allocation-transaction-history-number",
+                        "ATH", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "bill-of-material",
+                        "BOM", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "billing-request-number",
+                        "BR", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "cancelled-pick-number",
+                        "CPK", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "cartonization-number",
+                        "CTN", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "csr-order-number",
+                        "CSR", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "cycle-count-batch-id",
+                        "CB", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "inventory-activity-transaction-group-id",
+                        "INVACTGRP", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "inventory-activity-transaction-id",
+                        "INVACT", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "invoice-number",
+                        "INVOICE", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "item-sampling-number",
+                        "IS", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "list-pick",
+                        "LPICK", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "location-utilization-snapshot-number",
+                        "LUS", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "lpn",
+                        "L", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "mps-number",
+                        "MPS", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "mrp-number",
+                        "MRP", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "order-activity-number",
+                        "OA", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "order-activity-transaction-group-id",
+                        "OAG", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "order-number",
+                        "ORDER", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "pick-number",
+                        "PICK", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "production-plan",
+                        "PRP", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "qc-inspection-request",
+                        "QCR", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "receipt-number",
+                        "RECPT", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "receiving-lpn-number",
+                        "R1", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "shipment-line-number",
+                        "SL", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "shipment-number",
+                        "SHIP", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "shipping-cartonization-number",
+                        "SCTN", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "stop",
+                        "STP", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "trailer-appointment-number",
+                        "TAP", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "wave-number",
+                        "WAV", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "work-order-lpn-number",
+                        "W1", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "work-order-number",
+                        "WO", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "work-order-qc-sample-number",
+                        "WQC", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "work-task",
+                        "WORK", "", 10, 0, true)
+        };
     }
 
     private void initiateUser(Company company, String adminUsername) throws JsonProcessingException {
@@ -489,6 +495,55 @@ public class DataService {
      */
     public void exportProductionData(Long companyId){
 
+
+    }
+
+    public void initSystemControllerNumber() {
+        // let's first get all the companies and warehouse defined in the system
+        List<Company> companies = warehouseLayoutServiceRestemplateClient.getAllCompanies();
+        List<Warehouse> warehouses = new ArrayList<>();
+        companies.forEach(
+                company -> {
+                    List<Warehouse> companyWarehouses = warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(
+                            company.getId()
+                    );
+                    warehouses.addAll(companyWarehouses);
+                }
+        );
+        logger.debug("we get {} warehouses out of {} companies",
+                warehouses.size(), companies.size());
+        warehouses.forEach(
+                warehouse -> {
+                    SystemControlledNumber[] systemControlledNumbers =
+                            getPredefinedSystemControllerNumber(warehouse.getId());
+                    for (SystemControlledNumber systemControlledNumber : systemControlledNumbers) {
+                        logger.debug("let's check if the system controller number: {} is defined for warehouse {}",
+                                systemControlledNumber.getVariable(), warehouse.getName());
+                        String nextNumber =
+                                commonServiceRestemplateClient.getNextNumber(warehouse.getId(),
+                                        systemControlledNumber.getVariable()
+                                );
+
+                        logger.debug("system controller number: {} for warehouse {}, value? {}",
+                                systemControlledNumber.getVariable(),
+                                warehouse.getName(), nextNumber);
+                        if (Strings.isBlank(nextNumber)) {
+
+                            logger.debug("ERROR!!! system controller number: {} is NOT defined for warehouse {}",
+                                    systemControlledNumber.getVariable(), warehouse.getName());
+                            try {
+                                        commonServiceRestemplateClient.addSystemControlledNumbers(
+                                                systemControlledNumber
+                                        );
+                            } catch (JsonProcessingException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                    }
+                }
+        );
 
     }
 }

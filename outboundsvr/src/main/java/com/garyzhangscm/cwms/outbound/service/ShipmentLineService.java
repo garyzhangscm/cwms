@@ -124,6 +124,14 @@ public class ShipmentLineService {
         return shipmentLines.stream().distinct().collect(Collectors.toList());
     }
 
+    private void loadAttribute(List<ShipmentLine> shipmentLines) {
+        shipmentLines.stream().forEach(this::loadAttribute);
+    }
+    private void loadAttribute(ShipmentLine shipmentLine) {
+        if (shipmentLine.getOrderLine() != null) {
+            orderLineService.loadOrderLineAttribute(shipmentLine.getOrderLine());
+        }
+    }
     public List<ShipmentLine> findByOrderLine(OrderLine orderLine) {
         return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null);
     }
@@ -208,6 +216,7 @@ public class ShipmentLineService {
         }
 
         // AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine);
+        loadAttribute(shipmentLine);
 
         AllocationResult allocationResult = allocationService.allocate(shipmentLine);
 
@@ -220,6 +229,10 @@ public class ShipmentLineService {
 
         shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() + shipmentLine.getOpenQuantity());
         shipmentLine.setOpenQuantity(0L);
+        // setup the shipment line's destination location based on the pick's staging location
+        for (Pick pick : allocationResult.getPicks()) {
+            shipmentLine.setStageLocationId(pick.getDestinationLocationId());
+        }
 
         orderActivity.setQuantityByNewShipmentLine(shipmentLine);
         orderActivityService.saveOrderActivity(orderActivity);
@@ -337,7 +350,8 @@ public class ShipmentLineService {
     // Complete the shipment line
     public void completeShipmentLine(ShipmentLine shipmentLine) {
         // Move the loaded quantity to shipped quantity
-        Long quantity = shipmentLine.getLoadedQuantity();
+        Long quantity = shipmentLine.getLoadedQuantity() +
+                shipmentLine.getInprocessQuantity();
         shipmentLine.setLoadedQuantity(0L);
         shipmentLine.setShippedQuantity(quantity);
         shipmentLine = save(shipmentLine);

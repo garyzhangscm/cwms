@@ -393,6 +393,16 @@ public class LocationGroupService implements TestDataInitiableService {
             return null;
         }
     }
+    public LocationGroup getShippedInventoryLocationGroup(Long warehouseId) {
+
+        List<LocationGroup> locationGroups = locationGroupRepository.getShippedInventoryLocationGroup(warehouseId);
+        if (locationGroups.size() > 0) {
+            return locationGroups.get(0);
+        }
+        else {
+            return null;
+        }
+    }
 
     public LocationGroup getShippedParcelLocationGroup(Long warehouseId) {
         List<LocationGroup> locationGroups = locationGroupRepository.getShippedParcelLocationGroup(warehouseId);

@@ -64,6 +64,11 @@ public class TrailerAppointmentController {
     public TrailerAppointment completeTrailerAppointment(@PathVariable Long id) {
         return trailerAppointmentService.completeTrailerAppointment(id);
     }
+    @RequestMapping(value="/trailer-appointments/{id}/change-status", method = RequestMethod.POST)
+    public TrailerAppointment changeTrailerAppointmentStatus(@PathVariable Long id,
+                                                             @RequestParam String status) {
+        return trailerAppointmentService.changeTrailerAppointmentStatus(id, status);
+    }
 
 
 

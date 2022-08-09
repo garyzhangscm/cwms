@@ -188,4 +188,10 @@ public class TrailerAppointmentService {
         trailerAppointment.setCompletedTime(LocalDateTime.now());
         return save(trailerAppointment);
     }
+
+    public TrailerAppointment changeTrailerAppointmentStatus(Long id, String status) {
+        TrailerAppointment trailerAppointment = findById(id);
+        trailerAppointment.setStatus(TrailerAppointmentStatus.valueOf(status));
+        return saveOrUpdate(trailerAppointment);
+    }
 }

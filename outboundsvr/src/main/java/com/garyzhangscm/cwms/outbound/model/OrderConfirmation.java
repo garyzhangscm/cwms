@@ -55,6 +55,19 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
         });
     }
 
+    public OrderConfirmation(Shipment shipment){
+        this.number = shipment.getOrderNumber();
+        this.warehouseId = shipment.getWarehouseId();
+        if (Objects.nonNull(shipment.getWarehouse())) {
+            this.warehouseName = shipment.getWarehouse().getName();
+        }
+        shipment.getShipmentLines().forEach(shipmentLine -> {
+            OrderLineConfirmation orderLineConfirmation = new OrderLineConfirmation(shipmentLine);
+            orderLineConfirmation.setOrder(this);
+            addOrderLine(orderLineConfirmation);
+        });
+    }
+
     @Override
     public String toString() {
         try {

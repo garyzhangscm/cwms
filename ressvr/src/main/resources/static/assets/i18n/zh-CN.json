@@ -1816,5 +1816,6 @@
   "totalReceivedQuantity": "已入库总数量",
   "menu.main.outbound.load": "发运计划",
   "date-time-range": "时间范围",
-  "complete-date-time-range": "完成时间范围"
+  "complete-date-time-range": "完成时间范围",
+  "menu.main.outbound.stop": "停靠"
 }
