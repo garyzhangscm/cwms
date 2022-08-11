@@ -88,6 +88,10 @@ public class QuickBookOnlineTokenService  {
 				});
 	}
 
+	public QuickBookOnlineToken getByWarehouseId(Long warehouseId) {
+
+		return quickBookOnlineTokenRepository.findByWarehouseId(warehouseId);
+	}
 	public QuickBookOnlineToken getByRealmId(String realmId) {
 
 		if (quickBookOnlineTokenConcurrentHashMap.contains(realmId)) {
@@ -184,7 +188,7 @@ public class QuickBookOnlineTokenService  {
 		return oauth2Config;
 	}
 
-    public String requestToken(Long companyId,
+    public QuickBookOnlineToken requestToken(Long companyId,
 							   Long warehouseId,
 							   String authCode, String realmId) throws OAuthException {
 		logger.info("authQuickBook with auto code {} , realmId {}",
@@ -222,13 +226,14 @@ public class QuickBookOnlineTokenService  {
 				quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
 				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
 			}
-			saveOrUpdate(quickBookOnlineToken);
-
+			return saveOrUpdate(quickBookOnlineToken);
+/**
 			String jsonString = new JSONObject()
 					.put("access_token", bearerTokenResponse.getAccessToken())
 					.put("refresh_token", bearerTokenResponse.getRefreshToken()).toString();
 
 			return jsonString;
+ **/
 		}
 		catch (OAuthException exception) {
 			exception.printStackTrace();
@@ -236,7 +241,7 @@ public class QuickBookOnlineTokenService  {
 		}
     }
 
-	public String requestRefreshToken(Long companyId,
+	public QuickBookOnlineToken requestRefreshToken(Long companyId,
 									  Long warehouseId,
 									  String realmId) throws OAuthException {
 
@@ -263,12 +268,12 @@ public class QuickBookOnlineTokenService  {
 		quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
 		quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
 		quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
-	    saveOrUpdate(quickBookOnlineToken);
-
+	    return saveOrUpdate(quickBookOnlineToken);
+/*
 		String jsonString = new JSONObject()
 				.put("access_token", bearerTokenResponse.getAccessToken())
 				.put("refresh_token", bearerTokenResponse.getRefreshToken()).toString();
 		return jsonString;
-
+*/
 	}
 }

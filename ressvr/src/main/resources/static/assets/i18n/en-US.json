@@ -1818,5 +1818,12 @@
   "menu.main.outbound.load": "Load",
   "date-time-range": "Date Time Range",
   "complete-date-time-range": "Completed Date Time Range",
-  "menu.main.outbound.stop": "Stop"
+  "menu.main.outbound.stop": "Stop",
+  "menu.main.util.quickbook-config": "Quickbook Configuration",
+  "clientId": "Client ID",
+  "clientSecret": "Client Secret",
+  "webhookVerifierToken": "Webhook Verifier Token",
+  "quickbookOnlineUrl": "Quickbook API URL",
+  "authCode": "Authorization Code",
+  "realmId": "Realm ID"
 }

@@ -63,6 +63,8 @@ public class QuickBookOnlineConfiguration extends AuditibleEntity<String> implem
     @Column(name = "webhook_verifier_token")
     private String webhookVerifierToken;
 
+    @Column(name = "quickbook_online_url")
+    private String quickbookOnlineUrl;
 
     public Long getId() {
         return id;
@@ -126,5 +128,13 @@ public class QuickBookOnlineConfiguration extends AuditibleEntity<String> implem
 
     public void setWebhookVerifierToken(String webhookVerifierToken) {
         this.webhookVerifierToken = webhookVerifierToken;
+    }
+
+    public String getQuickbookOnlineUrl() {
+        return quickbookOnlineUrl;
+    }
+
+    public void setQuickbookOnlineUrl(String quickbookOnlineUrl) {
+        this.quickbookOnlineUrl = quickbookOnlineUrl;
     }
 }
