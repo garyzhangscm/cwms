@@ -1817,5 +1817,12 @@
   "menu.main.outbound.load": "发运计划",
   "date-time-range": "时间范围",
   "complete-date-time-range": "完成时间范围",
-  "menu.main.outbound.stop": "停靠"
+  "menu.main.outbound.stop": "停靠",
+  "menu.main.util.quickbook-config": "Quickbook配置",
+  "clientId": "用户ID",
+  "clientSecret": "用户秘钥",
+  "webhookVerifierToken": "Webhook验证码",
+  "quickbookOnlineUrl": "Quickbook URL",
+  "authCode": "授权码",
+  "realmId": "Realm ID"
 }

@@ -4,6 +4,7 @@ import com.garyzhangscm.cwms.quickbook.controller.QuickBookOnlineTokenController
 import com.garyzhangscm.cwms.quickbook.exception.SystemFatalException;
 import com.garyzhangscm.cwms.quickbook.model.AppConfig;
 import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineToken;
+import com.garyzhangscm.cwms.quickbook.service.QuickBookOnlineConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ public class DataServiceFactory {
 
 	@Autowired
 	AppConfig appConfig;
+	@Autowired
+	private QuickBookOnlineConfigurationService quickBookOnlineConfigurationService;
 	
 	/**
 	 * Initializes DataService for a given app/company profile
@@ -39,9 +42,17 @@ public class DataServiceFactory {
 	public DataService getDataService(QuickBookOnlineToken quickBookOnlineToken) throws FMSException {
 		logger.debug("start to get data service");
 		//set custom config, this should be commented for prod
-		logger.debug("QBO url: {}", appConfig.getQboUrl());
-		Config.setProperty(Config.BASE_URL_QBO, appConfig.getQboUrl());
-		
+		// logger.debug("QBO url: {}", appConfig.getQboUrl());
+		// Config.setProperty(Config.BASE_URL_QBO, appConfig.getQboUrl());
+
+		logger.debug("QBO url: {}", quickBookOnlineConfigurationService.findByWarehouseId(
+				quickBookOnlineToken.getWarehouseId()
+		).getQuickbookOnlineUrl());
+		Config.setProperty(Config.BASE_URL_QBO, quickBookOnlineConfigurationService.findByWarehouseId(
+				quickBookOnlineToken.getWarehouseId()
+		).getQuickbookOnlineUrl());
+
+
 		//create oauth object based on OAuth type
 		IAuthorizer oauth; 
 		if(appConfig.getOAuthType().equals("1")) {

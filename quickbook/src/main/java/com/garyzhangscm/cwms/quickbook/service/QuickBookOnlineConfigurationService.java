@@ -49,6 +49,25 @@ public class QuickBookOnlineConfigurationService {
 		return quickBookOnlineConfigurationRepository.findByWarehouseId(warehouseId);
 	}
 
+	public QuickBookOnlineConfiguration save(QuickBookOnlineConfiguration quickBookOnlineConfiguration) {
 
 
+		return quickBookOnlineConfigurationRepository.save(quickBookOnlineConfiguration);
+	}
+
+	public QuickBookOnlineConfiguration saveOrUpdate(QuickBookOnlineConfiguration quickBookOnlineConfiguration) {
+		if (Objects.isNull(quickBookOnlineConfiguration.getId()) &&
+				Objects.nonNull(findByWarehouseId(quickBookOnlineConfiguration.getWarehouseId()))) {
+			quickBookOnlineConfiguration.setId(
+					findByWarehouseId(quickBookOnlineConfiguration.getWarehouseId()).getId()
+			);
+		}
+		return save(quickBookOnlineConfiguration);
+	}
+
+
+	public QuickBookOnlineConfiguration saveConfiguration(Long companyId, Long warehouseId, QuickBookOnlineConfiguration quickBookOnlineConfiguration) {
+
+		return saveOrUpdate(quickBookOnlineConfiguration);
+    }
 }
