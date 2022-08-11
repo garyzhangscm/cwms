@@ -37,8 +37,9 @@ public class AppConfig {
 
 	public String getQboUrl() {
 
-		return env.getProperty("quickbook.qbo.url");
+		// return env.getProperty("quickbook.qbo.url");
 		// return "https://sandbox-quickbooks.api.intuit.com/v3/company";
+		return "https://quickbooks.api.intuit.com/v3/company";
 	}
 
 	//Flag to determine if app is OAuth1 or 2

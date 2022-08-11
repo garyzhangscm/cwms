@@ -1,8 +1,10 @@
 package com.garyzhangscm.cwms.quickbook.service;
 
+import com.garyzhangscm.cwms.quickbook.controller.WebhooksController;
 import com.garyzhangscm.cwms.quickbook.exception.MissingInformationException;
 import com.garyzhangscm.cwms.quickbook.exception.OAuthFailException;
 import com.garyzhangscm.cwms.quickbook.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineConfiguration;
 import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineToken;
 import com.garyzhangscm.cwms.quickbook.repository.QuickBookOnlineTokenRepository;
 import com.intuit.oauth2.client.OAuth2PlatformClient;
@@ -12,10 +14,10 @@ import com.intuit.oauth2.data.BearerTokenResponse;
 import com.intuit.oauth2.exception.OAuthException;
 import org.apache.logging.log4j.util.Strings;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.intuit.ipp.util.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -30,37 +32,29 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class QuickBookOnlineTokenService  {
-	
-	private static final org.slf4j.Logger logger = Logger.getLogger();
+
+	private static final Logger logger = LoggerFactory.getLogger(QuickBookOnlineTokenService.class);
 	
 	@Autowired
 	private QuickBookOnlineTokenRepository quickBookOnlineTokenRepository;
 
-	OAuth2PlatformClient client;
-	OAuth2Config oauth2Config;
 
 	// key: realmId
 	// concurrent hash map as locks so as to lock the web hook call or query call
 	// when we are updating the token
 	private ConcurrentHashMap<String, QuickBookOnlineToken> quickBookOnlineTokenConcurrentHashMap = new ConcurrentHashMap<>();
 
+	// key: warehouse id
+	// value: OAuth2Config
+	private ConcurrentHashMap<Long, OAuth2Config> oAuth2ConfigConcurrentHashMap = new ConcurrentHashMap<>();
+
+
+	@Autowired
+	private QuickBookOnlineConfigurationService quickBookOnlineConfigurationService;
 	
 	@Autowired
 	private SecurityService securityService;
 
-	private String clientId = "ABDFP7IYKkABCJ3L29pfNGwYfCgHtddfXswzNq3NeTCvQI6Dfz";
-	private String clientSecret = "GjGWB4tqIy490VSUqt4YL9WWRVmrdHKofr0f8uOz";
-
-	@PostConstruct
-	public void init() {
-		// intitialize a single thread executor, this will ensure only one thread processes the queue
-		oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(
-				clientId,
-				clientSecret) //set client id, secret
-				.callDiscoveryAPI(Environment.SANDBOX) // call discovery API to populate urls
-				.buildConfig();
-		client  = new OAuth2PlatformClient(oauth2Config);
-	}
 
 
 	public QuickBookOnlineToken findById(Long id) {
@@ -101,10 +95,13 @@ public class QuickBookOnlineTokenService  {
 		}
 		QuickBookOnlineToken quickBookOnlineToken =
 				quickBookOnlineTokenRepository.findByRealmId(realmId);
-		quickBookOnlineTokenConcurrentHashMap.put(
-				quickBookOnlineToken.getRealmId(),
-				quickBookOnlineToken
-		);
+		if (Objects.nonNull(quickBookOnlineToken)) {
+
+			quickBookOnlineTokenConcurrentHashMap.put(
+					quickBookOnlineToken.getRealmId(),
+					quickBookOnlineToken
+			);
+		}
 		return quickBookOnlineToken;
 		/*
 		try {
@@ -156,11 +153,34 @@ public class QuickBookOnlineTokenService  {
 	}
 
 
-	public OAuth2PlatformClient getOAuth2PlatformClient()  {
-		return client;
+	public OAuth2PlatformClient getOAuth2PlatformClient(Long warehouseId)  {
+
+		return new OAuth2PlatformClient(getOAuth2Config(warehouseId));
 	}
 
-	public OAuth2Config getOAuth2Config()  {
+	public OAuth2Config getOAuth2Config(Long warehouseId)  {
+
+		if (oAuth2ConfigConcurrentHashMap.contains(warehouseId)) {
+			return oAuth2ConfigConcurrentHashMap.get(warehouseId);
+		}
+		QuickBookOnlineConfiguration quickBookOnlineConfiguration =
+				quickBookOnlineConfigurationService.findByWarehouseId(warehouseId);
+		if (Objects.isNull(quickBookOnlineConfiguration)) {
+			throw ResourceNotFoundException.raiseException("quickbook is not setup yet." +
+					"please setup the client id and client secret first");
+		}
+
+		logger.debug("setup oauth2 configuration for warehouse {}, by client id {}, client secret {}",
+				warehouseId,
+				quickBookOnlineConfiguration.getClientId(),
+				quickBookOnlineConfiguration.getClientSecret());
+		OAuth2Config oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(
+				quickBookOnlineConfiguration.getClientId(),
+				quickBookOnlineConfiguration.getClientSecret()) //set client id, secret
+				.callDiscoveryAPI(Environment.PRODUCTION) // call discovery API to populate urls
+				.buildConfig();
+		oAuth2ConfigConcurrentHashMap.put(warehouseId, oauth2Config);
+
 		return oauth2Config;
 	}
 
@@ -169,7 +189,7 @@ public class QuickBookOnlineTokenService  {
 							   String authCode, String realmId) throws OAuthException {
 		logger.info("authQuickBook with auto code {} , realmId {}",
 				authCode, realmId);
-		OAuth2Config oauth2Config = getOAuth2Config();
+		OAuth2Config oauth2Config = getOAuth2Config(warehouseId);
 
 		OAuth2PlatformClient client  = new OAuth2PlatformClient(oauth2Config);
 
@@ -227,7 +247,7 @@ public class QuickBookOnlineTokenService  {
 			throw MissingInformationException.raiseException("Can't find token by realm ID " +
 					realmId + ", please initiate the token first");
 		}
-		OAuth2Config oauth2Config = getOAuth2Config();
+		OAuth2Config oauth2Config = getOAuth2Config(warehouseId);
 
 		OAuth2PlatformClient client  = new OAuth2PlatformClient(oauth2Config);
 

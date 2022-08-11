@@ -33,7 +33,7 @@ import com.intuit.ipp.services.DataService;
 @Service(value="CdcAPI")
 public class CDCService implements QBODataService {
 
-	private static final Logger logger = LoggerFactory.getLogger(QuickBookOnlineTokenController.class);
+	private static final Logger logger = LoggerFactory.getLogger(CDCService.class);
 	
 	@Autowired
     DataServiceFactory dataServiceFactory;

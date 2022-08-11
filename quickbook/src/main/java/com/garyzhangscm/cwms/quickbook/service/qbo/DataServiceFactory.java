@@ -25,7 +25,7 @@ import com.intuit.ipp.util.Config;
 @Service
 public class DataServiceFactory {
 
-	private static final Logger logger = LoggerFactory.getLogger(QuickBookOnlineTokenController.class);
+	private static final Logger logger = LoggerFactory.getLogger(DataServiceFactory.class);
 
 	@Autowired
 	AppConfig appConfig;

@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.quickbook.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.quickbook.WebhookResponseWrapper;
 import com.garyzhangscm.cwms.quickbook.service.SecurityService;
 import com.garyzhangscm.cwms.quickbook.service.queue.QueueService;
@@ -50,7 +51,7 @@ public class WebhooksController {
      * @return
      */
     @RequestMapping(value = "/webhooks", method = RequestMethod.POST)
-    public ResponseEntity<WebhookResponseWrapper> webhooks(@RequestHeader(SIGNATURE) String signature, @RequestBody String payload) {
+    public ResponseEntity<WebhookResponseWrapper> webhooks(@RequestHeader(SIGNATURE) String signature, @RequestBody String payload) throws JsonProcessingException {
 
         logger.debug("start to process webhook");
         logger.debug("signature >> {}", signature);
