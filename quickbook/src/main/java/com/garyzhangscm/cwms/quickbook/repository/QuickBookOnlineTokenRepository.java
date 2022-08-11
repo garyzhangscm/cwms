@@ -11,4 +11,6 @@ import org.springframework.data.repository.CrudRepository;
 public interface QuickBookOnlineTokenRepository extends CrudRepository<QuickBookOnlineToken, Long> , JpaSpecificationExecutor<QuickBookOnlineToken> {
 
 	QuickBookOnlineToken findByRealmId(String realmId);
+
+	QuickBookOnlineToken findByWarehouseId(Long warehouseId);
 }

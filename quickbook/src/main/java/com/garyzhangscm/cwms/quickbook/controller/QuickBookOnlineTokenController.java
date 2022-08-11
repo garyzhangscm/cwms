@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.quickbook.controller;
 
 import com.garyzhangscm.cwms.quickbook.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineToken;
 import com.garyzhangscm.cwms.quickbook.service.QuickBookOnlineTokenService;
 import com.intuit.oauth2.exception.OAuthException;
 import org.slf4j.Logger;
@@ -21,25 +22,32 @@ public class QuickBookOnlineTokenController {
 
 
     @RequestMapping(value="/requestToken", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> requestToken(
+    public QuickBookOnlineToken requestToken(
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
             @RequestParam String authCode,
             @RequestParam String realmId) throws   OAuthException {
 
 
-        return ResponseBodyWrapper.success(quickBookOnlineTokenService.requestToken(
-                companyId, warehouseId, authCode, realmId));
+        return quickBookOnlineTokenService.requestToken(
+                companyId, warehouseId, authCode, realmId);
     }
 
     @RequestMapping(value="/refreshToken", method = RequestMethod.POST)
-    public ResponseBodyWrapper<String> refreshToken(
+    public QuickBookOnlineToken refreshToken(
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
             @RequestParam String realmId) throws OAuthException {
 
-        return ResponseBodyWrapper.success(quickBookOnlineTokenService.requestRefreshToken(
-                companyId, warehouseId, realmId));
+        return quickBookOnlineTokenService.requestRefreshToken(
+                companyId, warehouseId, realmId);
     }
 
+    @RequestMapping(value="/current-token", method = RequestMethod.GET)
+    public QuickBookOnlineToken loadCurrentToken(
+            @RequestParam Long companyId,
+            @RequestParam Long warehouseId) throws OAuthException {
+
+        return quickBookOnlineTokenService.getByWarehouseId(warehouseId);
     }
+}

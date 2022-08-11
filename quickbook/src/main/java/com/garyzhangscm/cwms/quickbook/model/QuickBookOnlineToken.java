@@ -72,7 +72,6 @@ public class QuickBookOnlineToken extends AuditibleEntity<String> implements Ser
 
 
     @Column(name = "last_token_request_time")
-    @CreatedDate
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
