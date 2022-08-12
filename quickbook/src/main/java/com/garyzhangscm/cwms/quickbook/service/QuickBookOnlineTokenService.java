@@ -12,6 +12,7 @@ import com.intuit.oauth2.config.Environment;
 import com.intuit.oauth2.config.OAuth2Config;
 import com.intuit.oauth2.data.BearerTokenResponse;
 import com.intuit.oauth2.exception.OAuthException;
+import com.sun.xml.bind.v2.model.annotation.Quick;
 import org.apache.logging.log4j.util.Strings;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -130,9 +131,9 @@ public class QuickBookOnlineTokenService  {
 
 	public QuickBookOnlineToken saveOrUpdate(QuickBookOnlineToken quickBookOnlineToken) {
 		if (Objects.isNull(quickBookOnlineToken.getId()) &&
-		        Objects.nonNull(getByRealmId(quickBookOnlineToken.getRealmId()))) {
+		        Objects.nonNull(getByWarehouseId(quickBookOnlineToken.getWarehouseId()))) {
 			quickBookOnlineToken.setId(
-					getByRealmId(quickBookOnlineToken.getRealmId()).getId()
+					getByWarehouseId(quickBookOnlineToken.getWarehouseId()).getId()
 			);
 		}
 		return save(quickBookOnlineToken);

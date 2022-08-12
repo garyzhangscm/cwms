@@ -118,6 +118,13 @@ public class DBBasedItemIntegration {
     public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem) {
 
         dbBasedItem.setStatus(IntegrationStatus.PENDING);
+        // in case the description is too long
+        if (Strings.isNotBlank(dbBasedItem.getDescription()) &&
+                dbBasedItem.getDescription().length() > 100) {
+            dbBasedItem.setDescription(
+                    dbBasedItem.getDescription().substring(0, 96) + "..."
+            );
+        }
         dbBasedItem.getItemPackageTypes().forEach(
                 dbBasedItemPackageType -> {
                     dbBasedItemPackageType.setItem(dbBasedItem);
