@@ -2,6 +2,8 @@ package com.garyzhangscm.cwms.quickbook.service;
 
 import com.garyzhangscm.cwms.quickbook.clients.IntegrationServiceRestemplateClient;
 import com.garyzhangscm.cwms.quickbook.model.Item;
+import com.garyzhangscm.cwms.quickbook.model.WMSItemWrapper;
+import com.garyzhangscm.cwms.quickbook.model.WMSPurchaseOrderWrapper;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,8 @@ public class ItemIntegrationService {
 
 
         try {
-            String result = integrationServiceRestemplateClient.sendIntegrationData("item", item);
+            String result = integrationServiceRestemplateClient.sendIntegrationData("item",
+                    new WMSItemWrapper(item));
             logger.debug("# get result " + result);
         }
         catch (Exception ex) {
