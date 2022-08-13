@@ -218,8 +218,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2",
                 "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
                 "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
-                "warehouseId","warehouseName",
-                "companyId","companyCode"
+                "warehouseId","warehouseName"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);

@@ -9,16 +9,16 @@ import java.io.Serializable;
 public class ItemRef implements Serializable {
 
     // item ID
-    private Long value;
+    private String value;
 
     // item name
     private String name;
 
-    public Long getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(Long value) {
+    public void setValue(String value) {
         this.value = value;
     }
 

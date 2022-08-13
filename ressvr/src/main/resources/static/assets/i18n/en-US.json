@@ -1825,5 +1825,9 @@
   "webhookVerifierToken": "Webhook Verifier Token",
   "quickbookOnlineUrl": "Quickbook API URL",
   "authCode": "Authorization Code",
-  "realmId": "Realm ID"
+  "realmId": "Realm ID",
+  "totalLineCount":"Total Line #",
+  "totalItemCount":"Total Item #",
+  "create-receipt": "Create Receipt",
+  "new-receipt-line-quantity": "New Receipt Line Quantity"
 }

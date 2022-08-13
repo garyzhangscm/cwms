@@ -1118,4 +1118,32 @@ public class ReceiptService implements TestDataInitiableService{
         }
         return newReceipt;
     }
+
+    public void removeReceipts(String receiptIds) {
+        // get all the receipts we are try to remove. We may need to
+        // return the quantity back to the purchase order if
+        // the receipt is created from the purchase order
+        Arrays.stream(receiptIds.split(",")).forEach(
+                receiptId -> removeReceipt(Long.parseLong(receiptId))
+        );
+    }
+
+    /**
+     * Remove receipt by id
+     * @param receiptId
+     */
+    public void removeReceipt(Long receiptId) {
+        Receipt receipt  = findById(receiptId);
+        // see if any of the receipt is created from a purchase order line
+        receipt.getReceiptLines().stream().filter(
+                receiptLine -> Objects.nonNull(receiptLine.getPurchaseOrderLine())
+        ).forEach(
+                receiptLine -> purchaseOrderService.removeReceiptQuantity(
+                        receiptLine.getPurchaseOrderLine(), receiptLine.getExpectedQuantity()
+                )
+        );
+
+        delete(receiptId);
+
+    }
 }

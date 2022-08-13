@@ -40,7 +40,9 @@ public class WMSOrderLineWrapper implements Serializable {
     public WMSOrderLineWrapper() {}
     public WMSOrderLineWrapper(InvoiceLine invoiceLine, Long companyId, Long warehouseId) {
         setNumber(String.valueOf(invoiceLine.getLineNum()));
-        setItemName(invoiceLine.getSalesItemLineDetail().getItemRef().getName());
+        // We will use the item's value(which is the item's id in quickbook)
+        // as the item name
+        setItemName(invoiceLine.getSalesItemLineDetail().getItemRef().getValue());
         setWarehouseId(warehouseId);
         setCompanyId(companyId);
         setExpectedQuantity((long) Math.ceil(invoiceLine.getSalesItemLineDetail().getQty()));

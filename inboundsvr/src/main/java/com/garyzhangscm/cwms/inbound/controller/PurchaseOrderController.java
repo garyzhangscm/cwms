@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,13 +67,24 @@ public class PurchaseOrderController {
                                                   @RequestParam Long warehouseId,
                                                   @RequestParam String receiptNumber,
                                                   @RequestParam(name="allowUnexpectedItem", required = false, defaultValue = "false") Boolean allowUnexpectedItem,
-                                                  @RequestBody Map<Long, Long> receiptQuantityMap) {
+                                                  @RequestBody List<CreateReceiptFromPurchaseOrderRequest> createReceiptFromPurchaseOrderRequests) {
         // receiptQuantityMap
         // key: purchase order line id
         // value: receipt line quantity
         logger.debug("createReceiptFromPurchaseOrder with PO id {}, new receipt number {}",
                 id, receiptNumber);
-        logger.debug("receipt lines \n{}", receiptQuantityMap);
+        logger.debug("rcreateReceiptFromPurchaseOrderRequests \n{}", createReceiptFromPurchaseOrderRequests);
+        // convert the receipt quantities list into map so it will be easy and efficient to process
+        Map<Long, Long> receiptQuantityMap = new HashMap<>();
+
+        createReceiptFromPurchaseOrderRequests.stream().filter(
+                createReceiptFromPurchaseOrderRequest -> createReceiptFromPurchaseOrderRequest.getQuantity() > 0
+        ).forEach(
+                createReceiptFromPurchaseOrderRequest ->  receiptQuantityMap.put(
+                        createReceiptFromPurchaseOrderRequest.getPurchaseOrderLineId(),
+                        createReceiptFromPurchaseOrderRequest.getQuantity()
+                )
+        );
         return purchaseOrderService.createReceiptFromPurchaseOrder(id, receiptNumber, allowUnexpectedItem, receiptQuantityMap);
     }
 }

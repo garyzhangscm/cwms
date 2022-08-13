@@ -1824,5 +1824,9 @@
   "webhookVerifierToken": "Webhook验证码",
   "quickbookOnlineUrl": "Quickbook URL",
   "authCode": "授权码",
-  "realmId": "Realm ID"
+  "realmId": "Realm ID",
+  "totalLineCount":"总行数",
+  "totalItemCount":"商品数量（个）",
+  "create-receipt": "创建入库单",
+  "new-receipt-line-quantity": "新入库单数量"
 }

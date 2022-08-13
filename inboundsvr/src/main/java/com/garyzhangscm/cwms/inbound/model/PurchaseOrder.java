@@ -76,7 +76,8 @@ public class PurchaseOrder extends AuditibleEntity{
     private List<PurchaseOrderLine> purchaseOrderLines = new ArrayList<>();
 
     @Column(name = "status")
-    private PurchaseOrderStatus purchaseOrderStatus  = PurchaseOrderStatus.OPEN;
+    @Enumerated(EnumType.STRING)
+    private PurchaseOrderStatus status  = PurchaseOrderStatus.OPEN;
 
 
     public Long getId() {
@@ -151,11 +152,11 @@ public class PurchaseOrder extends AuditibleEntity{
         this.purchaseOrderLines = purchaseOrderLines;
     }
 
-    public PurchaseOrderStatus getPurchaseOrderStatus() {
-        return purchaseOrderStatus;
+    public PurchaseOrderStatus getStatus() {
+        return status;
     }
 
-    public void setPurchaseOrderStatus(PurchaseOrderStatus purchaseOrderStatus) {
-        this.purchaseOrderStatus = purchaseOrderStatus;
+    public void setStatus(PurchaseOrderStatus status) {
+        this.status = status;
     }
 }
