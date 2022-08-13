@@ -100,7 +100,7 @@ public class ReceiptController {
     @BillableEndpoint
     @RequestMapping(value="/receipts", method = RequestMethod.DELETE)
     public void removeReceipts(@RequestParam(name = "receipt_ids", required = false, defaultValue = "") String receiptIds) {
-        receiptService.delete(receiptIds);
+        receiptService.removeReceipts(receiptIds);
     }
 
 

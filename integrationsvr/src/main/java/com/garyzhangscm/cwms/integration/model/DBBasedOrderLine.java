@@ -163,11 +163,9 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         OrderLine orderLine = new OrderLine();
 
         String[] fieldNames = {
-                "number", "itemId",  "expectedQuantity", "openQuantity",
-                "inprocessQuantity", "shippedQuantity", "inventoryStatusId",
+                "number", "itemId",  "expectedQuantity",  "inventoryStatusId",
                 "carrierId", "carrierServiceLevelId",
                 "warehouseId","warehouseName",
-                "companyId","companyCode"
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
@@ -177,7 +175,7 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
             orderLine.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
-                            orderLine.getCompanyId(),
+                            getCompanyId(),
                             orderLine.getWarehouseId(), getItemName()
                     ).getId()
             );

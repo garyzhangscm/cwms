@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.integration.model;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

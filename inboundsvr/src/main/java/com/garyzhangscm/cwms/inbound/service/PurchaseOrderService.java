@@ -243,6 +243,7 @@ public class PurchaseOrderService {
         PurchaseOrder purchaseOrder = findById(id);
 
 
+
         // make sure the parameters pass in is valid
         // key: PO line id
         // value: PO line open quantity
@@ -276,7 +277,7 @@ public class PurchaseOrderService {
                                                         Map<Long, Long> receiptQuantityMap,
                                                         Map<Long, PurchaseOrderLine> matchedPurchaseOrderLineMap) {
 
-        if (purchaseOrder.getPurchaseOrderStatus().equals(PurchaseOrderStatus.CLOSED)) {
+        if (purchaseOrder.getStatus().equals(PurchaseOrderStatus.CLOSED)) {
             throw ReceiptOperationException.raiseException("Can't create from the purchase order " +
                     purchaseOrder.getNumber() + " as it is already closed");
         }
@@ -359,12 +360,26 @@ public class PurchaseOrderService {
         logger.debug("purchase order already exists? {}",
                 Objects.nonNull(existingPurchaseOrder));
         if (Objects.nonNull(existingPurchaseOrder) &&
-                !existingPurchaseOrder.getPurchaseOrderStatus().equals(PurchaseOrderStatus.OPEN)) {
+                !existingPurchaseOrder.getStatus().equals(PurchaseOrderStatus.OPEN)) {
             throw ReceiptOperationException.raiseException("Purchase Order " + existingPurchaseOrder.getNumber() +
                     " already exists and not in OPEN status");
         }
 
         saveOrUpdate(purchaseOrder, false);
         logger.debug("purchase order integration processed!");
+    }
+
+    /**
+     * Remove receipt quantity from the purchase order line. This is normally happens when we cancel a receipt line
+     * @param purchaseOrderLine
+     * @param receiptQuantity
+     */
+    public void removeReceiptQuantity(PurchaseOrderLine purchaseOrderLine, Long receiptQuantity) {
+
+        purchaseOrderLine.setReceiptQuantity(
+                purchaseOrderLine.getReceiptQuantity() - receiptQuantity
+        );
+        purchaseOrderLineRepository.save(purchaseOrderLine);
+
     }
 }

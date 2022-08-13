@@ -40,7 +40,7 @@ public class WMSPurchaseOrderLineWrapper {
     public WMSPurchaseOrderLineWrapper(Long warehouseId, PurchaseOrderLine purchaseOrderLine) {
         setNumber(String.valueOf(purchaseOrderLine.getLineNum()));
         setWarehouseId(warehouseId);
-        setItemName(purchaseOrderLine.getItemBasedExpenseLineDetail().getItemRef().getName());
+        setItemName(purchaseOrderLine.getItemBasedExpenseLineDetail().getItemRef().getValue());
         setExpectedQuantity((long) Math.ceil(purchaseOrderLine.getItemBasedExpenseLineDetail().getQty()));
     }
 
