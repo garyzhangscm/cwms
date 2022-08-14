@@ -164,6 +164,14 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     )
     private List<OrderLine> orderLines = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<OrderDocument> orderDocuments = new ArrayList<>();
+
 
     // staging location group
     @Column(name="stage_location_group_id")
@@ -667,5 +675,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setStageLocation(Location stageLocation) {
         this.stageLocation = stageLocation;
+    }
+
+    public List<OrderDocument> getOrderDocuments() {
+        return orderDocuments;
+    }
+
+    public void setOrderDocuments(List<OrderDocument> orderDocuments) {
+        this.orderDocuments = orderDocuments;
     }
 }

@@ -1828,5 +1828,7 @@
   "totalLineCount":"总行数",
   "totalItemCount":"商品数量（个）",
   "create-receipt": "创建入库单",
-  "new-receipt-line-quantity": "新入库单数量"
+  "new-receipt-line-quantity": "新入库单数量",
+  "upload-document": "上传文档",
+  "order-document": "文档"
 }

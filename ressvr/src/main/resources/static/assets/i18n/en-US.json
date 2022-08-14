@@ -1829,5 +1829,7 @@
   "totalLineCount":"Total Line #",
   "totalItemCount":"Total Item #",
   "create-receipt": "Create Receipt",
-  "new-receipt-line-quantity": "New Receipt Line Quantity"
+  "new-receipt-line-quantity": "New Receipt Line Quantity",
+  "upload-document": "Upload Documents",
+  "order-document": "Order Document"
 }
