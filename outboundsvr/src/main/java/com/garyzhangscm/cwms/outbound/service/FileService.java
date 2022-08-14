@@ -83,4 +83,41 @@ public class FileService {
         MappingIterator<T> mappingIterator = mapper.readerFor(tClass).with(schema).readValues(csvInputStream);
         return mappingIterator.readAll();
     }
+
+    public void removeFile(String folder, String fileName) throws IOException {
+
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
+        String destination = folder  + fileName;
+        File localFile = new File(destination);
+        localFile.deleteOnExit();
+    }
+    public File saveFile(MultipartFile file, String folder, String fileName) throws IOException {
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
+        String destination = folder  + fileName;
+        File localFile = new File(destination);
+
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+        if (!localFile.exists()) {
+            localFile.createNewFile();
+        }
+        file.transferTo(localFile);
+
+        return localFile;
+
+    }
+    public boolean fileExists(String folder, String fileName) {
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
+        String destination = folder  + fileName;
+        File localFile = new File(destination);
+
+        return localFile.exists();
+    }
 }

@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.outbound.security;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
@@ -21,6 +22,8 @@ public class OutboundServerConfiguration extends ResourceServerConfigurerAdapter
                 .antMatchers("/app").permitAll()
                 .antMatchers("/actuator").permitAll()
                 .antMatchers("/probe/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/orders/documents/*/download").permitAll()
+                .antMatchers(HttpMethod.GET, "/orders/*/*/documents/download/**").permitAll()
                 .anyRequest()
                 .authenticated();
     }
