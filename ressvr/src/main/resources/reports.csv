@@ -9,7 +9,7 @@ company,warehouse,type,description,fileName,orientation
 , ,PRODUCTION_LINE_ASSIGNMENT_REPORT,Production Line Assignment Report,ecotech_production_line_assignment_report,PORTRAIT
 , ,PACKING_SLIP,Packing Slip,packing_slip,PORTRAIT
 , ,BILL_OF_LADING,bill_of_lading,bill_of_lading,PORTRAIT
-, ,LPN_LABEL,lpn label,lpn.prn,PORTRAIT
+, ,LPN_LABEL,lpn label,lpn_label.prn,PORTRAIT
 , ,PRODUCTION_LINE_ASSIGNMENT_LABEL,Production Line Assignment Label,ecotech_production_line_assignment_label.prn,PORTRAIT
 , ,RECEIVING_LPN_LABEL,Receiving LPN Label,ecotech_receiving_lpn_label.prn,PORTRAIT
 , ,QC_INSPECTION_REQUEST_REPORT,QC Inspection Request Report,qc_inspection_request_report,PORTRAIT

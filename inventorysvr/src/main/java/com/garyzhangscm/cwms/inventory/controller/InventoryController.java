@@ -428,15 +428,17 @@ public class InventoryController {
 
 
     @BillableEndpoint
-    @RequestMapping(value="/inventories/{warehouseId}/{lpn}/lpn-label/ecotech", method = RequestMethod.POST)
+    @RequestMapping(value="/inventories/{warehouseId}/{lpn}/lpn-label", method = RequestMethod.POST)
     public ReportHistory generateEcotechLPNLabel(
             @PathVariable Long warehouseId,
             @PathVariable String lpn,
-            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity) throws JsonProcessingException {
 
-        logger.debug("start print lpn with warehouse and LPN: {} / {}",
-                warehouseId, lpn);
-        return inventoryService.generateEcotechLPNLabel(warehouseId, lpn, locale);
+        logger.debug("start print lpn with warehouse and LPN: {} / {}, quantity: {}, from printer {}",
+                warehouseId, lpn, quantity, printerName);
+        return inventoryService.generateEcotechLPNLabel(warehouseId, lpn, locale, quantity, printerName);
     }
 
 

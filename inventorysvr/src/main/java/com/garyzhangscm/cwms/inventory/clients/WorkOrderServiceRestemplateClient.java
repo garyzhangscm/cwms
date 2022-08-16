@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.clients;
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,6 +164,29 @@ public class WorkOrderServiceRestemplateClient {
                 HttpMethod.POST,
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public ReportHistory printLPNLabel(Long workOrderId, String lpn, Long quantity, String printerName) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/work-orders/{workOrderId}/pre-print-lpn-label")
+                        .queryParam("lpn", lpn);
+        if (Objects.nonNull(quantity)) {
+            builder = builder.queryParam("quantity", quantity);
+        }
+        if (Strings.isNotBlank(printerName)) {
+            builder = builder.queryParam("printerName", printerName);
+        }
+
+        ResponseBodyWrapper<ReportHistory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(workOrderId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }

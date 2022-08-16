@@ -98,9 +98,9 @@ public class ReceiptService implements TestDataInitiableService{
                                  Long supplierId, String supplierName,
                                  LocalDateTime checkInStartTime,
                                  LocalDateTime checkInEndTime,
-                                 LocalDate checkInDate) {
+                                 LocalDate checkInDate, Long purchaseOrderId) {
         return findAll(warehouseId, number, receiptStatusList, supplierId, supplierName,
-                checkInStartTime, checkInEndTime, checkInDate, true);
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, true);
     }
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
@@ -108,6 +108,7 @@ public class ReceiptService implements TestDataInitiableService{
                                  LocalDateTime checkInStartTime,
                                  LocalDateTime checkInEndTime,
                                  LocalDate checkInDate,
+                                 Long purchaseOrderId,
                                  boolean loadDetails) {
 
 
@@ -171,6 +172,11 @@ public class ReceiptService implements TestDataInitiableService{
                         LocalDateTime dateEndTime = checkInDate.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
                                 root.get("checkInTime"), dateStartTime, dateEndTime));
+
+                    }
+                    if (Objects.nonNull(purchaseOrderId)) {
+                        Join<Receipt, PurchaseOrder> joinPurchaseOrder = root.join("purchaseOrder", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinPurchaseOrder.get("id"), purchaseOrderId));
 
                     }
 
@@ -1064,7 +1070,7 @@ public class ReceiptService implements TestDataInitiableService{
                             " to get the receipt count for the supplier");
         }
         return findAll(warehouseId, null, null, supplierId,
-                supplierName, null, null, null, false).size();
+                supplierName, null, null, null, null, false).size();
     }
 
     /**

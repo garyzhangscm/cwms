@@ -53,9 +53,10 @@ public class ReceiptController {
                                          @RequestParam(name = "check_in_start_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkInStartTime,
                                          @RequestParam(name = "check_in_end_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime checkInEndTime,
                                          @RequestParam(name = "check_in_date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
+                                         @RequestParam(name = "purchaseOrderId", required = false, defaultValue = "") Long purchaseOrderId,
                                          @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
         return receiptService.findAll(warehouseId, number, receiptStatusList, supplierId,
-                supplierName, checkInStartTime, checkInEndTime, checkInDate, loadDetails);
+                supplierName, checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, loadDetails);
     }
 
 

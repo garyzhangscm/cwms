@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 /**
@@ -2406,9 +2407,103 @@ public class InventoryService implements TestDataInitiableService{
         return Objects.isNull(inventories) || inventories.size() == 0 ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
 
-    public ReportHistory generateEcotechLPNLabel(Long warehouseId, String lpn, String locale) throws JsonProcessingException {
-        List<Inventory> inventories = findByLpn(warehouseId, lpn);
+    /**
+     * Generate LPN Label. Based on where the LPN comes from, we may generate LPN label for
+     * 1. work order
+     * 2. receipt
+     * 3. LPN without work order and receipt
+     * @param warehouseId
+     * @param lpn
+     * @param locale
+     * @return
+     * @throws JsonProcessingException
+     */
+    public ReportHistory generateEcotechLPNLabel(Long warehouseId, String lpn, String locale,
+                                                 Long quantity, String printerName) throws JsonProcessingException {
+        // see if we can find work order or receipt form the LPN
+        // if we can only find one work order, or receipt from it, then we will call
+        // the correspodent service to print the LPN label.
+        // otherwise, if the LPN is mixed of work order and/or receipt and/or null, then we will print
+        // an plain LPN label
 
+        List<Inventory> inventories = findByLpn(warehouseId, lpn);
+        Set<Long> workOrderIds = new HashSet<>();
+        Set<Long> receiptLineIds = new HashSet<>();
+        boolean notFromWorkOrderReceipt = false;
+        boolean mixedSource = false;
+        for (Inventory inventory : inventories) {
+            if (Objects.isNull(inventory.getReceiptLineId()) && Objects.isNull(inventory.getWorkOrderId())) {
+                notFromWorkOrderReceipt = true;
+            }
+            else if (Objects.nonNull(inventory.getReceiptLineId()) && Objects.isNull(inventory.getWorkOrderId())) {
+                receiptLineIds.add(inventory.getReceiptLineId());
+            }
+            else if (Objects.isNull(inventory.getReceiptLineId()) && Objects.nonNull(inventory.getWorkOrderId())) {
+                workOrderIds.add(inventory.getWorkOrderId());
+            }
+            else {
+                // if we are here, it means the inventory has both receipt line and work order id set
+                // which should never be the case
+                mixedSource = true;
+            }
+        }
+        if (mixedSource) {
+            return generateLPNLabel(warehouseId, lpn, inventories, locale);
+        }
+        if (workOrderIds.size() > 1 || receiptLineIds.size() > 1) {
+            // the LPN is mixed with differetn work order or receipt line
+            return generateLPNLabel(warehouseId, lpn, inventories, locale);
+        }
+        if (notFromWorkOrderReceipt) {
+            // the LPN has inventory record that not from work order nor
+            // receipt line. No matter whether there's other inventory
+            // record in the same LPN has record from work order / receipt line
+            // we will print plain LPN Label
+            return generateLPNLabel(warehouseId, lpn, inventories, locale);
+        }
+        // if we are here, we know the LPN is either from work order, or from
+        // receipt, or both
+        if (workOrderIds.size() > 0 && receiptLineIds.size() > 0) {
+            // the LPN is mixed with inventory from work order and reciept
+            return generateLPNLabel(warehouseId, lpn, inventories, locale);
+        }
+        else if (workOrderIds.size() > 0 ) {
+
+            Long workOrderId = workOrderIds.iterator().next();
+            logger.debug("start to print work order LPN by work order id {} for LPN {}",
+                    workOrderId, lpn);
+            return workOrderServiceRestemplateClient.printLPNLabel(
+                    workOrderId, lpn, quantity, printerName
+            );
+
+        }
+        else if (receiptLineIds.size() > 0){
+
+            Long receiptLineId = receiptLineIds.iterator().next();
+            logger.debug("start to print receipt LPN by receipt line id {} for LPN {}",
+                    receiptLineId, lpn);
+            return inboundServiceRestemplateClient.printLPNLabel(
+                    receiptLineId, lpn, quantity, printerName
+            );
+
+        }
+        else {
+            // we should not be here.
+            // the LPN is from work order or receipt
+            // but both work order id set and receipt line set is empty
+            // so we don't know where the LPN comes from
+            throw InventoryException.raiseException("Can't print LPN label for " +  lpn + ", " +
+                    "We don't know whether the LPN comes from receiving or work order production," +
+                    " or none of them");
+        }
+
+
+
+    }
+    public ReportHistory generateLPNLabel(Long warehouseId, String lpn,
+                                          List<Inventory> inventories, String locale) throws JsonProcessingException {
+
+        /***
         // setup parameters
         // TO-DO:
         // For now we have specific design for ecotech only
@@ -2458,13 +2553,30 @@ public class InventoryService implements TestDataInitiableService{
 
         logger.debug("will find a printer by : \n{}, ",
                 reportData);
-        // we will print from the printer that assigned to the
-        // inventory's location group or location
-        // if not configured, then we will print the default printer
+         **/
+        // we will print one label per Item with its current quantity in the LPN
+        // key: item id
+        // value: item
+        Map<Long, Item> itemMap = new HashMap<>();
+        // key: item id
+        // value: quantity
+        Map<Long, Long> itemQuantityMap = new HashMap<>();
+
+        for (Inventory inventory : inventories) {
+            Long itemId = inventory.getItem().getId();
+            itemMap.putIfAbsent(itemId, inventory.getItem());
+            Long quantity = itemQuantityMap.getOrDefault(itemId, 0L);
+            itemQuantityMap.put(itemId, quantity + inventory.getQuantity());
+        }
+
+        Report reportData = new Report();
+        setupPrePrintLPNLabelData(
+                reportData, lpn, itemMap, itemQuantityMap, 1
+        );
 
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.LPN_REPORT, reportData, locale
+                        warehouseId, ReportType.LPN_LABEL, reportData, locale
                 );
 
 
@@ -2472,11 +2584,44 @@ public class InventoryService implements TestDataInitiableService{
         return reportHistory;
     }
 
-    private void setupLPNReportData(Report reportData, Collection<LpnReportData> lpnReportDataList) {
+    private void setupPrePrintLPNLabelData(Report reportData,
+                                           String lpn,
+                                           Map<Long, Item> itemMap,
+                                           Map<Long, Long> itemQuantityMap,
+                                           Integer copies) {
 
+        List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+        for (Map.Entry<Long, Item> itemEntries : itemMap.entrySet()) {
+            Long itemId = itemEntries.getKey();
+            Item item = itemEntries.getValue();
+            Long quantity = itemQuantityMap.getOrDefault(itemId, 0L);
 
-        reportData.setData(lpnReportDataList);
+            Map<String, Object> lpnLabelContent =   getLPNLabelContent(
+                    lpn, item, quantity
+            );
+            for (int i = 0; i < copies; i++) {
+                lpnLabelContents.add(lpnLabelContent);
+            }
+        }
+
+        reportData.setData(lpnLabelContents);
+
     }
+
+    private Map<String, Object> getLPNLabelContent(String lpn, Item item, Long quantity) {
+
+        Map<String, Object> lpnLabelContent = new HashMap<>();
+
+        lpnLabelContent.put("lpn", lpn);
+        lpnLabelContent.put("item_family", Objects.nonNull(item.getItemFamily()) ?
+                item.getItemFamily().getDescription() : "");
+        lpnLabelContent.put("item_name", item.getName());
+        lpnLabelContent.put("quantity", quantity);
+
+        return lpnLabelContent;
+
+    }
+
 
     public void validateLPN(Long warehouseId, String lpn, boolean newInventory) {
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
