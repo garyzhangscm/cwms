@@ -860,6 +860,21 @@ public class ItemService implements TestDataInitiableService{
                     }
                 }
         );
+
+
+        // we are not allow to change those information through integration yet
+        String[] fieldNames = {
+                "name",
+                "clientId","trackingVolumeFlag",
+                "trackingLotNumberFlag",
+                "trackingManufactureDateFlag","shelfLifeDays",
+                "trackingExpirationDateFlag", "warehouseId",
+                "companyId", "allowCartonization", "allowAllocationByLPN",
+                "allocationRoundUpStrategyType", "allocationRoundUpStrategyValue",
+                "imageUrl", "thumbnailUrl", "activeFlag"
+        };
+
+        ObjectCopyUtil.copyValue(existingItem, item,  fieldNames);
     }
 
     /**

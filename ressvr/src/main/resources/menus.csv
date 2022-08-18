@@ -26,7 +26,8 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Inventory Snapshot",menu.main.inventory.snapshot,/inventory/snapshot,15,Main-Menu-Inventory,Inventory-Snapshot,,true,false
 "Inventory Sampling",menu.main.inventory.item-sampling,/inventory/item-sampling,16,Main-Menu-Inventory,Inventory-ItemSampling,,true,false
 "Location Utilization Snapshot",menu.main.inventory.location-util,/inventory/location-utilization-snapshot,17,Main-Menu-Inventory,Location-Utilization-Snapshot,,true,false
-"Lock",menu.main.inventory.lock,/inventory/lock,18,Main-Menu-Inventory,Inventory-Lock,,true,false
+"Inventory Status",menu.main.inventory.status,/inventory/status,18,Main-Menu-Inventory,Inventory-Status,,true,false
+"Lock",menu.main.inventory.lock,/inventory/lock,19,Main-Menu-Inventory,Inventory-Lock,,true,false
 "QC Rule Maintenance",menu.main.qc.qc-rule,/qc/rules,1,Main-Menu-QC,QC-Rule,,true,false
 "QC Rule Configuration",menu.main.qc.qc-rule-configuration,/qc/rules/configuration,2,Main-Menu-QC,QC-Rule-Configuration,,true,false
 "QC Configuration",menu.main.qc.qc-configuration,/qc/configuration,2,Main-Menu-QC,QC-Configuration,,true,false

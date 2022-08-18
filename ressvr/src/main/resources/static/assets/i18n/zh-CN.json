@@ -1830,5 +1830,7 @@
   "create-receipt": "创建入库单",
   "new-receipt-line-quantity": "新入库单数量",
   "upload-document": "上传文档",
-  "order-document": "文档"
+  "order-document": "文档",
+  "menu.main.inventory.status": "库存状态",
+  "availableStatusFlag": "默认可用状态"
 }

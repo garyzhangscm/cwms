@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
 import com.garyzhangscm.cwms.inventory.model.InventoryStatus;
@@ -37,28 +38,42 @@ public class InventoryStatusController {
 
     @RequestMapping(value="/inventory-statuses", method = RequestMethod.GET)
     public List<InventoryStatus> findAllInventoryStatuses(@RequestParam Long warehouseId,
-                                                          @RequestParam(name="name", required = false, defaultValue = "") String name) {
-        return inventoryStatusService.findAll(warehouseId, name);
+                                                          @RequestParam(name="name", required = false, defaultValue = "") String name,
+                                                          @RequestParam(name="availableStatusFlag", required = false, defaultValue = "") Boolean availableStatusFlag) {
+        return inventoryStatusService.findAll(warehouseId, name, availableStatusFlag);
     }
 
     @RequestMapping(value="/inventory-status/{id}", method = RequestMethod.GET)
+    public InventoryStatus getInventoryStatus(@PathVariable Long id) {
+        return inventoryStatusService.findById(id);
+    }
+    @RequestMapping(value="/inventory-statuses/{id}", method = RequestMethod.GET)
     public InventoryStatus findInventoryStatus(@PathVariable Long id) {
         return inventoryStatusService.findById(id);
     }
+    @RequestMapping(value="/inventory-statuses/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeInventoryStatus(@PathVariable Long id,
+                                                             @RequestParam Long warehouseId) {
+        InventoryStatus inventoryStatus =
+                inventoryStatusService.removeInventoryStatus(warehouseId, id);
+        return ResponseBodyWrapper.success("Inventory Status " + inventoryStatus.getName() +
+                " is removed!");
+    }
 
-    @RequestMapping(value="/inventory-status", method = RequestMethod.PUT)
+    @RequestMapping(value="/inventory-statuses", method = RequestMethod.PUT)
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),
                     @CacheEvict(cacheNames = "outbound_inventoryStatus", allEntries = true),
             }
     )
-    public InventoryStatus createInventoryStatus(@RequestBody InventoryStatus inventoryStatus) {
-        return inventoryStatusService.save(inventoryStatus);
+    public InventoryStatus createInventoryStatus(@RequestParam Long warehouseId,
+                                                 @RequestBody InventoryStatus inventoryStatus) {
+        return inventoryStatusService.createInventoryStatus(inventoryStatus);
     }
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.POST, value="/inventory-status/{id}")
+    @RequestMapping(method=RequestMethod.POST, value="/inventory-statuses/{id}")
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),
@@ -66,17 +81,18 @@ public class InventoryStatusController {
             }
     )
     public InventoryStatus changeInventoryStatus(@PathVariable long id,
-                                       @RequestBody InventoryStatus inventoryStatus) {
+                                                 @RequestParam Long warehouseId,
+                                                 @RequestBody InventoryStatus inventoryStatus) {
         if (inventoryStatus.getId() != null && inventoryStatus.getId() != id) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; inventoryStatus.getId(): " + inventoryStatus.getId());
         }
-        return inventoryStatusService.save(inventoryStatus);
+        return inventoryStatusService.changeInventoryStatus(inventoryStatus);
     }
 
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.DELETE, value="/inventory-status")
+    @RequestMapping(method=RequestMethod.DELETE, value="/inventory-statuses")
     public void removeInventoryStatuses(@RequestParam(name = "inventory-status-ids", required = false, defaultValue = "") String inventoryStatusIds) {
         inventoryStatusService.delete(inventoryStatusIds);
     }
