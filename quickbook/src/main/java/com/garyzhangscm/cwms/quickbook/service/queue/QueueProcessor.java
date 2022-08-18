@@ -1,9 +1,14 @@
 package com.garyzhangscm.cwms.quickbook.service.queue;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineToken;
+import com.garyzhangscm.cwms.quickbook.model.QuickBookWebhookHistory;
+import com.garyzhangscm.cwms.quickbook.model.WebhookStatus;
 import com.garyzhangscm.cwms.quickbook.service.QuickBookOnlineTokenService;
+import com.garyzhangscm.cwms.quickbook.service.QuickBookWebhookHistoryService;
 import com.garyzhangscm.cwms.quickbook.service.qbo.QBODataService;
 import com.garyzhangscm.cwms.quickbook.service.qbo.WebhooksServiceFactory;
 import org.slf4j.LoggerFactory;
@@ -41,6 +46,8 @@ public class QueueProcessor implements Callable<Object> {
 	
 	@Autowired
 	private QuickBookOnlineTokenService quickBookOnlineTokenService;
+	@Autowired
+	private QuickBookWebhookHistoryService quickBookWebhookHistoryService;
 	
 	@Autowired
 	WebhooksServiceFactory webhooksServiceFactory;
@@ -59,22 +66,58 @@ public class QueueProcessor implements Callable<Object> {
 			
 			// create webhooks service
 			WebhooksService service = webhooksServiceFactory.getWebhooksService();
-			
+
+
+			// get the webhook history so we will update it later on
+			QuickBookWebhookHistory quickBookWebhookHistory =
+					quickBookWebhookHistoryService.findPendingWebhookRequest(payload);
+			// we will get the realmId from the notification and then get
+			// the warehouse id and company Id from the realmid. We will then save
+			// the 3 ids along with the webhook
+			Long warehouseId = null;
+			Long companyId = null;
+			String realmId = "";
 			//Convert payload to obj
 			WebhooksEvent event = service.getWebhooksEvent(payload);
-			for (EventNotification eventNotification : event.getEventNotifications()) {
+			try {
 
-				// get the company config
-				QuickBookOnlineToken quickBookOnlineToken
-						= quickBookOnlineTokenService.getByRealmId(eventNotification.getRealmId());
+				for (EventNotification eventNotification : event.getEventNotifications()) {
 
-				// perform cdc with last updated timestamp and subscribed entities
-				String cdcTimestamp = DateUtils.getStringFromDateTime(DateUtils.getCurrentDateTime());
-				cdcService.callDataService(eventNotification, quickBookOnlineToken);
+					// get the company config
+					QuickBookOnlineToken quickBookOnlineToken
+							= quickBookOnlineTokenService.getByRealmId(eventNotification.getRealmId());
+					warehouseId = quickBookOnlineToken.getWarehouseId();
+					companyId = quickBookOnlineToken.getCompanyId();
+					realmId = quickBookOnlineToken.getRealmId();
 
-				// update cdcTimestamp in companyconfig
-				quickBookOnlineToken.setLastCDCCallTime(cdcTimestamp);
-				quickBookOnlineTokenService.save(quickBookOnlineToken);
+					// perform cdc with last updated timestamp and subscribed entities
+					String cdcTimestamp = DateUtils.getStringFromDateTime(DateUtils.getCurrentDateTime());
+					cdcService.callDataService(eventNotification, quickBookOnlineToken);
+
+					// update cdcTimestamp in companyconfig
+					quickBookOnlineToken.setLastCDCCallTime(cdcTimestamp);
+					quickBookOnlineTokenService.save(quickBookOnlineToken);
+				}
+				quickBookWebhookHistory.setCompanyId(companyId);
+				quickBookWebhookHistory.setWarehouseId(warehouseId);
+				quickBookWebhookHistory.setRealmId(realmId);
+				quickBookWebhookHistory.setStatus(WebhookStatus.COMPLETE);
+				quickBookWebhookHistory.setErrorMessage("");
+				quickBookWebhookHistory.setProcessedTime(LocalDateTime.now());
+
+				quickBookWebhookHistoryService.save(quickBookWebhookHistory);
+
+			}
+			catch (Exception ex) {
+				ex.printStackTrace();
+				quickBookWebhookHistory.setCompanyId(companyId);
+				quickBookWebhookHistory.setWarehouseId(warehouseId);
+				quickBookWebhookHistory.setRealmId(realmId);
+				quickBookWebhookHistory.setStatus(WebhookStatus.ERROR);
+				quickBookWebhookHistory.setErrorMessage(ex.getMessage());
+				quickBookWebhookHistory.setProcessedTime(LocalDateTime.now());
+
+				quickBookWebhookHistoryService.save(quickBookWebhookHistory);
 			}
 
 		}
