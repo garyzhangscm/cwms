@@ -1831,5 +1831,7 @@
   "create-receipt": "Create Receipt",
   "new-receipt-line-quantity": "New Receipt Line Quantity",
   "upload-document": "Upload Documents",
-  "order-document": "Order Document"
+  "order-document": "Order Document",
+  "menu.main.inventory.status": "Inventory Status",
+  "availableStatusFlag": "Available Status Flag"
 }

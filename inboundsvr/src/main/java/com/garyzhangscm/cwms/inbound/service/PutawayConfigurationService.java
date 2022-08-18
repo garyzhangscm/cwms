@@ -448,11 +448,14 @@ public class PutawayConfigurationService implements TestDataInitiableService{
         }
 
         if (putawayConfiguration.getItemFamilyId() != null &&
-                inventory.getItem().getItemFamily().getId() != putawayConfiguration.getItemFamilyId()) {
+                (Objects.isNull(inventory.getItem().getItemFamily()) ||
+                inventory.getItem().getItemFamily().getId() != putawayConfiguration.getItemFamilyId())) {
 
             logger.debug("Step 1.2 >> fail as the item family doesn't match.");
             logger.debug(">>>>>>>>>>> putawayConfiguration.getItemFamilyId(): {} / inventory.getItem().getItemFamily().getId(): {}",
-                    putawayConfiguration.getItemFamilyId(), inventory.getItem().getItemFamily().getId());
+                    putawayConfiguration.getItemFamilyId(),
+                    Objects.isNull(inventory.getItem().getItemFamily()) ?
+                             "N/A" : inventory.getItem().getItemFamily().getId());
             return false;
         }
 

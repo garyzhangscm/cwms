@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryStatusRepository;
@@ -44,6 +45,8 @@ public class InventoryStatusService implements TestDataInitiableService{
     private InventoryStatusRepository inventoryStatusRepository;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private InventoryService inventoryService;
 
     @Autowired
     private FileService fileService;
@@ -57,7 +60,8 @@ public class InventoryStatusService implements TestDataInitiableService{
     }
 
 
-    public List<InventoryStatus> findAll(Long warehouseId, String name) {
+    public List<InventoryStatus> findAll(Long warehouseId, String name,
+                                         Boolean availableStatusFlag) {
 
         return inventoryStatusRepository.findAll(
                 (Root<InventoryStatus> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -66,8 +70,19 @@ public class InventoryStatusService implements TestDataInitiableService{
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(name)) {
-                        predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                        if (name.contains("%")) {
 
+                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                        }
+
+                    }
+                    if (Objects.nonNull(availableStatusFlag)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("availableStatusFlag"), availableStatusFlag));
                     }
 
 
@@ -96,8 +111,26 @@ public class InventoryStatusService implements TestDataInitiableService{
                     inventoryStatus.getName());
             inventoryStatus.setId(findByName(inventoryStatus.getWarehouseId(), inventoryStatus.getName()).getId());
         }
-        return save(inventoryStatus);
+        InventoryStatus newInventoryStatus = save(inventoryStatus);
+        if (Boolean.TRUE.equals(newInventoryStatus.getAvailableStatusFlag())) {
+            resetAvailableStatus(newInventoryStatus);
+        }
+        return newInventoryStatus;
     }
+
+    /**
+     * Every time we add a new inventory status or change the inventory status and mark it
+     * as the defaual available status, we will make sure it is the only one available status
+     *  defined for the warehouse
+     * @param newInventoryStatus
+     */
+    private void resetAvailableStatus(InventoryStatus newInventoryStatus) {
+        if (Boolean.TRUE.equals(newInventoryStatus.getAvailableStatusFlag())) {
+            inventoryStatusRepository.resetAvailableStatus(
+                    newInventoryStatus.getWarehouseId(), newInventoryStatus.getId());
+        }
+    }
+
     public void delete(InventoryStatus inventoryStatus) {
         inventoryStatusRepository.delete(inventoryStatus);
     }
@@ -166,8 +199,39 @@ public class InventoryStatusService implements TestDataInitiableService{
     }
 
     public Optional<InventoryStatus> getAvailableInventoryStatus(Long warehouseId) {
-        return findAll(warehouseId, null).stream().filter(
-                inventoryStatus -> Boolean.TRUE.equals(inventoryStatus.getAvailableStatusFlag())
-        ).findFirst();
+        return findAll(warehouseId, null, true).stream().findFirst();
+    }
+
+    public InventoryStatus removeInventoryStatus(Long warehouseId, Long id) {
+        InventoryStatus inventoryStatus = findById(id);
+        validateInventoryStatusForRemove(warehouseId, inventoryStatus);
+        delete(id);
+        return inventoryStatus;
+    }
+
+    private void validateInventoryStatusForRemove(Long warehouseId, InventoryStatus inventoryStatus) {
+        // we are allowed to remove the inventory status only when there's no one is using the status
+        if (Boolean.TRUE.equals(inventoryStatus.getAvailableStatusFlag()) ) {
+            throw InventoryException.raiseException("Can't remove the inventory status " + inventoryStatus.getName() +
+                    " as it is the default available status");
+        }
+        if (!inventoryService.findAll(warehouseId,
+                null, null, null, null,
+                null, null, inventoryStatus.getId(), null,
+                null, null, null, null,
+                null, null, null, null,
+                null, null, null, null,false, null).isEmpty()) {
+            throw InventoryException.raiseException("Can't remove the inventory status " + inventoryStatus.getName() +
+                    " as there's existing inventory");
+        }
+
+    }
+
+    public InventoryStatus createInventoryStatus(InventoryStatus inventoryStatus) {
+        return saveOrUpdate(inventoryStatus);
+    }
+
+    public InventoryStatus changeInventoryStatus(InventoryStatus inventoryStatus) {
+        return saveOrUpdate(inventoryStatus);
     }
 }

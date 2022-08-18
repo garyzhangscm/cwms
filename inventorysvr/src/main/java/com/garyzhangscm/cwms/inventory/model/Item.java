@@ -74,16 +74,16 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     private boolean trackingVolumeFlag = true;
 
     @Column(name="tracking_lot_number_flag")
-    private boolean trackingLotNumberFlag = true;
+    private boolean trackingLotNumberFlag = false;
 
     @Column(name="tracking_manufacture_date_flag")
-    private boolean trackingManufactureDateFlag = true;
+    private boolean trackingManufactureDateFlag = false;
 
     @Column(name="shelf_life_days")
     private Integer shelfLifeDays = 0;
 
     @Column(name="tracking_expiration_date_flag")
-    private boolean trackingExpirationDateFlag = true;
+    private boolean trackingExpirationDateFlag = false;
 
 
 

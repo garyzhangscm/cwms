@@ -21,9 +21,19 @@ package com.garyzhangscm.cwms.inventory.repository;
 import com.garyzhangscm.cwms.inventory.model.InventoryStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface InventoryStatusRepository extends JpaRepository<InventoryStatus, Long>, JpaSpecificationExecutor<InventoryStatus> {
     InventoryStatus findByWarehouseIdAndName(Long warehouseId, String name);
+
+    @Transactional
+    @Modifying
+    @Query(value = "update inventory_status set available_status_flag = false where inventory_status_id != :id and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void resetAvailableStatus(Long warehouseId, Long id);
 }
