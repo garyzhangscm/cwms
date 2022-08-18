@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.quickbook.model;
 
+import org.apache.logging.log4j.util.Strings;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,8 @@ public class WMSItemWrapper implements Serializable {
     private Long companyId;
     private String companyCode;
 
+    private String itemFamilyName;
+
 
     public WMSItemWrapper() {}
 
@@ -55,6 +59,14 @@ public class WMSItemWrapper implements Serializable {
         setWarehouseId(item.getWarehouseId());
         setName(String.valueOf(item.getId()));
         setDescription(item.getDescription());
+        if (Objects.nonNull(item.getParentRef()) &&
+                Strings.isNotBlank(item.getParentRef().getName())) {
+            // we will use the item's parent item as its item family
+            // which is category in quickbook
+            setItemFamilyName(
+                    item.getParentRef().getName()
+            );
+        }
 
     }
 
@@ -128,5 +140,13 @@ public class WMSItemWrapper implements Serializable {
 
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
+    }
+
+    public String getItemFamilyName() {
+        return itemFamilyName;
+    }
+
+    public void setItemFamilyName(String itemFamilyName) {
+        this.itemFamilyName = itemFamilyName;
     }
 }

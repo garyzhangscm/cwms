@@ -21,6 +21,8 @@ public class Item implements Serializable {
     private Long warehouseId;
     private Long companyId;
 
+    private ItemRef parentRef;
+
     @Override
     public String toString() {
         try {
@@ -93,5 +95,13 @@ public class Item implements Serializable {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public ItemRef getParentRef() {
+        return parentRef;
+    }
+
+    public void setParentRef(ItemRef parentRef) {
+        this.parentRef = parentRef;
     }
 }

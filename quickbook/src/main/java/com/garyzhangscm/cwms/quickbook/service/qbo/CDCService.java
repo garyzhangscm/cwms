@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.quickbook.service.qbo;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +44,8 @@ public class CDCService implements QBODataService {
 
 	@Autowired
 	private ItemIntegrationService itemIntegrationService;
+	@Autowired
+	private QuickBookOnlineTokenService quickBookOnlineTokenService;
 
 	@Autowired
 	private VendorIntegrationService vendorIntegrationService;
@@ -104,6 +107,55 @@ public class CDCService implements QBODataService {
 			logger.error("Error while calling CDC" , ex.getCause());
 		}
 		
+	}
+
+	/**
+	 * Sync full set of certain entity from quickbook into wms
+	 * only suggest for go live use, not for daily use
+	 * @param warehouseId
+	 * @param entityName
+	 */
+	public int syncEntity(Long warehouseId, String entityName, int syncTransactionDays) {
+
+		// see how many entity we processed
+		int affectEntityNumber = 0;
+		// get the company config
+		QuickBookOnlineToken quickBookOnlineToken
+				= quickBookOnlineTokenService.getByWarehouseId(warehouseId);
+		try {
+			DataService service = dataServiceFactory.getDataService(quickBookOnlineToken);
+
+			String intuitQuery = getSyncEntityQuery(entityName, syncTransactionDays);
+			logger.debug("start to get the entity of type " + entityName + " by query \n {}", intuitQuery);
+
+			QueryResult queryResult = service.executeQuery(intuitQuery);
+			affectEntityNumber = queryResult.getEntities().size();
+
+			processCDCQueryResults(EntityChangeOperation.Create,
+					entityName,
+					queryResult, quickBookOnlineToken.getCompanyId(),
+					quickBookOnlineToken.getWarehouseId());
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			logger.error("Error while calling CDC to sync entity " + entityName , ex.getCause());
+		}
+		logger.debug("We get {} number of entity {} from quickbook ", entityName);
+		return affectEntityNumber;
+	}
+	private String getSyncEntityQuery(String entityName, int syncTransactionDays) {
+
+		String intuitQuery = "SELECT * FROM " + entityName;
+
+		// if this is a transactional data, we will only download the data
+		// if it is changed in the past certain days
+		if (entityName.equalsIgnoreCase("Invoice") ||
+				entityName.equalsIgnoreCase("PurchaseOrder")) {
+
+			intuitQuery += " where MetaData.CreateTime >= '" + LocalDateTime.now().minusDays(syncTransactionDays) + "'";
+		}
+
+		return intuitQuery;
 	}
 
 	private void processCDCQueryResults(EntityChangeOperation operation, String type, QueryResult queryResult,
