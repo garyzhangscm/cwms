@@ -447,10 +447,20 @@ public class QCInspectionRequestService {
 
     private InventoryStatus getInventoryStatusForQCPass(Long warehouseId) {
 
-        return qcConfigurationService.getQCConfiguration(warehouseId).getQcPassInventoryStatus();
+        QCConfiguration qcConfiguration  = qcConfigurationService.getQCConfiguration(warehouseId);
+        if (Objects.isNull(qcConfiguration)) {
+            throw ResourceNotFoundException.raiseException("QC configuration is not found " +
+                    " for pass inventory status of warehouse " + warehouseId);
+        }
+        return qcConfiguration.getQcPassInventoryStatus();
     }
     private InventoryStatus getInventoryStatusForQCFail(Long warehouseId) {
-        return qcConfigurationService.getQCConfiguration(warehouseId).getQcFailInventoryStatus();
+        QCConfiguration qcConfiguration  = qcConfigurationService.getQCConfiguration(warehouseId);
+        if (Objects.isNull(qcConfiguration)) {
+            throw ResourceNotFoundException.raiseException("QC configuration is not found " +
+                    " for fail inventory status of warehouse " + warehouseId);
+        }
+        return qcConfiguration.getQcFailInventoryStatus();
 
     }
 
