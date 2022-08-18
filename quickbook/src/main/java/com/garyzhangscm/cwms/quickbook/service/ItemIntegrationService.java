@@ -2,8 +2,13 @@ package com.garyzhangscm.cwms.quickbook.service;
 
 import com.garyzhangscm.cwms.quickbook.clients.IntegrationServiceRestemplateClient;
 import com.garyzhangscm.cwms.quickbook.model.Item;
+import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineToken;
 import com.garyzhangscm.cwms.quickbook.model.WMSItemWrapper;
 import com.garyzhangscm.cwms.quickbook.model.WMSPurchaseOrderWrapper;
+import com.garyzhangscm.cwms.quickbook.service.qbo.CDCService;
+import com.garyzhangscm.cwms.quickbook.service.qbo.DataServiceFactory;
+import com.intuit.ipp.services.DataService;
+import com.intuit.ipp.services.QueryResult;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +59,5 @@ public class ItemIntegrationService {
 
         }
     }
-
 
 }
