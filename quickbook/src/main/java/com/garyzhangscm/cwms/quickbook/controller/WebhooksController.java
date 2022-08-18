@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.quickbook.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.quickbook.WebhookResponseWrapper;
 import com.garyzhangscm.cwms.quickbook.service.SecurityService;
+import com.garyzhangscm.cwms.quickbook.service.WebhookService;
 import com.garyzhangscm.cwms.quickbook.service.queue.QueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +34,8 @@ public class WebhooksController {
     private static final String ERROR = "Error";
 
     @Autowired
-    SecurityService securityService;
+    private WebhookService webhookService;
 
-    @Autowired
-    private QueueService queueService;
 
     /**
      * Method to receive webhooks event notification
@@ -56,30 +55,15 @@ public class WebhooksController {
         logger.debug("start to process webhook");
         logger.debug("signature >> {}", signature);
         logger.debug("payload >> {}", payload);
-        // if signature is empty return 401
-        if (!StringUtils.hasText(signature)) {
+        boolean result = webhookService.processWebhook(signature, payload);
+        if (result) {
+
+            return new ResponseEntity<>(new WebhookResponseWrapper(SUCCESS), HttpStatus.OK);
+        }
+        else {
             return new ResponseEntity<>(new WebhookResponseWrapper(ERROR), HttpStatus.FORBIDDEN);
+
         }
-
-        // if payload is empty, don't do anything
-        if (!StringUtils.hasText(payload)) {
-            new ResponseEntity<>(new WebhookResponseWrapper(SUCCESS), HttpStatus.OK);
-        }
-
-        logger.debug("start to verify the web hook request");
-
-        //if request valid - push to queue
-        if (securityService.isRequestValid(signature, payload)) {
-            logger.debug("webhook request passed validation, push payload to queue");
-            // add the payload to the queue
-            // QueueProcessor will dequeue the message and process
-            queueService.add(payload);
-        } else {
-            return new ResponseEntity<>(new WebhookResponseWrapper(ERROR), HttpStatus.FORBIDDEN);
-        }
-
-        logger.info("response sent ");
-        return new ResponseEntity<>(new WebhookResponseWrapper(SUCCESS), HttpStatus.OK);
     }
 
 }

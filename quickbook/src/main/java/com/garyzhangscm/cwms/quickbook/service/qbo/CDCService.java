@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +12,7 @@ import com.garyzhangscm.cwms.quickbook.clients.IntegrationServiceRestemplateClie
 import com.garyzhangscm.cwms.quickbook.controller.QuickBookOnlineTokenController;
 import com.garyzhangscm.cwms.quickbook.model.*;
 import com.garyzhangscm.cwms.quickbook.service.*;
+import com.intuit.ipp.data.Entity;
 import com.intuit.ipp.data.EventNotification;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.services.CDCQueryResult;
@@ -64,48 +66,24 @@ public class CDCService implements QBODataService {
 		logger.info("Calling CDC from CDCService");
 		// create data service
 		DataService service = dataServiceFactory.getDataService(quickBookOnlineToken);
-			
-		try {
-			eventNotification.getDataChangeEvent().getEntities().stream().filter(
-					entity -> isRegistered(entity.getName())
-			).forEach(
-					changedEntity -> {
 
 
-						String intuitQuery = "SELECT * FROM " + changedEntity.getName() + " where id = '"  + changedEntity.getId() + "'";
-						logger.debug("start to get the entity of type " + changedEntity.getName()
-								+ " by query \n {}", intuitQuery);
+			List<Entity> entities =
+					eventNotification.getDataChangeEvent().getEntities().stream().filter(
+							entity -> isRegistered(entity.getName())
+					).collect(Collectors.toList());
+			for (Entity changedEntity : entities) {
+				String intuitQuery = "SELECT * FROM " + changedEntity.getName() + " where id = '"  + changedEntity.getId() + "'";
+				logger.debug("start to get the entity of type " + changedEntity.getName()
+						+ " by query \n {}", intuitQuery);
 
-						try {
-							QueryResult queryResult = service.executeQuery(intuitQuery);
+					QueryResult queryResult = service.executeQuery(intuitQuery);
 
-							processCDCQueryResults(EntityChangeOperation.valueOf(changedEntity.getOperation()),
-									changedEntity.getName(),
-									queryResult, quickBookOnlineToken.getCompanyId(),
-									quickBookOnlineToken.getWarehouseId());
-						} catch (FMSException e) {
-							e.printStackTrace();
-						}
-					}
-			);
-/*
-
-			// build entity list for cdc based on entities subscribed for webhooks
-			List<String> subscribedEntities = Arrays.asList(getWebhooksSubscribedEntites().split(","));
-			List<IEntity> entities = new ArrayList<>();
-			for (String subscribedEntity : subscribedEntities) {
-				Class<?> className = Class.forName("com.intuit.ipp.data." + subscribedEntity);
-				IEntity entity = (IEntity) className.newInstance();
-				entities.add(entity);
+					processCDCQueryResults(EntityChangeOperation.valueOf(changedEntity.getOperation()),
+							changedEntity.getName(),
+							queryResult, quickBookOnlineToken.getCompanyId(),
+							quickBookOnlineToken.getWarehouseId());
 			}
-
-			List<CDCQueryResult> cdcQueryResults = service.executeCDCQuery(entities, quickBookOnlineToken.getLastCDCCallTime());
- */
-			
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			logger.error("Error while calling CDC" , ex.getCause());
-		}
 		
 	}
 
