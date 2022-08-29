@@ -74,11 +74,24 @@ public class QuickBookWebhookHistoryService {
 	}
 
 	public QuickBookWebhookHistory addNewWebhookRequest(String signature, String payload) {
+		return addNewWebhookRequest(
+				signature, payload, WebhookStatus.PENDING
+		);
+
+	}
+	public QuickBookWebhookHistory addNewWebhookRequest(String signature, String payload, WebhookStatus status) {
+		return addNewWebhookRequest(
+				signature, payload, status, ""
+		);
+
+	}
+	public QuickBookWebhookHistory addNewWebhookRequest(String signature, String payload,
+														WebhookStatus status,
+														String errorMessage) {
 		QuickBookWebhookHistory quickBookWebhookHistory = new QuickBookWebhookHistory(
-				signature, payload
+				signature, payload, status, errorMessage
 		);
 		return save(quickBookWebhookHistory);
-
 
 	}
 	public QuickBookWebhookHistory findPendingWebhookRequest(String signature, String payload) {

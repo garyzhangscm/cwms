@@ -1832,5 +1832,11 @@
   "upload-document": "上传文档",
   "order-document": "文档",
   "menu.main.inventory.status": "库存状态",
-  "availableStatusFlag": "默认可用状态"
+  "availableStatusFlag": "默认可用状态",
+  "steps.work-order.maintenance.info": "工单",
+  "steps.work-order.maintenance.line": "工单行",
+  "steps.work-order.maintenance.work-instruction": "工作指引",
+  "steps.work-order.maintenance.by-product": "副产品",
+  "page.work-order.new": "新建工单",
+  "expectedQuantity.new": "新预期数量"
 }

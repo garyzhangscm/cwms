@@ -60,7 +60,7 @@ public class WorkOrderController {
     @BillableEndpoint
     @RequestMapping(value="/work-orders", method = RequestMethod.POST)
     public WorkOrder addWorkOrder(@RequestBody WorkOrder workOrder) {
-        return workOrderService.save(workOrder);
+        return workOrderService.addWorkOrder(workOrder);
     }
 
 

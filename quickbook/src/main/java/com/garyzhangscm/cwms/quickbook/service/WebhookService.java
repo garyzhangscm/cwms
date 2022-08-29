@@ -9,6 +9,7 @@ import com.garyzhangscm.cwms.quickbook.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineConfiguration;
 import com.garyzhangscm.cwms.quickbook.model.QuickBookOnlineToken;
 import com.garyzhangscm.cwms.quickbook.model.QuickBookWebhookHistory;
+import com.garyzhangscm.cwms.quickbook.model.WebhookStatus;
 import com.garyzhangscm.cwms.quickbook.repository.QuickBookOnlineTokenRepository;
 import com.garyzhangscm.cwms.quickbook.service.queue.QueueService;
 import com.intuit.ipp.util.StringUtils;
@@ -70,6 +71,8 @@ public class WebhookService {
 			quickBookWebhookHistoryService.addNewWebhookRequest(signature, payload);
 
 		} else {
+			quickBookWebhookHistoryService.addNewWebhookRequest(signature, payload,
+					WebhookStatus.ERROR, "Payload is not valid according to the signature");
 			return false;
 		}
 

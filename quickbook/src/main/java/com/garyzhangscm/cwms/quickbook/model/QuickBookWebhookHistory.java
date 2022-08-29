@@ -79,9 +79,17 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
     public QuickBookWebhookHistory() {}
 
     public QuickBookWebhookHistory(String signature, String payload) {
+        this(signature, payload, WebhookStatus.PENDING);
+    }
+    public QuickBookWebhookHistory(String signature, String payload, WebhookStatus status) {
+        this(signature, payload, status, "");
+    }
+    public QuickBookWebhookHistory(String signature, String payload, WebhookStatus status,
+                                   String errorMessage) {
         this.signature = signature;
         this.payload = payload;
-        this.status = WebhookStatus.PENDING;
+        this.status = status;
+        this.errorMessage = errorMessage;
     }
 
 
