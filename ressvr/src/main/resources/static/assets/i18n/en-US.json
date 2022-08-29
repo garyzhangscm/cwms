@@ -1833,5 +1833,11 @@
   "upload-document": "Upload Documents",
   "order-document": "Order Document",
   "menu.main.inventory.status": "Inventory Status",
-  "availableStatusFlag": "Available Status Flag"
+  "availableStatusFlag": "Available Status Flag",
+  "steps.work-order.maintenance.info": "Work Order",
+  "steps.work-order.maintenance.line": "Work Order Line",
+  "steps.work-order.maintenance.work-instruction": "Work Instruction",
+  "steps.work-order.maintenance.by-product": "By Product",
+  "page.work-order.new": "Create Work Order",
+  "expectedQuantity.new": "New Expected Quantity"
 }

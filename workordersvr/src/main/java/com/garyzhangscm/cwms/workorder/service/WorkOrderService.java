@@ -1937,4 +1937,64 @@ public class WorkOrderService implements TestDataInitiableService {
         return saveOrUpdate(workOrder);
 
     }
+
+    public WorkOrder addWorkOrder(WorkOrder workOrder) {
+        // init work order
+        if (workOrder.getExpectedQuantity() <= 0) {
+            throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
+                    " 's quantity can't be less than 0");
+        }
+        workOrder.setProducedQuantity(0L);
+        workOrder.setStatus(WorkOrderStatus.PENDING);
+
+        WorkOrder savedWorkOrder = saveOrUpdate(workOrder, false);
+
+        // init work order line
+        for (WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
+
+            if (workOrderLine.getExpectedQuantity() <= 0) {
+
+                throw WorkOrderException.raiseException("work order line" + workOrderLine.getNumber() +
+                        " 's quantity can't be less than 0");
+            }
+            workOrderLine.setWorkOrder(savedWorkOrder);
+
+            workOrderLine.setOpenQuantity(workOrderLine.getExpectedQuantity());
+            workOrderLine.setInprocessQuantity(0L);
+            workOrderLine.setDeliveredQuantity(0L);
+            workOrderLine.setConsumedQuantity(0L);
+            //TO-DO: Default to FIFO for now
+            workOrderLine.setAllocationStrategyType(AllocationStrategyType.FIRST_IN_FIRST_OUT);
+            workOrderLineService.saveOrUpdate(workOrderLine, false);
+        }
+
+        // init work order instruction
+        workOrder.getWorkOrderInstructions().forEach(
+                workOrderInstruction -> {
+
+                    workOrderInstruction.setWorkOrder(savedWorkOrder);
+                    workOrderInstructionService.saveOrUpdate(workOrderInstruction);
+                }
+        );
+
+        // init work order by product
+        for (WorkOrderByProduct workOrderByProduct : workOrder.getWorkOrderByProducts()) {
+
+            if (workOrderByProduct.getExpectedQuantity() <= 0) {
+
+                throw WorkOrderException.raiseException("work order by product " +
+                        (Objects.isNull(workOrderByProduct.getItem()) ?
+                            workOrderByProduct.getItemId().toString() :
+                            workOrderByProduct.getItem().getName())
+                                +
+                        " 's quantity can't be less than 0");
+            }
+            workOrderByProduct.setWorkOrder(savedWorkOrder);
+
+            workOrderByProduct.setProducedQuantity(0L);
+            workOrderByProductService.save(workOrderByProduct);
+        }
+
+        return findById(savedWorkOrder.getId(), false);
+    }
 }
