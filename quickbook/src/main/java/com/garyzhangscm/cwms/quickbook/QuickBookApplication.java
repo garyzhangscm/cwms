@@ -17,6 +17,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -42,7 +43,7 @@ import java.util.Arrays;
 @RefreshScope
 @EnableResourceServer
 @EnableCaching
-@EnableJpaAuditing
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class QuickBookApplication {
 
 	private static final Logger logger = LoggerFactory.getLogger(QuickBookApplication.class);
@@ -109,5 +110,15 @@ public class QuickBookApplication {
 				.entryTtl(Duration.ofMinutes(5))
 				.disableCachingNullValues()
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+	}
+	/**
+	 * Class to implement the JPA audit. Auto generate the
+	 * created by and last modified by username for any
+	 * database entity
+	 * @return
+	 */
+	@Bean
+	public AuditorAware<String> auditorAware(){
+		return new AuditorAwareImpl();
 	}
 }
