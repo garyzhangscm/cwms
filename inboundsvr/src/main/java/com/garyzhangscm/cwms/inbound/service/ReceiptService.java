@@ -769,7 +769,10 @@ public class ReceiptService implements TestDataInitiableService{
         return generatePrePrintLPNDocument(reportType, receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
     }
 
-    public ReportHistory generatePrePrintLPNDocument(ReportType reportType, ReceiptLine receiptLine, String lpnNumber, Long lpnQuantity, String locale,
+    public ReportHistory generatePrePrintLPNDocument(ReportType reportType,
+                                                     ReceiptLine receiptLine,
+                                                     String lpnNumber,
+                                                     Long lpnQuantity, String locale,
                                                   String printerName)
             throws JsonProcessingException {
         Long warehouseId = receiptLine.getWarehouseId();

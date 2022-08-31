@@ -1838,5 +1838,7 @@
   "steps.work-order.maintenance.work-instruction": "工作指引",
   "steps.work-order.maintenance.by-product": "副产品",
   "page.work-order.new": "新建工单",
-  "expectedQuantity.new": "新预期数量"
+  "expectedQuantity.new": "新预期数量",
+  "menu.main.util.rf-configuration": "扫描枪配置",
+  "workOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货"
 }

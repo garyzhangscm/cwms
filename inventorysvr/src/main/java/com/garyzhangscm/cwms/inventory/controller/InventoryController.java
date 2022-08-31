@@ -429,7 +429,7 @@ public class InventoryController {
 
     @BillableEndpoint
     @RequestMapping(value="/inventories/{warehouseId}/{lpn}/lpn-label", method = RequestMethod.POST)
-    public ReportHistory generateEcotechLPNLabel(
+    public ReportHistory generateLPNLabel(
             @PathVariable Long warehouseId,
             @PathVariable String lpn,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
@@ -438,7 +438,7 @@ public class InventoryController {
 
         logger.debug("start print lpn with warehouse and LPN: {} / {}, quantity: {}, from printer {}",
                 warehouseId, lpn, quantity, printerName);
-        return inventoryService.generateEcotechLPNLabel(warehouseId, lpn, locale, quantity, printerName);
+        return inventoryService.generateLPNLabel(warehouseId, lpn, locale, quantity, printerName);
     }
 
 

@@ -606,7 +606,8 @@ public class ReportService implements TestDataInitiableService{
      * @return
      */
     private String processLabel(String labelTemplate, Report report) {
-         if (report.getData().size() == 0) {
+         if (Objects.isNull(report.getData()) ||
+                 report.getData().size() == 0) {
              logger.debug("Will get the label content out of parameters");
              return processLabel(labelTemplate, report.getParameters());
          }
