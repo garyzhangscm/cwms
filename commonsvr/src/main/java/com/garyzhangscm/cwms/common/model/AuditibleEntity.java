@@ -31,7 +31,7 @@ public class AuditibleEntity<U> {
 
     @Column(name = "created_by")
     @CreatedBy
-    private String createdBy;
+    private U createdBy;
 
     @Column(name = "last_modified_time")
     @LastModifiedDate
@@ -42,7 +42,7 @@ public class AuditibleEntity<U> {
 
     @Column(name = "last_modified_by")
     @LastModifiedBy
-    private String lastModifiedBy;
+    private U lastModifiedBy;
 
     @Override
     public String toString() {
@@ -54,6 +54,7 @@ public class AuditibleEntity<U> {
         return null;
     }
 
+
     public LocalDateTime getCreatedTime() {
         return createdTime;
     }
@@ -62,11 +63,11 @@ public class AuditibleEntity<U> {
         this.createdTime = createdTime;
     }
 
-    public String getCreatedBy() {
+    public U getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public void setCreatedBy(U createdBy) {
         this.createdBy = createdBy;
     }
 
@@ -78,11 +79,11 @@ public class AuditibleEntity<U> {
         this.lastModifiedTime = lastModifiedTime;
     }
 
-    public String getLastModifiedBy() {
+    public U getLastModifiedBy() {
         return lastModifiedBy;
     }
 
-    public void setLastModifiedBy(String lastModifiedBy) {
+    public void setLastModifiedBy(U lastModifiedBy) {
         this.lastModifiedBy = lastModifiedBy;
     }
 }

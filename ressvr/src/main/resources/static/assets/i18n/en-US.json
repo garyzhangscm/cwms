@@ -1839,5 +1839,7 @@
   "steps.work-order.maintenance.work-instruction": "Work Instruction",
   "steps.work-order.maintenance.by-product": "By Product",
   "page.work-order.new": "Create Work Order",
-  "expectedQuantity.new": "New Expected Quantity"
+  "expectedQuantity.new": "New Expected Quantity",
+  "menu.main.util.rf-configuration": "RF Configuration",
+  "workOrderValidatePartialLPNPick": "Validate Partial LPN During Pick"
 }

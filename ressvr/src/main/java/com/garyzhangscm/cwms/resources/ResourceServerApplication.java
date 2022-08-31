@@ -20,6 +20,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -50,7 +51,7 @@ import java.util.*;
 // @EnableEurekaClient
 @EnableResourceServer
 @EnableOAuth2Client
-@EnableJpaAuditing
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableScheduling
 public class ResourceServerApplication {
 
@@ -137,4 +138,15 @@ public class ResourceServerApplication {
 		return mailSender;
 	}
 	**/
+
+	/**
+	 * Class to implement the JPA audit. Auto generate the
+	 * created by and last modified by username for any
+	 * database entity
+	 * @return
+	 */
+	@Bean
+	public AuditorAware<String> auditorAware(){
+		return new AuditorAwareImpl();
+	}
 }

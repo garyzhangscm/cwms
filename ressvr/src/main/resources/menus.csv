@@ -83,14 +83,15 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "System Configuration",menu.main.util.system-config,/util/system-configuration,5,Main-Menu-Util,Util-SystemConfiguration,,true,true
 "RF",menu.main.util.rf,/util/rf,6,Main-Menu-Util,Util-RF,,true,false
 "RF App Version",menu.main.util.rf-app-version,/util/rf-app-version,7,Main-Menu-Util,Util-RFAppVersion,,true,true
-"System Controlled Number",menu.main.util.sys-controlled-num,/util/system-controlled-number,8,Main-Menu-Util,Util-SysControlledNum,,true,false
-"Data Initial",menu.main.util.data-initial,/util/data-init,9,Main-Menu-Util,Util-DataInitial,,true,true
-"Billable Request",menu.main.util.billable-request,/util/billable-request,10,Main-Menu-Util,Util-BillableRequest,,true,false
-"Company",menu.main.util.company,/util/company,11,Main-Menu-Util,Util-Company,,true,true
-"Menu",menu.main.util.menu,/util/menu,12,Main-Menu-Util,Util-Menu,,true,true
-"Data Transfer",menu.main.util.data-transfer,/util/data-transfer,13,Main-Menu-Util,Util-DataTransfer,,true,true
-"QuickBook Auth",menu.main.util.quickbook-auth,/util/quickbook-auth,14,Main-Menu-Util,Util-QuickBookAuth,,true,true
-"QuickBook Configuration",menu.main.util.quickbook-config,/util/quickbook/configuration,15,Main-Menu-Util,Util-QuickbookConfig,,true,true
+"RF Configuration",menu.main.util.rf-configuration,/util/rf-configuration,8,Main-Menu-Util,Util-RFConfiguration,,true,false
+"System Controlled Number",menu.main.util.sys-controlled-num,/util/system-controlled-number,9,Main-Menu-Util,Util-SysControlledNum,,true,false
+"Data Initial",menu.main.util.data-initial,/util/data-init,10,Main-Menu-Util,Util-DataInitial,,true,true
+"Billable Request",menu.main.util.billable-request,/util/billable-request,11,Main-Menu-Util,Util-BillableRequest,,true,false
+"Company",menu.main.util.company,/util/company,12,Main-Menu-Util,Util-Company,,true,true
+"Menu",menu.main.util.menu,/util/menu,13,Main-Menu-Util,Util-Menu,,true,true
+"Data Transfer",menu.main.util.data-transfer,/util/data-transfer,14,Main-Menu-Util,Util-DataTransfer,,true,true
+"QuickBook Auth",menu.main.util.quickbook-auth,/util/quickbook-auth,15,Main-Menu-Util,Util-QuickBookAuth,,true,true
+"QuickBook Configuration",menu.main.util.quickbook-config,/util/quickbook/configuration,16,Main-Menu-Util,Util-QuickbookConfig,,true,true
 "Alert",menu.main.alert.alert,/alert/alert,1,Main-Menu-Alert,Alert-Alert,,true,true
 "Alert Configuration",menu.main.alert.config,/alert/configuration,2,Main-Menu-Alert,Alert-Config,,true,true
 "Alert Subscription",menu.main.alert.subscription,/alert/subscription,3,Main-Menu-Alert,Alert-Subscription,,true,false

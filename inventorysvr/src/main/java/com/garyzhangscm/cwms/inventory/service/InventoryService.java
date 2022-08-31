@@ -2418,7 +2418,7 @@ public class InventoryService implements TestDataInitiableService{
      * @return
      * @throws JsonProcessingException
      */
-    public ReportHistory generateEcotechLPNLabel(Long warehouseId, String lpn, String locale,
+    public ReportHistory generateLPNLabel(Long warehouseId, String lpn, String locale,
                                                  Long quantity, String printerName) throws JsonProcessingException {
         // see if we can find work order or receipt form the LPN
         // if we can only find one work order, or receipt from it, then we will call
