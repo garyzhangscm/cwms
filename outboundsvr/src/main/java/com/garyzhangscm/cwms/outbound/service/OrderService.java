@@ -575,7 +575,7 @@ public class OrderService implements TestDataInitiableService {
                 order.getNumber());
 
         // When we directly allocate the order, we will
-        // 1. create a fake wave / shipment for the order
+        // 1. create a fake shipment for the order
         // 2. allocate the shipment
         shipmentService.planShipments(order.getWarehouseId(), order.getOrderLines());
 

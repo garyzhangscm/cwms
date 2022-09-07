@@ -1841,5 +1841,7 @@
   "page.work-order.new": "Create Work Order",
   "expectedQuantity.new": "New Expected Quantity",
   "menu.main.util.rf-configuration": "RF Configuration",
-  "workOrderValidatePartialLPNPick": "Validate Partial LPN During Pick"
+  "workOrderValidatePartialLPNPick": "Validate Partial LPN During Pick",
+  "pickToProductionLineInStage": "Pick to Production Line In Stage",
+  "receiveToStage": "Receive To Stage"
 }

@@ -22,8 +22,11 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
 import com.garyzhangscm.cwms.outbound.service.WaveService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -32,8 +35,12 @@ public class WaveController {
     WaveService waveService;
 
     @RequestMapping(value="/waves", method = RequestMethod.GET)
-    public List<Wave> findAllWaves(@RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return waveService.findAll(number);
+    public List<Wave> findAllWaves(@RequestParam Long warehouseId,
+                                   @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                   @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
+                                   @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+                                   @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return waveService.findAll(warehouseId, number, startTime, endTime, date);
     }
     @RequestMapping(value="/waves/candidate", method = RequestMethod.GET)
     public List<Order> findWaveCandidate(@RequestParam Long warehouseId,

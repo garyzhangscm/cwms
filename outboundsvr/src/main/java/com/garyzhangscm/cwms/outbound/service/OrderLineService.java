@@ -196,14 +196,19 @@ public class OrderLineService implements TestDataInitiableService{
                     List<Predicate> predicates = new ArrayList<Predicate>();
                     // the open quantity needs to be greater than 0 so we can plan a wave on this order line
                     predicates.add(criteriaBuilder.greaterThan(root.get("openQuantity"), 0L));
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
+
+                    // only return the order status that is not complete
+                    predicates.add(criteriaBuilder.notEqual(joinOrder.get("status"),
+                            OrderStatus.COMPLETE));
 
                     if (!StringUtils.isBlank(orderNumber)) {
-                        Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinOrder.get("name"), orderNumber));
 
                     }
                     if (!StringUtils.isBlank(customerName)) {
-                        Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
                         Customer customer = commonServiceRestemplateClient.getCustomerByName(null, warehouseId,
                                 customerName);
                         predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), customer.getId()));
@@ -217,7 +222,9 @@ public class OrderLineService implements TestDataInitiableService{
         if (wavableOrderLine.size() > 0) {
             loadOrderLineAttribute(wavableOrderLine);
         }
-        return wavableOrderLine;
+        return wavableOrderLine.stream().filter(
+                orderLine -> orderLine.getOrder().getCategory().isWaveable()
+        ).collect(Collectors.toList());
     }
 
     public OrderLine save(OrderLine orderLine) {

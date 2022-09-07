@@ -44,9 +44,26 @@ public class RFConfiguration extends AuditibleEntity<String>  {
     @Column(name = "rf_code")
     private String rfCode;
 
-    // work order - manual pick
+    // work order - manual pick, whether
+    // check the partial LPN if whole LPN is too much
+    // for the current pick
     @Column(name = "work_order_validate_partial_lpn_pick")
-    private Boolean workOrderValidatePartialLPNPick;
+    private Boolean workOrderValidatePartialLPNPick = false;
+
+    // work order
+    // whether pick directly to the production line, or
+    // pick to the RF then ask the user to drop to the stage
+    @Column(name = "work_order_pick_to_production_line_in_stage")
+    private Boolean pickToProductionLineInStage = false;
+
+
+    // receiving
+    // whether receive directly to the receive stage, or
+    // pick to the RF then ask the user to drop to somewhere
+    // Note, if this is enabled, it will choose the first location
+    // from the location groups that marked as receiving stage
+    @Column(name = "receiving_receive_to_stage")
+    private Boolean receiveToStage = false;
 
     public Long getId() {
         return id;
@@ -78,5 +95,21 @@ public class RFConfiguration extends AuditibleEntity<String>  {
 
     public void setWorkOrderValidatePartialLPNPick(Boolean workOrderValidatePartialLPNPick) {
         this.workOrderValidatePartialLPNPick = workOrderValidatePartialLPNPick;
+    }
+
+    public Boolean getPickToProductionLineInStage() {
+        return pickToProductionLineInStage;
+    }
+
+    public void setPickToProductionLineInStage(Boolean pickToProductionLineInStage) {
+        this.pickToProductionLineInStage = pickToProductionLineInStage;
+    }
+
+    public Boolean getReceiveToStage() {
+        return receiveToStage;
+    }
+
+    public void setReceiveToStage(Boolean receiveToStage) {
+        this.receiveToStage = receiveToStage;
     }
 }
