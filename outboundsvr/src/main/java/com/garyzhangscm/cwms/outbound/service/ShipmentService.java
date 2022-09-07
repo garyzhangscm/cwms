@@ -282,6 +282,10 @@ public class ShipmentService {
         return shipments;
     }
     @Transactional
+    public Shipment planShipments(String shipmentNumber, List<OrderLine> orderLines){
+        return planShipments(null, shipmentNumber, orderLines);
+    }
+    @Transactional
     public Shipment planShipments(Wave wave, String shipmentNumber, List<OrderLine> orderLines){
 
         // Let's split the list of order line by order number first
@@ -323,26 +327,22 @@ public class ShipmentService {
 
     }
 
-    @Transactional
-    public Shipment planShipments(Long warehouseId, String shipmentNumber, List<OrderLine> orderLines){
 
-        Wave wave = waveService.createWave(warehouseId, shipmentNumber);
-        return planShipments(wave, shipmentNumber, orderLines);
-
-    }
 
     @Transactional
     public List<Shipment> planShipments(Long warehouseId, List<OrderLine> orderLines){
         List<Shipment> shipments = new ArrayList<>();
-        // Plan one wave for each shipment, wave number will be the shipment number
+        // Plan one wave for each shipment
         Map<Order, List<OrderLine>> orderListMap
                 = segregateOrderLinesBasedOnOrder(orderLines, true);
 
         orderListMap.entrySet().forEach(entrySet -> {
 
             String shipmentNumber = getNextShipmentNumber(warehouseId);
-            Wave wave = waveService.createWave(warehouseId, shipmentNumber);
-            Shipment shipment = planShipments(wave, shipmentNumber, entrySet.getValue());
+            // we will not create a fake wave for the shipment any more
+            // in this scenario, we will ship by shipment
+            // Wave wave = waveService.createWave(warehouseId, shipmentNumber);
+            Shipment shipment = planShipments(shipmentNumber, entrySet.getValue());
             shipments.add(shipment);
 
         });
@@ -393,6 +393,9 @@ public class ShipmentService {
         return orderListMap;
     }
 
+    private Shipment createShipment(String shipmentNumber, Order order, List<OrderLine> orderLines) {
+        return createShipment(null, shipmentNumber, order, orderLines);
+    }
     private Shipment createShipment(Wave wave, String shipmentNumber, Order order, List<OrderLine> orderLines) {
 
         Shipment shipment = new Shipment(shipmentNumber, order);

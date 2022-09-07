@@ -26,7 +26,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "purchase_order_line")
-public class PurchaseOrderLine extends AuditibleEntity{
+public class PurchaseOrderLine extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

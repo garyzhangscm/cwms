@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 
-public class ReportHistory extends AuditibleEntity<String> {
+public class ReportHistory {
 
     private Long id;
 

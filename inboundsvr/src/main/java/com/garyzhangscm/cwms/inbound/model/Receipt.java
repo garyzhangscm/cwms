@@ -39,7 +39,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "receipt")
-public class Receipt extends AuditibleEntity{
+public class Receipt extends AuditibleEntity<String>{
 
 
     @Id

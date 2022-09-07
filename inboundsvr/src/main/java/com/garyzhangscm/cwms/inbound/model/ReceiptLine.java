@@ -28,7 +28,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "receipt_line")
-public class ReceiptLine extends AuditibleEntity{
+public class ReceiptLine extends AuditibleEntity<String>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

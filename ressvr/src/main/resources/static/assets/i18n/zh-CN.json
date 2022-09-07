@@ -1840,5 +1840,7 @@
   "page.work-order.new": "新建工单",
   "expectedQuantity.new": "新预期数量",
   "menu.main.util.rf-configuration": "扫描枪配置",
-  "workOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货"
+  "workOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货",
+  "pickToProductionLineInStage": "拣货至产线（不需放置确认）",
+  "receiveToStage": "收货至暂存区（不需放置确认）"
 }

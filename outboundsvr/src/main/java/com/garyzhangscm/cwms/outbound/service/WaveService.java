@@ -26,13 +26,20 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import com.garyzhangscm.cwms.outbound.repository.WaveRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -73,23 +80,64 @@ public class WaveService {
         return wave;
     }
 
-    public List<Wave> findAll(String number ) {
-        return findAll(number, true);
+    public List<Wave> findAll(Long warehouseId,
+                              String number,
+                              LocalDateTime startTime,
+                              LocalDateTime endTime,
+                              LocalDate date) {
+        return findAll(warehouseId, number, startTime, endTime, date, true);
     }
 
-    public List<Wave> findAll(String number, boolean loadAttribute) {
-        List<Wave> waves;
+    public List<Wave> findAll(Long warehouseId,
+                              String number,
+                              LocalDateTime startTime,
+                              LocalDateTime endTime,
+                              LocalDate date,
+                              boolean loadAttribute) {
+        List<Wave> waves
+            = waveRepository.findAll(
+                (Root<Wave> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if (StringUtils.isBlank(number)) {
-            waves = waveRepository.findAll();
-        } else {
-            Wave wave = waveRepository.findByNumber(number);
-            if (wave != null) {
-                waves = Arrays.asList(new Wave[]{wave});
-            } else {
-                waves = new ArrayList<>();
-            }
-        }
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Strings.isNotBlank(number)) {
+                        if (number.contains("%")) {
+
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+
+                        }
+
+                    }
+
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("createdTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("createdTime"), endTime));
+
+                    }
+                    logger.debug(">> Date is passed in {}", date);
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("createdTime"), dateStartTime, dateEndTime));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+            );
+
+
         if (waves.size() > 0 && loadAttribute) {
             loadAttribute(waves);
         }

@@ -159,6 +159,10 @@ public class ShipmentLineService {
     }
 
     @Transactional
+    public ShipmentLine createShipmentLine(Shipment shipment, OrderLine orderLine, Long shipmentLineQuantity) {
+        return createShipmentLine(null, shipment, orderLine, shipmentLineQuantity);
+    }
+    @Transactional
     public ShipmentLine createShipmentLine(Wave wave, Shipment shipment, OrderLine orderLine, Long shipmentLineQuantity) {
         // Deduct quantity from open quantity to inprocess quantity for the order line
         orderLineService.markQuantityAsInProcess(orderLine, shipmentLineQuantity);
@@ -182,7 +186,8 @@ public class ShipmentLineService {
         shipmentLine.setShipment(shipment);
         shipmentLine = save(shipmentLine);
         logger.debug("Save shipment line # {} with wave # {}",
-                shipmentLine.getId(), wave.getNumber());
+                shipmentLine.getId(),
+                Objects.isNull(wave) ? "N/A" : wave.getNumber());
         return shipmentLine;
     }
 

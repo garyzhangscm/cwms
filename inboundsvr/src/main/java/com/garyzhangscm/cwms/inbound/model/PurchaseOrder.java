@@ -35,7 +35,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "purchase_order")
-public class PurchaseOrder extends AuditibleEntity{
+public class PurchaseOrder extends AuditibleEntity<String>{
 
 
     @Id
