@@ -39,6 +39,7 @@ public class Item implements Serializable {
     private ItemFamily itemFamily;
 
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
+    private ItemPackageType defaultItemPackageType;
 
     private double unitCost;
 
@@ -156,5 +157,13 @@ public class Item implements Serializable {
 
     public void setAllocationRoundUpStrategyValue(Double allocationRoundUpStrategyValue) {
         this.allocationRoundUpStrategyValue = allocationRoundUpStrategyValue;
+    }
+
+    public ItemPackageType getDefaultItemPackageType() {
+        return defaultItemPackageType;
+    }
+
+    public void setDefaultItemPackageType(ItemPackageType defaultItemPackageType) {
+        this.defaultItemPackageType = defaultItemPackageType;
     }
 }

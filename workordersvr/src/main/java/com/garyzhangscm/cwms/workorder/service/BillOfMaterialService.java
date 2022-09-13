@@ -92,7 +92,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(number)) {
-                        if (genericMatch) {
+                        if (genericMatch || number.contains("%")) {
 
                             predicates.add(criteriaBuilder.like(root.get("number"), number));
                         }

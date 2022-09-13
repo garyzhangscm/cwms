@@ -22,7 +22,10 @@ package com.garyzhangscm.cwms.inventory.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.inventory.service.ItemService;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -34,6 +37,8 @@ import java.util.Objects;
 @Table(name = "item")
 @JsonIgnoreProperties({"hibernateLazyInitializer"})
 public class Item extends AuditibleEntity<String> implements Serializable {
+
+    private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -99,6 +104,9 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     @Column(name = "allow_cartonization")
     private Boolean allowCartonization = false;
+
+    @Transient
+    private ItemPackageType defaultItemPackageType;
 
     // those 2 attributes normally work together
     // to let the user allocate the whole LPN
@@ -342,5 +350,25 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setActiveFlag(Boolean activeFlag) {
         this.activeFlag = activeFlag;
+    }
+
+    public ItemPackageType getDefaultItemPackageType() {
+        // if the default item package type is not setup for this item
+        // then return the first available item package type
+        /**
+        logger.debug("item {}'s default item package type: ", getName());
+        logger.debug(">> Objects.nonNull(defaultItemPackageType)? {}", Objects.nonNull(defaultItemPackageType) );
+        if (Objects.isNull(defaultItemPackageType)) {
+            logger.debug(">> item package type size: {}", getItemPackageTypes().size());
+            if (!getItemPackageTypes().isEmpty()) {
+                logger.debug("getItemPackageTypes().get(0).getName(): {}", getItemPackageTypes().get(0).getName());
+            }
+        }
+         **/
+        return Objects.nonNull(defaultItemPackageType) ?
+                defaultItemPackageType :
+                getItemPackageTypes().isEmpty() ?
+                        null :
+                        getItemPackageTypes().get(0);
     }
 }

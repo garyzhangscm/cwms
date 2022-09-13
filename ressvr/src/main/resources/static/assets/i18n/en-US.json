@@ -1777,7 +1777,6 @@
   "ALERT-TYPE-NEW_ORDER": "New Order",
   "ALERT-TYPE-NEW_WORK_ORDER": "New Work Order",
   "ALERT-TYPE-NEW_RECEIPT": "New Receipt",
-  "web-message-alert": "Alert",
   "ERROR-NO-ITEM-INFO-FOR-SHORT-ALLOCATION": "can't get item information for this short allocation",
   "ERROR-NO-BOM-INFO-FOR-ITEM": "can't get bill of material information for this item",
   "create-work-order": "Create Work Order",
@@ -1843,5 +1842,7 @@
   "menu.main.util.rf-configuration": "RF Configuration",
   "workOrderValidatePartialLPNPick": "Validate Partial LPN During Pick",
   "pickToProductionLineInStage": "Pick to Production Line In Stage",
-  "receiveToStage": "Receive To Stage"
+  "receiveToStage": "Receive To Stage",
+  "menu.main.alert.template": "Alert Template",
+  "deliveryChannel": "Delivery Channel"
 }
