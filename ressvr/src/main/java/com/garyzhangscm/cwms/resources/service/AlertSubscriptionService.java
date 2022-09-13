@@ -181,6 +181,7 @@ public class AlertSubscriptionService {
      */
     private void setupAlertMessage(Alert alert, AlertSubscription alertSubscription) {
         if (Strings.isNotBlank(alert.getMessage())) {
+            logger.debug("The alert already have message setup. we will ignore the template");
             return;
         }
         // check if we have a template associated with the alert and subscripion type

@@ -101,4 +101,12 @@ public class Alert    {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public String getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
+    }
 }

@@ -95,6 +95,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Alert",menu.main.alert.alert,/alert/alert,1,Main-Menu-Alert,Alert-Alert,,true,true
 "Alert Configuration",menu.main.alert.config,/alert/configuration,2,Main-Menu-Alert,Alert-Config,,true,true
 "Alert Subscription",menu.main.alert.subscription,/alert/subscription,3,Main-Menu-Alert,Alert-Subscription,,true,false
+"Alert Template",menu.main.alert.template,/alert/template,4,Main-Menu-Alert,Alert-Template,,true,false
 "Billing Rate",menu.main.billing.rate,/billing/rate,1,Main-Menu-Billing,Billing-Rate,,true,false
 "Invoice",menu.main.billing.invoice,/billing/invoice,2,Main-Menu-Billing,Billing-Invoice,,true,false
 "Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,,true,false

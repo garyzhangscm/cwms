@@ -368,6 +368,8 @@ public class WorkOrderProduceTransactionService  {
                     "Can't produce the inventory since the LPN is empty ");
         }
 
+        // see if we are over produce inventory only if over produce is not allowed
+
         // only validate the consume transaction
         // if we consume the material line per each produce transaction
         if (workOrderConfigurationService.getWorkOrderMaterialConsumeTiming(

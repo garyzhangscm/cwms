@@ -152,13 +152,19 @@ public class AlertTemplateService {
     }
 
     public void processAlertTemplate(Alert alert, AlertSubscription alertSubscription) {
+        logger.debug("start to find the template for alert company {}, type: {}, delivery channel: {}",
+                alert.getCompanyId(), alert.getType(),
+                alertSubscription.getDeliveryChannel());
         AlertTemplate alertTemplate = findMatchedAlertTemplate(alert, alertSubscription);
         if (Objects.isNull(alertTemplate)) {
             // OK, there's no template defined for the alert and delivery channel combination
             // let's return nothing
+            logger.debug("No template defined");
             return;
         }
         // let's get the parameters map from the alert
+        logger.debug("We found a template, start to fill in the template. Template ==> \n{}",
+                alertTemplate.getTemplate());
         fillTemplate(alert, alertTemplate);
 
     }
@@ -182,4 +188,7 @@ public class AlertTemplateService {
 
     }
 
+    public void removeAlertTemplate(Long id) {
+        delete(id);
+    }
 }
