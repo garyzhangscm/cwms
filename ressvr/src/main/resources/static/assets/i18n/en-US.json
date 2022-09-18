@@ -1844,5 +1844,8 @@
   "pickToProductionLineInStage": "Pick to Production Line In Stage",
   "receiveToStage": "Receive To Stage",
   "menu.main.alert.template": "Alert Template",
-  "deliveryChannel": "Delivery Channel"
+  "deliveryChannel": "Delivery Channel",
+  "menu.main.work-order.production-line-monitor": "Production Line Monitor",
+  "menu.main.work-order.production-line-monitor-transaction": "Production Line Monitor Transaction",
+  "production-line-monitor": "Production Line Monitor"
 }

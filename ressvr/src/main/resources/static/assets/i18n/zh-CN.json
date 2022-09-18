@@ -1844,5 +1844,8 @@
   "pickToProductionLineInStage": "拣货至产线（不需放置确认）",
   "receiveToStage": "收货至暂存区（不需放置确认）",
   "menu.main.alert.template": "通知模板",
-  "deliveryChannel": "信息发送渠道"
+  "deliveryChannel": "信息发送渠道",
+  "menu.main.work-order.production-line-monitor": "生产线监控",
+  "menu.main.work-order.production-line-monitor-transaction": "生产线监控记录",
+  "production-line-monitor": "生产线监控"
 }
