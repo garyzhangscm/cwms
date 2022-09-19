@@ -126,7 +126,7 @@ public class ProductionLineMonitorTransactionService {
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
                 ,
-                Sort.by(Sort.Direction.ASC, "createdTime")
+                Sort.by(Sort.Direction.DESC, "createdTime")
         );
     }
 

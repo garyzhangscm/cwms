@@ -1847,5 +1847,8 @@
   "deliveryChannel": "信息发送渠道",
   "menu.main.work-order.production-line-monitor": "生产线监控",
   "menu.main.work-order.production-line-monitor-transaction": "生产线监控记录",
-  "production-line-monitor": "生产线监控"
+  "production-line-monitor": "生产线监控",
+  "cycleTime": "周期",
+  "menu.main.work-order.production-line-status": "产线状态",
+  "lastCycleHappensTiming": "最后一周期运行时间"
 }

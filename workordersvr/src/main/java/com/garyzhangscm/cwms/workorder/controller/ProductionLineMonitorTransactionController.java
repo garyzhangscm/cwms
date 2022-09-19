@@ -53,8 +53,7 @@ public class ProductionLineMonitorTransactionController {
                 startTime, endTime, date);
     }
 
-    @BillableEndpoint
-    @RequestMapping(value="/production-line-monitor-transactions", method = RequestMethod.PUT)
+    @RequestMapping(value="/production-line-monitor-transactions", method = RequestMethod.POST)
     public ProductionLineMonitorTransaction addProductionLineMonitorTransaction(
             @RequestParam Long warehouseId,
             @RequestParam String productionLineMonitorName,

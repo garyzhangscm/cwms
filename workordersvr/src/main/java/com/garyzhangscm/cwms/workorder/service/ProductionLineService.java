@@ -22,11 +22,13 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.exception.ProductionLineException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +45,9 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -62,6 +63,9 @@ public class ProductionLineService implements TestDataInitiableService {
     private ProductionLineActivityService productionLineActivityService;
 
     @Autowired
+    private ProductionLineMonitorTransactionService productionLineMonitorTransactionService;
+
+    @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -73,6 +77,10 @@ public class ProductionLineService implements TestDataInitiableService {
     @Value("${fileupload.test-data.production-lines:production-lines}")
     String testDataFile;
 
+    // the default max cycle time for all production is 120 second.
+    // if the last cycle happens 120 seconds ago, then the production will
+    // be defined as inactive
+    private Double DEFAULT_MAX_CYCLE_TIME = 120.0;
     public ProductionLine findById(Long id, boolean loadDetails) {
         ProductionLine productionLine = productionLineRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("production line not found by id: " + id));
@@ -585,5 +593,152 @@ public class ProductionLineService implements TestDataInitiableService {
         }
         delete(id);
         return productionLine;
+    }
+
+    public List<ProductionLineStatus> getProductionLineStatus(
+            Long warehouseId,
+            String name,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+
+        if (Objects.isNull(startTime)) {
+            startTime = LocalDateTime.now().minusDays(1);
+        }
+        logger.debug("start to get production line's status for name: {}\n" +
+                "start time: {}, end time: {}",
+                Strings.isBlank(name) ? "N/A" : name,
+                Objects.isNull(startTime) ? "N/A" : startTime,
+                Objects.isNull(endTime) ? "N/A" : endTime);
+        // we will calculate the production line's status
+        // based on its monitor's transaction
+        List<ProductionLineMonitorTransaction> productionLineMonitorTransactions =
+                productionLineMonitorTransactionService.findAll(
+                        warehouseId, null,
+                        name, null,
+                        startTime, endTime, null
+                );
+
+        if (Strings.isBlank(name)) {
+            // we don't have the production line name passed in, then
+            // return the status for all production line
+            List<ProductionLine> productionLines = findAll(warehouseId,
+                    null, null, false, false);
+            return getProductionLineStatus(warehouseId, productionLines,
+                    productionLineMonitorTransactions, startTime, endTime);
+
+        }
+        else {
+            ProductionLine productionLine = findByName(warehouseId, name);
+            if (Objects.isNull(productionLine)) {
+                throw ProductionLineException.raiseException("Can't find production line by name " + name);
+            }
+            return getProductionLineStatus(warehouseId,
+                    Collections.singletonList(productionLine),
+                    productionLineMonitorTransactions, startTime, endTime);
+        }
+    }
+    public List<ProductionLineStatus> getProductionLineStatus(
+            Long warehouseId,
+            List<ProductionLine> productionLines,
+            List<ProductionLineMonitorTransaction> productionLineMonitorTransactions,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+
+        // group the result by production line
+        // key: prouduction line id
+        // value: list of transactions of this production line
+        Map<Long, List<ProductionLineMonitorTransaction>> productionLineMonitorTransactionMap =
+                new HashMap<>();
+
+        productionLineMonitorTransactions.stream().filter(
+                // the transaction may not belong to any production, in case the monitor is not setup
+                // to any production line(which should not be a right scenario). In this case, we will
+                // ignore the record
+                productionLineMonitorTransaction -> Objects.nonNull(productionLineMonitorTransaction.getProductionLine())
+        ).forEach(
+                productionLineMonitorTransaction -> {
+                    List<ProductionLineMonitorTransaction> specificProductionLineMonitorTransactions =
+                            productionLineMonitorTransactionMap.getOrDefault(
+                                    productionLineMonitorTransaction.getProductionLine().getId(),
+                                    new ArrayList<>());
+                    specificProductionLineMonitorTransactions.add(productionLineMonitorTransaction);
+                    productionLineMonitorTransactionMap.put(
+                            productionLineMonitorTransaction.getProductionLine().getId(),
+                            specificProductionLineMonitorTransactions
+                    );
+                }
+        );
+
+        return productionLines.stream().map(
+                    productionLine -> {
+                        // for each production line, get the monitor transactions of this production line only
+
+                        return getProductionLineStatus(warehouseId, productionLine,
+                                productionLineMonitorTransactionMap.get(productionLine.getId()),
+                                startTime, endTime);
+                    }
+               ).collect(Collectors.toList());
+
+    }
+    public ProductionLineStatus getProductionLineStatus(
+            Long warehouseId,
+            ProductionLine productionLine,
+            List<ProductionLineMonitorTransaction> productionLineMonitorTransactions,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+
+        if (Objects.isNull(productionLineMonitorTransactions) ||
+                productionLineMonitorTransactions.isEmpty()) {
+            // there's no monitor transaction for this production line during the
+            // time period, let's assume the production is inactive
+            return new ProductionLineStatus(
+                    productionLine, startTime, endTime,
+                    false, 0.0, 0.0, null
+            );
+        }
+        // there's monitor transaction for this production line, we will assume
+        // the production line is active and calculate the cycle time
+        Collections.sort(productionLineMonitorTransactions,
+                Comparator.comparing(ProductionLineMonitorTransaction::getCreatedTime).reversed());
+
+        ProductionLineMonitorTransaction lastMonitorTransaction = productionLineMonitorTransactions.get(0);
+        LocalDateTime lastCycleHappensTiming = lastMonitorTransaction.getCreatedTime();
+        double lastCycleTime = lastMonitorTransaction.getCycleTime();
+        double averageCycleTime = productionLineMonitorTransactions.stream()
+                .map(ProductionLineMonitorTransaction::getCycleTime).mapToDouble(Double::doubleValue)
+                .average().orElse(0.0);
+
+        logger.debug("production line: {}, lastCycleHappensTiming: {}, lastMonitorTransaction id {}",
+                productionLine.getName(),
+                lastCycleHappensTiming,
+                lastMonitorTransaction.getId());
+        // see if the production line is active
+        // it is inactive if the last cycle time is too far away from the end time
+        // If the end time is not passed in or is a future time, then in order to calculate the
+        // status, we will use the current date time
+        boolean active;
+        if (Objects.isNull(endTime) || endTime.isAfter(LocalDateTime.now())) {
+            active = LocalDateTime.now().minusSeconds((int)getMaxCycleTime(productionLine))
+                    .isBefore(lastCycleHappensTiming);
+        }
+        else {
+
+            active = endTime.minusSeconds((int)getMaxCycleTime(productionLine))
+                    .isBefore(lastCycleHappensTiming);
+        }
+        return new ProductionLineStatus(
+                productionLine, startTime, endTime,
+                active, lastCycleTime, averageCycleTime,
+                lastCycleHappensTiming
+        );
+
+
+
+
+    }
+
+
+    private double getMaxCycleTime(ProductionLine productionLine) {
+        return DEFAULT_MAX_CYCLE_TIME;
     }
 }
