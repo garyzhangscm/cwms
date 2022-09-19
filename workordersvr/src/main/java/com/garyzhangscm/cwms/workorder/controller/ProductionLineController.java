@@ -23,10 +23,13 @@ package com.garyzhangscm.cwms.workorder.controller;
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.ProductionLine;
 
+import com.garyzhangscm.cwms.workorder.model.ProductionLineStatus;
 import com.garyzhangscm.cwms.workorder.service.ProductionLineService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -101,6 +104,15 @@ public class ProductionLineController {
     public ProductionLine disableProductionLine(@PathVariable Long id,
                                       @RequestParam boolean disabled) {
         return productionLineService.disableProductionLine(id, disabled);
+    }
+
+
+    @RequestMapping(value="/production-lines/status", method = RequestMethod.GET)
+    public List<ProductionLineStatus> getProductionLineStatus(@RequestParam Long warehouseId,
+                                                              @RequestParam(name="name", required = false, defaultValue = "") String name,
+                                                              @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+                                                              @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
+        return productionLineService.getProductionLineStatus(warehouseId, name, startTime, endTime);
     }
 
 }

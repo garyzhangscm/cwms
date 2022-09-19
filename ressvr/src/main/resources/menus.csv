@@ -69,8 +69,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Master Production Schedule",menu.main.work-order.mps,/work-order/mps,12,Main-Menu-WorkOrder,Work-Order-MPS,,true,false
 "Master Production Schedule View",menu.main.work-order.mps-view,/work-order/mps-view,13,Main-Menu-WorkOrder,Work-Order-MPS-VIEW,,true,false
 "Material Requirements Planning",menu.main.work-order.mrp,/work-order/mrp,14,Main-Menu-WorkOrder,Work-Order-MRP,,true,false
-"Production Line Monitor",menu.main.work-order.production-line-monitor,/work-order/production-line-monitor,15,Main-Menu-WorkOrder,Production-Line-Monitor,,true,false
-"Production Line Monitor Transaction",menu.main.work-order.production-line-monitor-transaction,/work-order/production-line-monitor/transaction,16,Main-Menu-WorkOrder,Production-Line-Monitor-Transaction,,true,false
+"Production Line Status",menu.main.work-order.production-line-status,/work-order/production-line-status,15,Main-Menu-WorkOrder,Production-Line-Status,,true,false
+"Production Line Monitor",menu.main.work-order.production-line-monitor,/work-order/production-line-monitor,16,Main-Menu-WorkOrder,Production-Line-Monitor,,true,false
+"Production Line Monitor Transaction",menu.main.work-order.production-line-monitor-transaction,/work-order/production-line-monitor/transaction,17,Main-Menu-WorkOrder,Production-Line-Monitor-Transaction,,true,false
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,,true,false
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,,true,false
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false

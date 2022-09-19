@@ -1847,5 +1847,8 @@
   "deliveryChannel": "Delivery Channel",
   "menu.main.work-order.production-line-monitor": "Production Line Monitor",
   "menu.main.work-order.production-line-monitor-transaction": "Production Line Monitor Transaction",
-  "production-line-monitor": "Production Line Monitor"
+  "production-line-monitor": "Production Line Monitor",
+  "cycleTime": "Cycle Time",
+  "menu.main.work-order.production-line-status": "Production Line Status",
+  "lastCycleHappensTiming": "Last Cycle Happens Timing"
 }
