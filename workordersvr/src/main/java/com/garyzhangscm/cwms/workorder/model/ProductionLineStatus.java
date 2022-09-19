@@ -28,6 +28,8 @@ public class ProductionLineStatus  {
     private boolean active;
 
     private double lastCycleTime;
+    // total cycles in the time span
+    private int totalCycles;
 
     private double averageCycleTime;
 
@@ -38,7 +40,9 @@ public class ProductionLineStatus  {
 
     public ProductionLineStatus(){}
     public ProductionLineStatus(ProductionLine productionLine, LocalDateTime startTime, LocalDateTime endTime,
-                                boolean active, double lastCycleTime, double averageCycleTime,
+                                boolean active, double lastCycleTime,
+                                int totalCycles,
+                                double averageCycleTime,
                                 LocalDateTime lastCycleHappensTiming) {
         this.productionLine = productionLine;
         this.startTime = startTime;
@@ -47,6 +51,7 @@ public class ProductionLineStatus  {
         this.lastCycleTime = lastCycleTime;
         this.averageCycleTime = averageCycleTime;
         this.lastCycleHappensTiming = lastCycleHappensTiming;
+        this.totalCycles = totalCycles;
     }
 
     public ProductionLine getProductionLine() {
@@ -103,5 +108,13 @@ public class ProductionLineStatus  {
 
     public void setLastCycleHappensTiming(LocalDateTime lastCycleHappensTiming) {
         this.lastCycleHappensTiming = lastCycleHappensTiming;
+    }
+
+    public int getTotalCycles() {
+        return totalCycles;
+    }
+
+    public void setTotalCycles(int totalCycles) {
+        this.totalCycles = totalCycles;
     }
 }

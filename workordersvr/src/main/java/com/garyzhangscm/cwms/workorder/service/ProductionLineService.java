@@ -693,7 +693,7 @@ public class ProductionLineService implements TestDataInitiableService {
             // time period, let's assume the production is inactive
             return new ProductionLineStatus(
                     productionLine, startTime, endTime,
-                    false, 0.0, 0.0, null
+                    false, 0.0, 0, 0.0, null
             );
         }
         // there's monitor transaction for this production line, we will assume
@@ -728,7 +728,8 @@ public class ProductionLineService implements TestDataInitiableService {
         }
         return new ProductionLineStatus(
                 productionLine, startTime, endTime,
-                active, lastCycleTime, averageCycleTime,
+                active, lastCycleTime, productionLineMonitorTransactions.size(),
+                averageCycleTime,
                 lastCycleHappensTiming
         );
 
