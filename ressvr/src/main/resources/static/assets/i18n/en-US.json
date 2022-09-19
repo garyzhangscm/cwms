@@ -1850,5 +1850,6 @@
   "production-line-monitor": "Production Line Monitor",
   "cycleTime": "Cycle Time",
   "menu.main.work-order.production-line-status": "Production Line Status",
-  "lastCycleHappensTiming": "Last Cycle Happens Timing"
+  "lastCycleHappensTiming": "Last Cycle Happens Timing",
+  "totalCycles": "Total Cycles"
 }
