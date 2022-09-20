@@ -616,7 +616,11 @@ public class ProductionLineService implements TestDataInitiableService {
                         warehouseId, null,
                         name, null,
                         startTime, endTime, null
-                );
+                ).stream().filter(
+                        // only return the value that has cycle time that is marked as VALID
+                        productionLineMonitorTransaction ->
+                                productionLineMonitorTransaction.getCycleTime() < getMaxCycleTime(productionLineMonitorTransaction.getProductionLine())
+                ).collect(Collectors.toList());
 
         if (Strings.isBlank(name)) {
             // we don't have the production line name passed in, then
@@ -741,5 +745,154 @@ public class ProductionLineService implements TestDataInitiableService {
 
     private double getMaxCycleTime(ProductionLine productionLine) {
         return DEFAULT_MAX_CYCLE_TIME;
+    }
+
+    /**
+     * Return specific production line's attribute
+     * if the production line id list is not passed in, it will return the attribute value
+     * for all the existing production line
+     * @param warehouseId
+     * @param productionLineIds
+     * @return
+     */
+    public List<ProductionLineAttribute> getProductionLineAttribute(Long warehouseId,
+                                                                    String productionLineIds,
+                                                                    String name) {
+
+        List<ProductionLine> productionLines =
+                findAll(warehouseId, null, productionLineIds, false, false);
+
+        return getProductionLineAttribute(
+                productionLines, name
+        );
+    }
+
+    /**
+     * Get the specific production line attribute from the production lines
+     * now we support
+     * 1. current finish goods
+     * 2. current mold's capacity
+     * @param productionLines
+     * @param name
+     * @return
+     */
+    public List<ProductionLineAttribute> getProductionLineAttribute(List<ProductionLine> productionLines,
+                                                                    String name) {
+        logger.debug("Start to get attribute of {} for {} production lines",
+                name, productionLines.size());
+        if ("item".equalsIgnoreCase(name)) {
+            return getProductionLineAttributeItem(productionLines, name);
+        }
+        else if ("capacity".equalsIgnoreCase(name)) {
+
+            return getProductionLineAttributeCapacity(productionLines, name);
+        }
+
+        throw ProductionLineException.raiseException("attribute " + name + " is not support");
+
+    }
+
+    private List<ProductionLineAttribute> getProductionLineAttributeCapacity(
+            List<ProductionLine> productionLines, String name) {
+        return productionLines.stream().map(
+                productionLine -> {
+                    // let's get the work order on the production line
+                    if (Objects.isNull(productionLine.getProductionLineAssignments()) ||
+                            productionLine.getProductionLineAssignments().isEmpty()) {
+                        // there's nothing on the production line yet
+                        // let's return an empty item name
+                        logger.debug("production line {} doesn't have work assignment",
+                                productionLine.getName());
+                        return new ProductionLineAttribute(productionLine, name, "");
+                    }
+                    Set<Long> itemIds = productionLine.getProductionLineAssignments()
+                            .stream().map(
+                                    productionLineAssignment -> productionLineAssignment.getWorkOrder().getItemId()
+                            ).collect(Collectors.toSet());
+                    if (itemIds.size() > 1) {
+                        // there's multiple work orders / item on this production line, we won't
+                        // get each individual item. Instead we will only return a indicator
+                        logger.debug("production line {} has more than one work assignment",
+                                productionLine.getName());
+                        return new ProductionLineAttribute(productionLine, name, "MULTIPLE");
+
+                    }
+                    Long itemId = itemIds.iterator().next();
+
+                    logger.debug("production line {} has one work order assignment with item id {}",
+                            productionLine.getName(), itemId);
+                    // see if we have the capacity information defined for the item
+                    Optional<ProductionLineCapacity> matchedProductionLineCapacity =
+                            productionLine.getProductionLineCapacities()
+                            .stream().filter(
+                                    productionLineCapacity -> itemId.equals(productionLineCapacity.getItemId())
+                            ).findFirst();
+                    if (matchedProductionLineCapacity.isPresent()) {
+
+                        logger.debug("we found capacity defined for production line {}  with item id {}" +
+                                " staff count: {}",
+                                productionLine.getName(), itemId,
+                                Objects.isNull(matchedProductionLineCapacity.get().getStaffCount()) ?
+                                        "N/A" : matchedProductionLineCapacity.get().getStaffCount());
+                        return new ProductionLineAttribute(
+                                productionLine, name,
+                                Objects.isNull(matchedProductionLineCapacity.get().getStaffCount()) ?
+                                        "" : String.valueOf(matchedProductionLineCapacity.get().getStaffCount())
+                        );
+                    }
+
+                    logger.debug("we CANNOT FIND capacity defined for production line {}  with item id {}",
+                            productionLine.getName(), itemId);
+                    return new ProductionLineAttribute(
+                            productionLine, name, "");
+
+                }
+        ).collect(Collectors.toList());
+    }
+
+    private List<ProductionLineAttribute> getProductionLineAttributeItem(
+            List<ProductionLine> productionLines, String name) {
+
+        return productionLines.stream().map(
+                productionLine -> {
+                    // let's get the work order on the production line
+                    if (Objects.isNull(productionLine.getProductionLineAssignments()) ||
+                        productionLine.getProductionLineAssignments().isEmpty()) {
+                        // there's nothing on the production line yet
+                        // let's return an empty item name
+                        logger.debug("production line {} doesn't have work assignment",
+                                productionLine.getName());
+                        return new ProductionLineAttribute(productionLine, name, "");
+                    }
+                    Set<Long> itemIds = productionLine.getProductionLineAssignments()
+                            .stream().map(
+                                    productionLineAssignment -> productionLineAssignment.getWorkOrder().getItemId()
+                            ).collect(Collectors.toSet());
+                    if (itemIds.size() > 1) {
+                        // there's multiple work orders / item on this production line, we won't
+                        // get each individual item. Instead we will only return a indicator
+                        logger.debug("production line {} has more than one work assignment",
+                                productionLine.getName());
+                        return new ProductionLineAttribute(productionLine, name, "MULTIPLE");
+
+                    }
+                    Long itemId = itemIds.iterator().next();
+
+                    Item item = inventoryServiceRestemplateClient.getItemById(itemId);
+
+                    logger.debug("production line {} has one work order assignment with item id {}, name {}",
+                            productionLine.getName(), itemId,
+                            Objects.isNull(item) ? "N/A" : item.getName());
+                    if (Objects.nonNull(item)) {
+
+                        return new ProductionLineAttribute(
+                                productionLine, name, item.getName());
+                    }
+
+                    return new ProductionLineAttribute(
+                            productionLine, name, "");
+
+                }
+        ).collect(Collectors.toList());
     }
 }

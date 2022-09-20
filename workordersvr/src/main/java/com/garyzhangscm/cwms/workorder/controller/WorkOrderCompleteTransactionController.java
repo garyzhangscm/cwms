@@ -51,9 +51,11 @@ public class WorkOrderCompleteTransactionController {
     @BillableEndpoint
     @RequestMapping(value="/work-order-complete-transactions", method = RequestMethod.POST)
     public WorkOrderCompleteTransaction addWorkOrderCompleteTransaction(
+            @RequestParam Long warehouseId,
             @RequestBody WorkOrderCompleteTransaction workOrderCompleteTransaction,
             @RequestParam(name = "locationId", required = false, defaultValue = "") Long locationId) {
-        return workOrderCompleteTransactionService.startNewTransaction(workOrderCompleteTransaction, locationId);
+        return workOrderCompleteTransactionService.startNewTransaction(
+                warehouseId, workOrderCompleteTransaction, locationId);
     }
 
 

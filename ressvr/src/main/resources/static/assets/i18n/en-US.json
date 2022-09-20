@@ -1851,5 +1851,6 @@
   "cycleTime": "Cycle Time",
   "menu.main.work-order.production-line-status": "Production Line Status",
   "lastCycleHappensTiming": "Last Cycle Happens Timing",
-  "totalCycles": "Total Cycles"
+  "totalCycles": "Total Cycles",
+  "menu.main.work-order.production-line-dashboard": "Production Line Dashboard"
 }

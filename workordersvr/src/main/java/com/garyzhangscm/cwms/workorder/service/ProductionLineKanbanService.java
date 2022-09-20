@@ -58,7 +58,8 @@ public class ProductionLineKanbanService {
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
-    public List<ProductionLineKanbanData> getProductionLineKanbanData(Long productionLineId,
+    public List<ProductionLineKanbanData> getProductionLineKanbanData(Long warehouseId,
+                                                                      Long productionLineId,
                                                                       String productionLineIds,
                                                                       String productionLineNames) {
 
@@ -69,7 +70,7 @@ public class ProductionLineKanbanService {
                 currentLocalDateTime );
 
         List<ProductionLineAssignment> productionLineAssignments
-                = productionLineAssignmentService.findAll(productionLineId, productionLineIds, null, productionLineNames);
+                = productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, null, productionLineNames);
 
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {},we found all production line assignment",

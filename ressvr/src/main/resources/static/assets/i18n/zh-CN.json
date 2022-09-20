@@ -1851,5 +1851,6 @@
   "cycleTime": "周期",
   "menu.main.work-order.production-line-status": "产线状态",
   "lastCycleHappensTiming": "最后一周期运行时间",
-  "totalCycles": "总周期数量"
+  "totalCycles": "总周期数量",
+  "menu.main.work-order.production-line-dashboard": "产线仪表盘"
 }

@@ -43,6 +43,8 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     private Long workOrderId;
     @Transient
     private String workOrderNumber;
+    @Transient
+    private Long workOrderItemId;
 
 
     @OneToMany(
@@ -248,5 +250,16 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setWorkOrderNumber(String workOrderNumber) {
         this.workOrderNumber = workOrderNumber;
+    }
+
+
+    public Long getWorkOrderItemId() {
+        if (Objects.nonNull(workOrderItemId)) {
+            return workOrderItemId;
+        }
+        else if (Objects.nonNull(workOrder)) {
+            return workOrder.getItemId();
+        }
+        return null;
     }
 }
