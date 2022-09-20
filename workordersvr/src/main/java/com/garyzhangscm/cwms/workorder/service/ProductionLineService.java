@@ -947,9 +947,13 @@ public class ProductionLineService implements TestDataInitiableService {
                             workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber,
                                     productionLine.getId(),  false, startTime, endTime, date);
 
-                    logger.debug("production line {} and work order {} has {} produced inventory transactions",
+                    logger.debug("production line {} and work order {} has {} produced inventory transactions" +
+                            ", between start time {} and end time {}, on date {}",
                             productionLine.getName(), workOrderNumber,
-                            workOrderProduceTransactions.size());
+                            workOrderProduceTransactions.size(),
+                            Objects.isNull(startTime) ? "N/A" : startTime,
+                            Objects.isNull(endTime) ? "N/A" : endTime,
+                            Objects.isNull(date) ? "N/A" : date);
 
                     Long totalProducedInventoryQuantity =
                             workOrderProduceTransactions.stream().map(
