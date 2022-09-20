@@ -1852,5 +1852,11 @@
   "menu.main.work-order.production-line-status": "Production Line Status",
   "lastCycleHappensTiming": "Last Cycle Happens Timing",
   "totalCycles": "Total Cycles",
-  "menu.main.work-order.production-line-dashboard": "Production Line Dashboard"
+  "menu.main.work-order.production-line-dashboard": "Production Line Dashboard",
+  "averageCycleTime": "Average Cycle Time",
+  "moldCount": "Mold Count",
+  "itemScanned": "Item Scanned",
+  "difference": "Difference",
+  "laborNeed": "Labor Needed",
+  "lastCycleTime": "Last Cycle Time"
 }

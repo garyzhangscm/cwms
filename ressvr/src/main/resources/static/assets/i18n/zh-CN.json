@@ -1852,5 +1852,11 @@
   "menu.main.work-order.production-line-status": "产线状态",
   "lastCycleHappensTiming": "最后一周期运行时间",
   "totalCycles": "总周期数量",
-  "menu.main.work-order.production-line-dashboard": "产线仪表盘"
+  "menu.main.work-order.production-line-dashboard": "产线仪表盘",
+  "averageCycleTime": "平均周期用时",
+  "moldCount": "模具开关时间",
+  "itemScanned": "商品扫描数量",
+  "difference": "差距",
+  "laborNeed": "所需工人数量",
+  "lastCycleTime": "最后一周期用时"
 }
