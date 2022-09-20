@@ -40,6 +40,8 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -91,12 +93,16 @@ public class WorkOrderProduceTransactionService  {
 
 
     public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber,
-                                                     Long productionLineId, boolean genericQuery) {
-        return findAll(warehouseId, workOrderNumber, productionLineId, genericQuery, true);
+                                                     Long productionLineId, boolean genericQuery,
+                                                     LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        return findAll(warehouseId, workOrderNumber, productionLineId, genericQuery,
+                startTime, endTime, date, true);
     }
     public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber,
                                                      Long productionLineId,
-                                                     boolean genericQuery, boolean loadDetails) {
+                                                     boolean genericQuery,
+                                                     LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+                                                     boolean loadDetails) {
 
         List<WorkOrderProduceTransaction> workOrderProduceTransactions
                 =  workOrderProduceTransactionRepository.findAll(
@@ -128,6 +134,25 @@ public class WorkOrderProduceTransactionService  {
                         predicates.add(criteriaBuilder.equal(joinProductionLine.get("id"), productionLineId));
                     }
 
+                    if (Objects.nonNull(startTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("createdTime"), startTime));
+
+                    }
+
+                    if (Objects.nonNull(endTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("createdTime"), endTime));
+
+                    }
+                    logger.debug(">> Date is passed in {}", date);
+                    if (Objects.nonNull(date)) {
+                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("createdTime"), dateStartTime, dateEndTime));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

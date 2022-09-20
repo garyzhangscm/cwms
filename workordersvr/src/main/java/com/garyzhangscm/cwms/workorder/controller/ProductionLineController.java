@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -122,6 +123,19 @@ public class ProductionLineController {
                                                               @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds) {
 
         return productionLineService.getProductionLineAttribute(warehouseId,  productionLineIds, name);
+    }
+
+
+    @RequestMapping(value="/production-lines/produced-inventory/total-quantity", method = RequestMethod.GET)
+    public List<ProductionLineAttribute> getProducedInventoryTotalQuantity(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        return productionLineService.getProducedInventoryTotalQuantity(warehouseId,  productionLineIds,
+                startTime, endTime, date);
     }
 
 }
