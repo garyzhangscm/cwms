@@ -445,6 +445,7 @@ public class WorkOrderService implements TestDataInitiableService {
         workOrder.setProducedQuantity(0L);
         workOrder.setStatus(WorkOrderStatus.PENDING);
         workOrder.setBillOfMaterial(billOfMaterial);
+        workOrder.setConsumeByBom(billOfMaterial);
 
 
         WorkOrder savedWorkOrder = save(workOrder);
@@ -459,11 +460,14 @@ public class WorkOrderService implements TestDataInitiableService {
                     workOrder.getExpectedQuantity());
         }
 
-        Long workOrderCount = (long)(expectedQuantity / billOfMaterial.getExpectedQuantity());
+        double workOrderCount = (expectedQuantity * 1.0 / billOfMaterial.getExpectedQuantity());
         // Start to create work order line
         billOfMaterial.getBillOfMaterialLines()
                 .forEach(billOfMaterialLine ->
-                        workOrderLineService.createWorkOrderLineFromBOMLine(savedWorkOrder, workOrderCount, billOfMaterialLine));
+                        workOrderLineService.createWorkOrderLineFromBOMLine(
+                                savedWorkOrder, expectedQuantity,
+                                billOfMaterial.getExpectedQuantity(),
+                                billOfMaterialLine));
 
         // Start to create work order instruction
         billOfMaterial.getWorkOrderInstructionTemplates()
@@ -472,7 +476,10 @@ public class WorkOrderService implements TestDataInitiableService {
 
         billOfMaterial.getBillOfMaterialByProducts()
                 .forEach(billOfMaterialByProduct ->
-                        workOrderByProductService.createWorkOrderByProductFromBOMByProduct(savedWorkOrder, workOrderCount, billOfMaterialByProduct));
+                        workOrderByProductService.createWorkOrderByProductFromBOMByProduct(
+                                savedWorkOrder, expectedQuantity,
+                                billOfMaterial.getExpectedQuantity(),
+                                billOfMaterialByProduct));
         return findById(savedWorkOrder.getId());
     }
 

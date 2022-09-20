@@ -157,6 +157,26 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
 
     }
 
+    public boolean isOverProduceAllowed(WorkOrder workOrder) {
+
+        WorkOrderConfiguration workOrderConfiguration = getWorkOrderConfiguration(
+                workOrder.getWarehouse().getCompanyId(),
+                workOrder.getWarehouseId()
+        );
+
+        return Objects.nonNull(workOrderConfiguration) &&
+                Boolean.TRUE.equals(workOrderConfiguration.getOverProduceIsAllowed());
+    }
+    public boolean isOverConsumeAllowed(WorkOrder workOrder) {
+
+        WorkOrderConfiguration workOrderConfiguration = getWorkOrderConfiguration(
+                workOrder.getWarehouse().getCompanyId(),
+                workOrder.getWarehouseId()
+        );
+
+        return Objects.nonNull(workOrderConfiguration) &&
+                Boolean.TRUE.equals(workOrderConfiguration.getOverConsumeIsAllowed());
+    }
     public WorkOrderMaterialConsumeTiming getWorkOrderMaterialConsumeTiming(WorkOrder workOrder) {
 
         // if we already have the configuration setup in the work order, then
