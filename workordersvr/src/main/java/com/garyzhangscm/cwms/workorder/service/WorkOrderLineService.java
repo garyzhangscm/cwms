@@ -304,15 +304,21 @@ public class WorkOrderLineService implements TestDataInitiableService {
     }
 
 
-    public WorkOrderLine createWorkOrderLineFromBOMLine(WorkOrder workOrder, Long workOrderCount,  BillOfMaterialLine billOfMaterialLine) {
+    public WorkOrderLine createWorkOrderLineFromBOMLine(WorkOrder workOrder, long workOrderExpectedQuantity,
+                                                        double billOfMaterialExpectedQuantity,
+                                                        BillOfMaterialLine billOfMaterialLine) {
         WorkOrderLine workOrderLine = new WorkOrderLine();
         workOrderLine.setWorkOrder(workOrder);
         workOrderLine.setNumber(billOfMaterialLine.getNumber());
         workOrderLine.setItemId(billOfMaterialLine.getItemId());
         workOrderLine.setInventoryStatusId(billOfMaterialLine.getInventoryStatusId());
 
-        workOrderLine.setExpectedQuantity((long)Math.ceil(billOfMaterialLine.getExpectedQuantity() * workOrderCount));
-        workOrderLine.setOpenQuantity((long)Math.ceil(billOfMaterialLine.getExpectedQuantity() * workOrderCount));
+        workOrderLine.setExpectedQuantity(
+                (long)Math.ceil(
+                        billOfMaterialLine.getExpectedQuantity() * 1.0 * workOrderExpectedQuantity / billOfMaterialExpectedQuantity));
+        workOrderLine.setOpenQuantity(
+                (long)Math.ceil(
+                        billOfMaterialLine.getExpectedQuantity()  * 1.0 * workOrderExpectedQuantity / billOfMaterialExpectedQuantity));
         workOrderLine.setInprocessQuantity(0L);
         workOrderLine.setDeliveredQuantity(0L);
         workOrderLine.setConsumedQuantity(0L);

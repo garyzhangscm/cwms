@@ -216,14 +216,17 @@ public class WorkOrderByProductService implements TestDataInitiableService {
     }
 
 
-    public WorkOrderByProduct createWorkOrderByProductFromBOMByProduct(WorkOrder workOrder, Long workOrderCount,  BillOfMaterialByProduct billOfMaterialByProduct) {
+    public WorkOrderByProduct createWorkOrderByProductFromBOMByProduct(WorkOrder workOrder, long workOrderExpectedQuantity,
+                                                                       double billOfMaterialExpectedQuantity,
+                                                                       BillOfMaterialByProduct billOfMaterialByProduct) {
         WorkOrderByProduct workOrderByProduct = new WorkOrderByProduct();
         workOrderByProduct.setWorkOrder(workOrder);
 
         workOrderByProduct.setItemId(billOfMaterialByProduct.getItemId());
         workOrderByProduct.setInventoryStatusId(billOfMaterialByProduct.getInventoryStatusId());
 
-        workOrderByProduct.setExpectedQuantity(billOfMaterialByProduct.getExpectedQuantity() * workOrderCount);
+        workOrderByProduct.setExpectedQuantity(
+                (long)Math.ceil(billOfMaterialByProduct.getExpectedQuantity() * 1.0 * workOrderExpectedQuantity / billOfMaterialExpectedQuantity));
 
         workOrderByProduct.setProducedQuantity(0L);
 

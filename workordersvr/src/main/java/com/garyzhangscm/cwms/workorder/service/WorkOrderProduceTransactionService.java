@@ -384,6 +384,18 @@ public class WorkOrderProduceTransactionService  {
             WorkOrderProduceTransaction workOrderProduceTransaction) {
         // make sure we won't over consume
 
+        boolean isOverProduceAllowed =
+                workOrderConfigurationService.isOverProduceAllowed(
+                        workOrderProduceTransaction.getWorkOrder()
+                );
+        boolean isOverConsumeAllowed =
+                workOrderConfigurationService.isOverConsumeAllowed(
+                        workOrderProduceTransaction.getWorkOrder()
+                );
+        logger.debug("Start to validate the produce transaction with " +
+                " isOverProduceAllowed: {}, isOverConsumeAllowed: {}",
+                isOverProduceAllowed,
+                isOverConsumeAllowed);
         // we need to make sure the LPNs of the produced inventory
         // is passed in
         if (workOrderProduceTransaction
@@ -395,6 +407,9 @@ public class WorkOrderProduceTransactionService  {
 
         // see if we are over produce inventory only if over produce is not allowed
 
+        if (!isOverProduceAllowed) {
+            validateWorkOrderOverProduced(workOrderProduceTransaction);
+        }
 
         // only validate the consume transaction
         // if we consume the material line per each produce transaction
@@ -402,7 +417,7 @@ public class WorkOrderProduceTransactionService  {
                 workOrderProduceTransaction.getWorkOrder()).equals(WorkOrderMaterialConsumeTiming.BY_TRANSACTION)) {
 
             if(Boolean.TRUE.equals(workOrderProduceTransaction.getWorkOrder().getConsumeByBomOnly())) {
-                validateWorkOrderLineConsumeTransactionByBom(workOrderProduceTransaction);
+                validateWorkOrderLineConsumeTransactionByBom(workOrderProduceTransaction, isOverConsumeAllowed);
             }
             else {
 
@@ -410,7 +425,8 @@ public class WorkOrderProduceTransactionService  {
                         : workOrderProduceTransaction.getWorkOrderLineConsumeTransactions()) {
                     validateWorkOrderLineConsumeTransaction(
                             workOrderLineConsumeTransaction,
-                            workOrderProduceTransaction.getProductionLine());
+                            workOrderProduceTransaction.getProductionLine(),
+                            isOverConsumeAllowed);
                 }
             }
 
@@ -419,15 +435,45 @@ public class WorkOrderProduceTransactionService  {
 
     }
 
+    /**
+     * Make sure we are not over produce from the work order
+     * @param workOrderProduceTransaction
+     */
+    private void validateWorkOrderOverProduced(WorkOrderProduceTransaction workOrderProduceTransaction) {
+        Long currentProducedQuantity = workOrderProduceTransaction.getWorkOrder().getProducedQuantity();
+        Long expectedProduceQuantity = workOrderProduceTransaction.getWorkOrder().getExpectedQuantity();
+
+        Long producingQuantity = workOrderProduceTransaction.getWorkOrderProducedInventories()
+                .stream().mapToLong(
+                        producedInventory -> producedInventory.getQuantity()
+                ).sum();
+        if (currentProducedQuantity + producingQuantity > expectedProduceQuantity) {
+            logger.debug("Over Producing found!");
+            logger.debug("expectedProduceQuantity: {}, currentProducedQuantity: {}, " +
+                    " producingQuantity: {}, (currentProducedQuantity + producingQuantity) = {}",
+                    expectedProduceQuantity,
+                    currentProducedQuantity,
+                    producingQuantity,
+                    (currentProducedQuantity + producingQuantity));
+            throw WorkOrderException.raiseException("Over produce is not allowed! Work order " +
+                    workOrderProduceTransaction.getWorkOrder().getNumber() +
+                    " we already produced " + currentProducedQuantity +
+                    ", total quantity in this transaction is " + producingQuantity +
+                    ", which makes the total quantity become " + (currentProducedQuantity + producingQuantity) +
+                    " and exceeds the expected total quantity of " + expectedProduceQuantity);
+        }
+    }
+
     private void validateWorkOrderLineConsumeTransactionByBom(
-            WorkOrderProduceTransaction workOrderProduceTransaction) {
+            WorkOrderProduceTransaction workOrderProduceTransaction,
+            boolean isOverConsumeAllowed) {
         WorkOrder workOrder = workOrderProduceTransaction.getWorkOrder();
         if (Objects.isNull(workOrder.getConsumeByBom())) {
             throw WorkOrderException.raiseException("BOM is not setup in the work order");
         }
 
         if (!workOrderProduceTransaction.getConsumeByBomQuantity()) {
-            throw WorkOrderException.raiseException("The work order is setup to be consumed by BOM only");
+            throw WorkOrderException.raiseException("The work order is not setup to be consumed by BOM only");
         }
         // we allow the user to override the default BOM
         // 1. if so we will use the override BOM
@@ -468,7 +514,8 @@ public class WorkOrderProduceTransactionService  {
             }
             BillOfMaterialLine billOfMaterialLine = billOfMaterialLines.get(0);
             Double billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
-            Long consumingQuantity = (long)(billOfMaterialLineConsumeQuantity * totalProducedQuantity / billOfMaterial.getExpectedQuantity());
+            Long consumingQuantity = (long)
+                    Math.ceil(billOfMaterialLineConsumeQuantity * totalProducedQuantity * 1.0 / billOfMaterial.getExpectedQuantity());
             logger.debug("Start to check if we can consume {} of item {} by BOM {}, in order to create {} of item {}",
                     consumingQuantity,
                     workOrderLineConsumeTransaction.getWorkOrderLine().getItem().getName(),
@@ -481,7 +528,7 @@ public class WorkOrderProduceTransactionService  {
             validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
                     workOrderLineConsumeTransaction.getWorkOrderLine(),
                     workOrderProduceTransaction.getProductionLine(),
-                    consumingQuantity
+                    consumingQuantity, isOverConsumeAllowed
             );
 
         }
@@ -489,13 +536,15 @@ public class WorkOrderProduceTransactionService  {
 
     private void validateWorkOrderLineConsumeTransaction(
             WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
-            ProductionLine productionLine) {
+            ProductionLine productionLine,
+            boolean isOverConsumeAllowed) {
 
         // if we consume from the delivered inventory, make sure
         // we have enough quantity being delivered
         if (workOrderLineConsumeTransaction.getConsumedQuantity() > 0) {
             validateWorkOrderLineConsumeTransactionByDeliveredQuantity(workOrderLineConsumeTransaction,
-                    productionLine);
+                    productionLine,
+                    isOverConsumeAllowed);
         }
 
         if (!workOrderLineConsumeTransaction.getWorkOrderLineConsumeLPNTransactions().isEmpty()) {
@@ -565,7 +614,8 @@ public class WorkOrderProduceTransactionService  {
     private void validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
             WorkOrderLine workOrderLine,
             ProductionLine productionLine,
-            Long consumingQuantity) {
+            Long consumingQuantity,
+            boolean isOverConsumeAllowed) {
         Optional<ProductionLineDelivery> productionLineDelivery =
                 Optional.ofNullable(
                         productionLineDeliveryService.getProductionLineDelivery(
@@ -603,6 +653,10 @@ public class WorkOrderProduceTransactionService  {
                 totalDeliveredQuantity,
                 totalConsumedQuantity,
                 consumingQuantity);
+        if (isOverConsumeAllowed) {
+            logger.debug(" over consume is allowed, skip quantity validation");
+            return;
+        }
         if  (totalDeliveredQuantity - totalConsumedQuantity < consumingQuantity) {
 
             throw  WorkOrderException.raiseException(
@@ -615,14 +669,17 @@ public class WorkOrderProduceTransactionService  {
 
     }
     private void validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
+
             WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction,
-            ProductionLine productionLine) {
+            ProductionLine productionLine,
+            boolean isOverConsumeAllowed) {
 
 
         validateWorkOrderLineConsumeTransactionByDeliveredQuantity(
                 workOrderLineConsumeTransaction.getWorkOrderLine(),
                 productionLine,
-                workOrderLineConsumeTransaction.getConsumedQuantity()
+                workOrderLineConsumeTransaction.getConsumedQuantity(),
+                isOverConsumeAllowed
         );
     }
 
@@ -664,10 +721,12 @@ public class WorkOrderProduceTransactionService  {
 
         // consume by BOM
         if (workOrderProduceTransaction.getConsumeByBomQuantity() == true) {
+            logger.debug("we will consume by BOM quantity");
             consumeQuantityByBomQuantity(workOrderLine, workOrderProduceTransaction, totalProducedQuantity);
         }
         else {
             // USER specify the quantity to be consumed
+            logger.debug("user specify the quantity to be consumed, ignore the BOM");
             workOrderProduceTransaction.getWorkOrderLineConsumeTransactions().forEach(workOrderLineConsumeTransaction -> {
                 if (workOrderLine.equals(workOrderLineConsumeTransaction.getWorkOrderLine())) {
 
@@ -702,7 +761,8 @@ public class WorkOrderProduceTransactionService  {
         billOfMaterial.getBillOfMaterialLines().forEach(billOfMaterialLine -> {
             if(billOfMaterialLineService.match(billOfMaterialLine, workOrderLine)) {
                 Double billOfMaterialLineConsumeQuantity = billOfMaterialLine.getExpectedQuantity();
-                Long consumedQuantity = (long)(billOfMaterialLineConsumeQuantity * totalProducedQuantity / finalBillOfMaterial.getExpectedQuantity());
+                Long consumedQuantity = (long)
+                        Math.ceil(billOfMaterialLineConsumeQuantity * totalProducedQuantity * 1.0 / finalBillOfMaterial.getExpectedQuantity());
 
                 workOrderLineService.consume(workOrderLine, consumedQuantity, workOrderProduceTransaction.getProductionLine());
             }
