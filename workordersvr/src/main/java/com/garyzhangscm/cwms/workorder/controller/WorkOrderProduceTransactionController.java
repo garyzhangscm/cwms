@@ -26,8 +26,11 @@ import com.garyzhangscm.cwms.workorder.service.WorkOrderLineService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderProduceTransactionService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -42,9 +45,13 @@ public class WorkOrderProduceTransactionController {
             @RequestParam Long warehouseId,
             @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber,
             @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
-            @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery
+            @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
                                              ) {
-        return workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber,productionLineId,  genericQuery);
+        return workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber,
+                productionLineId,  genericQuery, startTime, endTime, date);
     }
 
     @BillableEndpoint

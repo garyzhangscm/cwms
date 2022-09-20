@@ -147,7 +147,7 @@ public class ProductionLineKanbanService {
                             productionLineAssignment.getWorkOrder().getWarehouseId(),
                             productionLineAssignment.getWorkOrder().getNumber(),
                             productionLineAssignment.getProductionLine().getId(),
-                            false, false
+                            false, null, null, null, false
                     );
 
 

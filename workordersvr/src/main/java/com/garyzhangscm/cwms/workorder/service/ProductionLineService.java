@@ -64,6 +64,8 @@ public class ProductionLineService implements TestDataInitiableService {
 
     @Autowired
     private ProductionLineMonitorTransactionService productionLineMonitorTransactionService;
+    @Autowired
+    WorkOrderProduceTransactionService workOrderProduceTransactionService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -895,4 +897,77 @@ public class ProductionLineService implements TestDataInitiableService {
                 }
         ).collect(Collectors.toList());
     }
+
+    public List<ProductionLineAttribute> getProducedInventoryTotalQuantity(
+            Long warehouseId, String productionLineIds,
+            LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+
+        List<ProductionLine> productionLines =
+                findAll(warehouseId, null, productionLineIds, false, false);
+
+        return getProducedInventoryTotalQuantity(
+                warehouseId, productionLines, startTime, endTime, date
+        );
+    }
+
+    public List<ProductionLineAttribute> getProducedInventoryTotalQuantity(
+            Long warehouseId, List<ProductionLine> productionLines,
+            LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+
+        // default the attribute name to produced-inventory-quantity
+        String name = "produced-inventory-quantity";
+        // first of all, get the current assigned work order for each production line
+
+        return productionLines.stream().map(
+                productionLine -> {
+                    // let's get the work order on the production line
+                    if (Objects.isNull(productionLine.getProductionLineAssignments()) ||
+                            productionLine.getProductionLineAssignments().isEmpty()) {
+                        // there's nothing on the production line yet
+                        // let's return an empty item name
+                        logger.debug("production line {} doesn't have work assignment",
+                                productionLine.getName());
+                        return new ProductionLineAttribute(productionLine, name, "0");
+                    }
+                    Set<String> workOrderNumbers = productionLine.getProductionLineAssignments()
+                            .stream().map(
+                                    productionLineAssignment -> productionLineAssignment.getWorkOrderNumber()
+                            ).collect(Collectors.toSet());
+                    if (workOrderNumbers.size() > 1) {
+                        // there's multiple work orders / item on this production line, we won't
+                        // get each individual item. Instead we will only return a indicator
+                        logger.debug("production line {} has more than one work assignment",
+                                productionLine.getName());
+                        return new ProductionLineAttribute(productionLine, name, "MULTIPLE");
+
+                    }
+                    String workOrderNumber = workOrderNumbers.iterator().next();
+
+                    List<WorkOrderProduceTransaction> workOrderProduceTransactions =
+                            workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber,
+                                    productionLine.getId(),  false, startTime, endTime, date);
+
+                    logger.debug("production line {} and work order {} has {} produced inventory transactions",
+                            productionLine.getName(), workOrderNumber,
+                            workOrderProduceTransactions.size());
+
+                    Long totalProducedInventoryQuantity =
+                            workOrderProduceTransactions.stream().map(
+                                    workOrderProduceTransaction -> workOrderProduceTransaction.getWorkOrderProducedInventories()
+                            ).flatMap(List::stream)
+                            .map(workOrderProducedInventory -> workOrderProducedInventory.getQuantity())
+                            .mapToLong(Long::longValue).sum();
+
+                    logger.debug(">> total produced inventory quantity: {}",
+                            totalProducedInventoryQuantity);
+                    return new ProductionLineAttribute(
+                                productionLine, name, totalProducedInventoryQuantity.toString()
+
+                    );
+
+                }
+        ).collect(Collectors.toList());
+
+    }
+
 }
