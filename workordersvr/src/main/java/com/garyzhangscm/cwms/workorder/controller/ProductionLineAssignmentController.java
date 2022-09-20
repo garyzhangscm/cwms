@@ -37,11 +37,12 @@ public class ProductionLineAssignmentController {
 
     @RequestMapping(value="/production-line-assignments", method = RequestMethod.GET)
     public List<ProductionLineAssignment> findAllProductionLineAssignment(
+                Long warehouseId,
                 @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
                 @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
                 @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds,
                 @RequestParam(name="productionLineNames", required = false, defaultValue = "") String productionLineNames) {
-        return productionLineAssignmentService.findAll(productionLineId, productionLineIds, workOrderId, productionLineNames);
+        return productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, workOrderId, productionLineNames);
     }
 
 
@@ -62,9 +63,10 @@ public class ProductionLineAssignmentController {
 
 
     @RequestMapping(value="/production-line-assignments/assigned-work-orders", method = RequestMethod.GET)
-    public List<WorkOrder> getAssignedWorkOrderByProductionLine(Long productionLineId) {
+    public List<WorkOrder> getAssignedWorkOrderByProductionLine(
+            Long warehouseId,Long productionLineId) {
 
-        return productionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLineId);
+        return productionLineAssignmentService.getAssignedWorkOrderByProductionLine(warehouseId, productionLineId);
     }
 
 

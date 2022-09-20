@@ -175,11 +175,12 @@ public class WorkOrderCompleteTransactionService {
      * @return
      */
 
-    public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction, Long locationId) {
+    public WorkOrderCompleteTransaction startNewTransaction(Long warehouseId, WorkOrderCompleteTransaction workOrderCompleteTransaction, Long locationId) {
         if (Objects.isNull(locationId)) {
             // the user didn't specify any location, choose any production
             List<ProductionLineAssignment> productionLineAssignments =
-                    productionLineAssignmentService.findAll(null, null, workOrderCompleteTransaction.getWorkOrder().getId(), null);
+                    productionLineAssignmentService.findAll(warehouseId,
+                            null, null, workOrderCompleteTransaction.getWorkOrder().getId(), null);
             logger.debug("We get {} production line assignment for work order {} when closing this work order",
                     productionLineAssignments.size(), workOrderCompleteTransaction.getWorkOrder().getNumber());
             logger.debug("We will choose the first production line to complete the work order and receive returned material");
@@ -235,7 +236,7 @@ public class WorkOrderCompleteTransactionService {
     private void deassignProductLine(WorkOrder workOrder) {
         logger.debug("Remove production line assignment for work order {} as it is closed",
                 workOrder.getNumber());
-        productionLineAssignmentService.removeProductionLineAssignmentForWorkOrder(workOrder.getId());
+        productionLineAssignmentService.removeProductionLineAssignmentForWorkOrder(workOrder.getWarehouseId(), workOrder.getId());
 
     }
 

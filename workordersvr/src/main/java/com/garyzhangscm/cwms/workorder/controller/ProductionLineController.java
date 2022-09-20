@@ -23,6 +23,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.ProductionLine;
 
+import com.garyzhangscm.cwms.workorder.model.ProductionLineAttribute;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineStatus;
 import com.garyzhangscm.cwms.workorder.service.ProductionLineService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,14 @@ public class ProductionLineController {
                                                               @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
                                                               @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
         return productionLineService.getProductionLineStatus(warehouseId, name, startTime, endTime);
+    }
+
+    @RequestMapping(value="/production-lines/attribute", method = RequestMethod.GET)
+    public List<ProductionLineAttribute> getProductionLineAttribute(@RequestParam Long warehouseId,
+                                                              @RequestParam String name,
+                                                              @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds) {
+
+        return productionLineService.getProductionLineAttribute(warehouseId,  productionLineIds, name);
     }
 
 }
