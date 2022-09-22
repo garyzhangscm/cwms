@@ -75,7 +75,7 @@ public class SupplierController {
     @BillableEndpoint
     @RequestMapping(value="/suppliers/{id}", method = RequestMethod.PUT)
     public Supplier changeSupplier(@PathVariable Long id, @RequestBody Supplier supplier) {
-        if (supplier.getId() != null && supplier.getId() != id) {
+        if (Objects.nonNull(supplier.getId()) && !Objects.equals(supplier.getId(), id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; supplier.getId(): " + supplier.getId());
 

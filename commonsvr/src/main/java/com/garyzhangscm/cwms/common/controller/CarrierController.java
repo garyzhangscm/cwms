@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class CarrierController {
@@ -55,7 +56,7 @@ public class CarrierController {
     @BillableEndpoint
     @RequestMapping(value="/carriers/{id}", method = RequestMethod.PUT)
     public Carrier changeCarrier(@PathVariable Long id, @RequestBody Carrier carrier) {
-        if (carrier.getId() != null && carrier.getId() != id) {
+        if (Objects.nonNull(carrier.getId()) && !Objects.equals(carrier.getId(), id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; carrier.getId(): " + carrier.getId());
         }

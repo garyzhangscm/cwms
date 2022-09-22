@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class CarrierServiceLevelController {
@@ -52,7 +53,7 @@ public class CarrierServiceLevelController {
     @BillableEndpoint
     @RequestMapping(value="/carrier-service-levels/{id}", method = RequestMethod.PUT)
     public CarrierServiceLevel changeCarrierServiceLevel(@PathVariable Long id, @RequestBody CarrierServiceLevel carrierServiceLevel) {
-        if (carrierServiceLevel.getId() != null && carrierServiceLevel.getId() != id) {
+        if (Objects.nonNull(carrierServiceLevel.getId()) && !Objects.equals(carrierServiceLevel.getId(), id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; carrierServiceLevel.getId(): " + carrierServiceLevel.getId());
         }

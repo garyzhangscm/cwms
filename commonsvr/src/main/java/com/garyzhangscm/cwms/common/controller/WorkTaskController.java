@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class WorkTaskController {
@@ -98,7 +99,7 @@ public class WorkTaskController {
     @BillableEndpoint
     @RequestMapping(value="/work-tasks/{id}", method = RequestMethod.PUT)
     public WorkTask changeWorkTask(@PathVariable Long id, @RequestBody WorkTask workTask) {
-        if (workTask.getId() != null && workTask.getId() != id) {
+        if (Objects.nonNull(workTask.getId()) && !Objects.equals(workTask.getId(), id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; workTask.getId(): " + workTask.getId());
         }
