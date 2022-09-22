@@ -34,6 +34,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class PolicyController {
@@ -71,7 +72,7 @@ public class PolicyController {
     )
     public Policy changePolicy(@PathVariable Long id,
                              @RequestBody Policy policy) {
-        if (policy.getId() != null && policy.getId() != id) {
+        if (Objects.nonNull(policy.getId()) && !Objects.equals(policy.getId(),  id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; policy.getId(): " + policy.getId());
         }

@@ -91,7 +91,7 @@ public class ClientController {
             }
     )
     public Client changeClient(@PathVariable Long id, @RequestBody Client client) {
-        if (client.getId() != null && client.getId() != id) {
+        if (Objects.nonNull(client.getId()) && !Objects.equals(client.getId(), id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; client.getId(): " + client.getId());
         }

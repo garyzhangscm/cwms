@@ -75,7 +75,7 @@ public class CustomerController {
     @BillableEndpoint
     @RequestMapping(value="/customers/{id}", method = RequestMethod.PUT)
     public Customer changeCustomer(@PathVariable Long id, @RequestBody Customer customer) {
-        if (customer.getId() != null && customer.getId() != id) {
+        if (Objects.nonNull(customer.getId()) && !Objects.equals(customer.getId(), id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; customer.getId(): " + customer.getId());
         }
