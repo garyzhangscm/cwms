@@ -258,9 +258,10 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations")
-    public Location addLocation(@RequestBody Location location) {
+    public Location addLocation(@RequestParam Long warehouseId,
+                                @RequestBody Location location) {
 
-        return locationService.saveOrUpdate(location);
+        return locationService.addLocation(warehouseId, location);
     }
 
     @BillableEndpoint
