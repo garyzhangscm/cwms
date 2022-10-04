@@ -1,0 +1,9 @@
+type,name,description,ratio,baseUnitFlag
+LENGTH,inch,inch,1,true
+LENGTH,foot,foot,12,false
+LENGTH,cm,centimeter,2.54,false
+LENGTH,m,meter,254,false
+WEIGHT,lb,pound,1,true
+WEIGHT,g,gram,0.002205,false
+WEIGHT,kg,kilogram,2.205,false
+WEIGHT,oz,ounce,0.0625,false
