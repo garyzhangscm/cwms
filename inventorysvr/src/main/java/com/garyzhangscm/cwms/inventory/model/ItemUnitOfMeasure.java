@@ -52,13 +52,21 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     @Column(name = "weight")
     private Double weight;
+    @Column(name = "weight_unit")
+    private String weightUnit;
 
     @Column(name = "length")
     private Double length;
+    @Column(name = "length_unit")
+    private String lengthUnit;
     @Column(name = "width")
     private Double width;
+    @Column(name = "width_unit")
+    private String widthUnit;
     @Column(name = "height")
     private Double height;
+    @Column(name = "height_unit")
+    private String heightUnit;
 
     @Column(name = "default_for_inbound_receiving")
     private Boolean defaultForInboundReceiving = false;
@@ -224,5 +232,37 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setCaseFlag(Boolean caseFlag) {
         this.caseFlag = caseFlag;
+    }
+
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
+    }
+
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
+    }
+
+    public String getWidthUnit() {
+        return widthUnit;
+    }
+
+    public void setWidthUnit(String widthUnit) {
+        this.widthUnit = widthUnit;
+    }
+
+    public String getHeightUnit() {
+        return heightUnit;
+    }
+
+    public void setHeightUnit(String heightUnit) {
+        this.heightUnit = heightUnit;
     }
 }
