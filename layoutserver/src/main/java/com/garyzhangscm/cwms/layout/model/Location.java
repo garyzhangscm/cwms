@@ -58,10 +58,16 @@ public class Location extends AuditibleEntity<String>{
 
     @Column(name = "length")
     private Double length;
+    @Column(name = "length_unit")
+    private String lengthUnit;
     @Column(name = "width")
     private Double width;
+    @Column(name = "width_unit")
+    private String widthUnit;
     @Column(name = "height")
     private Double height;
+    @Column(name = "height_unit")
+    private String heightUnit;
 
     @Column(name = "pick_sequence")
     private Long pickSequence;
@@ -72,6 +78,8 @@ public class Location extends AuditibleEntity<String>{
 
     @Column(name = "capacity")
     private Double capacity;
+    @Column(name = "capacity_unit")
+    private String capacityUnit;
     @Column(name = "fill_percentage")
     private Double fillPercentage;
 
@@ -293,4 +301,35 @@ public class Location extends AuditibleEntity<String>{
         this.code = code;
     }
 
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
+    }
+
+    public String getWidthUnit() {
+        return widthUnit;
+    }
+
+    public void setWidthUnit(String widthUnit) {
+        this.widthUnit = widthUnit;
+    }
+
+    public String getHeightUnit() {
+        return heightUnit;
+    }
+
+    public void setHeightUnit(String heightUnit) {
+        this.heightUnit = heightUnit;
+    }
+
+    public String getCapacityUnit() {
+        return capacityUnit;
+    }
+
+    public void setCapacityUnit(String capacityUnit) {
+        this.capacityUnit = capacityUnit;
+    }
 }

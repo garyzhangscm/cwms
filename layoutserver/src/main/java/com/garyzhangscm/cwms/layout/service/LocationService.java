@@ -937,4 +937,13 @@ public class LocationService implements TestDataInitiableService {
         );
         return utilizationTrackingLocations;
     }
+
+    public Location addLocation(Long warehouseId, Location location) {
+        if (Objects.isNull(location.getWarehouse())) {
+            location.setWarehouse(
+                    warehouseService.findById(warehouseId)
+            );
+        }
+        return saveOrUpdate(location);
+    }
 }
