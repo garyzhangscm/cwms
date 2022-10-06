@@ -143,6 +143,13 @@ public class PickListService {
     // we don't have the matched policy, return null
     @Transactional
     public PickList processPickList(Pick pick) {
+        // first, let's check if the pick is enabled
+        // 1. globally
+        // 2. enabled for the customer
+        // 3. etc(see the method for the details
+        if(!listPickEnabled(pick)) {
+            return null;
+        }
         // Step 1. Find the matched configuration
         List<ListPickingConfiguration> listPickingConfigurations = findMatchedListPickingConfiguration(pick);
 
@@ -163,6 +170,57 @@ public class PickListService {
             return createPickList(listPickingConfigurations, pick);
 
         }
+
+    }
+
+    private boolean listPickEnabled(Pick pick) {
+
+        // see if the list pick is enabled for the warehouse
+        WarehouseConfiguration warehouseConfiguration =
+                warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(
+                        pick.getWarehouseId()
+                );
+        if (Objects.isNull(warehouseConfiguration) ||
+                !Boolean.TRUE.equals(warehouseConfiguration.getListPickEnabledFlag())) {
+            // warehouse configuration is not setup
+            // or list pick is not enabled
+            return false;
+        }
+
+        // see if the list pick is enabled for the client
+        Client client = pick.getShipmentLine().getOrderLine().getOrder().getClient();
+        if (Objects.isNull(client)) {
+            Long clientId = pick.getShipmentLine().getOrderLine().getOrder().getClientId();
+            if (Objects.nonNull(clientId)) {
+                client = commonServiceRestemplateClient.getClientById(clientId);
+            }
+        }
+
+        if (Objects.nonNull(client) && !Boolean.TRUE.equals(client.getListPickEnabledFlag())) {
+
+            // ok the order belongs to certain client but list pick is not enabled
+            // for the client
+            return false;
+        }
+
+        // see if list pick is enabled for the customer
+        Customer shipToCustomer = pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomer();
+        if (Objects.isNull(shipToCustomer)) {
+            Long customerId = pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomerId();
+            if (Objects.nonNull(customerId)) {
+                shipToCustomer = commonServiceRestemplateClient.getCustomerById(customerId);
+            }
+        }
+
+        if (Objects.nonNull(shipToCustomer) && !Boolean.TRUE.equals(shipToCustomer.getListPickEnabledFlag())) {
+
+            // ok the order belongs to certain customer but list pick is not enabled
+            // for the client
+            return false;
+        }
+
+
+        return true;
 
     }
 

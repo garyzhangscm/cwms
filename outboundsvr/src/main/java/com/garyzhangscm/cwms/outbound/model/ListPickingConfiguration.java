@@ -44,20 +44,6 @@ public class ListPickingConfiguration  extends AuditibleEntity<String> {
     @Column(name = "enabled")
     private Boolean enabled;
 
-    @Override
-    public String toString() {
-        return "ListPickingConfiguration{" +
-                "id=" + id +
-                ", sequence=" + sequence +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", clientId=" + clientId +
-                ", client=" + client +
-                ", pickType=" + pickType +
-                ", groupRule=" + groupRule +
-                ", enabled=" + enabled +
-                '}';
-    }
 
     public Long getId() {
         return id;

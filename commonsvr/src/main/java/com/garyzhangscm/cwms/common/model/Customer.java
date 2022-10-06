@@ -54,6 +54,9 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
     @Column(name = "description")
     private String description;
 
+    // whether list pick is enabled for this customer
+    @Column(name = "list_pick_enabled_flag")
+    private Boolean listPickEnabledFlag  = false;
 
     @Column(name = "contactor_firstname")
     private String contactorFirstname;
@@ -274,5 +277,13 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
 
     public void setUserDefinedField5(String userDefinedField5) {
         this.userDefinedField5 = userDefinedField5;
+    }
+
+    public Boolean getListPickEnabledFlag() {
+        return listPickEnabledFlag;
+    }
+
+    public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
+        this.listPickEnabledFlag = listPickEnabledFlag;
     }
 }

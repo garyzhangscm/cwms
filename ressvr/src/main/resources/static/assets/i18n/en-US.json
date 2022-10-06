@@ -1858,5 +1858,6 @@
   "itemScanned": "Item Scanned",
   "difference": "Difference",
   "laborNeed": "Labor Needed",
-  "lastCycleTime": "Last Cycle Time"
+  "lastCycleTime": "Last Cycle Time",
+  "listPickEnabledFlag": "List Pick Enabled"
 }

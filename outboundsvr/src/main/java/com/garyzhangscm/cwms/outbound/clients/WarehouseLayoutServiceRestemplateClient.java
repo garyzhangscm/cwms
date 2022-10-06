@@ -249,6 +249,25 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+
+    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouse-configuration/by-warehouse/{warehouseId}");
+
+        ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
     @Cacheable(cacheNames = "outbound_locationGroup", unless="#result == null")
     public LocationGroup getLocationGroupById(Long id) {
         UriComponentsBuilder builder =

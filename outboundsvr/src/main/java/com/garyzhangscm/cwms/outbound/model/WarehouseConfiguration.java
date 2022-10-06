@@ -16,37 +16,20 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.layout.model;
+package com.garyzhangscm.cwms.outbound.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
-import java.io.Serializable;
+public class WarehouseConfiguration {
 
-@Entity
-@Table(name = "warehouse_configuration")
-public class WarehouseConfiguration extends AuditibleEntity<String> implements Serializable {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "warehouse_configuration_id")
-    @JsonProperty(value="id")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
-
-    // whether this warehouse is serving as
-    // 3pl warehouse
-    @Column(name = "three_party_logistics_flag")
     private Boolean threePartyLogisticsFlag;
 
-    // whether list pick is enabled for this warehouse
-    @Column(name = "list_pick_enabled_flag")
-    private Boolean listPickEnabledFlag = false;
+    private Boolean listPickEnabledFlag ;
+
 
     public Long getId() {
         return id;
