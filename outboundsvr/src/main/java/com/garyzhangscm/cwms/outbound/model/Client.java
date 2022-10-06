@@ -42,6 +42,8 @@ public class Client implements Serializable {
     private String addressLine2;
     private String addressPostcode;
 
+    private Boolean listPickEnabledFlag ;
+
     public Long getId() {
         return id;
     }
@@ -144,5 +146,13 @@ public class Client implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Boolean getListPickEnabledFlag() {
+        return listPickEnabledFlag;
+    }
+
+    public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
+        this.listPickEnabledFlag = listPickEnabledFlag;
     }
 }

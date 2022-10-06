@@ -29,6 +29,8 @@ public class Customer implements Serializable {
 
     private String description;
 
+    private Boolean listPickEnabledFlag ;
+
     private String contactorFirstname;
     private String contactorLastname;
 
@@ -143,5 +145,13 @@ public class Customer implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Boolean getListPickEnabledFlag() {
+        return listPickEnabledFlag;
+    }
+
+    public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
+        this.listPickEnabledFlag = listPickEnabledFlag;
     }
 }

@@ -1858,5 +1858,6 @@
   "itemScanned": "商品扫描数量",
   "difference": "差距",
   "laborNeed": "所需工人数量",
-  "lastCycleTime": "最后一周期用时"
+  "lastCycleTime": "最后一周期用时",
+  "listPickEnabledFlag": "启用列表拣货"
 }

@@ -44,6 +44,10 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @Column(name = "three_party_logistics_flag")
     private Boolean threePartyLogisticsFlag;
 
+    // whether list pick is enabled for this warehouse
+    @Column(name = "list_pick_enabled_flag")
+    private Boolean listPickEnabledFlag = false;
+
     public Long getId() {
         return id;
     }
@@ -68,4 +72,11 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
         this.threePartyLogisticsFlag = threePartyLogisticsFlag;
     }
 
+    public Boolean getListPickEnabledFlag() {
+        return listPickEnabledFlag;
+    }
+
+    public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
+        this.listPickEnabledFlag = listPickEnabledFlag;
+    }
 }
