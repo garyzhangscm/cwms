@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "outbound_order")
@@ -231,6 +232,11 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(number, warehouseId);
     }
 
     public LocalDateTime getCompleteTime() {
