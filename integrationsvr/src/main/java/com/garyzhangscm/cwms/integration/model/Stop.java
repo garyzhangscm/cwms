@@ -13,6 +13,8 @@ public class Stop   implements Serializable {
     private String number;
 
 
+    private Long shipToCustomerId;
+
     private Long sequence;
     private Long trailerAppointmentId;
     private TrailerAppointment trailerAppointment;
@@ -160,5 +162,13 @@ public class Stop   implements Serializable {
 
     public void setTrailerAppointment(TrailerAppointment trailerAppointment) {
         this.trailerAppointment = trailerAppointment;
+    }
+
+    public Long getShipToCustomerId() {
+        return shipToCustomerId;
+    }
+
+    public void setShipToCustomerId(Long shipToCustomerId) {
+        this.shipToCustomerId = shipToCustomerId;
     }
 }

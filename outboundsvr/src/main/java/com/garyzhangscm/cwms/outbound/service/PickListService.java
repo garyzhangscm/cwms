@@ -25,7 +25,6 @@ import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickListRepository;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +38,7 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -48,7 +48,7 @@ public class PickListService {
     @Autowired
     private PickListRepository pickListRepository;
     @Autowired
-    private ListPickingConfigurationService listPickingConfigurationService;
+    private ListPickConfigurationService listPickConfigurationService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -148,26 +148,28 @@ public class PickListService {
         // 2. enabled for the customer
         // 3. etc(see the method for the details
         if(!listPickEnabled(pick)) {
+            logger.debug("list pick is not enabled");
+
             return null;
         }
         // Step 1. Find the matched configuration
-        List<ListPickingConfiguration> listPickingConfigurations = findMatchedListPickingConfiguration(pick);
+        List<ListPickConfiguration> listPickConfigurations = findMatchedListPickingConfiguration(pick);
 
         logger.debug("We find {} list picking configuration that match with current pick",
-                listPickingConfigurations.size());
-        if (listPickingConfigurations.size() == 0) {
+                listPickConfigurations.size());
+        if (listPickConfigurations.size() == 0) {
             // throw PickingException.raiseException("No list picking configuration defined for the current pick " + pick);
             return null;
         }
         try {
-            PickList  pickList = findMatchedPickList(listPickingConfigurations, pick);
+            PickList  pickList = findMatchedPickList(listPickConfigurations, pick);
             return pickList;
         }
         catch (GenericException ex) {
             // OK we can't find any existing pick list for the pick. Let's
             // create a new list based upon the first available pick list
             logger.debug("We can't find any existing picking list, let's try to create one based on the configuration");
-            return createPickList(listPickingConfigurations, pick);
+            return createPickList(listPickConfigurations, pick);
 
         }
 
@@ -224,33 +226,33 @@ public class PickListService {
 
     }
 
-    private List<ListPickingConfiguration> findMatchedListPickingConfiguration(Pick pick) {
-        return listPickingConfigurationService.findMatchedListPickingConfiguration(pick);
+    private List<ListPickConfiguration> findMatchedListPickingConfiguration(Pick pick) {
+        return listPickConfigurationService.findMatchedListPickConfiguration(pick);
 
     }
 
-    private PickList findMatchedPickList(List<ListPickingConfiguration> listPickingConfigurations, Pick pick) {
+    private PickList findMatchedPickList(List<ListPickConfiguration> listPickConfigurations, Pick pick) {
 
-        for(ListPickingConfiguration listPickingConfiguration : listPickingConfigurations) {
+        for(ListPickConfiguration listPickConfiguration : listPickConfigurations) {
             try {
                 logger.debug("Start to find existing PENDING picking list based on the configuraiton {}",
-                        listPickingConfiguration);
-                PickList pickList = findMatchedPickList(listPickingConfiguration, pick);
+                        listPickConfiguration);
+                PickList pickList = findMatchedPickList(listPickConfiguration, pick);
                 return pickList;
             }
             catch (GenericException ex) {
                 // if we can't find a list, let's just ignore and continue with the next configuration
                 logger.debug("Fail when try the configuration {}, exception: \n{}",
-                        listPickingConfiguration.getId(), ex.getMessage());
+                        listPickConfiguration.getId(), ex.getMessage());
             }
         }
         throw PickingException.raiseException( "Can't find matched open list while trying all the list pick configurations");
 
     }
 
-    private PickList findMatchedPickList(ListPickingConfiguration listPickingConfiguration, Pick pick) {
+    private PickList findMatchedPickList(ListPickConfiguration listPickConfiguration, Pick pick) {
 
-        String groupKey = getGroupKey(listPickingConfiguration, pick);
+        String groupKey = getGroupKey(listPickConfiguration, pick);
 
         logger.debug("Will try to find existing list picking based on groupKey: {}",
                 groupKey);
@@ -262,10 +264,10 @@ public class PickListService {
         return pickLists.get(0);
     }
 
-    private String getGroupKey(ListPickingConfiguration listPickingConfiguration, Pick pick) {
+    private String getGroupKey(ListPickConfiguration listPickConfiguration, Pick pick) {
 
         if (Objects.nonNull(pick.getCartonization()) &&
-                !validategroupKeyByCartonization(listPickingConfiguration, pick)) {
+                !validategroupKeyByCartonization(listPickConfiguration, pick)) {
             String errorMessage = "The picks in the cartonization: " +
                                    pick.getCartonization() +
                                     ", have different group key";
@@ -273,22 +275,55 @@ public class PickListService {
             logger.debug(errorMessage);
             throw PickingException.raiseException(errorMessage);
         }
-        String groupKey = "";
-        switch (listPickingConfiguration.getGroupRule()) {
-            case BY_ORDER:
-                groupKey = pick.getOrderNumber();
-                break;
-            case BY_SHIPMENT:
-                groupKey = pick.getShipmentLine().getShipmentNumber();
-                break;
-            default:
-                throw PickingException.raiseException( "Can't get group key from the pick: " + pick);
-        }
-        return groupKey;
+        List<String> groupKeyList = new ArrayList<>();
+        listPickConfiguration.getGroupRules().forEach(
+            groupRule -> {
+                switch (groupRule.getGroupRuleType()) {
+                    case BY_ORDER:
+                        groupKeyList.add(pick.getOrderNumber());
+                        break;
+                    case BY_SHIPMENT:
+                        groupKeyList.add(pick.getShipmentLine().getShipmentNumber());
+                        break;
+                    case BY_CUSTOMER:
+                        groupKeyList.add(
+                                Objects.nonNull(pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomerId()) ?
+                                        pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomerId().toString() :
+                                        "****"
+                                );
+                        break;
+                    case BY_ITEM:
+                        groupKeyList.add(
+                                Objects.nonNull(pick.getShipmentLine().getOrderLine().getItemId()) ?
+                                        pick.getShipmentLine().getOrderLine().getItemId().toString() :
+                                        "****"
+                        );
+                        break;
+                    case BY_TRAILER_APPOINTMENT:
+                        if (Objects.nonNull(pick.getShipmentLine()) &&
+                               Objects.nonNull(pick.getShipmentLine().getShipment()) &&
+                                Objects.nonNull(pick.getShipmentLine().getShipment().getStop()) &&
+                                Objects.nonNull(pick.getShipmentLine().getShipment().getStop().getTrailerAppointmentId())) {
+
+                            groupKeyList.add(pick.getShipmentLine().getShipment().getStop().getTrailerAppointmentId().toString());
+                        }
+                        else {
+
+                            groupKeyList.add("****");
+                        }
+
+                        break;
+                }
+
+            }
+        );
+
+        return groupKeyList.stream().collect(Collectors.joining("#"));
     }
 
-    private boolean validategroupKeyByCartonization(ListPickingConfiguration listPickingConfiguration, Pick pick) {
+    private boolean validategroupKeyByCartonization(ListPickConfiguration listPickConfiguration, Pick pick) {
 
+        /*
         Cartonization cartonization = pick.getCartonization();
         // We will get the group key's values from each pick in the cartonization
         // then make sure the value is unique in all the
@@ -305,15 +340,17 @@ public class PickListService {
 
         }
         return keyValue.size() == 1;
+        */
+        return true;
     }
 
     @Transactional
-    protected PickList createPickList(List<ListPickingConfiguration> listPickingConfigurations, Pick pick) {
+    protected PickList createPickList(List<ListPickConfiguration> listPickConfigurations, Pick pick) {
 
         // Create the pick list based upon the first configuration
-        ListPickingConfiguration listPickingConfiguration = listPickingConfigurations.get(0);
-        logger.debug("try to create picking list based on the configuration {}", listPickingConfiguration);
-        String groupKey = getGroupKey(listPickingConfiguration, pick);
+        ListPickConfiguration listPickConfiguration = listPickConfigurations.get(0);
+        logger.debug("try to create picking list based on the configuration {}", listPickConfiguration);
+        String groupKey = getGroupKey(listPickConfiguration, pick);
 
         PickList pickList = new PickList();
         pickList.setGroupKey(groupKey);

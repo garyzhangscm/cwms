@@ -42,11 +42,12 @@ public class ShortAllocationController {
             @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
             @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
             @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
+            @RequestParam(name="trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
             @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
             @RequestParam(name="includeCancelledShortAllocation", required = false, defaultValue = "false") Boolean includeCancelledShortAllocation,
             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
         return shortAllocationService.findAll(warehouseId, workOrderLineId, workOrderLineIds,
-                itemNumber, orderId, workOrderId, shipmentId, waveId, includeCancelledShortAllocation, loadDetails);
+                itemNumber, orderId, workOrderId, shipmentId, waveId, includeCancelledShortAllocation, trailerAppointmentId, loadDetails);
     }
 
     @RequestMapping(value="/shortAllocations/{id}", method = RequestMethod.GET)

@@ -56,6 +56,11 @@ public class Stop  extends AuditibleEntity<String> {
     @Transient
     private TrailerAppointment trailerAppointment;
 
+    @Column(name = "ship_to_customer_id")
+    private Long shipToCustomerId;
+    @Transient
+    private Customer shipToCustomer;
+
     @Column(name = "contactor_firstname")
     private String contactorFirstname;
     @Column(name = "contactor_lastname")
@@ -390,5 +395,21 @@ public class Stop  extends AuditibleEntity<String> {
         if (Objects.nonNull(getTrailerAppointment())) {
             getTrailerAppointment().setTrailer(trailer);
         }
+    }
+
+    public Long getShipToCustomerId() {
+        return shipToCustomerId;
+    }
+
+    public void setShipToCustomerId(Long shipToCustomerId) {
+        this.shipToCustomerId = shipToCustomerId;
+    }
+
+    public Customer getShipToCustomer() {
+        return shipToCustomer;
+    }
+
+    public void setShipToCustomer(Customer shipToCustomer) {
+        this.shipToCustomer = shipToCustomer;
     }
 }

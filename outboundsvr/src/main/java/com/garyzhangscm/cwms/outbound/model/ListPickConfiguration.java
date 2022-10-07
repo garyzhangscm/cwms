@@ -3,18 +3,20 @@ package com.garyzhangscm.cwms.outbound.model;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "list_picking_configuration")
-public class ListPickingConfiguration  extends AuditibleEntity<String> {
+@Table(name = "list_pick_configuration")
+public class ListPickConfiguration extends AuditibleEntity<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "list_picking_configuration_id")
+    @Column(name = "list_pick_configuration_id")
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "sequence", unique = true)
+    @Column(name = "sequence")
     private Integer sequence;
 
 
@@ -32,18 +34,34 @@ public class ListPickingConfiguration  extends AuditibleEntity<String> {
     @Transient
     private Client client;
 
+    @Column(name = "customer_id")
+    private Long customerId;
+
+    @Transient
+    private Customer customer;
+
     @Column(name = "pick_type")
     @Enumerated(EnumType.STRING)
     private PickType pickType;
 
-    // Group Rule
-    @Column(name = "group_rule")
-    @Enumerated(EnumType.STRING)
-    private ListPickingGroupRule groupRule;
 
     @Column(name = "enabled")
     private Boolean enabled;
 
+    @OneToMany(
+            mappedBy = "listPickConfiguration",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<ListPickConfigurationGroupRule> groupRules = new ArrayList<>();
+
+
+    @Column(name = "max_volume")
+    private Double maxVolume = 0.0;
+
+    @Column(name = "max_weight")
+    private Double maxWeight = 0.0;
 
     public Long getId() {
         return id;
@@ -93,13 +111,6 @@ public class ListPickingConfiguration  extends AuditibleEntity<String> {
         this.client = client;
     }
 
-    public ListPickingGroupRule getGroupRule() {
-        return groupRule;
-    }
-
-    public void setGroupRule(ListPickingGroupRule groupRule) {
-        this.groupRule = groupRule;
-    }
 
     public Boolean getEnabled() {
         return enabled;
@@ -117,4 +128,44 @@ public class ListPickingConfiguration  extends AuditibleEntity<String> {
         this.pickType = pickType;
     }
 
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public List<ListPickConfigurationGroupRule> getGroupRules() {
+        return groupRules;
+    }
+
+    public void setGroupRules(List<ListPickConfigurationGroupRule> groupRules) {
+        this.groupRules = groupRules;
+    }
+
+    public Double getMaxVolume() {
+        return maxVolume;
+    }
+
+    public void setMaxVolume(Double maxVolume) {
+        this.maxVolume = maxVolume;
+    }
+
+    public Double getMaxWeight() {
+        return maxWeight;
+    }
+
+    public void setMaxWeight(Double maxWeight) {
+        this.maxWeight = maxWeight;
+    }
 }

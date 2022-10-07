@@ -43,6 +43,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,,true,false
 "Pick",menu.main.outbound.pick,/outbound/pick,4,Main-Menu-Outbound,Outbound-Pick,,true,false
 "Pick List",menu.main.outbound.pick-list,/outbound/pick-list,5,Main-Menu-Outbound,Outbound-PickList,,true,false
+"Pick List Configuration",menu.main.outbound.list-pick-configuration,/outbound/list-pick-configuration,5,Main-Menu-Outbound,Outbound-ListPickConfigure,,true,false
 "Carton",menu.main.outbound.carton,/outbound/carton,6,Main-Menu-Outbound,Outbound-Carton,,true,false
 "Cartonization Configuration",menu.main.outbound.cartonization-configuration,/outbound/cartonization-configuration,7,Main-Menu-Outbound,Outbound-CartonizationConfiguration,,true,false
 "Cartonization",menu.main.outbound.cartonization,/outbound/cartonization,8,Main-Menu-Outbound,Outbound-Cartonization,,true,false
