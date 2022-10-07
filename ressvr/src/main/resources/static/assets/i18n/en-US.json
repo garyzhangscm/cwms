@@ -1859,5 +1859,16 @@
   "difference": "Difference",
   "laborNeed": "Labor Needed",
   "lastCycleTime": "Last Cycle Time",
-  "listPickEnabledFlag": "List Pick Enabled"
+  "listPickEnabledFlag": "List Pick Enabled",
+  "menu.main.outbound.list-pick-configuration": "List Pick Configuration",
+  "pickType": "Pick Type",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_ORDER": "By Order",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_SHIPMENT": "By Shipment",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_CARRIER": "By Carrier",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_CUSTOMER": "By Customer",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_LOCATION_GROUP": "By Location Group",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_STOP": "By Stop",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_TRAILER_APPOINTMENT": "By Load",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_ITEM": "By Item",
+  "groupRules": "Group Rules"
 }

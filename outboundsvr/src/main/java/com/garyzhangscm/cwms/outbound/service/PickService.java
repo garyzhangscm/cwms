@@ -124,6 +124,7 @@ public class PickService {
                               String itemNumber,
                               String sourceLocationName,
                               String destinationLocationName,
+                              Long trailerAppointmentId,
                               boolean loadDetails) {
 
         List<Pick> picks =  pickRepository.findAll(
@@ -154,10 +155,20 @@ public class PickService {
                             predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
                         }
                     }
-                    if (Objects.nonNull(shipmentId)) {
+                    if (Objects.nonNull(shipmentId) || Objects.nonNull(trailerAppointmentId)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, Shipment> joinShipment= joinShipmentLine.join("shipment", JoinType.INNER);
-                        predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
+
+                        if (Objects.nonNull(shipmentId)) {
+
+                            predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
+                        }
+                        if (Objects.nonNull(trailerAppointmentId)) {
+
+                            Join<Shipment, Stop> joinStop = joinShipment.join("stop", JoinType.INNER);
+                            predicates.add(criteriaBuilder.equal(joinStop.get("trailerAppointmentId"), trailerAppointmentId));
+                        }
+
 
                     }
                     if (Strings.isNotBlank(shipmentNumber)) {
@@ -293,12 +304,15 @@ public class PickService {
                               String cartonizationNumber,
                               String itemNumber,
                               String sourceLocationName,
-                              String destinationLocationName,Boolean openPickOnly) {
+                              String destinationLocationName,
+                              Long trailerAppointmentId,
+                              Boolean openPickOnly) {
         return findAll(warehouseId, number, orderId, orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber,
                 itemNumber, sourceLocationName, destinationLocationName,
+                trailerAppointmentId,
                 true);
     }
 
@@ -314,14 +328,14 @@ public class PickService {
         return findAll(order.getWarehouseId(), null, order.getId(), null, null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null, null);
+                null, null, null, null, null, null);
     }
 
     public List<Pick> findByShipment(Shipment shipment) {
         return findAll(shipment.getWarehouseId(), null, null, null, shipment.getId(),
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null, null);
+                null, null, null, null, null, null);
     }
     public List<Pick> findByWorkOrder(WorkOrder workOrder) {
         String workOrderLineIds
@@ -332,28 +346,28 @@ public class PickService {
         return findAll(workOrder.getWarehouseId(), null, null, null,  null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, workOrderLineIds, null,null, null);
+                null, workOrderLineIds, null,null, null, null);
     }
     public List<Pick> findByWave(Wave wave) {
 
         return findAll(wave.getWarehouseId(), null, null, null, null,
                 wave.getId(), null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null);
+                null, null, null, null,null, null);
     }
     public List<Pick> findByPickList(PickList pickList) {
 
         return findAll(pickList.getWarehouseId(), null, null, null,  null,
                 null, pickList.getId(),  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null);
+                null, null, null, null,null, null);
     }
     public List<Pick> findByCartonization(Cartonization cartonization) {
 
         return findAll(cartonization.getWarehouseId(), null, null, null, null,
                 null, null,  cartonization.getId(),null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null);
+                null, null, null, null,null, null);
     }
 
     public Pick findByNumber(String number) {

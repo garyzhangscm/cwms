@@ -75,12 +75,12 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
 
     @Column(name = "ship_to_customer_id")
     private Long shipToCustomerId;
+    @Transient
+    private Customer shipToCustomer;
 
     @Column(name = "complete_time")
     private LocalDateTime completeTime;
 
-    @Transient
-    private Customer shipToCustomer;
     // Ship to Address
     @Column(name = "ship_to_contactor_firstname")
     private String shipToContactorFirstname;

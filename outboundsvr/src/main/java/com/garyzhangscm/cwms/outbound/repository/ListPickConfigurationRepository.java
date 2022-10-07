@@ -18,14 +18,14 @@
 
 package com.garyzhangscm.cwms.outbound.repository;
 
-import com.garyzhangscm.cwms.outbound.model.ListPickingConfiguration;
+import com.garyzhangscm.cwms.outbound.model.ListPickConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ListPickingConfigurationRepository extends JpaRepository<ListPickingConfiguration, Long>, JpaSpecificationExecutor<ListPickingConfiguration> {
+public interface ListPickConfigurationRepository extends JpaRepository<ListPickConfiguration, Long>, JpaSpecificationExecutor<ListPickConfiguration> {
 
-    ListPickingConfiguration findBySequence(int sequence);
+    ListPickConfiguration findBySequence(int sequence);
 
 }

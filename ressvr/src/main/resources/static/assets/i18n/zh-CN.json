@@ -1859,5 +1859,16 @@
   "difference": "差距",
   "laborNeed": "所需工人数量",
   "lastCycleTime": "最后一周期用时",
-  "listPickEnabledFlag": "启用列表拣货"
+  "listPickEnabledFlag": "启用列表拣货",
+  "menu.main.outbound.list-pick-configuration": "列表拣货配置",
+  "pickType": "拣货类型",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_ORDER": "按订单",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_SHIPMENT": "按发货单",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_CARRIER": "按承运商",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_CUSTOMER": "按客户",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_LOCATION_GROUP": "按库位组",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_STOP": "按发运站点",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_TRAILER_APPOINTMENT": "按发运车辆",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_ITEM": "按商品",
+  "groupRules": "组合规则"
 }

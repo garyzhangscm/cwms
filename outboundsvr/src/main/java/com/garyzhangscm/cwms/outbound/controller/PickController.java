@@ -42,6 +42,7 @@ public class PickController {
                                    @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
                                    @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
+                                   @RequestParam(name="trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
                                    @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
                                    @RequestParam(name="listId", required = false, defaultValue = "") Long listId,
                                    @RequestParam(name="cartonizationId", required = false, defaultValue = "") Long cartonizationId,
@@ -72,7 +73,7 @@ public class PickController {
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber, itemNumber,
-                sourceLocationName, destinationLocationName,
+                sourceLocationName, destinationLocationName, trailerAppointmentId,
                 loadDetails);
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)

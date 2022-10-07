@@ -93,7 +93,7 @@ public class ShortAllocationService {
     public List<ShortAllocation> findAll(boolean loadDetails) {
         return findAll(null, null,
                 null, null, null,
-                null, null, null, false, loadDetails);
+                null, null, null, false, null, loadDetails);
     }
 
     public List<ShortAllocation> findAll() {
@@ -104,6 +104,7 @@ public class ShortAllocationService {
                                          Long workOrderLineId, String workOrderLineIds,
                                          String itemNumber, Long orderId,  Long workOrderId,
                                          Long shipmentId, Long waveId, Boolean includeCancelledShortAllocation,
+                                         Long trailerAppointmentId,
                                          boolean loadDetails) {
 
 
@@ -111,10 +112,8 @@ public class ShortAllocationService {
                 (Root<ShortAllocation> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    if (Objects.nonNull(warehouseId)) {
 
-                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
-                    }
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (Objects.nonNull(workOrderLineId)) {
                         predicates.add(criteriaBuilder.equal(root.get("workOrderLineId"), workOrderLineId));
@@ -141,11 +140,19 @@ public class ShortAllocationService {
 
                     }
 
-                    if (Objects.nonNull(shipmentId)) {
+                    if (Objects.nonNull(shipmentId) || Objects.nonNull(trailerAppointmentId)) {
 
                         Join<ShortAllocation, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, Shipment> joinShipment = joinShipmentLine.join("shipment", JoinType.INNER);
-                        predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
+                        if (Objects.nonNull(shipmentId)) {
+
+                            predicates.add(criteriaBuilder.equal(joinShipment.get("id"), shipmentId));
+                        }
+                        if (Objects.nonNull(trailerAppointmentId)) {
+
+                            Join<Shipment, Stop> joinStop = joinShipment.join("stop", JoinType.INNER);
+                            predicates.add(criteriaBuilder.equal(joinStop.get("trailerAppointmentId"), trailerAppointmentId));
+                        }
                     }
 
                     if (Objects.nonNull(waveId)) {
@@ -177,21 +184,22 @@ public class ShortAllocationService {
                                          Long workOrderLineId, String workOrderLineIds,
                                          String itemNumber, Long orderId,
                                          Long workOrderId, Long shipmentId, Long waveId,
-                                         Boolean includeCancelledShortAllocation) {
+                                         Boolean includeCancelledShortAllocation,
+                                         Long trailerAppointmentId) {
         return findAll(warehouseId, workOrderLineId, workOrderLineIds,
                 itemNumber, orderId,  workOrderId,
-                shipmentId, waveId, includeCancelledShortAllocation,
+                shipmentId, waveId, includeCancelledShortAllocation, trailerAppointmentId,
                 true);
     }
 
     public List<ShortAllocation> findByOrder(Order order) {
         return findAll(order.getWarehouseId(), null, null,
-                null, order.getId(),  null, null, null, null);
+                null, order.getId(),  null, null, null, null, null);
     }
 
     public List<ShortAllocation> findByShipment(Shipment shipment) {
         return findAll(shipment.getWarehouseId(), null, null,
-                null, null,  null, shipment.getId(), null, null);
+                null, null,  null, shipment.getId(), null, null, null);
     }
 
 

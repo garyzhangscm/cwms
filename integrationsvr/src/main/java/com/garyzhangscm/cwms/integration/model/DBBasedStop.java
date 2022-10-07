@@ -48,6 +48,12 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
     private Long sequence;
 
 
+    @Column(name = "ship_to_customer_id")
+    private Long shipToCustomerId;
+    @Column(name = "ship_to_customer_name")
+    private String shipToCustomerName;
+
+
     @Column(name = "contactor_firstname")
     private String contactorFirstname;
     @Column(name = "contactor_lastname")
@@ -121,9 +127,22 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
             setWarehouseId(warehouseId);
         }
 
+        if (Objects.isNull(getShipToCustomerId()) &&
+                Strings.isNotBlank(getShipToCustomerName())) {
+            Customer customer
+                    = commonServiceRestemplateClient.getCustomerByName(
+                    getCompanyId(),
+                    getWarehouseId(),
+                    getShipToCustomerName()
+            );
+            if (Objects.nonNull(customer)) {
+                setShipToCustomerId(customer.getId());
+            }
+        }
+
         String[] fieldNames = {
                 "warehouseId",
-                "number","sequence",
+                "number","sequence","shipToCustomerId",
                 "contactorFirstname","contactorLastname",
                 "addressCountry","addressState",
                 "addressCounty","addressCity","addressDistrict",
@@ -324,4 +343,19 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
         this.errorMessage = errorMessage;
     }
 
+    public Long getShipToCustomerId() {
+        return shipToCustomerId;
+    }
+
+    public void setShipToCustomerId(Long shipToCustomerId) {
+        this.shipToCustomerId = shipToCustomerId;
+    }
+
+    public String getShipToCustomerName() {
+        return shipToCustomerName;
+    }
+
+    public void setShipToCustomerName(String shipToCustomerName) {
+        this.shipToCustomerName = shipToCustomerName;
+    }
 }

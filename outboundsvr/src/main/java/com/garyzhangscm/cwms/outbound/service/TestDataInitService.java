@@ -18,8 +18,6 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.garyzhangscm.cwms.outbound.model.GridConfiguration;
-import com.garyzhangscm.cwms.outbound.model.GridLocationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +48,7 @@ public class TestDataInitService {
 
     EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService;
 
-    ListPickingConfigurationService listPickingConfigurationService;
+    ListPickConfigurationService listPickConfigurationService;
 
     TrailerTemplateService trailerTemplateService;
 
@@ -74,7 +71,7 @@ public class TestDataInitService {
                                AllocationConfigurationService allocationConfigurationService,
                                ShippingStageAreaConfigurationService shippingStageAreaConfigurationService,
                                EmergencyReplenishmentConfigurationService emergencyReplenishmentConfigurationService,
-                               ListPickingConfigurationService listPickingConfigurationService,
+                               ListPickConfigurationService listPickConfigurationService,
                                TrailerTemplateService trailerTemplateService,
                                CartonService cartonService,
                                CartonizationConfigurationService cartonizationConfigurationService,
@@ -85,7 +82,7 @@ public class TestDataInitService {
         this.allocationConfigurationService = allocationConfigurationService;
         this.shippingStageAreaConfigurationService = shippingStageAreaConfigurationService;
         this.emergencyReplenishmentConfigurationService = emergencyReplenishmentConfigurationService;
-        this.listPickingConfigurationService = listPickingConfigurationService;
+        this.listPickConfigurationService = listPickConfigurationService;
         this.cartonService = cartonService;
         this.cartonizationConfigurationService = cartonizationConfigurationService;
         this.gridConfigurationService = gridConfigurationService;
@@ -104,7 +101,7 @@ public class TestDataInitService {
         serviceNames.add("Shipping_Stage_Area_Configuration");
         initiableServices.put("Emergency_Replenishment_Configuration", emergencyReplenishmentConfigurationService);
         serviceNames.add("Emergency_Replenishment_Configuration");
-        initiableServices.put("List_Picking_Configuration", listPickingConfigurationService);
+        initiableServices.put("List_Picking_Configuration", listPickConfigurationService);
         serviceNames.add("List_Picking_Configuration");
         initiableServices.put("Carton", cartonService);
         serviceNames.add("Carton");
