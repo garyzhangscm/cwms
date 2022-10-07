@@ -272,13 +272,7 @@ public class ShipmentService {
                 shipment.getNumber());
         while (shipmentLineIterator.hasNext()) {
             ShipmentLine shipmentLine = shipmentLineIterator.next();
-            logger.debug("start to allocate shipment line : {}", shipmentLine.getId());
             shipmentLineService.allocateShipmentLine(shipmentLine);
-            logger.debug("finish allocate shipment line : {}", shipmentLine.getId());
-
-            logger.debug("Get {} lines from shipment {}",
-                    shipment.getShipmentLines().size(),
-                    shipment.getNumber());
         }
         /***
         shipment.getShipmentLines().
