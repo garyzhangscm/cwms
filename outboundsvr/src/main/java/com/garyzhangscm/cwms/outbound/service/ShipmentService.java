@@ -256,10 +256,34 @@ public class ShipmentService {
     public Shipment allocateShipment(Long id){
 
         Shipment shipment = findById(id);
+
+        // Change the shipment's status to 'In Process'
+        if (!shipment.getStatus().equals(ShipmentStatus.INPROCESS)) {
+            logger.debug("Will need to save the shipment {} to in process",
+                    shipment.getNumber());
+            shipment.setStatus(ShipmentStatus.INPROCESS);
+            shipment = save(shipment);
+        }
+
         // Allocate each line
+        Iterator<ShipmentLine> shipmentLineIterator = shipment.getShipmentLines().iterator();
+        logger.debug("Get {} lines from shipment {}",
+                shipment.getShipmentLines().size(),
+                shipment.getNumber());
+        while (shipmentLineIterator.hasNext()) {
+            ShipmentLine shipmentLine = shipmentLineIterator.next();
+            logger.debug("start to allocate shipment line : {}", shipmentLine.getId());
+            shipmentLineService.allocateShipmentLine(shipmentLine);
+            logger.debug("finish allocate shipment line : {}", shipmentLine.getId());
+
+            logger.debug("Get {} lines from shipment {}",
+                    shipment.getShipmentLines().size(),
+                    shipment.getNumber());
+        }
+        /***
         shipment.getShipmentLines().
                 forEach(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine));
-
+        **/
         // return the result after the allocation
         return findById(id);
     }
