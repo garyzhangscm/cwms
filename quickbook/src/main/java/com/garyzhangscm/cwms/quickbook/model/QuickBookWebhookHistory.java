@@ -63,6 +63,11 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
     @Column(name = "payload")
     private String payload;
 
+    // entity name
+    @Column(name = "entity_name")
+    private String entityName;
+
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;
@@ -82,14 +87,45 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
         this(signature, payload, WebhookStatus.PENDING);
     }
     public QuickBookWebhookHistory(String signature, String payload, WebhookStatus status) {
-        this(signature, payload, status, "");
+        this(signature, payload, "", status, "");
     }
-    public QuickBookWebhookHistory(String signature, String payload, WebhookStatus status,
+    public QuickBookWebhookHistory(String signature, String payload,
+                                   String entityName,
+                                   WebhookStatus status) {
+        this(signature, payload, entityName, status, "");
+    }
+    public QuickBookWebhookHistory(String signature, String payload,
+                                   WebhookStatus status,
                                    String errorMessage) {
         this.signature = signature;
         this.payload = payload;
         this.status = status;
         this.errorMessage = errorMessage;
+        this.processedTime = LocalDateTime.now();
+    }
+    public QuickBookWebhookHistory(String signature, String payload, String entityName,
+                                   WebhookStatus status,
+                                   String errorMessage) {
+        this.signature = signature;
+        this.payload = payload;
+        this.entityName = entityName;
+        this.status = status;
+        this.errorMessage = errorMessage;
+    }
+    public QuickBookWebhookHistory(Long companyId, Long warehouseId, String realmId,
+                                   String signature, String payload, String entityName,
+                                   WebhookStatus status,
+                                   String errorMessage,
+                                   LocalDateTime processedTime) {
+        this.companyId = companyId;
+        this.warehouseId = warehouseId;
+        this.realmId = realmId;
+        this.signature = signature;
+        this.payload = payload;
+        this.entityName = entityName;
+        this.status = status;
+        this.errorMessage = errorMessage;
+        this.processedTime = processedTime;
     }
 
 
@@ -179,5 +215,13 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
 
     public void setProcessedTime(LocalDateTime processedTime) {
         this.processedTime = processedTime;
+    }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
     }
 }

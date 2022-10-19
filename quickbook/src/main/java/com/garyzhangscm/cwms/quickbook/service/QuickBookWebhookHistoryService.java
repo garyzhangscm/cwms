@@ -56,7 +56,7 @@ public class QuickBookWebhookHistoryService {
 					}
 					if (Strings.isNotBlank(payload)) {
 
-						predicates.add(criteriaBuilder.equal(root.get("payload"), payload));
+						predicates.add(criteriaBuilder.like(root.get("payload"), "%" + payload + "%"));
 					}
 					if (Strings.isNotBlank(status)) {
 
@@ -100,5 +100,9 @@ public class QuickBookWebhookHistoryService {
 	}
 	public QuickBookWebhookHistory findPendingWebhookRequest(String payload) {
 		return findPendingWebhookRequest(null, payload);
+	}
+
+	public List<QuickBookWebhookHistory> findPendingWebhookRequest() {
+		return findAll(null, null, null, WebhookStatus.PENDING.toString());
 	}
 }

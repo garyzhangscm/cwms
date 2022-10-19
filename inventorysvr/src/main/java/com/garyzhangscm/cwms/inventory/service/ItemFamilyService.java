@@ -155,9 +155,19 @@ public class ItemFamilyService implements TestDataInitiableService{
     }
 
     private void loadAttributes(ItemFamily itemFamily) {
-        itemFamily.setTotalItemCount(
-                itemFamilyRepository.getItemCount(itemFamily.getName())
-        );
+        if (Objects.isNull(itemFamily.getWarehouseId())) {
+
+            itemFamily.setTotalItemCount(
+                    itemFamilyRepository.getItemCount(itemFamily.getCompanyId(), itemFamily.getName())
+            );
+        }
+        else {
+
+            itemFamily.setTotalItemCount(
+                    itemFamilyRepository.getItemCount(itemFamily.getCompanyId(),
+                            itemFamily.getWarehouseId(), itemFamily.getName())
+            );
+        }
     }
 
     public ItemFamily findByName(Long warehouseId, String name){

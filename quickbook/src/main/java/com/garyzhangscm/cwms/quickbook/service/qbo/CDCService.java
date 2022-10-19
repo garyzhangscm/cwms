@@ -61,29 +61,36 @@ public class CDCService implements QBODataService {
 	private static final String WEBHOOKS_SUBSCRIBED_ENTITES = "Invoice,Customer,Vendor,Item,PurchaseOrder";
 
 	@Override
+	public void callDataService(Entity entity, QuickBookOnlineToken quickBookOnlineToken) throws Exception {
+
+		DataService service = dataServiceFactory.getDataService(quickBookOnlineToken);
+
+		logger.info("Calling CDC from CDCService for entity : {}", entity.getName());
+
+		String intuitQuery = "SELECT * FROM " + entity.getName() + " where id = '"  + entity.getId() + "'";
+		logger.debug("start to get the entity of type " + entity.getName()
+				+ " by query \n {}", intuitQuery);
+
+		QueryResult queryResult = service.executeQuery(intuitQuery);
+
+		processCDCQueryResults(EntityChangeOperation.valueOf(entity.getOperation()),
+				entity.getName(),
+				queryResult, quickBookOnlineToken.getCompanyId(),
+				quickBookOnlineToken.getWarehouseId());
+	}
+	@Override
 	public void callDataService(EventNotification eventNotification, QuickBookOnlineToken quickBookOnlineToken) throws Exception {
 
 		logger.info("Calling CDC from CDCService");
-		// create data service
-		DataService service = dataServiceFactory.getDataService(quickBookOnlineToken);
 
 
-			List<Entity> entities =
+		List<Entity> entities =
 					eventNotification.getDataChangeEvent().getEntities().stream().filter(
 							entity -> isRegistered(entity.getName())
 					).collect(Collectors.toList());
-			for (Entity changedEntity : entities) {
-				String intuitQuery = "SELECT * FROM " + changedEntity.getName() + " where id = '"  + changedEntity.getId() + "'";
-				logger.debug("start to get the entity of type " + changedEntity.getName()
-						+ " by query \n {}", intuitQuery);
-
-					QueryResult queryResult = service.executeQuery(intuitQuery);
-
-					processCDCQueryResults(EntityChangeOperation.valueOf(changedEntity.getOperation()),
-							changedEntity.getName(),
-							queryResult, quickBookOnlineToken.getCompanyId(),
-							quickBookOnlineToken.getWarehouseId());
-			}
+		for (Entity changedEntity : entities) {
+				callDataService(changedEntity, quickBookOnlineToken);
+		}
 		
 	}
 
@@ -104,7 +111,9 @@ public class CDCService implements QBODataService {
 			DataService service = dataServiceFactory.getDataService(quickBookOnlineToken);
 
 			String intuitQuery = getSyncEntityQuery(entityName, syncTransactionDays);
-			logger.debug("start to get the entity of type " + entityName + " by query \n {}", intuitQuery);
+			logger.debug("start to get the entity of type " + entityName +
+					" by query \n {}, syncTransactionDays: {}", intuitQuery,
+					syncTransactionDays);
 
 			QueryResult queryResult = service.executeQuery(intuitQuery);
 			affectEntityNumber = queryResult.getEntities().size();
@@ -292,7 +301,8 @@ public class CDCService implements QBODataService {
 		return WEBHOOKS_SUBSCRIBED_ENTITES;
 	}
 
-	private boolean isRegistered(String name) {
+	@Override
+	public boolean isRegistered(String name) {
 		return Arrays.stream(WEBHOOKS_SUBSCRIBED_ENTITES.split(",")).anyMatch(
 				entity -> entity.equalsIgnoreCase(name)
 		);

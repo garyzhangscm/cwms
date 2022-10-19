@@ -23,6 +23,7 @@ import org.springframework.core.env.Environment;
 import javax.annotation.PostConstruct;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Objects;
 
 import com.intuit.ipp.services.WebhooksService;
@@ -105,12 +106,17 @@ public class SecurityService {
 
         // return env.getProperty(VERIFIER_KEY);
         // return "3c9ea2d4-bdc2-464d-ad44-aa12e412f694";
-        QuickBookOnlineToken quickBookOnlineToken =
+        List<QuickBookOnlineToken> quickBookOnlineTokens =
                 quickBookOnlineTokenService.getByRealmId(realmId);
-        if (Objects.isNull(quickBookOnlineToken)) {
+        if (Objects.isNull(quickBookOnlineTokens) || quickBookOnlineTokens.size() == 0) {
             logger.debug("can't get token from realmid, which should not be the case. Fatal error");
             throw ResourceNotFoundException.raiseException("can't find oauth 2 token by realm id " + realmId);
         }
+
+        // we may only need one token since all the token, if they belong
+        // to the same realmid, then they should have the same configuration
+        QuickBookOnlineToken quickBookOnlineToken = quickBookOnlineTokens.get(0);
+
         QuickBookOnlineConfiguration quickBookOnlineConfiguration =
                 quickBookOnlineConfigurationService.findByWarehouseId(
                         quickBookOnlineToken.getWarehouseId()

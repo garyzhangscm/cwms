@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class QuickBookOnlineTokenService  {
@@ -43,7 +44,7 @@ public class QuickBookOnlineTokenService  {
 	// key: realmId
 	// concurrent hash map as locks so as to lock the web hook call or query call
 	// when we are updating the token
-	private ConcurrentHashMap<String, QuickBookOnlineToken> quickBookOnlineTokenConcurrentHashMap = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, List<QuickBookOnlineToken>> quickBookOnlineTokenConcurrentHashMap = new ConcurrentHashMap<>();
 
 	// key: warehouse id
 	// value: OAuth2Config
@@ -93,21 +94,21 @@ public class QuickBookOnlineTokenService  {
 
 		return quickBookOnlineTokenRepository.findByWarehouseId(warehouseId);
 	}
-	public QuickBookOnlineToken getByRealmId(String realmId) {
+	public List<QuickBookOnlineToken> getByRealmId(String realmId) {
 
 		if (quickBookOnlineTokenConcurrentHashMap.contains(realmId)) {
 			return quickBookOnlineTokenConcurrentHashMap.get(realmId);
 		}
-		QuickBookOnlineToken quickBookOnlineToken =
+		List<QuickBookOnlineToken> quickBookOnlineTokens =
 				quickBookOnlineTokenRepository.findByRealmId(realmId);
-		if (Objects.nonNull(quickBookOnlineToken)) {
+		if (Objects.nonNull(quickBookOnlineTokens)) {
 
 			quickBookOnlineTokenConcurrentHashMap.put(
-					quickBookOnlineToken.getRealmId(),
-					quickBookOnlineToken
+					realmId,
+					quickBookOnlineTokens
 			);
 		}
-		return quickBookOnlineToken;
+		return quickBookOnlineTokens;
 		/*
 		try {
 			quickBookOnlineToken.set(decrypt(quickBookOnlineToken.getAccessToken()));
@@ -123,8 +124,22 @@ public class QuickBookOnlineTokenService  {
 	public QuickBookOnlineToken save(QuickBookOnlineToken quickBookOnlineToken) {
 		QuickBookOnlineToken newQuickBookOnlineToken =
 				quickBookOnlineTokenRepository.save(quickBookOnlineToken);
+
+		// refresh the map to update the cached token
+		List<QuickBookOnlineToken> quickBookOnlineTokens =
+				quickBookOnlineTokenConcurrentHashMap.get(
+						newQuickBookOnlineToken.getRealmId()
+				).stream().map(existingQuickBookOnlineToken -> {
+					if (Objects.equals(newQuickBookOnlineToken.getCompanyId(), existingQuickBookOnlineToken.getCompanyId()) &&
+							Objects.equals(newQuickBookOnlineToken.getWarehouseId(), existingQuickBookOnlineToken.getWarehouseId()) &&
+							Objects.equals(newQuickBookOnlineToken.getRealmId(), existingQuickBookOnlineToken.getRealmId())) {
+						return newQuickBookOnlineToken;
+					}
+					// for anything that not in saved in current transaction
+					return existingQuickBookOnlineToken;
+				}).collect(Collectors.toList());
 		quickBookOnlineTokenConcurrentHashMap.put(
-				newQuickBookOnlineToken.getRealmId(), newQuickBookOnlineToken
+				newQuickBookOnlineToken.getRealmId(), quickBookOnlineTokens
 		);
 		return newQuickBookOnlineToken;
 	}
@@ -194,15 +209,33 @@ public class QuickBookOnlineTokenService  {
 							   String authCode, String realmId) throws OAuthException {
 		logger.info("authQuickBook with auto code {} , realmId {}",
 				authCode, realmId);
+
+		// see if we already have the token information saved for this realmId
+		List<QuickBookOnlineToken> quickBookOnlineTokens = getByRealmId(realmId);
+
 		OAuth2Config oauth2Config = getOAuth2Config(warehouseId);
 
 		OAuth2PlatformClient client  = new OAuth2PlatformClient(oauth2Config);
 
 		//Get the bearer token (OAuth2 tokens)
 		try {
-			BearerTokenResponse bearerTokenResponse = client.retrieveBearerTokens(
-					authCode,
-					"https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl");
+			BearerTokenResponse bearerTokenResponse;
+			if (quickBookOnlineTokens.size() > 0) {
+				// ok, we already have existing token record for this realmid.
+				// let's just refresh the token for every record and
+				// save / update for this warehouse as well
+
+				bearerTokenResponse = client.refreshToken(
+						quickBookOnlineTokens.get(0).getRefreshToken()
+				);
+
+			}
+			else {
+
+				bearerTokenResponse = client.retrieveBearerTokens(
+						authCode,
+						"https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl");
+			}
 
 			//retrieve the token using the variables below
 			logger.debug("access token: {}", bearerTokenResponse.getAccessToken());
@@ -210,24 +243,47 @@ public class QuickBookOnlineTokenService  {
 			logger.debug("token expired in : {}", bearerTokenResponse.getExpiresIn());
 			logger.debug("refresh token expired in : {}", bearerTokenResponse.getXRefreshTokenExpiresIn());
 
-			// see if we already have the token information saved for this realmId
-			QuickBookOnlineToken quickBookOnlineToken = getByRealmId(realmId);
-			if (Objects.isNull(quickBookOnlineToken)) {
-				quickBookOnlineToken = new QuickBookOnlineToken();
-				quickBookOnlineToken.setCompanyId(companyId);
-				quickBookOnlineToken.setWarehouseId(warehouseId);
-				quickBookOnlineToken.setRealmId(realmId);
+			// see if the token for current warehouse already exists, if not, we
+			// will create one
+
+			QuickBookOnlineToken existingQuickBookOnlineToken = null;
+			// loop through the existing token record with the same realmid and update
+			// them accordingly, regardless of whether the record belongs to the same
+			//  compamny or warehouse
+			// the token may be for other company or warehouse
+			// 1. a test environment for the same company but using a different company code
+			// 2. another warehouse that connect to the same quickbook account
+			// then we will update the token as well as long as the 2 share the same
+			// realmid
+			for (QuickBookOnlineToken quickBookOnlineToken : quickBookOnlineTokens) {
+
 				quickBookOnlineToken.setAuthorizationCode(authCode);
 				quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
 				quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
 				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
-			} else {
-				quickBookOnlineToken.setAuthorizationCode(authCode);
-				quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
-				quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+
+				if (Objects.equals(companyId, quickBookOnlineToken.getCompanyId()) &&
+								Objects.equals(warehouseId, quickBookOnlineToken.getWarehouseId()) &&
+								Objects.equals(realmId, quickBookOnlineToken.getRealmId())) {
+					// the token for current warehouse already exists, we will
+					// update it and return
+					existingQuickBookOnlineToken = saveOrUpdate(quickBookOnlineToken);
+				}
+				else {
+					saveOrUpdate(quickBookOnlineToken);
+				}
 			}
-			return saveOrUpdate(quickBookOnlineToken);
+
+			if (Objects.isNull(existingQuickBookOnlineToken)) {
+				// if we are here, then this is the first time we request a token for this
+				// warehouse / company, let's save it
+				existingQuickBookOnlineToken =
+				   saveOrUpdate(new QuickBookOnlineToken(companyId, warehouseId,
+						  realmId, authCode, bearerTokenResponse.getAccessToken(),
+						  bearerTokenResponse.getRefreshToken(), LocalDateTime.now())
+				   );
+			}
+			return existingQuickBookOnlineToken;
 /**
 			String jsonString = new JSONObject()
 					.put("access_token", bearerTokenResponse.getAccessToken())
@@ -248,14 +304,18 @@ public class QuickBookOnlineTokenService  {
 
 
 
-		QuickBookOnlineToken quickBookOnlineToken = getByRealmId(realmId);
-		if (Objects.isNull(quickBookOnlineToken)) {
+		List<QuickBookOnlineToken> quickBookOnlineTokens = getByRealmId(realmId);
+		if (Objects.isNull(quickBookOnlineTokens) || quickBookOnlineTokens.size() == 0) {
 			throw MissingInformationException.raiseException("Can't find token by realm ID " +
 					realmId + ", please initiate the token first");
 		}
 		OAuth2Config oauth2Config = getOAuth2Config(warehouseId);
 
 		OAuth2PlatformClient client  = new OAuth2PlatformClient(oauth2Config);
+
+		// we will only refresh the token once but update all the
+		// record that has the same realmid
+		QuickBookOnlineToken quickBookOnlineToken = quickBookOnlineTokens.get(0);
 
 		BearerTokenResponse bearerTokenResponse = client.refreshToken(
 				quickBookOnlineToken.getRefreshToken()
@@ -266,10 +326,18 @@ public class QuickBookOnlineTokenService  {
 		logger.debug("token expired in : {}", bearerTokenResponse.getExpiresIn());
 		logger.debug("refresh token expired in : {}", bearerTokenResponse.getXRefreshTokenExpiresIn());
 
-		quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
-		quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-		quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
-	    return saveOrUpdate(quickBookOnlineToken);
+		quickBookOnlineTokens.forEach(
+				existingQuickBookOnlineToken -> {
+
+					existingQuickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
+					existingQuickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
+					existingQuickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+					saveOrUpdate(existingQuickBookOnlineToken);
+				}
+		);
+
+
+	    return getByWarehouseId(warehouseId);
 /*
 		String jsonString = new JSONObject()
 				.put("access_token", bearerTokenResponse.getAccessToken())
