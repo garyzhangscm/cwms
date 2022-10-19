@@ -81,6 +81,21 @@ public class QuickBookOnlineToken extends AuditibleEntity<String> implements Ser
     @Column(name = "last_cdc_call_time")
     private String lastCDCCallTime;
 
+    public QuickBookOnlineToken() {
+
+    }
+    public QuickBookOnlineToken(Long companyId, Long warehouseId, String realmId,
+                                String authorizationCode, String token,
+                                String refreshToken, LocalDateTime lastTokenRequestTime) {
+        this.warehouseId = warehouseId;
+        this.companyId = companyId;
+        this.realmId = realmId;
+        this.authorizationCode = authorizationCode;
+        this.token = token;
+        this.refreshToken = refreshToken;
+        this.lastTokenRequestTime = lastTokenRequestTime;
+    }
+
     public Long getId() {
         return id;
     }

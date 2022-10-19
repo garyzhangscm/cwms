@@ -67,7 +67,10 @@ public class WebhookService {
 			logger.debug("webhook request passed validation, push payload to queue");
 			// add the payload to the queue
 			// QueueProcessor will dequeue the message and process
-			queueService.add(payload);
+			// we will no long add the payload to the queue.
+			// instead we will just save the payload and relay on the
+			// scheduled job to process the payload
+			// queueService.add(payload);
 			quickBookWebhookHistoryService.addNewWebhookRequest(signature, payload);
 
 		} else {

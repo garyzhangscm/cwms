@@ -49,7 +49,7 @@ public class WebhooksController {
      * @param payload
      * @return
      */
-    @RequestMapping(value = "/webhooks", method = RequestMethod.POST)
+    @RequestMapping(value = "/webhooks")
     public ResponseEntity<WebhookResponseWrapper> webhooks(@RequestHeader(SIGNATURE) String signature, @RequestBody String payload) throws JsonProcessingException {
 
         logger.debug("start to process webhook");
