@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,7 +145,7 @@ public class DBBasedShipment extends AuditibleEntity<String> implements Serializ
 
     public Shipment convertToShipment(CommonServiceRestemplateClient commonServiceRestemplateClient,
                                       WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
-                                      OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) {
+                                      OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) throws UnsupportedEncodingException {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {

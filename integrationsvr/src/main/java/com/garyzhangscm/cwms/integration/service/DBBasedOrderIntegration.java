@@ -21,6 +21,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -200,7 +201,7 @@ public class DBBasedOrderIntegration {
     }
 
 
-    private void setupMissingField(Order order, DBBasedOrder dbBasedOrder){
+    private void setupMissingField(Order order, DBBasedOrder dbBasedOrder) throws UnsupportedEncodingException {
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId());
 
@@ -233,7 +234,7 @@ public class DBBasedOrderIntegration {
                 order.setBillToCustomerId(customer.getId());
             }
         }
-        order.getOrderLines().forEach(orderLine -> {
+        for(OrderLine orderLine : order.getOrderLines()) {
             // Get the matched order line and setup the missing field
             // for
             // 1. item Id
@@ -241,13 +242,13 @@ public class DBBasedOrderIntegration {
             // 3. inventory status ID
             // 4. carrier ID
             // 5. carrier service level id
-            dbBasedOrder.getOrderLines().forEach(dbBasedOrderLine -> {
+            for(DBBasedOrderLine dbBasedOrderLine: dbBasedOrder.getOrderLines()) {
                 if (orderLine.getNumber().equals(dbBasedOrderLine.getNumber())) {
                     setupMissingField(warehouse, orderLine, dbBasedOrderLine);
                 }
-            });
+            }
 
-        });
+        }
 
     }
 
@@ -264,7 +265,7 @@ public class DBBasedOrderIntegration {
      * @param orderLine
      * @param dbBasedOrderLine
      */
-    private void setupMissingField(Warehouse warehouse, OrderLine orderLine, DBBasedOrderLine dbBasedOrderLine){
+    private void setupMissingField(Warehouse warehouse, OrderLine orderLine, DBBasedOrderLine dbBasedOrderLine) throws UnsupportedEncodingException {
 
         // 1. item Id
         if(Objects.isNull(orderLine.getItemId())) {

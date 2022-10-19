@@ -12,6 +12,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,7 +103,7 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
 
     public Stop convertToStop(CommonServiceRestemplateClient commonServiceRestemplateClient,
                               WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
-                              OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) {
+                              OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) throws UnsupportedEncodingException {
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
 
@@ -151,13 +152,13 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
 
         ObjectCopyUtil.copyValue(this, stop,  fieldNames);
 
-        getShipments().forEach(dbBasedShipment -> {
+        for(DBBasedShipment dbBasedShipment : getShipments()) {
             stop.addShipment(dbBasedShipment.convertToShipment(
                     commonServiceRestemplateClient,
                     warehouseLayoutServiceRestemplateClient,
                     outbuondServiceRestemplateClient
             ));
-        });
+        }
 
         return stop;
     }

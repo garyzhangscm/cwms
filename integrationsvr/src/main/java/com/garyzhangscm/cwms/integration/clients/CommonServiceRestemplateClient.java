@@ -52,12 +52,12 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Client getClientByName(Long warehouseId, String name) {
+    public Client getClientByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder
                         .fromHttpUrl("http://zuulserver:5555/api/common/clients")
                         .queryParam("warehouseId", warehouseId)
-                .queryParam("name", name);
+                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
@@ -76,11 +76,11 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    public Supplier getSupplierByName(Long warehouseId, String name) {
+    public Supplier getSupplierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
                         .queryParam("warehouseId", warehouseId)
-                .queryParam("name", name);
+                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
         List<Supplier> suppliers = responseBodyWrapper.getData();
@@ -102,7 +102,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public UnitOfMeasure getUnitOfMeasureByName(Long companyId, Long warehouseId, String name) {
+    public UnitOfMeasure getUnitOfMeasureByName(Long companyId, Long warehouseId, String name) throws UnsupportedEncodingException {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -110,7 +110,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/unit-of-measures")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("companyId", companyId)
-                        .queryParam("name", name);
+                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -167,13 +167,13 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    public Carrier getCarrierByName(Long warehouseId, String name) {
+    public Carrier getCarrierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carriers")
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("name", name);
+                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
         ResponseBodyWrapper<List<Carrier>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -198,13 +198,13 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public CarrierServiceLevel getCarrierServiceLevelByName(Long warehouseId, String name) {
+    public CarrierServiceLevel getCarrierServiceLevelByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carrier-service-levels")
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("name", name);
+                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
         ResponseBodyWrapper<List<CarrierServiceLevel>> responseBodyWrapper
                 = restTemplate.exchange(

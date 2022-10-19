@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,7 @@ public class DBBasedTrailerAppointment extends AuditibleEntity<String> implement
 
     public TrailerAppointment convertToTrailerAppointment(CommonServiceRestemplateClient commonServiceRestemplateClient,
                                                           WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
-                                                          OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) {
+                                                          OutbuondServiceRestemplateClient outbuondServiceRestemplateClient) throws UnsupportedEncodingException {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
@@ -109,12 +110,12 @@ public class DBBasedTrailerAppointment extends AuditibleEntity<String> implement
 
         logger.debug("We have {} stops for this appointment {}",
                 getStops().size(), getNumber());
-        getStops().forEach(dbBasedStop -> {
+        for(DBBasedStop dbBasedStop : getStops()) {
             trailerAppointment.addStop(dbBasedStop.convertToStop(
                     commonServiceRestemplateClient,
                     warehouseLayoutServiceRestemplateClient,
                     outbuondServiceRestemplateClient));
-        });
+        }
 
         return trailerAppointment;
 

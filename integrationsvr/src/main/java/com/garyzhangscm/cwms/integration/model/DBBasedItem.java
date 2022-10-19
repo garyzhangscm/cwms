@@ -35,6 +35,7 @@ import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +109,7 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
 
     public Item convertToItem(InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
                               CommonServiceRestemplateClient commonServiceRestemplateClient,
-                              WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+                              WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) throws UnsupportedEncodingException {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
@@ -186,13 +187,13 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
         }
         logger.debug("We have {} item package types for this item {}",
                 getItemPackageTypes().size(), item.getName());
-        getItemPackageTypes().forEach(dbBasedItemPackageType -> {
+        for(DBBasedItemPackageType dbBasedItemPackageType: getItemPackageTypes()) {
             item.addItemPackageType(dbBasedItemPackageType.convertToItemPackageType(
                     inventoryServiceRestemplateClient,
                     commonServiceRestemplateClient,
                     warehouseLayoutServiceRestemplateClient,
                     true));
-        });
+        }
 
         return item;
 
