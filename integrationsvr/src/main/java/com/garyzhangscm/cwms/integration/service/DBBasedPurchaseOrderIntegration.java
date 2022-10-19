@@ -20,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -214,7 +215,7 @@ public class DBBasedPurchaseOrderIntegration {
     }
 
 
-    private void setupMissingField(PurchaseOrder purchaseOrder, DBBasedPurchaseOrder dbBasedPurchaseOrder){
+    private void setupMissingField(PurchaseOrder purchaseOrder, DBBasedPurchaseOrder dbBasedPurchaseOrder) throws UnsupportedEncodingException {
 
         if (Objects.isNull(purchaseOrder.getSupplierId()) &&
                Objects.nonNull(dbBasedPurchaseOrder.getSupplierName())) {

@@ -112,7 +112,7 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
     public ItemPackageType convertToItemPackageType(
             InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
             CommonServiceRestemplateClient commonServiceRestemplateClient,
-            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) throws UnsupportedEncodingException {
         return convertToItemPackageType(
                 inventoryServiceRestemplateClient,
                 commonServiceRestemplateClient,
@@ -137,7 +137,7 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
             InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
             CommonServiceRestemplateClient commonServiceRestemplateClient,
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
-            boolean attachedToItemTransaction)   {
+            boolean attachedToItemTransaction) throws UnsupportedEncodingException {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
@@ -205,14 +205,14 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
             );
         }
 
-        getItemUnitOfMeasures().forEach(dbBasedItemUnitOfMeasure -> {
+        for(DBBasedItemUnitOfMeasure dbBasedItemUnitOfMeasure: getItemUnitOfMeasures()){
             itemPackageType.addItemUnitOfMeasure(dbBasedItemUnitOfMeasure.convertToItemUnitOfMeasure(
                     inventoryServiceRestemplateClient,
                     commonServiceRestemplateClient,
                     warehouseLayoutServiceRestemplateClient,
                     true
             ));
-        });
+        }
 
         return itemPackageType;
     }

@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -111,7 +112,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
             InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
             CommonServiceRestemplateClient commonServiceRestemplateClient,
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient
-    ){
+    ) throws UnsupportedEncodingException {
         return convertToItemUnitOfMeasure(
                 inventoryServiceRestemplateClient,
                 commonServiceRestemplateClient,
@@ -125,7 +126,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
             CommonServiceRestemplateClient commonServiceRestemplateClient,
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
             boolean attachedToItemPackageTypeTransaction
-    ) {
+    ) throws UnsupportedEncodingException {
 
         // company ID or company code is required
         if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {

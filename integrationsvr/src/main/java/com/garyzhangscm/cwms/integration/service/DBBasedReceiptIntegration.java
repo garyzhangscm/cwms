@@ -22,6 +22,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -217,7 +218,7 @@ public class DBBasedReceiptIntegration {
     }
 
 
-    private void setupMissingField(Receipt receipt, DBBasedReceipt dbBasedReceipt){
+    private void setupMissingField(Receipt receipt, DBBasedReceipt dbBasedReceipt) throws UnsupportedEncodingException {
 
         if (Objects.isNull(receipt.getSupplierId()) &&
                Objects.nonNull(dbBasedReceipt.getSupplierName())) {
