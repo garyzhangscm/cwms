@@ -944,6 +944,8 @@ public class LocationService implements TestDataInitiableService {
                     warehouseService.findById(warehouseId)
             );
         }
+        location.setCurrentVolume(0.0);
+        location.setPendingVolume(0.0);
         return saveOrUpdate(location);
     }
 }
