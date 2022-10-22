@@ -90,6 +90,13 @@ public class WorkOrderService implements TestDataInitiableService {
     private WorkOrderQCRuleConfigurationService workOrderQCRuleConfigurationService;
 
     @Autowired
+    private MaterialRequirementsPlanningService materialRequirementsPlanningService;
+    @Autowired
+    private MasterProductionScheduleService masterProductionScheduleService;
+    @Autowired
+    private ProductionLineCapacityService productionLineCapacityService;
+
+    @Autowired
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -2003,5 +2010,38 @@ public class WorkOrderService implements TestDataInitiableService {
         }
 
         return findById(savedWorkOrder.getId(), false);
+    }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for work order line, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        workOrderRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+
+
+        workOrderLineService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+        workOrderByProductService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+        workOrderLineSparePartDetailService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+        workOrderQCRuleConfigurationService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+        billOfMaterialService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+
+        materialRequirementsPlanningService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+        masterProductionScheduleService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+        productionLineCapacityService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+        productionPlanLineService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
     }
 }

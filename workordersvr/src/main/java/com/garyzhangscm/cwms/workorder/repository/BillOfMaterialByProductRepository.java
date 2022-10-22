@@ -23,10 +23,25 @@ import com.garyzhangscm.cwms.workorder.model.BillOfMaterialByProduct;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterialLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface BillOfMaterialByProductRepository extends JpaRepository<BillOfMaterialByProduct, Long>, JpaSpecificationExecutor<BillOfMaterialByProduct> {
 
+    /**
+     * Override a item in the warehouse level. We will change the work order line's item id to the new warehouse level
+     * item. We will only change the work order line in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update bill_of_material_by_product set item_id = :newItemId where item_id = :oldItemId " +
+            "  and bill_of_material_id in (select bill_of_material_id from bill_of_material where warehouse_id = :warehouseId) ",
+            nativeQuery = true)
+    void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
 }

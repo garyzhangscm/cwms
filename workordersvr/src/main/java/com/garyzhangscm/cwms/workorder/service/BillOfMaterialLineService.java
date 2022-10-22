@@ -271,4 +271,10 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
         return billOfMaterialLineCSVWrappers.stream()
                 .map(billOfMaterialLineCSVWrapper -> convertFromWrapper(billOfMaterialLineCSVWrapper)).collect(Collectors.toList());
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        billOfMaterialLineRepository.processItemOverride(
+                warehouseId, oldItemId, newItemId
+        );
+    }
 }

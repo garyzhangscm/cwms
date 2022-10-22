@@ -1721,6 +1721,13 @@ public class InventoryService implements TestDataInitiableService{
                                   String documentNumber, String comment) {
 
         logger.debug("Start to add inventory");
+        // if inventory's LPN is not setup, get next LPN for it
+        if (Strings.isBlank(inventory.getLpn())) {
+
+            inventory.setLpn(
+                    commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId())
+            );
+        }
         if (isApprovalNeededForInventoryAdjust(inventory, 0L, inventory.getQuantity(), inventoryQuantityChangeType)) {
 
             logger.debug("We will need to get approval, so here we just save the request");
@@ -2791,7 +2798,16 @@ public class InventoryService implements TestDataInitiableService{
     public void handleItemOverride(Long oldItemId, Long newItemId, Long warehouseId) {
         logger.debug("start to process item override, current warehouse {}, from item id {} to item id {}",
                 warehouseId, oldItemId, newItemId);
-        inventoryRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+        // let's get the first item package type id for the new item id
+        Item item = itemService.findById(newItemId);
+        if (Objects.nonNull(item) && Objects.nonNull(item.getItemPackageTypes()) &&
+                !item.getItemPackageTypes().isEmpty()) {
+            inventoryRepository.processItemOverride(
+                    oldItemId, newItemId, item.getItemPackageTypes().get(0).getId(),
+                    warehouseId);
+
+        }
+
     }
 
 

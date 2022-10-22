@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.clients.*;
 import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
@@ -66,6 +63,8 @@ public class ItemService implements TestDataInitiableService{
     private InboundServiceRestemplateClient inboundServiceRestemplateClient;
     @Autowired
     private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
+    @Autowired
+    private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -479,6 +478,8 @@ public class ItemService implements TestDataInitiableService{
             inboundServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
                     globalItemId, newItem.getId());
             outbuondServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
+                    globalItemId, newItem.getId());
+            workOrderServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
                     globalItemId, newItem.getId());
 
         }

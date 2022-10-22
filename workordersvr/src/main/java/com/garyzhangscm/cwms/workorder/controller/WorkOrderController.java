@@ -357,4 +357,18 @@ public class WorkOrderController {
         return workOrderLineService.changeSpareParts(id, workOrderLineSpareParts);
     }
 
+
+    @RequestMapping(value="/work-orders/item-override", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> handleItemOverride(
+            @RequestParam Long warehouseId,
+            @RequestParam Long oldItemId,
+            @RequestParam Long newItemId
+    ) {
+        workOrderService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+
+        return ResponseBodyWrapper.success("success");
+    }
+
 }

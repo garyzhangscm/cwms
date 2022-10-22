@@ -1107,9 +1107,23 @@ public class ShipmentService {
 
 
         // move inventory to the location and update the shipment line's quantity
+        // we will save the shipment line and order line in the temporary map
+        // so that when we go through the inventory , we won't need to consistently
+        // hit the database if the inventory are from the same order line and shipment line
+        // 1. to increase the performance
+        // 2. save function won't actually persist into database right away so when we loop
+        // through the inventory list, we may get old data that should already been updated
+        // key: id
+        // value: order line or shipment line
+        Map<Long, OrderLine> orderLineMap = new HashMap<>();
+        Map<Long, ShipmentLine> shipmentLineMap = new HashMap<>();
+
         stagedInventory.stream().forEach(inventory -> {
 
             ShipmentLine shipmentLine = pickService.findById(inventory.getPickId()).getShipmentLine();
+            if (shipmentLineMap.containsKey(shipmentLine.getId())) {
+                shipmentLine = shipmentLineMap.get(shipmentLine.getId());
+            }
 
             logger.debug("Start to move inventory {} onto order {} ",
                     inventory.getLpn(), inventoryDestination.getName());
@@ -1125,12 +1139,20 @@ public class ShipmentService {
             shipmentLine.setShippedQuantity(shipmentLine.getShippedQuantity() + inventory.getQuantity());
             shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - inventory.getQuantity());
             shipmentLine.setStatus(ShipmentLineStatus.DISPATCHED);
-            shipmentLineService.save(shipmentLine);
+            shipmentLine = shipmentLineService.save(shipmentLine);
+            // save the updated shipment line into map so we will always get the latest data
+            shipmentLineMap.put(shipmentLine.getId(), shipmentLine);
 
             OrderLine orderLine = shipmentLine.getOrderLine();
+            if (orderLineMap.containsKey(orderLine.getId())) {
+                orderLine = orderLineMap.get(orderLine.getId());
+            }
+
             orderLine.setInprocessQuantity(orderLine.getInprocessQuantity() - inventory.getQuantity());
             orderLine.setShippedQuantity(orderLine.getShippedQuantity() + inventory.getQuantity());
-            orderLineService.saveOrUpdate(orderLine);
+            orderLine = orderLineService.saveOrUpdate(orderLine);
+            // save the updated order line into map so we will always get the latest data
+            orderLineMap.put(orderLine.getId(), orderLine);
         });
 
         shipment.setStatus(ShipmentStatus.DISPATCHED);

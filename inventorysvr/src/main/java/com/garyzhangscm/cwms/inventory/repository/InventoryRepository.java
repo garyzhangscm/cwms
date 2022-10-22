@@ -64,7 +64,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
      */
     @Transactional
     @Modifying
-    @Query(value = "update inventory set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+    @Query(value = "update inventory set item_id = :newItemId, item_package_type_id = :newItemPackageTypeId " +
+            " where item_id = :oldItemId and warehouse_id = :warehouseId",
             nativeQuery = true)
-    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
+    void processItemOverride(Long oldItemId, Long newItemId, Long newItemPackageTypeId, Long warehouseId);
 }

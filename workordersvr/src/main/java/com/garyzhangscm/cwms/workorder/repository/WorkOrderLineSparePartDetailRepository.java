@@ -23,9 +23,28 @@ import com.garyzhangscm.cwms.workorder.model.WorkOrderLineSparePart;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderLineSparePartDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface WorkOrderLineSparePartDetailRepository extends JpaRepository<WorkOrderLineSparePartDetail, Long>, JpaSpecificationExecutor<WorkOrderLineSparePartDetail> {
 
+    /**
+     * Override a item in the warehouse level. We will change  item id to the new warehouse level
+     * item. We will only change in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update work_order_line_spare_part_detail set item_id = :newItemId where item_id = :oldItemId " +
+            "  and work_order_line_spare_part_id in (select work_order_line_spare_part.work_order_line_spare_part_id from work_order " +
+            "        join work_order_line on work_order.work_order_id = work_order_line.work_order_id " +
+            "        join work_order_line_spare_part on work_order_line_spare_part.work_order_line_id = work_order_line.work_order_line_id " +
+            "        where work_order.warehouse_id = :warehouseId) ",
+            nativeQuery = true)
+    void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
 }

@@ -190,4 +190,24 @@ public class WorkOrderServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+
+    public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/work-orders/item-override")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("oldItemId", oldItemId)
+                        .queryParam("newItemId", newItemId);
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
 }

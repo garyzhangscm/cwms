@@ -201,5 +201,9 @@ public class WorkOrderLineSparePartDetailService {
     }
 
 
-
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        workOrderLineSparePartDetailRepository.processItemOverride(
+                warehouseId, oldItemId, newItemId
+        );
+    }
 }

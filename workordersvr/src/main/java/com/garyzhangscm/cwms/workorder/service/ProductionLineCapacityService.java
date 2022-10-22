@@ -313,4 +313,10 @@ public class ProductionLineCapacityService implements TestDataInitiableService {
     public ProductionLineCapacity changeProductionCapacity(Long id, ProductionLineCapacity productionLineCapacity) {
         return  saveOrUpdate(productionLineCapacity);
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        productionLineCapacityRepository.processItemOverride(
+                warehouseId, oldItemId, newItemId
+        );
+    }
 }

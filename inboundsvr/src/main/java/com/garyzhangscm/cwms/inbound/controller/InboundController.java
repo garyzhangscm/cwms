@@ -42,6 +42,8 @@ public class InboundController {
     InboundQCConfigurationService inboundQCConfigurationService;
     @Autowired
     PutawayConfigurationService putawayConfigurationService;
+    @Autowired
+    PurchaseOrderService purchaseOrderService;
 
 
 
@@ -62,6 +64,10 @@ public class InboundController {
 
         putawayConfigurationService.handleItemOverride(warehouseId,
                 oldItemId, newItemId);
+
+        purchaseOrderService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
         return ResponseBodyWrapper.success("success");
     }
 }

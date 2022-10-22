@@ -790,4 +790,11 @@ public class WorkOrderLineService implements TestDataInitiableService {
         );
         saveOrUpdate(workOrderLine);
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        logger.debug("start to process item override for work order line, current warehouse {}, from item id {} to item id {}",
+                warehouseId, oldItemId, newItemId);
+        workOrderLineRepository.processItemOverride(warehouseId, oldItemId, newItemId);
+
+    }
 }

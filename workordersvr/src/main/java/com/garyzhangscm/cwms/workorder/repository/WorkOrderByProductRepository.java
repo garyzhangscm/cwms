@@ -23,10 +23,25 @@ import com.garyzhangscm.cwms.workorder.model.WorkOrderByProduct;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface WorkOrderByProductRepository extends JpaRepository<WorkOrderByProduct, Long>, JpaSpecificationExecutor<WorkOrderByProduct> {
 
+    /**
+     * Override a item in the warehouse level. We will change  item id to the new warehouse level
+     * item. We will only change in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update work_order_by_product set item_id = :newItemId where item_id = :oldItemId " +
+            "  and work_order_id in (select work_order_id from work_order where warehouse_id = :warehouseId) ",
+            nativeQuery = true)
+    void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
 }
