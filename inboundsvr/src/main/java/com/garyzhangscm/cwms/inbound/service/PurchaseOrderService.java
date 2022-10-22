@@ -382,4 +382,11 @@ public class PurchaseOrderService {
         purchaseOrderLineRepository.save(purchaseOrderLine);
 
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+
+        purchaseOrderLineRepository.processItemOverride(
+                oldItemId, newItemId, warehouseId
+        );
+    }
 }

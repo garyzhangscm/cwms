@@ -189,4 +189,13 @@ public class MaterialRequirementsPlanningService   {
         );
         return saveOrUpdate(materialRequirementsPlanning);
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        materialRequirementsPlanningRepository.processItemOverride(
+                warehouseId, oldItemId, newItemId
+        );
+        materialRequirementsPlanningRepository.processItemOverrideFroLine(
+                warehouseId, oldItemId, newItemId
+        );
+    }
 }

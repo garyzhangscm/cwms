@@ -23,9 +23,11 @@ import com.garyzhangscm.cwms.workorder.model.WorkOrderStatus;
 import org.hibernate.jdbc.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -43,4 +45,15 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, Jpa
             " and wo.status != com.garyzhangscm.cwms.workorder.model.WorkOrderStatus.CLOSED ")
     List<WorkOrder> findOpenWorkOrderByItem(Long itemId);
 
+    /**
+     * Override a item in the warehouse level. We will change the work order line's item id to the new warehouse level
+     * item. We will only change the work order line in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update work_order set item_id = :newItemId where item_id = :oldItemId  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long oldItemId, Long newItemId, Long warehouseId);
 }

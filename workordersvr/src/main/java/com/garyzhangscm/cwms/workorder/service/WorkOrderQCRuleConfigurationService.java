@@ -541,4 +541,10 @@ public class WorkOrderQCRuleConfigurationService {
         );
 
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        workOrderQCRuleConfigurationRepository.processItemOverride(
+                warehouseId, oldItemId, newItemId
+        );
+    }
 }

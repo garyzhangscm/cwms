@@ -22,9 +22,27 @@ package com.garyzhangscm.cwms.workorder.repository;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface BillOfMaterialRepository extends JpaRepository<BillOfMaterial, Long>, JpaSpecificationExecutor<BillOfMaterial> {
     BillOfMaterial findByWarehouseIdAndNumber(Long warehouseId, String number);
+
+    /**
+     * Override a item in the warehouse level. We will change  item id to the new warehouse level
+     * item. We will only change in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update bill_of_material set item_id = :newItemId where item_id = :oldItemId " +
+            "  and warehouse_id = :warehouseId ",
+            nativeQuery = true)
+    void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
+
 }

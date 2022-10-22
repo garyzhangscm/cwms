@@ -293,5 +293,7 @@ public class WorkOrderByProductService implements TestDataInitiableService {
                 location);
     }
 
-
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        workOrderByProductReRepository.processItemOverride(warehouseId, oldItemId, newItemId);
+    }
 }

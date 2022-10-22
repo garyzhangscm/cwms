@@ -57,6 +57,12 @@ public class MasterProductionScheduleService   {
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        masterProductionScheduleRepository.processItemOverride(
+                warehouseId, oldItemId, newItemId
+        );
+    }
+
     public MasterProductionSchedule findById(Long id) {
         return findById(id, true);
     }

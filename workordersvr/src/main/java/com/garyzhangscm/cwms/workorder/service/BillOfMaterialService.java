@@ -503,5 +503,13 @@ public class BillOfMaterialService implements TestDataInitiableService {
     }
 
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        billOfMaterialRepository.processItemOverride(warehouseId,oldItemId, newItemId);
 
+        billOfMaterialLineService.handleItemOverride(
+                warehouseId, oldItemId, newItemId);
+        billOfMaterialByProductService.handleItemOverride(
+                warehouseId, oldItemId, newItemId);
+
+    }
 }

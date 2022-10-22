@@ -370,4 +370,10 @@ public class ProductionPlanLineService implements TestDataInitiableService {
             );
         }
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        productionPlanLineRepository.processItemOverride(
+                warehouseId, oldItemId, newItemId
+        );
+    }
 }

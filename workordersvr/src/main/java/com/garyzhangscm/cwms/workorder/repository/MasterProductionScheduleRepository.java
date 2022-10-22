@@ -24,9 +24,11 @@ import com.garyzhangscm.cwms.workorder.model.MasterProductionScheduleLineDate;
 import com.garyzhangscm.cwms.workorder.model.Mould;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,5 +37,19 @@ import java.util.List;
 public interface MasterProductionScheduleRepository extends JpaRepository<MasterProductionSchedule, Long>, JpaSpecificationExecutor<MasterProductionSchedule> {
 
     MasterProductionSchedule findByWarehouseIdAndNumber(Long warehouseId, String number);
+
+
+    /**
+     * Override a item in the warehouse level. We will change  item id to the new warehouse level
+     * item. We will only change in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update master_production_schedule set item_id = :newItemId where item_id = :oldItemId " +
+            "  and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
 
 }
