@@ -26,6 +26,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -36,4 +37,17 @@ public interface CycleCountResultRepository extends JpaRepository<CycleCountResu
 
     @Query("select c from CycleCountResult c where c.auditCountRequest.id = :auditCountRequestId")
     List<CycleCountResult> findByAuditCountRequestId(Long auditCountRequestId);
+
+    /**
+     * Override a item in the warehouse level. We will change the item id to the new warehouse level
+     * item. We will only change in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update cycle_count_result set item_id = :newItemId  " +
+            " where item_id = :oldItemId and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
 }

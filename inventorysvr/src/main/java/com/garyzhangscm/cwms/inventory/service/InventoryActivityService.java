@@ -384,11 +384,8 @@ public class InventoryActivityService{
     }
 
 
-
-
-
-
-
-
-
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        inventoryActivityRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }

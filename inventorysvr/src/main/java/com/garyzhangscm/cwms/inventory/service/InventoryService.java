@@ -2795,7 +2795,7 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
-    public void handleItemOverride(Long oldItemId, Long newItemId, Long warehouseId) {
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
         logger.debug("start to process item override, current warehouse {}, from item id {} to item id {}",
                 warehouseId, oldItemId, newItemId);
         // let's get the first item package type id for the new item id

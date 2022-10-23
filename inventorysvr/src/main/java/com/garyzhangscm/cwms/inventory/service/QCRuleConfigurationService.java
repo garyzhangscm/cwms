@@ -321,5 +321,8 @@ public class QCRuleConfigurationService {
     }
 
 
-
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        qcRuleConfigurationRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }

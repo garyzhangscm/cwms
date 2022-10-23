@@ -503,4 +503,9 @@ public class InventorySnapshotService  {
         saveOrUpdate(inventorySnapshot);
 
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        inventorySnapshotRepository.processItemOverrideForLine(warehouseId,
+                oldItemId, newItemId);
+    }
 }

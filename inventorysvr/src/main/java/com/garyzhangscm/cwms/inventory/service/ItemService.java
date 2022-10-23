@@ -67,6 +67,30 @@ public class ItemService implements TestDataInitiableService{
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
 
     @Autowired
+    private QCInspectionRequestService qcInspectionRequestService;
+
+    @Autowired
+    private AuditCountResultService auditCountResultService;
+    @Autowired
+    private CycleCountResultService cycleCountResultService;
+    @Autowired
+    private InventoryActivityService inventoryActivityService;
+    @Autowired
+    private InventoryAdjustmentRequestService inventoryAdjustmentRequestService;
+    @Autowired
+    private InventoryAdjustmentThresholdService inventoryAdjustmentThresholdService;
+    @Autowired
+    private InventorySnapshotService inventorySnapshotService;
+    @Autowired
+    private ItemSamplingService itemSamplingService;
+    @Autowired
+    private LocationUtilizationSnapshotService locationUtilizationSnapshotService;
+
+    @Autowired
+    private QCRuleConfigurationService qcRuleConfigurationService;
+
+
+    @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -474,19 +498,36 @@ public class ItemService implements TestDataInitiableService{
             logger.debug("we will update the item id in the order line, receipt line, inventory " +
                     " and cycle count request to reflect the item id change and point them to the new item id");
 
-            inventoryService.handleItemOverride(globalItemId, newItem.getId(), newItem.getWarehouseId());
-            inboundServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
+            handleItemOverride(newItem.getWarehouseId(),
                     globalItemId, newItem.getId());
-            outbuondServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
-                    globalItemId, newItem.getId());
-            workOrderServiceRestemplateClient.handleItemOverride(newItem.getWarehouseId(),
-                    globalItemId, newItem.getId());
+
 
         }
 
         return newItem;
     }
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+
+        // inventory service
+        // TO-DO
+        auditCountResultService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        cycleCountResultService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        inventoryService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        inventoryActivityService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        inventoryAdjustmentRequestService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        inventoryAdjustmentThresholdService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        inventorySnapshotService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        itemSamplingService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        locationUtilizationSnapshotService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        qcInspectionRequestService.handleItemOverride(warehouseId, oldItemId, newItemId);
+        qcRuleConfigurationService.handleItemOverride(warehouseId, oldItemId, newItemId);
+
+        // other service
+        inboundServiceRestemplateClient.handleItemOverride(warehouseId, oldItemId, newItemId);
+        outbuondServiceRestemplateClient.handleItemOverride(warehouseId, oldItemId, newItemId);
+        workOrderServiceRestemplateClient.handleItemOverride(warehouseId, oldItemId, newItemId);
+    }
     /**
      * Get item family. If the item family  doesn't exists yet, we will create it
      * on the fly
