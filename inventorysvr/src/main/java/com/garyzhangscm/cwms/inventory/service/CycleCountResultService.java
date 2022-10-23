@@ -82,5 +82,10 @@ public class CycleCountResultService {
             save(cycleCountResult);
         });
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        cycleCountResultRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }
 

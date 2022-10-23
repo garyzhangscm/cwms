@@ -298,5 +298,8 @@ public class InventoryAdjustmentRequestService{
     }
 
 
-
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        inventoryAdjustmentRequestRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }

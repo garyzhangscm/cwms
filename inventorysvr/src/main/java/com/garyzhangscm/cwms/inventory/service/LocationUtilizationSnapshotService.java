@@ -141,4 +141,8 @@ public class LocationUtilizationSnapshotService   {
     }
 
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        locationUtilizationSnapshotRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }

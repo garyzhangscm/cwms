@@ -737,4 +737,9 @@ public class QCInspectionRequestService {
         qcInspectionRequest.setDocumentUrls(documentUrls);
         return saveOrUpdate(qcInspectionRequest);
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        qcInspectionRequestRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }

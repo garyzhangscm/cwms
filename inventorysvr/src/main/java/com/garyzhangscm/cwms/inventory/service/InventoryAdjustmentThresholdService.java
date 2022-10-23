@@ -559,9 +559,13 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
         return save(inventoryAdjustmentThreshold);
     }
 
-    @RequestMapping(value="/inventory-adjustment-thresholds/{id}", method = RequestMethod.DELETE)
+
     public void removeInventoryAdjustmentThreshold(@PathVariable Long id) {
         delete(id);
     }
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        inventoryAdjustmentThresholdRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }

@@ -22,9 +22,26 @@ import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.model.ItemSampling;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 @Repository
 public interface ItemSamplingRepository extends JpaRepository<ItemSampling, Long>, JpaSpecificationExecutor<ItemSampling> {
     ItemSampling findByWarehouseIdAndNumber(Long warehouseId, String number);
+
+    /**
+     * Override a item in the warehouse level. We will change the item id to the new warehouse level
+     * item. We will only change in the specific warehouse
+     * @param oldItemId
+     * @param newItemId
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "update item_sampling set item_id = :newItemId  " +
+            " where item_id = :oldItemId and warehouse_id = :warehouseId",
+            nativeQuery = true)
+    void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
 }

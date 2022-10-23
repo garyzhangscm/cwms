@@ -161,5 +161,9 @@ public class AuditCountResultService {
 
     }
 
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        auditCountResultRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }
 

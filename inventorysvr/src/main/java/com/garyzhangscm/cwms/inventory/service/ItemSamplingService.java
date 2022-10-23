@@ -407,4 +407,9 @@ public class ItemSamplingService {
             imageFile.delete();
         }
     }
+
+    public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
+        itemSamplingRepository.processItemOverride(warehouseId,
+                oldItemId, newItemId);
+    }
 }
