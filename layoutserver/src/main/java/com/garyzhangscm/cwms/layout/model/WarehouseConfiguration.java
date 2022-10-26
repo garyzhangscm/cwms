@@ -48,6 +48,11 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @Column(name = "list_pick_enabled_flag")
     private Boolean listPickEnabledFlag = false;
 
+
+    @Column(name = "printing_strategy")
+    @Enumerated(EnumType.STRING)
+    private PrintingStrategy printingStrategy;
+
     public Long getId() {
         return id;
     }
@@ -78,5 +83,13 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
         this.listPickEnabledFlag = listPickEnabledFlag;
+    }
+
+    public PrintingStrategy getPrintingStrategy() {
+        return printingStrategy;
+    }
+
+    public void setPrintingStrategy(PrintingStrategy printingStrategy) {
+        this.printingStrategy = printingStrategy;
     }
 }

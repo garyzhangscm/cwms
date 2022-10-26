@@ -81,6 +81,7 @@ public class ReportHistoryController {
                 .body(resource);
     }
 
+
     @RequestMapping(value="/report-histories/download/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.GET)
     public ResponseEntity<Resource>  downloadReport(@PathVariable String filename,
                                                     @PathVariable String type,

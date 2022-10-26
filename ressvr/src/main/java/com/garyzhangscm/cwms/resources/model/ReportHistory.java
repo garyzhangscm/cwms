@@ -39,6 +39,7 @@ public class ReportHistory extends AuditibleEntity<String> {
     //@DateTimeFormat(pattern =  "YYYY-MM-DDTHH:mm:ss.SSSZ")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime printedDate;
+
     @Column(name = "printed_username")
     private String printedUsername;
 

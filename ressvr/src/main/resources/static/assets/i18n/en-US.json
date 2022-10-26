@@ -1870,5 +1870,9 @@
   "LIST-PICK-GROUP-RULE-TYPE-BY_STOP": "By Stop",
   "LIST-PICK-GROUP-RULE-TYPE-BY_TRAILER_APPOINTMENT": "By Load",
   "LIST-PICK-GROUP-RULE-TYPE-BY_ITEM": "By Item",
-  "groupRules": "Group Rules"
+  "groupRules": "Group Rules",
+  "printing-strategy": "Printing Strategy",
+  "PRINTING-STRATEGY-SERVER_PRINTER": "Print from Server",
+  "PRINTING-STRATEGY-LOCAL_PRINTER_SERVER_DATA": "Print from Local, Data from Server",
+  "PRINTING-STRATEGY-LOCAL_PRINTER_LOCAL_DATA": "Print from Local, Data from Local"
 }
