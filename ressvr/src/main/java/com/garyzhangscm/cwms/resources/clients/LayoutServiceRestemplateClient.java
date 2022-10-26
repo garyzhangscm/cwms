@@ -127,6 +127,34 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         }
     }
 
+
+    public Warehouse getWarehouseByName(Long companyId, String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyId", companyId)
+                        .queryParam("name", name);
+
+
+        ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {}).getBody();
+
+
+        List<Warehouse> warehouses = responseBodyWrapper.getData();
+
+        if (warehouses.size() != 1) {
+            return null;
+        }
+        else {
+            return warehouses.get(0);
+        }
+    }
+
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

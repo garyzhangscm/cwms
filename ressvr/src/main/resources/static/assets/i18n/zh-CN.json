@@ -1870,5 +1870,9 @@
   "LIST-PICK-GROUP-RULE-TYPE-BY_STOP": "按发运站点",
   "LIST-PICK-GROUP-RULE-TYPE-BY_TRAILER_APPOINTMENT": "按发运车辆",
   "LIST-PICK-GROUP-RULE-TYPE-BY_ITEM": "按商品",
-  "groupRules": "组合规则"
+  "groupRules": "组合规则",
+  "printing-strategy": "打印规则",
+  "PRINTING-STRATEGY-SERVER_PRINTER": "从服务器打印",
+  "PRINTING-STRATEGY-LOCAL_PRINTER_SERVER_DATA": "本地打印,从服务器读取数据",
+  "PRINTING-STRATEGY-LOCAL_PRINTER_LOCAL_DATA": "本地打印,从本地读取数据"
 }
