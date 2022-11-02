@@ -1,11 +1,18 @@
 package com.garyzhangscm.cwms.workorder.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +44,13 @@ public class ProductionLineMonitor extends AuditibleEntity<String>{
     @ManyToOne
     @JoinColumn(name = "production_line_id")
     private ProductionLine productionLine;
+
+
+    @Column(name = "last_heart_beat_time")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime lastHeartBeatTime;
 
     public Long getId() {
         return id;
@@ -76,5 +90,13 @@ public class ProductionLineMonitor extends AuditibleEntity<String>{
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public LocalDateTime getLastHeartBeatTime() {
+        return lastHeartBeatTime;
+    }
+
+    public void setLastHeartBeatTime(LocalDateTime lastHeartBeatTime) {
+        this.lastHeartBeatTime = lastHeartBeatTime;
     }
 }

@@ -70,4 +70,14 @@ public class ProductionLineMonitorController {
         return productionLineMonitorService.changeProductionLineMonitor(productionLineMonitor);
     }
 
+
+    @RequestMapping(value="/production-line-monitors/heart-beat", method = RequestMethod.POST)
+    public String processProductionLineMonitorHeartBeat(
+            @RequestParam Long warehouseId,
+            @RequestParam String productionLineMonitorName) {
+
+        return productionLineMonitorService.processProductionLineMonitorHeartBeat(warehouseId, productionLineMonitorName);
+    }
+
+
 }
