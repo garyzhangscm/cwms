@@ -25,6 +25,8 @@ import com.garyzhangscm.cwms.workorder.model.ProductionLineMonitor;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineMonitorTransaction;
 import com.garyzhangscm.cwms.workorder.service.ProductionLineMonitorService;
 import com.garyzhangscm.cwms.workorder.service.ProductionLineMonitorTransactionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,7 @@ import java.util.List;
 
 @RestController
 public class ProductionLineMonitorTransactionController {
+    private static final Logger logger = LoggerFactory.getLogger(ProductionLineMonitorTransactionController.class);
     @Autowired
     ProductionLineMonitorTransactionService productionLineMonitorTransactionService;
 
@@ -54,14 +57,17 @@ public class ProductionLineMonitorTransactionController {
     }
 
     @RequestMapping(value="/production-line-monitor-transactions", method = RequestMethod.POST)
-    public ProductionLineMonitorTransaction addProductionLineMonitorTransaction(
+    public String addProductionLineMonitorTransaction(
             @RequestParam Long warehouseId,
             @RequestParam String productionLineMonitorName,
             @RequestParam Double cycleTime) {
-        return productionLineMonitorTransactionService.addProductionLineMonitorTransaction(
+        productionLineMonitorTransactionService.addProductionLineMonitorTransaction(
                 warehouseId, productionLineMonitorName, cycleTime
         );
+        return productionLineMonitorName + ": last cycle time " + cycleTime + " s record!";
+
     }
+
 
 
     @RequestMapping(value="/production-line-monitor-transactions/{id}", method = RequestMethod.GET)

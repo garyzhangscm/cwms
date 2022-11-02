@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -148,4 +149,17 @@ public class ProductionLineMonitorService  {
     }
 
 
+    public String processProductionLineMonitorHeartBeat(Long warehouseId, String productionLineMonitorName) {
+        ProductionLineMonitor productionLineMonitor = findByName(warehouseId, productionLineMonitorName);
+        if (Objects.nonNull(productionLineMonitor)) {
+            productionLineMonitor.setLastHeartBeatTime(LocalDateTime.now());
+
+            productionLineMonitor = saveOrUpdate(productionLineMonitor);
+            logger.debug("heart beat for monitor {} at {}",
+                    productionLineMonitor.getName(),
+                    productionLineMonitor.getLastHeartBeatTime());
+            return productionLineMonitorName + " heart beat!";
+        }
+        return "not able to find the monitor " + productionLineMonitorName;
+    }
 }

@@ -333,6 +333,8 @@ public class ProductionLineAssignmentService   {
         List<ProductionLineAssignment> productionLineAssignments =
                 findAll(warehouseId, productionLineId, null, null, null);
 
+        logger.debug("get {} assignment from production line {}, warehouse id {}",
+            productionLineAssignments.size(), productionLineId, warehouseId);
         return productionLineAssignments.stream().map(
                 productionLineAssignment -> productionLineAssignment.getWorkOrder()
         ).map(workOrder -> {
