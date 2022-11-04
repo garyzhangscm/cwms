@@ -57,7 +57,6 @@ public class DataTransferRequest extends AuditibleEntity<String>  {
     @Enumerated(EnumType.STRING)
     private DataTransferRequestType type;
 
-
     @OneToMany(
             mappedBy = "dataTransferRequest",
             cascade = CascadeType.ALL,

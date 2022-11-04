@@ -46,6 +46,12 @@ public class Company extends AuditibleEntity<String> {
     @Column(name = "address_postcode")
     private String addressPostcode;
 
+    // if the company marked as production
+    // then we won't massive CRUD the
+    // data that belongs to this company
+    @Column(name = "production")
+    private Boolean production;
+
     public Long getId() {
         return id;
     }
@@ -156,5 +162,13 @@ public class Company extends AuditibleEntity<String> {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Boolean getProduction() {
+        return production;
+    }
+
+    public void setProduction(Boolean production) {
+        this.production = production;
     }
 }
