@@ -6,6 +6,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A container that has all the information we will
@@ -56,6 +57,12 @@ public class DataInitialRequest extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private DataInitialRequestStatus status;
 
+    // if the company marked as production
+    // then we won't massive CRUD the
+    // data that belongs to this company
+    @Column(name = "production")
+    private Boolean production;
+
     @Transient
     private User requestUser;
 
@@ -64,12 +71,15 @@ public class DataInitialRequest extends AuditibleEntity<String>{
     public DataInitialRequest(String companyName,
                               String warehouseName,
                               String adminUserName,
-                              String requestUsername) {
+                              String requestUsername,
+                              Boolean production) {
         this.companyName = companyName;
         this.warehouseName = warehouseName;
         this.adminUserName = adminUserName;
         this.requestUsername = requestUsername;
         this.status = DataInitialRequestStatus.PENDING;
+        this.production = Objects.isNull(production) ?
+                true : production;
 
     }
 
@@ -135,5 +145,13 @@ public class DataInitialRequest extends AuditibleEntity<String>{
 
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
+    }
+
+    public Boolean getProduction() {
+        return production;
+    }
+
+    public void setProduction(Boolean production) {
+        this.production = production;
     }
 }

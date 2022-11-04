@@ -24,6 +24,8 @@ public class Company  {
     private String addressLine2;
     private String addressPostcode;
 
+    private Boolean production;
+
     public Long getId() {
         return id;
     }
@@ -134,5 +136,13 @@ public class Company  {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Boolean getProduction() {
+        return production;
+    }
+
+    public void setProduction(Boolean production) {
+        this.production = production;
     }
 }

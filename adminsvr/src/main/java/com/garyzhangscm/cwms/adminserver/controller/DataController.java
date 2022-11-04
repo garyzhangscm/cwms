@@ -30,12 +30,15 @@ public class DataController {
     @RequestMapping(value="/data/company/initiate", method = RequestMethod.PUT)
     public Boolean initiateProductionData(@RequestParam String companyName,
                                           @RequestParam String warehouseName,
-                                          @RequestParam String adminUsername) throws JsonProcessingException {
+                                          @RequestParam String adminUsername,
+                                          @RequestParam(name = "production", required = false, defaultValue = "") Boolean production) throws JsonProcessingException {
+
 
         String requestUsername = userService.getCurrentUserName();
-        dataService.initiateProductionData(companyName, warehouseName, adminUsername, requestUsername);
+        dataService.initiateProductionData(companyName, warehouseName, adminUsername, requestUsername, production);
         return true;
     }
+
 
     @RequestMapping(value="/data/company/initiate/{id}", method = RequestMethod.GET)
     public DataInitialRequest initiateProductionData(@PathVariable Long id) throws JsonProcessingException {
@@ -53,8 +56,6 @@ public class DataController {
         }
         return dataService.findInitiateProductionData(companyName);
     }
-
-
 
 
 }
