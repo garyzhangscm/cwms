@@ -785,7 +785,7 @@ public class ProductionLineService implements TestDataInitiableService {
         if ("item".equalsIgnoreCase(name)) {
             return getProductionLineAttributeItem(productionLines, name);
         }
-        else if ("capacity".equalsIgnoreCase(name)) {
+        else if ("capacity".equalsIgnoreCase(name) || "staffCount".equalsIgnoreCase(name)) {
 
             return getProductionLineAttributeCapacity(productionLines, name);
         }
@@ -832,15 +832,35 @@ public class ProductionLineService implements TestDataInitiableService {
                     if (matchedProductionLineCapacity.isPresent()) {
 
                         logger.debug("we found capacity defined for production line {}  with item id {}" +
-                                " staff count: {}",
+                                " staff count: {}, capacity: {}",
                                 productionLine.getName(), itemId,
                                 Objects.isNull(matchedProductionLineCapacity.get().getStaffCount()) ?
-                                        "N/A" : matchedProductionLineCapacity.get().getStaffCount());
-                        return new ProductionLineAttribute(
-                                productionLine, name,
-                                Objects.isNull(matchedProductionLineCapacity.get().getStaffCount()) ?
-                                        "" : String.valueOf(matchedProductionLineCapacity.get().getStaffCount())
-                        );
+                                        "N/A" : matchedProductionLineCapacity.get().getStaffCount(),
+                        Objects.isNull(matchedProductionLineCapacity.get().getCapacity()) ?
+                                "N/A" : matchedProductionLineCapacity.get().getCapacity());
+
+                        if (name.equals("capacity")) {
+
+                            return new ProductionLineAttribute(
+                                    productionLine, name,
+                                    Objects.isNull(matchedProductionLineCapacity.get().getCapacity()) ?
+                                            "" : String.valueOf(matchedProductionLineCapacity.get().getCapacity())
+                            );
+                        }
+                        else if (name.equals("staffCount")) {
+
+                            return new ProductionLineAttribute(
+                                    productionLine, name,
+                                    Objects.isNull(matchedProductionLineCapacity.get().getStaffCount()) ?
+                                            "" : String.valueOf(matchedProductionLineCapacity.get().getStaffCount())
+                            );
+                        }
+                        else {
+
+                            return new ProductionLineAttribute(
+                                    productionLine, name, ""
+                            );
+                        }
                     }
 
                     logger.debug("we CANNOT FIND capacity defined for production line {}  with item id {}",

@@ -21,7 +21,9 @@ package com.garyzhangscm.cwms.workorder.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
+import com.garyzhangscm.cwms.workorder.repository.ProductionShiftScheduleRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.jdbc.Work;
@@ -31,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -38,6 +41,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -45,6 +50,9 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
     private static final Logger logger = LoggerFactory.getLogger(WorkOrderConfigurationService.class);
     @Autowired
     private WorkOrderConfigurationRepository workOrderConfigurationRepository;
+
+    @Autowired
+    private ProductionShiftScheduleRepository productionShiftScheduleRepository;
 
 
     @Autowired
@@ -56,14 +64,18 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
 
 
     public WorkOrderConfiguration findById(Long id) {
-        return workOrderConfigurationRepository.findById(id)
+        WorkOrderConfiguration workOrderConfiguration = workOrderConfigurationRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("web client tab display configuration not found by id: " + id));
+
+        loadProductionShiftSchedule(workOrderConfiguration);
+        return  workOrderConfiguration;
     }
 
     public List<WorkOrderConfiguration> findAll(Long companyId,
                                                 Long warehouseId) {
 
-        return workOrderConfigurationRepository.findAll(
+        List<WorkOrderConfiguration> workOrderConfigurations =
+                workOrderConfigurationRepository.findAll(
                 (Root<WorkOrderConfiguration> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -79,9 +91,14 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
+        loadProductionShiftSchedule(workOrderConfigurations);
+        return workOrderConfigurations;
     }
     public WorkOrderConfiguration save(WorkOrderConfiguration workOrderConfiguration) {
-        return workOrderConfigurationRepository.save(workOrderConfiguration);
+        WorkOrderConfiguration newWorkOrderConfiguration =
+                workOrderConfigurationRepository.save(workOrderConfiguration);
+        loadProductionShiftSchedule(newWorkOrderConfiguration);
+        return newWorkOrderConfiguration;
     }
 
 
@@ -201,24 +218,29 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
         // 2. company
         // 3. default
 
+        WorkOrderConfiguration bestMatchWorkOrderConfiguration = null;
         List<WorkOrderConfiguration> workOrderConfigurations = new ArrayList<>();
         // 1. company + warehouse
         workOrderConfigurations = findAll(companyId, warehouseId);
         if (workOrderConfigurations.size() >= 1) {
-            return workOrderConfigurations.get(0);
+            bestMatchWorkOrderConfiguration = workOrderConfigurations.get(0);
         }
         // 2. company
         workOrderConfigurations = findAll(companyId, null);
         if (workOrderConfigurations.size() >= 1) {
-            return workOrderConfigurations.get(0);
+            bestMatchWorkOrderConfiguration = workOrderConfigurations.get(0);
         }
         // 3. default
         workOrderConfigurations = findAll(null, null);
         if (workOrderConfigurations.size() >= 1) {
-            return workOrderConfigurations.get(0);
+            bestMatchWorkOrderConfiguration = workOrderConfigurations.get(0);
         }
+        if (Objects.isNull(bestMatchWorkOrderConfiguration)) {
+            return null;
+        }
+        loadProductionShiftSchedule(bestMatchWorkOrderConfiguration);
 
-        return null;
+        return bestMatchWorkOrderConfiguration;
     }
 
 
@@ -231,9 +253,119 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
                 Objects.equals(existingWorkOrderConfiguration.getWarehouseId(), workOrderConfiguration.getWarehouseId())) {
             workOrderConfiguration.setId(existingWorkOrderConfiguration.getId());
         }
+        // let's refresh the production line shift schedule
+        saveProductionLineSchedule(workOrderConfiguration);
         return save(workOrderConfiguration);
 
     }
 
+    @Transactional
+    private void saveProductionLineSchedule(WorkOrderConfiguration workOrderConfiguration) {
+        logger.debug("start to save the shift schedule \n{}", workOrderConfiguration.getProductionShiftSchedules());
+        validateShiftSchedule(workOrderConfiguration);
 
+        logger.debug("the shift schedule passed validation");
+        logger.debug("will remove the shift schedule for warehouse {} first",
+                workOrderConfiguration.getWarehouseId());
+        // remove the existing shift schedule and then save the new one
+        productionShiftScheduleRepository.deleteByWarehouseId(workOrderConfiguration.getWarehouseId());
+
+
+        for (ProductionShiftSchedule productionShiftSchedule : workOrderConfiguration.getProductionShiftSchedules()) {
+            logger.debug("will save schedule {}", productionShiftSchedule);
+            productionShiftScheduleRepository.save(productionShiftSchedule);
+        }
+    }
+
+    private void validateShiftSchedule(WorkOrderConfiguration workOrderConfiguration) {
+        // make sure the schedule is not overlapped
+
+        if (workOrderConfiguration.getProductionShiftSchedules().isEmpty()) {
+            // production shift schedule is not setup, do nothing
+            return;
+        }
+
+        // load all the schedule
+        int shiftNumbers = workOrderConfiguration.getProductionShiftSchedules().size();
+        LocalDateTime[] startTimes = new LocalDateTime[shiftNumbers];
+        LocalDateTime[] endTimes = new LocalDateTime[shiftNumbers];
+
+        int index = 0;
+        // the start time and end time will be added to today and then we will do the compare
+        for (ProductionShiftSchedule productionShiftSchedule : workOrderConfiguration.getProductionShiftSchedules()) {
+            startTimes[index] = LocalDateTime.now().withHour(productionShiftSchedule.getShiftStartTime().getHour())
+                    .withMinute(productionShiftSchedule.getShiftStartTime().getMinute())
+                    .withSecond(productionShiftSchedule.getShiftStartTime().getSecond());
+            if (Boolean.TRUE.equals(productionShiftSchedule.getShiftEndNextDay())) {
+                endTimes[index] = LocalDateTime.now().plusDays(1)
+                        .withHour(productionShiftSchedule.getShiftEndTime().getHour())
+                        .withMinute(productionShiftSchedule.getShiftEndTime().getMinute())
+                        .withSecond(productionShiftSchedule.getShiftEndTime().getSecond());
+            }
+            else {
+                endTimes[index] = LocalDateTime.now()
+                        .withHour(productionShiftSchedule.getShiftEndTime().getHour())
+                        .withMinute(productionShiftSchedule.getShiftEndTime().getMinute())
+                        .withSecond(productionShiftSchedule.getShiftEndTime().getSecond());
+            }
+            index++;
+
+        }
+
+        for(int i = 0; i < shiftNumbers - 1; i++) {
+            for (int j = i + 1; j < shiftNumbers; j ++) {
+                if (isTimeRangeOverLapping(startTimes[i], endTimes[i], startTimes[j], endTimes[j])) {
+                    throw WorkOrderException.raiseException("Can't setup the shift schedule as the following time overlapping: " +
+                            "[" + startTimes[i] + "," + endTimes[i] + "] and " +
+                            "[" + startTimes[j] + "," +  endTimes[j] + "]");
+                }
+
+            }
+        }
+
+    }
+
+    /**
+     * Check if the 2 time range has over lapping.
+     * 1. time range 1: start time1 ~ end time 1
+     * 2. time range 2: start time2 ~ end time 2
+     * @param startTime1
+     * @param endTime1
+     * @param startTime2
+     * @param endTime2
+     * @return
+     */
+    private boolean isTimeRangeOverLapping(LocalDateTime startTime1, LocalDateTime endTime1,
+                                           LocalDateTime startTime2, LocalDateTime endTime2) {
+        // not over lapping if one of the following condition meet
+        // 1. end time 1 < start time 2
+        // 2. start time 1 > end time 2
+        if (endTime1.isBefore(startTime2)) {
+            return false;
+        }
+        else if (startTime1.isAfter(endTime2)) {
+            return false;
+        }
+        return false;
+    }
+
+    private void loadProductionShiftSchedule(List<WorkOrderConfiguration> workOrderConfigurations) {
+
+        workOrderConfigurations.forEach(
+                workOrderConfiguration -> loadProductionShiftSchedule(workOrderConfiguration)
+        );
+    }
+    private void loadProductionShiftSchedule(WorkOrderConfiguration workOrderConfiguration) {
+
+        workOrderConfiguration.setProductionShiftSchedules(
+                productionShiftScheduleRepository.findByWarehouseId(
+                        workOrderConfiguration.getWarehouseId()
+                )
+        );
+    }
+
+
+    public WorkOrderConfiguration changeWorkOrderConfiguration(WorkOrderConfiguration workOrderConfiguration) {
+        return saveOrUpdate(workOrderConfiguration);
+    }
 }

@@ -98,7 +98,7 @@ public class SupplierService implements  TestDataInitiableService{
                     }
                 }
         ,
-                Sort.by(Sort.Direction.ASC, "warehouseId", "name")
+                Sort.by(Sort.Direction.ASC, "warehouseId", "description", "name")
         );
 
         // we may get duplicated record from the above query when we pass in the warehouse id
