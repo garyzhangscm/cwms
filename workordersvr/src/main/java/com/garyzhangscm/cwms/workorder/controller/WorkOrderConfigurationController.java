@@ -52,7 +52,7 @@ public class WorkOrderConfigurationController {
     @BillableEndpoint
     @RequestMapping(value="/work-order-configuration", method = RequestMethod.POST)
     public WorkOrderConfiguration changeWorkOrderConfiguration(@RequestBody WorkOrderConfiguration workOrderConfiguration) {
-        return workOrderConfigurationService.saveOrUpdate(workOrderConfiguration);
+        return workOrderConfigurationService.changeWorkOrderConfiguration(workOrderConfiguration);
     }
 
 

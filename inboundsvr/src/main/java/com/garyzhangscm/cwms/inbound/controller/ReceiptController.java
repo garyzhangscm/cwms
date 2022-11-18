@@ -71,7 +71,7 @@ public class ReceiptController {
     @BillableEndpoint
     @RequestMapping(value="/receipts", method = RequestMethod.POST)
     public Receipt addReceipts(@RequestBody Receipt receipt) {
-        return receiptService.save(receipt);
+        return receiptService.addReceipts(receipt);
     }
 
 

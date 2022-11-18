@@ -1155,4 +1155,15 @@ public class ReceiptService implements TestDataInitiableService{
         delete(receiptId);
 
     }
+
+    public Receipt addReceipts(Receipt receipt) {
+        // make sure all the necessary field is filled in
+        for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+            if (Objects.isNull(receiptLine)) {
+                throw ReceiptOperationException.raiseException("Can't create the receipt as the item for line " +
+                        receiptLine.getNumber() + " is null");
+            }
+        }
+        return saveOrUpdate(receipt);
+    }
 }
