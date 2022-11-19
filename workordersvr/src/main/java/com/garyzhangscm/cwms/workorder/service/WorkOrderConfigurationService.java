@@ -244,6 +244,7 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
     }
 
 
+    @Transactional
     public WorkOrderConfiguration saveOrUpdate(WorkOrderConfiguration workOrderConfiguration) {
 
         WorkOrderConfiguration existingWorkOrderConfiguration =
@@ -365,6 +366,7 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
     }
 
 
+    @Transactional
     public WorkOrderConfiguration changeWorkOrderConfiguration(WorkOrderConfiguration workOrderConfiguration) {
         return saveOrUpdate(workOrderConfiguration);
     }
