@@ -74,6 +74,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Production Line Dashboard",menu.main.work-order.production-line-dashboard,/work-order/production-line-dashboard,16,Main-Menu-WorkOrder,Production-Line-Dashboard,,true,false
 "Production Line Monitor",menu.main.work-order.production-line-monitor,/work-order/production-line-monitor,17,Main-Menu-WorkOrder,Production-Line-Monitor,,true,false
 "Production Line Monitor Transaction",menu.main.work-order.production-line-monitor-transaction,/work-order/production-line-monitor/transaction,18,Main-Menu-WorkOrder,Production-Line-Monitor-Transaction,,true,false
+"Production Line Status Display",menu.main.work-order.production-line-status-display,/work-order/production-line-status/display,19,Main-Menu-WorkOrder,Production-Line-Status-Display,,true,false
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,,true,false
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,,true,false
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false

@@ -1875,5 +1875,7 @@
   "PRINTING-STRATEGY-SERVER_PRINTER": "Print from Server",
   "PRINTING-STRATEGY-LOCAL_PRINTER_SERVER_DATA": "Print from Local, Data from Server",
   "PRINTING-STRATEGY-LOCAL_PRINTER_LOCAL_DATA": "Print from Local, Data from Local",
-  "lastHeartBeatTime": "Last Heart Beat Time"
+  "lastHeartBeatTime": "Last Heart Beat Time",
+  "achievingRate": "Achieving Rate",
+  "menu.main.work-order.production-line-status-display": "Production Line Status Display"
 }
