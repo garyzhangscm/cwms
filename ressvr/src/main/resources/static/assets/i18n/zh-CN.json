@@ -1875,5 +1875,7 @@
   "PRINTING-STRATEGY-SERVER_PRINTER": "从服务器打印",
   "PRINTING-STRATEGY-LOCAL_PRINTER_SERVER_DATA": "本地打印,从服务器读取数据",
   "PRINTING-STRATEGY-LOCAL_PRINTER_LOCAL_DATA": "本地打印,从本地读取数据",
-  "lastHeartBeatTime": "上次心跳时间"
+  "lastHeartBeatTime": "上次心跳时间",
+  "achievingRate": "达成率",
+  "menu.main.work-order.production-line-status-display": "生产线状态展示"
 }
