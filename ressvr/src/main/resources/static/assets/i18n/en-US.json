@@ -1877,5 +1877,7 @@
   "PRINTING-STRATEGY-LOCAL_PRINTER_LOCAL_DATA": "Print from Local, Data from Local",
   "lastHeartBeatTime": "Last Heart Beat Time",
   "achievingRate": "Achieving Rate",
-  "menu.main.work-order.production-line-status-display": "Production Line Status Display"
+  "menu.main.work-order.production-line-status-display": "Production Line Status Display",
+  "menu.dashboard.inventory-kanban": "Inventory Kanban",
+  "menu.dashboard.location-kanban": "Location Kanban"
 }
