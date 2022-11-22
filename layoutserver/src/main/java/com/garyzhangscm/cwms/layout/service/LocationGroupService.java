@@ -480,4 +480,45 @@ public class LocationGroupService implements TestDataInitiableService {
 
         return locationGroupRepository.getUtilizationTrackingLocationGroups(warehouseId);
     }
+
+    public List<StorageLocationGroupUtilization> getStorageLocationGroupUtilization(Long warehouseId) {
+        List<StorageLocationGroupUtilization> locationGroupUtilizations = new ArrayList<>();
+        // get all the storage location group
+
+        List<LocationGroup> storageLocationGroups = getStorageLocationGroup(warehouseId);
+        // for each location group get the utilization
+        // we will only return when the location group is volume tracking
+        storageLocationGroups.stream().filter(
+                locationGroup -> Boolean.TRUE.equals(locationGroup.getTrackingVolume())
+        ).forEach(
+                locationGroup -> locationGroupUtilizations.add(
+                        getStorageLocationGroupUtilization(locationGroup)
+                )
+        );
+
+        return locationGroupUtilizations;
+    }
+
+
+    public StorageLocationGroupUtilization getStorageLocationGroupUtilization(LocationGroup locationGroup) {
+        List<Location> locations = locationService.findByLocationGroup(locationGroup.getId());
+        int emptyLocation = 0;
+        int partialLocation = 0;
+        int fullLocation = 0;
+
+        for (Location location : locations) {
+            if (location.isEmpty()) {
+                emptyLocation++;
+            }
+            else if (location.getCurrentVolume() + location.getPendingVolume() >= location.getCapacity() * location.getFillPercentage() / 100) {
+                fullLocation++;
+            }
+            else {
+                partialLocation++;
+            }
+        }
+        return new StorageLocationGroupUtilization(locationGroup.getName(), emptyLocation,
+                partialLocation, fullLocation);
+
+    }
 }
