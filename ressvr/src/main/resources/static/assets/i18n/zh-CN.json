@@ -1877,5 +1877,7 @@
   "PRINTING-STRATEGY-LOCAL_PRINTER_LOCAL_DATA": "本地打印,从本地读取数据",
   "lastHeartBeatTime": "上次心跳时间",
   "achievingRate": "达成率",
-  "menu.main.work-order.production-line-status-display": "生产线状态展示"
+  "menu.main.work-order.production-line-status-display": "生产线状态展示",
+  "menu.dashboard.inventory-kanban": "库存看板",
+  "menu.dashboard.location-kanban": "库位看板"
 }
