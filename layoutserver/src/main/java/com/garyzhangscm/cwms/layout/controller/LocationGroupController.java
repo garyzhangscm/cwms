@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.layout.controller;
 
 
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
-import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
-import com.garyzhangscm.cwms.layout.model.InventoryConsolidationStrategy;
-import com.garyzhangscm.cwms.layout.model.Location;
-import com.garyzhangscm.cwms.layout.model.LocationGroup;
+import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.service.LocationGroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +109,8 @@ public class LocationGroupController {
     }
 
 
+
+
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}/reserve")
@@ -138,5 +137,10 @@ public class LocationGroupController {
     }
 
 
+    @RequestMapping(method=RequestMethod.GET, value="/locationgroups/utilization/storage")
+    public List<StorageLocationGroupUtilization> getStorageLocationGroupUtilization(
+            Long warehouseId) {
+        return locationGroupService.getStorageLocationGroupUtilization(warehouseId);
+    }
 
 }
