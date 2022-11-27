@@ -525,7 +525,7 @@ public class InventorySnapshotService  {
         // Columns
         // 1. inventory snapshot batch number
         // 2. inventory snapshot complete time
-        // 3. velocity name
+        // 3. velocity id
         // 4. total inventory quantity
         logger.debug("start to get inventory snapshot by velocity by time range({}, {}), warehouse id: {}",
                 df.format(startTime), df.format(endTime), warehouseId);
@@ -533,6 +533,13 @@ public class InventorySnapshotService  {
                 warehouseId , df.format(startTime), df.format(endTime)
         );
         logger.debug("get {} inventory snapshot summary record by velocity", inventorySnapshotSummaries.size());
+        List<Velocity> velocities = commonServiceRestemplateClient.getVelocitesByWarehouse(warehouseId);
+
+        // we will use the velocity name to return the inventory snapshot summary
+        // key: velocity id
+        // value: velocity name
+        Map<Long, String> velocityMap = new HashMap<>();
+        velocities.forEach(velocity -> velocityMap.put(velocity.getId(), velocity.getName()));
 
 
 
@@ -541,20 +548,25 @@ public class InventorySnapshotService  {
                     logger.debug("> inventorySnapshotSummary.length: {}", inventorySnapshotSummary.length);
                     return inventorySnapshotSummary.length == 4;
                 }
-        ).limit(20)
+        ).limit(10)
                 .map(
                 inventorySnapshotSummary -> {
                     logger.debug("batch number: {}, complete date: {}, velocity: {}, quantity: {}",
                             inventorySnapshotSummary[0].toString(),
                             inventorySnapshotSummary[1].toString(),
-                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" : inventorySnapshotSummary[2].toString(),
+                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" :
+                                    velocityMap.containsKey(inventorySnapshotSummary[2].toString()) ?
+                                        velocityMap.get(inventorySnapshotSummary[2].toString()) : "N/A",
                             inventorySnapshotSummary[3].toString());
+
 
                     return new InventorySnapshotSummary(
                             inventorySnapshotSummary[0].toString(),
                             LocalDateTime.parse(inventorySnapshotSummary[1].toString(), df),
                             InventorySnapshotSummaryGroupBy.VELOCITY,
-                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" : inventorySnapshotSummary[2].toString(),
+                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" :
+                                    velocityMap.containsKey(inventorySnapshotSummary[2].toString()) ?
+                                            velocityMap.get(inventorySnapshotSummary[2].toString()) : "N/A",
                             Long.parseLong(inventorySnapshotSummary[3].toString())
                     );
                 }
@@ -590,7 +602,7 @@ public class InventorySnapshotService  {
                     logger.debug("> inventorySnapshotSummary.length: {}", inventorySnapshotSummary.length);
                     return inventorySnapshotSummary.length == 4;
                 }
-        ).map(
+        ).limit(10).map(
                 inventorySnapshotSummary -> new InventorySnapshotSummary(
                         inventorySnapshotSummary[0].toString(),
                         LocalDateTime.parse(inventorySnapshotSummary[1].toString(), df),

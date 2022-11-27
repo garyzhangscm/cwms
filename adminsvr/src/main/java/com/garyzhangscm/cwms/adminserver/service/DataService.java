@@ -219,6 +219,8 @@ public class DataService {
                         "INVACT", "", 10, 0, true),
                 new SystemControlledNumber(warehouseId, "invoice-number",
                         "INVOICE", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "inventory-snapshot-batch-number",
+                        "INVSNAP", "", 10, 0, true),
                 new SystemControlledNumber(warehouseId, "item-sampling-number",
                         "IS", "", 10, 0, true),
                 new SystemControlledNumber(warehouseId, "list-pick",

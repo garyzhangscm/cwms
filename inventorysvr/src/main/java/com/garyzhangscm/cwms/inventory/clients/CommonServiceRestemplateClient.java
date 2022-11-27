@@ -175,6 +175,43 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    @Cacheable(cacheNames = "inventory_velocity", unless="#result == null", key = "warehouse_#warehouseId")
+    public List<Velocity> getVelocitesByWarehouse(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/velocities")
+                .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Velocity>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Velocity>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    @Cacheable(cacheNames = "inventory_abc-category", unless="#result == null", key = "warehouse_#warehouseId")
+    public List<ABCCategory> getABCCategoriesByWarehouse(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/abc-categories")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<ABCCategory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<ABCCategory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
         return getUnitOfMeasureByName(null, warehouseId, name, null, null);

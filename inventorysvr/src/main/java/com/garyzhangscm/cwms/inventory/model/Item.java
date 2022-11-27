@@ -91,13 +91,11 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     private boolean trackingExpirationDateFlag = false;
 
 
-    @ManyToOne
-    @JoinColumn(name="abc_category_id")
-    private ABCCategory abcCategory;
+    @Column(name="abc_category_id")
+    private Long abcCategoryId;
 
-    @ManyToOne
-    @JoinColumn(name="velocity_id")
-    private Velocity velocity;
+    @Column(name="velocity_id")
+    private Long velocityId;
 
 
     @Column(name="unit_cost")
@@ -380,19 +378,19 @@ public class Item extends AuditibleEntity<String> implements Serializable {
                         getItemPackageTypes().get(0);
     }
 
-    public ABCCategory getAbcCategory() {
-        return abcCategory;
+    public Long getAbcCategoryId() {
+        return abcCategoryId;
     }
 
-    public void setAbcCategory(ABCCategory abcCategory) {
-        this.abcCategory = abcCategory;
+    public void setAbcCategoryId(Long abcCategoryId) {
+        this.abcCategoryId = abcCategoryId;
     }
 
-    public Velocity getVelocity() {
-        return velocity;
+    public Long getVelocityId() {
+        return velocityId;
     }
 
-    public void setVelocity(Velocity velocity) {
-        this.velocity = velocity;
+    public void setVelocityId(Long velocityId) {
+        this.velocityId = velocityId;
     }
 }

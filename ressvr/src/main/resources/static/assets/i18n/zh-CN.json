@@ -1879,5 +1879,7 @@
   "achievingRate": "达成率",
   "menu.main.work-order.production-line-status-display": "生产线状态展示",
   "menu.dashboard.inventory-kanban": "库存看板",
-  "menu.dashboard.location-kanban": "库位看板"
+  "menu.dashboard.location-kanban": "库位看板",
+  "menu.main.common.abc-category": "ABC分类",
+  "menu.main.common.velocity": "周转率"
 }

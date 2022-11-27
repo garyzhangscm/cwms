@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.inventory.model;
+package com.garyzhangscm.cwms.common.model;
 
 
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -24,13 +24,22 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 
-public class Velocity extends AuditibleEntity<String> implements Serializable {
+@Entity
+@Table(name = "abc_category")
+public class ABCCategory extends AuditibleEntity<String> implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "abc_category_id")
+    @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "name")
     private String name;
+    @Column(name = "description")
     private String description;
 
     public Long getId() {
