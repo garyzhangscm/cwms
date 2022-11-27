@@ -70,12 +70,12 @@ public interface InventorySnapshotRepository extends JpaRepository<InventorySnap
             "  join item  on inventory_snapshot_detail.item_id = item.item_id " +
             "  left join abc_velocity on item.abc_velocity_id = abc_velocity.abc_velocity_id  " +
             " where inventory_snapshot.warehouse_id = :warehouseId " +
-            // "  and inventory_snapshot.complete_time between (:startTime, :endTime) " +
+            "  and inventory_snapshot.complete_time between :startTime and :endTime " +
             "group by inventory_snapshot.batch_number, inventory_snapshot.complete_time, " +
             "    inventory_snapshot.inventory_snapshot_id, " +
             "   abc_velocity.abc_velocity_id, abc_velocity.name",
             nativeQuery = true)
-    List<Object[]> getInventorySnapshotSummaryByABCCategory(Long warehouseId);
-    // List<Object[]> getInventorySnapshotSummaryByABCCategory(Long warehouseId, LocalDateTime startTime, LocalDateTime endTime);
+    // List<Object[]> getInventorySnapshotSummaryByABCCategory(Long warehouseId);
+    List<Object[]> getInventorySnapshotSummaryByABCCategory(Long warehouseId, String startTime, String endTime);
 
 }

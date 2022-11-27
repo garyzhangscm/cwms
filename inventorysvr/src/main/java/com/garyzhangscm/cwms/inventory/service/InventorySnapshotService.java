@@ -527,7 +527,7 @@ public class InventorySnapshotService  {
         // 2. inventory snapshot complete time
         // 3. velocity name
         // 4. total inventory quantity
-        logger.debug("start to get inventory snapshot by time range({}, {}), warehouse id: {}",
+        logger.debug("start to get inventory snapshot by velocity by time range({}, {}), warehouse id: {}",
                 df.format(startTime), df.format(endTime), warehouseId);
         List<Object[]> inventorySnapshotSummaries = inventorySnapshotRepository.getInventorySnapshotSummaryByVelocity(
                 warehouseId , df.format(startTime), df.format(endTime)
@@ -571,15 +571,18 @@ public class InventorySnapshotService  {
             startTime = endTime.minusDays(90);
         }
 
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+
         // get inventory snapshot summary by velocity
         // Columns
         // 1. inventory snapshot batch number
         // 2. inventory snapshot complete time
         // 3. abc cateogry name
         // 4. total inventory quantity
+        logger.debug("start to get inventory snapshot by ABC Category by time range({}, {}), warehouse id: {}",
+                df.format(startTime), df.format(endTime), warehouseId);
         List<Object[]> inventorySnapshotSummaries = inventorySnapshotRepository.getInventorySnapshotSummaryByABCCategory(
-                warehouseId
-                // , startTime, endTime
+                warehouseId, df.format(startTime), df.format(endTime)
         );
         logger.debug("get {} inventory snapshot summary record by abc category", inventorySnapshotSummaries.size());
         return inventorySnapshotSummaries.stream().filter(
@@ -590,9 +593,9 @@ public class InventorySnapshotService  {
         ).map(
                 inventorySnapshotSummary -> new InventorySnapshotSummary(
                         inventorySnapshotSummary[0].toString(),
-                        LocalDateTime.parse(inventorySnapshotSummary[1].toString()),
+                        LocalDateTime.parse(inventorySnapshotSummary[1].toString(), df),
                         InventorySnapshotSummaryGroupBy.ABCCATEGORY,
-                        inventorySnapshotSummary[2].toString(),
+                        Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" : inventorySnapshotSummary[2].toString(),
                         Long.parseLong(inventorySnapshotSummary[3].toString())
                 )
         ).collect(Collectors.toList());
