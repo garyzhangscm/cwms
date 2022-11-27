@@ -1879,5 +1879,7 @@
   "achievingRate": "Achieving Rate",
   "menu.main.work-order.production-line-status-display": "Production Line Status Display",
   "menu.dashboard.inventory-kanban": "Inventory Kanban",
-  "menu.dashboard.location-kanban": "Location Kanban"
+  "menu.dashboard.location-kanban": "Location Kanban",
+  "menu.main.common.abc-category": "ABC Category",
+  "menu.main.common.velocity": "Velocity"
 }

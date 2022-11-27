@@ -24,22 +24,13 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "velocity")
 public class Velocity extends AuditibleEntity<String> implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "velocity_id")
-    @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "warehouse_id")
     private Long warehouseId;
 
-    @Column(name = "name")
     private String name;
-    @Column(name = "description")
     private String description;
 
     public Long getId() {
