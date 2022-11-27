@@ -47,6 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -507,5 +508,94 @@ public class InventorySnapshotService  {
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
         inventorySnapshotRepository.processItemOverrideForLine(warehouseId,
                 oldItemId, newItemId);
+    }
+
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(Long warehouseId, LocalDateTime startTime, LocalDateTime endTime) {
+        if (Objects.isNull(endTime)) {
+            endTime = LocalDateTime.now();
+        }
+        // by default, we will get 90 days' data
+        if (Objects.isNull(startTime)) {
+            startTime = endTime.minusDays(90);
+        }
+
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+
+        // get inventory snapshot summary by velocity
+        // Columns
+        // 1. inventory snapshot batch number
+        // 2. inventory snapshot complete time
+        // 3. velocity name
+        // 4. total inventory quantity
+        logger.debug("start to get inventory snapshot by time range({}, {}), warehouse id: {}",
+                df.format(startTime), df.format(endTime), warehouseId);
+        List<Object[]> inventorySnapshotSummaries = inventorySnapshotRepository.getInventorySnapshotSummaryByVelocity(
+                warehouseId , df.format(startTime), df.format(endTime)
+        );
+        logger.debug("get {} inventory snapshot summary record by velocity", inventorySnapshotSummaries.size());
+
+
+
+        return inventorySnapshotSummaries.stream().filter(
+                inventorySnapshotSummary ->  {
+                    logger.debug("> inventorySnapshotSummary.length: {}", inventorySnapshotSummary.length);
+                    return inventorySnapshotSummary.length == 4;
+                }
+        ).limit(20)
+                .map(
+                inventorySnapshotSummary -> {
+                    logger.debug("batch number: {}, complete date: {}, velocity: {}, quantity: {}",
+                            inventorySnapshotSummary[0].toString(),
+                            inventorySnapshotSummary[1].toString(),
+                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" : inventorySnapshotSummary[2].toString(),
+                            inventorySnapshotSummary[3].toString());
+
+                    return new InventorySnapshotSummary(
+                            inventorySnapshotSummary[0].toString(),
+                            LocalDateTime.parse(inventorySnapshotSummary[1].toString(), df),
+                            InventorySnapshotSummaryGroupBy.VELOCITY,
+                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" : inventorySnapshotSummary[2].toString(),
+                            Long.parseLong(inventorySnapshotSummary[3].toString())
+                    );
+                }
+        ).collect(Collectors.toList());
+
+    }
+
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByABCCategory(Long warehouseId, LocalDateTime startTime, LocalDateTime endTime) {
+        if (Objects.isNull(endTime)) {
+            endTime = LocalDateTime.now();
+        }
+        // by default, we will get 90 days' data
+        if (Objects.isNull(startTime)) {
+            startTime = endTime.minusDays(90);
+        }
+
+        // get inventory snapshot summary by velocity
+        // Columns
+        // 1. inventory snapshot batch number
+        // 2. inventory snapshot complete time
+        // 3. abc cateogry name
+        // 4. total inventory quantity
+        List<Object[]> inventorySnapshotSummaries = inventorySnapshotRepository.getInventorySnapshotSummaryByABCCategory(
+                warehouseId
+                // , startTime, endTime
+        );
+        logger.debug("get {} inventory snapshot summary record by abc category", inventorySnapshotSummaries.size());
+        return inventorySnapshotSummaries.stream().filter(
+                inventorySnapshotSummary ->  {
+                    logger.debug("> inventorySnapshotSummary.length: {}", inventorySnapshotSummary.length);
+                    return inventorySnapshotSummary.length == 4;
+                }
+        ).map(
+                inventorySnapshotSummary -> new InventorySnapshotSummary(
+                        inventorySnapshotSummary[0].toString(),
+                        LocalDateTime.parse(inventorySnapshotSummary[1].toString()),
+                        InventorySnapshotSummaryGroupBy.ABCCATEGORY,
+                        inventorySnapshotSummary[2].toString(),
+                        Long.parseLong(inventorySnapshotSummary[3].toString())
+                )
+        ).collect(Collectors.toList());
+
     }
 }
