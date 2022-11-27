@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,6 +61,25 @@ public class InventorySnapshotController {
             @RequestParam Long warehouseId, @PathVariable String batchNumber) {
         return inventorySnapshotService.findAllInventorySnapshotDetails(warehouseId, batchNumber);
     }
+
+    @RequestMapping(value="/inventory_snapshot/summary/by-velocity", method = RequestMethod.GET)
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
+        return inventorySnapshotService.getInventorySnapshotSummaryByVelocity(warehouseId,
+                startTime, endTime);
+    }
+
+    @RequestMapping(value="/inventory_snapshot/summary/by-abc-category", method = RequestMethod.GET)
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByABCCategory(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
+        return inventorySnapshotService.getInventorySnapshotSummaryByABCCategory(warehouseId,
+                startTime, endTime);
+    }
+
 
 
     @BillableEndpoint
