@@ -1881,5 +1881,6 @@
   "menu.dashboard.inventory-kanban": "库存看板",
   "menu.dashboard.location-kanban": "库位看板",
   "menu.main.common.abc-category": "ABC分类",
-  "menu.main.common.velocity": "周转率"
+  "menu.main.common.velocity": "周转率",
+  "abc-category": "ABC分类"
 }

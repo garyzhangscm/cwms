@@ -1881,5 +1881,6 @@
   "menu.dashboard.inventory-kanban": "Inventory Kanban",
   "menu.dashboard.location-kanban": "Location Kanban",
   "menu.main.common.abc-category": "ABC Category",
-  "menu.main.common.velocity": "Velocity"
+  "menu.main.common.velocity": "Velocity",
+  "abc-category": "ABC Category"
 }
