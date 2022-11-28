@@ -597,6 +597,14 @@ public class InventorySnapshotService  {
                 warehouseId, df.format(startTime), df.format(endTime)
         );
         logger.debug("get {} inventory snapshot summary record by abc category", inventorySnapshotSummaries.size());
+        List<ABCCategory> abcCategories = commonServiceRestemplateClient.getABCCategoriesByWarehouse(warehouseId);
+
+        // we will use the abc category name to return the inventory snapshot summary
+        // key: abc category id
+        // value: abc category name
+        Map<Long, String> abcCategoryMap = new HashMap<>();
+        abcCategories.forEach(abcCategory -> abcCategoryMap.put(abcCategory.getId(), abcCategory.getName()));
+
         return inventorySnapshotSummaries.stream().filter(
                 inventorySnapshotSummary ->  {
                     logger.debug("> inventorySnapshotSummary.length: {}", inventorySnapshotSummary.length);
@@ -607,7 +615,9 @@ public class InventorySnapshotService  {
                         inventorySnapshotSummary[0].toString(),
                         LocalDateTime.parse(inventorySnapshotSummary[1].toString(), df),
                         InventorySnapshotSummaryGroupBy.ABCCATEGORY,
-                        Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" : inventorySnapshotSummary[2].toString(),
+                        Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" :
+                                abcCategoryMap.containsKey(inventorySnapshotSummary[2].toString()) ?
+                                        abcCategoryMap.get(inventorySnapshotSummary[2].toString()) : "N/A",
                         Long.parseLong(inventorySnapshotSummary[3].toString())
                 )
         ).collect(Collectors.toList());
