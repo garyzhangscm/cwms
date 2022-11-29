@@ -535,7 +535,10 @@ public class InventorySnapshotService  {
         inventorySnapshots.sort((invsnap1, invsnap2) ->
             invsnap2.getCompleteTime().compareTo(invsnap1.getCompleteTime())
         );
-        return  inventorySnapshots.subList(0, maxRecordNumber);
+        if (inventorySnapshots.size() > maxRecordNumber) {
+            return  inventorySnapshots.subList(0, maxRecordNumber);
+        }
+        return inventorySnapshots.size() > maxRecordNumber ? inventorySnapshots.subList(0, maxRecordNumber - 1) : inventorySnapshots;
         /**
         inventorySnapshots = inventorySnapshots.subList(0, maxRecordNumber);
 
