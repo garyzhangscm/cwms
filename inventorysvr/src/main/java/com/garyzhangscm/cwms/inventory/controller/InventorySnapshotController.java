@@ -65,22 +65,33 @@ public class InventorySnapshotController {
     @RequestMapping(value="/inventory_snapshot/summary/by-velocity", method = RequestMethod.GET)
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(
             @RequestParam Long warehouseId,
+            @RequestParam(name = "maxRecordNumber", required = false, defaultValue = "15") Integer maxRecordNumber,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
         return inventorySnapshotService.getInventorySnapshotSummaryByVelocity(warehouseId,
-                startTime, endTime);
+                startTime, endTime, maxRecordNumber);
     }
 
     @RequestMapping(value="/inventory_snapshot/summary/by-abc-category", method = RequestMethod.GET)
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryByABCCategory(
             @RequestParam Long warehouseId,
+            @RequestParam(name = "maxRecordNumber", required = false, defaultValue = "15") Integer maxRecordNumber,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
         return inventorySnapshotService.getInventorySnapshotSummaryByABCCategory(warehouseId,
-                startTime, endTime);
+                startTime, endTime, maxRecordNumber);
     }
 
 
+    @RequestMapping(value="/inventory_snapshot/summary/quantity", method = RequestMethod.GET)
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryQuantity(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "maxRecordNumber", required = false, defaultValue = "15") Integer maxRecordNumber,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
+        return inventorySnapshotService.getInventorySnapshotSummaryQuantity(warehouseId,
+                startTime, endTime, maxRecordNumber);
+    }
 
     @BillableEndpoint
     @RequestMapping(value="/inventory_snapshot", method = RequestMethod.POST)

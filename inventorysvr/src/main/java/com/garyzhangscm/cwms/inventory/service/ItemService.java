@@ -261,6 +261,12 @@ public class ItemService implements TestDataInitiableService{
         if (item.getClientId() != null && item.getClient() == null) {
             item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
         }
+        if (item.getAbcCategoryId() != null && item.getAbcCategory() == null) {
+            item.setAbcCategory(commonServiceRestemplateClient.getABCCategoryById(item.getAbcCategoryId()));
+        }
+        if (item.getVelocityId() != null && item.getVelocity() == null) {
+            item.setVelocity(commonServiceRestemplateClient.getVelocityById(item.getVelocityId()));
+        }
         // Setup the unit of measure information for each item package type
         item.getItemPackageTypes().stream().forEach(itemPackageType -> {
             itemPackageType.getItemUnitOfMeasures()
@@ -272,6 +278,7 @@ public class ItemService implements TestDataInitiableService{
             });
 
         });
+
     }
 
 

@@ -35,8 +35,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.util.UriComponentsBuilder;
+
+import org.springframework.cache.interceptor.SimpleKey;
 
 import java.util.List;
 import java.util.Objects;
@@ -175,7 +177,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "inventory_velocity", unless="#result == null", key = "warehouse_#warehouseId")
+    @Cacheable(cacheNames = "inventory_velocity", unless="#result == null",  key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
     public List<Velocity> getVelocitesByWarehouse(Long warehouseId) {
 
         UriComponentsBuilder builder =
@@ -194,7 +196,25 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "inventory_abc-category", unless="#result == null", key = "warehouse_#warehouseId")
+    public Velocity getVelocityById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/velocities/{id}");
+
+        ResponseBodyWrapper<Velocity> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Velocity>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    @Cacheable(cacheNames = "inventory_abc-category", unless="#result == null", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
     public List<ABCCategory> getABCCategoriesByWarehouse(Long warehouseId) {
 
         UriComponentsBuilder builder =
@@ -212,6 +232,25 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    public ABCCategory getABCCategoryById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/abc-categories/{id}");
+
+        ResponseBodyWrapper<ABCCategory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<ABCCategory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
 
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
         return getUnitOfMeasureByName(null, warehouseId, name, null, null);
