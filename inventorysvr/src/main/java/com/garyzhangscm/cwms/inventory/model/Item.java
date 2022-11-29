@@ -94,8 +94,14 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name="abc_category_id")
     private Long abcCategoryId;
 
+    @Transient
+    private ABCCategory abcCategory;
+
     @Column(name="velocity_id")
     private Long velocityId;
+
+    @Transient
+    private Velocity velocity;
 
 
     @Column(name="unit_cost")
@@ -348,6 +354,22 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public ABCCategory getAbcCategory() {
+        return abcCategory;
+    }
+
+    public void setAbcCategory(ABCCategory abcCategory) {
+        this.abcCategory = abcCategory;
+    }
+
+    public Velocity getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(Velocity velocity) {
+        this.velocity = velocity;
     }
 
     public Boolean getActiveFlag() {

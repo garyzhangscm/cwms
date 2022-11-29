@@ -48,6 +48,11 @@ public interface InventorySnapshotRepository extends JpaRepository<InventorySnap
             nativeQuery = true)
     void processItemOverrideForLine(Long warehouseId, Long oldItemId, Long newItemId);
 
+    @Query("select invsnap from InventorySnapshot invsnap where  invsnap.warehouseId = :warehouseId and " +
+            " invsnap.completeTime between :startTime and :endTime " +
+            " order by invsnap.completeTime desc")
+    List<InventorySnapshot> getInventorySnapshot(Long warehouseId, LocalDateTime startTime, LocalDateTime endTime);
+
     @Query(value = "select inventory_snapshot.batch_number, inventory_snapshot.complete_time, " +
             "   item.velocity_id, sum(inventory_snapshot_detail.quantity) total_quantity" +
             "  from inventory_snapshot join inventory_snapshot_detail " +
@@ -61,8 +66,30 @@ public interface InventorySnapshotRepository extends JpaRepository<InventorySnap
     // List<Object[]> getInventorySnapshotSummaryByVelocity(Long warehouseId);
     List<Object[]> getInventorySnapshotSummaryByVelocity(Long warehouseId, String startTime, String endTime);
 
+    @Query(value = "select  item.velocity_id, sum(inventory_snapshot_detail.quantity) total_quantity" +
+            "  from inventory_snapshot_detail " +
+            "  join item on inventory_snapshot_detail.item_id = item.item_id " +
+            " where inventory_snapshot_detail.inventory_snapshot_id = :inventorySnapshotId " +
+            "group by item.velocity_id",
+            nativeQuery = true)
+    List<Object[]> getInventorySnapshotSummaryByVelocity(Long inventorySnapshotId);
+
+    @Query(value = "select  item.abc_category_id, sum(inventory_snapshot_detail.quantity) total_quantity" +
+            "  from inventory_snapshot_detail " +
+            "  join item on inventory_snapshot_detail.item_id = item.item_id " +
+            " where inventory_snapshot_detail.inventory_snapshot_id = :inventorySnapshotId " +
+            "group by item.abc_category_id",
+            nativeQuery = true)
+    List<Object[]> getInventorySnapshotSummaryByABCCategory(Long inventorySnapshotId);
+
+    @Query(value = "select -1, sum(inventory_snapshot_detail.quantity) total_quantity" +
+            "  from inventory_snapshot_detail " +
+            " where inventory_snapshot_detail.inventory_snapshot_id = :inventorySnapshotId ",
+            nativeQuery = true)
+    List<Object[]> getInventorySnapshotSummaryQuantity(Long inventorySnapshotId);
+
     @Query(value = "select inventory_snapshot.batch_number, inventory_snapshot.complete_time, " +
-            "   item.abc_velocity_id, sum(inventory_snapshot_detail.quantity) total_quantity" +
+            "   item.abc_category_id, sum(inventory_snapshot_detail.quantity) total_quantity" +
             "  from inventory_snapshot join inventory_snapshot_detail " +
             "  on inventory_snapshot.inventory_snapshot_id = inventory_snapshot_detail.inventory_snapshot_id" +
             "  join item  on inventory_snapshot_detail.item_id = item.item_id " +
@@ -70,7 +97,7 @@ public interface InventorySnapshotRepository extends JpaRepository<InventorySnap
             "  and inventory_snapshot.complete_time between :startTime and :endTime " +
             "group by inventory_snapshot.batch_number, inventory_snapshot.complete_time, " +
             "    inventory_snapshot.inventory_snapshot_id, " +
-            "   item.abc_velocity_id",
+            "   item.abc_category_id",
             nativeQuery = true)
     // List<Object[]> getInventorySnapshotSummaryByABCCategory(Long warehouseId);
     List<Object[]> getInventorySnapshotSummaryByABCCategory(Long warehouseId, String startTime, String endTime);

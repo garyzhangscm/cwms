@@ -510,7 +510,9 @@ public class InventorySnapshotService  {
                 oldItemId, newItemId);
     }
 
-    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(Long warehouseId, LocalDateTime startTime, LocalDateTime endTime) {
+    public List<InventorySnapshot> getInventorySnapshot(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
+
         if (Objects.isNull(endTime)) {
             endTime = LocalDateTime.now();
         }
@@ -519,108 +521,136 @@ public class InventorySnapshotService  {
             startTime = endTime.minusDays(90);
         }
 
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
 
-        // get inventory snapshot summary by velocity
-        // Columns
-        // 1. inventory snapshot batch number
-        // 2. inventory snapshot complete time
-        // 3. velocity id
-        // 4. total inventory quantity
+        // get inventory snapshot by time range,
+        // and only return limited records
         logger.debug("start to get inventory snapshot by velocity by time range({}, {}), warehouse id: {}",
-                df.format(startTime), df.format(endTime), warehouseId);
-        List<Object[]> inventorySnapshotSummaries = inventorySnapshotRepository.getInventorySnapshotSummaryByVelocity(
-                warehouseId , df.format(startTime), df.format(endTime)
+                 startTime, endTime, warehouseId);
+
+        List<InventorySnapshot> inventorySnapshots = inventorySnapshotRepository.getInventorySnapshot(
+                warehouseId, startTime, endTime
         );
-        logger.debug("get {} inventory snapshot summary record by velocity", inventorySnapshotSummaries.size());
-        List<Velocity> velocities = commonServiceRestemplateClient.getVelocitesByWarehouse(warehouseId);
+        // return the top N record. The record is supposed to be sort by completed date, desc
+        return inventorySnapshots.subList(0, maxRecordNumber);
+    }
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
+        return getInventorySnapshotSummary(warehouseId, startTime, endTime, maxRecordNumber,
+                InventorySnapshotSummaryGroupBy.VELOCITY);
+    }
 
-        // we will use the velocity name to return the inventory snapshot summary
-        // key: velocity id
-        // value: velocity name
-        Map<Long, String> velocityMap = new HashMap<>();
-        velocities.forEach(velocity -> velocityMap.put(velocity.getId(), velocity.getName()));
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByABCCategory(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
 
+        return getInventorySnapshotSummary(warehouseId, startTime, endTime, maxRecordNumber,
+                InventorySnapshotSummaryGroupBy.ABCCATEGORY);
 
+    }
+    public List<InventorySnapshotSummary> getInventorySnapshotSummaryQuantity(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
 
-        return inventorySnapshotSummaries.stream().filter(
-                inventorySnapshotSummary ->  {
-                    logger.debug("> inventorySnapshotSummary.length: {}", inventorySnapshotSummary.length);
-                    return inventorySnapshotSummary.length == 4;
-                }
-        ).limit(10)
-                .map(
-                inventorySnapshotSummary -> {
-                    logger.debug("batch number: {}, complete date: {}, velocity: {}, quantity: {}",
-                            inventorySnapshotSummary[0].toString(),
-                            inventorySnapshotSummary[1].toString(),
-                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" :
-                                    velocityMap.containsKey(inventorySnapshotSummary[2].toString()) ?
-                                        velocityMap.get(inventorySnapshotSummary[2].toString()) : "N/A",
-                            inventorySnapshotSummary[3].toString());
-
-
-                    return new InventorySnapshotSummary(
-                            inventorySnapshotSummary[0].toString(),
-                            LocalDateTime.parse(inventorySnapshotSummary[1].toString(), df),
-                            InventorySnapshotSummaryGroupBy.VELOCITY,
-                            Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" :
-                                    velocityMap.containsKey(inventorySnapshotSummary[2].toString()) ?
-                                            velocityMap.get(inventorySnapshotSummary[2].toString()) : "N/A",
-                            Long.parseLong(inventorySnapshotSummary[3].toString())
-                    );
-                }
-        ).collect(Collectors.toList());
+        return getInventorySnapshotSummary(warehouseId, startTime, endTime, maxRecordNumber,
+                InventorySnapshotSummaryGroupBy.NONE);
 
     }
 
-    public List<InventorySnapshotSummary> getInventorySnapshotSummaryByABCCategory(Long warehouseId, LocalDateTime startTime, LocalDateTime endTime) {
-        if (Objects.isNull(endTime)) {
-            endTime = LocalDateTime.now();
-        }
-        // by default, we will get 90 days' data
-        if (Objects.isNull(startTime)) {
-            startTime = endTime.minusDays(90);
-        }
+    public List<InventorySnapshotSummary> getInventorySnapshotSummary(
+            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime,
+            int maxRecordNumber, InventorySnapshotSummaryGroupBy groupBy) {
+        // result
+        List<InventorySnapshotSummary> inventorySnapshotSummaries = new ArrayList<>();
+        // we will use the velocity name to return the inventory snapshot summary
+        // key: velocity id
+        // value: velocity name
+        Map<Long, String> idNameMap = getIDNameMaps(groupBy, warehouseId);
 
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-
-        // get inventory snapshot summary by velocity
-        // Columns
-        // 1. inventory snapshot batch number
-        // 2. inventory snapshot complete time
-        // 3. abc cateogry name
-        // 4. total inventory quantity
-        logger.debug("start to get inventory snapshot by ABC Category by time range({}, {}), warehouse id: {}",
-                df.format(startTime), df.format(endTime), warehouseId);
-        List<Object[]> inventorySnapshotSummaries = inventorySnapshotRepository.getInventorySnapshotSummaryByABCCategory(
-                warehouseId, df.format(startTime), df.format(endTime)
+        // get the inventory snapshot within the time range
+        List<InventorySnapshot> inventorySnapshots =  getInventorySnapshot(
+                warehouseId, startTime, endTime, maxRecordNumber
         );
-        logger.debug("get {} inventory snapshot summary record by abc category", inventorySnapshotSummaries.size());
-        List<ABCCategory> abcCategories = commonServiceRestemplateClient.getABCCategoriesByWarehouse(warehouseId);
 
-        // we will use the abc category name to return the inventory snapshot summary
-        // key: abc category id
-        // value: abc category name
-        Map<Long, String> abcCategoryMap = new HashMap<>();
-        abcCategories.forEach(abcCategory -> abcCategoryMap.put(abcCategory.getId(), abcCategory.getName()));
+        // for each inventory snapshot, we will get the summary based on
+        // either velocity or abc category and the total quantity of inventory
+        inventorySnapshots.forEach(
+                inventorySnapshot -> {
+                    // get inventory snapshot summary by velocity Columns
+                    // 1. velocity id / abc category id
+                    // 2. total inventory quantity
 
-        return inventorySnapshotSummaries.stream().filter(
-                inventorySnapshotSummary ->  {
-                    logger.debug("> inventorySnapshotSummary.length: {}", inventorySnapshotSummary.length);
-                    return inventorySnapshotSummary.length == 4;
+                    List<Object[]> inventorySnapshotSummaryRecords = new ArrayList<>();
+                    // based upon the group by type, get the right records
+                    if (groupBy.equals(InventorySnapshotSummaryGroupBy.VELOCITY)) {
+                        inventorySnapshotSummaryRecords =
+                                inventorySnapshotRepository.getInventorySnapshotSummaryByVelocity(
+                                        inventorySnapshot.getId()
+                                );
+                    }
+                    else if (groupBy.equals(InventorySnapshotSummaryGroupBy.ABCCATEGORY)) {
+                        inventorySnapshotSummaryRecords =
+                                inventorySnapshotRepository.getInventorySnapshotSummaryByABCCategory(
+                                        inventorySnapshot.getId()
+                                );
+                    }
+                    else if (groupBy.equals(InventorySnapshotSummaryGroupBy.NONE)) {
+                        inventorySnapshotSummaryRecords =
+                                inventorySnapshotRepository.getInventorySnapshotSummaryQuantity(
+                                        inventorySnapshot.getId()
+                                );
+                    }
+                    // for each record, make sure there's only 2 columns
+                    // then for each record, we will create the summary so the summary will have
+                    // 1. inventory snapshot batch number
+                    // 2. inventory snapshot generated time
+                    // 3. type(whether summary by velocity or abc category)
+                    // 4. velocity or abc category
+                    // 5. total quantity
+                    inventorySnapshotSummaryRecords.stream().filter(
+                            inventorySnapshotSummaryRecord ->   inventorySnapshotSummaryRecord.length == 2
+                    ).forEach(
+                            inventorySnapshotSummaryRecord ->
+                                    inventorySnapshotSummaries.add(
+                                            new InventorySnapshotSummary(
+                                                    inventorySnapshot.getBatchNumber(),
+                                                    inventorySnapshot.getCompleteTime(),
+                                                    groupBy,
+                                                    Objects.isNull(inventorySnapshotSummaryRecord[0]) ? "N/A" :
+                                                            idNameMap.containsKey(Long.parseLong(inventorySnapshotSummaryRecord[0].toString())) ?
+                                                                    idNameMap.get(Long.parseLong(inventorySnapshotSummaryRecord[0].toString())) : "N/A",
+                                                    Long.parseLong(inventorySnapshotSummaryRecord[1].toString())
+                                            )
+                                    )
+                    );
                 }
-        ).limit(10).map(
-                inventorySnapshotSummary -> new InventorySnapshotSummary(
-                        inventorySnapshotSummary[0].toString(),
-                        LocalDateTime.parse(inventorySnapshotSummary[1].toString(), df),
-                        InventorySnapshotSummaryGroupBy.ABCCATEGORY,
-                        Objects.isNull(inventorySnapshotSummary[2]) ? "N/A" :
-                                abcCategoryMap.containsKey(inventorySnapshotSummary[2].toString()) ?
-                                        abcCategoryMap.get(inventorySnapshotSummary[2].toString()) : "N/A",
-                        Long.parseLong(inventorySnapshotSummary[3].toString())
-                )
-        ).collect(Collectors.toList());
+        );
+        return inventorySnapshotSummaries;
 
+    }
+
+
+
+    /**
+     * Based on the group by column, return either velocity map or abc category map,
+     * key: id
+     * value: name
+     * @param groupBy
+     * @return
+     */
+    private Map<Long, String> getIDNameMaps(InventorySnapshotSummaryGroupBy groupBy,
+                                            Long warehouseId) {
+
+        Map<Long, String> resultMap = new HashMap<>();
+        if (groupBy.equals(InventorySnapshotSummaryGroupBy.VELOCITY)) {
+
+            List<Velocity> velocities = commonServiceRestemplateClient.getVelocitesByWarehouse(warehouseId);
+            velocities.forEach(velocity -> resultMap.put(velocity.getId(), velocity.getName()));
+        }
+        else if (groupBy.equals(InventorySnapshotSummaryGroupBy.ABCCATEGORY)) {
+
+            List<ABCCategory> abcCategories = commonServiceRestemplateClient.getABCCategoriesByWarehouse(warehouseId);
+
+            abcCategories.forEach(abcCategory -> resultMap.put(abcCategory.getId(), abcCategory.getName()));
+        }
+
+        return resultMap;
     }
 }
