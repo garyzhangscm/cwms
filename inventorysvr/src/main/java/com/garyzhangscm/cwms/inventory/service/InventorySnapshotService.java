@@ -530,8 +530,22 @@ public class InventorySnapshotService  {
         List<InventorySnapshot> inventorySnapshots = inventorySnapshotRepository.getInventorySnapshot(
                 warehouseId, startTime, endTime
         );
-        // return the top N record. The record is supposed to be sort by completed date, desc
-        return inventorySnapshots.subList(0, maxRecordNumber);
+
+        // sort by complete time desc so we can get the most recently record
+        inventorySnapshots.sort((invsnap1, invsnap2) ->
+            invsnap2.getCompleteTime().compareTo(invsnap1.getCompleteTime())
+        );
+        return  inventorySnapshots.subList(0, maxRecordNumber);
+        /**
+        inventorySnapshots = inventorySnapshots.subList(0, maxRecordNumber);
+
+        // sort by complete time asc again so we will display the result in the right sequence
+        inventorySnapshots.sort((invsnap1, invsnap2) ->
+                invsnap1.getCompleteTime().compareTo(invsnap2.getCompleteTime())
+        );
+
+        return inventorySnapshots;
+         **/
     }
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(
             Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
@@ -622,6 +636,13 @@ public class InventorySnapshotService  {
                     );
                 }
         );
+
+        inventorySnapshotSummaries.sort((summary1, summary2) -> {
+            if (summary1.getBatchNumber().equalsIgnoreCase(summary2.getBatchNumber())) {
+                return summary1.getGroupByValue().compareTo(summary2.getGroupByValue());
+            }
+            return summary1.getCompleteTime().compareTo(summary2.getCompleteTime());
+        });
         return inventorySnapshotSummaries;
 
     }
