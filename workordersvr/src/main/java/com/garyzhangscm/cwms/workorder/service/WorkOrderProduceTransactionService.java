@@ -790,11 +790,13 @@ public class WorkOrderProduceTransactionService  {
 
         if (newLPN) {
             logger.debug("We are producing a new LPN, let's see if we will need to print a LPN label for it");
-            try {
-                printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine());
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            // try {
+                // printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine());
+
+            // } catch (JsonProcessingException e) {
+            //     e.printStackTrace();
+            // }
+            logger.debug("Print LPN Label is disabled from server right now. ");
         }
         return inventory;
     }
@@ -802,6 +804,8 @@ public class WorkOrderProduceTransactionService  {
     private void printNEWLPNLabel(Inventory inventory,
                                   WorkOrder workOrder,
                                   ProductionLine productionLine) throws JsonProcessingException {
+
+
         WarehouseConfiguration warehouseConfiguration
                 = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(workOrder.getWarehouseId());
         if (Objects.isNull(warehouseConfiguration) || !Boolean.TRUE.equals(warehouseConfiguration.getNewLPNPrintLabelAtProducingFlag())) {

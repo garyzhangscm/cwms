@@ -1889,5 +1889,7 @@
   "reuseLPNAfterRemovedFlag": "库存删除后重用LPN",
   "reuseLPNAfterShippedFlag": "库存发货后重用LPN",
   "INVENTORY-ACTIVITY-TYPE-REVERSE_PRODUCTION": "取消完工入库",
-  "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "取消副产品入库"
+  "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "取消副产品入库",
+  "label-printer": "标签打印机",
+  "report-printer": "报表打印机"
 }

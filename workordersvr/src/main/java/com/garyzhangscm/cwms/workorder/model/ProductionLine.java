@@ -75,6 +75,16 @@ public class ProductionLine extends AuditibleEntity<String>{
     @Column(name = "generic_purpose")
     private Boolean genericPurpose = false;
 
+
+    // default printer to print report for
+    // this production line
+    @Column(name = "report_printer_name")
+    private String reportPrinterName;
+
+    @Column(name = "label_printer_name")
+    private String labelPrinterName;
+
+
     @Override
     public String toString() {
         try {
@@ -205,6 +215,21 @@ public class ProductionLine extends AuditibleEntity<String>{
         this.model = model;
     }
 
+    public String getReportPrinterName() {
+        return reportPrinterName;
+    }
+
+    public void setReportPrinterName(String reportPrinterName) {
+        this.reportPrinterName = reportPrinterName;
+    }
+
+    public String getLabelPrinterName() {
+        return labelPrinterName;
+    }
+
+    public void setLabelPrinterName(String labelPrinterName) {
+        this.labelPrinterName = labelPrinterName;
+    }
 
     public Boolean getGenericPurpose() {
         return genericPurpose;
