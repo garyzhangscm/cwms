@@ -1889,5 +1889,7 @@
   "reuseLPNAfterRemovedFlag": "Reuse LPN After Removed(Inventory Adjustment, Reverse Receipt / Production)",
   "reuseLPNAfterShippedFlag": "Reuse LPN After Shipped",
   "INVENTORY-ACTIVITY-TYPE-REVERSE_PRODUCTION": "Reverse Production",
-  "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "Reverse By Product"
+  "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "Reverse By Product",
+  "label-printer": "Label Printer",
+  "report-printer": "Report Printer"
 }
