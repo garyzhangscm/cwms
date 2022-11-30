@@ -47,7 +47,10 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -1062,6 +1065,14 @@ public class InventoryService implements TestDataInitiableService{
                 inventory.getLpn());
         return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_PRODUCTION, documentNumber, comment);
     }
+
+    public Inventory reverseByProduct(Long id, String documentNumber, String comment) {
+        Inventory inventory = findById(id);
+        logger.debug("Start to reverse by product of inventory with lpn {}",
+                inventory.getLpn());
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_BY_PRODUCT, documentNumber, comment);
+    }
+
     public Inventory reverseReceiving(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
         return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment);
@@ -1110,7 +1121,10 @@ public class InventoryService implements TestDataInitiableService{
                 inventoryActivityType = InventoryActivityType.WORK_ORDER_CONSUME;
                 break;
             case REVERSE_PRODUCTION:
-                inventoryActivityType = InventoryActivityType.RESERVE_PRODUCTION;
+                inventoryActivityType = InventoryActivityType.REVERSE_PRODUCTION;
+                break;
+            case REVERSE_BY_PRODUCT:
+                inventoryActivityType = InventoryActivityType.REVERSE_BY_PRODUCT;
                 break;
             default:
                 inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
@@ -1133,7 +1147,32 @@ public class InventoryService implements TestDataInitiableService{
                 = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
                 inventoryQuantityChangeType, inventory.getWarehouseId()
         );
-        return moveInventory(inventory, destination);
+        inventory = moveInventory(inventory, destination);
+
+        // see if we will need to relable the LPN so that the LPN can be reused
+        logger.debug("check if we will need to reuse the LPN of the removed inventory");
+        WarehouseConfiguration warehouseConfiguration = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(inventory.getWarehouseId());
+        if (Objects.nonNull(warehouseConfiguration) && Boolean.TRUE.equals(warehouseConfiguration.getReuseLPNAfterRemovedFlag())) {
+            logger.debug("warehouse configuration is setup to reuse the LPN after removed");
+            // the lpn will needs to be relabeled by adding a post fix with time stamp
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
+
+            String strDate = LocalDateTime.now().format(formatter);
+            String newLPN = inventory.getLpn() + "-REM-" + strDate;
+            inventory = relabelLPN(inventory, newLPN);
+        }
+        return inventory;
+    }
+
+    private Inventory relabelLPN(Inventory inventory, String newLPN) {
+
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.RELABEL_LPN,
+                "LPN", String.valueOf(inventory.getLpn()), newLPN,
+                "", "");
+        inventory.setLpn(newLPN);
+
+        return saveOrUpdate(inventory);
     }
 
     public Inventory moveInventory(Inventory inventory, Location destination) {

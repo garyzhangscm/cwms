@@ -1882,5 +1882,12 @@
   "menu.dashboard.location-kanban": "Location Kanban",
   "menu.main.common.abc-category": "ABC Category",
   "menu.main.common.velocity": "Velocity",
-  "abc-category": "ABC Category"
+  "abc-category": "ABC Category",
+  "newLPNPrintLabelAtReceivingFlag": "Print Label for New LPN during Receiving",
+  "newLPNPrintLabelAtProducingFlag": "Print Label for New LPN during Producing",
+  "newLPNPrintLabelAtAdjustmentFlag": "Print Label for New LPN during Adjustment",
+  "reuseLPNAfterRemovedFlag": "Reuse LPN After Removed(Inventory Adjustment, Reverse Receipt / Production)",
+  "reuseLPNAfterShippedFlag": "Reuse LPN After Shipped",
+  "INVENTORY-ACTIVITY-TYPE-REVERSE_PRODUCTION": "Reverse Production",
+  "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "Reverse By Product"
 }

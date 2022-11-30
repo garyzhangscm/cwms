@@ -253,6 +253,14 @@ public class InventoryController {
     }
 
     @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/reverse-by-product/{id}")
+    public Inventory reverseByProduct(@PathVariable Long id,
+                                       @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
+                                       @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
+        return inventoryService.reverseByProduct(id, documentNumber, comment);
+    }
+
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/reverse-receiving/{id}")
     public Inventory reverseReceiving(@PathVariable Long id,
                                          @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,

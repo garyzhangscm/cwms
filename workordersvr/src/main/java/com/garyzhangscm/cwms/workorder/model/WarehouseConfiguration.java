@@ -16,59 +16,22 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.layout.model;
+package com.garyzhangscm.cwms.workorder.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "warehouse_configuration")
 public class WarehouseConfiguration extends AuditibleEntity<String> implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "warehouse_configuration_id")
-    @JsonProperty(value="id")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
-
-    // whether this warehouse is serving as
-    // 3pl warehouse
-    @Column(name = "three_party_logistics_flag")
     private Boolean threePartyLogisticsFlag;
 
-    // whether list pick is enabled for this warehouse
-    @Column(name = "list_pick_enabled_flag")
-    private Boolean listPickEnabledFlag = false;
-
-
-    @Column(name = "printing_strategy")
-    @Enumerated(EnumType.STRING)
-    private PrintingStrategy printingStrategy;
-
-    @Column(name = "new_lpn_print_label_at_receiving_flag")
     private Boolean newLPNPrintLabelAtReceivingFlag;
-    @Column(name = "new_lpn_print_label_at_producing_flag")
     private Boolean newLPNPrintLabelAtProducingFlag;
-    @Column(name = "new_lpn_print_label_at_adjustment_flag")
     private Boolean newLPNPrintLabelAtAdjustmentFlag;
-
-
-    // whether we will reuse lpn after removed by inventory adjust
-    // or reverse receipt / product
-    @Column(name = "reuse_lpn_after_removed")
-    private Boolean reuseLPNAfterRemovedFlag;
-
-    // whether we will reuse lpn after shipped
-    @Column(name = "reuse_lpn_after_shipped")
-    private Boolean reuseLPNAfterShippedFlag;
 
     public Long getId() {
         return id;
@@ -94,22 +57,6 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
         this.threePartyLogisticsFlag = threePartyLogisticsFlag;
     }
 
-    public Boolean getListPickEnabledFlag() {
-        return listPickEnabledFlag;
-    }
-
-    public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
-        this.listPickEnabledFlag = listPickEnabledFlag;
-    }
-
-    public PrintingStrategy getPrintingStrategy() {
-        return printingStrategy;
-    }
-
-    public void setPrintingStrategy(PrintingStrategy printingStrategy) {
-        this.printingStrategy = printingStrategy;
-    }
-
     public Boolean getNewLPNPrintLabelAtReceivingFlag() {
         return newLPNPrintLabelAtReceivingFlag;
     }
@@ -132,21 +79,5 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setNewLPNPrintLabelAtAdjustmentFlag(Boolean newLPNPrintLabelAtAdjustmentFlag) {
         this.newLPNPrintLabelAtAdjustmentFlag = newLPNPrintLabelAtAdjustmentFlag;
-    }
-
-    public Boolean getReuseLPNAfterRemovedFlag() {
-        return reuseLPNAfterRemovedFlag;
-    }
-
-    public void setReuseLPNAfterRemovedFlag(Boolean reuseLPNAfterRemovedFlag) {
-        this.reuseLPNAfterRemovedFlag = reuseLPNAfterRemovedFlag;
-    }
-
-    public Boolean getReuseLPNAfterShippedFlag() {
-        return reuseLPNAfterShippedFlag;
-    }
-
-    public void setReuseLPNAfterShippedFlag(Boolean reuseLPNAfterShippedFlag) {
-        this.reuseLPNAfterShippedFlag = reuseLPNAfterShippedFlag;
     }
 }

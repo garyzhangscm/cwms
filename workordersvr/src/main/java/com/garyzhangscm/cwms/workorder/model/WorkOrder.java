@@ -48,7 +48,7 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     @OneToMany(
             mappedBy = "workOrder",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     List<WorkOrderByProduct> workOrderByProducts = new ArrayList<>();

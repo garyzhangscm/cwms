@@ -1882,5 +1882,12 @@
   "menu.dashboard.location-kanban": "库位看板",
   "menu.main.common.abc-category": "ABC分类",
   "menu.main.common.velocity": "周转率",
-  "abc-category": "ABC分类"
+  "abc-category": "ABC分类",
+  "newLPNPrintLabelAtReceivingFlag": "收货时为新LPN打印标签",
+  "newLPNPrintLabelAtProducingFlag": "完工入库时为新LPN打印标签",
+  "newLPNPrintLabelAtAdjustmentFlag": "库存调整时为新LPN打印标签",
+  "reuseLPNAfterRemovedFlag": "库存删除后重用LPN",
+  "reuseLPNAfterShippedFlag": "库存发货后重用LPN",
+  "INVENTORY-ACTIVITY-TYPE-REVERSE_PRODUCTION": "取消完工入库",
+  "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "取消副产品入库"
 }
