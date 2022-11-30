@@ -235,7 +235,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public List<Inventory> getProducedByProduct(Long warehouseId, String workOrderByProductIds) {
+    public List<Inventory> getProducedByProduct(Long warehouseId, String workOrderByProductIds, String lpn) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -243,6 +243,9 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/inventories")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("workOrderByProductIds", workOrderByProductIds);
+        if (Strings.isNotBlank(lpn)) {
+            builder = builder.queryParam("lpn", lpn);
+        }
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -280,6 +283,25 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/reverse-production/{id}");
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(inventoryId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
+    public Inventory reverseByProduct(Long inventoryId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/reverse-by-product/{id}");
 
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = restTemplate.exchange(

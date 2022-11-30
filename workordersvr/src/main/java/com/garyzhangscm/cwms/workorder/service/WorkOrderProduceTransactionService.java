@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
@@ -772,13 +773,51 @@ public class WorkOrderProduceTransactionService  {
 
     private Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder,
                                                     WorkOrderProducedInventory workOrderProducedInventory,
-                                                    WorkOrderProduceTransaction workOrderProduceTransaction) {
+                                                    WorkOrderProduceTransaction workOrderProduceTransaction)   {
         logger.debug("Start to receive inventory from work order: \n{}", workOrder.getNumber());
         logger.debug("Inventory's item package typ is setup to \n{}",
                 workOrderProducedInventory.getItemPackageType());
+
+        // see if the LPN is a new LPN, if so, we will print the label for the new LPN(depends on the configuration)
+        boolean newLPN = inventoryServiceRestemplateClient.findInventoryByLPN(
+                                workOrder.getWarehouseId(),
+                                workOrderProducedInventory.getLpn()).size() == 0;
+
         Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction);
 
-        return inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder,inventory);
+
+        inventory = inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder,inventory);
+
+        if (newLPN) {
+            logger.debug("We are producing a new LPN, let's see if we will need to print a LPN label for it");
+            try {
+                printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine());
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+        return inventory;
+    }
+
+    private void printNEWLPNLabel(Inventory inventory,
+                                  WorkOrder workOrder,
+                                  ProductionLine productionLine) throws JsonProcessingException {
+        WarehouseConfiguration warehouseConfiguration
+                = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(workOrder.getWarehouseId());
+        if (Objects.isNull(warehouseConfiguration) || !Boolean.TRUE.equals(warehouseConfiguration.getNewLPNPrintLabelAtProducingFlag())) {
+            logger.debug("The warehouse is configured to not print LPN label for new LPN from work order");
+            return;
+        }
+        String printerName = getPrinterName(productionLine);
+        logger.debug("We will print LPN label for new LPN ");
+
+        // warehouse is configured to print new lpn label when producing
+        workOrderService.generatePrePrintLPNLabel(workOrder, inventory.getLpn(), inventory.getQuantity(),
+                productionLine.getName(), "", printerName);
+    }
+
+    private String getPrinterName(ProductionLine productionLine) {
+        return "";
     }
 
 

@@ -53,6 +53,23 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @Enumerated(EnumType.STRING)
     private PrintingStrategy printingStrategy;
 
+    @Column(name = "new_lpn_print_label_at_receiving_flag")
+    private Boolean newLPNPrintLabelAtReceivingFlag;
+    @Column(name = "new_lpn_print_label_at_producing_flag")
+    private Boolean newLPNPrintLabelAtProducingFlag;
+    @Column(name = "new_lpn_print_label_at_adjustment_flag")
+    private Boolean newLPNPrintLabelAtAdjustmentFlag;
+
+
+    // whether we will reuse lpn after removed by inventory adjust
+    // or reverse receipt / product
+    @Column(name = "reuse_lpn_after_removed")
+    private Boolean reuseLPNAfterRemovedFlag;
+
+    // whether we will reuse lpn after shipped
+    @Column(name = "reuse_lpn_after_shipped")
+    private Boolean reuseLPNAfterShippedFlag;
+
     public Long getId() {
         return id;
     }
@@ -91,5 +108,45 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setPrintingStrategy(PrintingStrategy printingStrategy) {
         this.printingStrategy = printingStrategy;
+    }
+
+    public Boolean getNewLPNPrintLabelAtReceivingFlag() {
+        return newLPNPrintLabelAtReceivingFlag;
+    }
+
+    public void setNewLPNPrintLabelAtReceivingFlag(Boolean newLPNPrintLabelAtReceivingFlag) {
+        this.newLPNPrintLabelAtReceivingFlag = newLPNPrintLabelAtReceivingFlag;
+    }
+
+    public Boolean getNewLPNPrintLabelAtProducingFlag() {
+        return newLPNPrintLabelAtProducingFlag;
+    }
+
+    public void setNewLPNPrintLabelAtProducingFlag(Boolean newLPNPrintLabelAtProducingFlag) {
+        this.newLPNPrintLabelAtProducingFlag = newLPNPrintLabelAtProducingFlag;
+    }
+
+    public Boolean getNewLPNPrintLabelAtAdjustmentFlag() {
+        return newLPNPrintLabelAtAdjustmentFlag;
+    }
+
+    public void setNewLPNPrintLabelAtAdjustmentFlag(Boolean newLPNPrintLabelAtAdjustmentFlag) {
+        this.newLPNPrintLabelAtAdjustmentFlag = newLPNPrintLabelAtAdjustmentFlag;
+    }
+
+    public Boolean getReuseLPNAfterRemovedFlag() {
+        return reuseLPNAfterRemovedFlag;
+    }
+
+    public void setReuseLPNAfterRemovedFlag(Boolean reuseLPNAfterRemovedFlag) {
+        this.reuseLPNAfterRemovedFlag = reuseLPNAfterRemovedFlag;
+    }
+
+    public Boolean getReuseLPNAfterShippedFlag() {
+        return reuseLPNAfterShippedFlag;
+    }
+
+    public void setReuseLPNAfterShippedFlag(Boolean reuseLPNAfterShippedFlag) {
+        this.reuseLPNAfterShippedFlag = reuseLPNAfterShippedFlag;
     }
 }

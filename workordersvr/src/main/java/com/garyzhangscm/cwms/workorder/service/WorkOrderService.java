@@ -904,6 +904,9 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     public List<Inventory> getProducedByProduct(Long workOrderId) {
+        return getProducedByProduct(workOrderId, "");
+    }
+    public List<Inventory> getProducedByProduct(Long workOrderId, String lpn) {
 
         WorkOrder workOrder = findById(workOrderId);
         // if we don't have by product setup, then return empty
@@ -916,7 +919,7 @@ public class WorkOrderService implements TestDataInitiableService {
                         .map(WorkOrderByProduct::getId).map(String::valueOf).collect(Collectors.joining(","));
         return inventoryServiceRestemplateClient.getProducedByProduct(
                 workOrder.getWarehouseId(),
-                workOrderByProductIds
+                workOrderByProductIds, lpn
         );
 
     }
@@ -1398,6 +1401,79 @@ public class WorkOrderService implements TestDataInitiableService {
         return workOrder;
     }
 
+    /**
+     * Reverse by product, remove the inventory and return the quantity to the by product
+     * @param id
+     * @param lpn
+     * @return
+     */
+    public WorkOrder reverseByProduct(Long id, String lpn) {
+        WorkOrder workOrder = findById(id, false);
+
+        List<Inventory> inventories = getProducedByProduct(workOrder.getId(), lpn);
+
+        logger.debug("We found {} inventory to be reversed by LPN {}",
+                inventories.size(), lpn);
+
+        // if we can find any inventory that matches with the work order and id,
+        // let's remove the inventory and return the quantity
+
+        // key: work order produce transaction id
+        // value: work order produce transaction
+        // we will save the work order
+        Map<Long, WorkOrderProduceTransaction> inventoryProducedTransactionSet = new HashMap<>();
+        Long totalQuantity = 0l;
+        for (Inventory inventory : inventories) {
+            totalQuantity += inventory.getQuantity();
+            logger.debug("will remove inventory with id {}, lpn {}, item {}, quantity {}",
+                    inventory.getId(),
+                    inventory.getLpn(),
+                    inventory.getItem().getName(),
+                    inventory.getQuantity());
+            inventoryServiceRestemplateClient.reverseByProduct(inventory.getId());
+
+
+            // see if we can find transaction that created the inventory.
+            // if so, we may be able to return the quantity back to the
+            // work order line and adjust the quantity of the transaction
+            logger.debug("Inventory's work order: {}, transaction id {}",
+                    inventory.getWorkOrderId(), inventory.getCreateInventoryTransactionId());
+            if (Objects.nonNull(inventory.getWorkOrderId()) &&
+                    Objects.nonNull(inventory.getCreateInventoryTransactionId())) {
+                WorkOrderProduceTransaction workOrderProduceTransaction =
+                        workOrderProduceTransactionService.findById(inventory.getCreateInventoryTransactionId());
+                logger.debug("Found right work order produce transaction by id {} ? {}",
+                        inventory.getCreateInventoryTransactionId(),
+                        Objects.nonNull(workOrderProduceTransaction));
+                if (Objects.nonNull(workOrderProduceTransaction)) {
+                    logger.debug("Add a new reverse production transaction");
+                    workOrderReverseProductionInventoryService.save(new WorkOrderReverseProductionInventory(
+                            workOrderProduceTransaction, inventory.getLpn(), inventory.getQuantity()
+                    ));
+                    // we will put the quantity back
+                    // logger.debug("will return the consumed quantity back, only if we can ");
+                    // processReverseProductionQuantity(workOrderProduceTransaction, inventory.getQuantity());
+                }
+            }
+        }
+
+        // return the quantity back to work order's by product
+        logger.debug("Deduct the produced quantity of the work order by {}",
+                totalQuantity);
+        inventories.forEach(
+                inventory -> {
+                    for (WorkOrderByProduct workOrderByProduct : workOrder.getWorkOrderByProducts()) {
+                        if (workOrderByProduct.getItemId().equals(inventory.getItem().getId())) {
+                            workOrderByProduct.setProducedQuantity(
+                                    workOrderByProduct.getProducedQuantity() - inventory.getQuantity()
+                            );
+                        }
+                    }
+                }
+        );
+
+        return saveOrUpdate(workOrder);
+    }
     /**
      * return the quantity back to work order line / production line / etc if necessary
      * @param workOrderProduceTransaction
@@ -2043,5 +2119,16 @@ public class WorkOrderService implements TestDataInitiableService {
 
         productionPlanLineService.handleItemOverride(warehouseId,
                 oldItemId, newItemId);
+    }
+
+    public WorkOrder changeWorkOrder(WorkOrder workOrder) {
+        // we will only allow to change the by product
+        workOrder.getWorkOrderByProducts().forEach(
+                workOrderByProduct -> workOrderByProduct.setWorkOrder(workOrder)
+        );
+
+        return saveOrUpdate(workOrder, false);
+
+
     }
 }

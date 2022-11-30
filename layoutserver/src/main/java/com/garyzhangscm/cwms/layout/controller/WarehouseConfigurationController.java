@@ -67,7 +67,8 @@ public class WarehouseConfigurationController {
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "inventory_warehouse_configuration", allEntries = true),
-                    @CacheEvict(cacheNames = "common_warehouse_configuration", allEntries = true)
+                    @CacheEvict(cacheNames = "common_warehouse_configuration", allEntries = true),
+                    @CacheEvict(cacheNames = "work_order_warehouse_configuration", allEntries = true)
             }
     )
     public WarehouseConfiguration changeWarehouseConfiguration(@RequestParam Long companyId,

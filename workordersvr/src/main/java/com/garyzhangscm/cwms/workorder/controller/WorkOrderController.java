@@ -72,7 +72,7 @@ public class WorkOrderController {
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}", method = RequestMethod.PUT)
     public WorkOrder changeWorkOrder(@RequestBody WorkOrder workOrder){
-        return workOrderService.save(workOrder);
+        return workOrderService.changeWorkOrder(workOrder);
     }
 
     @BillableEndpoint
@@ -206,6 +206,13 @@ public class WorkOrderController {
     public WorkOrder reverseProduction(@PathVariable Long id,
                                        @RequestParam String lpn) {
         return workOrderService.reverseProduction(id, lpn);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/{id}/reverse-by-product", method = RequestMethod.POST)
+    public WorkOrder reverseByProduct(@PathVariable Long id,
+                                       @RequestParam String lpn) {
+        return workOrderService.reverseByProduct(id, lpn);
     }
 
     @BillableEndpoint

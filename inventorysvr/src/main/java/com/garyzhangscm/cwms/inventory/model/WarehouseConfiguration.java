@@ -32,6 +32,13 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     private Boolean threePartyLogisticsFlag;
 
+    private Boolean newLPNPrintLabelAtReceivingFlag;
+    private Boolean newLPNPrintLabelAtProducingFlag;
+    private Boolean newLPNPrintLabelAtAdjustmentFlag;
+
+    private Boolean reuseLPNAfterRemovedFlag;
+    private Boolean reuseLPNAfterShippedFlag;
+
     public Long getId() {
         return id;
     }
@@ -56,4 +63,43 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
         this.threePartyLogisticsFlag = threePartyLogisticsFlag;
     }
 
+    public Boolean getNewLPNPrintLabelAtReceivingFlag() {
+        return newLPNPrintLabelAtReceivingFlag;
+    }
+
+    public void setNewLPNPrintLabelAtReceivingFlag(Boolean newLPNPrintLabelAtReceivingFlag) {
+        this.newLPNPrintLabelAtReceivingFlag = newLPNPrintLabelAtReceivingFlag;
+    }
+
+    public Boolean getNewLPNPrintLabelAtProducingFlag() {
+        return newLPNPrintLabelAtProducingFlag;
+    }
+
+    public void setNewLPNPrintLabelAtProducingFlag(Boolean newLPNPrintLabelAtProducingFlag) {
+        this.newLPNPrintLabelAtProducingFlag = newLPNPrintLabelAtProducingFlag;
+    }
+
+    public Boolean getNewLPNPrintLabelAtAdjustmentFlag() {
+        return newLPNPrintLabelAtAdjustmentFlag;
+    }
+
+    public void setNewLPNPrintLabelAtAdjustmentFlag(Boolean newLPNPrintLabelAtAdjustmentFlag) {
+        this.newLPNPrintLabelAtAdjustmentFlag = newLPNPrintLabelAtAdjustmentFlag;
+    }
+
+    public Boolean getReuseLPNAfterRemovedFlag() {
+        return reuseLPNAfterRemovedFlag;
+    }
+
+    public void setReuseLPNAfterRemovedFlag(Boolean reuseLPNAfterRemovedFlag) {
+        this.reuseLPNAfterRemovedFlag = reuseLPNAfterRemovedFlag;
+    }
+
+    public Boolean getReuseLPNAfterShippedFlag() {
+        return reuseLPNAfterShippedFlag;
+    }
+
+    public void setReuseLPNAfterShippedFlag(Boolean reuseLPNAfterShippedFlag) {
+        this.reuseLPNAfterShippedFlag = reuseLPNAfterShippedFlag;
+    }
 }
