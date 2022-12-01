@@ -194,7 +194,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "inventory_warehouse_configuration", unless="#result == null")
+    @Cacheable(cacheNames = "work_order_warehouse_configuration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
 
 
