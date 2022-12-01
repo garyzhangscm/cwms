@@ -246,7 +246,8 @@ public class WorkOrderByProductService implements TestDataInitiableService {
                 workOrderByProductProduceTransaction.getWorkOrderByProduct().getWorkOrder(), inventory);
 
         // Let's change the quantities of the by product information
-        WorkOrderByProduct workOrderByProduct = workOrderByProductProduceTransaction.getWorkOrderByProduct();
+        // we will always get the latest data from the database
+        WorkOrderByProduct workOrderByProduct = findById(workOrderByProductProduceTransaction.getWorkOrderByProduct().getId());
         workOrderByProduct.setProducedQuantity(
                 workOrderByProduct.getProducedQuantity() + workOrderByProductProduceTransaction.getQuantity()
         );
