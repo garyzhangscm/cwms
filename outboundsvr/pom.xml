@@ -15,7 +15,7 @@
 	<description>Outbound Server - order / shipment / wave / etc</description>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>13</java.version>
 		<spring-cloud.version>Hoxton.SR1</spring-cloud.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>com.garyzhangscm.cwms.outbound.OutboundServerApplication</start-class>
@@ -39,6 +39,16 @@
         <repository>
             <id>jr-ce-releases</id>
             <url>http://jaspersoft.jfrog.io/jaspersoft/jr-ce-releases</url>
+        </repository>
+        <repository>
+            <id>my-repo2</id>
+            <name>your custom repo</name>
+            <url>https://mvnrepository.com</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
 
@@ -182,6 +192,26 @@
             <version>1.2</version>
         </dependency>
 
+        <!--
+         https://www.shipengine.com/
+         an integration for UPS / Fedex / USPS / etc
+         -->
+        <dependency>
+            <groupId>com.shipengine</groupId>
+            <artifactId>shipengine</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <!--
+        https://www.easypost.com/
+         an integration for UPS / Fedex / USPS / etc
+        -->
+        <dependency>
+            <groupId>com.easypost</groupId>
+            <artifactId>easypost-api-client</artifactId>
+            <version>6.0.0-rc1</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -241,6 +271,14 @@
                             <include>${project.build.finalName}.jar</include>
                         </resource>
                     </resources>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
                 </configuration>
             </plugin>
         </plugins>
