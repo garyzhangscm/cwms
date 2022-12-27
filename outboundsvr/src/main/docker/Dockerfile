@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:13-jdk-alpine
 RUN apk update && apk upgrade && apk add netcat-openbsd
 RUN mkdir -p /usr/local/service
 ADD @project.build.finalName@.jar /usr/local/service/

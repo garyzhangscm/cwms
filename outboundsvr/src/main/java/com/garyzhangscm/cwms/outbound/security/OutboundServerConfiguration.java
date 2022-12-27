@@ -22,6 +22,7 @@ public class OutboundServerConfiguration extends ResourceServerConfigurerAdapter
                 .antMatchers("/app").permitAll()
                 .antMatchers("/actuator").permitAll()
                 .antMatchers("/probe/**").permitAll()
+                .antMatchers("/parcel/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/orders/documents/*/download").permitAll()
                 .antMatchers(HttpMethod.GET, "/orders/*/*/documents/download/**").permitAll()
                 .anyRequest()

@@ -627,8 +627,11 @@ public class ProductionLineService implements TestDataInitiableService {
         if (Strings.isBlank(name)) {
             // we don't have the production line name passed in, then
             // return the status for all production line
+            // we will only return the enabled lines
             List<ProductionLine> productionLines = findAll(warehouseId,
-                    null, null, false, false);
+                    null, null, false, false)
+                    .stream().filter(productionLine -> Boolean.TRUE.equals(productionLine.getEnabled()))
+                    .collect(Collectors.toList());
             return getProductionLineStatus(warehouseId, productionLines,
                     productionLineMonitorTransactions, startTime, endTime);
 
@@ -637,6 +640,10 @@ public class ProductionLineService implements TestDataInitiableService {
             ProductionLine productionLine = findByName(warehouseId, name);
             if (Objects.isNull(productionLine)) {
                 throw ProductionLineException.raiseException("Can't find production line by name " + name);
+            }
+            if (!Boolean.TRUE.equals(productionLine.getEnabled())) {
+                throw ProductionLineException.raiseException("production line " + name + " is not enabled");
+
             }
             return getProductionLineStatus(warehouseId,
                     Collections.singletonList(productionLine),

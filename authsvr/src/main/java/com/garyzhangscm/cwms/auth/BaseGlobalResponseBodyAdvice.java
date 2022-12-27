@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.common;
+package com.garyzhangscm.cwms.auth;
 
 import com.garyzhangscm.cwms.auth.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.auth.ResponseBodyWrapper;
