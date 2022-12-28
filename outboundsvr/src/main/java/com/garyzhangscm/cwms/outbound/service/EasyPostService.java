@@ -39,6 +39,8 @@ public class EasyPostService {
     @Autowired
     private OrderService orderService;
     @Autowired
+    private ParcelPackageService parcelPackageService;
+    @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
 
@@ -147,11 +149,17 @@ public class EasyPostService {
      * @return
      * @throws EasyPostException
      */
-    public Shipment confirmEasyPostShipment(Long warehouseId, String shipmentId, Rate rate) throws EasyPostException {
+    public Shipment confirmEasyPostShipment(Long warehouseId, Long orderId, String shipmentId, Rate rate) throws EasyPostException {
 
+        // request the shipping label from easy post
         Shipment boughtShipment = easyPostClient().shipment.buy(shipmentId, rate);
 
-        logger.debug("bought shipment \n {}", boughtShipment);
+        // save the data to database
+        Order order = orderService.findById(orderId);
+        parcelPackageService.addParcelPackage(warehouseId, order, boughtShipment);
+
+
+        // logger.debug("bought shipment \n {}", boughtShipment);
         return boughtShipment;
     }
 }
