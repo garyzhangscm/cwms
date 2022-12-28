@@ -23,14 +23,8 @@ import com.easypost.model.Rate;
 import com.easypost.model.Shipment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.Pick;
-import com.garyzhangscm.cwms.outbound.model.ReportHistory;
-import com.garyzhangscm.cwms.outbound.service.EasyPostService;
-import com.garyzhangscm.cwms.outbound.service.OrderLineService;
-import com.garyzhangscm.cwms.outbound.service.OrderService;
-import com.garyzhangscm.cwms.outbound.service.ShipEngineService;
+import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +44,9 @@ public class ParcelShippingController {
     ShipEngineService shipEngineService;
     @Autowired
     EasyPostService easyPostService;
+
+    @Autowired
+    private ParcelPackageService parcelPackageService;
 
     @RequestMapping(value="/parcel/ship-engine/rate", method = RequestMethod.GET)
     public ResponseBodyWrapper getShipEngineRate(@RequestParam Long warehouseId) throws JsonProcessingException {
@@ -73,10 +70,18 @@ public class ParcelShippingController {
     }
     @RequestMapping(value="/parcel/easy-post/shipment-confirm", method = RequestMethod.POST)
     public Shipment confirmEasyPostShipment(@RequestParam Long warehouseId,
+                                            @RequestParam Long orderId,
                                             @RequestParam String shipmentId,
                                             @RequestBody Rate rate) throws JsonProcessingException, EasyPostException {
 
-        return easyPostService.confirmEasyPostShipment(warehouseId,
+        return easyPostService.confirmEasyPostShipment(warehouseId, orderId,
                 shipmentId, rate);
+    }
+
+    @RequestMapping(value="/parcel/packages", method = RequestMethod.GET)
+    public List<ParcelPackage> findParcelPackages(@RequestParam Long warehouseId,
+                                                  @RequestParam(name = "orderId", required = false) Long orderId,
+                                                  @RequestParam(name = "orderNumber", required = false) String orderNumber) {
+        return parcelPackageService.findAll(warehouseId, orderId, orderNumber);
     }
 }
