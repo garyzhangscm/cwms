@@ -1891,5 +1891,19 @@
   "INVENTORY-ACTIVITY-TYPE-REVERSE_PRODUCTION": "取消完工入库",
   "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "取消副产品入库",
   "label-printer": "标签打印机",
-  "report-printer": "报表打印机"
+  "report-printer": "报表打印机",
+  "parcel-package": "包裹",
+  "trackingCode": "跟踪码",
+  "service": "服务",
+  "deliveryDays": "派送天数",
+  "insurance": "保险",
+  "label": "标签",
+  "ship-parcel": "包裹快递",
+  "parcel-by-order": "订单包裹",
+  "ship-from": "源地址",
+  "ship-to": "目的地",
+  "fill-in-package-information-to-get-rate": "填写包裹信息用以计算费用",
+  "selected-rate": "已选服务和费用",
+  "no-parcel-rate-selected": "请选择服务和费用",
+  "other-rate": "可选的服务"
 }

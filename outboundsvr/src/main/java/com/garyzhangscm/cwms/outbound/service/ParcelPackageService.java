@@ -74,6 +74,14 @@ public class ParcelPackageService  {
         return parcelPackageRepository.findByWarehouseIdAndShipmentId(warehouseId, shipmentId);
     }
 
+    public ParcelPackage findByTrackingCode(Long warehouseId, String trackingCode) {
+        return parcelPackageRepository.findByWarehouseIdAndTrackingCode(warehouseId, trackingCode);
+    }
+
+    public ParcelPackage findByTrackingCode(String trackingCode) {
+        return parcelPackageRepository.findByTrackingCode(trackingCode);
+    }
+
 
     public ParcelPackage addParcelPackage(Long warehouseId,
                                            ParcelPackage parcelPackage) {
@@ -91,7 +99,8 @@ public class ParcelPackageService  {
 
     public List<ParcelPackage> findAll(Long warehouseId,
                                        Long orderId,
-                                       String orderNumber) {
+                                       String orderNumber,
+                                       String trackingCode) {
 
         List<ParcelPackage> cartons =  parcelPackageRepository.findAll(
                 (Root<ParcelPackage> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -110,6 +119,10 @@ public class ParcelPackageService  {
                         predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
 
                     }
+                    if (Strings.isNotBlank(trackingCode)) {
+                        predicates.add(criteriaBuilder.equal(root.get("trackingCode"), trackingCode));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -119,4 +132,17 @@ public class ParcelPackageService  {
         return cartons;
     }
 
+    public void updateTracker(String trackingCode, String status) {
+        ParcelPackage parcelPackage = findByTrackingCode(trackingCode);
+        if (Objects.nonNull(parcelPackage)) {
+            logger.debug("we found a package with tracking code {}, let's update its status to {}",
+                    trackingCode, status);
+            parcelPackage.setStatus(status);
+            saveOrUpdate(parcelPackage);
+        }
+        else {
+            logger.debug("can't find any package with tracking code {}",
+                    trackingCode);
+        }
+    }
 }

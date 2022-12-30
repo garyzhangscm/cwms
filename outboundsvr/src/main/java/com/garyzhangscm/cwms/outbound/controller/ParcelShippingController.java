@@ -81,7 +81,8 @@ public class ParcelShippingController {
     @RequestMapping(value="/parcel/packages", method = RequestMethod.GET)
     public List<ParcelPackage> findParcelPackages(@RequestParam Long warehouseId,
                                                   @RequestParam(name = "orderId", required = false) Long orderId,
-                                                  @RequestParam(name = "orderNumber", required = false) String orderNumber) {
-        return parcelPackageService.findAll(warehouseId, orderId, orderNumber);
+                                                  @RequestParam(name = "orderNumber", required = false) String orderNumber,
+                                                  @RequestParam(name = "trackingCode", required = false) String trackingCode) {
+        return parcelPackageService.findAll(warehouseId, orderId, orderNumber, trackingCode);
     }
 }
