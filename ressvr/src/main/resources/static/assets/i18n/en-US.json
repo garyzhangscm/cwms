@@ -1891,5 +1891,20 @@
   "INVENTORY-ACTIVITY-TYPE-REVERSE_PRODUCTION": "Reverse Production",
   "INVENTORY-ACTIVITY-TYPE-REVERSE_BY_PRODUCT": "Reverse By Product",
   "label-printer": "Label Printer",
-  "report-printer": "Report Printer"
+  "report-printer": "Report Printer",
+  "parcel-package": "Parcel Package",
+  "trackingCode": "Tracking Code",
+  "service": "Service",
+  "deliveryDays": "Delivery Days",
+  "insurance": "Insurance",
+  "label": "Label",
+  "ship-parcel": "Ship Parcel",
+  "parcel-by-order": "Parcel By Order",
+  "ship-from": "Ship From",
+  "ship-to": "Ship To",
+  "fill-in-package-information-to-get-rate": "Fill in Package Information to Get Rate",
+  "selected-rate": "Selected Rate",
+  "no-parcel-rate-selected": "No Rate Selected Yet",
+  "other-rate": "Other Rate"
+
 }

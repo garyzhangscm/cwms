@@ -32,4 +32,8 @@ import java.util.List;
 public interface ParcelPackageRepository extends JpaRepository<ParcelPackage, Long>, JpaSpecificationExecutor<ParcelPackage> {
 
     ParcelPackage findByWarehouseIdAndShipmentId(Long warehouseId, String shipmentId);
+
+    ParcelPackage findByWarehouseIdAndTrackingCode(Long warehouseId, String trackingCode);
+
+    ParcelPackage findByTrackingCode(String trackingCode);
 }

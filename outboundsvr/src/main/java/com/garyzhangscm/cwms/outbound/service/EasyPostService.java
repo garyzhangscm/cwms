@@ -2,9 +2,13 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.easypost.exception.EasyPostException;
 import com.easypost.exception.General.MissingParameterError;
+import com.easypost.exception.General.SignatureVerificationError;
+import com.easypost.http.Constant;
+import com.easypost.model.Event;
 import com.easypost.model.Rate;
 import com.easypost.model.Shipment;
 import com.easypost.service.EasyPostClient;
+import com.easypost.utils.Cryptography;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -16,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +41,10 @@ public class EasyPostService {
 
     @Value("${parcel.easyPost.apiKey}")
     private String apiKey;
+
+    @Value("${parcel.easyPost.webhookSecret}")
+    private String webhookSecret;
+
 
     @Autowired
     private OrderService orderService;
@@ -161,5 +171,22 @@ public class EasyPostService {
 
         // logger.debug("bought shipment \n {}", boughtShipment);
         return boughtShipment;
+    }
+    public Event validateWebhook(byte[] eventBody, Map<String, Object> headers) throws EasyPostException {
+        return easyPostClient().webhook.validateWebhook(eventBody, headers, webhookSecret);
+    }
+
+    public void processWebhookEvent(Event event) {
+        logger.debug("start to process webhook event with {}", event.getDescription());
+        logger.debug("event.getDescription().equalsIgnoreCase(tracker.updated): {}",
+                event.getDescription().equalsIgnoreCase("tracker.updated"));
+        if (event.getDescription().equalsIgnoreCase("tracker.updated")) {
+            // update the tracking information
+            logger.debug("start to change the tracker {}'s status to {}",
+                    event.getResult().get("tracking_code"),
+                    event.getResult().get("status"));
+            parcelPackageService.updateTracker(event.getResult().get("tracking_code").toString(),
+                    event.getResult().get("status").toString());
+        }
     }
 }
