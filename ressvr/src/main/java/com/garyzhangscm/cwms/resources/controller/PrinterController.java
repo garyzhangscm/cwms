@@ -49,9 +49,10 @@ public class PrinterController {
      * @return a list of printer name return from the server
      */
     @RequestMapping(value="/server-printers", method = RequestMethod.GET)
-    public List<String> getServerPrinters() {
+    public List<String> getServerPrinters(Long warehouseId,
+                                          @RequestParam(name="printingStrategy", required = false, defaultValue = "") String printingStrategy) {
 
-        return printerService.getServerPrinters();
+        return printerService.getServerPrinters(warehouseId, printingStrategy);
     }
 
 

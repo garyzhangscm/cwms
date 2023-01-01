@@ -261,6 +261,15 @@ public class UserService  implements TestDataInitiableService{
 
         }
 
+        // get server side printing flag from the warehouse configuration instead
+        WarehouseConfiguration warehouseConfiguration = layoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+
+        Boolean serversidePrintingFlag  = null;
+        if (Objects.nonNull(warehouseConfiguration) && Objects.nonNull(warehouseConfiguration.getPrintingStrategy())) {
+            serversidePrintingFlag = warehouseConfiguration.getPrintingStrategy().equals(PrintingStrategy.SERVER_PRINTER) ||
+                    warehouseConfiguration.getPrintingStrategy().equals(PrintingStrategy.LOCAL_PRINTER_SERVER_DATA);
+        }
+
         SystemConfiguration systemConfiguration
                 = systemConfigurationService.findByCompanyAndWarehouse(
                 companyId, warehouseId
@@ -270,7 +279,7 @@ public class UserService  implements TestDataInitiableService{
                     companyId, warehouseId);
             logger.debug("will default to side side printing and NOT allow data initial");
             siteInformation.setServerSidePrinting(
-                    true
+                    Objects.isNull(serversidePrintingFlag) ? true : serversidePrintingFlag
             );
             siteInformation.setAllowDataInitialFlag(false);
         }
@@ -279,7 +288,9 @@ public class UserService  implements TestDataInitiableService{
                     companyId, warehouseId);
 
             siteInformation.setServerSidePrinting(
-                    systemConfiguration.getServerSidePrinting()
+
+                    Objects.isNull(serversidePrintingFlag) ? systemConfiguration.getServerSidePrinting() : serversidePrintingFlag
+
             );
             siteInformation.setAllowDataInitialFlag(
                     systemConfiguration.getAllowDataInitialFlag()
@@ -548,7 +559,13 @@ public class UserService  implements TestDataInitiableService{
         User user = findById(id);
         user.setPassword(newPassword);
         user.setChangePasswordAtNextLogon(false);
-        changeUser(user);
+
+
+        UserAuth userAuth = user.getUserAuth();
+
+        authServiceRestemplateClient.changeUserAuth(userAuth);
+
+
     }
 
     public User recordLoginEvent(UserLoginEvent userLoginEvent) {

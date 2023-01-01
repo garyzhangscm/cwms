@@ -19,11 +19,10 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.PrinterConfiguration;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.resources.model.Printer;
-import com.garyzhangscm.cwms.resources.model.PrinterType;
-import com.garyzhangscm.cwms.resources.model.ReportType;
+import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.PrinterRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -49,6 +48,8 @@ public class PrinterService  {
 
     @Autowired
     PrintingServiceRestemplateClient printingServiceRestemplateClient;
+    @Autowired
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
     private PrinterRepository printerRepository;
@@ -131,11 +132,53 @@ public class PrinterService  {
         printerRepository.deleteById(id);
 
     }
-    public List<String> getServerPrinters() {
+    public List<String> getServerPrinters(Long warehouseId, String printingStrategyName) {
+        // there're 3 ways to print document
+        // 1. print from the server that host this resource service
+        // 2. print from a centralized client but data from server
+        // 3. print from local by Ldoop
+        // for option 1, we will connect to the printing service and get all printers that connect to the printing service
+        // 's host. In this way there's no need to setup anything in the system, you will only need to connect the printer
+        // to the server that host the printing service(as of now, it is integrated inthe local plug service)
+        // for option 2, the printing request will be saved on server but printed from a local PC that has local plugin service
+        // installed. In this case, you will need to setup the printer in the web portal's printer page, then connect the printer
+        // to the PC that host the local plugin service
+        // for option 3, you will need to install lodop(https://ng-alain.com/components/lodop/zh) locally. Then the web page will
+        // send printing request to this plugin and the lodop will get the printer list from the local PC. There's nothing needs to be
+        // configured
+        // we can tell which option the warehouse is using from the printingStrategy variable. If this variable is not passed in
+        // we will get from the warehouse's configuration
+        PrintingStrategy printingStrategy;
+        if (Strings.isNotBlank(printingStrategyName)) {
+            printingStrategy = PrintingStrategy.valueOf(printingStrategyName);
+        }
+        else {
+            WarehouseConfiguration warehouseConfiguration =
+                    layoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+            if (Objects.isNull(warehouseConfiguration) || Objects.isNull(warehouseConfiguration.getPrintingStrategy())) {
+                throw ResourceNotFoundException.raiseException("Can't find the printing strategy for warehouse " + warehouseId);
+            }
+            printingStrategy = warehouseConfiguration.getPrintingStrategy();
+        }
+
+        /**
         if (Boolean.TRUE.equals(printerConfiguration.getTestPrintersOnly())) {
             return printerConfiguration.getTestPrinters().stream().map(printer -> printer.getName()).collect(Collectors.toList());
         }
-        return printingServiceRestemplateClient.getPrinters();
+         **/
+        if (printingStrategy.equals(PrintingStrategy.SERVER_PRINTER)) {
+            // option 1: get printers that connect to the server that host the printing service(now integrated in local plugin service)
+            return printingServiceRestemplateClient.getPrinters();
+        }
+        else if (printingStrategy.equals(PrintingStrategy.LOCAL_PRINTER_SERVER_DATA)) {
+            // option 2: get printers from the printer table
+            return findAll(warehouseId, null, null).stream().map(Printer::getName).collect(Collectors.toList());
+        }
+        else {
+
+            throw ResourceNotFoundException.raiseException("Can't find printers with warehouse " + warehouseId + " and strategy " + printingStrategy);
+        }
+
     }
 
 

@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.Company;
 import com.garyzhangscm.cwms.resources.model.Location;
 import com.garyzhangscm.cwms.resources.model.Warehouse;
+import com.garyzhangscm.cwms.resources.model.WarehouseConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -282,5 +283,23 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
                 null,
                 Location.class);
         return restExchange.getBody();
+    }
+
+
+    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouse-configuration/by-warehouse/{warehouseId}") ;
+
+        ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 }
