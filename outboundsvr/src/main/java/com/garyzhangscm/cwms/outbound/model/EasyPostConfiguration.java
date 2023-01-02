@@ -47,7 +47,7 @@ public class EasyPostConfiguration extends AuditibleEntity<String> implements Se
     private String apiKey;
 
 
-    @Column(name = "webhookSecret")
+    @Column(name = "webhook_secret")
     private String webhookSecret;
 
     @OneToMany(
