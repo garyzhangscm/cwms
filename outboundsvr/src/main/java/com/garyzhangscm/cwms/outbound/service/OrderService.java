@@ -273,6 +273,23 @@ public class OrderService implements TestDataInitiableService {
                     )
             );
         }
+
+        if (Objects.nonNull(order.getCarrierId()) && Objects.isNull(order.getCarrier())) {
+            order.setCarrier(
+                    commonServiceRestemplateClient.getCarrierById(
+                            order.getCarrierId()
+                    )
+            );
+        }
+
+        if (Objects.nonNull(order.getCarrierServiceLevelId()) && Objects.isNull(order.getCarrierServiceLevel())) {
+            order.setCarrierServiceLevel(
+                    commonServiceRestemplateClient.getCarrierServiceLevelById(
+                            order.getCarrierServiceLevelId()
+                    )
+            );
+        }
+
         if (order.getWarehouseId() != null && order.getWarehouse() == null) {
             order.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId()));
         }

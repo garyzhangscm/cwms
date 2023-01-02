@@ -262,12 +262,15 @@ public class UserService  implements TestDataInitiableService{
         }
 
         // get server side printing flag from the warehouse configuration instead
-        WarehouseConfiguration warehouseConfiguration = layoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
 
         Boolean serversidePrintingFlag  = null;
-        if (Objects.nonNull(warehouseConfiguration) && Objects.nonNull(warehouseConfiguration.getPrintingStrategy())) {
-            serversidePrintingFlag = warehouseConfiguration.getPrintingStrategy().equals(PrintingStrategy.SERVER_PRINTER) ||
-                    warehouseConfiguration.getPrintingStrategy().equals(PrintingStrategy.LOCAL_PRINTER_SERVER_DATA);
+        if(Objects.nonNull(warehouseId)) {
+
+            WarehouseConfiguration warehouseConfiguration = layoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+            if (Objects.nonNull(warehouseConfiguration) && Objects.nonNull(warehouseConfiguration.getPrintingStrategy())) {
+                serversidePrintingFlag = warehouseConfiguration.getPrintingStrategy().equals(PrintingStrategy.SERVER_PRINTER) ||
+                        warehouseConfiguration.getPrintingStrategy().equals(PrintingStrategy.LOCAL_PRINTER_SERVER_DATA);
+            }
         }
 
         SystemConfiguration systemConfiguration

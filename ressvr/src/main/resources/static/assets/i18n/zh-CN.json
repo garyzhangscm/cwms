@@ -1905,5 +1905,18 @@
   "fill-in-package-information-to-get-rate": "填写包裹信息用以计算费用",
   "selected-rate": "已选服务和费用",
   "no-parcel-rate-selected": "请选择服务和费用",
-  "other-rate": "可选的服务"
+  "other-rate": "可选的服务",
+  "menu.main.transport.carrier": "承运商",
+  "menu.main.transport.easy-post": "Easy Post",
+  "CARRIER-SERVICE-LEVEL-TYPE-TRUCK_LOAD": "整车",
+  "CARRIER-SERVICE-LEVEL-TYPE-LESS_THAN_TRUCK_LOAD": "零担",
+  "CARRIER-SERVICE-LEVEL-TYPE-PARCEL": "包裹",
+  "contactorFirstname": "联系人（姓）",
+  "contactorLastname": "联系人（名）",
+  "already-exists-error": "已经存在",
+  "maintenance": "维护",
+  "carrier-service-name-required": "请输入承运商的服务等级名称",
+  "carrier-service-type-required": "请选择承运商的服务等级类型",
+  "selected-carrier-doesnot-match-with-order": "选择的承运商和订单指定的承运商不吻合",
+  "selected-carrier-carrier-doesnot-match-with-order": "选择的承运商的服务等级和订单指定的承运商服务等级不吻合"
 }

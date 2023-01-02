@@ -28,6 +28,9 @@ public class Carrier extends AuditibleEntity<String> {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "enabled")
+    private Boolean enabled;
+
 
     @Column(name = "contactor_firstname")
     private String contactorFirstname;
@@ -66,7 +69,7 @@ public class Carrier extends AuditibleEntity<String> {
     @OneToMany(
             mappedBy = "carrier",
             orphanRemoval = true,
-            cascade = CascadeType.REMOVE
+            cascade = CascadeType.ALL
     )
     private List<CarrierServiceLevel> carrierServiceLevels = new ArrayList<>();
 
@@ -237,5 +240,13 @@ public class Carrier extends AuditibleEntity<String> {
 
     public void setUserDefinedField5(String userDefinedField5) {
         this.userDefinedField5 = userDefinedField5;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

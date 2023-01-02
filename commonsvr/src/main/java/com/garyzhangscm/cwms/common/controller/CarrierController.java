@@ -50,7 +50,7 @@ public class CarrierController {
     @BillableEndpoint
     @RequestMapping(value="/carriers", method = RequestMethod.POST)
     public Carrier addCarrier(@RequestBody Carrier carrier) {
-        return carrierService.save(carrier);
+        return carrierService.addCarrier(carrier);
     }
 
     @BillableEndpoint
@@ -60,12 +60,24 @@ public class CarrierController {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; carrier.getId(): " + carrier.getId());
         }
-        return carrierService.save(carrier);
+        return carrierService.changeCarrier(carrier);
     }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/carriers")
     public void deleteCarriers(@RequestParam(name = "carrier_ids", required = false, defaultValue = "") String carrierIds) {
         carrierService.delete(carrierIds);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/carriers/{id}/disable", method = RequestMethod.POST)
+    public Carrier disableCarrier(@PathVariable Long id) {
+        return carrierService.disableCarrier(id);
+    }
+    @BillableEndpoint
+    @RequestMapping(value="/carriers/{id}/enable", method = RequestMethod.POST)
+    public Carrier enableCarrier(@PathVariable Long id) {
+        return carrierService.enableCarrier(id);
     }
 }

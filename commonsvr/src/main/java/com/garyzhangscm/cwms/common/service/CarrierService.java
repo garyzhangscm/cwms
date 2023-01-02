@@ -212,4 +212,28 @@ public class CarrierService implements  TestDataInitiableService{
     }
 
 
+    public Carrier disableCarrier(Long id) {
+        Carrier carrier = findById(id);
+        carrier.setEnabled(false);
+        return saveOrUpdate(carrier);
+    }
+    public Carrier enableCarrier(Long id) {
+        Carrier carrier = findById(id);
+        carrier.setEnabled(true);
+        return saveOrUpdate(carrier);
+    }
+
+    public Carrier addCarrier(Carrier carrier) {
+        carrier.getCarrierServiceLevels().forEach(
+                carrierServiceLevel -> carrierServiceLevel.setCarrier(carrier)
+        );
+        return saveOrUpdate(carrier);
+    }
+
+    public Carrier changeCarrier(Carrier carrier) {
+        carrier.getCarrierServiceLevels().forEach(
+                carrierServiceLevel -> carrierServiceLevel.setCarrier(carrier)
+        );
+        return saveOrUpdate(carrier);
+    }
 }
