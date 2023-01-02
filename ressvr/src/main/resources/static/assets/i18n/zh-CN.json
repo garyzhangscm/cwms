@@ -1918,5 +1918,6 @@
   "carrier-service-name-required": "请输入承运商的服务等级名称",
   "carrier-service-type-required": "请选择承运商的服务等级类型",
   "selected-carrier-doesnot-match-with-order": "选择的承运商和订单指定的承运商不吻合",
-  "selected-carrier-carrier-doesnot-match-with-order": "选择的承运商的服务等级和订单指定的承运商服务等级不吻合"
+  "selected-carrier-carrier-doesnot-match-with-order": "选择的承运商的服务等级和订单指定的承运商服务等级不吻合",
+  "shippedDate": "发货日期"
 }
