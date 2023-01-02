@@ -63,7 +63,8 @@ public class ParcelShippingController {
                                            @RequestParam Double length,
                                            @RequestParam Double width,
                                            @RequestParam Double height,
-                                           @RequestParam Double weight ) throws JsonProcessingException, EasyPostException {
+                                           @RequestParam Double weight)
+            throws EasyPostException {
 
         return easyPostService.createEasyPostShipment(warehouseId,
                 orderId, length, width, height, weight);

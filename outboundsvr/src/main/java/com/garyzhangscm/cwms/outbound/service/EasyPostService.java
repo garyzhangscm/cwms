@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.Warehouse;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,6 +145,7 @@ public class EasyPostService {
         parcelMap.put("height", height);
         parcelMap.put("width", width);
         parcelMap.put("length", length);
+
 
         Map<String, Object> shipmentMap = new HashMap<String, Object>();
         shipmentMap.put("from_address", fromAddressMap);

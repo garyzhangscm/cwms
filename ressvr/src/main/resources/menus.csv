@@ -84,8 +84,10 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure,,true,false
 "ABC Category",menu.main.common.abc-category,/common/abc-category,5,Main-Menu-Common,Common-ABCCategory,,true,false
 "Velocity",menu.main.common.velocity,/common/velocity,6,Main-Menu-Common,Common-Velocity,,true,false
-"Tractor",menu.main.transport.tractor,/transportation/tractor,5,Main-Menu-transport,transport-Tractor,,true,false
-"Trailer",menu.main.transport.trailer,/transportation/trailer,6,Main-Menu-transport,transport-Trailer,,true,false
+"Tractor",menu.main.transport.tractor,/transportation/tractor,1,Main-Menu-transport,transport-Tractor,,true,false
+"Trailer",menu.main.transport.trailer,/transportation/trailer,2,Main-Menu-transport,transport-Trailer,,true,false
+"Carrier",menu.main.transport.carrier,/transportation/carrier,3,Main-Menu-transport,transport-carrier,,true,false
+"Easy Post",menu.main.transport.easy-post,/transportation/easy-post,3,Main-Menu-transport,transport-EasyPost,,true,false
 "File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client,,true,false
 "Test Data Initial",menu.main.util.test-data-init,,2,Main-Menu-Util,Util-TestDataInit,,true,true
 "Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester,,true,true

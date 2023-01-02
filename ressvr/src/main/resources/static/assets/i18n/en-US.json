@@ -1905,6 +1905,18 @@
   "fill-in-package-information-to-get-rate": "Fill in Package Information to Get Rate",
   "selected-rate": "Selected Rate",
   "no-parcel-rate-selected": "No Rate Selected Yet",
-  "other-rate": "Other Rate"
-
+  "other-rate": "Other Rate",
+  "menu.main.transport.carrier": "Carrier",
+  "menu.main.transport.easy-post": "Easy Post",
+  "CARRIER-SERVICE-LEVEL-TYPE-TRUCK_LOAD": "Truck Load",
+  "CARRIER-SERVICE-LEVEL-TYPE-LESS_THAN_TRUCK_LOAD": "Less Than Truck Load",
+  "CARRIER-SERVICE-LEVEL-TYPE-PARCEL": "Parcel",
+  "contactorFirstname": "Contactor First Name",
+  "contactorLastname": "Contactor Last Name",
+  "already-exists-error": "Already exists",
+  "maintenance": "Maintenance",
+  "carrier-service-name-required": "Carrier's service name is required",
+  "carrier-service-type-required": "Carrier's service type is required",
+  "selected-carrier-doesnot-match-with-order": "Selected Carrier Doesn't Match With Order",
+  "selected-carrier-carrier-doesnot-match-with-order": "Selected Carrier Service Doesn't Match With Order"
 }
