@@ -1918,5 +1918,6 @@
   "carrier-service-name-required": "Carrier's service name is required",
   "carrier-service-type-required": "Carrier's service type is required",
   "selected-carrier-doesnot-match-with-order": "Selected Carrier Doesn't Match With Order",
-  "selected-carrier-carrier-doesnot-match-with-order": "Selected Carrier Service Doesn't Match With Order"
+  "selected-carrier-carrier-doesnot-match-with-order": "Selected Carrier Service Doesn't Match With Order",
+  "shippedDate": "Shipped Date"
 }
