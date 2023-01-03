@@ -11,6 +11,8 @@ import com.easypost.service.EasyPostClient;
 import com.easypost.utils.Cryptography;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.model.EasyPostConfiguration;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.Warehouse;
 import org.apache.logging.log4j.util.Strings;
@@ -25,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /*
  * https://www.easypost.com/
@@ -40,11 +43,11 @@ public class EasyPostService {
 
     private static final Logger logger = LoggerFactory.getLogger(EasyPostService.class);
 
-    @Value("${parcel.easyPost.apiKey}")
-    private String apiKey;
+    // @Value("${parcel.easyPost.apiKey}")
+    // private String apiKey;
 
-    @Value("${parcel.easyPost.webhookSecret}")
-    private String webhookSecret;
+    // @Value("${parcel.easyPost.webhookSecret}")
+    // private String webhookSecret;
 
 
     @Autowired
@@ -54,15 +57,38 @@ public class EasyPostService {
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
+    @Autowired
+    private EasyPostConfigurationService easyPostConfigurationService;
 
-    @Bean
-    public EasyPostClient easyPostClient() throws MissingParameterError {
+
+    public EasyPostClient easyPostClient(String apiKey) throws MissingParameterError {
         return new EasyPostClient(apiKey);
 
     }
 
+    private String getAPIKey(Long warehouseId) {
+        EasyPostConfiguration easyPostConfiguration =
+                easyPostConfigurationService.findByWarehouseId(warehouseId, false);
 
-    public void getShippingRates() throws JsonProcessingException, EasyPostException {
+        if (Objects.isNull(easyPostConfiguration) || Strings.isBlank(easyPostConfiguration.getApiKey())) {
+            throw ResourceNotFoundException.raiseException("please setup the API key for easy post first");
+        }
+        return easyPostConfiguration.getApiKey();
+
+    }
+    private String getWebhookSecret(Long warehouseId) {
+        EasyPostConfiguration easyPostConfiguration =
+                easyPostConfigurationService.findByWarehouseId(warehouseId, false);
+
+        if (Objects.isNull(easyPostConfiguration) || Strings.isBlank(easyPostConfiguration.getWebhookSecret())) {
+            throw ResourceNotFoundException.raiseException("please setup the webhook secret for easy post first");
+        }
+        return easyPostConfiguration.getWebhookSecret();
+
+    }
+
+
+    public void getShippingRates(Long warehouseId) throws JsonProcessingException, EasyPostException {
 
         Map<String, Object> fromAddressMap = new HashMap<String, Object>();
         fromAddressMap.put("company", "EasyPost");
@@ -94,9 +120,10 @@ public class EasyPostService {
         shipmentMap.put("to_address", toAddressMap);
         shipmentMap.put("parcel", parcelMap);
 
-        Shipment shipment = easyPostClient().shipment.create(shipmentMap);
+        EasyPostClient easyPostClient = easyPostClient(getAPIKey(warehouseId));
+        Shipment shipment = easyPostClient.shipment.create(shipmentMap);
 
-        Shipment boughtShipment = easyPostClient().shipment.buy(shipment.getId(), shipment.lowestRate());
+        Shipment boughtShipment = easyPostClient.shipment.buy(shipment.getId(), shipment.lowestRate());
 
         System.out.println(boughtShipment.prettyPrint());
 
@@ -152,7 +179,7 @@ public class EasyPostService {
         shipmentMap.put("to_address", toAddressMap);
         shipmentMap.put("parcel", parcelMap);
 
-        return easyPostClient().shipment.create(shipmentMap);
+        return easyPostClient(getAPIKey(warehouseId)).shipment.create(shipmentMap);
     }
 
 
@@ -164,7 +191,7 @@ public class EasyPostService {
     public Shipment confirmEasyPostShipment(Long warehouseId, Long orderId, String shipmentId, Rate rate) throws EasyPostException {
 
         // request the shipping label from easy post
-        Shipment boughtShipment = easyPostClient().shipment.buy(shipmentId, rate);
+        Shipment boughtShipment = easyPostClient(getAPIKey(warehouseId)).shipment.buy(shipmentId, rate);
 
         // save the data to database
         Order order = orderService.findById(orderId);
@@ -174,8 +201,8 @@ public class EasyPostService {
         // logger.debug("bought shipment \n {}", boughtShipment);
         return boughtShipment;
     }
-    public Event validateWebhook(byte[] eventBody, Map<String, Object> headers) throws EasyPostException {
-        return easyPostClient().webhook.validateWebhook(eventBody, headers, webhookSecret);
+    public Event validateWebhook(Long warehouseId, byte[] eventBody, Map<String, Object> headers) throws EasyPostException {
+        return easyPostClient(getAPIKey(warehouseId)).webhook.validateWebhook(eventBody, headers, getWebhookSecret(warehouseId));
     }
 
     public void processWebhookEvent(Event event) {

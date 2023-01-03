@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.adminserver.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.model.BillableRequest;
+import com.garyzhangscm.cwms.adminserver.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.adminserver.service.BillableRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -26,15 +28,38 @@ public class KafkaReceiver {
     @Autowired
     private BillableRequestService billableRequestService;
 
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @KafkaListener(topics = {"BILLABLE_REQUEST"})
     public void processBillableRequest(@Payload String billableRequestJsonRepresent)  {
         logger.info("# received billable request : {}", billableRequestJsonRepresent);
+
         try {
             BillableRequest billableRequest = objectMapper.readValue(billableRequestJsonRepresent, BillableRequest.class);
             logger.info("BillableRequest: {}", billableRequest);
+            if (Objects.nonNull(billableRequest.getWarehouseId())) {
+                // see if the billable request process is enabled in the warehouse level
+                WarehouseConfiguration warehouseConfiguration
+                        = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(
+                                billableRequest.getWarehouseId()
+                );
+                if (Objects.nonNull(warehouseConfiguration) && Boolean.TRUE.equals(warehouseConfiguration.getBillingRequestEnabledFlag())) {
 
-            billableRequestService.createBillableRequest(billableRequest);
+                    logger.info("BillableRequest is enabled for warehouse {}", billableRequest.getWarehouseId());
+                    billableRequestService.createBillableRequest(billableRequest);
+                }
+                else {
+
+                    logger.info("BillableRequest is disabled for warehouse {}", billableRequest.getWarehouseId());
+                }
+            }
+            else {
+                logger.debug("warehouse id is not passed in, not possible to see if the billable function is enabled, we will process the billable reuqest any way");
+
+                billableRequestService.createBillableRequest(billableRequest);
+            }
+
 
         }
         catch (JsonProcessingException ex) {

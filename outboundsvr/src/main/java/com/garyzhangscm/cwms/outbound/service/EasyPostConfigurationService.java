@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -183,6 +184,8 @@ public class EasyPostConfigurationService {
         }
         return saveOrUpdate(easyPostCarrier);
     }
+
+    @Transactional
     public void removeCarrier(Long easyPostCarrierId) {
         easyPostCarrierRepository.deleteById(easyPostCarrierId);
     }

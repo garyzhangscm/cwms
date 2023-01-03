@@ -50,7 +50,7 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
     private String accountNumber;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "easy_post_configuration_id")
     private EasyPostConfiguration easyPostConfiguration;
 

@@ -70,6 +70,10 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @Column(name = "reuse_lpn_after_shipped")
     private Boolean reuseLPNAfterShippedFlag;
 
+    // whether we will reuse lpn after shipped
+    @Column(name = "billing_request_enabled")
+    private Boolean billingRequestEnabledFlag;
+
     public Long getId() {
         return id;
     }
@@ -148,5 +152,13 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setReuseLPNAfterShippedFlag(Boolean reuseLPNAfterShippedFlag) {
         this.reuseLPNAfterShippedFlag = reuseLPNAfterShippedFlag;
+    }
+
+    public Boolean getBillingRequestEnabledFlag() {
+        return billingRequestEnabledFlag;
+    }
+
+    public void setBillingRequestEnabledFlag(Boolean billingRequestEnabledFlag) {
+        this.billingRequestEnabledFlag = billingRequestEnabledFlag;
     }
 }

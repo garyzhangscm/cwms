@@ -1919,5 +1919,11 @@
   "carrier-service-type-required": "请选择承运商的服务等级类型",
   "selected-carrier-doesnot-match-with-order": "选择的承运商和订单指定的承运商不吻合",
   "selected-carrier-carrier-doesnot-match-with-order": "选择的承运商的服务等级和订单指定的承运商服务等级不吻合",
-  "shippedDate": "发货日期"
+  "shippedDate": "发货日期",
+  "apiKey": "API Key",
+  "webhookSecret": "Webhook Secret",
+  "no-easy-post-carrier-setup": "当前没有为Easy Post维护任何的承运商",
+  "no-more-carrier-to-add-to-easy-port": "没有更多的可以作为Easy Post的包裹承运商了",
+  "accountNumber": "Account Number",
+  "billingRequestEnabledFlag": "跟踪网站API访问"
 }

@@ -1919,5 +1919,11 @@
   "carrier-service-type-required": "Carrier's service type is required",
   "selected-carrier-doesnot-match-with-order": "Selected Carrier Doesn't Match With Order",
   "selected-carrier-carrier-doesnot-match-with-order": "Selected Carrier Service Doesn't Match With Order",
-  "shippedDate": "Shipped Date"
+  "shippedDate": "Shipped Date",
+  "apiKey": "API Key",
+  "webhookSecret": "Webhook Secret",
+  "no-easy-post-carrier-setup": "There's no Carrier Setup for EasyPost yet",
+  "no-more-carrier-to-add-to-easy-port": "There's no more valid Parcel Carrier to be added to Easy Post.",
+  "accountNumber": "Account Number",
+  "billingRequestEnabledFlag": "Billing Request Enabled"
 }
