@@ -55,11 +55,13 @@ public class EasyPostController {
     private EasyPostService easyPostService;
 
 
-    @RequestMapping(value="/parcel/easy-post/webhook", method = RequestMethod.POST)
-    public ResponseBodyWrapper processWebhook(@RequestHeader Map<String, Object> headers,
+    @RequestMapping(value="/parcel/easy-post/{warehouseId}/webhook", method = RequestMethod.POST)
+    public ResponseBodyWrapper processWebhook(@PathVariable Long warehouseId,
+                                              @RequestHeader Map<String, Object> headers,
                                               @RequestBody String webhookEvent) throws JsonProcessingException, EasyPostException {
 
         logger.debug("start to process easy post webhook");
+        logger.debug("warehouseId: {}", warehouseId);
         logger.debug("get event from easypost webhook \n{}", webhookEvent);
 
 
@@ -81,6 +83,7 @@ public class EasyPostController {
         logger.debug("header container key x-hmac-signature: {}", headers.containsKey("x-hmac-signature"));
 
         Event event = easyPostService.validateWebhook(
+                warehouseId,
                 webhookEvent.getBytes(StandardCharsets.UTF_8),
                 headers
         );

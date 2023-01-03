@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.adminserver.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,24 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Qualifier("getObjMapper")
     private ObjectMapper objectMapper;
 
+    @Cacheable(cacheNames = "admin_warehouse_configuration", unless="#result == null")
+    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouse-configuration/by-warehouse/{id}");
+
+        ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 
     public Location getLocationById(Long id) {
