@@ -70,13 +70,25 @@ public class PrintingRequestController {
                 warehouseId, reportHistoryId, printerName, copies);
     }
 
+    @RequestMapping(value="/printing-requests/by-url", method = RequestMethod.PUT)
+    public PrintingRequest generatePrintingRequestByURL(
+            Long warehouseId, String url,
+            String printerName, Integer copies,
+            String reportType
+    ) {
+        return printingRequestService.generatePrintingRequestByURL(
+                warehouseId, url, printerName, copies, reportType);
+    }
+
     @RequestMapping(value="/printing-requests/{id}/processed", method = RequestMethod.POST)
     public PrintingRequest markPrintingRequestProcessed(
             @PathVariable Long id,
-            Long warehouseId
+            Long warehouseId,
+            @RequestParam String result,
+            @RequestParam(name =  "errorMessage", required = false, defaultValue = "") String errorMessage
     ) {
         return printingRequestService.markPrintingRequestProcessed(
-                warehouseId, id);
+                warehouseId, id, result, errorMessage);
     }
 
 }

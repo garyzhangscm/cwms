@@ -37,8 +37,23 @@ public class PrintingRequest extends AuditibleEntity<String> {
     @Column(name = "printer_name")
     private String printerName;
 
+    @Column(name = "report_url")
+    private String reportUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private ReportType type;
+
     @Column(name = "copies")
     private Integer copies;
+
+    // printing result
+    @Column(name = "result")
+    @Enumerated(EnumType.STRING)
+    private PrintingRequestResult result;
+
+    @Column(name = "error_message")
+    private String errorMessage;
 
     @Column(name = "printing_time")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -53,6 +68,17 @@ public class PrintingRequest extends AuditibleEntity<String> {
         this.reportHistory = reportHistory;
         this.printerName = printerName;
         this.copies = copies;
+        this.result = PrintingRequestResult.PENDING;
+
+    }
+    public PrintingRequest(Long warehouseId, String reportUrl, String printerName,
+                           Integer copies, String reportType) {
+        this.warehouseId = warehouseId;
+        this.reportUrl = reportUrl;
+        this.printerName = printerName;
+        this.copies = copies;
+        this.type = ReportType.valueOf(reportType);
+        this.result = PrintingRequestResult.PENDING;
 
     }
 
@@ -102,5 +128,37 @@ public class PrintingRequest extends AuditibleEntity<String> {
 
     public void setPrintingTime(LocalDateTime printingTime) {
         this.printingTime = printingTime;
+    }
+
+    public String getReportUrl() {
+        return reportUrl;
+    }
+
+    public void setReportUrl(String reportUrl) {
+        this.reportUrl = reportUrl;
+    }
+
+    public ReportType getType() {
+        return type;
+    }
+
+    public void setType(ReportType type) {
+        this.type = type;
+    }
+
+    public PrintingRequestResult getResult() {
+        return result;
+    }
+
+    public void setResult(PrintingRequestResult result) {
+        this.result = result;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

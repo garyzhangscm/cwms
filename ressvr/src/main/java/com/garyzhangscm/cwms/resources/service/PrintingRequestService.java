@@ -60,7 +60,7 @@ public class PrintingRequestService {
     }
 
     public List<PrintingRequest> findAll(Long warehouseId,
-                                         Boolean notPrintedRequestOnly) {
+                                         PrintingRequestResult result) {
 
         return printingRequestRepository.findAll(
                 (Root<PrintingRequest> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -69,8 +69,8 @@ public class PrintingRequestService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
 
-                    if (Boolean.TRUE.equals(notPrintedRequestOnly)) {
-                        predicates.add(criteriaBuilder.isNull(root.get("printingTime")));
+                    if (Objects.nonNull(result)) {
+                        predicates.add(criteriaBuilder.equal(root.get("result"), result));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -79,7 +79,7 @@ public class PrintingRequestService {
     }
 
     public List<PrintingRequest> findPendingPrintingRequest(Long warehouseId) {
-        return findAll(warehouseId, true);
+        return findAll(warehouseId, PrintingRequestResult.PENDING);
     }
 
     public PrintingRequest save(PrintingRequest printingRequest) {
@@ -158,9 +158,22 @@ public class PrintingRequestService {
         return save(printingRequest);
     }
 
-    public PrintingRequest markPrintingRequestProcessed(Long warehouseId, Long id) {
+    public PrintingRequest markPrintingRequestProcessed(Long warehouseId, Long id, String result, String errorMessage) {
         PrintingRequest printingRequest = findById(id);
         printingRequest.setPrintingTime(LocalDateTime.now());
+        printingRequest.setResult(PrintingRequestResult.valueOf(result));
+        printingRequest.setErrorMessage(errorMessage);
+        return save(printingRequest);
+    }
+
+    public PrintingRequest generatePrintingRequestByURL(Long warehouseId, String url, String printerName,
+                                                        Integer copies, String reportType) {
+
+        PrintingRequest printingRequest = new PrintingRequest(
+                warehouseId, url, printerName, copies,
+                reportType
+        );
+
         return save(printingRequest);
     }
 }

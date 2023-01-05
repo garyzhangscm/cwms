@@ -12,6 +12,7 @@ import com.easypost.utils.Cryptography;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.EasyPostConfiguration;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.Warehouse;
@@ -26,8 +27,10 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /*
  * https://www.easypost.com/
@@ -145,17 +148,14 @@ public class EasyPostService {
         Order order = orderService.findById(orderId);
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
 
-        // from address is the warehouse's address
-        Map<String, Object> fromAddressMap = new HashMap<String, Object>();
+        EasyPostConfiguration easyPostConfiguration = easyPostConfigurationService.findByWarehouseId(warehouseId, false);
+        
 
-        fromAddressMap.put("company", warehouse.getCompany().getName());
-        fromAddressMap.put("street1", warehouse.getAddressLine1());
-        fromAddressMap.put("street2", warehouse.getAddressLine2());
-        fromAddressMap.put("city", warehouse.getAddressCity());
-        fromAddressMap.put("state", warehouse.getAddressState());
-        fromAddressMap.put("country", warehouse.getAddressCountry());
-        fromAddressMap.put("zip", warehouse.getAddressPostcode());
-        fromAddressMap.put("phone", "");
+        // ship from address
+        Map<String, Object> fromAddressMap = getShipFromAddress(easyPostConfiguration, warehouse);
+        // ship from address
+        Map<String, Object> returnAddressMap = getReturnAddress(easyPostConfiguration, warehouse);
+
 
         Map<String, Object> toAddressMap = new HashMap<String, Object>();
         toAddressMap.put("name", order.getShipToContactorFirstname() + " " + order.getShipToContactorLastname());
@@ -173,16 +173,100 @@ public class EasyPostService {
         parcelMap.put("width", width);
         parcelMap.put("length", length);
 
+        List<String> carrierAccountNumbers =  getCarrierAccountNumbers(easyPostConfiguration);
 
         Map<String, Object> shipmentMap = new HashMap<String, Object>();
         shipmentMap.put("from_address", fromAddressMap);
         shipmentMap.put("to_address", toAddressMap);
+        shipmentMap.put("return_address", returnAddressMap);
         shipmentMap.put("parcel", parcelMap);
+        shipmentMap.put("carrier_accounts ", carrierAccountNumbers);
 
-        return easyPostClient(getAPIKey(warehouseId)).shipment.create(shipmentMap);
+
+        logger.debug("start to create shipment with parameters \n{}", shipmentMap);
+
+        try {
+            return easyPostClient(getAPIKey(warehouseId)).shipment.create(shipmentMap);
+        }
+        catch(com.easypost.exception.EasyPostException ex) {
+            throw ShippingException.raiseException("Error while create Easy Post shipment: " + ex.getMessage());
+        }
+    }
+
+    private List<String> getCarrierAccountNumbers(EasyPostConfiguration easyPostConfiguration) {
+        return easyPostConfiguration.getCarriers().stream().map(
+                easyPostCarrier -> easyPostCarrier.getAccountNumber()
+        ).collect(Collectors.toList());
+    }
+
+    private Map<String, Object> getShipFromAddress(EasyPostConfiguration easyPostConfiguration, Warehouse warehouse) {
+
+        Map<String, Object> fromAddressMap =new HashMap<String, Object>();
+
+        // get the ship from address from warehouse or the configuration
+        // based on the setup
+        if (Boolean.TRUE.equals(easyPostConfiguration.getUseWarehouseAddressAsShipFromFlag())) {
+            fromAddressMap.put("name", warehouse.getContactorFirstname() + " " + warehouse.getContactorLastname());
+            fromAddressMap.put("company", warehouse.getCompany().getName());
+            fromAddressMap.put("street1", warehouse.getAddressLine1());
+            fromAddressMap.put("street2", warehouse.getAddressLine2());
+            fromAddressMap.put("city", warehouse.getAddressCity());
+            fromAddressMap.put("state", warehouse.getAddressState());
+            fromAddressMap.put("country", warehouse.getAddressCountry());
+            fromAddressMap.put("zip", warehouse.getAddressPostcode());
+            fromAddressMap.put("phone", "");
+        }
+        else {
+
+            fromAddressMap.put("name", easyPostConfiguration.getContactorFirstname() + " " + easyPostConfiguration.getContactorLastname());
+            fromAddressMap.put("company", warehouse.getCompany().getName());
+            fromAddressMap.put("street1", easyPostConfiguration.getAddressLine1());
+            fromAddressMap.put("street2", easyPostConfiguration.getAddressLine2());
+            fromAddressMap.put("city", easyPostConfiguration.getAddressCity());
+            fromAddressMap.put("state", easyPostConfiguration.getAddressState());
+            fromAddressMap.put("country", easyPostConfiguration.getAddressCountry());
+            fromAddressMap.put("zip", easyPostConfiguration.getAddressPostcode());
+            fromAddressMap.put("phone", "");
+        }
+        return fromAddressMap;
+
+
     }
 
 
+    private Map<String, Object> getReturnAddress(EasyPostConfiguration easyPostConfiguration, Warehouse warehouse) {
+
+        Map<String, Object> returnAddressMap =new HashMap<String, Object>();
+
+        // get the ship from address from warehouse or the configuration
+        // based on the setup
+        if (Boolean.TRUE.equals(easyPostConfiguration.getUseWarehouseAddressAsShipFromFlag())) {
+            returnAddressMap.put("name", warehouse.getContactorFirstname() + " " + warehouse.getContactorLastname());
+            returnAddressMap.put("company", warehouse.getCompany().getName());
+            returnAddressMap.put("street1", warehouse.getAddressLine1());
+            returnAddressMap.put("street2", warehouse.getAddressLine2());
+            returnAddressMap.put("city", warehouse.getAddressCity());
+            returnAddressMap.put("state", warehouse.getAddressState());
+            returnAddressMap.put("country", warehouse.getAddressCountry());
+            returnAddressMap.put("zip", warehouse.getAddressPostcode());
+            returnAddressMap.put("phone", "");
+        }
+        else {
+
+            returnAddressMap.put("name", easyPostConfiguration.getReturnContactorFirstname() + " " + easyPostConfiguration.getReturnContactorLastname());
+            returnAddressMap.put("company", warehouse.getCompany().getName());
+            returnAddressMap.put("street1", easyPostConfiguration.getReturnAddressLine1());
+            returnAddressMap.put("street2", easyPostConfiguration.getReturnAddressLine2());
+            returnAddressMap.put("city", easyPostConfiguration.getReturnAddressCity());
+            returnAddressMap.put("state", easyPostConfiguration.getReturnAddressState());
+            returnAddressMap.put("country", easyPostConfiguration.getReturnAddressCountry());
+            returnAddressMap.put("zip", easyPostConfiguration.getReturnAddressPostcode());
+            returnAddressMap.put("phone", "");
+        }
+        return returnAddressMap;
+
+
+    }
     /**
      * Confirm easy post shipment with  rate
      * @return

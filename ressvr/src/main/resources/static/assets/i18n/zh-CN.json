@@ -1925,5 +1925,14 @@
   "no-easy-post-carrier-setup": "当前没有为Easy Post维护任何的承运商",
   "no-more-carrier-to-add-to-easy-port": "没有更多的可以作为Easy Post的包裹承运商了",
   "accountNumber": "Account Number",
-  "billingRequestEnabledFlag": "跟踪网站API访问"
+  "billingRequestEnabledFlag": "跟踪网站API访问",
+  "REPORT-TYPE-PARCEL_LABEL": "发货标签",
+  "REPORT-TYPE-PARCEL_REPORT": "发货文档（A4纸）",
+  "useWarehouseAddressAsShipFromFlag": "使用仓库地址作为发货地址",
+  "useWarehouseAddressAsReturnFlag": "使用仓库地址作为退货地址",
+  "ship-from-address-required": "请输入发货地址",
+  "return-address-required": "请输入退货地址",
+  "shipFromAddress": "发货地址",
+  "returnAddress": "退货地址",
+  "not-defined-by-easy-post": "没有在easy post中维护"
 }
