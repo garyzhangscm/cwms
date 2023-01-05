@@ -46,6 +46,11 @@ public class Warehouse extends AuditibleEntity<String> implements Serializable {
     @Column(name = "size")
     private Double size;
 
+    @Column(name = "contactor_firstname")
+    private String contactorFirstname;
+    @Column(name = "contactor_lastname")
+    private String contactorLastname;
+
     @Column(name = "address_country")
     private String addressCountry;
     @Column(name = "address_state")
@@ -165,5 +170,21 @@ public class Warehouse extends AuditibleEntity<String> implements Serializable {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public String getContactorFirstname() {
+        return contactorFirstname;
+    }
+
+    public void setContactorFirstname(String contactorFirstname) {
+        this.contactorFirstname = contactorFirstname;
+    }
+
+    public String getContactorLastname() {
+        return contactorLastname;
+    }
+
+    public void setContactorLastname(String contactorLastname) {
+        this.contactorLastname = contactorLastname;
     }
 }

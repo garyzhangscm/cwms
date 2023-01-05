@@ -1925,5 +1925,14 @@
   "no-easy-post-carrier-setup": "There's no Carrier Setup for EasyPost yet",
   "no-more-carrier-to-add-to-easy-port": "There's no more valid Parcel Carrier to be added to Easy Post.",
   "accountNumber": "Account Number",
-  "billingRequestEnabledFlag": "Billing Request Enabled"
+  "billingRequestEnabledFlag": "Billing Request Enabled",
+  "REPORT-TYPE-PARCEL_LABEL": "Parcel Label",
+  "REPORT-TYPE-PARCEL_REPORT": "Parcel Report(A4)",
+  "useWarehouseAddressAsShipFromFlag": "Use Warehouse Address As Ship From Address",
+  "useWarehouseAddressAsReturnFlag": "Use Warehouse Address As Return Address",
+  "ship-from-address-required": "Ship From Address is Required",
+  "return-address-required": "Return Address is Required",
+  "shipFromAddress": "Ship From Address",
+  "returnAddress": "Return Address",
+  "not-defined-by-easy-post": "Not Defined By Easy Post"
 }

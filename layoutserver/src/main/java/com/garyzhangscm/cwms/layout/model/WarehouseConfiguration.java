@@ -74,6 +74,23 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @Column(name = "billing_request_enabled")
     private Boolean billingRequestEnabledFlag;
 
+
+    // define week days
+    @Column(name = "working_on_sunday")
+    private Boolean workingOnSundayFlag;
+    @Column(name = "working_on_monday")
+    private Boolean workingOnMondayFlag;
+    @Column(name = "working_on_tuesday")
+    private Boolean workingOnTuesdayFlag;
+    @Column(name = "working_on_wednesday")
+    private Boolean workingOnWednesdayFlag;
+    @Column(name = "working_on_thursday")
+    private Boolean workingOnThursdayFlag;
+    @Column(name = "working_on_friday")
+    private Boolean workingOnFridayFlag;
+    @Column(name = "working_on_saturday")
+    private Boolean workingOnSaturdayFlag;
+
     public Long getId() {
         return id;
     }

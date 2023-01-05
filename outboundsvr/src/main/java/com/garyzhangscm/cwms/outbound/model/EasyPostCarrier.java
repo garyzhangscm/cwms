@@ -49,6 +49,17 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
     @Column(name = "account_number")
     private String accountNumber;
 
+
+    @Column(name = "report_type")
+    @Enumerated(EnumType.STRING)
+    private ReportType reportType;
+
+
+    // default printer for printing parcel label
+    @Column(name = "printer_name")
+    private String printerName;
+
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "easy_post_configuration_id")
@@ -101,5 +112,21 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
 
     public void setEasyPostConfiguration(EasyPostConfiguration easyPostConfiguration) {
         this.easyPostConfiguration = easyPostConfiguration;
+    }
+
+    public ReportType getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(ReportType reportType) {
+        this.reportType = reportType;
+    }
+
+    public String getPrinterName() {
+        return printerName;
+    }
+
+    public void setPrinterName(String printerName) {
+        this.printerName = printerName;
     }
 }

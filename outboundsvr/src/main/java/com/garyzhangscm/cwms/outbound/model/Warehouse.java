@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -32,6 +33,8 @@ public class Warehouse implements Serializable {
 
     private String size;
 
+    private String contactorFirstname;
+    private String contactorLastname;
     private String addressCountry;
     private String addressState;
     private String addressCounty;
@@ -177,5 +180,21 @@ public class Warehouse implements Serializable {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public String getContactorFirstname() {
+        return contactorFirstname;
+    }
+
+    public void setContactorFirstname(String contactorFirstname) {
+        this.contactorFirstname = contactorFirstname;
+    }
+
+    public String getContactorLastname() {
+        return contactorLastname;
+    }
+
+    public void setContactorLastname(String contactorLastname) {
+        this.contactorLastname = contactorLastname;
     }
 }
