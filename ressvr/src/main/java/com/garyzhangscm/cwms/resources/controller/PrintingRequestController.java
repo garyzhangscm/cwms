@@ -33,10 +33,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -65,9 +63,9 @@ public class PrintingRequestController {
     public PrintingRequest generatePrintingRequestByReportHistory(
             Long warehouseId, Long reportHistoryId,
             String printerName, Integer copies
-    ) {
+    ) throws UnsupportedEncodingException {
         return printingRequestService.generatePrintingRequestByReportHistory(
-                warehouseId, reportHistoryId, printerName, copies);
+                warehouseId, reportHistoryId, java.net.URLDecoder.decode(printerName, StandardCharsets.UTF_8.name()), copies);
     }
 
     @RequestMapping(value="/printing-requests/by-url", method = RequestMethod.PUT)
@@ -75,9 +73,10 @@ public class PrintingRequestController {
             Long warehouseId, String url,
             String printerName, Integer copies,
             String reportType
-    ) {
+    ) throws UnsupportedEncodingException {
         return printingRequestService.generatePrintingRequestByURL(
-                warehouseId, url, printerName, copies, reportType);
+                warehouseId, java.net.URLDecoder.decode(url, StandardCharsets.UTF_8.name()),
+                java.net.URLDecoder.decode(printerName, StandardCharsets.UTF_8.name()), copies, reportType);
     }
 
     @RequestMapping(value="/printing-requests/{id}/processed", method = RequestMethod.POST)
