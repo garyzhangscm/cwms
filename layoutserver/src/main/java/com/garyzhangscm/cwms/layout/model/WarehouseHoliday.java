@@ -31,6 +31,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "warehouse_holiday")
@@ -46,14 +47,17 @@ public class WarehouseHoliday extends AuditibleEntity<String> implements Seriali
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
+    @Column(name = "description")
+    private String description;
+
 
     // whether this warehouse is serving as
     // 3pl warehouse
     @Column(name = "holiday_date")
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate holidayDate;
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime holidayDate;
 
     public Long getId() {
         return id;
@@ -71,11 +75,19 @@ public class WarehouseHoliday extends AuditibleEntity<String> implements Seriali
         this.warehouse = warehouse;
     }
 
-    public LocalDate getHolidayDate() {
+    public LocalDateTime getHolidayDate() {
         return holidayDate;
     }
 
-    public void setHolidayDate(LocalDate holidayDate) {
+    public void setHolidayDate(LocalDateTime holidayDate) {
         this.holidayDate = holidayDate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
