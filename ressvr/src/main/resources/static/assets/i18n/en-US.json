@@ -1934,5 +1934,21 @@
   "return-address-required": "Return Address is Required",
   "shipFromAddress": "Ship From Address",
   "returnAddress": "Return Address",
-  "not-defined-by-easy-post": "Not Defined By Easy Post"
+  "not-defined-by-easy-post": "Not Defined By Easy Post",
+  "weekDays": "Week Days",
+  "specify-working-days": "Please Specify When the Warehouse Team is Working",
+  "Sunday": "Sunday",
+  "Monday": "Monday",
+  "Tuesday": "Tuesday",
+  "Wednesday": "Wednesday",
+  "Thursday": "Thursday",
+  "Friday": "Friday",
+  "Saturday": "Saturday",
+  "clear-local-cache": "Clear Local Cache",
+  "local-cache-cleared": "Local Cache Cleared!",
+  "holiday": "Holiday",
+  "specify-holiday": "Please Specify the Holidays that When the Warehouse will be Closed!",
+  "no-holiday-setup-for-the-year": "No Holiday Setup for The Year",
+  "select-a-date-to-add-as-holiday": "Select a Date to Add As Holiday",
+  "type-in-description-for-holiday": "Type in Description for The Holiday"
 }

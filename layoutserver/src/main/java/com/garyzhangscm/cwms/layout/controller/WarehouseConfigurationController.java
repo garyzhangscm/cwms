@@ -31,8 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -77,6 +79,33 @@ public class WarehouseConfigurationController {
         return warehouseConfigurationService.changeWarehouseConfiguration(companyId, warehouseConfiguration);
     }
 
+
+    /**
+     * Check if a specific date is a working day for the warehouse
+     * if date is not passed, then check if today is a working day
+     * @param warehouseId
+     * @param date
+     * @return
+     * @throws JsonProcessingException
+     */
+    @RequestMapping(value="/warehouse-configuration/is-working-day", method=RequestMethod.GET)
+    public Boolean isWorkingDay(@RequestParam Long warehouseId,
+                             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) throws JsonProcessingException {
+        return warehouseConfigurationService.isWorkingDay(warehouseId, date);
+    }
+
+    /**
+     * Get the next working day for the warehouse
+     *
+     * @param warehouseId
+     * @param includingToday
+     * @return
+     */
+    @RequestMapping(value="/warehouse-configuration/next-working-day", method=RequestMethod.GET)
+    public LocalDate getNextWorkingDay(@RequestParam Long warehouseId,
+                                @RequestParam(name = "includingToday", required = false, defaultValue = "") Boolean includingToday)  {
+        return warehouseConfigurationService.getNextWorkingDay(warehouseId, includingToday);
+    }
 
 
 

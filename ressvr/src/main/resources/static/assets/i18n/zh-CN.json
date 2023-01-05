@@ -1934,5 +1934,21 @@
   "return-address-required": "请输入退货地址",
   "shipFromAddress": "发货地址",
   "returnAddress": "退货地址",
-  "not-defined-by-easy-post": "没有在easy post中维护"
+  "not-defined-by-easy-post": "没有在easy post中维护",
+  "weekDays": "工作日",
+  "specify-working-days": "请输入仓库员工的工作时间",
+  "Sunday": "周日",
+  "Monday": "周一",
+  "Tuesday": "周二",
+  "Wednesday": "周三",
+  "Thursday": "周四",
+  "Friday": "周五",
+  "Saturday": "周六",
+  "clear-local-cache": "清除本地缓存",
+  "local-cache-cleared": "本地缓存以及清空",
+  "holiday": "节假日",
+  "specify-holiday": "请输入仓库员工不上班的节假日",
+  "no-holiday-setup-for-the-year": "还没有为当前年份设置节假日",
+  "select-a-date-to-add-as-holiday": "请为节假日选择一个日期",
+  "type-in-description-for-holiday": "请为节假日输入描述"
 }

@@ -178,4 +178,60 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     public void setBillingRequestEnabledFlag(Boolean billingRequestEnabledFlag) {
         this.billingRequestEnabledFlag = billingRequestEnabledFlag;
     }
+
+    public Boolean getWorkingOnSundayFlag() {
+        return workingOnSundayFlag;
+    }
+
+    public void setWorkingOnSundayFlag(Boolean workingOnSundayFlag) {
+        this.workingOnSundayFlag = workingOnSundayFlag;
+    }
+
+    public Boolean getWorkingOnMondayFlag() {
+        return workingOnMondayFlag;
+    }
+
+    public void setWorkingOnMondayFlag(Boolean workingOnMondayFlag) {
+        this.workingOnMondayFlag = workingOnMondayFlag;
+    }
+
+    public Boolean getWorkingOnTuesdayFlag() {
+        return workingOnTuesdayFlag;
+    }
+
+    public void setWorkingOnTuesdayFlag(Boolean workingOnTuesdayFlag) {
+        this.workingOnTuesdayFlag = workingOnTuesdayFlag;
+    }
+
+    public Boolean getWorkingOnWednesdayFlag() {
+        return workingOnWednesdayFlag;
+    }
+
+    public void setWorkingOnWednesdayFlag(Boolean workingOnWednesdayFlag) {
+        this.workingOnWednesdayFlag = workingOnWednesdayFlag;
+    }
+
+    public Boolean getWorkingOnThursdayFlag() {
+        return workingOnThursdayFlag;
+    }
+
+    public void setWorkingOnThursdayFlag(Boolean workingOnThursdayFlag) {
+        this.workingOnThursdayFlag = workingOnThursdayFlag;
+    }
+
+    public Boolean getWorkingOnFridayFlag() {
+        return workingOnFridayFlag;
+    }
+
+    public void setWorkingOnFridayFlag(Boolean workingOnFridayFlag) {
+        this.workingOnFridayFlag = workingOnFridayFlag;
+    }
+
+    public Boolean getWorkingOnSaturdayFlag() {
+        return workingOnSaturdayFlag;
+    }
+
+    public void setWorkingOnSaturdayFlag(Boolean workingOnSaturdayFlag) {
+        this.workingOnSaturdayFlag = workingOnSaturdayFlag;
+    }
 }
