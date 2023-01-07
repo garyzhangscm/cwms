@@ -26,6 +26,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 
 @Entity
@@ -103,7 +105,7 @@ public class DBBasedReceiptLine extends AuditibleEntity<String> implements Seria
 
 
         setStatus(IntegrationStatus.PENDING);
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
     }
     @Override
     public String toString() {

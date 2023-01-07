@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,7 @@ public class InventorySummary implements Serializable {
     private InventoryStatus inventoryStatus;
 
 
-    private LocalDateTime fifoDate;
+    private ZonedDateTime fifoDate;
 
     // map of inventory.
     // key: LPN
@@ -68,7 +69,7 @@ public class InventorySummary implements Serializable {
         addInventory(inventory);
     }
 
-    public void resetFIFODate(LocalDateTime newFifoDate) {
+    public void resetFIFODate(ZonedDateTime newFifoDate) {
         // reset the FIFO date is the new fifo date is older
         // than the inventory summary.
         // we will make sure there's only one FIFO date for the
@@ -172,11 +173,11 @@ public class InventorySummary implements Serializable {
         this.virtual = virtual;
     }
 
-    public LocalDateTime getFifoDate() {
+    public ZonedDateTime getFifoDate() {
         return fifoDate;
     }
 
-    public void setFifoDate(LocalDateTime fifoDate) {
+    public void setFifoDate(ZonedDateTime fifoDate) {
         this.fifoDate = fifoDate;
     }
 

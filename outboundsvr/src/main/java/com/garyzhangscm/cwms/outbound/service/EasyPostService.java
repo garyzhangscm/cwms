@@ -2,17 +2,16 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.easypost.exception.EasyPostException;
 import com.easypost.exception.General.MissingParameterError;
-import com.easypost.exception.General.SignatureVerificationError;
-import com.easypost.http.Constant;
 import com.easypost.model.Event;
+import com.easypost.model.Pickup;
 import com.easypost.model.Rate;
 import com.easypost.model.Shipment;
 import com.easypost.service.EasyPostClient;
-import com.easypost.utils.Cryptography;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.exception.ShippingException;
+import com.garyzhangscm.cwms.outbound.model.EasyPostCarrier;
 import com.garyzhangscm.cwms.outbound.model.EasyPostConfiguration;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.Warehouse;
@@ -20,16 +19,13 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /*
@@ -281,10 +277,83 @@ public class EasyPostService {
         Order order = orderService.findById(orderId);
         parcelPackageService.addParcelPackage(warehouseId, order, boughtShipment);
 
+        // let's schedule a pickup if configured
+
+        EasyPostConfiguration easyPostConfiguration = easyPostConfigurationService.findByWarehouseId(warehouseId, true);
+
+        Optional<EasyPostCarrier> easyPostCarrierOptional = easyPostConfiguration.getCarriers().stream().filter(
+                existingEasyPostCarrier -> boughtShipment.getSelectedRate().getCarrier().equalsIgnoreCase(existingEasyPostCarrier.getCarrier().getName())
+        ).findFirst();
+
+        if (easyPostCarrierOptional.isPresent() && Boolean.TRUE.equals(easyPostCarrierOptional.get().getSchedulePickupAfterManifestFlag())) {
+            // OK, we found the right carrier that ship the parcel
+            // let's check if we will need to schedule a pickup time with the carrier for this parcel
+            schedulePickUp(easyPostConfiguration, boughtShipment, easyPostCarrierOptional.get());
+        }
 
         // logger.debug("bought shipment \n {}", boughtShipment);
         return boughtShipment;
     }
+
+    private void schedulePickUp(EasyPostConfiguration easyPostConfiguration,
+                                Shipment shipment,
+                                EasyPostCarrier easyPostCarrier) throws EasyPostException {
+        Pickup pickup = createPickupRequest(easyPostConfiguration, shipment, easyPostCarrier);
+
+        logger.debug("pickup created ! \n {}", pickup);
+
+
+    }
+    private Pickup createPickupRequest(EasyPostConfiguration easyPostConfiguration,
+                                       Shipment shipment,
+                                       EasyPostCarrier easyPostCarrier) throws EasyPostException {
+
+        // make sure the carrier has everything configured for pickup
+        if (Objects.isNull(easyPostCarrier.getMaxPickupTime()) || Objects.isNull(easyPostCarrier.getMinPickupTime())) {
+            throw ShippingException.raiseException("the pickup time window is not setup correctly for the carrier" +
+                    (Objects.nonNull(easyPostCarrier.getCarrier()) ? easyPostCarrier.getCarrier().getName() : ""));
+        }
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(easyPostConfiguration.getWarehouseId());
+
+        // user ship from address as pickup address
+        Map<String, Object> pickupAddressMap = getShipFromAddress(easyPostConfiguration, warehouse);
+
+
+        HashMap<String, Object> shipmentMap = new HashMap<>();
+        shipmentMap.put("id", shipment.getId());
+
+        Map<String, Object> pickupMap = new HashMap<>();
+        pickupMap.put("address", pickupAddressMap);
+        pickupMap.put("shipment", shipmentMap);
+        pickupMap.put("reference", "shipment:" + shipment.getId());
+
+        // see if we still have time to pickup today for this package
+
+        boolean includingToday = false;
+        if (easyPostCarrier.getMinPickupTime().isAfter(LocalTime.now())) {
+            // the min pickup time is after now, which means we still have time
+            // to prepare the package and pickup today.
+            includingToday = true;
+        }
+        LocalDate nextWorkingDay = warehouseLayoutServiceRestemplateClient.getNextWorkingDay(
+                easyPostConfiguration.getWarehouseId(), includingToday
+        );
+        if (Objects.isNull(nextWorkingDay)) {
+            throw ShippingException.raiseException("Can't get the next working day. Fail to generate pickup request");
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        pickupMap.put("min_datetime", LocalDateTime.of(nextWorkingDay,easyPostCarrier.getMinPickupTime()).format(formatter));
+        pickupMap.put("max_datetime", LocalDateTime.of(nextWorkingDay,easyPostCarrier.getMaxPickupTime()).format(formatter));
+        pickupMap.put("is_account_address", false);
+        // pickupMap.put("instructions", "Special pickup instructions");
+
+        logger.debug("start to schedule a pickup request with data \n {}", pickupMap);
+
+        EasyPostClient easyPostClient = easyPostClient(getAPIKey(easyPostConfiguration.getWarehouseId()));
+        return easyPostClient.pickup.create(pickupMap);
+    }
+
     public Event validateWebhook(Long warehouseId, byte[] eventBody, Map<String, Object> headers) throws EasyPostException {
         return easyPostClient(getAPIKey(warehouseId)).webhook.validateWebhook(eventBody, headers, getWebhookSecret(warehouseId));
     }

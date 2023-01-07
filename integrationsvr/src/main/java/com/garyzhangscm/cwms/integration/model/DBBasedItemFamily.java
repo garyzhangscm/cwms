@@ -30,6 +30,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Entity
@@ -117,7 +119,7 @@ public class DBBasedItemFamily extends AuditibleEntity<String> implements Serial
         ObjectCopyUtil.copyValue(itemFamily,this,  fieldNames);
 
         setStatus(IntegrationStatus.PENDING);
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
     }
 
     public void completeIntegration(IntegrationStatus integrationStatus) {
@@ -126,7 +128,7 @@ public class DBBasedItemFamily extends AuditibleEntity<String> implements Serial
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastModifiedTime(LocalDateTime.now());
+        setLastModifiedTime(ZonedDateTime.now(ZoneId.of("UTC")));
     }
 
     @Override

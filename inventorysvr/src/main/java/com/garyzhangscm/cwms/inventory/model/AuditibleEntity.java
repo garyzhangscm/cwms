@@ -54,7 +54,6 @@ public class AuditibleEntity<U> {
         return null;
     }
 
-
     public LocalDateTime getCreatedTime() {
         return createdTime;
     }

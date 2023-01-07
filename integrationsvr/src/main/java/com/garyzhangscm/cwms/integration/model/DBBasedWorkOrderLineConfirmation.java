@@ -27,6 +27,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "integration_work_order_line_confirmation")
@@ -106,7 +108,7 @@ public class DBBasedWorkOrderLineConfirmation extends AuditibleEntity<String> im
         setInventoryStatusId(workOrderLineConfirmation.getInventoryStatusId());
         setInventoryStatusName(workOrderLineConfirmation.getInventoryStatusName());
 
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
         setStatus(IntegrationStatus.PENDING);
     }
 

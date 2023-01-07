@@ -16,6 +16,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -127,7 +129,8 @@ public class DBBasedTrailerAppointment extends AuditibleEntity<String> implement
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastModifiedTime(LocalDateTime.now());
+
+        setLastModifiedTime(ZonedDateTime.now(ZoneId.of("UTC")));
         // Complete related integration
         getStops().forEach(dbBasedStop -> dbBasedStop.completeIntegration(integrationStatus, errorMessage));
 

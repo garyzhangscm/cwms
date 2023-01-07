@@ -26,6 +26,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -117,7 +119,7 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
         setAllowUnexpectedItem(receiptConfirmation.getAllowUnexpectedItem());
 
 
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
         setStatus(IntegrationStatus.PENDING);
 
     }

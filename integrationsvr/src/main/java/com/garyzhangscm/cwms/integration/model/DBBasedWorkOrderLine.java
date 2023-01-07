@@ -28,6 +28,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "integration_work_order_line")
@@ -113,7 +115,7 @@ public class DBBasedWorkOrderLine extends AuditibleEntity<String> implements Ser
 
 
         setStatus(IntegrationStatus.PENDING);
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
     }
 
 

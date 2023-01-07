@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Entity
@@ -139,7 +141,7 @@ public class DBBasedShipmentLine extends AuditibleEntity<String> implements Seri
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastModifiedTime(LocalDateTime.now());
+        setLastModifiedTime(ZonedDateTime.now(ZoneId.of("UTC")));
 
     }
 

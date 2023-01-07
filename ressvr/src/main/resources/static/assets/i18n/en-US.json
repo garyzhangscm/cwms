@@ -1950,5 +1950,13 @@
   "specify-holiday": "Please Specify the Holidays that When the Warehouse will be Closed!",
   "no-holiday-setup-for-the-year": "No Holiday Setup for The Year",
   "select-a-date-to-add-as-holiday": "Select a Date to Add As Holiday",
-  "type-in-description-for-holiday": "Type in Description for The Holiday"
+  "type-in-description-for-holiday": "Type in Description for The Holiday",
+  "parcel-shipment-saved-no-printer-config": "Parcel Shipment is Created but FAIL to Print Parcel Label. No Printer is Configured",
+  "parcel-shipment-saved-parcel-label-printed": "Parcel Shipment is Created and Parcel Label is Printed",
+  "parcel-shipment-created": "Parcel Shipment is Created",
+  "printParcelLabelAfterManifest": "Print Parcel Label After Manifest",
+  "labelCopyCount": "Label Count",
+  "schedulePickupAfterManifest": "Schedule Pickup After Manifest",
+  "minPickupTime": "Min PickUp Time",
+  "maxPickupTime": "Max PickUp Time"
 }

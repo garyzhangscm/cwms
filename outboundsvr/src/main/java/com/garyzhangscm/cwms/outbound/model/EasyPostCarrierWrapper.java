@@ -18,95 +18,52 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 
-@Entity
-@Table(name = "easy_post_carrier")
-public class EasyPostCarrier extends AuditibleEntity<String> implements Serializable {
+public class EasyPostCarrierWrapper extends AuditibleEntity<String> implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "easy_post_carrier_id")
-    @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "warehouse_id")
     private Long warehouseId;
 
 
-    @Column(name = "carrier_id")
     private Long carrierId;
 
-    @Transient
-    private Carrier carrier;
 
-    @Column(name = "account_number")
     private String accountNumber;
 
 
-    @Column(name = "report_type")
-    @Enumerated(EnumType.STRING)
     private ReportType reportType;
 
 
-    // default printer for printing parcel label
-    @Column(name = "printer_name")
     private String printerName;
 
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "easy_post_configuration_id")
-    private EasyPostConfiguration easyPostConfiguration;
 
 
-    @Column(name = "print_parcel_label_after_manifest")
     private Boolean printParcelLabelAfterManifestFlag = true;
 
-    @Column(name = "label_copy_count")
     private Integer labelCopyCount;
 
-    @Column(name = "schedule_pickup_after_manifest")
     private Boolean schedulePickupAfterManifestFlag = true;
 
-    @Column(name = "min_pickup_time")
-    private LocalTime minPickupTime;
-    @Column(name = "max_pickup_time")
-    private LocalTime maxPickupTime;
+    // The 2 pickup time will be in the string with the format
+    // of HHmm.
+    private String minPickupTime;
 
-    public EasyPostCarrier() {
+    private String maxPickupTime;
 
-    }
-
-    public EasyPostCarrier(EasyPostCarrierWrapper easyPostCarrierWrapper) {
-        setId(easyPostCarrierWrapper.getId());
-        setWarehouseId(easyPostCarrierWrapper.getWarehouseId());
-        setCarrierId(easyPostCarrierWrapper.getCarrierId());
-        setAccountNumber(easyPostCarrierWrapper.getAccountNumber());
-        setReportType(easyPostCarrierWrapper.getReportType());
-        setPrinterName(easyPostCarrierWrapper.getPrinterName());
-        setPrintParcelLabelAfterManifestFlag(easyPostCarrierWrapper.getPrintParcelLabelAfterManifestFlag());
-        setLabelCopyCount(easyPostCarrierWrapper.getLabelCopyCount());
-        setSchedulePickupAfterManifestFlag(easyPostCarrierWrapper.getSchedulePickupAfterManifestFlag());
-        // convert the localdate time to local time
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH);
-        if (Objects.nonNull(easyPostCarrierWrapper.getMinPickupTime())) {
-            setMinPickupTime(LocalTime.parse(easyPostCarrierWrapper.getMinPickupTime(), formatter));
-        }
-        if (Objects.nonNull(easyPostCarrierWrapper.getMaxPickupTime())) {
-            setMaxPickupTime(LocalTime.parse(easyPostCarrierWrapper.getMaxPickupTime(), formatter));
-        }
-    }
 
     public Long getId() {
         return id;
@@ -132,14 +89,6 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
         this.carrierId = carrierId;
     }
 
-    public Carrier getCarrier() {
-        return carrier;
-    }
-
-    public void setCarrier(Carrier carrier) {
-        this.carrier = carrier;
-    }
-
     public String getAccountNumber() {
         return accountNumber;
     }
@@ -148,13 +97,6 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
         this.accountNumber = accountNumber;
     }
 
-    public EasyPostConfiguration getEasyPostConfiguration() {
-        return easyPostConfiguration;
-    }
-
-    public void setEasyPostConfiguration(EasyPostConfiguration easyPostConfiguration) {
-        this.easyPostConfiguration = easyPostConfiguration;
-    }
 
     public ReportType getReportType() {
         return reportType;
@@ -196,19 +138,19 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
         this.labelCopyCount = labelCopyCount;
     }
 
-    public LocalTime getMinPickupTime() {
+    public String getMinPickupTime() {
         return minPickupTime;
     }
 
-    public void setMinPickupTime(LocalTime minPickupTime) {
+    public void setMinPickupTime(String minPickupTime) {
         this.minPickupTime = minPickupTime;
     }
 
-    public LocalTime getMaxPickupTime() {
+    public String getMaxPickupTime() {
         return maxPickupTime;
     }
 
-    public void setMaxPickupTime(LocalTime maxPickupTime) {
+    public void setMaxPickupTime(String maxPickupTime) {
         this.maxPickupTime = maxPickupTime;
     }
 }

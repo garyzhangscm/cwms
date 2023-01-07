@@ -39,6 +39,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -615,6 +616,26 @@ public class WarehouseLayoutServiceRestemplateClient {
                 HttpMethod.POST,
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
+    public LocalDate getNextWorkingDay(Long warehouseId, boolean includingToday) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouse-configuration/next-working-day")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("includingToday", includingToday);
+
+        ResponseBodyWrapper<LocalDate> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<LocalDate>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }
