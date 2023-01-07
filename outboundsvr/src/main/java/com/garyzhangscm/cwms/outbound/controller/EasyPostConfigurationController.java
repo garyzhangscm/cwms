@@ -62,21 +62,36 @@ public class EasyPostConfigurationController {
         return easyPostConfigurationService.changeConfiguration(easyPostConfiguration);
     }
 
+    /**
+     * Add a new carrier, as the client can only pass in date time instead of date or time, we have
+     * to use a wrapper to accept the date time fileds and convert to date or time accordingly
+     * @param id
+     * @param warehouseId
+     * @param easyPostCarrierWrapper
+     * @return
+     */
     @BillableEndpoint
     @RequestMapping(value="/easy-post-configuration/{id}/carriers", method = RequestMethod.PUT)
     public EasyPostCarrier addCarrier(@PathVariable Long id,
                                       @RequestParam Long warehouseId,
-                                       @RequestBody EasyPostCarrier easyPostCarrier){
-        return easyPostConfigurationService.addCarrier(id, easyPostCarrier);
+                                       @RequestBody EasyPostCarrierWrapper easyPostCarrierWrapper){
+        return easyPostConfigurationService.addCarrier(id, new EasyPostCarrier(easyPostCarrierWrapper));
     }
 
+    /**
+     * Add a new carrier, as the client can only pass in date time instead of date or time, we have
+     * to use a wrapper to accept the date time fileds and convert to date or time accordingly
+     * @param id
+     * @param warehouseId
+     * @return
+     */
     @BillableEndpoint
     @RequestMapping(value="/easy-post-configuration/{id}/carriers/{carrierId}", method = RequestMethod.POST)
     public EasyPostCarrier changeCarrier(@PathVariable Long id,
                                          @PathVariable Long carrierId,
                                          @RequestParam Long warehouseId,
-                                         @RequestBody EasyPostCarrier easyPostCarrier){
-        return easyPostConfigurationService.addCarrier(id, easyPostCarrier);
+                                         @RequestBody EasyPostCarrierWrapper easyPostCarrierWrapper){
+        return easyPostConfigurationService.addCarrier(id, new EasyPostCarrier(easyPostCarrierWrapper));
     }
 
     @BillableEndpoint

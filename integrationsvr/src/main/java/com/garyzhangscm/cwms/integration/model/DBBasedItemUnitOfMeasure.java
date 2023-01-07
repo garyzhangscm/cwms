@@ -36,6 +36,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Entity
@@ -220,7 +222,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
         ObjectCopyUtil.copyValue(  itemUnitOfMeasure, this,  fieldNames);
 
         setStatus(IntegrationStatus.PENDING);
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
 
     }
 
@@ -256,7 +258,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastModifiedTime(LocalDateTime.now());
+        setLastModifiedTime(ZonedDateTime.now(ZoneId.of("UTC")));
     }
     public Long getId() {
         return id;

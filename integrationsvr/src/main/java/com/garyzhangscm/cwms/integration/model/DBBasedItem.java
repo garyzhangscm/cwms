@@ -37,6 +37,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -222,7 +224,7 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
         });
 
         setStatus(IntegrationStatus.PENDING);
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
 
     }
 
@@ -263,7 +265,7 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
     public void completeIntegration(IntegrationStatus integrationStatus, String errorMessage) {
         setStatus(integrationStatus);
         setErrorMessage(errorMessage);
-        setLastModifiedTime(LocalDateTime.now());
+        setLastModifiedTime(ZonedDateTime.now(ZoneId.of("UTC")));
         // Complete related integration
         if (Objects.nonNull(itemFamily)) {
             itemFamily.completeIntegration(integrationStatus, errorMessage);

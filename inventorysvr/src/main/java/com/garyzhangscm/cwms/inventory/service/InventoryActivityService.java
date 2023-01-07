@@ -42,6 +42,8 @@ import javax.servlet.http.HttpSession;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -308,7 +310,7 @@ public class InventoryActivityService{
     }
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
-                                      LocalDateTime activityDateTime, String username,
+                                      ZonedDateTime activityDateTime, String username,
                                       String valueType, String fromValue, String toValue,
                                       String documentNumber, String comment) {
         logger.debug("Start to construct the inventory activities");
@@ -329,21 +331,21 @@ public class InventoryActivityService{
     }
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType) {
         logInventoryActivitiy(inventory, inventoryActivityType,
-                LocalDateTime.now(), userService.getCurrentUserName(),
+                ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
                 "", "", "", "", "");
     }
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
                                       String valueType, String fromValue, String toValue, String documentNumber) {
         logInventoryActivitiy(inventory, inventoryActivityType,
-                LocalDateTime.now(), userService.getCurrentUserName(),
+                ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
                 valueType, fromValue, toValue, documentNumber, "");
     }
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
                                       String valueType, String fromValue, String toValue) {
         logInventoryActivitiy(inventory, inventoryActivityType,
-                LocalDateTime.now(), userService.getCurrentUserName(),
+                ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
                 valueType, fromValue, toValue, "", "");
     }
 
@@ -352,7 +354,7 @@ public class InventoryActivityService{
                                        String valueType, String fromValue, String toValue,
                                       String documentNumber, String comment) {
         logInventoryActivitiy(inventory, inventoryActivityType,
-                LocalDateTime.now(), userService.getCurrentUserName(),
+                ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
                 valueType, fromValue, toValue, documentNumber, comment);
     }
 

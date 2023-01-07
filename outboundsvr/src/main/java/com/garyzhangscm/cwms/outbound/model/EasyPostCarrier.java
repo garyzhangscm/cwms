@@ -23,8 +23,12 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 @Entity
 @Table(name = "easy_post_carrier")
@@ -65,6 +69,44 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
     @JoinColumn(name = "easy_post_configuration_id")
     private EasyPostConfiguration easyPostConfiguration;
 
+
+    @Column(name = "print_parcel_label_after_manifest")
+    private Boolean printParcelLabelAfterManifestFlag = true;
+
+    @Column(name = "label_copy_count")
+    private Integer labelCopyCount;
+
+    @Column(name = "schedule_pickup_after_manifest")
+    private Boolean schedulePickupAfterManifestFlag = true;
+
+    @Column(name = "min_pickup_time")
+    private LocalTime minPickupTime;
+    @Column(name = "max_pickup_time")
+    private LocalTime maxPickupTime;
+
+    public EasyPostCarrier() {
+
+    }
+
+    public EasyPostCarrier(EasyPostCarrierWrapper easyPostCarrierWrapper) {
+        setId(easyPostCarrierWrapper.getId());
+        setWarehouseId(easyPostCarrierWrapper.getWarehouseId());
+        setCarrierId(easyPostCarrierWrapper.getCarrierId());
+        setAccountNumber(easyPostCarrierWrapper.getAccountNumber());
+        setReportType(easyPostCarrierWrapper.getReportType());
+        setPrinterName(easyPostCarrierWrapper.getPrinterName());
+        setPrintParcelLabelAfterManifestFlag(easyPostCarrierWrapper.getPrintParcelLabelAfterManifestFlag());
+        setLabelCopyCount(easyPostCarrierWrapper.getLabelCopyCount());
+        setSchedulePickupAfterManifestFlag(easyPostCarrierWrapper.getSchedulePickupAfterManifestFlag());
+        // convert the localdate time to local time
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmm", Locale.ENGLISH);
+        if (Objects.nonNull(easyPostCarrierWrapper.getMinPickupTime())) {
+            setMinPickupTime(LocalTime.parse(easyPostCarrierWrapper.getMinPickupTime(), formatter));
+        }
+        if (Objects.nonNull(easyPostCarrierWrapper.getMaxPickupTime())) {
+            setMaxPickupTime(LocalTime.parse(easyPostCarrierWrapper.getMaxPickupTime(), formatter));
+        }
+    }
 
     public Long getId() {
         return id;
@@ -128,5 +170,45 @@ public class EasyPostCarrier extends AuditibleEntity<String> implements Serializ
 
     public void setPrinterName(String printerName) {
         this.printerName = printerName;
+    }
+
+    public Boolean getPrintParcelLabelAfterManifestFlag() {
+        return printParcelLabelAfterManifestFlag;
+    }
+
+    public void setPrintParcelLabelAfterManifestFlag(Boolean printParcelLabelAfterManifestFlag) {
+        this.printParcelLabelAfterManifestFlag = printParcelLabelAfterManifestFlag;
+    }
+
+    public Boolean getSchedulePickupAfterManifestFlag() {
+        return schedulePickupAfterManifestFlag;
+    }
+
+    public void setSchedulePickupAfterManifestFlag(Boolean schedulePickupAfterManifestFlag) {
+        this.schedulePickupAfterManifestFlag = schedulePickupAfterManifestFlag;
+    }
+
+    public Integer getLabelCopyCount() {
+        return labelCopyCount;
+    }
+
+    public void setLabelCopyCount(Integer labelCopyCount) {
+        this.labelCopyCount = labelCopyCount;
+    }
+
+    public LocalTime getMinPickupTime() {
+        return minPickupTime;
+    }
+
+    public void setMinPickupTime(LocalTime minPickupTime) {
+        this.minPickupTime = minPickupTime;
+    }
+
+    public LocalTime getMaxPickupTime() {
+        return maxPickupTime;
+    }
+
+    public void setMaxPickupTime(LocalTime maxPickupTime) {
+        this.maxPickupTime = maxPickupTime;
     }
 }

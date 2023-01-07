@@ -27,6 +27,8 @@ import org.springframework.beans.BeanUtils;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "integration_customer")
@@ -97,7 +99,7 @@ public class DBBasedCustomer extends AuditibleEntity<String> implements Serializ
 
         BeanUtils.copyProperties(customer, this);
         setStatus(IntegrationStatus.PENDING);
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
     }
 
     @Override

@@ -1950,5 +1950,13 @@
   "specify-holiday": "请输入仓库员工不上班的节假日",
   "no-holiday-setup-for-the-year": "还没有为当前年份设置节假日",
   "select-a-date-to-add-as-holiday": "请为节假日选择一个日期",
-  "type-in-description-for-holiday": "请为节假日输入描述"
+  "type-in-description-for-holiday": "请为节假日输入描述",
+  "parcel-shipment-saved-no-printer-config": "发货请求已经创建。由于打印机没有配置，系统无法打印发货标签",
+  "parcel-shipment-saved-parcel-label-printed": "发货请求已经创建， 发货标签已经打印",
+  "parcel-shipment-created": "发货请求已经创建",
+  "printParcelLabelAfterManifest": "打包后打印发货标签",
+  "labelCopyCount": "标签数量",
+  "schedulePickupAfterManifest": "打包后发送提货请求",
+  "minPickupTime": "最早提货时间",
+  "maxPickupTime": "最晚提货时间"
 }

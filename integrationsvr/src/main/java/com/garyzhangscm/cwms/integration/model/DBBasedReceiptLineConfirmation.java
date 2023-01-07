@@ -26,6 +26,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 
 @Entity
@@ -99,8 +101,8 @@ public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> impl
         setOverReceivingQuantity(receiptLineConfirmation.getOverReceivingQuantity());
         setOverReceivingPercent(receiptLineConfirmation.getOverReceivingPercent());
 
-
-        setCreatedTime(LocalDateTime.now());
+ 
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
         setStatus(IntegrationStatus.PENDING);
     }
 

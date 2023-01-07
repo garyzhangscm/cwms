@@ -27,6 +27,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "integration_order_line_confirmation")
@@ -131,7 +133,7 @@ public class DBBasedOrderLineConfirmation extends AuditibleEntity<String> implem
         setCarrierServiceLevelName(orderLineConfirmation.getCarrierServiceLevelName());
 
 
-        setCreatedTime(LocalDateTime.now());
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
         setStatus(IntegrationStatus.PENDING);
     }
 

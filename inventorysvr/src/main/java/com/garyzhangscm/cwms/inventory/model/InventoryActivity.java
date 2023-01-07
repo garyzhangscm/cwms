@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -123,7 +124,7 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
     private InventoryActivityType inventoryActivityType;
 
     @Column(name = "activity_datetime")
-    private LocalDateTime activityDateTime;
+    private ZonedDateTime activityDateTime;
 
     /**
      * User who carry out this activity
@@ -165,7 +166,7 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
     public InventoryActivity(Inventory inventory, InventoryActivityType inventoryActivityType,
                              String transactionId,
                              String transactionGroupId,
-                             LocalDateTime activityDateTime, String username,
+                             ZonedDateTime activityDateTime, String username,
                              String valueType, String fromValue, String toValue,
                              String documentNumber, String comment,
                              String rfCode) {
@@ -334,11 +335,11 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
         this.inventoryActivityType = inventoryActivityType;
     }
 
-    public LocalDateTime getActivityDateTime() {
+    public ZonedDateTime getActivityDateTime() {
         return activityDateTime;
     }
 
-    public void setActivityDateTime(LocalDateTime activityDateTime) {
+    public void setActivityDateTime(ZonedDateTime activityDateTime) {
         this.activityDateTime = activityDateTime;
     }
 
