@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -50,8 +51,10 @@ public class ReceiptController {
                                          @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
                                          @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
                                          @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList,
-                                         @RequestParam(name = "check_in_start_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkInStartTime,
-                                         @RequestParam(name = "check_in_end_time", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime checkInEndTime,
+                                         @RequestParam(name = "check_in_start_time", required = false, defaultValue = "")
+                                             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime checkInStartTime,
+                                         @RequestParam(name = "check_in_end_time", required = false, defaultValue = "")
+                                             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime checkInEndTime,
                                          @RequestParam(name = "check_in_date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
                                          @RequestParam(name = "purchaseOrderId", required = false, defaultValue = "") Long purchaseOrderId,
                                          @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {

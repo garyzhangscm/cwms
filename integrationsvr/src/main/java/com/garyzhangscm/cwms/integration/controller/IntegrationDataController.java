@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 
@@ -50,8 +51,10 @@ public class IntegrationDataController {
     @RequestMapping(value="/clients", method = RequestMethod.GET)
     public List<? extends IntegrationClientData> getIntegrationClientData(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "")
+              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "")
+              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "") Long id) {
@@ -86,8 +89,8 @@ public class IntegrationDataController {
     @RequestMapping(value="/customers", method = RequestMethod.GET)
     public List<? extends IntegrationCustomerData> getIntegrationCustomerData(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")  Long id) {
@@ -120,8 +123,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationItemData> getIntegrationItemData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")  Long id) {
@@ -155,8 +158,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationItemFamilyData> getIntegrationItemFamilyData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")  Long id) {
@@ -189,8 +192,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationItemPackageTypeData> getIntegrationItemPackageTypeData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")   String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
@@ -222,8 +225,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationItemUnitOfMeasureData> getIntegrationItemUnitOfMeasureData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
@@ -256,8 +259,8 @@ public class IntegrationDataController {
     @RequestMapping(value="/suppliers", method = RequestMethod.GET)
     public List<? extends IntegrationSupplierData> getIntegrationSupplierData(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
@@ -302,8 +305,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationOrderData> getIntegrationOrderData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")   String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
@@ -343,8 +346,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationReceiptData> getIntegrationReceiptData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
@@ -388,8 +391,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationPurchaseOrderData> getIntegrationPurchaseOrderData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")  String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
@@ -434,8 +437,8 @@ public class IntegrationDataController {
             @RequestParam(name = "warehouseName", required = false, defaultValue = "") String warehouseName,
             @RequestParam(name = "number", required = false, defaultValue = "") String number,
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")   String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")  Long id) {
@@ -462,8 +465,8 @@ public class IntegrationDataController {
     public List<? extends IntegrationWorkOrderData> getIntegrationWorkOrderData(
             @RequestParam String companyCode,
             @RequestParam(name = "warehouseId", required = false, defaultValue = "")  Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")   String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
@@ -537,8 +540,8 @@ public class IntegrationDataController {
     @RequestMapping(value="/work-order-confirmations", method = RequestMethod.GET)
     public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "warehouseName", required = false, defaultValue = "") String warehouseName,
             @RequestParam(name = "number", required = false, defaultValue = "") String number,
@@ -565,8 +568,8 @@ public class IntegrationDataController {
     @RequestMapping(value="/receipt-confirmations", method = RequestMethod.GET)
     public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "warehouseName", required = false, defaultValue = "") String warehouseName,
             @RequestParam(name = "number", required = false, defaultValue = "") String number,
@@ -602,8 +605,8 @@ public class IntegrationDataController {
     @RequestMapping(value="/inventory-adjustment-confirmations", method = RequestMethod.GET)
     public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")   String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")  Long id
@@ -631,8 +634,8 @@ public class IntegrationDataController {
     @RequestMapping(value="/inventory-attribute-change-confirmations", method = RequestMethod.GET)
     public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")   String statusList,
             @RequestParam(name = "id", required = false, defaultValue = "")  Long id) {

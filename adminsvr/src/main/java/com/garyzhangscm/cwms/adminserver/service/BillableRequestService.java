@@ -38,6 +38,8 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -70,8 +72,8 @@ public class BillableRequestService {
 
     public List<BillableRequest> findAll(Long companyId,
                                          Long warehouseId,
-                                         LocalDateTime startTime,
-                                         LocalDateTime endTime,
+                                         ZonedDateTime startTime,
+                                         ZonedDateTime endTime,
                                          LocalDate date
     ) {
 
@@ -87,8 +89,8 @@ public class BillableRequestService {
 
     public List<BillableRequest> findAll(Long companyId,
                                          Long warehouseId,
-                                         LocalDateTime startTime,
-                                         LocalDateTime endTime,
+                                         ZonedDateTime startTime,
+                                         ZonedDateTime endTime,
                                          LocalDate date,
                                          boolean loadDetails
                                          ) {
@@ -120,10 +122,10 @@ public class BillableRequestService {
                     }
 
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
+                        LocalDateTime dateEndTime = date.plusDays(1).atStartOfDay().minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
 
@@ -169,8 +171,8 @@ public class BillableRequestService {
     }
 
     public Collection<BillableRequestSummaryByCompany> getBillableRequestSummaryByCompany(Long companyId,
-                                                                                   LocalDateTime startTime,
-                                                                                   LocalDateTime endTime,
+                                                                                          ZonedDateTime startTime,
+                                                                                          ZonedDateTime endTime,
                                                                                           LocalDate date) {
         List<BillableRequest> billableRequests = findAll(companyId, null, startTime, endTime, date);
 

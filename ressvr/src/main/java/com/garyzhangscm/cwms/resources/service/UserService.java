@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -623,8 +624,8 @@ public class UserService  implements TestDataInitiableService{
         }
 
         User newUser = existingUser.copy(username, firstname, lastname);
-        newUser.setCreatedTime(LocalDateTime.now());
-        newUser.setLastModifiedTime(LocalDateTime.now());
+        newUser.setCreatedTime(LocalDateTime.now().atZone(ZoneId.of("UTC")));
+        newUser.setLastModifiedTime(LocalDateTime.now().atZone(ZoneId.of("UTC")));
 
         return addUser(newUser);
 

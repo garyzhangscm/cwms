@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,14 +97,14 @@ public class WorkOrderProduceTransactionService  {
 
     public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber,
                                                      Long productionLineId, boolean genericQuery,
-                                                     LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+                                                     ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date) {
         return findAll(warehouseId, workOrderNumber, productionLineId, genericQuery,
                 startTime, endTime, date, true);
     }
     public List<WorkOrderProduceTransaction> findAll(Long warehouseId, String workOrderNumber,
                                                      Long productionLineId,
                                                      boolean genericQuery,
-                                                     LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+                                                     ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
                                                      boolean loadDetails) {
 
         List<WorkOrderProduceTransaction> workOrderProduceTransactions
@@ -148,10 +150,10 @@ public class WorkOrderProduceTransactionService  {
                     }
                     logger.debug(">> Date is passed in {}", date);
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
+                        LocalDateTime dateEndTime = date.atStartOfDay().plusDays(1).minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
 

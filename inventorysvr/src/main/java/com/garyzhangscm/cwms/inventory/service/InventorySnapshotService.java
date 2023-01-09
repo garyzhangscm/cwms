@@ -47,6 +47,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -511,10 +513,10 @@ public class InventorySnapshotService  {
     }
 
     public List<InventorySnapshot> getInventorySnapshot(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, int maxRecordNumber) {
 
         if (Objects.isNull(endTime)) {
-            endTime = LocalDateTime.now();
+            endTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
         }
         // by default, we will get 90 days' data
         if (Objects.isNull(startTime)) {
@@ -551,20 +553,20 @@ public class InventorySnapshotService  {
          **/
     }
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, int maxRecordNumber) {
         return getInventorySnapshotSummary(warehouseId, startTime, endTime, maxRecordNumber,
                 InventorySnapshotSummaryGroupBy.VELOCITY);
     }
 
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryByABCCategory(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, int maxRecordNumber) {
 
         return getInventorySnapshotSummary(warehouseId, startTime, endTime, maxRecordNumber,
                 InventorySnapshotSummaryGroupBy.ABCCATEGORY);
 
     }
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryQuantity(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, int maxRecordNumber) {
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, int maxRecordNumber) {
 
         return getInventorySnapshotSummary(warehouseId, startTime, endTime, maxRecordNumber,
                 InventorySnapshotSummaryGroupBy.NONE);
@@ -572,7 +574,7 @@ public class InventorySnapshotService  {
     }
 
     public List<InventorySnapshotSummary> getInventorySnapshotSummary(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime,
             int maxRecordNumber, InventorySnapshotSummaryGroupBy groupBy) {
         // result
         List<InventorySnapshotSummary> inventorySnapshotSummaries = new ArrayList<>();

@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -46,8 +47,8 @@ public class WorkOrderProduceTransactionController {
             @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber,
             @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
                                              ) {
         return workOrderProduceTransactionService.findAll(warehouseId, workOrderNumber,

@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -600,11 +602,11 @@ public class ProductionLineService implements TestDataInitiableService {
     public List<ProductionLineStatus> getProductionLineStatus(
             Long warehouseId,
             String name,
-            LocalDateTime startTime,
-            LocalDateTime endTime) {
+            ZonedDateTime startTime,
+            ZonedDateTime endTime) {
 
         if (Objects.isNull(startTime)) {
-            startTime = LocalDateTime.now().minusDays(1);
+            startTime = ZonedDateTime.now(ZoneId.of("UTC")).minusDays(1);
         }
         logger.debug("start to get production line's status for name: {}\n" +
                 "start time: {}, end time: {}",
@@ -654,8 +656,8 @@ public class ProductionLineService implements TestDataInitiableService {
             Long warehouseId,
             List<ProductionLine> productionLines,
             List<ProductionLineMonitorTransaction> productionLineMonitorTransactions,
-            LocalDateTime startTime,
-            LocalDateTime endTime) {
+            ZonedDateTime startTime,
+            ZonedDateTime endTime) {
 
         // group the result by production line
         // key: prouduction line id
@@ -697,8 +699,8 @@ public class ProductionLineService implements TestDataInitiableService {
             Long warehouseId,
             ProductionLine productionLine,
             List<ProductionLineMonitorTransaction> productionLineMonitorTransactions,
-            LocalDateTime startTime,
-            LocalDateTime endTime) {
+            ZonedDateTime startTime,
+            ZonedDateTime endTime) {
 
         if (Objects.isNull(productionLineMonitorTransactions) ||
                 productionLineMonitorTransactions.isEmpty()) {
@@ -715,7 +717,7 @@ public class ProductionLineService implements TestDataInitiableService {
                 Comparator.comparing(ProductionLineMonitorTransaction::getCreatedTime).reversed());
 
         ProductionLineMonitorTransaction lastMonitorTransaction = productionLineMonitorTransactions.get(0);
-        LocalDateTime lastCycleHappensTiming = lastMonitorTransaction.getCreatedTime();
+        ZonedDateTime lastCycleHappensTiming = lastMonitorTransaction.getCreatedTime();
         double lastCycleTime = lastMonitorTransaction.getCycleTime();
         double averageCycleTime = productionLineMonitorTransactions.stream()
                 .map(ProductionLineMonitorTransaction::getCycleTime).mapToDouble(Double::doubleValue)
@@ -730,8 +732,8 @@ public class ProductionLineService implements TestDataInitiableService {
         // If the end time is not passed in or is a future time, then in order to calculate the
         // status, we will use the current date time
         boolean active;
-        if (Objects.isNull(endTime) || endTime.isAfter(LocalDateTime.now())) {
-            active = LocalDateTime.now().minusSeconds((int)getMaxCycleTime(productionLine))
+        if (Objects.isNull(endTime) || endTime.isAfter(ZonedDateTime.now(ZoneId.of("UTC")))) {
+            active = ZonedDateTime.now(ZoneId.of("UTC")).minusSeconds((int)getMaxCycleTime(productionLine))
                     .isBefore(lastCycleHappensTiming);
         }
         else {
@@ -927,7 +929,7 @@ public class ProductionLineService implements TestDataInitiableService {
 
     public List<ProductionLineAttribute> getProducedInventoryTotalQuantity(
             Long warehouseId, String productionLineIds,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date) {
 
         List<ProductionLine> productionLines =
                 findAll(warehouseId, null, productionLineIds, false, false);
@@ -939,7 +941,7 @@ public class ProductionLineService implements TestDataInitiableService {
 
     public List<ProductionLineAttribute> getProducedInventoryTotalQuantity(
             Long warehouseId, List<ProductionLine> productionLines,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+            ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date) {
 
         // default the attribute name to produced-inventory-quantity
         String name = "produced-inventory-quantity";

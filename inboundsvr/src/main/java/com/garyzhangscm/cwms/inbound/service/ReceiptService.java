@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,8 +98,8 @@ public class ReceiptService implements TestDataInitiableService{
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
                                  Long supplierId, String supplierName,
-                                 LocalDateTime checkInStartTime,
-                                 LocalDateTime checkInEndTime,
+                                 ZonedDateTime checkInStartTime,
+                                 ZonedDateTime checkInEndTime,
                                  LocalDate checkInDate, Long purchaseOrderId) {
         return findAll(warehouseId, number, receiptStatusList, supplierId, supplierName,
                 checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, true);
@@ -105,8 +107,8 @@ public class ReceiptService implements TestDataInitiableService{
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
                                  Long supplierId, String supplierName,
-                                 LocalDateTime checkInStartTime,
-                                 LocalDateTime checkInEndTime,
+                                 ZonedDateTime checkInStartTime,
+                                 ZonedDateTime checkInEndTime,
                                  LocalDate checkInDate,
                                  Long purchaseOrderId,
                                  boolean loadDetails) {
@@ -168,10 +170,10 @@ public class ReceiptService implements TestDataInitiableService{
                     }
                     logger.debug(">> Check In Date is passed in {}", checkInDate);
                     if (Objects.nonNull(checkInDate)) {
-                        LocalDateTime dateStartTime = checkInDate.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = checkInDate.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = checkInDate.atStartOfDay();
+                        LocalDateTime dateEndTime = checkInDate.atStartOfDay().plusDays(1).minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("checkInTime"), dateStartTime, dateEndTime));
+                                root.get("checkInTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
                     if (Objects.nonNull(purchaseOrderId)) {

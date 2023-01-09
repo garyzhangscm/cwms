@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -53,8 +54,8 @@ public class OrderController {
                                      @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
                                      @RequestParam(name="customerId", required = false, defaultValue = "") Long customerId,
                                      @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
-                                     @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startCompleteTime,
-                                     @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endCompleteTime,
+                                     @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCompleteTime,
+                                     @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCompleteTime,
                                      @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate) {
         logger.debug("Start to find order by number {}", number);
         return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,  category,  customerName, customerId, loadDetails);

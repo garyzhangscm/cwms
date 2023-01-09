@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -317,11 +318,11 @@ public class ProductionLineKanbanService {
                             logger.debug("workOrderProduceTransaction.getCreatedTime(): {}",
                                     workOrderProduceTransaction.getCreatedTime());
                             logger.debug("!workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime): {}",
-                                    !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime));
+                                    !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime.atZone(ZoneId.of("UTC"))));
                             logger.debug("workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime): {}",
-                                    workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime));
-                            return !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime)
-                                    & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime);
+                                    workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime.atZone(ZoneId.of("UTC"))));
+                            return !workOrderProduceTransaction.getCreatedTime().isBefore(dayStartDateTime.atZone(ZoneId.of("UTC")))
+                                    & workOrderProduceTransaction.getCreatedTime().isBefore(dayEndDateTime.atZone(ZoneId.of("UTC")));
                         }
                 ).collect(Collectors.toList());
 

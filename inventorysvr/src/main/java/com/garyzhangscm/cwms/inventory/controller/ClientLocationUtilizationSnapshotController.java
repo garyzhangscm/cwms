@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -45,8 +46,8 @@ public class ClientLocationUtilizationSnapshotController {
             @RequestParam Long warehouseId,
             @RequestParam(name="clientName", required = false, defaultValue = "") String clientName,
             @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
-            @RequestParam(name="startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam(name="endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam(name="startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name="endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime,
             @RequestParam(name="loadDetails", required = false, defaultValue = "") Boolean loadDetails) {
         return clientLocationUtilizationSnapshotBatchService.findAll(warehouseId,
                 clientName, clientId, startTime, endTime, loadDetails);

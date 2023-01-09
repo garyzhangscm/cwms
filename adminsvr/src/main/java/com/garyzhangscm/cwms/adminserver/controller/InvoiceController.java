@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,8 +43,8 @@ public class InvoiceController {
             @RequestParam String number,
             @RequestParam(name = "referenceNumber", required = false, defaultValue = "") String referenceNumber,
             @RequestParam(name = "comment", required = false, defaultValue = "") String comment,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
             @RequestParam Long clientId
@@ -57,8 +58,8 @@ public class InvoiceController {
     @RequestMapping(value="/invoices/from-billing-request", method = RequestMethod.POST)
     public Invoice generateInvoiceFromBillingRequest(
             @RequestParam String number,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
             @RequestParam(name = "referenceNumber", required = false, defaultValue = "") String referenceNumber,

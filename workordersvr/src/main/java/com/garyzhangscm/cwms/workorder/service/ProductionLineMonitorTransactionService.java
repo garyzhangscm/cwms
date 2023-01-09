@@ -35,6 +35,8 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -63,7 +65,7 @@ public class ProductionLineMonitorTransactionService {
                                                           String productionLineMonitorName,
                                                           String productionLineName,
                                                           Long productionLineId,
-                                                          LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+                                                          ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date) {
         return productionLineMonitorTransactionRepository.findAll(
                 (Root<ProductionLineMonitorTransaction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -116,10 +118,11 @@ public class ProductionLineMonitorTransactionService {
                     }
                     logger.debug(">> Date is passed in {}", date);
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
+                        LocalDateTime dateEndTime = date.plusDays(1).atStartOfDay().minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime.atZone(ZoneId.of("UTC")),
+                                dateEndTime.atZone(ZoneId.of("UTC"))));
 
                     }
                     Predicate[] p = new Predicate[predicates.size()];
