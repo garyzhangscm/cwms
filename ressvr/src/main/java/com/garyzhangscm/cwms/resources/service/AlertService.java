@@ -36,6 +36,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -60,7 +62,7 @@ public class AlertService {
                                String type,
                                String status,
                                String keyWords,
-                               LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+                               ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date) {
 
         return alertRepository.findAll(
                 (Root<Alert> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -99,10 +101,10 @@ public class AlertService {
 
                     }
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
 

@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -110,8 +112,8 @@ public class OrderService implements TestDataInitiableService {
     public List<Order> findAll(Long warehouseId,
                                String number,
                                String status,
-                               LocalDateTime startCompleteTime,
-                               LocalDateTime endCompleteTime,
+                               ZonedDateTime startCompleteTime,
+                               ZonedDateTime endCompleteTime,
                                LocalDate specificCompleteDate,
                                String category,
                                String customerName,
@@ -157,10 +159,10 @@ public class OrderService implements TestDataInitiableService {
 
                     }
                     if (Objects.nonNull(specificCompleteDate)) {
-                        LocalDateTime dateStartTime = specificCompleteDate.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = specificCompleteDate.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = specificCompleteDate.atStartOfDay();
+                        LocalDateTime dateEndTime = specificCompleteDate.atStartOfDay().plusDays(1).minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("completeTime"), dateStartTime, dateEndTime));
+                                root.get("completeTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
                     if (Objects.nonNull(customerId)) {
@@ -194,7 +196,7 @@ public class OrderService implements TestDataInitiableService {
     }
 
     public List<Order> findAll(Long warehouseId, String number, String status,
-                               LocalDateTime startCompleteTime, LocalDateTime endCompleteTime,
+                               ZonedDateTime startCompleteTime, ZonedDateTime endCompleteTime,
                                LocalDate specificCompleteDate, String category, String customerName, Long customerId) {
         return findAll(warehouseId, number, status, startCompleteTime, endCompleteTime,
                 specificCompleteDate, category, customerName, customerId, true);

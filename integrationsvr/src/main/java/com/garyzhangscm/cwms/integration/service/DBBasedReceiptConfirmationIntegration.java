@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -63,7 +65,7 @@ public class DBBasedReceiptConfirmationIntegration {
     public List<DBBasedReceiptConfirmation> findAll(Long warehouseId, String warehouseName,
                                                     String number, Long clientId, String clientName,
                                                     Long supplierId, String supplierName,
-                                                    LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+                                                    ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
                                                     String statusList, Long id) {
 
         return dbBasedReceiptConfirmationRepository.findAll(
@@ -104,10 +106,11 @@ public class DBBasedReceiptConfirmationIntegration {
 
                     }
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
+                        LocalDateTime dateEndTime = date.atStartOfDay().plusDays(1).minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"),
+                                dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
 

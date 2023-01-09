@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -17,7 +18,7 @@ public interface Integration {
     // Integration - Client
     //
     List<? extends IntegrationClientData> getClientData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationClientData getClientData(Long id);
     IntegrationClientData addIntegrationClientData(Client client);
@@ -27,7 +28,7 @@ public interface Integration {
     // Integration - Customer
     //
     List<? extends IntegrationCustomerData> getCustomerData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationCustomerData getCustomerData(Long id);
     IntegrationCustomerData addIntegrationCustomerData(Customer customer);
@@ -39,7 +40,7 @@ public interface Integration {
     //
     List<? extends IntegrationItemData> getItemData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemData getItemData(Long id);
     IntegrationItemData addIntegrationItemData(Item item);
@@ -50,7 +51,7 @@ public interface Integration {
     //
     List<? extends IntegrationItemFamilyData> getItemFamilyData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemFamilyData getItemFamilyData(Long id);
     IntegrationItemFamilyData addIntegrationItemFamilyData(ItemFamily itemFamily);
@@ -61,7 +62,7 @@ public interface Integration {
     //
     List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemPackageTypeData getItemPackageTypeData(Long id);
     IntegrationItemPackageTypeData addIntegrationItemPackageTypeData(ItemPackageType itemPackageType);
@@ -73,7 +74,7 @@ public interface Integration {
     //
     List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemUnitOfMeasureData getItemUnitOfMeasureData(Long id);
     IntegrationItemUnitOfMeasureData addIntegrationItemUnitOfMeasureData(ItemUnitOfMeasure itemUnitOfMeasure);
@@ -82,7 +83,7 @@ public interface Integration {
     // Integration - Supplier
     //
     List<? extends IntegrationSupplierData> getSupplierData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationSupplierData getSupplierData(Long id);
     IntegrationSupplierData addIntegrationSupplierData(Supplier supplier);
@@ -98,7 +99,7 @@ public interface Integration {
     //
     List<? extends IntegrationReceiptData> getReceiptData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList,
             Long id);
     IntegrationReceiptData getReceiptData(Long id);
@@ -110,7 +111,7 @@ public interface Integration {
     //
     List<? extends IntegrationPurchaseOrderData> getPurchaseOrderData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList,
             Long id);
     IntegrationPurchaseOrderData getPurchaseOrderData(Long id);
@@ -123,7 +124,7 @@ public interface Integration {
     //
     List<? extends IntegrationOrderData> getOrderData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationOrderData getOrderData(Long id);
     IntegrationOrderData addOrderData(Order order);
@@ -134,7 +135,7 @@ public interface Integration {
     //
     List<? extends IntegrationWorkOrderData> getWorkOrderData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationWorkOrderData getWorkOrderData(Long id);
     IntegrationWorkOrderData addWorkOrderData(WorkOrder workOrder);
@@ -143,7 +144,7 @@ public interface Integration {
     // Integration - BOM and BOM line
     //
     List<? extends IntegrationBillOfMaterialData> getBillOfMaterialData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationBillOfMaterialData getBillOfMaterialData(Long id);
     IntegrationBillOfMaterialData addBillOfMaterialData(BillOfMaterial billOfMaterial);
@@ -155,7 +156,7 @@ public interface Integration {
     // Order Confirmation Data
     List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id);
     IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id);
     IntegrationOrderConfirmationData resendOrderConfirmationData(Long id);
@@ -164,7 +165,7 @@ public interface Integration {
     // Work Order Confirmation Data
     List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id);
     IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id);
     IntegrationWorkOrderConfirmationData resendWorkOrderConfirmationData(Long id);
@@ -173,7 +174,7 @@ public interface Integration {
     // Receipt Confirmation Data
     List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(
             Long warehouseId, String warehouseName, String number, Long clientId, String clientName,
-            Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long supplierId, String supplierName, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id);
     IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id);
     IntegrationReceiptConfirmationData resendReceiptConfirmationData(Long id);
@@ -182,7 +183,7 @@ public interface Integration {
     // Inventory Adjustment Confirmation
     List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData(
 
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id
     );
     IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id);
@@ -191,7 +192,7 @@ public interface Integration {
 
     // Inventory Attribute Confirmation
     List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id);
     IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id);
     IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id);
@@ -199,7 +200,7 @@ public interface Integration {
 
     // Inventory Shipping Confirmation
     List<? extends IntegrationInventoryShippingConfirmationData> getInventoryShippingConfirmationData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date);
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date);
     IntegrationInventoryShippingConfirmationData getInventoryShippingConfirmationData(Long id);
     IntegrationInventoryShippingConfirmationData sendInventoryShippingConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation);
 

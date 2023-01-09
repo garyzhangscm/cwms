@@ -23,6 +23,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,7 +67,7 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
 
 
     public List<DBBasedInventoryAdjustmentConfirmation> findAll(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id) {
 
         return dbBasedInventoryAdjustmentConfirmationRepository.findAll(

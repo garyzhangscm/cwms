@@ -37,6 +37,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -54,7 +56,7 @@ public abstract class StorageFeeBillingService implements BillingService {
 
 
     @Override
-    public BillingRequest generateBillingRequest(LocalDateTime startTime, LocalDateTime endTime,
+    public BillingRequest generateBillingRequest(ZonedDateTime startTime, ZonedDateTime endTime,
                                                  Long companyId, Long warehouseId, Long clientId,
                                                  String number, Boolean serialize) {
 
@@ -84,7 +86,7 @@ public abstract class StorageFeeBillingService implements BillingService {
 
     private BillingRequest generateBillingRequestByDailyBillingCycle(
             BillingRate billingRate,
-            LocalDateTime startTime, LocalDateTime endTime,
+            ZonedDateTime startTime, ZonedDateTime endTime,
             Long companyId, Long warehouseId, Long clientId,
             String number, Boolean serialize
     ) {
@@ -94,8 +96,8 @@ public abstract class StorageFeeBillingService implements BillingService {
         // until the date of the endTime, then sort the result
         // by date. If there's multiple records for the same day, then
         // we will average the number for each day
-        startTime = startTime.toLocalDate().atStartOfDay();
-        endTime = endTime.toLocalDate().plusDays(1).atStartOfDay().minusNanos(1);
+        startTime = startTime.toLocalDate().atStartOfDay(ZoneOffset.UTC);
+        endTime = endTime.toLocalDate().plusDays(1).atStartOfDay(ZoneOffset.UTC).minusNanos(1);
 
         logger.debug("Start to generate daily billing request for storage fee, time span: {} -- {}",
                 startTime, endTime);

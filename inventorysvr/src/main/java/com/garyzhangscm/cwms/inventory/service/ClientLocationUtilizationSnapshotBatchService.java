@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -63,8 +64,8 @@ public class ClientLocationUtilizationSnapshotBatchService {
 
     public List<ClientLocationUtilizationSnapshotBatch> findAll(Long warehouseId,
                                                      String clientName, Long clientId,
-                                                     LocalDateTime startTime,
-                                                     LocalDateTime endTime,
+                                                                ZonedDateTime startTime,
+                                                                ZonedDateTime endTime,
                                                      Boolean loadDetails) {
 
         List<ClientLocationUtilizationSnapshotBatch> clientLocationUtilizationSnapshotBatches

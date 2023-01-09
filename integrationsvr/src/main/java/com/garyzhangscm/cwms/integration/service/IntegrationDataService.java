@@ -136,7 +136,7 @@ public class IntegrationDataService {
     // Integration - Supplier
     //
     public List<? extends IntegrationSupplierData> getSupplierData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getSupplierData(
                 warehouseId, startTime, endTime, date, statusList, id);
@@ -157,7 +157,7 @@ public class IntegrationDataService {
 
     public List<? extends IntegrationWorkOrderData> getWorkOrderData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getWorkOrderData(
                 companyCode, warehouseId, startTime, endTime, date, statusList, id);
@@ -179,7 +179,7 @@ public class IntegrationDataService {
     //
     public List<? extends IntegrationReceiptData> getReceiptData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList,
             Long id) {
         return integration.getReceiptData(
@@ -200,7 +200,7 @@ public class IntegrationDataService {
     //
     public List<? extends IntegrationPurchaseOrderData> getPurchaseOrderData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList,
             Long id) {
         return integration.getPurchaseOrderData(
@@ -221,7 +221,7 @@ public class IntegrationDataService {
     //
     public List<? extends IntegrationOrderData> getOrderData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getOrderData(
                 companyCode, warehouseId, startTime, endTime, date, statusList, id);
@@ -244,7 +244,7 @@ public class IntegrationDataService {
     // Order Confirmation Data
     public List<? extends IntegrationOrderConfirmationData> getIntegrationOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id){
         return integration.getIntegrationOrderConfirmationData(warehouseId, warehouseName,
                 number, startTime, endTime, date, statusList, id);
@@ -264,7 +264,7 @@ public class IntegrationDataService {
     // Work Order Confirmation Data
     public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,
-            LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id){
         return integration.getIntegrationWorkOrderConfirmationData(warehouseId, warehouseName,
                 number, startTime, endTime, date, statusList, id);
@@ -281,7 +281,7 @@ public class IntegrationDataService {
     // Receipt Confirmation Data
     public List<? extends IntegrationReceiptConfirmationData> getIntegrationReceiptConfirmationData(
             Long warehouseId, String warehouseName, String number, Long clientId, String clientName,
-            Long supplierId, String supplierName, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long supplierId, String supplierName, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id){
         return integration.getIntegrationReceiptConfirmationData(warehouseId, warehouseName,
                 number, clientId, clientName,
@@ -300,7 +300,7 @@ public class IntegrationDataService {
 
     // Inventory Adjustment Confirmation
     public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id
     ) {
         return integration.getInventoryAdjustmentConfirmationData(
@@ -318,7 +318,7 @@ public class IntegrationDataService {
     }
     // Inventory Attribute Change Confirmation
     public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getInventoryAttributeChangeConfirmationData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id) {
         return integration.getInventoryAttributeChangeConfirmationData(
                 warehouseId, startTime, endTime, date, statusList, id);

@@ -40,6 +40,8 @@ import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 
@@ -82,16 +84,16 @@ public class WaveService {
 
     public List<Wave> findAll(Long warehouseId,
                               String number,
-                              LocalDateTime startTime,
-                              LocalDateTime endTime,
+                              ZonedDateTime startTime,
+                              ZonedDateTime endTime,
                               LocalDate date) {
         return findAll(warehouseId, number, startTime, endTime, date, true);
     }
 
     public List<Wave> findAll(Long warehouseId,
                               String number,
-                              LocalDateTime startTime,
-                              LocalDateTime endTime,
+                              ZonedDateTime startTime,
+                              ZonedDateTime endTime,
                               LocalDate date,
                               boolean loadAttribute) {
         List<Wave> waves
@@ -126,10 +128,10 @@ public class WaveService {
                     }
                     logger.debug(">> Date is passed in {}", date);
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
                         LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
                         predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
                     Predicate[] p = new Predicate[predicates.size()];
