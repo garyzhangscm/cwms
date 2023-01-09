@@ -36,6 +36,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -161,7 +162,7 @@ public class InvoiceService {
     }
 
     public Invoice generateInvoice(String number, String referenceNumber, String comment,
-                                   LocalDateTime startTime, LocalDateTime endTime,
+                                   ZonedDateTime startTime, ZonedDateTime endTime,
                                    Long companyId, Long warehouseId, Long clientId) {
         List<BillingRequest> billingRequests = billingServices.stream().map(
                 billingService -> billingService.generateBillingRequest(
@@ -182,8 +183,8 @@ public class InvoiceService {
     }
 
     public Invoice generateInvoiceFromBillingRequest(
-            String number, String referenceNumber, String comment, LocalDateTime startTime,
-            LocalDateTime endTime, Long companyId, Long warehouseId, Long clientId,
+            String number, String referenceNumber, String comment, ZonedDateTime startTime,
+            ZonedDateTime endTime, Long companyId, Long warehouseId, Long clientId,
             List<BillingRequest> billingRequests) {
 
         Invoice invoice = new Invoice(

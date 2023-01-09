@@ -25,7 +25,6 @@ import com.garyzhangscm.cwms.auth.exception.ExceptionCode;
 import com.garyzhangscm.cwms.auth.model.*;
 import com.garyzhangscm.cwms.auth.service.OAuth2Service;
 import com.garyzhangscm.cwms.auth.service.UserService;
-import com.garyzhangscm.cwms.common.BaseGlobalResponseBodyAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

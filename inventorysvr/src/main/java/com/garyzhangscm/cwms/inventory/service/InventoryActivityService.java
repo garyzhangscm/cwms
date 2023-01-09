@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -74,6 +75,7 @@ public class InventoryActivityService{
 
     @Autowired
     private KafkaSender kafkaSender;
+
 
     public InventoryActivity findById(Long id) {
         return findById(id, true);
@@ -221,10 +223,14 @@ public class InventoryActivityService{
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end));
                     }
 
+                    // date is passed in as the user's local date
+                    // based on the user's time zone
                     if (!StringUtils.isBlank(date)) {
                         LocalDateTime begin = LocalDate.parse(date).atStartOfDay();
                         LocalDateTime end = begin.plusDays(1).minusNanos(1);
-                        predicates.add(criteriaBuilder.between(root.get("activityDateTime"), begin, end));
+                        // we will need to convert to the UTC time before we can compare
+                        // the user input against the activity date time
+                        predicates.add(criteriaBuilder.between(root.get("activityDateTime"), begin.atZone(ZoneId.of("UTC")), end.atZone(ZoneId.of("UTC"))));
                     }
 
                     if (!StringUtils.isBlank(username)) {

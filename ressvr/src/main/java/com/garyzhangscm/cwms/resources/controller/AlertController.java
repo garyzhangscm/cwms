@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -42,8 +43,8 @@ public class AlertController {
                                      @RequestParam(value = "type", defaultValue = "", required = false) String type,
                                      @RequestParam(value = "status", defaultValue = "", required = false) String status,
                                      @RequestParam(value = "keyWords", defaultValue = "", required = false) String keyWords,
-                                     @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-                                     @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+                                     @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+                                     @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime,
                                      @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return alertService.findAll(companyId, type, status, keyWords, startTime, endTime, date);
     }

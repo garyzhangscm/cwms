@@ -6,24 +6,26 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.Column;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 public class ProductionLineStatus  {
 
     private ProductionLine productionLine;
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime startTime;
+    private ZonedDateTime startTime;
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime endTime;
+    private ZonedDateTime endTime;
 
     private boolean active;
 
@@ -35,17 +37,17 @@ public class ProductionLineStatus  {
 
 
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime lastCycleHappensTiming;
+    private ZonedDateTime lastCycleHappensTiming;
 
     public ProductionLineStatus(){}
-    public ProductionLineStatus(ProductionLine productionLine, LocalDateTime startTime, LocalDateTime endTime,
+    public ProductionLineStatus(ProductionLine productionLine, ZonedDateTime startTime, ZonedDateTime endTime,
                                 boolean active, double lastCycleTime,
                                 int totalCycles,
                                 double averageCycleTime,
-                                LocalDateTime lastCycleHappensTiming) {
+                                ZonedDateTime lastCycleHappensTiming) {
         this.productionLine = productionLine;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -64,19 +66,19 @@ public class ProductionLineStatus  {
         this.productionLine = productionLine;
     }
 
-    public LocalDateTime getStartTime() {
+    public ZonedDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(ZonedDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public ZonedDateTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(ZonedDateTime endTime) {
         this.endTime = endTime;
     }
 
@@ -104,11 +106,11 @@ public class ProductionLineStatus  {
         this.averageCycleTime = averageCycleTime;
     }
 
-    public LocalDateTime getLastCycleHappensTiming() {
+    public ZonedDateTime getLastCycleHappensTiming() {
         return lastCycleHappensTiming;
     }
 
-    public void setLastCycleHappensTiming(LocalDateTime lastCycleHappensTiming) {
+    public void setLastCycleHappensTiming(ZonedDateTime lastCycleHappensTiming) {
         this.lastCycleHappensTiming = lastCycleHappensTiming;
     }
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -17,8 +18,8 @@ public class IntegrationDataService {
     private Integration integration;
 
     public List<? extends IntegrationClientData> getClientData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
-    Long id) {
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
+            Long id) {
         return integration.getClientData(
                 warehouseId, startTime, endTime, date, statusList, id
         );
@@ -38,7 +39,7 @@ public class IntegrationDataService {
     // Integration - Customer
     //
     public List<? extends IntegrationCustomerData> getCustomerData(
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getCustomerData(
                 warehouseId, startTime, endTime, date, statusList, id);
@@ -60,7 +61,7 @@ public class IntegrationDataService {
     //
     public List<? extends IntegrationItemData> getItemData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemData(
                 companyCode, warehouseId, startTime, endTime, date, statusList, id);
@@ -80,7 +81,7 @@ public class IntegrationDataService {
     //
     public List<? extends IntegrationItemFamilyData> getItemFamilyData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemFamilyData(
                 companyCode, warehouseId, startTime, endTime, date, statusList, id);
@@ -98,7 +99,7 @@ public class IntegrationDataService {
     //
     public List<? extends IntegrationItemPackageTypeData> getItemPackageTypeData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemPackageTypeData(
                 companyCode, warehouseId, startTime, endTime, date, statusList, id);
@@ -119,7 +120,7 @@ public class IntegrationDataService {
     //
     public List<? extends IntegrationItemUnitOfMeasureData> getItemUnitOfMeasureData(
             String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date, String statusList,
+            Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id) {
         return integration.getItemUnitOfMeasureData(
                 companyCode, warehouseId, startTime, endTime, date, statusList, id);

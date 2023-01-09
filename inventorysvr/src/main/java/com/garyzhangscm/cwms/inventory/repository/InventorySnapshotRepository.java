@@ -28,6 +28,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
@@ -51,7 +52,7 @@ public interface InventorySnapshotRepository extends JpaRepository<InventorySnap
     @Query("select invsnap from InventorySnapshot invsnap where  invsnap.warehouseId = :warehouseId and " +
             " invsnap.completeTime between :startTime and :endTime " +
             " order by invsnap.completeTime desc")
-    List<InventorySnapshot> getInventorySnapshot(Long warehouseId, LocalDateTime startTime, LocalDateTime endTime);
+    List<InventorySnapshot> getInventorySnapshot(Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime);
 
     @Query(value = "select inventory_snapshot.batch_number, inventory_snapshot.complete_time, " +
             "   item.velocity_id, sum(inventory_snapshot_detail.quantity) total_quantity" +

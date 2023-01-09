@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
@@ -14,6 +15,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,16 +64,16 @@ public class Invoice extends AuditibleEntity<String>{
     private String comment;
 
     @Column(name = "start_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime startTime;
+    private ZonedDateTime startTime;
 
     @Column(name = "end_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime endTime;
+    private ZonedDateTime endTime;
 
     @OneToMany(
             mappedBy = "invoice",
@@ -86,7 +88,7 @@ public class Invoice extends AuditibleEntity<String>{
 
     public Invoice(Long companyId, Long warehouseId,
                    Long clientId, String number, String referenceNumber,
-                   String comment, LocalDateTime startTime, LocalDateTime endTime,
+                   String comment, ZonedDateTime startTime, ZonedDateTime endTime,
                    Double totalCharge) {
         this.companyId = companyId;
         this.warehouseId = warehouseId;
@@ -156,19 +158,19 @@ public class Invoice extends AuditibleEntity<String>{
         this.client = client;
     }
 
-    public LocalDateTime getStartTime() {
+    public ZonedDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(ZonedDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public ZonedDateTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(ZonedDateTime endTime) {
         this.endTime = endTime;
     }
 

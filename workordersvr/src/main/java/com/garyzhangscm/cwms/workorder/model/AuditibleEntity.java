@@ -3,45 +3,44 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class AuditibleEntity<U> {
 
+
     @Column(name = "created_time")
-    @CreatedDate
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @CreatedDate
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime createdTime;
+    private ZonedDateTime createdTime;
 
     @Column(name = "created_by")
     @CreatedBy
     private U createdBy;
 
     @Column(name = "last_modified_time")
-    @LastModifiedDate
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @LastModifiedDate
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime lastModifiedTime;
+    private ZonedDateTime lastModifiedTime;
 
     @Column(name = "last_modified_by")
     @LastModifiedBy
     private U lastModifiedBy;
+
 
     @Override
     public String toString() {
@@ -53,12 +52,24 @@ public class AuditibleEntity<U> {
         return null;
     }
 
+    @PrePersist
+    public void onPrePersist() {
+        setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
 
-    public LocalDateTime getCreatedTime() {
+    }
+
+    @PreUpdate
+    public void onPreUpdate() {
+
+        setLastModifiedTime(ZonedDateTime.now(ZoneId.of("UTC")));
+    }
+
+
+    public ZonedDateTime getCreatedTime() {
         return createdTime;
     }
 
-    public void setCreatedTime(LocalDateTime createdTime) {
+    public void setCreatedTime(ZonedDateTime createdTime) {
         this.createdTime = createdTime;
     }
 
@@ -70,11 +81,11 @@ public class AuditibleEntity<U> {
         this.createdBy = createdBy;
     }
 
-    public LocalDateTime getLastModifiedTime() {
+    public ZonedDateTime getLastModifiedTime() {
         return lastModifiedTime;
     }
 
-    public void setLastModifiedTime(LocalDateTime lastModifiedTime) {
+    public void setLastModifiedTime(ZonedDateTime lastModifiedTime) {
         this.lastModifiedTime = lastModifiedTime;
     }
 

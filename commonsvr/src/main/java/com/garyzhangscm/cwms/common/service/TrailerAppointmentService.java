@@ -40,6 +40,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 
@@ -70,8 +72,8 @@ public class TrailerAppointmentService {
                                             String number,
                                             String type,
                                             String status,
-                                            LocalDateTime startTime,
-                                            LocalDateTime endTime,
+                                            ZonedDateTime startTime,
+                                            ZonedDateTime endTime,
                                             LocalDate date) {
         List<TrailerAppointment> trailerAppointments = trailerAppointmentRepository.findAll(
                 (Root<TrailerAppointment> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -106,10 +108,10 @@ public class TrailerAppointmentService {
 
                     }
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
+                        LocalDateTime dateEndTime = date.atStartOfDay().plusDays(1).minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("completedTime"), dateStartTime, dateEndTime));
+                                root.get("completedTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
                     Predicate[] p = new Predicate[predicates.size()];

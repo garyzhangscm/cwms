@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,8 +67,8 @@ public class InventorySnapshotController {
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryByVelocity(
             @RequestParam Long warehouseId,
             @RequestParam(name = "maxRecordNumber", required = false, defaultValue = "15") Integer maxRecordNumber,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime) {
         return inventorySnapshotService.getInventorySnapshotSummaryByVelocity(warehouseId,
                 startTime, endTime, maxRecordNumber);
     }
@@ -76,8 +77,8 @@ public class InventorySnapshotController {
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryByABCCategory(
             @RequestParam Long warehouseId,
             @RequestParam(name = "maxRecordNumber", required = false, defaultValue = "15") Integer maxRecordNumber,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime) {
         return inventorySnapshotService.getInventorySnapshotSummaryByABCCategory(warehouseId,
                 startTime, endTime, maxRecordNumber);
     }
@@ -87,8 +88,8 @@ public class InventorySnapshotController {
     public List<InventorySnapshotSummary> getInventorySnapshotSummaryQuantity(
             @RequestParam Long warehouseId,
             @RequestParam(name = "maxRecordNumber", required = false, defaultValue = "15") Integer maxRecordNumber,
-            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime) {
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime) {
         return inventorySnapshotService.getInventorySnapshotSummaryQuantity(warehouseId,
                 startTime, endTime, maxRecordNumber);
     }
