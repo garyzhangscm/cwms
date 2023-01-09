@@ -18,6 +18,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,8 +38,8 @@ public class DBBasedItemFamilyIntegration {
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     public List<DBBasedItemFamily> findAll(String companyCode,
-            Long warehouseId, LocalDateTime startTime, LocalDateTime endTime, LocalDate date,
-            String statusList, Long id) {
+                                           Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
+                                           String statusList, Long id) {
 
         return dbBasedItemFamilyRepository.findAll(
                 (Root<DBBasedItemFamily> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -63,10 +65,11 @@ public class DBBasedItemFamilyIntegration {
                     }
                     logger.debug(">> Date is passed in {}", date);
                     if (Objects.nonNull(date)) {
-                        LocalDateTime dateStartTime = date.atTime(0, 0, 0, 0);
-                        LocalDateTime dateEndTime = date.atTime(23, 59, 59, 999999999);
+                        LocalDateTime dateStartTime = date.atStartOfDay();
+                        LocalDateTime dateEndTime = date.atStartOfDay().plusDays(1).minusSeconds(1);
                         predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime, dateEndTime));
+                                root.get("createdTime"),
+                                dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
                     if (Strings.isNotBlank(statusList)) {

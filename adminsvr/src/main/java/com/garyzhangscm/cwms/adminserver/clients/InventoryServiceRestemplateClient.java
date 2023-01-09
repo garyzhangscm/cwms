@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -799,7 +800,7 @@ public class InventoryServiceRestemplateClient {
     }
 
     public List<ClientLocationUtilizationSnapshotBatch> getLocationUtilizationSnapshotByClient(
-            Long warehouseId, Long clientId, LocalDateTime startTime, LocalDateTime endTime) {
+            Long warehouseId, Long clientId, ZonedDateTime startTime, ZonedDateTime endTime) {
 
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
