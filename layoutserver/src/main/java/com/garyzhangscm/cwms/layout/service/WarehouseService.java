@@ -235,6 +235,8 @@ public class WarehouseService implements TestDataInitiableService {
     public Warehouse changeWarehouse(long id, Warehouse warehouse) {
         Warehouse existingWarehouse = findById(id);
         BeanUtils.copyProperties(warehouse, existingWarehouse, "id", "name", "company");
+
+        // logger.debug("start to save the new warehouse: {}", existingWarehouse);
         return saveOrUpdate(existingWarehouse);
     }
 
