@@ -43,6 +43,7 @@ public class Warehouse implements Serializable {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+    private String addressPhone;
 
     @Override
     public boolean equals(Object o) {
@@ -196,5 +197,13 @@ public class Warehouse implements Serializable {
 
     public void setContactorLastname(String contactorLastname) {
         this.contactorLastname = contactorLastname;
+    }
+
+    public String getAddressPhone() {
+        return addressPhone;
+    }
+
+    public void setAddressPhone(String addressPhone) {
+        this.addressPhone = addressPhone;
     }
 }

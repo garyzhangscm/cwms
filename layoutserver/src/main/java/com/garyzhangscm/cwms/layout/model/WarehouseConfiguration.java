@@ -91,6 +91,10 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @Column(name = "working_on_saturday")
     private Boolean workingOnSaturdayFlag;
 
+
+    @Column(name = "time_zone")
+    private String timeZone = "UTC";
+
     public Long getId() {
         return id;
     }
@@ -233,5 +237,13 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setWorkingOnSaturdayFlag(Boolean workingOnSaturdayFlag) {
         this.workingOnSaturdayFlag = workingOnSaturdayFlag;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }

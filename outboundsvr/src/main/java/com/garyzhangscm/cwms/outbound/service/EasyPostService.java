@@ -210,7 +210,7 @@ public class EasyPostService {
             fromAddressMap.put("state", warehouse.getAddressState());
             fromAddressMap.put("country", warehouse.getAddressCountry());
             fromAddressMap.put("zip", warehouse.getAddressPostcode());
-            fromAddressMap.put("phone", "");
+            fromAddressMap.put("phone", warehouse.getAddressPhone());
         }
         else {
 
@@ -222,7 +222,7 @@ public class EasyPostService {
             fromAddressMap.put("state", easyPostConfiguration.getAddressState());
             fromAddressMap.put("country", easyPostConfiguration.getAddressCountry());
             fromAddressMap.put("zip", easyPostConfiguration.getAddressPostcode());
-            fromAddressMap.put("phone", "");
+            fromAddressMap.put("phone", easyPostConfiguration.getAddressPhone());
         }
         return fromAddressMap;
 
@@ -245,7 +245,7 @@ public class EasyPostService {
             returnAddressMap.put("state", warehouse.getAddressState());
             returnAddressMap.put("country", warehouse.getAddressCountry());
             returnAddressMap.put("zip", warehouse.getAddressPostcode());
-            returnAddressMap.put("phone", "");
+            returnAddressMap.put("phone", warehouse.getAddressPhone());
         }
         else {
 
@@ -257,7 +257,7 @@ public class EasyPostService {
             returnAddressMap.put("state", easyPostConfiguration.getReturnAddressState());
             returnAddressMap.put("country", easyPostConfiguration.getReturnAddressCountry());
             returnAddressMap.put("zip", easyPostConfiguration.getReturnAddressPostcode());
-            returnAddressMap.put("phone", "");
+            returnAddressMap.put("phone", easyPostConfiguration.getReturnAddressPhone());
         }
         return returnAddressMap;
 
@@ -330,6 +330,9 @@ public class EasyPostService {
         // see if we still have time to pickup today for this package
 
         boolean includingToday = false;
+        logger.debug("easyPostCarrier's carrier {}", easyPostCarrier.getCarrier().getName());
+        logger.debug("easyPostCarrier's getMinPickupTime {}", easyPostCarrier.getMinPickupTime());
+        logger.debug("LocalTime.now() {}", LocalTime.now());
         if (easyPostCarrier.getMinPickupTime().isAfter(LocalTime.now())) {
             // the min pickup time is after now, which means we still have time
             // to prepare the package and pickup today.
@@ -341,6 +344,7 @@ public class EasyPostService {
         if (Objects.isNull(nextWorkingDay)) {
             throw ShippingException.raiseException("Can't get the next working day. Fail to generate pickup request");
         }
+        logger.debug("get next working day: {}", nextWorkingDay);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         pickupMap.put("min_datetime", LocalDateTime.of(nextWorkingDay,easyPostCarrier.getMinPickupTime()).format(formatter));

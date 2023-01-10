@@ -67,6 +67,8 @@ public class Warehouse extends AuditibleEntity<String> implements Serializable {
     private String addressLine2;
     @Column(name = "address_postcode")
     private String addressPostcode;
+    @Column(name = "address_phone")
+    private String addressPhone;
 
     public Long getId() {
         return id;
@@ -186,5 +188,13 @@ public class Warehouse extends AuditibleEntity<String> implements Serializable {
 
     public void setContactorLastname(String contactorLastname) {
         this.contactorLastname = contactorLastname;
+    }
+
+    public String getAddressPhone() {
+        return addressPhone;
+    }
+
+    public void setAddressPhone(String addressPhone) {
+        this.addressPhone = addressPhone;
     }
 }
