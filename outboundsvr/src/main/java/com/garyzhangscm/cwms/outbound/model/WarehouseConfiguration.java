@@ -29,6 +29,7 @@ public class WarehouseConfiguration {
     private Boolean threePartyLogisticsFlag;
 
     private Boolean listPickEnabledFlag ;
+    private String timeZone;
 
 
     public Long getId() {
@@ -61,5 +62,13 @@ public class WarehouseConfiguration {
 
     public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
         this.listPickEnabledFlag = listPickEnabledFlag;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }

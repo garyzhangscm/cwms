@@ -22,7 +22,7 @@ public class AuditibleEntity<U> {
     @Column(name = "created_time")
     // @CreatedDate
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime createdTime;
 
@@ -33,7 +33,7 @@ public class AuditibleEntity<U> {
     @Column(name = "last_modified_time")
     // @LastModifiedDate
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime lastModifiedTime;
 

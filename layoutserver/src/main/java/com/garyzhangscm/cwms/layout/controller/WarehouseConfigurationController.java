@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.TimeZone;
 
 @RestController
 public class WarehouseConfigurationController {
@@ -107,6 +108,10 @@ public class WarehouseConfigurationController {
         return warehouseConfigurationService.getNextWorkingDay(warehouseId, includingToday);
     }
 
+    @RequestMapping(value="/warehouse-configuration/time-zones", method=RequestMethod.GET)
+    public String[] getAvaiableTimeZones(@RequestParam Long warehouseId)  {
+        return TimeZone.getAvailableIDs();
+    }
 
 
 }

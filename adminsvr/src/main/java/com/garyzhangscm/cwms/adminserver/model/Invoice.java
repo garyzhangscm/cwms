@@ -65,13 +65,13 @@ public class Invoice extends AuditibleEntity<String>{
 
     @Column(name = "start_time")
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime startTime;
 
     @Column(name = "end_time")
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime endTime;
 

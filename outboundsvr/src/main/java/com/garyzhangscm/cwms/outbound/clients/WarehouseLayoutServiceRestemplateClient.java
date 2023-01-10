@@ -633,7 +633,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         ResponseBodyWrapper<LocalDate> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
-                HttpMethod.POST,
+                HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<LocalDate>>() {}).getBody();
 

@@ -77,6 +77,8 @@ public class EasyPostConfiguration extends AuditibleEntity<String> implements Se
     private String addressLine2;
     @Column(name = "address_postcode")
     private String addressPostcode;
+    @Column(name = "address_phone")
+    private String addressPhone;
 
     // address for return
     // if we use the warehouse address as the ship from address
@@ -105,6 +107,8 @@ public class EasyPostConfiguration extends AuditibleEntity<String> implements Se
     private String returnAddressLine2;
     @Column(name = "return_address_postcode")
     private String returnAddressPostcode;
+    @Column(name = "return_address_phone")
+    private String returnAddressPhone;
 
     @OneToMany(
             mappedBy = "easyPostConfiguration",
@@ -328,5 +332,21 @@ public class EasyPostConfiguration extends AuditibleEntity<String> implements Se
 
     public void setReturnAddressPostcode(String returnAddressPostcode) {
         this.returnAddressPostcode = returnAddressPostcode;
+    }
+
+    public String getAddressPhone() {
+        return addressPhone;
+    }
+
+    public void setAddressPhone(String addressPhone) {
+        this.addressPhone = addressPhone;
+    }
+
+    public String getReturnAddressPhone() {
+        return returnAddressPhone;
+    }
+
+    public void setReturnAddressPhone(String returnAddressPhone) {
+        this.returnAddressPhone = returnAddressPhone;
     }
 }

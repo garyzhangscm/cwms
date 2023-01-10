@@ -18,12 +18,12 @@ public class ProductionLineStatus  {
     private ProductionLine productionLine;
 
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime startTime;
 
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime endTime;
 

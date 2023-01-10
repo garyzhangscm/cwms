@@ -248,6 +248,14 @@ public class InventoryActivityService{
                 }
         );
 
+        inventoryActivities.forEach(
+                inventoryActivity -> {
+                    logger.debug("id {}, Inventory's activityDateTime {}",
+                            inventoryActivity.getId(),
+                            inventoryActivity.getActivityDateTime());
+                }
+        );
+
         if (includeDetails && inventoryActivities.size() > 0) {
             loadAttribute(inventoryActivities);
         }
