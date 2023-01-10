@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -34,9 +35,7 @@ import org.springframework.beans.BeanUtils;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "user_info")
@@ -96,7 +95,6 @@ public class User extends AuditibleEntity<String>  {
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles = new ArrayList<>();
-
 
     @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JoinTable(name = "working_team_user",
