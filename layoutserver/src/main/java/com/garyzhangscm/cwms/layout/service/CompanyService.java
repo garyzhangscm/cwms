@@ -182,4 +182,5 @@ public class CompanyService implements TestDataInitiableService{
         return String.valueOf(Integer.parseInt(maxCompanyCode) + 1);
 
     }
+
 }

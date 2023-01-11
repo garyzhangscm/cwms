@@ -19,11 +19,8 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
-import com.garyzhangscm.cwms.resources.model.Report;
+import com.garyzhangscm.cwms.resources.model.*;
 
-import com.garyzhangscm.cwms.resources.model.ReportHistory;
-import com.garyzhangscm.cwms.resources.model.ReportType;
 import com.garyzhangscm.cwms.resources.service.ReportService;
 import net.sf.jasperreports.engine.JRException;
 import org.slf4j.Logger;

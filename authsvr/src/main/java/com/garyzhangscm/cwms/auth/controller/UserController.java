@@ -53,4 +53,11 @@ public class UserController {
         return userService.saveOrUpdate(user);
     }
 
+
+    @RequestMapping(value = "/company-access-validation", method =  RequestMethod.GET)
+    public Boolean validateCompanyAccess(@RequestParam Long companyId,
+                                         @RequestParam String token) {
+        return userService.validateCompanyAccess(companyId, token);
+    }
+
 }

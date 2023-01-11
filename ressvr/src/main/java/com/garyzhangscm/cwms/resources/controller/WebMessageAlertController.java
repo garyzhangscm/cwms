@@ -18,11 +18,7 @@
 
 package com.garyzhangscm.cwms.resources.controller;
 
-import com.garyzhangscm.cwms.resources.model.AlertSubscription;
-import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.WebMessageAlert;
-import com.garyzhangscm.cwms.resources.service.AlertSubscriptionService;
-import com.garyzhangscm.cwms.resources.service.DepartmentService;
 import com.garyzhangscm.cwms.resources.service.WebMessageAlertService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;

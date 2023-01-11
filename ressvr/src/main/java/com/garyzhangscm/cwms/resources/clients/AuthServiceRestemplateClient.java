@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -127,6 +128,24 @@ public class AuthServiceRestemplateClient {
         } catch (JsonProcessingException e) {
             throw UserOperationException.raiseException("Can't change user's auth information due to JsonProcessingException: " + e.getMessage());
         }
+
+
+    }
+
+    @Cacheable(cacheNames = "company_access", unless="#result == null")
+    public Boolean validateCompanyAccess(Long companyId, String token)  {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/auth/users/company-access-validation")
+                .queryParam("companyId", companyId)
+                        .queryParam("token", token);
+
+        return restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<Boolean>() {}).getBody();
 
 
     }

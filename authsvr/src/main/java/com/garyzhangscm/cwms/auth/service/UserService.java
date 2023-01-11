@@ -94,6 +94,14 @@ public class UserService {
         return user;
     }
 
+    public User findByToken(Long companyId, String token){
+        User user =  userRepository.findByCompanyIdAndCurrentToken(companyId, token);
+        if (Objects.isNull(user)) {
+            user = userRepository.findByCompanyIdAndCurrentToken(-1l, token);
+        }
+        return user;
+    }
+
     @Transactional
     public User save(User user) {
         encryptPassword(user);
@@ -149,5 +157,17 @@ public class UserService {
 
         kafkaSender.send(userLoginEvent);
 
+        // save the token
+        User user = findByUsername(companyId, username);
+        if (Objects.nonNull(user)) {
+            user.setCurrentToken(token);
+            saveOrUpdate(user);
+        }
+
+
+    }
+
+    public Boolean validateCompanyAccess(Long companyId, String token) {
+        return Objects.nonNull(findByToken(companyId, token));
     }
 }

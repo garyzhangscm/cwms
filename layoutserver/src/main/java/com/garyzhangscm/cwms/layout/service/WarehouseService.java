@@ -680,4 +680,12 @@ public class WarehouseService implements TestDataInitiableService {
         inventoryServiceRestemplateClient.removeInventory(warehouseId, null, null);
 
     }
+
+    public Long getCompanyId(Long id) {
+        Warehouse warehouse = findById(id);
+        if (Objects.nonNull(warehouse)) {
+            return warehouse.getCompanyId();
+        }
+        return null;
+    }
 }

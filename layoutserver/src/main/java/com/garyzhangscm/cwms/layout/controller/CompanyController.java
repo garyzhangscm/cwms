@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.layout.controller;
 
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.exception.MissingInformationException;
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
 import com.garyzhangscm.cwms.layout.model.Company;
@@ -26,6 +27,7 @@ import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.CompanyService;
 import com.garyzhangscm.cwms.layout.service.WarehouseService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public class CompanyController {
             @RequestParam(name = "code", required = false, defaultValue = "") String code,
             @RequestParam(name = "name", required = false, defaultValue = "") String name) {
 
+        if (Strings.isBlank(code) && Strings.isBlank(name)) {
+            throw MissingInformationException.raiseException("code or name is required to get the company information");
+        }
         return companyService.findAll(code, name);
     }
 

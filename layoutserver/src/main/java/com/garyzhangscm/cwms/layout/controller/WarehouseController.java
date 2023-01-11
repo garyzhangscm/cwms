@@ -115,5 +115,10 @@ public class WarehouseController {
         return warehouses;
     }
 
+    @RequestMapping(value="/warehouses/{id}/company-id", method = RequestMethod.GET)
+    public Long getCompanyId(@PathVariable  Long id) {
+
+        return warehouseService.getCompanyId(id);
+    }
 
 }
