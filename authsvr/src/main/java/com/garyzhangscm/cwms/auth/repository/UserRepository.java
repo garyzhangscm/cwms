@@ -30,4 +30,5 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     List<User> findAll();
 
     User findByCompanyIdAndUsername(Long companyId, String username);
+    User findByCompanyIdAndCurrentToken(Long companyId, String currentToken);
 }

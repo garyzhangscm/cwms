@@ -19,14 +19,10 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.resources.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.UserOperationException;
 import com.garyzhangscm.cwms.resources.service.InitTestDataService;
 import com.garyzhangscm.cwms.resources.service.SystemConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

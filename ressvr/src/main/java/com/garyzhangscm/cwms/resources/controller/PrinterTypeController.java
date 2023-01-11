@@ -21,21 +21,11 @@ package com.garyzhangscm.cwms.resources.controller;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.service.PrinterTypeService;
-import com.garyzhangscm.cwms.resources.service.ReportService;
-import net.sf.jasperreports.engine.JRException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 

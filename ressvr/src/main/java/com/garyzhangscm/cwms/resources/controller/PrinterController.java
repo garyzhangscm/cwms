@@ -19,12 +19,9 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.Printer;
-import com.garyzhangscm.cwms.resources.model.PrinterType;
 import com.garyzhangscm.cwms.resources.service.PrinterService;
-import com.garyzhangscm.cwms.resources.service.PrinterTypeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

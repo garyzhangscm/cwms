@@ -20,9 +20,7 @@ package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.Department;
-import com.garyzhangscm.cwms.resources.model.RF;
 import com.garyzhangscm.cwms.resources.service.DepartmentService;
-import com.garyzhangscm.cwms.resources.service.RFService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -19,17 +19,12 @@
 package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.resources.model.Alert;
 import com.garyzhangscm.cwms.resources.model.AlertTemplate;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
-import com.garyzhangscm.cwms.resources.service.AlertService;
 import com.garyzhangscm.cwms.resources.service.AlertTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController

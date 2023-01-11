@@ -68,6 +68,7 @@ public class LoginController {
     public LoginResponseWrapper login(@RequestBody User user) throws JsonProcessingException {
         try {
             OAuth2Token oAuth2Token = oAuth2Service.getOAuth2Token(user.getCompanyId(), user.getUsername(), user.getPassword());
+
             oAuth2Token.setUser(userService.findByUsername(user.getCompanyId(), user.getUsername()));
             userService.recordLoginEvent(user.getCompanyId(), user.getLoginWarehouseId(),
                     user.getUsername(), oAuth2Token.getAccess_token());

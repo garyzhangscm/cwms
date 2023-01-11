@@ -32,6 +32,6 @@ public interface WarehouseAccessRepository extends JpaRepository<WarehouseAccess
 
 
     @Query("select wa from WarehouseAccess wa where wa.warehouseId  = :warehouseId" +
-            " and wo.user.id = :userId")
+            " and wa.user.id = :userId")
     WarehouseAccess findByWarehouseIdAndUserId(Long warehouseId, Long userId);
 }

@@ -55,6 +55,10 @@ public class User implements UserDetails {
     @Column(name = "locked")
     private boolean locked;
 
+    // current login token
+    @Column(name = "current_token")
+    private String currentToken;
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -140,5 +144,13 @@ public class User implements UserDetails {
 
     public void setLoginWarehouseId(Long loginWarehouseId) {
         this.loginWarehouseId = loginWarehouseId;
+    }
+
+    public String getCurrentToken() {
+        return currentToken;
+    }
+
+    public void setCurrentToken(String currentToken) {
+        this.currentToken = currentToken;
     }
 }

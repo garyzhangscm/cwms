@@ -97,6 +97,7 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/site-information/default").permitAll()
                 .antMatchers("/probe/**").permitAll()
+                .antMatchers("/users/company-access-validation").permitAll()
                 .anyRequest()
                 .authenticated();
     }

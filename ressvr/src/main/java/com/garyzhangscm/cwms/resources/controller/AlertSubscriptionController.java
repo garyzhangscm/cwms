@@ -20,9 +20,7 @@ package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.model.AlertSubscription;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
-import com.garyzhangscm.cwms.resources.model.EmailAlertConfiguration;
 import com.garyzhangscm.cwms.resources.service.AlertSubscriptionService;
-import com.garyzhangscm.cwms.resources.service.EmailAlertConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

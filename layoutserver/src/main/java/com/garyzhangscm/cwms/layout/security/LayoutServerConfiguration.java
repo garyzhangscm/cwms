@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.layout.security;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
@@ -20,9 +21,11 @@ public class LayoutServerConfiguration extends ResourceServerConfigurerAdapter {
         .authorizeRequests()
                 .antMatchers("/app").permitAll()
           .antMatchers("/actuator").permitAll()
+                .antMatchers(HttpMethod.GET, "/companies").permitAll()
            .antMatchers("/companies/validate").permitAll()
           .antMatchers("/warehouses/accessible/**").permitAll()
                 .antMatchers("/probe/**").permitAll()
+                .antMatchers("/warehouses/*/company-id").permitAll()
           .anyRequest()
           .authenticated();
     }
