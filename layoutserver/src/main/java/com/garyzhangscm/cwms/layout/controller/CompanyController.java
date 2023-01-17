@@ -49,10 +49,12 @@ public class CompanyController {
     public List<Company> listCompanies(
             @RequestParam(name = "code", required = false, defaultValue = "") String code,
             @RequestParam(name = "name", required = false, defaultValue = "") String name) {
-
+/**
         if (Strings.isBlank(code) && Strings.isBlank(name)) {
             throw MissingInformationException.raiseException("code or name is required to get the company information");
         }
+ **/
+
         return companyService.findAll(code, name);
     }
 

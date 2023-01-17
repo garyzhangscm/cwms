@@ -109,6 +109,7 @@ public class UrlAccessControllerFilter extends ZuulFilter {
 
     private void validateAccess(RequestContext requestContext)  {
 
+
         logger.debug("Start to validate http access");
         // first, we will check if we have token in the http header
         String token = requestContext.getRequest().getHeader("Authorization");
