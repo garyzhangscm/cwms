@@ -1,6 +1,5 @@
 package com.garyzhangscm.cwms.quickbook.service;
 
-import com.garyzhangscm.cwms.quickbook.controller.WebhooksController;
 import com.garyzhangscm.cwms.quickbook.exception.MissingInformationException;
 import com.garyzhangscm.cwms.quickbook.exception.OAuthFailException;
 import com.garyzhangscm.cwms.quickbook.exception.ResourceNotFoundException;
@@ -12,20 +11,18 @@ import com.intuit.oauth2.config.Environment;
 import com.intuit.oauth2.config.OAuth2Config;
 import com.intuit.oauth2.data.BearerTokenResponse;
 import com.intuit.oauth2.exception.OAuthException;
-import com.sun.xml.bind.v2.model.annotation.Quick;
 import org.apache.logging.log4j.util.Strings;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -260,7 +257,7 @@ public class QuickBookOnlineTokenService  {
 				quickBookOnlineToken.setAuthorizationCode(authCode);
 				quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
 				quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
 				if (Objects.equals(companyId, quickBookOnlineToken.getCompanyId()) &&
 								Objects.equals(warehouseId, quickBookOnlineToken.getWarehouseId()) &&
@@ -280,7 +277,7 @@ public class QuickBookOnlineTokenService  {
 				existingQuickBookOnlineToken =
 				   saveOrUpdate(new QuickBookOnlineToken(companyId, warehouseId,
 						  realmId, authCode, bearerTokenResponse.getAccessToken(),
-						  bearerTokenResponse.getRefreshToken(), LocalDateTime.now())
+						  bearerTokenResponse.getRefreshToken(), LocalDateTime.now().atZone(ZoneOffset.UTC))
 				   );
 			}
 			return existingQuickBookOnlineToken;
@@ -331,7 +328,7 @@ public class QuickBookOnlineTokenService  {
 
 					existingQuickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
 					existingQuickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-					existingQuickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now());
+					existingQuickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 					saveOrUpdate(existingQuickBookOnlineToken);
 				}
 		);

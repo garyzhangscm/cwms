@@ -28,12 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class LocationUtilizationSnapshotService   {
@@ -61,8 +59,8 @@ public class LocationUtilizationSnapshotService   {
     public List<LocationUtilizationSnapshot> findAll(Long warehouseId,
                                                      String itemName, Long itemId,
                                                      String clientName, Long clientId,
-                                                     LocalDateTime startTime,
-                                                     LocalDateTime endTime,
+                                                     ZonedDateTime startTime,
+                                                     ZonedDateTime endTime,
                                                      Boolean loadDetails) {
 
         List<LocationUtilizationSnapshot> locationUtilizationSnapshots = locationUtilizationSnapshotRepository.findAll(

@@ -22,12 +22,9 @@ package com.garyzhangscm.cwms.dblink.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 public class DBBasedInventoryAdjustmentConfirmation implements Serializable {
 

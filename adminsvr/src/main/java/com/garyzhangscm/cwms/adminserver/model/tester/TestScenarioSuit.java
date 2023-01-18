@@ -2,7 +2,6 @@ package com.garyzhangscm.cwms.adminserver.model.tester;
 
 
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
-import com.garyzhangscm.cwms.adminserver.service.TestScenarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

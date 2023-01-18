@@ -820,7 +820,7 @@ public class OrderService implements TestDataInitiableService {
                         });
 
         order.setStatus(OrderStatus.COMPLETE);
-        order.setCompleteTime(LocalDateTime.now());
+        order.setCompleteTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
 
 
@@ -880,7 +880,7 @@ public class OrderService implements TestDataInitiableService {
                         }
                 );
         existingOrder.setStatus(OrderStatus.COMPLETE);
-        existingOrder.setCompleteTime(LocalDateTime.now());
+        existingOrder.setCompleteTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
         logger.debug("Start to send order confirmation after the order {} is marked as completed",
                  existingOrder.getNumber());

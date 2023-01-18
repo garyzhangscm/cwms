@@ -18,36 +18,22 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineMonitorRepository;
-import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -152,7 +138,7 @@ public class ProductionLineMonitorService  {
     public String processProductionLineMonitorHeartBeat(Long warehouseId, String productionLineMonitorName) {
         ProductionLineMonitor productionLineMonitor = findByName(warehouseId, productionLineMonitorName);
         if (Objects.nonNull(productionLineMonitor)) {
-            productionLineMonitor.setLastHeartBeatTime(LocalDateTime.now());
+            productionLineMonitor.setLastHeartBeatTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
             productionLineMonitor = saveOrUpdate(productionLineMonitor);
             logger.debug("heart beat for monitor {} at {}",

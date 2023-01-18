@@ -1,18 +1,11 @@
 package com.garyzhangscm.cwms.adminserver.controller;
 
 
-import com.garyzhangscm.cwms.adminserver.model.BillableRequest;
-import com.garyzhangscm.cwms.adminserver.model.BillableRequestSummaryByCompany;
 import com.garyzhangscm.cwms.adminserver.model.BillingRate;
-import com.garyzhangscm.cwms.adminserver.service.BillableRequestService;
 import com.garyzhangscm.cwms.adminserver.service.BillingRateService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 
 @RestController

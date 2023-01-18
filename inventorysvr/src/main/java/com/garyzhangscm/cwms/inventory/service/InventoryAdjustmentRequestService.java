@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 /**
@@ -240,7 +241,7 @@ public class InventoryAdjustmentRequestService{
         InventoryAdjustmentRequest inventoryAdjustmentRequest = findById(id);
         logger.debug("We got the request by id {}", id);
         inventoryAdjustmentRequest.setStatus(inventoryAdjustmentRequestStatus);
-        inventoryAdjustmentRequest.setProcessedByDateTime(LocalDateTime.now());
+        inventoryAdjustmentRequest.setProcessedByDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
         inventoryAdjustmentRequest.setProcessedByUsername(userService.getCurrentUserName());
         // If the user pass in the comment, we will override the comment
         // that is generated during requesting. Otherwise, we will keep the

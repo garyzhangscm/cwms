@@ -3,8 +3,6 @@ package com.garyzhangscm.cwms.outbound.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -13,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Entity
@@ -35,10 +35,14 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     private String transactionGroupId;
 
     @Column(name = "activity_datetime")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime activityDateTime;
+    private ZonedDateTime activityDateTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime activityDateTime;
 
     @Column(name = "username")
     private String username;
@@ -187,16 +191,16 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
         return new OrderActivity(warehouseId, transactionGroupId, number)
                 .withUsername(SecurityContextHolder.getContext().getAuthentication().getName())
-                .withActivityDateTime(LocalDateTime.now());
+                .withActivityDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
     }
 
     public static OrderActivity build(Long warehouseId, String transactionGroupId, String number, String username) {
 
         return new OrderActivity(warehouseId, transactionGroupId, number)
                 .withUsername(username)
-                .withActivityDateTime(LocalDateTime.now());
+                .withActivityDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
     }
-    public OrderActivity withActivityDateTime(LocalDateTime activityDateTime) {
+    public OrderActivity withActivityDateTime(ZonedDateTime activityDateTime) {
         setActivityDateTime(activityDateTime);
         return this;
     }
@@ -344,11 +348,11 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
         this.number = number;
     }
 
-    public LocalDateTime getActivityDateTime() {
+    public ZonedDateTime getActivityDateTime() {
         return activityDateTime;
     }
 
-    public void setActivityDateTime(LocalDateTime activityDateTime) {
+    public void setActivityDateTime(ZonedDateTime activityDateTime) {
         this.activityDateTime = activityDateTime;
     }
 

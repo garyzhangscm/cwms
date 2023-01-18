@@ -20,38 +20,32 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.annotation.CreatedDate;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Objects;
+import java.time.ZonedDateTime;
 
 public class InventorySnapshotSummary extends AuditibleEntity<String> implements Serializable {
 
     // inventory snapshot
     String batchNumber;
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    LocalDateTime completeTime;
+    private ZonedDateTime completeTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // LocalDateTime completeTime;
 
     InventorySnapshotSummaryGroupBy groupBy;
     String groupByValue;
 
     long inventoryQuantity;
 
-    public InventorySnapshotSummary(String batchNumber, LocalDateTime completeTime, InventorySnapshotSummaryGroupBy groupBy, String groupByValue, long inventoryQuantity) {
+    public InventorySnapshotSummary(String batchNumber, ZonedDateTime completeTime, InventorySnapshotSummaryGroupBy groupBy, String groupByValue, long inventoryQuantity) {
         this.batchNumber = batchNumber;
         this.completeTime = completeTime;
         this.groupBy = groupBy;
@@ -79,11 +73,11 @@ public class InventorySnapshotSummary extends AuditibleEntity<String> implements
         this.batchNumber = batchNumber;
     }
 
-    public LocalDateTime getCompleteTime() {
+    public ZonedDateTime getCompleteTime() {
         return completeTime;
     }
 
-    public void setCompleteTime(LocalDateTime completeTime) {
+    public void setCompleteTime(ZonedDateTime completeTime) {
         this.completeTime = completeTime;
     }
 

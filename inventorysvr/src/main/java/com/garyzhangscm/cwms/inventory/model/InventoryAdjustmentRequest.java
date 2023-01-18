@@ -19,20 +19,19 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "inventory_adjustment_request")
@@ -96,7 +95,11 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
 
     // Request Date
     @Column(name = "requested_by_datetime")
-    private LocalDateTime requestedByDateTime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime requestedByDateTime;
+    // private LocalDateTime requestedByDateTime;
 
 
     // Approved or Denied by
@@ -105,7 +108,11 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
 
     // Approved or Denied Date
     @Column(name = "processed_by_datetime")
-    private LocalDateTime processedByDateTime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime processedByDateTime;
+    // private LocalDateTime processedByDateTime;
 
     // Approved or Denied comment
     @Column(name = "document_number")
@@ -151,7 +158,7 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
         setInventoryQuantityChangeType(inventoryQuantityChangeType);
         setStatus(InventoryAdjustmentRequestStatus.PENDING);
         setRequestedByUsername(username);
-        setRequestedByDateTime(LocalDateTime.now());
+        setRequestedByDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
         setDocumentNumber(documentNumber);
         setComment(comment);
     }
@@ -266,11 +273,11 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
         this.requestedByUsername = requestedByUsername;
     }
 
-    public LocalDateTime getRequestedByDateTime() {
+    public ZonedDateTime getRequestedByDateTime() {
         return requestedByDateTime;
     }
 
-    public void setRequestedByDateTime(LocalDateTime requestedByDateTime) {
+    public void setRequestedByDateTime(ZonedDateTime requestedByDateTime) {
         this.requestedByDateTime = requestedByDateTime;
     }
 
@@ -282,11 +289,11 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
         this.processedByUsername = processedByUsername;
     }
 
-    public LocalDateTime getProcessedByDateTime() {
+    public ZonedDateTime getProcessedByDateTime() {
         return processedByDateTime;
     }
 
-    public void setProcessedByDateTime(LocalDateTime processedByDateTime) {
+    public void setProcessedByDateTime(ZonedDateTime processedByDateTime) {
         this.processedByDateTime = processedByDateTime;
     }
 

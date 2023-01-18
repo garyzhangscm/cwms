@@ -1,30 +1,23 @@
 package com.garyzhangscm.cwms.quickbook.service.qbo;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.quickbook.clients.IntegrationServiceRestemplateClient;
-import com.garyzhangscm.cwms.quickbook.controller.QuickBookOnlineTokenController;
 import com.garyzhangscm.cwms.quickbook.model.*;
 import com.garyzhangscm.cwms.quickbook.service.*;
 import com.intuit.ipp.data.Entity;
 import com.intuit.ipp.data.EventNotification;
-import com.intuit.ipp.exception.FMSException;
-import com.intuit.ipp.services.CDCQueryResult;
 import com.intuit.ipp.services.QueryResult;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.intuit.ipp.core.IEntity;
 import com.intuit.ipp.services.DataService;
 
 /**

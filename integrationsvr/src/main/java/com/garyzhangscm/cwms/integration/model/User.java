@@ -1,7 +1,6 @@
 package com.garyzhangscm.cwms.integration.model;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 public class User {
     private String token;

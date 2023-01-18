@@ -1,9 +1,13 @@
 package com.garyzhangscm.cwms.common.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "work_task")
@@ -83,9 +87,18 @@ public class WorkTask extends AuditibleEntity<String> {
 
     // User who complete this work
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime startTime;
+    // private LocalDateTime startTime;
+
     @Column(name = "complete_time")
-    private LocalDateTime completeTime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime completeTime;
+    // private LocalDateTime completeTime;
 
 
     public Long getId() {
@@ -224,19 +237,19 @@ public class WorkTask extends AuditibleEntity<String> {
         this.completeUserId = completeUserId;
     }
 
-    public LocalDateTime getStartTime() {
+    public ZonedDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(ZonedDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getCompleteTime() {
+    public ZonedDateTime getCompleteTime() {
         return completeTime;
     }
 
-    public void setCompleteTime(LocalDateTime completeTime) {
+    public void setCompleteTime(ZonedDateTime completeTime) {
         this.completeTime = completeTime;
     }
 

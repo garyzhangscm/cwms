@@ -9,6 +9,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "production_line_activity")
@@ -48,11 +50,16 @@ public class ProductionLineActivity extends AuditibleEntity<String>{
     private Integer workingTeamMemberCount;
 
     @Column(name = "transaction_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-//@DateTimeFormat(pattern =  "YYYY-MM-DDTHH:mm:ss.SSSZ")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime transactionTime;
+    private ZonedDateTime transactionTime;
+
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+//@DateTimeFormat(pattern =  "YYYY-MM-DDTHH:mm:ss.SSSZ")
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime transactionTime;
 
     public ProductionLineActivity(){}
 
@@ -66,7 +73,7 @@ public class ProductionLineActivity extends AuditibleEntity<String>{
         this.username = username;
         this.workingTeamMemberCount = workingTeamMemberCount;
         this.type = type;
-        this.transactionTime = LocalDateTime.now();
+        this.transactionTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
 
     }
     public Long getId() {
@@ -125,11 +132,11 @@ public class ProductionLineActivity extends AuditibleEntity<String>{
         this.workingTeamMemberCount = workingTeamMemberCount;
     }
 
-    public LocalDateTime getTransactionTime() {
+    public ZonedDateTime getTransactionTime() {
         return transactionTime;
     }
 
-    public void setTransactionTime(LocalDateTime transactionTime) {
+    public void setTransactionTime(ZonedDateTime transactionTime) {
         this.transactionTime = transactionTime;
     }
 

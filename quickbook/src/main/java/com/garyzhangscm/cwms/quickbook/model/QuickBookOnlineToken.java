@@ -19,20 +19,13 @@
 package com.garyzhangscm.cwms.quickbook.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.ZonedDateTime;
 
 
 @Entity
@@ -72,10 +65,14 @@ public class QuickBookOnlineToken extends AuditibleEntity<String> implements Ser
 
 
     @Column(name = "last_token_request_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime lastTokenRequestTime;
+    private ZonedDateTime lastTokenRequestTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime lastTokenRequestTime;
 
     // last call to QBO CDC api
     @Column(name = "last_cdc_call_time")
@@ -86,7 +83,7 @@ public class QuickBookOnlineToken extends AuditibleEntity<String> implements Ser
     }
     public QuickBookOnlineToken(Long companyId, Long warehouseId, String realmId,
                                 String authorizationCode, String token,
-                                String refreshToken, LocalDateTime lastTokenRequestTime) {
+                                String refreshToken, ZonedDateTime lastTokenRequestTime) {
         this.warehouseId = warehouseId;
         this.companyId = companyId;
         this.realmId = realmId;
@@ -168,11 +165,11 @@ public class QuickBookOnlineToken extends AuditibleEntity<String> implements Ser
         this.refreshToken = refreshToken;
     }
 
-    public LocalDateTime getLastTokenRequestTime() {
+    public ZonedDateTime getLastTokenRequestTime() {
         return lastTokenRequestTime;
     }
 
-    public void setLastTokenRequestTime(LocalDateTime lastTokenRequestTime) {
+    public void setLastTokenRequestTime(ZonedDateTime lastTokenRequestTime) {
         this.lastTokenRequestTime = lastTokenRequestTime;
     }
 

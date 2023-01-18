@@ -36,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -182,7 +184,7 @@ public class CancelledShortAllocationService {
 
         cancelledShortAllocation.setCancelledQuantity(cancelledQuantity);
         cancelledShortAllocation.setCancelledUsername(userService.getCurrentUserName());
-        cancelledShortAllocation.setCancelledDate(LocalDateTime.now());
+        cancelledShortAllocation.setCancelledDate(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
         return cancelledShortAllocation;
     }

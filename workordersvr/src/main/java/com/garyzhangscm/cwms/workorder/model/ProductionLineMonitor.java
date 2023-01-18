@@ -13,6 +13,7 @@ import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +48,14 @@ public class ProductionLineMonitor extends AuditibleEntity<String>{
 
 
     @Column(name = "last_heart_beat_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime lastHeartBeatTime;
+    private ZonedDateTime lastHeartBeatTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime lastHeartBeatTime;
 
     public Long getId() {
         return id;
@@ -92,11 +97,11 @@ public class ProductionLineMonitor extends AuditibleEntity<String>{
         this.warehouseId = warehouseId;
     }
 
-    public LocalDateTime getLastHeartBeatTime() {
+    public ZonedDateTime getLastHeartBeatTime() {
         return lastHeartBeatTime;
     }
 
-    public void setLastHeartBeatTime(LocalDateTime lastHeartBeatTime) {
+    public void setLastHeartBeatTime(ZonedDateTime lastHeartBeatTime) {
         this.lastHeartBeatTime = lastHeartBeatTime;
     }
 }

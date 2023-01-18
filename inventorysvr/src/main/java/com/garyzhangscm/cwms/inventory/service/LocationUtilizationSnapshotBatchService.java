@@ -39,6 +39,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
@@ -253,7 +254,7 @@ public class LocationUtilizationSnapshotBatchService {
 
     private void completeLocationUtilizationSnapshotBatch(LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch) {
         locationUtilizationSnapshotBatch.setStatus(LocationUtilizationSnapshotStatus.DONE);
-        locationUtilizationSnapshotBatch.setCompleteTime(LocalDateTime.now());
+        locationUtilizationSnapshotBatch.setCompleteTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
         // save the result
         logger.debug(">>   3 start to save details to batch {}",

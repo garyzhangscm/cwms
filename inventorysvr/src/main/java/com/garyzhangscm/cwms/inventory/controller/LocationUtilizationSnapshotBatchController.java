@@ -20,7 +20,6 @@ package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotBatchService;
-import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

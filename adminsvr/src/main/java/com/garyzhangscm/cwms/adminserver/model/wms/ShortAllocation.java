@@ -1,13 +1,10 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public class ShortAllocation  implements Serializable {
@@ -29,7 +26,7 @@ public class ShortAllocation  implements Serializable {
     // the last allocation time, to make sure we
     // will only re-try after certain amount time
     // has been passed.
-    private LocalDateTime lastAllocationDatetime;
+    private ZonedDateTime lastAllocationDatetime;
 
     private List<Pick> picks;
 
@@ -176,11 +173,15 @@ public class ShortAllocation  implements Serializable {
         this.allocationCount = allocationCount;
     }
 
-    public LocalDateTime getLastAllocationDatetime() {
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public ZonedDateTime getLastAllocationDatetime() {
         return lastAllocationDatetime;
     }
 
-    public void setLastAllocationDatetime(LocalDateTime lastAllocationDatetime) {
+    public void setLastAllocationDatetime(ZonedDateTime lastAllocationDatetime) {
         this.lastAllocationDatetime = lastAllocationDatetime;
     }
 

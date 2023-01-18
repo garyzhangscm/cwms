@@ -36,10 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
@@ -281,7 +279,7 @@ public class ReceiptService implements TestDataInitiableService{
         if (receipt != null && receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
 
             receipt.setReceiptStatus(ReceiptStatus.CHECK_IN);
-            receipt.setCheckInTime(LocalDateTime.now());
+            receipt.setCheckInTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
             logger.debug("update the receipt to check in");
             if (recalculateQCDuringCheckin()) {
                 recalculateQCQuantity(receipt);

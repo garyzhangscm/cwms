@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -47,8 +47,8 @@ public class LocationUtilizationSnapshotController {
             @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
             @RequestParam(name="clientName", required = false, defaultValue = "") String clientName,
             @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
-            @RequestParam(name="startTime", required = false, defaultValue = "") LocalDateTime startTime,
-            @RequestParam(name="endTime", required = false, defaultValue = "") LocalDateTime endTime,
+            @RequestParam(name="startTime", required = false, defaultValue = "") ZonedDateTime startTime,
+            @RequestParam(name="endTime", required = false, defaultValue = "") ZonedDateTime endTime,
             @RequestParam(name="loadDetails", required = false, defaultValue = "") Boolean loadDetails) {
         return locationUtilizationSnapshotService.findAll(warehouseId,
                 itemName, itemId, clientName, clientId, startTime, endTime, loadDetails);

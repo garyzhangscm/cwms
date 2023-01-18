@@ -4,16 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 public class IntegrationData implements Serializable {
 
     private Long id;
     private IntegrationStatus status;
 
-    private LocalDateTime insertTime;
+    private ZonedDateTime insertTime;
 
-    private LocalDateTime lastUpdateTime;
+    private ZonedDateTime lastUpdateTime;
 
     @Override
     public String toString() {
@@ -41,19 +41,19 @@ public class IntegrationData implements Serializable {
         this.status = status;
     }
 
-    public LocalDateTime getInsertTime() {
+    public ZonedDateTime getInsertTime() {
         return insertTime;
     }
 
-    public void setInsertTime(LocalDateTime insertTime) {
+    public void setInsertTime(ZonedDateTime insertTime) {
         this.insertTime = insertTime;
     }
 
-    public LocalDateTime getLastUpdateTime() {
+    public ZonedDateTime getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
+    public void setLastUpdateTime(ZonedDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
 }

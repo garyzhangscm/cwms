@@ -18,15 +18,19 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,7 +83,11 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
     private Customer shipToCustomer;
 
     @Column(name = "complete_time")
-    private LocalDateTime completeTime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime completeTime;
+    // private LocalDateTime completeTime;
 
     // Ship to Address
     @Column(name = "ship_to_contactor_firstname")
@@ -215,11 +223,11 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
         this.number = number;
     }
 
-    public LocalDateTime getCompleteTime() {
+    public ZonedDateTime getCompleteTime() {
         return completeTime;
     }
 
-    public void setCompleteTime(LocalDateTime completeTime) {
+    public void setCompleteTime(ZonedDateTime completeTime) {
         this.completeTime = completeTime;
     }
 

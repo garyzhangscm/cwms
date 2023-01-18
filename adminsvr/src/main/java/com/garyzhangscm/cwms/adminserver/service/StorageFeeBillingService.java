@@ -18,25 +18,15 @@
 
 package com.garyzhangscm.cwms.adminserver.service;
 
-import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.model.*;
-import com.garyzhangscm.cwms.adminserver.repository.BillingRateRepository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -163,8 +153,8 @@ public abstract class StorageFeeBillingService implements BillingService {
         dailyAverageAmountMap.entrySet().forEach(
                 entry -> {
                     BillingRequestLine billingRequestLine = new BillingRequestLine(
-                            billingRequest, entry.getKey().atStartOfDay(),
-                            entry.getKey().plusDays(1).atStartOfDay().minusNanos(1),
+                            billingRequest, entry.getKey().atStartOfDay().atZone(ZoneOffset.UTC),
+                            entry.getKey().plusDays(1).atStartOfDay().minusNanos(1).atZone(ZoneOffset.UTC),
                             entry.getValue(),
                             entry.getValue() * billingRate.getRate()
                     );

@@ -3,14 +3,11 @@ package com.garyzhangscm.cwms.common.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -57,10 +54,14 @@ public class TrailerAppointment extends AuditibleEntity<String>{
     private TrailerAppointmentStatus status;
 
     @Column(name = "completed_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime completedTime;
+    private ZonedDateTime completedTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime completedTime;
 
 
 
@@ -151,11 +152,11 @@ public class TrailerAppointment extends AuditibleEntity<String>{
         this.stops = stops;
     }
 
-    public LocalDateTime getCompletedTime() {
+    public ZonedDateTime getCompletedTime() {
         return completedTime;
     }
 
-    public void setCompletedTime(LocalDateTime completedTime) {
+    public void setCompletedTime(ZonedDateTime completedTime) {
         this.completedTime = completedTime;
     }
 }

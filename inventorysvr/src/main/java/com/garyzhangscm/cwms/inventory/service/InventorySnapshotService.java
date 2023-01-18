@@ -18,14 +18,10 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.CustomRequestScopeAttr;
 import com.garyzhangscm.cwms.inventory.clients.*;
-import com.garyzhangscm.cwms.inventory.exception.InventoryException;
-import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
-import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
 import com.garyzhangscm.cwms.inventory.repository.InventorySnapshotRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -33,25 +29,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -308,7 +298,7 @@ public class InventorySnapshotService  {
         inventorySnapshot.setBatchNumber(batchNumber);
 
         inventorySnapshot.setStatus(InventorySnapshotStatus.PROCESSING);
-        inventorySnapshot.setStartTime(LocalDateTime.now());
+        inventorySnapshot.setStartTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
         InventorySnapshot savedInventorySnapshot = saveOrUpdate(inventorySnapshot);
 
         logger.debug("  inventory snapshot with batch number {} is generated",
@@ -383,7 +373,7 @@ public class InventorySnapshotService  {
                 new ArrayList<>(inventorySnapshotDetailMap.values())
         );
         inventorySnapshot.setStatus(InventorySnapshotStatus.DONE);
-        inventorySnapshot.setCompleteTime(LocalDateTime.now());
+        inventorySnapshot.setCompleteTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
         // save the result
         logger.debug(">>   3 start to save details to batch {}",

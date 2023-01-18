@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ProductionLineException;
@@ -30,13 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -113,11 +110,11 @@ public class ProductionLineActivityService {
                         predicates.add(criteriaBuilder.equal(root.get("type"), ProductionLineActivityType.valueOf(type)));
                     }
                     if (StringUtils.isNotBlank(transactionTimeStart)) {
-                        LocalDateTime dateTime = LocalDateTime.parse(transactionTimeStart);
+                        ZonedDateTime dateTime = ZonedDateTime.parse(transactionTimeStart);
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("transactionTime"), dateTime));
                     }
                     if (StringUtils.isNotBlank(transactionTimeEnd)) {
-                        LocalDateTime dateTime = LocalDateTime.parse(transactionTimeEnd);
+                        ZonedDateTime dateTime = ZonedDateTime.parse(transactionTimeEnd);
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("transactionTime"), dateTime));
                     }
                     Predicate[] p = new Predicate[predicates.size()];

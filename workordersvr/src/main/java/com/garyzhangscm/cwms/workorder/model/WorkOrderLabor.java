@@ -11,6 +11,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,17 +40,25 @@ public class WorkOrderLabor extends AuditibleEntity<String>{
     private ProductionLine productionLine;
 
     @Column(name = "last_check_in_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime lastCheckInTime;
+    private ZonedDateTime lastCheckInTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime lastCheckInTime;
 
 
     @Column(name = "last_check_out_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime lastCheckOutTime;
+    private ZonedDateTime lastCheckOutTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime lastCheckOutTime;
 
 
     @Column(name = "labor_status")
@@ -58,7 +67,7 @@ public class WorkOrderLabor extends AuditibleEntity<String>{
 
     public WorkOrderLabor(){}
     public WorkOrderLabor(Long warehouseId, String username, ProductionLine productionLine,
-                          LocalDateTime lastCheckInTime, LocalDateTime lastCheckOutTime, WorkOrderLaborStatus workOrderLaborStatus) {
+                          ZonedDateTime lastCheckInTime, ZonedDateTime lastCheckOutTime, WorkOrderLaborStatus workOrderLaborStatus) {
         this.warehouseId = warehouseId;
         this.username = username;
         this.productionLine = productionLine;
@@ -93,19 +102,19 @@ public class WorkOrderLabor extends AuditibleEntity<String>{
         this.username = username;
     }
 
-    public LocalDateTime getLastCheckInTime() {
+    public ZonedDateTime getLastCheckInTime() {
         return lastCheckInTime;
     }
 
-    public void setLastCheckInTime(LocalDateTime lastCheckInTime) {
+    public void setLastCheckInTime(ZonedDateTime lastCheckInTime) {
         this.lastCheckInTime = lastCheckInTime;
     }
 
-    public LocalDateTime getLastCheckOutTime() {
+    public ZonedDateTime getLastCheckOutTime() {
         return lastCheckOutTime;
     }
 
-    public void setLastCheckOutTime(LocalDateTime lastCheckOutTime) {
+    public void setLastCheckOutTime(ZonedDateTime lastCheckOutTime) {
         this.lastCheckOutTime = lastCheckOutTime;
     }
 

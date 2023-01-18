@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -365,7 +366,7 @@ public class QCInspectionRequestService {
         List<QCInspectionRequest> newQCInspectionRequests = new ArrayList<>();
         qcInspectionRequests.forEach(
                 qcInspectionRequest -> {
-                    qcInspectionRequest.setQcTime(LocalDateTime.now());
+                    qcInspectionRequest.setQcTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
                     qcInspectionRequest.setQcUsername(userService.getCurrentUserName());
                     qcInspectionRequest.setRfCode(rfCode);
 

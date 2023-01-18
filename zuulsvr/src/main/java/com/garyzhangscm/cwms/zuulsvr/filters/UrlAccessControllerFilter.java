@@ -111,6 +111,12 @@ public class UrlAccessControllerFilter extends ZuulFilter {
 
 
         logger.debug("Start to validate http access");
+        String innerCall = requestContext.getRequest().getHeader("innerCall");
+        logger.debug("innerCall? : {}", innerCall);
+        if ("true".equalsIgnoreCase(innerCall)) {
+            logger.debug("Skip validation if the call is from inner service");
+            return;
+        }
         // first, we will check if we have token in the http header
         String token = requestContext.getRequest().getHeader("Authorization");
         logger.debug("token: " + token);

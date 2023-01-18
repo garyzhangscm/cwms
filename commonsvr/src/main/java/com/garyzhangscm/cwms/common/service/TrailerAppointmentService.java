@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.common.service;
 
+import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
 import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.KafkaSender;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
@@ -187,7 +188,7 @@ public class TrailerAppointmentService {
             throw TrailerException.raiseException("Trailer is not ready for complete");
         }
         trailerAppointment.setStatus(TrailerAppointmentStatus.COMPLETED);
-        trailerAppointment.setCompletedTime(LocalDateTime.now());
+        trailerAppointment.setCompletedTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
         return save(trailerAppointment);
     }
 

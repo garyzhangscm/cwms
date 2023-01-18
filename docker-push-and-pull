@@ -93,18 +93,26 @@ docker tag garyzhangscm/cwms-ressvr:latest   garyzhangscm/cwms-ressvr:v1.1
 docker tag garyzhangscm/cwms-workorderserver:latest  garyzhangscm/cwms-workorderserver:v1.1
 docker tag garyzhangscm/cwms-quickbook:latest  garyzhangscm/cwms-quickbook:v1.1
 
+
+
+
+docker tag garyzhangscm/cwms-zuulsvr:latest   garyzhangscm/cwms-zuulsvr:v1.1
 //// db link is always use latest
 
-docker push garyzhangscm/cwms-adminserver:v1.0
-docker push garyzhangscm/cwms-auth:v1.0
-docker push garyzhangscm/cwms-commonserver:v1.0
-docker push garyzhangscm/cwms-inboundserver:v1.0
-docker push garyzhangscm/cwms-integrationserver:v1.0
-docker push garyzhangscm/cwms-inventoryserver:v1.0
-docker push garyzhangscm/cwms-outboundserver:v1.0
-docker push garyzhangscm/cwms-layoutserver:v1.0
-docker push garyzhangscm/cwms-ressvr:v1.0
-docker push garyzhangscm/cwms-workorderserver:v1.0
+docker push garyzhangscm/cwms-adminserver:v1.1
+docker push garyzhangscm/cwms-auth:v1.1
+docker push garyzhangscm/cwms-commonserver:v1.1
+docker push garyzhangscm/cwms-inboundserver:v1.1
+docker push garyzhangscm/cwms-integrationserver:v1.1
+docker push garyzhangscm/cwms-inventoryserver:v1.1
+docker push garyzhangscm/cwms-outboundserver:v1.1
+docker push garyzhangscm/cwms-layoutserver:v1.1
+docker push garyzhangscm/cwms-ressvr:v1.1
+docker push garyzhangscm/cwms-workorderserver:v1.1
+docker push garyzhangscm/cwms-quickbook:v1.1
+
+
+docker push garyzhangscm/cwms-zuulsvr:v1.1
 
 
 docker tag garyzhangscm/cwms-confsvr:latest  garyzhangscm/cwms-confsvr:v1.0

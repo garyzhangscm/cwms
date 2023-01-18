@@ -18,14 +18,16 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Entity
@@ -124,7 +126,11 @@ public class CancelledPick  extends AuditibleEntity<String> implements Serializa
     private User cancelledUser;
 
     @Column(name = "cancelled_date")
-    private LocalDateTime cancelledDate;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime cancelledDate;
+    // private LocalDateTime cancelledDate;
 
     public Long getId() {
         return id;
@@ -311,11 +317,11 @@ public class CancelledPick  extends AuditibleEntity<String> implements Serializa
         this.cancelledUser = cancelledUser;
     }
 
-    public LocalDateTime getCancelledDate() {
+    public ZonedDateTime getCancelledDate() {
         return cancelledDate;
     }
 
-    public void setCancelledDate(LocalDateTime cancelledDate) {
+    public void setCancelledDate(ZonedDateTime cancelledDate) {
         this.cancelledDate = cancelledDate;
     }
 

@@ -1,17 +1,12 @@
 package com.garyzhangscm.cwms.common.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "tractor_schedule")
@@ -32,16 +27,24 @@ public class TractorSchedule extends AuditibleEntity<String>{
     private Tractor tractor;
 
     @Column(name = "check_in_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime checkInTime;
+    private ZonedDateTime checkInTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime checkInTime;
 
     @Column(name = "dispatch_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime dispatchTime;
+    private ZonedDateTime dispatchTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime dispatchTime;
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
@@ -74,19 +77,19 @@ public class TractorSchedule extends AuditibleEntity<String>{
         this.tractor = tractor;
     }
 
-    public LocalDateTime getCheckInTime() {
+    public ZonedDateTime getCheckInTime() {
         return checkInTime;
     }
 
-    public void setCheckInTime(LocalDateTime checkInTime) {
+    public void setCheckInTime(ZonedDateTime checkInTime) {
         this.checkInTime = checkInTime;
     }
 
-    public LocalDateTime getDispatchTime() {
+    public ZonedDateTime getDispatchTime() {
         return dispatchTime;
     }
 
-    public void setDispatchTime(LocalDateTime dispatchTime) {
+    public void setDispatchTime(ZonedDateTime dispatchTime) {
         this.dispatchTime = dispatchTime;
     }
 
