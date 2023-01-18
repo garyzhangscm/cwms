@@ -19,17 +19,17 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -52,10 +52,18 @@ public class InventorySnapshot extends AuditibleEntity<String> implements Serial
     private String batchNumber;
 
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime startTime;
+    // private LocalDateTime startTime;
 
     @Column(name = "complete_time")
-    private LocalDateTime completeTime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime completeTime;
+    // private LocalDateTime completeTime;
 
     // allow the user to generate an excel file
     // for the inventory snapshot. We will save
@@ -153,19 +161,19 @@ public class InventorySnapshot extends AuditibleEntity<String> implements Serial
         this.status = status;
     }
 
-    public LocalDateTime getStartTime() {
+    public ZonedDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(ZonedDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getCompleteTime() {
+    public ZonedDateTime getCompleteTime() {
         return completeTime;
     }
 
-    public void setCompleteTime(LocalDateTime completeTime) {
+    public void setCompleteTime(ZonedDateTime completeTime) {
         this.completeTime = completeTime;
     }
 

@@ -20,26 +20,19 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "qc_inspection_request")
@@ -120,10 +113,14 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
     private String qcUsername;
 
     @Column(name = "qc_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime qcTime;
+    private ZonedDateTime qcTime;
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime qcTime;
 
     @Column(name = "qc_rf_code")
     private String rfCode;
@@ -206,14 +203,13 @@ public class QCInspectionRequest extends AuditibleEntity<String> implements Seri
         this.qcUsername = qcUsername;
     }
 
-    public LocalDateTime getQcTime() {
+    public ZonedDateTime getQcTime() {
         return qcTime;
     }
 
-    public void setQcTime(LocalDateTime qcTime) {
+    public void setQcTime(ZonedDateTime qcTime) {
         this.qcTime = qcTime;
     }
-
 
     public List<QCInspectionRequestItem> getQcInspectionRequestItems() {
         return qcInspectionRequestItems;

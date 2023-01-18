@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.inventory.repository;
 
-import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventorySnapshot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -27,7 +26,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 

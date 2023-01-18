@@ -38,6 +38,8 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -222,7 +224,7 @@ public class CancelledPickService {
         cancelledPick.setPickList(pick.getPickList());
 
         cancelledPick.setCancelledUsername(userService.getCurrentUserName());
-        cancelledPick.setCancelledDate(LocalDateTime.now());
+        cancelledPick.setCancelledDate(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
         return cancelledPick;
     }

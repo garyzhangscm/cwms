@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.model.ClientLocationUtilizationSnapshotBatch;
-import com.garyzhangscm.cwms.inventory.model.LocationUtilizationSnapshot;
 import com.garyzhangscm.cwms.inventory.service.ClientLocationUtilizationSnapshotBatchService;
-import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 

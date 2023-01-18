@@ -4,15 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.garyzhangscm.cwms.adminserver.model.wms.Client;
-import com.garyzhangscm.cwms.adminserver.model.wms.Company;
-import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 /**
  * Billable web request call
@@ -37,16 +32,26 @@ public class BillingRequestLine extends AuditibleEntity<String>{
     private BillingRequest billingRequest;
 
     @Column(name = "start_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime startTime;
+    private ZonedDateTime startTime;
+
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime startTime;
 
     @Column(name = "end_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime endTime;
+    private ZonedDateTime endTime;
+
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime endTime;
 
     @Column(name = "total_amount")
     private Double totalAmount;
@@ -57,7 +62,7 @@ public class BillingRequestLine extends AuditibleEntity<String>{
 
     }
 
-    public BillingRequestLine(BillingRequest billingRequest, LocalDateTime startTime, LocalDateTime endTime, Double totalAmount, Double totalCharge) {
+    public BillingRequestLine(BillingRequest billingRequest, ZonedDateTime startTime, ZonedDateTime endTime, Double totalAmount, Double totalCharge) {
         this.billingRequest = billingRequest;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -81,19 +86,19 @@ public class BillingRequestLine extends AuditibleEntity<String>{
         this.billingRequest = billingRequest;
     }
 
-    public LocalDateTime getStartTime() {
+    public ZonedDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(ZonedDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public ZonedDateTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(ZonedDateTime endTime) {
         this.endTime = endTime;
     }
 

@@ -2,7 +2,6 @@ package com.garyzhangscm.cwms.integration.model;
 
 
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;

@@ -44,6 +44,7 @@
         <module>integrationsvr</module>
         <module>dblink</module>
         <module>QuickBook</module>
+        <module>zuulsvr</module>
         <!--
         <module>licensing-service</module>
         -->

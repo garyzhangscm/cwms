@@ -1,35 +1,16 @@
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.easypost.exception.EasyPostException;
-import com.easypost.exception.General.MissingParameterError;
-import com.easypost.model.Event;
-import com.easypost.model.Rate;
-import com.easypost.model.Shipment;
-import com.easypost.service.EasyPostClient;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.EasyPostCarrierRepository;
 import com.garyzhangscm.cwms.outbound.repository.EasyPostConfigurationRepository;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 /*

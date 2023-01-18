@@ -19,14 +19,13 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 public class InventoryAdjustmentRequest implements Serializable {
     private Long id;
@@ -59,12 +58,12 @@ public class InventoryAdjustmentRequest implements Serializable {
 
     private String requestedByUsername;
 
-    private LocalDateTime requestedByDateTime;
+    private ZonedDateTime requestedByDateTime;
 
 
     private String processedByUsername;
 
-    private LocalDateTime processedByDateTime;
+    private ZonedDateTime processedByDateTime;
 
     private String documentNumber;
     private String comment;
@@ -91,7 +90,7 @@ public class InventoryAdjustmentRequest implements Serializable {
         setInventoryQuantityChangeType(inventoryQuantityChangeType);
         setStatus(InventoryAdjustmentRequestStatus.PENDING);
         setRequestedByUsername(username);
-        setRequestedByDateTime(LocalDateTime.now());
+        setRequestedByDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
         setDocumentNumber(documentNumber);
         setComment(comment);
     }
@@ -209,13 +208,6 @@ public class InventoryAdjustmentRequest implements Serializable {
         this.requestedByUsername = requestedByUsername;
     }
 
-    public LocalDateTime getRequestedByDateTime() {
-        return requestedByDateTime;
-    }
-
-    public void setRequestedByDateTime(LocalDateTime requestedByDateTime) {
-        this.requestedByDateTime = requestedByDateTime;
-    }
 
     public String getProcessedByUsername() {
         return processedByUsername;
@@ -225,11 +217,19 @@ public class InventoryAdjustmentRequest implements Serializable {
         this.processedByUsername = processedByUsername;
     }
 
-    public LocalDateTime getProcessedByDateTime() {
+    public ZonedDateTime getRequestedByDateTime() {
+        return requestedByDateTime;
+    }
+
+    public void setRequestedByDateTime(ZonedDateTime requestedByDateTime) {
+        this.requestedByDateTime = requestedByDateTime;
+    }
+
+    public ZonedDateTime getProcessedByDateTime() {
         return processedByDateTime;
     }
 
-    public void setProcessedByDateTime(LocalDateTime processedByDateTime) {
+    public void setProcessedByDateTime(ZonedDateTime processedByDateTime) {
         this.processedByDateTime = processedByDateTime;
     }
 

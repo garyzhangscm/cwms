@@ -18,20 +18,14 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
-import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.common.exception.MissingInformationException;
 import com.garyzhangscm.cwms.common.model.BillableEndpoint;
-import com.garyzhangscm.cwms.common.model.Location;
-import com.garyzhangscm.cwms.common.model.Tractor;
 import com.garyzhangscm.cwms.common.model.TractorSchedule;
 import com.garyzhangscm.cwms.common.service.TractorScheduleService;
-import com.garyzhangscm.cwms.common.service.TractorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 public class TractorScheduleController {
@@ -43,10 +37,10 @@ public class TractorScheduleController {
     public List<TractorSchedule> findAllTractors(@RequestParam Long warehouseId,
                                                  @RequestParam(name="tractorId", required = false, defaultValue = "") Long tractorId,
                                                  @RequestParam(name="tractorNumber", required = false, defaultValue = "") String tractorNumber,
-                                         @RequestParam(name="startCheckInTime", required = false, defaultValue = "") LocalDateTime startCheckInTime,
-                                         @RequestParam(name="endCheckInTime", required = false, defaultValue = "") LocalDateTime endCheckInTime,
-                                         @RequestParam(name="startDispatchTime", required = false, defaultValue = "") LocalDateTime startDispatchTime,
-                                         @RequestParam(name="endDispatchTime", required = false, defaultValue = "") LocalDateTime endDispatchTime) {
+                                         @RequestParam(name="startCheckInTime", required = false, defaultValue = "") ZonedDateTime startCheckInTime,
+                                         @RequestParam(name="endCheckInTime", required = false, defaultValue = "") ZonedDateTime endCheckInTime,
+                                         @RequestParam(name="startDispatchTime", required = false, defaultValue = "") ZonedDateTime startDispatchTime,
+                                         @RequestParam(name="endDispatchTime", required = false, defaultValue = "") ZonedDateTime endDispatchTime) {
 
         return tractorScheduleService.findAll(warehouseId, tractorId, tractorNumber, startCheckInTime, endCheckInTime, startDispatchTime, endDispatchTime);
     }

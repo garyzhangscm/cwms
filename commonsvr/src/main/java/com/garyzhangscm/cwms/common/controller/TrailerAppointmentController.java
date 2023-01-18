@@ -18,23 +18,15 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
-import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.common.exception.MissingInformationException;
-import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
-import com.garyzhangscm.cwms.common.model.BillableEndpoint;
-import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.model.TrailerAppointment;
-import com.garyzhangscm.cwms.common.service.SupplierService;
 import com.garyzhangscm.cwms.common.service.TrailerAppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 public class TrailerAppointmentController {

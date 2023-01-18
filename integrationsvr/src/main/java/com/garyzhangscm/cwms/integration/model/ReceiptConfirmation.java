@@ -21,11 +21,9 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,8 +51,8 @@ public class ReceiptConfirmation implements Serializable{
     private Boolean allowUnexpectedItem;
 
     private IntegrationStatus status;
-    private LocalDateTime insertTime;
-    private LocalDateTime lastUpdateTime;
+    private ZonedDateTime insertTime;
+    private ZonedDateTime lastUpdateTime;
     private String errorMessage;
 
 
@@ -148,19 +146,19 @@ public class ReceiptConfirmation implements Serializable{
         this.status = status;
     }
 
-    public LocalDateTime getInsertTime() {
+    public ZonedDateTime getInsertTime() {
         return insertTime;
     }
 
-    public void setInsertTime(LocalDateTime insertTime) {
+    public void setInsertTime(ZonedDateTime insertTime) {
         this.insertTime = insertTime;
     }
 
-    public LocalDateTime getLastUpdateTime() {
+    public ZonedDateTime getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
+    public void setLastUpdateTime(ZonedDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
 

@@ -2,7 +2,6 @@ package com.garyzhangscm.cwms.dblink.service;
 
 import com.garyzhangscm.cwms.dblink.model.DBBasedInventoryAdjustmentConfirmation;
 import com.garyzhangscm.cwms.dblink.model.DBBasedWorkOrderReceivingConfirmation;
-import com.garyzhangscm.cwms.dblink.model.IntegrationStatus;
 import com.garyzhangscm.cwms.dblink.model.InventoryQuantityChangeType;
 import com.garyzhangscm.cwms.dblink.repository.DBBasedWorkOrderReceivingConfirmationRepository;
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 

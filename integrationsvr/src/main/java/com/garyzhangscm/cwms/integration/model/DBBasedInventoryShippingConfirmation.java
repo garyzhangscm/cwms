@@ -26,7 +26,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * Outbound shipping confirmation integration at inventory / LPN level

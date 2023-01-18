@@ -21,14 +21,13 @@ package com.garyzhangscm.cwms.quickbook.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 
 @Entity
@@ -76,10 +75,16 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
     private String errorMessage;
 
     @Column(name = "processed_time")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime processedTime;
+    private ZonedDateTime processedTime;
+
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // private LocalDateTime processedTime;
 
     public QuickBookWebhookHistory() {}
 
@@ -101,7 +106,7 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
         this.payload = payload;
         this.status = status;
         this.errorMessage = errorMessage;
-        this.processedTime = LocalDateTime.now();
+        this.processedTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
     }
     public QuickBookWebhookHistory(String signature, String payload, String entityName,
                                    WebhookStatus status,
@@ -116,7 +121,7 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
                                    String signature, String payload, String entityName,
                                    WebhookStatus status,
                                    String errorMessage,
-                                   LocalDateTime processedTime) {
+                                   ZonedDateTime processedTime) {
         this.companyId = companyId;
         this.warehouseId = warehouseId;
         this.realmId = realmId;
@@ -209,11 +214,11 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
         this.errorMessage = errorMessage;
     }
 
-    public LocalDateTime getProcessedTime() {
+    public ZonedDateTime getProcessedTime() {
         return processedTime;
     }
 
-    public void setProcessedTime(LocalDateTime processedTime) {
+    public void setProcessedTime(ZonedDateTime processedTime) {
         this.processedTime = processedTime;
     }
 

@@ -19,14 +19,11 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 
 public class OrderLineConfirmation implements Serializable {
@@ -63,8 +60,8 @@ public class OrderLineConfirmation implements Serializable {
     private String carrierServiceLevelName;
 
     private IntegrationStatus status;
-    private LocalDateTime insertTime;
-    private LocalDateTime lastUpdateTime;
+    private ZonedDateTime insertTime;
+    private ZonedDateTime lastUpdateTime;
     private String errorMessage;
 
     @Override
@@ -213,19 +210,19 @@ public class OrderLineConfirmation implements Serializable {
         this.status = status;
     }
 
-    public LocalDateTime getInsertTime() {
+    public ZonedDateTime getInsertTime() {
         return insertTime;
     }
 
-    public void setInsertTime(LocalDateTime insertTime) {
+    public void setInsertTime(ZonedDateTime insertTime) {
         this.insertTime = insertTime;
     }
 
-    public LocalDateTime getLastUpdateTime() {
+    public ZonedDateTime getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
+    public void setLastUpdateTime(ZonedDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
 

@@ -18,24 +18,18 @@
 
 package com.garyzhangscm.cwms.common.service;
 
-import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.exception.TrailerException;
 import com.garyzhangscm.cwms.common.model.*;
-import com.garyzhangscm.cwms.common.repository.TractorRepository;
 import com.garyzhangscm.cwms.common.repository.TractorScheduleRepository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 
@@ -57,10 +51,10 @@ public class TractorScheduleService {
     public List<TractorSchedule> findAll(Long warehouseId,
                                          Long tractorId,
                                          String tractorNumber,
-                                         LocalDateTime startCheckInTime,
-                                         LocalDateTime endCheckInTime,
-                                         LocalDateTime startDispatchTime,
-                                         LocalDateTime endDispatchTime) {
+                                         ZonedDateTime startCheckInTime,
+                                         ZonedDateTime endCheckInTime,
+                                         ZonedDateTime startDispatchTime,
+                                         ZonedDateTime endDispatchTime) {
         return tractorScheduleRepository.findAll(
                 (Root<TractorSchedule> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();

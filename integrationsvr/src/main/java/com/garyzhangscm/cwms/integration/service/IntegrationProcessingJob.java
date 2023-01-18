@@ -23,14 +23,14 @@ public class IntegrationProcessingJob {
     @Scheduled(fixedDelay = 2000)
     public void processInboundIntegration() {
 
-        logger.debug("# process inbound integration data @ {}", LocalDateTime.now());
+        logger.debug("# process inbound integration data @ local date {}", LocalDateTime.now());
         integration.listen();
     }
 
     @Scheduled(fixedDelay = 2000)
     public void processOutboundIntegration() {
 
-        logger.debug("# process outbound integration data @ {}", LocalDateTime.now());
+        logger.debug("# process outbound integration data @ local date {}", LocalDateTime.now());
         if (Boolean.TRUE.equals(hostAPIEnabled)) {
 
             integration.send();

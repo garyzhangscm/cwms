@@ -18,17 +18,11 @@
 
 package com.garyzhangscm.cwms.adminserver.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.adminserver.exception.SystemFatalException;
 import com.garyzhangscm.cwms.adminserver.model.*;
-import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import com.garyzhangscm.cwms.adminserver.repository.BillableRequestRepository;
-import com.garyzhangscm.cwms.adminserver.repository.DataInitialRequestRepository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

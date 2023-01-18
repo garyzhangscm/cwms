@@ -1,10 +1,13 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "short_allocation_configuration")
@@ -26,7 +29,10 @@ public class ShortAllocationConfiguration  extends AuditibleEntity<String>{
 
 
     @Column(name = "last_modify_datetime")
-    private LocalDateTime lastModifyDatetime;
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime lastModifyDatetime;
 
     /**
      * User who carry out this activity
@@ -68,11 +74,11 @@ public class ShortAllocationConfiguration  extends AuditibleEntity<String>{
         this.warehouse = warehouse;
     }
 
-    public LocalDateTime getLastModifyDatetime() {
+    public ZonedDateTime getLastModifyDatetime() {
         return lastModifyDatetime;
     }
 
-    public void setLastModifyDatetime(LocalDateTime lastModifyDatetime) {
+    public void setLastModifyDatetime(ZonedDateTime lastModifyDatetime) {
         this.lastModifyDatetime = lastModifyDatetime;
     }
 
