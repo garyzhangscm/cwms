@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryActivityRepository;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -202,7 +203,7 @@ public class InventoryActivityService{
                         predicates.add(inClause);
 
                     }
-                    if (!StringUtils.isBlank(lpn)) {
+                    if (Strings.isNotBlank(lpn)) {
                         predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
 
                     }

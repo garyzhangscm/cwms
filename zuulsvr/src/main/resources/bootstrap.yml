@@ -8,7 +8,6 @@ spring:
   application:
     name: zuulservice
 
-
 #Setting logging levels
 logging:
    level:

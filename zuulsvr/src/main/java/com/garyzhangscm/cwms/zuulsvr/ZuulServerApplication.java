@@ -1,6 +1,5 @@
 package com.garyzhangscm.cwms.zuulsvr;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
@@ -20,6 +19,7 @@ public class ZuulServerApplication {
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
+
 
 
 }

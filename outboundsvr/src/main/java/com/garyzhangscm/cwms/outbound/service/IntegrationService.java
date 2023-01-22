@@ -3,12 +3,10 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.OrderConfirmation;
-import com.garyzhangscm.cwms.outbound.model.Stop;
 import com.garyzhangscm.cwms.outbound.model.TrailerAppointment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.sleuth.instrument.messaging.SleuthMessagingProperties;
 import org.springframework.stereotype.Service;
 
 

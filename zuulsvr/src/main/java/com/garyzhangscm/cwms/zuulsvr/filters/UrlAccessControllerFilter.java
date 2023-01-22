@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.zuulsvr.filters;
 
-import brave.Tracer;
 import com.garyzhangscm.cwms.zuulsvr.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.exception.SystemFatalException;
@@ -64,8 +63,7 @@ public class UrlAccessControllerFilter extends ZuulFilter {
     @Autowired
     FilterUtils filterUtils;
 ***/
-    @Autowired
-    Tracer tracer;
+
     @Override
     public String filterType() {
         return FilterUtils.PRE_FILTER_TYPE;
