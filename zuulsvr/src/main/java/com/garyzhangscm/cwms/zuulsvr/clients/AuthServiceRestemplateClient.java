@@ -34,6 +34,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AuthServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceRestemplateClient.class);
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -54,7 +55,6 @@ public class AuthServiceRestemplateClient {
 
 
     }
-
 
 
 

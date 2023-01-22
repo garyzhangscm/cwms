@@ -3,25 +3,14 @@ package com.garyzhangscm.cwms.inventory;
 import com.garyzhangscm.cwms.inventory.clients.KafkaSender;
 import com.garyzhangscm.cwms.inventory.model.BillableRequest;
 import com.garyzhangscm.cwms.inventory.service.UserService;
-import com.google.common.collect.Maps;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.Signature;
-import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.servlet.mvc.condition.RequestConditionHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -29,7 +18,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Aspect // indicate the component is used for aspect
 @Component

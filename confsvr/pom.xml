@@ -15,7 +15,7 @@
 	<description>Config Server for CWMS project</description>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>13</java.version>
 		<spring-cloud.version>Greenwich.SR2</spring-cloud.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -7,6 +7,7 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/resourceserver-v1.1.jar /usr/local/service/
+ADD target/integrationserver-v1.1.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/resourceserver-v1.1.jar"]
+
+ENTRYPOINT ["java","-jar","/usr/local/service/integrationserver-v1.1.jar"]

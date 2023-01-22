@@ -32,42 +32,23 @@
         <module name="authenticationserver" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="authentication-service" target="1.8" />
-      <module name="authserver" target="1.8" />
-      <module name="common" target="1.8" />
-      <module name="resources" target="1.8" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="13" />
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="adminserver" options="-parameters" />
-      <module name="adminsvr" options="-parameters" />
-      <module name="authentication-service" options="-parameters" />
       <module name="authenticationserver" options="-parameters" />
-      <module name="authserver" options="-parameters" />
-      <module name="authsvr" options="-parameters" />
-      <module name="common" options="-parameters" />
       <module name="commonserver" options="-parameters" />
-      <module name="commonsvr" options="-parameters" />
       <module name="configurationserver" options="-parameters" />
-      <module name="confsvr" options="-parameters" />
       <module name="dblink" options="-parameters" />
       <module name="inboundserver" options="-parameters" />
-      <module name="inboundsvr" options="-parameters" />
       <module name="integrationserver" options="-parameters" />
-      <module name="integrationsvr" options="-parameters" />
       <module name="inventoryserver" options="-parameters" />
-      <module name="inventorysvr" options="-parameters" />
       <module name="layoutserver" options="-parameters" />
       <module name="outboundserver" options="-parameters" />
-      <module name="outboundsvr" options="-parameters" />
       <module name="quickbook" options="-parameters" />
-      <module name="resources" options="-parameters" />
       <module name="resourceserver" options="-parameters" />
-      <module name="ressvr" options="-parameters" />
       <module name="workorderserver" options="-parameters" />
-      <module name="workordersvr" options="-parameters" />
       <module name="zuulsvr" options="-parameters" />
     </option>
   </component>

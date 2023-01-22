@@ -26,5 +26,6 @@
     <file url="file://$PROJECT_DIR$/workordersvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zuulsvr/src/main/resources" charset="UTF-8" />
   </component>
 </project>

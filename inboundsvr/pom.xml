@@ -5,24 +5,38 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.2.RELEASE</version>
+		<!--<version>2.2.2.RELEASE</version>-->
+		<version>2.7.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>inboundserver</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>v1.1</version>
 	<name>Inbound Server</name>
 	<description>Inbound Server</description>
 
 	<properties>
-		<java.version>1.8</java.version>
-		<spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
+		<java.version>13</java.version>
+		<spring-cloud.version>2021.0.5</spring-cloud.version>
+		<maven.test.skip>true</maven.test.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>com.garyzhangscm.cwms.inbound.InboundServerApplication</start-class>
-		<docker.image.name>garyzhangscm/cwms-inboundserver</docker.image.name>
-		<docker.image.tag>latest</docker.image.tag>
-		<maven.test.skip>true</maven.test.skip>
 	</properties>
+
+	<!--
+    https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-dependencies/2021.0.5/pom
+    -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -48,6 +62,14 @@
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.12.0</version>
+		</dependency>
+
 		<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -83,10 +105,12 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-oauth2</artifactId>
+			<version>2.2.5.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-security</artifactId>
+			<version>2.2.5.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security.oauth.boot</groupId>
@@ -98,6 +122,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.32</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -117,7 +142,7 @@
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
-
+<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
@@ -127,7 +152,7 @@
 			<artifactId>hystrix-javanica</artifactId>
 			<version>1.5.9</version>
 		</dependency>
-
+-->
 
 		<!-- Support serialize / deserialize LocalDateTime-->
 		<dependency>
@@ -149,19 +174,13 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<build>
 		<plugins>
@@ -171,12 +190,12 @@
 			</plugin>
 			<!-- We use the Resources plugin to filer Dockerfile and run.sh, it inserts actual JAR filename -->
 			<!-- The final Dockerfile will be created in target/dockerfile/Dockerfile -->
+			<!--
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
 						<id>copy-resources</id>
-						<!-- here the phase you need -->
 						<phase>validate</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -209,6 +228,7 @@
 					</resources>
 				</configuration>
 			</plugin>
+			-->
 		</plugins>
 	</build>
 

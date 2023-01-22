@@ -22,6 +22,16 @@
       <option name="url" value="http://jaspersoft.jfrog.io/jaspersoft/jr-ce-releases" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="mvnrepository" />
+      <option name="name" value="mvnrepository" />
+      <option name="url" value="https://mvnrepository.com" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="mvnrepository" />
+      <option name="name" value="mvn repository" />
+      <option name="url" value="https://mvnrepository.com" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="spring-milestones" />
       <option name="name" value="Spring Milestones" />
       <option name="url" value="https://repo.spring.io/milestone" />

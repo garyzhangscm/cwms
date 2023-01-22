@@ -19,12 +19,10 @@
 package com.garyzhangscm.cwms.zuulsvr.filters;
 
 import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import brave.Tracer;
 
 
 @Component
@@ -38,8 +36,7 @@ public class TrackingFilter extends ZuulFilter {
     @Autowired
     FilterUtils filterUtils;
 
-    @Autowired
-    Tracer tracer;
+
     @Override
     public String filterType() {
         return FilterUtils.PRE_FILTER_TYPE;

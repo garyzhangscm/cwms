@@ -1,0 +1,134 @@
+
+docker push garyzhangscm/cwms-adminserver:latest
+docker push garyzhangscm/cwms-auth:latest
+docker push garyzhangscm/cwms-commonserver:latest
+docker push garyzhangscm/cwms-inboundserver:latest
+docker push garyzhangscm/cwms-integrationserver:latest
+docker push garyzhangscm/cwms-inventoryserver:latest
+docker push garyzhangscm/cwms-outboundserver:latest
+docker push garyzhangscm/cwms-layoutserver:latest
+docker push garyzhangscm/cwms-ressvr:latest
+docker push garyzhangscm/cwms-workorderserver:latest
+
+
+kubectl rollout restart -n staging deployment/adminservice
+kubectl rollout restart -n staging deployment/authserver
+kubectl rollout restart -n staging deployment/commonservice
+kubectl rollout restart -n staging deployment/inboundservice
+kubectl rollout restart -n staging deployment/integrationservice
+kubectl rollout restart -n staging deployment/inventoryservice
+kubectl rollout restart -n staging deployment/outboundservice
+kubectl rollout restart -n staging deployment/layoutservice
+kubectl rollout restart -n staging deployment/resourceservice
+kubectl rollout restart -n staging deployment/workorderservice
+
+
+kubectl rollout restart -n prod deployment/adminservice
+kubectl rollout restart -n prod deployment/authserver
+
+
+kubectl rollout restart -n prod deployment/commonservice
+kubectl rollout restart -n prod deployment/inboundservice
+kubectl rollout restart -n prod deployment/integrationservice
+kubectl rollout restart -n prod deployment/inventoryservice
+kubectl rollout restart -n prod deployment/layoutservice
+kubectl rollout restart -n prod deployment/outboundservice
+kubectl rollout restart -n prod deployment/resourceservice
+kubectl rollout restart -n prod deployment/webclient
+kubectl rollout restart -n prod deployment/workorderservice
+
+
+kubectl rollout restart -n staging deployment/commonservice
+kubectl rollout restart -n staging deployment/inboundservice
+kubectl rollout restart -n staging deployment/integrationservice
+kubectl rollout restart -n staging deployment/inventoryservice
+kubectl rollout restart -n staging deployment/layoutservice
+kubectl rollout restart -n staging deployment/outboundservice
+kubectl rollout restart -n staging deployment/resourceservice
+kubectl rollout restart -n staging deployment/webclient
+kubectl rollout restart -n staging deployment/workorderservice
+
+
+
+docker push garyzhangscm/cwms-zuulsvr:latest
+
+docker push garyzhangscm/cwms-confsvr:latest
+docker push garyzhangscm/cwms-eurekasvr:latest
+
+
+
+docker pull garyzhangscm/cwms-commonserver:latest
+docker pull garyzhangscm/cwms-ressvr:latest
+docker pull garyzhangscm/cwms-layoutserver:latest
+docker pull garyzhangscm/cwms-inboundserver:latest
+docker pull garyzhangscm/cwms-outboundserver:latest
+docker pull garyzhangscm/cwms-inventoryserver:latest
+docker pull garyzhangscm/cwms-workorderserver:latest
+docker pull garyzhangscm/cwms-adminserver:latest
+docker pull garyzhangscm/cwms-integrationserver:latest
+
+
+docker pull garyzhangscm/cwms-auth:latest
+docker pull garyzhangscm/cwms-zuulsvr:latest
+
+docker pull garyzhangscm/cwms-confsvr:latest
+docker pull garyzhangscm/cwms-eurekasvr:latest
+
+
+Remove untaged
+docker rmi $(docker images -f "dangling=true" -q)
+
+
+Tag
+
+docker tag garyzhangscm/cwms-adminserver:latest   garyzhangscm/cwms-adminserver:v1.1
+docker tag garyzhangscm/cwms-auth:latest   garyzhangscm/cwms-auth:v1.1
+docker tag garyzhangscm/cwms-commonserver:latest   garyzhangscm/cwms-commonserver:v1.1
+docker tag garyzhangscm/cwms-inboundserver:latest garyzhangscm/cwms-inboundserver:v1.1
+docker tag garyzhangscm/cwms-integrationserver:latest   garyzhangscm/cwms-integrationserver:v1.1
+docker tag garyzhangscm/cwms-inventoryserver:latest   garyzhangscm/cwms-inventoryserver:v1.1
+docker tag garyzhangscm/cwms-layoutserver:latest  garyzhangscm/cwms-layoutserver:v1.1
+docker tag garyzhangscm/cwms-outboundserver:latest garyzhangscm/cwms-outboundserver:v1.1
+docker tag garyzhangscm/cwms-ressvr:latest   garyzhangscm/cwms-ressvr:v1.1
+docker tag garyzhangscm/cwms-workorderserver:latest  garyzhangscm/cwms-workorderserver:v1.1
+docker tag garyzhangscm/cwms-quickbook:latest  garyzhangscm/cwms-quickbook:v1.1
+
+NEW TAG:
+// Flow https://www.docker.com/blog/multi-arch-images/ to enable multiple arch build
+// current multiple arch buildx name is multiArch
+// > docker buildx inspect --bootstrap
+// support platform
+// Platforms: linux/amd64, linux/amd64/v2, linux/amd64/v3, linux/amd64/v4, linux/arm64, linux/riscv64, linux/ppc64le,
+//             linux/s390x, linux/386, linux/mips64le, linux/mips64, linux/arm/v7, linux/arm/v6
+// check if the image support multiple arch
+// > docker buildx imagetools inspect alpine
+
+docker buildx build --platform linux/amd64,linux/arm64 --build-arg VERSION=v1.1 -t garyzhangscm/cwms-zuulsvr:v1.1 --push .
+
+
+
+docker buildx build --platform linux/amd64,linux/arm64 --build-arg VERSION=v1.1 -t garyzhangscm/cwms-zuulsvr:v1.1 --push .
+
+
+
+
+docker tag garyzhangscm/cwms-zuulsvr:latest   garyzhangscm/cwms-zuulsvr:v1.1
+//// db link is always use latest
+
+docker push garyzhangscm/cwms-adminserver:v1.1
+docker push garyzhangscm/cwms-auth:v1.1
+docker push garyzhangscm/cwms-commonserver:v1.1
+docker push garyzhangscm/cwms-inboundserver:v1.1
+docker push garyzhangscm/cwms-integrationserver:v1.1
+docker push garyzhangscm/cwms-inventoryserver:v1.1
+docker push garyzhangscm/cwms-outboundserver:v1.1
+docker push garyzhangscm/cwms-layoutserver:v1.1
+docker push garyzhangscm/cwms-ressvr:v1.1
+docker push garyzhangscm/cwms-workorderserver:v1.1
+docker push garyzhangscm/cwms-quickbook:v1.1
+
+
+docker push garyzhangscm/cwms-zuulsvr:v1.1
+
+
+docker tag garyzhangscm/cwms-confsvr:latest  garyzhangscm/cwms-confsvr:v1.0
