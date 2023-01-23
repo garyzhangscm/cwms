@@ -48,12 +48,16 @@ public class InventoryActivityController {
                                                               @RequestParam(name="inventoryActivityType", required = false, defaultValue = "") String inventoryActivityType,
                                                               @RequestParam(name="beginDateTime", required = false, defaultValue = "") String beginDateTime,
                                                               @RequestParam(name="endDateTime", required = false, defaultValue = "") String endDateTime,
+                                                              // begin date will be in the format of YYYYMMDD
+                                                              @RequestParam(name="beginDate", required = false, defaultValue = "") String beginDate,
+                                                              // end date will be in the format of YYYYMMDD
+                                                              @RequestParam(name="endDate", required = false, defaultValue = "") String endDate,
                                                               @RequestParam(name="date", required = false, defaultValue = "") String date,
                                                               @RequestParam(name="username", required = false, defaultValue = "") String username,
                                                               @RequestParam(name="rfCode", required = false, defaultValue = "") String rfCode) {
         return inventoryActivityService.findAll(warehouseId, itemName, clientIds, itemFamilyIds,inventoryStatusId,
                 locationName, locationId, locationGroupId, receiptId, pickIds, lpn,
-                inventoryActivityType,  beginDateTime, endDateTime, date, username,
+                inventoryActivityType,  beginDateTime, endDateTime, beginDate, endDate, date, username,
                 rfCode
         );
     }

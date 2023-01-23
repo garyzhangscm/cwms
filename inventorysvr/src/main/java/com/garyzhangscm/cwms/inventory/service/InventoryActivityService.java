@@ -117,12 +117,15 @@ public class InventoryActivityService{
                                            String inventoryActivityType,
                                            String beginDateTime,
                                            String endDateTime,
+                                           String beginDate,
+                                           String endDate,
                                            String date,
                                            String username,
                                            String rfCode) {
         return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationGroupId, receiptId, pickIds, lpn,
-                inventoryActivityType, beginDateTime, endDateTime, date, username,
+                inventoryActivityType, beginDateTime, endDateTime,
+                beginDate, endDate, date, username,
                 rfCode, true);
     }
 
@@ -141,6 +144,8 @@ public class InventoryActivityService{
                                            String inventoryActivityType,
                                            String beginDateTime,
                                            String endDateTime,
+                                           String beginDate,
+                                           String endDate,
                                            String date,
                                            String username,
                                            String rfCode,
@@ -223,6 +228,25 @@ public class InventoryActivityService{
                         LocalDateTime end = LocalDateTime.parse(endDateTime);
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end));
                     }
+
+                    if (Strings.isNotBlank(beginDate)) {
+
+                        LocalDateTime begin = LocalDate.parse(beginDate).atStartOfDay();
+                        // we will need to convert to the UTC time before we can compare
+                        // the user input against the activity date time
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("activityDateTime"), begin.atZone(ZoneId.of("UTC"))));
+
+                    }
+
+                    if (Strings.isNotBlank(endDate)) {
+
+                        LocalDateTime end = LocalDate.parse(endDate).atStartOfDay().plusDays(1).minusSeconds(1);
+                        // we will need to convert to the UTC time before we can compare
+                        // the user input against the activity date time
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end.atZone(ZoneId.of("UTC"))));
+
+                    }
+
 
                     // date is passed in as the user's local date
                     // based on the user's time zone

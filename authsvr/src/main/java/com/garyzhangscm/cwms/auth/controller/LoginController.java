@@ -67,6 +67,7 @@ public class LoginController {
     @RequestMapping(method =  RequestMethod.POST)
     public LoginResponseWrapper login(@RequestBody User user) throws JsonProcessingException {
         try {
+            // logger.debug("start to login with user {}", user);
             OAuth2Token oAuth2Token = oAuth2Service.getOAuth2Token(user.getCompanyId(), user.getUsername(), user.getPassword());
 
             oAuth2Token.setUser(userService.findByUsername(user.getCompanyId(), user.getUsername()));
