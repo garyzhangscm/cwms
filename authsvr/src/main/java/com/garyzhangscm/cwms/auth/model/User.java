@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.auth.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,6 +48,7 @@ public class User implements UserDetails {
 
     @Column(name = "username")
     private String username;
+
     @Column(name = "password")
     private String password;
     @Column(name = "email")
@@ -85,6 +88,18 @@ public class User implements UserDetails {
 
     }
 
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     public Long getCompanyId() {
         return companyId;
     }
@@ -110,7 +125,6 @@ public class User implements UserDetails {
     }
 
 
-    @JsonIgnore
     public String getPassword() {
         return password;
     }
