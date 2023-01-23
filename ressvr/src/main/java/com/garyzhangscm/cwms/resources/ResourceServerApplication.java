@@ -51,7 +51,7 @@ import java.util.*;
 @RefreshScope
 // @EnableEurekaClient
 @EnableResourceServer
-@EnableOAuth2Client
+// @EnableOAuth2Client
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableScheduling
 @EnableCaching

@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 
 @Configuration
 public class LayoutServerConfiguration extends ResourceServerConfigurerAdapter {
-
+// public class LayoutServerConfiguration{
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
         // 设置资源服务器的 id
@@ -26,6 +26,7 @@ public class LayoutServerConfiguration extends ResourceServerConfigurerAdapter {
           .antMatchers("/warehouses/accessible/**").permitAll()
                 .antMatchers("/probe/**").permitAll()
                 .antMatchers("/warehouses/*/company-id").permitAll()
+
           .anyRequest()
           .authenticated();
     }

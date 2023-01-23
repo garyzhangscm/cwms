@@ -10,13 +10,12 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 @Configuration
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
-    @Override
+
     public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
         // 设置资源服务器的 id
         resources.resourceId("wms-resource");
     }
 
-    @Override
     public void configure(HttpSecurity http) throws Exception{
         http
         .authorizeRequests()

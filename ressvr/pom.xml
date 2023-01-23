@@ -72,6 +72,14 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-oauth2</artifactId>
 			<version>2.2.5.RELEASE</version>
+			<!--
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-security</artifactId>
+				</exclusion>
+			</exclusions>
+			-->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security.oauth.boot</groupId>
@@ -121,11 +129,13 @@
 		</dependency>
 		-->
 
+		<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		-->
 
 		<!-- since we are using K8S now, we will not use eureka
 		  for service discovery any more
@@ -152,11 +162,12 @@
 
 
 		<!-- decrypt for message from config server-->
+		<!--
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-rsa</artifactId>
 		</dependency>
-
+-->
 		<!-- Kafka -->
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
@@ -178,10 +189,12 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 		<!-- sleuth for logging -->
+		<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
