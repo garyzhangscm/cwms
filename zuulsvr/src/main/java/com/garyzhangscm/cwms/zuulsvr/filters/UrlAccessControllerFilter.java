@@ -83,13 +83,13 @@ public class UrlAccessControllerFilter extends ZuulFilter {
     public Object run() {
 
         RequestContext requestContext = RequestContext.getCurrentContext();
-        // logger.debug("ctx.getRequest().getContextPath(): " + requestContext.getRequest().getContextPath());
-        // logger.debug("ctx.getRequest().getPathInfo(): " + requestContext.getRequest().getPathInfo());
-        // logger.debug("ctx.getRequest().getPathTranslated(): " + requestContext.getRequest().getPathTranslated());
-        // logger.debug("ctx.getRequest().getRequestURI(): " + requestContext.getRequest().getRequestURI());
-        // logger.debug("ctx.getRequest().getServletPath(): " + requestContext.getRequest().getServletPath());
-        // logger.debug("ctx.getRequest().getRemoteAddr(): " + requestContext.getRequest().getRemoteAddr());
-        // logger.debug("ctx.getRequest().getRequestURL().toString(): " + requestContext.getRequest().getRequestURL().toString());
+        logger.debug("ctx.getRequest().getContextPath(): " + requestContext.getRequest().getContextPath());
+        logger.debug("ctx.getRequest().getPathInfo(): " + requestContext.getRequest().getPathInfo());
+        logger.debug("ctx.getRequest().getPathTranslated(): " + requestContext.getRequest().getPathTranslated());
+        logger.debug("ctx.getRequest().getRequestURI(): " + requestContext.getRequest().getRequestURI());
+        logger.debug("ctx.getRequest().getServletPath(): " + requestContext.getRequest().getServletPath());
+        logger.debug("ctx.getRequest().getRemoteAddr(): " + requestContext.getRequest().getRemoteAddr());
+        logger.debug("ctx.getRequest().getRequestURL().toString(): " + requestContext.getRequest().getRequestURL().toString());
 
         validateAccess(requestContext);
 
