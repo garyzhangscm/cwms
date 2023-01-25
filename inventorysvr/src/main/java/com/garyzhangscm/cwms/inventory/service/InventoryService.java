@@ -2913,4 +2913,32 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("{} inventory is removed", inventories.size());
 
     }
+
+    public List<QuickbookDesktopInventorySummary> getQuickbookDesktopInventorySummary(String companyCode, String warehouseName) {
+
+        Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(companyCode, warehouseName).getId();
+
+        logger.debug("start get quickbook inventory summary by company {}, warehouse {}, warehouse id {}",
+                companyCode, warehouseName, warehouseId);
+        List<Object[]> inventorySummariesResult =
+                inventoryRepository.getQuickbookDesktopInventorySummary(warehouseId);
+
+        logger.debug("get {} inventory summary records", inventorySummariesResult.size());
+
+        List<QuickbookDesktopInventorySummary> inventorySummaries =
+                inventorySummariesResult.stream().map(
+                        inventorySummaryRecord -> new QuickbookDesktopInventorySummary(
+                                inventorySummaryRecord[0].toString(),
+                                inventorySummaryRecord[1].toString(),
+                                inventorySummaryRecord[2].toString(),
+                                Long.parseLong(inventorySummaryRecord[3].toString())
+                        )
+                ).collect(Collectors.toList());
+
+        inventorySummaries.forEach(
+                inventorySummary -> logger.debug("==========    Quickbook inventorySummary   ===========\n{}", inventorySummary)
+        );
+
+        return inventorySummaries;
+    }
 }

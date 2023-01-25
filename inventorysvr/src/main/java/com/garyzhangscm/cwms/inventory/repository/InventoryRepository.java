@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.repository;
 
 import com.garyzhangscm.cwms.inventory.model.Inventory;
+import com.garyzhangscm.cwms.inventory.model.QuickbookDesktopInventorySummary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -68,4 +69,17 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
             " where item_id = :oldItemId and warehouse_id = :warehouseId",
             nativeQuery = true)
     void processItemOverride(Long oldItemId, Long newItemId, Long newItemPackageTypeId, Long warehouseId);
+
+
+    @Query(value =" select item.name itemName, item.quickbook_listid listId, " +
+            " inventory_status.name inventoryStatus, sum(inventory.quantity) quantity" +
+            " from inventory join item on inventory.item_id = item.item_id " +
+            " join inventory_status on inventory.inventory_status_id = inventory_status.inventory_status_id " +
+            "  where inventory.warehouse_id = :warehouseId " +
+            "    and item.quickbook_listid is not null " +
+            "    and item.quickbook_listid != '' " +
+            "    and inventory.virtual_inventory = false " +
+            "group by item.name, item.quickbook_listid, inventory_status.name ",
+            nativeQuery = true)
+    List<Object[]> getQuickbookDesktopInventorySummary(Long warehouseId);
 }
