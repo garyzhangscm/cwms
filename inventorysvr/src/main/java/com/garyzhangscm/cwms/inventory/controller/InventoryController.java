@@ -488,4 +488,15 @@ public class InventoryController {
                 itemId, itemName);
     }
 
+    @RequestMapping(value="/inventories/summary/quickbook-desktop", method = RequestMethod.GET)
+    public List<QuickbookDesktopInventorySummary> getQuickbookDesktopInventorySummary(
+
+            @RequestParam String companyCode,
+            @RequestParam String warehouseName) {
+
+
+        return inventoryService.getQuickbookDesktopInventorySummary(
+                companyCode, warehouseName
+        );
+    }
 }

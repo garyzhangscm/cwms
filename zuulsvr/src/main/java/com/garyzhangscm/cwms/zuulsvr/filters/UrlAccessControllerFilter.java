@@ -156,7 +156,7 @@ public class UrlAccessControllerFilter extends ZuulFilter {
                                     null : Long.parseLong(requestContext.getRequest().getHeader("companyId"));
         }
         catch (Exception ex) {
-            logger.debug("error while get company id for billable request: {}",
+            logger.debug("error while get company id for request: {}",
                     ex.getMessage());
 
         }
@@ -164,7 +164,11 @@ public class UrlAccessControllerFilter extends ZuulFilter {
             // if company Id is not passed in but we can find the company code, then
             // we will get the company ID from the code
             logger.debug("company id is not passed in, let's see if we can find the company code");
-            List<String> companyCodeParameters = requestContext.getRequestQueryParams().get("companyCode");
+            List<String> companyCodeParameters =
+                    Objects.nonNull(requestContext.getRequestQueryParams()) ?
+                            requestContext.getRequestQueryParams().get("companyCode")
+                            : new ArrayList<>();
+
             String companyCode =
                     Objects.nonNull(companyCodeParameters) && companyCodeParameters.size() > 0 ?
                             companyCodeParameters.get(0) :
