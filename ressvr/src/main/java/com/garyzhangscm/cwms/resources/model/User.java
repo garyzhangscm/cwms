@@ -78,6 +78,10 @@ public class User extends AuditibleEntity<String>  {
     private String lastLoginToken;
 
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private UserType type;
+
     @Transient
     @JsonIgnore
     private String password;
@@ -385,5 +389,13 @@ public class User extends AuditibleEntity<String>  {
 
     public void setWorkerType(WorkerType workerType) {
         this.workerType = workerType;
+    }
+
+    public UserType getType() {
+        return type;
+    }
+
+    public void setType(UserType type) {
+        this.type = type;
     }
 }

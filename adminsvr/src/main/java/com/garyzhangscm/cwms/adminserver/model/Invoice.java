@@ -3,12 +3,15 @@ package com.garyzhangscm.cwms.adminserver.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,11 +70,31 @@ public class Invoice extends AuditibleEntity<String>{
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime endTime;
 
+
+    @Column(name = "invoice_date")
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate invoiceDate;
+
+    @Column(name = "due_date")
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate dueDate;
+
     @OneToMany(
             mappedBy = "invoice",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY)
     private List<InvoiceLine> lines = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "invoice",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY)
+    private List<InvoiceDocument> documents = new ArrayList<>();
+
 
     @Column(name = "total_charge")
     private Double totalCharge;
@@ -92,6 +115,23 @@ public class Invoice extends AuditibleEntity<String>{
         this.endTime = endTime;
         this.totalCharge = totalCharge;
         this.lines = new ArrayList<>();
+        this.documents = new ArrayList<>();
+    }
+    public Invoice(Long companyId, Long warehouseId,
+                   Long clientId, String number, String referenceNumber,
+                   String comment, LocalDate invoiceDate, LocalDate dueDate,
+                   Double totalCharge) {
+        this.companyId = companyId;
+        this.warehouseId = warehouseId;
+        this.clientId = clientId;
+        this.number = number;
+        this.referenceNumber = referenceNumber;
+        this.comment = comment;
+        this.invoiceDate = invoiceDate;
+        this.dueDate = dueDate;
+        this.totalCharge = totalCharge;
+        this.lines = new ArrayList<>();
+        this.documents = new ArrayList<>();
     }
 
     public Long getId() {
@@ -132,6 +172,22 @@ public class Invoice extends AuditibleEntity<String>{
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public LocalDate getInvoiceDate() {
+        return invoiceDate;
+    }
+
+    public void setInvoiceDate(LocalDate invoiceDate) {
+        this.invoiceDate = invoiceDate;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 
     public Long getClientId() {
@@ -208,5 +264,18 @@ public class Invoice extends AuditibleEntity<String>{
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+
+    public List<InvoiceDocument> getDocuments() {
+        return documents;
+    }
+
+    public void setDocuments(List<InvoiceDocument> documents) {
+        this.documents = documents;
+    }
+
+    public void addDocument(InvoiceDocument invoiceDocument) {
+        documents.add(invoiceDocument);
     }
 }

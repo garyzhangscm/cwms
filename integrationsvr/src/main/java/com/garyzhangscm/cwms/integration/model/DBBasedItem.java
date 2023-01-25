@@ -70,6 +70,9 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
     private DBBasedItemFamily itemFamily;
 
 
+    @Column(name = "quickbook_listid")
+    private String quickbookListId;
+
     @Column(name = "item_family_name")
     private String itemFamilyName;
     @Column(name = "item_family_id")
@@ -132,7 +135,8 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
                 "clientId","clientName",
                 "unitCost",
                 "warehouseId","warehouseName",
-                "companyId","companyCode"
+                "companyId","companyCode",
+                "quickbookListId"
         };
 
         ObjectCopyUtil.copyValue(this, item,  fieldNames);
@@ -202,7 +206,8 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
     public DBBasedItem(Item item) {
 
         String[] fieldNames = {
-                "name","description","clientId","clientName","unitCost","warehouseId","warehouseName"
+                "name","description","clientId","clientName","unitCost","warehouseId","warehouseName",
+                "quickbookListId"
         };
 
         ObjectCopyUtil.copyValue(item, this, fieldNames);
@@ -384,5 +389,13 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
 
     public void setItemFamilyId(Long itemFamilyId) {
         this.itemFamilyId = itemFamilyId;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 }
