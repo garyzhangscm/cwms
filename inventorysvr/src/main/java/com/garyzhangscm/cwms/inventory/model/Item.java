@@ -143,6 +143,11 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "active_flag")
     private Boolean activeFlag = true;
 
+
+    // quickbook unique id
+    @Column(name = "quickbook_listid")
+    private String quickbookListId;
+
     @Transient
     private Warehouse warehouse;
 
@@ -270,6 +275,14 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setShelfLifeDays(Integer shelfLifeDays) {
         this.shelfLifeDays = shelfLifeDays;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 
     public Integer getShelfLifeDays() {

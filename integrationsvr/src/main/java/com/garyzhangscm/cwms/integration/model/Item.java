@@ -54,6 +54,9 @@ public class Item implements Serializable {
     private String companyCode;
 
 
+    private String quickbookListId;
+
+
 
     @Override
     public String toString() {
@@ -162,5 +165,13 @@ public class Item implements Serializable {
 
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 }

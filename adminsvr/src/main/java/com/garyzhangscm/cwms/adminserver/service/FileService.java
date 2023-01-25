@@ -23,11 +23,15 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +61,26 @@ public class FileService {
 
         return localFile;
     }
+
+
+    public File saveFile(MultipartFile file, Path path, String fileName) throws IOException {
+
+        File localFile = path.resolve(fileName).toFile();
+
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+        if (!localFile.exists()) {
+            localFile.createNewFile();
+        }
+
+        FileCopyUtils.copy(file.getInputStream(), new FileOutputStream(localFile));
+
+
+        return localFile;
+
+    }
+
 
     public <T> List<T> loadData(File file, CsvSchema schema, Class<T> tClass)throws IOException {
 
@@ -142,5 +166,27 @@ public class FileService {
         fos.close();
 
         return new File(zipFileName);
+    }
+
+
+    public void copyFile(String sourceFilePath, String destinationFilePath)
+            throws IOException {
+
+        File sourceFile = new File(sourceFilePath);
+        File destinationFile = new File(destinationFilePath);
+
+        copyFile(sourceFile, destinationFile);
+    }
+    public void copyFile(File sourceFile, File destinationFile)
+            throws IOException {
+
+        // InputStream in = new BufferedInputStream(
+        //        new FileInputStream(sourceFile));
+
+
+        // copyFile(in, destinationFile);
+
+        FileUtils.copyFile(sourceFile, destinationFile);
+
     }
 }
