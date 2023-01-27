@@ -73,9 +73,11 @@ public class ItemIntegrationDataController {
 
 
     @RequestMapping(value="/items", method = RequestMethod.PUT)
-    public IntegrationItemData addIntegrationItemData(@RequestBody Item item) {
+    public ResponseBodyWrapper addIntegrationItemData(@RequestBody Item item) {
 
-        return integrationDataService.addIntegrationItemData(item);
+        IntegrationItemData itemData =
+                integrationDataService.addIntegrationItemData(item);
+        return ResponseBodyWrapper.success(String.valueOf(item.getId()));
     }
 /***
     @RequestMapping(value="/dblink/item", method = RequestMethod.PUT)

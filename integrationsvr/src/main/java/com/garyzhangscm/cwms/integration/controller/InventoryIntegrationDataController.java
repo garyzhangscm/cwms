@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.integration.controller;
 
 
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.model.IntegrationInventoryAdjustmentConfirmationData;
 import com.garyzhangscm.cwms.integration.model.IntegrationInventoryAttributeChangeConfirmationData;
@@ -94,6 +95,19 @@ public class InventoryIntegrationDataController {
         return integrationDataService.resendInventoryAdjustmentConfirmationData(id);
     }
 
+
+    @RequestMapping(value="/inventory-adjustment-confirmations/{id}/result", method = RequestMethod.POST)
+    public ResponseBodyWrapper saveInventoryAdjustmentConfirmationResult(@PathVariable Long id,
+                                                                         boolean succeed,
+                                                                         String errorMessage) {
+
+        IntegrationInventoryAdjustmentConfirmationData integrationInventoryAdjustmentConfirmationData =
+                integrationDataService.saveInventoryAdjustmentConfirmationResult(id, succeed, errorMessage);
+
+        return ResponseBodyWrapper.success(String.valueOf(integrationInventoryAdjustmentConfirmationData.getId()));
+    }
+
+
     //
     // Inventory Attribute Change Confirmation Related
     //
@@ -135,6 +149,7 @@ public class InventoryIntegrationDataController {
 
         }
         return integrationDataService.getPendingInventoryAttributeChangeConfirmationData(warehouseId, companyCode, warehouseName);
+
     }
 
 }

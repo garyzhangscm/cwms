@@ -198,6 +198,9 @@ public interface Integration {
             Long warehouseId, String companyCode, String warehouseName);
     IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id);
     IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id);
+
+    IntegrationInventoryAdjustmentConfirmationData saveInventoryAdjustmentConfirmationResult(Long id, boolean succeed, String errorMessage);
+
     IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation);
 
     // Inventory Attribute Confirmation

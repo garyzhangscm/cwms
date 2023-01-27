@@ -562,6 +562,11 @@ public class DBBasedIntegration implements Integration{
     public IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.resendInventoryAdjustmentConfirmationData(id);
     }
+    public IntegrationInventoryAdjustmentConfirmationData saveInventoryAdjustmentConfirmationResult(
+            Long id, boolean succeed, String errorMessage
+    ) {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.saveInventoryAdjustmentConfirmationResult(id, succeed, errorMessage);
+    }
     public IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.saveInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
     }
