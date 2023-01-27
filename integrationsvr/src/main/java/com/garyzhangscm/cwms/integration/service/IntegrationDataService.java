@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.integration.service;
 import com.garyzhangscm.cwms.integration.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
@@ -247,6 +248,11 @@ public class IntegrationDataService {
         return integration.getIntegrationOrderConfirmationData(warehouseId, warehouseName,
                 number, startTime, endTime, date, statusList, id);
     }
+    public List<? extends IntegrationOrderConfirmationData> getPendingIntegrationOrderConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName
+    ){
+        return integration.getPendingIntegrationOrderConfirmationData(warehouseId, companyCode, warehouseName);
+    }
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
         return integration.getIntegrationOrderConfirmationData(id);
     }
@@ -267,6 +273,11 @@ public class IntegrationDataService {
         return integration.getIntegrationWorkOrderConfirmationData(warehouseId, warehouseName,
                 number, startTime, endTime, date, statusList, id);
     }
+    public List<? extends IntegrationWorkOrderConfirmationData> getPendingIntegrationWorkOrderConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName){
+        return integration.getPendingIntegrationWorkOrderConfirmationData(
+                warehouseId, companyCode, warehouseName);
+    }
     public IntegrationWorkOrderConfirmationData getIntegrationWorkOrderConfirmationData(Long id){
         return integration.getIntegrationWorkOrderConfirmationData(id);
     }
@@ -285,6 +296,13 @@ public class IntegrationDataService {
                 number, clientId, clientName,
                 supplierId, supplierName, startTime, endTime, date, statusList, id);
     }
+    public List<? extends IntegrationReceiptConfirmationData> getPendingIntegrationReceiptConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName){
+        return integration.getPendingIntegrationReceiptConfirmationData(
+                warehouseId, companyCode, warehouseName);
+    }
+
+
     public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
         return integration.getIntegrationReceiptConfirmationData(id);
     }
@@ -295,7 +313,6 @@ public class IntegrationDataService {
         return integration.sendIntegrationReceiptConfirmationData(receiptConfirmation);
     }
 
-
     // Inventory Adjustment Confirmation
     public List<? extends IntegrationInventoryAdjustmentConfirmationData> getInventoryAdjustmentConfirmationData(
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
@@ -305,6 +322,15 @@ public class IntegrationDataService {
                 warehouseId, startTime, endTime, date, statusList, id
         );
     }
+
+    public List<? extends IntegrationInventoryAdjustmentConfirmationData> getPendingInventoryAdjustmentConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+        return integration.getPendingInventoryAdjustmentConfirmationData(
+               warehouseId, companyCode, warehouseName
+        );
+    }
+
+
     public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
         return integration.getInventoryAdjustmentConfirmationData(id);
     }
@@ -321,13 +347,19 @@ public class IntegrationDataService {
         return integration.getInventoryAttributeChangeConfirmationData(
                 warehouseId, startTime, endTime, date, statusList, id);
     }
+    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getPendingInventoryAttributeChangeConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+        return integration.getPendingInventoryAttributeChangeConfirmationData(
+                warehouseId, companyCode, warehouseName);
+    }
     public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {
         return integration.getInventoryAttributeChangeConfirmationData(id);
     }
     public IntegrationInventoryAttributeChangeConfirmationData resendInventoryAttributeChangeConfirmationData(Long id) {
         return integration.resendInventoryAttributeChangeConfirmationData(id);
     }
-    public IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
+    public IntegrationInventoryAttributeChangeConfirmationData sendInventoryAttributeChangeConfirmationData(
+            InventoryAttributeChangeConfirmation inventoryAttributeChangeConfirmation) {
         return integration.sendInventoryAttributeChangeConfirmationData(inventoryAttributeChangeConfirmation);
     }
 
@@ -379,4 +411,5 @@ public class IntegrationDataService {
     public IntegrationWorkOrderData resendWorkOrderData(Long id) {
         return integration.resendWorkOrderData(id);
     }
+
 }

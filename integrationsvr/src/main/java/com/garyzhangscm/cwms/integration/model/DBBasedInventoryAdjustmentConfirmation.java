@@ -43,6 +43,10 @@ public class DBBasedInventoryAdjustmentConfirmation extends AuditibleEntity<Stri
     @Column(name = "item_name")
     private String itemName;
 
+    // quickbook unique id
+    @Column(name = "quickbook_listid")
+    private String quickbookListId;
+
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
@@ -101,8 +105,12 @@ public class DBBasedInventoryAdjustmentConfirmation extends AuditibleEntity<Stri
         setItemId(inventoryAdjustmentConfirmation.getItem().getId());
         setItemName(inventoryAdjustmentConfirmation.getItem().getName());
 
+        setQuickbookListId(inventoryAdjustmentConfirmation.getItem().getQuickbookListId());
+
         setWarehouseId(inventoryAdjustmentConfirmation.getWarehouse().getId());
         setWarehouseName(inventoryAdjustmentConfirmation.getWarehouse().getName());
+
+
 
         setAdjustQuantity(inventoryAdjustmentConfirmation.getAdjustQuantity());
 
@@ -277,5 +285,14 @@ public class DBBasedInventoryAdjustmentConfirmation extends AuditibleEntity<Stri
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    @Override
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 }

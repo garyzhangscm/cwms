@@ -229,4 +229,19 @@ public class DBBasedOrderConfirmationIntegration {
 
         kafkaSender.send(alert);
     }
+
+    public List<? extends IntegrationOrderConfirmationData> getPendingIntegrationOrderConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+
+
+        Warehouse warehouse =
+                Objects.nonNull(warehouseId) ? warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId)
+                        :
+                        warehouseLayoutServiceRestemplateClient.getWarehouseByName(companyCode, warehouseName);
+
+        return dbBasedOrderConfirmationRepository.findPendingIntegration(
+                warehouse.getCompany().getId(), warehouse.getCompany().getCode(),
+                warehouse.getId(), warehouse.getName()
+        );
+    }
 }
