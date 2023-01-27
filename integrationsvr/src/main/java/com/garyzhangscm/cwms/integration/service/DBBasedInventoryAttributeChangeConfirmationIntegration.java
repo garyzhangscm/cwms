@@ -158,4 +158,19 @@ public class DBBasedInventoryAttributeChangeConfirmationIntegration {
 
         kafkaSender.send(alert);
     }
+
+    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getPendingInventoryAttributeChangeConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+
+
+        Warehouse warehouse =
+                Objects.nonNull(warehouseId) ? warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId)
+                        :
+                        warehouseLayoutServiceRestemplateClient.getWarehouseByName(companyCode, warehouseName);
+
+        return dbBasedInventoryAttributeChangeConfirmationRepository.findPendingIntegration(
+                warehouse.getCompany().getId(), warehouse.getCompany().getCode(),
+                warehouse.getId(), warehouse.getName()
+        );
+    }
 }

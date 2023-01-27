@@ -65,6 +65,21 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
     }
 
 
+    public List<DBBasedInventoryAdjustmentConfirmation> getPendingInventoryAdjustmentConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+
+
+        Warehouse warehouse =
+                Objects.nonNull(warehouseId) ? warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId)
+                     :
+                        warehouseLayoutServiceRestemplateClient.getWarehouseByName(companyCode, warehouseName);
+
+        return dbBasedInventoryAdjustmentConfirmationRepository.findPendingIntegration(
+                warehouse.getCompany().getId(), warehouse.getCompany().getCode(),
+                warehouse.getId(), warehouse.getName()
+        );
+    }
+
     public List<DBBasedInventoryAdjustmentConfirmation> findAll(
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList, Long id) {
@@ -153,6 +168,7 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
         return new DBBasedInventoryAdjustmentConfirmation(inventoryAdjustmentConfirmation);
     }
 
+    @Deprecated
     public void sendToHost() {
         List<DBBasedInventoryAdjustmentConfirmation> dbBasedInventoryAdjustmentConfirmations =
                 findPendingIntegration();

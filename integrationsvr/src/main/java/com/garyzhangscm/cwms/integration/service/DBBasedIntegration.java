@@ -460,6 +460,12 @@ public class DBBasedIntegration implements Integration{
         return dbBasedOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
                 number, startTime, endTime, date, statusList, id);
     }
+    public List<? extends IntegrationOrderConfirmationData> getPendingIntegrationOrderConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName){
+        return dbBasedOrderConfirmationIntegration.getPendingIntegrationOrderConfirmationData(
+                warehouseId, companyCode, warehouseName
+        );
+    }
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id){
         return dbBasedOrderConfirmationIntegration.findById(id);
     }
@@ -478,6 +484,13 @@ public class DBBasedIntegration implements Integration{
         return dbBasedWorkOrderConfirmationIntegration.findAll(warehouseId, warehouseName,
                 number, startTime, endTime, date, statusList, id);
     }
+    @Override
+    public List<? extends IntegrationWorkOrderConfirmationData> getPendingIntegrationWorkOrderConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+        return dbBasedWorkOrderConfirmationIntegration.getPendingIntegrationWorkOrderConfirmationData(
+                warehouseId, companyCode, warehouseName);
+    }
+
 
 
     @Override
@@ -505,6 +518,13 @@ public class DBBasedIntegration implements Integration{
                 number, clientId, clientName,
                 supplierId, supplierName, startTime, endTime, date, statusList, id);
     }
+    public  List<? extends IntegrationReceiptConfirmationData>  getPendingIntegrationReceiptConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName){
+
+        return dbBasedReceiptConfirmationIntegration.getPendingIntegrationReceiptConfirmationData(
+                warehouseId, companyCode, warehouseName
+        );
+    }
     public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
 
         return dbBasedReceiptConfirmationIntegration.findById(id);
@@ -527,6 +547,15 @@ public class DBBasedIntegration implements Integration{
                 warehouseId, startTime, endTime, date, statusList, id
         );
     }
+
+    public List<? extends IntegrationInventoryAdjustmentConfirmationData> getPendingInventoryAdjustmentConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+        return dbBasedInventoryAdjustmentConfirmationIntegration.getPendingInventoryAdjustmentConfirmationData(
+                warehouseId, companyCode, warehouseName
+        );
+    }
+
+
     public IntegrationInventoryAdjustmentConfirmationData getInventoryAdjustmentConfirmationData(Long id) {
         return dbBasedInventoryAdjustmentConfirmationIntegration.findById(id);
     }
@@ -544,6 +573,13 @@ public class DBBasedIntegration implements Integration{
         return dbBasedInventoryAttributeChangeConfirmationIntegration.findAll(
                 warehouseId, startTime, endTime, date, statusList, id);
     }
+    @Override
+    public List<? extends IntegrationInventoryAttributeChangeConfirmationData> getPendingInventoryAttributeChangeConfirmationData(
+            Long warehouseId, String companyCode, String warehouseName) {
+        return dbBasedInventoryAttributeChangeConfirmationIntegration.getPendingInventoryAttributeChangeConfirmationData(
+                warehouseId, companyCode, warehouseName);
+    }
+
 
     @Override
     public IntegrationInventoryAttributeChangeConfirmationData getInventoryAttributeChangeConfirmationData(Long id) {

@@ -27,10 +27,19 @@ public class IntegrationProcessingJob {
         integration.listen();
     }
 
+
+    // we will on long push the integration data.
+    // instead, we will let the client pull data from us
+    // the client may be
+    // 1. dblink tools: internal tools used for ERP integration via database
+    // 2. quickbook online: internal tools to connect to quickbook online
+    // 3. quickbook local plugin: local plugin to connect to quickbook desktop
+    /**
     @Scheduled(fixedDelay = 2000)
     public void processOutboundIntegration() {
 
         logger.debug("# process outbound integration data @ local date {}", LocalDateTime.now());
+
         if (Boolean.TRUE.equals(hostAPIEnabled)) {
 
             integration.send();
@@ -39,6 +48,7 @@ public class IntegrationProcessingJob {
             logger.debug("Host API Endpoint is not enabled");
         }
     }
+    **/
 
 
 }

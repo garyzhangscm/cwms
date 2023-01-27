@@ -33,6 +33,7 @@ docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuul
 
 
 
+
 docker buildx build --platform linux/amd64,linux/arm64 --build-arg VERSION=v1.1 -t garyzhangscm/cwms-adminserver:v1.1 --push .
 docker buildx build --platform linux/amd64,linux/arm64 --build-arg VERSION=v1.1 -t garyzhangscm/cwms-auth:v1.1 --push .
 docker buildx build --platform linux/amd64,linux/arm64 --build-arg VERSION=v1.1 -t garyzhangscm/cwms-commonserver:v1.1 --push .

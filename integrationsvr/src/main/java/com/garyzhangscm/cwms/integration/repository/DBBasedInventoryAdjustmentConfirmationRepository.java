@@ -24,10 +24,20 @@ import com.garyzhangscm.cwms.integration.model.DBBasedInventoryAdjustmentConfirm
 import com.garyzhangscm.cwms.integration.model.DBBasedShipmentLineConfirmation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface DBBasedInventoryAdjustmentConfirmationRepository extends JpaRepository<DBBasedInventoryAdjustmentConfirmation, Long>, JpaSpecificationExecutor<DBBasedInventoryAdjustmentConfirmation> {
 
 
+    @Query( "select cf from DBBasedInventoryAdjustmentConfirmation cf " +
+            "  where (cf.companyId is null or cf.companyId = :companyId) " +
+            "    and (cf.companyCode is null or cf.companyCode = :companyCode)" +
+            "    and (cf.warehouseId is null or cf.warehouseId = :warehouseId)" +
+            "    and (cf.warehouseName is null or cf.warehouseName = :warehouseName)" +
+            "    and cf.status = com.garyzhangscm.cwms.integration.model.IntegrationStatus.PENDING " )
+    List<DBBasedInventoryAdjustmentConfirmation> findPendingIntegration(Long companyId, String companyCode, Long warehouseId, String warehouseName);
 }

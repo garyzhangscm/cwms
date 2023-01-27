@@ -20,13 +20,24 @@ package com.garyzhangscm.cwms.integration.repository;
 
 
 import com.garyzhangscm.cwms.integration.model.DBBasedOrderConfirmation;
+import com.garyzhangscm.cwms.integration.model.DBBasedReceiptConfirmation;
 import com.garyzhangscm.cwms.integration.model.DBBasedWorkOrderConfirmation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface DBBasedWorkOrderConfirmationRepository extends JpaRepository<DBBasedWorkOrderConfirmation, Long>, JpaSpecificationExecutor<DBBasedWorkOrderConfirmation> {
 
+    @Query( "select cf from DBBasedWorkOrderConfirmation cf " +
+            "  where (cf.companyId is null or cf.companyId = :companyId) " +
+            "    and (cf.companyCode is null or cf.companyCode = :companyCode)" +
+            "    and (cf.warehouseId is null or cf.warehouseId = :warehouseId)" +
+            "    and (cf.warehouseName is null or cf.warehouseName = :warehouseName)" +
+            "    and cf.status = com.garyzhangscm.cwms.integration.model.IntegrationStatus.PENDING " )
+    List<DBBasedWorkOrderConfirmation> findPendingIntegration(Long companyId, String companyCode, Long warehouseId, String warehouseName);
 
 }
