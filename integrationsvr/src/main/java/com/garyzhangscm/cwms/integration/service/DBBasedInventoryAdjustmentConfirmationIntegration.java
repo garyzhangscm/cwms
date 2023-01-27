@@ -202,6 +202,7 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
 
     }
 
+
     private void sendAlert(DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation) {
         Alert alert = dbBasedInventoryAdjustmentConfirmation.getStatus().equals(IntegrationStatus.COMPLETED) ?
                 new Alert(dbBasedInventoryAdjustmentConfirmation.getCompanyId(),
@@ -243,6 +244,18 @@ public class DBBasedInventoryAdjustmentConfirmationIntegration {
                 findById(id);
         dbBasedInventoryAdjustmentConfirmation.setStatus(IntegrationStatus.PENDING);
         dbBasedInventoryAdjustmentConfirmation.setErrorMessage("");
+        return save(dbBasedInventoryAdjustmentConfirmation);
+    }
+
+    public IntegrationInventoryAdjustmentConfirmationData saveInventoryAdjustmentConfirmationResult(Long id, boolean succeed, String errorMessage) {
+        DBBasedInventoryAdjustmentConfirmation dbBasedInventoryAdjustmentConfirmation =
+                findById(id);
+        logger.debug("save dbBasedInventoryAdjustmentConfirmation result, id {}, succeed: {}, error message: {}",
+                id, succeed, errorMessage);
+        dbBasedInventoryAdjustmentConfirmation.setStatus(
+                succeed ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR
+        );
+        dbBasedInventoryAdjustmentConfirmation.setErrorMessage(errorMessage);
         return save(dbBasedInventoryAdjustmentConfirmation);
     }
 }

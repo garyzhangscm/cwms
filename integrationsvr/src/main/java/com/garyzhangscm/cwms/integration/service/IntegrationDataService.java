@@ -337,6 +337,11 @@ public class IntegrationDataService {
     public IntegrationInventoryAdjustmentConfirmationData resendInventoryAdjustmentConfirmationData(Long id) {
         return integration.resendInventoryAdjustmentConfirmationData(id);
     }
+
+    public IntegrationInventoryAdjustmentConfirmationData saveInventoryAdjustmentConfirmationResult(Long id, boolean succeed, String errorMessage) {
+        return integration.saveInventoryAdjustmentConfirmationResult(id, succeed, errorMessage);
+    }
+
     public IntegrationInventoryAdjustmentConfirmationData sendInventoryAdjustmentConfirmationData(InventoryAdjustmentConfirmation inventoryAdjustmentConfirmation) {
         return integration.sendInventoryAdjustmentConfirmationData(inventoryAdjustmentConfirmation);
     }
