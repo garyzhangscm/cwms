@@ -106,7 +106,7 @@ public class QuickBookWebhookHistory extends AuditibleEntity<String> implements 
         this.payload = payload;
         this.status = status;
         this.errorMessage = errorMessage;
-        this.processedTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
+        this.processedTime = ZonedDateTime.now(ZoneOffset.UTC);
     }
     public QuickBookWebhookHistory(String signature, String payload, String entityName,
                                    WebhookStatus status,

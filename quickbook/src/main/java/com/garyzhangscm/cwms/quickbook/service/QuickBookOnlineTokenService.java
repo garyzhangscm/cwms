@@ -23,6 +23,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -257,7 +258,7 @@ public class QuickBookOnlineTokenService  {
 				quickBookOnlineToken.setAuthorizationCode(authCode);
 				quickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
 				quickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-				quickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+				quickBookOnlineToken.setLastTokenRequestTime(ZonedDateTime.now(ZoneOffset.UTC));
 
 				if (Objects.equals(companyId, quickBookOnlineToken.getCompanyId()) &&
 								Objects.equals(warehouseId, quickBookOnlineToken.getWarehouseId()) &&
@@ -277,7 +278,7 @@ public class QuickBookOnlineTokenService  {
 				existingQuickBookOnlineToken =
 				   saveOrUpdate(new QuickBookOnlineToken(companyId, warehouseId,
 						  realmId, authCode, bearerTokenResponse.getAccessToken(),
-						  bearerTokenResponse.getRefreshToken(), LocalDateTime.now().atZone(ZoneOffset.UTC))
+						  bearerTokenResponse.getRefreshToken(), ZonedDateTime.now(ZoneOffset.UTC))
 				   );
 			}
 			return existingQuickBookOnlineToken;
@@ -328,7 +329,7 @@ public class QuickBookOnlineTokenService  {
 
 					existingQuickBookOnlineToken.setToken(bearerTokenResponse.getAccessToken());
 					existingQuickBookOnlineToken.setRefreshToken(bearerTokenResponse.getRefreshToken());
-					existingQuickBookOnlineToken.setLastTokenRequestTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+					existingQuickBookOnlineToken.setLastTokenRequestTime(ZonedDateTime.now(ZoneOffset.UTC));
 					saveOrUpdate(existingQuickBookOnlineToken);
 				}
 		);
