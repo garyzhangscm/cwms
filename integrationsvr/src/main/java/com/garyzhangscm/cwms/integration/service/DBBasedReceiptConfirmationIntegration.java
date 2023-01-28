@@ -259,4 +259,16 @@ public class DBBasedReceiptConfirmationIntegration {
                 warehouse.getId(), warehouse.getName()
         );
     }
+
+    public IntegrationReceiptConfirmationData saveReceiptConfirmationResult(Long id, boolean succeed, String errorMessage) {
+        DBBasedReceiptConfirmation dbBasedReceiptConfirmation =
+                findById(id);
+        logger.debug("save dbBasedReceiptConfirmation result, id {}, succeed: {}, error message: {}",
+                id, succeed, errorMessage);
+        dbBasedReceiptConfirmation.setStatus(
+                succeed ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR
+        );
+        dbBasedReceiptConfirmation.setErrorMessage(errorMessage);
+        return save(dbBasedReceiptConfirmation);
+    }
 }

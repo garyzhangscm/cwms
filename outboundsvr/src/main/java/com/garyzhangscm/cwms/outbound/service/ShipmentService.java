@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1157,7 +1158,7 @@ public class ShipmentService {
         });
 
         shipment.setStatus(ShipmentStatus.DISPATCHED);
-        shipment.setCompleteTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+        shipment.setCompleteTime(ZonedDateTime.now(ZoneOffset.UTC));
         save(shipment);
         // after we complete the shipment, release all the locations
         // that reserved by the shipment

@@ -28,6 +28,7 @@ public class Item implements Serializable {
 
     private String name;
     private String description;
+    private String quickbookListId;
 
     private Long clientId;
 
@@ -122,5 +123,13 @@ public class Item implements Serializable {
 
     public void setUnitCost(double unitCost) {
         this.unitCost = unitCost;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 }

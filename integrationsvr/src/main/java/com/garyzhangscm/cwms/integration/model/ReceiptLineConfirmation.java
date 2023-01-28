@@ -36,6 +36,7 @@ public class ReceiptLineConfirmation implements Serializable {
 
     private Long itemId;
     private String itemName;
+    private String quickbookItemListId;
 
     private Long expectedQuantity;
 
@@ -98,6 +99,14 @@ public class ReceiptLineConfirmation implements Serializable {
 
     public String getItemName() {
         return itemName;
+    }
+
+    public String getQuickbookItemListId() {
+        return quickbookItemListId;
+    }
+
+    public void setQuickbookItemListId(String quickbookItemListId) {
+        this.quickbookItemListId = quickbookItemListId;
     }
 
     public void setItemName(String itemName) {

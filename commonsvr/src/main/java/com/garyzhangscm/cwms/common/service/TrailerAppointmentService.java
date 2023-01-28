@@ -188,7 +188,7 @@ public class TrailerAppointmentService {
             throw TrailerException.raiseException("Trailer is not ready for complete");
         }
         trailerAppointment.setStatus(TrailerAppointmentStatus.COMPLETED);
-        trailerAppointment.setCompletedTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+        trailerAppointment.setCompletedTime(ZonedDateTime.now(ZoneOffset.UTC));
         return save(trailerAppointment);
     }
 

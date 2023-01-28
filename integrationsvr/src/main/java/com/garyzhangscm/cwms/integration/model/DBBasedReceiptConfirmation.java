@@ -70,6 +70,9 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
     @Column(name = "supplier_name")
     private String supplierName;
 
+    @Column(name = "quickbook_vendor_listid")
+    private String quickbookVendorListId;
+
     @OneToMany(
             mappedBy = "receipt",
             cascade = CascadeType.ALL,
@@ -84,6 +87,7 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
 
     @Column(name = "quickbook_txnid")
     private String quickbookTxnID;
+
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -109,6 +113,7 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
 
         setSupplierId(receiptConfirmation.getSupplierId());
         setSupplierName(receiptConfirmation.getSupplierName());
+        setQuickbookVendorListId(receiptConfirmation.getQuickbookVendorListId());
 
         receiptConfirmation.getReceiptLines().forEach(receiptLineConfirmation -> {
             DBBasedReceiptLineConfirmation dbBasedReceiptLineConfirmation =
@@ -271,5 +276,13 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getQuickbookVendorListId() {
+        return quickbookVendorListId;
+    }
+
+    public void setQuickbookVendorListId(String quickbookVendorListId) {
+        this.quickbookVendorListId = quickbookVendorListId;
     }
 }

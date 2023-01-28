@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -138,7 +139,7 @@ public class ProductionLineMonitorService  {
     public String processProductionLineMonitorHeartBeat(Long warehouseId, String productionLineMonitorName) {
         ProductionLineMonitor productionLineMonitor = findByName(warehouseId, productionLineMonitorName);
         if (Objects.nonNull(productionLineMonitor)) {
-            productionLineMonitor.setLastHeartBeatTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+            productionLineMonitor.setLastHeartBeatTime(ZonedDateTime.now(ZoneOffset.UTC));
 
             productionLineMonitor = saveOrUpdate(productionLineMonitor);
             logger.debug("heart beat for monitor {} at {}",

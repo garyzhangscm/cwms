@@ -55,6 +55,9 @@ public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> impl
     @Column(name = "item_name")
     private String itemName;
 
+    @Column(name = "quickbook_item_listid")
+    private String quickbookItemListId;
+
 
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
@@ -97,6 +100,7 @@ public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> impl
 
         setItemId(receiptLineConfirmation.getItemId());
         setItemName(receiptLineConfirmation.getItemName());
+        setQuickbookItemListId(receiptLineConfirmation.getQuickbookItemListId());
 
         setExpectedQuantity(receiptLineConfirmation.getExpectedQuantity());
         setReceivedQuantity(receiptLineConfirmation.getReceivedQuantity());
@@ -242,5 +246,13 @@ public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> impl
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getQuickbookItemListId() {
+        return quickbookItemListId;
+    }
+
+    public void setQuickbookItemListId(String quickbookItemListId) {
+        this.quickbookItemListId = quickbookItemListId;
     }
 }

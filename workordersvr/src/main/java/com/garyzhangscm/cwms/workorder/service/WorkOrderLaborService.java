@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -162,7 +163,7 @@ public class WorkOrderLaborService  {
                 String originalValue = Objects.isNull(workOrderLabor.getLastCheckInTime())?
                     "" : workOrderLabor.getLastCheckInTime().toString();
                 workOrderLabor.setWorkOrderLaborStatus(WorkOrderLaborStatus.CHECK_IN);
-                workOrderLabor.setLastCheckInTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+                workOrderLabor.setLastCheckInTime(ZonedDateTime.now(ZoneOffset.UTC));
 
                 workOrderLabor = saveOrUpdate(workOrderLabor);
 
@@ -175,7 +176,7 @@ public class WorkOrderLaborService  {
         else {
             ProductionLine productionLine = productionLineService.findById(productionLineId);
             workOrderLabor = new WorkOrderLabor(warehouseId, username, productionLine,
-                    LocalDateTime.now().atZone(ZoneOffset.UTC), null, WorkOrderLaborStatus.CHECK_IN);
+                    ZonedDateTime.now(ZoneOffset.UTC), null, WorkOrderLaborStatus.CHECK_IN);
 
             workOrderLabor = saveOrUpdate(workOrderLabor);
 
@@ -210,7 +211,7 @@ public class WorkOrderLaborService  {
                         workOrderLabor.getLastCheckOutTime() == null ? "" : workOrderLabor.getLastCheckOutTime().toString();
 
                 workOrderLabor.setWorkOrderLaborStatus(WorkOrderLaborStatus.CHECK_OUT);
-                workOrderLabor.setLastCheckOutTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+                workOrderLabor.setLastCheckOutTime(ZonedDateTime.now(ZoneOffset.UTC));
 
                 workOrderLabor = saveOrUpdate(workOrderLabor);
 
