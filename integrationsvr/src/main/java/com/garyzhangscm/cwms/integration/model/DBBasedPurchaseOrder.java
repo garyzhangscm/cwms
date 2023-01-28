@@ -121,7 +121,8 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
         getPurchaseOrderLines().forEach(dbBasedPurchaseOrderLine -> {
             PurchaseOrderLine purchaseOrderLine = new PurchaseOrderLine();
             String[] purchaseOrderLineFieldNames = {
-                    "number", "itemId", "warehouseId", "expectedQuantity"
+                    "number", "itemId", "warehouseId", "expectedQuantity",
+                    "quickbookTxnLineID"
             };
             ObjectCopyUtil.copyValue(dbBasedPurchaseOrderLine, purchaseOrderLine, purchaseOrderLineFieldNames);
             purchaseOrder.getPurchaseOrderLines().add(purchaseOrderLine);
