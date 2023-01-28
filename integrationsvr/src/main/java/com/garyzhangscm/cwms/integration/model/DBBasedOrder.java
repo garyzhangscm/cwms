@@ -163,6 +163,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     @Column(name="stage_location_group_name")
     private String stageLocationGroupName;
 
+    @Column(name = "quickbook_txnid")
+    private String quickbookTxnID;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -185,7 +187,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty",
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2", "billToAddressPostcode",
                 "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName",
-                "category", "transferReceiptWarehouseId"
+                "category", "transferReceiptWarehouseId", "quickbookTxnID"
         };
 
         ObjectCopyUtil.copyValue(order, this, fieldNames);
@@ -219,7 +221,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2",
                 "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
                 "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
-                "warehouseId","warehouseName"
+                "warehouseId","warehouseName", "quickbookTxnID"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);
@@ -582,6 +584,14 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
 
     public void setStageLocationGroupName(String stageLocationGroupName) {
         this.stageLocationGroupName = stageLocationGroupName;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 
     @Override

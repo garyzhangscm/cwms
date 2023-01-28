@@ -82,6 +82,8 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
     @Column(name = "allow_unexpected_item")
     private Boolean allowUnexpectedItem;
 
+    @Column(name = "quickbook_txnid")
+    private String quickbookTxnID;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -97,6 +99,7 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
     public DBBasedReceiptConfirmation(ReceiptConfirmation receiptConfirmation){
 
         setNumber(receiptConfirmation.getNumber());
+        setQuickbookTxnID(receiptConfirmation.getQuickbookTxnID());
 
         setWarehouseId(receiptConfirmation.getWarehouseId());
         setWarehouseName(receiptConfirmation.getWarehouseName());
@@ -242,6 +245,14 @@ public class DBBasedReceiptConfirmation extends AuditibleEntity<String> implemen
 
     public void setAllowUnexpectedItem(Boolean allowUnexpectedItem) {
         this.allowUnexpectedItem = allowUnexpectedItem;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 
     @Override

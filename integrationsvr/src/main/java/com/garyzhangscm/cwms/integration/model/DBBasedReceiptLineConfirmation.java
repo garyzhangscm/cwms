@@ -75,6 +75,9 @@ public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> impl
     private Double overReceivingPercent;
 
 
+    @Column(name = "quickbook_txnlineid")
+    private String quickbookTxnLineID;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -88,6 +91,7 @@ public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> impl
     public DBBasedReceiptLineConfirmation(ReceiptLineConfirmation receiptLineConfirmation){
         setNumber(receiptLineConfirmation.getNumber());
 
+        setQuickbookTxnLineID(receiptLineConfirmation.getQuickbookTxnLineID());
         setWarehouseId(receiptLineConfirmation.getWarehouseId());
         setWarehouseName(receiptLineConfirmation.getWarehouseName());
 
@@ -212,6 +216,14 @@ public class DBBasedReceiptLineConfirmation extends AuditibleEntity<String> impl
 
     public void setOverReceivingPercent(Double overReceivingPercent) {
         this.overReceivingPercent = overReceivingPercent;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 
     @Override

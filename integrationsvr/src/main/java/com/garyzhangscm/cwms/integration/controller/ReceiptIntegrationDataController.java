@@ -76,10 +76,12 @@ public class ReceiptIntegrationDataController {
         return integrationDataService.resendReceiptData(id);
     }
     @RequestMapping(value="/receipts", method = RequestMethod.PUT)
-    public IntegrationReceiptData addIntegrationReceiptData(@RequestBody Receipt receipt) {
+    public ResponseBodyWrapper addIntegrationReceiptData(@RequestBody Receipt receipt) {
 
-        logger.debug("Start to add receipt: \n{}", receipt);
-        return integrationDataService.addReceiptData(receipt);
+        // logger.debug("Start to add receipt: \n{}", receipt);
+        IntegrationReceiptData receiptData =
+                integrationDataService.addReceiptData(receipt);
+        return ResponseBodyWrapper.success(String.valueOf(receiptData.getId()));
     }
 /***
     @RequestMapping(value="/dblink/receipt", method = RequestMethod.PUT)

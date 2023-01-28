@@ -86,6 +86,9 @@ public class DBBasedCustomer extends AuditibleEntity<String> implements Serializ
     @Column(name = "error_message")
     private String errorMessage;
 
+    @Column(name = "quickbook_listid")
+    private String quickbookListId;
+
     public Customer convertToCustomer() {
 
         Customer customer = new Customer();
@@ -255,7 +258,13 @@ public class DBBasedCustomer extends AuditibleEntity<String> implements Serializ
         this.status = status;
     }
 
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
 
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
+    }
 
     public String getErrorMessage() {
         return errorMessage;

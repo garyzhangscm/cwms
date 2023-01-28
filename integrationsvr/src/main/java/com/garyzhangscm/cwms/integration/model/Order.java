@@ -96,6 +96,7 @@ public class Order implements Serializable {
 
     private Long stageLocationGroupId;
     private String stageLocationGroupName;
+    private String quickbookTxnID;
 
     public Long getId() {
         return id;
@@ -304,6 +305,14 @@ public class Order implements Serializable {
 
     public void setBillToAddressPostcode(String billToAddressPostcode) {
         this.billToAddressPostcode = billToAddressPostcode;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 
     public Long getCarrierId() {

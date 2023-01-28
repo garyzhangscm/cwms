@@ -72,9 +72,11 @@ public class CustomerIntegrationDataController {
     }
 
     @RequestMapping(value="/customers", method = RequestMethod.PUT)
-    public IntegrationCustomerData addIntegrationCustomerData(@RequestBody Customer customer) {
+    public ResponseBodyWrapper addIntegrationCustomerData(@RequestBody Customer customer) {
 
-        return integrationDataService.addIntegrationCustomerData(customer);
+        IntegrationCustomerData customerData =
+                integrationDataService.addIntegrationCustomerData(customer);
+        return ResponseBodyWrapper.success(String.valueOf(customerData.getId()));
     }
 
     /**

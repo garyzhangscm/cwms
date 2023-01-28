@@ -53,6 +53,7 @@ public class Supplier implements Serializable {
     private String userDefinedField3;
     private String userDefinedField4;
     private String userDefinedField5;
+    private String quickbookListId;
 
     public Long getId() {
         return id;
@@ -204,6 +205,14 @@ public class Supplier implements Serializable {
 
     public void setUserDefinedField5(String userDefinedField5) {
         this.userDefinedField5 = userDefinedField5;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 
     public Long getCompanyId() {

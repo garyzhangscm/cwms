@@ -66,6 +66,9 @@ public class PurchaseOrderLine extends AuditibleEntity<String>{
     @JoinColumn(name = "purchase_order_id")
     private PurchaseOrder purchaseOrder;
 
+    @Column(name = "quickbook_txnlineid")
+    private String quickbookTxnLineID;
+
 
     public Long getId() {
         return id;
@@ -145,5 +148,13 @@ public class PurchaseOrderLine extends AuditibleEntity<String>{
 
     public void setPurchaseOrder(PurchaseOrder purchaseOrder) {
         this.purchaseOrder = purchaseOrder;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 }

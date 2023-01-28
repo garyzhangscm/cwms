@@ -50,6 +50,7 @@ public interface IntegrationCustomerData {
 
     public IntegrationStatus getStatus() ;
 
+    public String getQuickbookListId();
 
 
 }

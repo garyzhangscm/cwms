@@ -74,10 +74,11 @@ public class PurchaseOrderIntegrationDataController {
         return integrationDataService.resendPurchaseOrderData(id);
     }
     @RequestMapping(value="/purchase-orders", method = RequestMethod.PUT)
-    public IntegrationPurchaseOrderData addIntegrationPurchaseOrderData(@RequestBody PurchaseOrder purchaseOrder) {
+    public ResponseBodyWrapper addIntegrationPurchaseOrderData(@RequestBody PurchaseOrder purchaseOrder) {
 
-        logger.debug("Start to add purchase order: \n{}", purchaseOrder);
-        return integrationDataService.addPurchaseOrderData(purchaseOrder);
+        IntegrationPurchaseOrderData purchaseOrderData =
+                integrationDataService.addPurchaseOrderData(purchaseOrder);
+        return ResponseBodyWrapper.success(String.valueOf(purchaseOrderData.getId()));
     }
 /**
     @RequestMapping(value="/dblink/purchase-orders", method = RequestMethod.PUT)

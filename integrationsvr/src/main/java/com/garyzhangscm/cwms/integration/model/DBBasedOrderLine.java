@@ -99,6 +99,9 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     private String carrierServiceLevelName;
 
 
+    @Column(name = "quickbook_txnlineid")
+    private String quickbookTxnLineID;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -129,6 +132,9 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
         setCarrierServiceLevelId(orderLine.getCarrierServiceLevelId());
         setCarrierServiceLevelName(orderLine.getCarrierServiceLevelName());
+
+
+        setQuickbookTxnLineID(orderLine.getQuickbookTxnLineID());
 
         setStatus(IntegrationStatus.PENDING);
         setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
@@ -164,7 +170,7 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         String[] fieldNames = {
                 "number", "itemId",  "expectedQuantity",  "inventoryStatusId",
                 "carrierId", "carrierServiceLevelId",
-                "warehouseId","warehouseName",
+                "warehouseId","warehouseName", "quickbookTxnLineID"
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
@@ -343,6 +349,14 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
     public void setCarrierServiceLevelName(String carrierServiceLevelName) {
         this.carrierServiceLevelName = carrierServiceLevelName;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 
     @Override

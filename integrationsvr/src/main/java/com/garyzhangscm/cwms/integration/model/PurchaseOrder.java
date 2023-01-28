@@ -33,6 +33,9 @@ public class PurchaseOrder {
     private Long warehouseId;
     private String warehouseName;
 
+    private Long companyId;
+    private String companyCode;
+
     private Warehouse warehouse;
 
     private Long clientId;
@@ -44,6 +47,7 @@ public class PurchaseOrder {
     private List<PurchaseOrderLine> purchaseOrderLines = new ArrayList<>();
 
     private Boolean allowUnexpectedItem;
+    private String quickbookTxnID;
 
     @Override
     public String toString() {
@@ -133,5 +137,29 @@ public class PurchaseOrder {
 
     public void setPurchaseOrderLines(List<PurchaseOrderLine> purchaseOrderLines) {
         this.purchaseOrderLines = purchaseOrderLines;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 }

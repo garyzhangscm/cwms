@@ -46,6 +46,7 @@ public class ReceiptLineConfirmation implements Serializable {
 
     private Long overReceivingQuantity;
     private Double overReceivingPercent;
+    private String quickbookTxnLineID;
 
     public ReceiptLineConfirmation() {
 
@@ -53,6 +54,11 @@ public class ReceiptLineConfirmation implements Serializable {
 
     public ReceiptLineConfirmation(ReceiptLine receiptLine) {
         setNumber(receiptLine.getNumber());
+        if (Objects.nonNull(receiptLine.getPurchaseOrderLine())) {
+            setQuickbookTxnLineID(
+                    receiptLine.getPurchaseOrderLine().getQuickbookTxnLineID()
+            );
+        }
 
         setWarehouseId(receiptLine.getWarehouseId());
         if (Objects.nonNull(receiptLine.getWarehouse())) {
@@ -165,4 +171,11 @@ public class ReceiptLineConfirmation implements Serializable {
         this.overReceivingPercent = overReceivingPercent;
     }
 
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
+    }
 }

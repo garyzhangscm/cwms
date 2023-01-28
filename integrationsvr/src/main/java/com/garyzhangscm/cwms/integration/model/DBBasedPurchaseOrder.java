@@ -85,6 +85,9 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
     private Boolean allowUnexpectedItem;
 
 
+    @Column(name = "quickbook_txnid")
+    private String quickbookTxnID;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -97,7 +100,8 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
         PurchaseOrder purchaseOrder = new PurchaseOrder();
 
         String[] fieldNames = {
-                "number", "warehouseId", "clientId", "supplierId", "allowUnexpectedItem"
+                "number", "warehouseId", "clientId", "supplierId", "allowUnexpectedItem",
+                "quickbookTxnID"
         };
 
         ObjectCopyUtil.copyValue(this, purchaseOrder, fieldNames);
@@ -134,6 +138,9 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
         setNumber(purchaseOrder.getNumber());
         setWarehouseId(purchaseOrder.getWarehouseId());
         setWarehouseName(purchaseOrder.getWarehouseName());
+        setCompanyId(purchaseOrder.getCompanyId());
+        setCompanyCode(purchaseOrder.getCompanyCode());
+        setQuickbookTxnID(purchaseOrder.getQuickbookTxnID());
 
         setClientId(purchaseOrder.getClientId());
         setClientName(purchaseOrder.getClientName());
@@ -267,6 +274,14 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
 
     public void addPurchaseOrderLine(DBBasedPurchaseOrderLine purchaseOrderLine) {
         this.purchaseOrderLines.add(purchaseOrderLine);
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 
     @Override

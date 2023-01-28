@@ -46,6 +46,7 @@ public class OrderLine implements Serializable {
 
     private Long carrierServiceLevelId;
     private String carrierServiceLevelName;
+    private String quickbookTxnLineID;
 
     public Long getId() {
         return id;
@@ -151,4 +152,11 @@ public class OrderLine implements Serializable {
         this.carrierServiceLevelName = carrierServiceLevelName;
     }
 
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
+    }
 }

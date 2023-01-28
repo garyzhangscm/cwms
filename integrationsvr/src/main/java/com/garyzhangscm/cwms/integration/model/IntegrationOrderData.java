@@ -5,6 +5,7 @@ import java.util.List;
 
 public interface IntegrationOrderData {
 
+    Long getId();
     String getNumber();
     Long getShipToCustomerId();
     String getShipToCustomerName();

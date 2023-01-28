@@ -73,6 +73,9 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
     private DBBasedPurchaseOrder purchaseOrder;
 
 
+    @Column(name = "quickbook_txnlineid")
+    private String quickbookTxnLineID;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -94,6 +97,7 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
         setItemName(purchaseOrderLine.getItemName());
 
         setExpectedQuantity(purchaseOrderLine.getExpectedQuantity());
+        setQuickbookTxnLineID(purchaseOrderLine.getQuickbookTxnLineID());
 
 
         setStatus(IntegrationStatus.PENDING);
@@ -196,6 +200,14 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
 
     public void setPurchaseOrder(DBBasedPurchaseOrder purchaseOrder) {
         this.purchaseOrder = purchaseOrder;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 
     @Override
