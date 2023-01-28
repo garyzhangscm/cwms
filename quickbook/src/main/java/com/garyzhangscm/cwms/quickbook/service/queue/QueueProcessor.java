@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.quickbook.service.queue;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -138,7 +139,7 @@ public class QueueProcessor implements Callable<Object> {
 											changedEntity.getName(),
 											WebhookStatus.COMPLETE,
 											"",
-											LocalDateTime.now().atZone(ZoneOffset.UTC)
+											ZonedDateTime.now(ZoneOffset.UTC)
 									)
 							);
 
@@ -151,7 +152,7 @@ public class QueueProcessor implements Callable<Object> {
 				// update the original webhook to complete
 				quickBookWebhookHistory.setStatus(WebhookStatus.COMPLETE);
 				quickBookWebhookHistory.setErrorMessage("");
-				quickBookWebhookHistory.setProcessedTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+				quickBookWebhookHistory.setProcessedTime(ZonedDateTime.now(ZoneOffset.UTC));
 
 				quickBookWebhookHistoryService.save(quickBookWebhookHistory);
 
@@ -163,7 +164,7 @@ public class QueueProcessor implements Callable<Object> {
 				quickBookWebhookHistory.setRealmId(realmId);
 				quickBookWebhookHistory.setStatus(WebhookStatus.ERROR);
 				quickBookWebhookHistory.setErrorMessage(ex.getMessage());
-				quickBookWebhookHistory.setProcessedTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+				quickBookWebhookHistory.setProcessedTime(ZonedDateTime.now(ZoneOffset.UTC));
 
 				quickBookWebhookHistoryService.save(quickBookWebhookHistory);
 			}
