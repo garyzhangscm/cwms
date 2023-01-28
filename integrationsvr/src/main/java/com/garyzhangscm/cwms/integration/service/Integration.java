@@ -183,6 +183,8 @@ public interface Integration {
             String statusList, Long id);
     List<? extends IntegrationReceiptConfirmationData>  getPendingIntegrationReceiptConfirmationData(
             Long warehouseId, String companyCode, String warehouseName);
+    IntegrationReceiptConfirmationData saveInventoryReceiptConfirmationResult(Long id, boolean succeed, String errorMessage);
+
     IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id);
     IntegrationReceiptConfirmationData resendReceiptConfirmationData(Long id);
     IntegrationReceiptConfirmationData sendIntegrationReceiptConfirmationData(ReceiptConfirmation receiptConfirmation);

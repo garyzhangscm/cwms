@@ -45,6 +45,7 @@ public class ReceiptConfirmation implements Serializable{
     private Long supplierId;
 
     private String supplierName;
+    private String quickbookVendorListId;
 
     private List<ReceiptLineConfirmation> receiptLines = new ArrayList<>();
 
@@ -76,6 +77,7 @@ public class ReceiptConfirmation implements Serializable{
         setSupplierId(receipt.getSupplierId());
         if (Objects.nonNull(receipt.getSupplier())) {
             setSupplierName(receipt.getSupplier().getName());
+            setQuickbookVendorListId(receipt.getSupplier().getQuickbookListId());
         }
 
         setAllowUnexpectedItem(receipt.getAllowUnexpectedItem());
@@ -181,5 +183,13 @@ public class ReceiptConfirmation implements Serializable{
 
     public void setQuickbookTxnID(String quickbookTxnID) {
         this.quickbookTxnID = quickbookTxnID;
+    }
+
+    public String getQuickbookVendorListId() {
+        return quickbookVendorListId;
+    }
+
+    public void setQuickbookVendorListId(String quickbookVendorListId) {
+        this.quickbookVendorListId = quickbookVendorListId;
     }
 }

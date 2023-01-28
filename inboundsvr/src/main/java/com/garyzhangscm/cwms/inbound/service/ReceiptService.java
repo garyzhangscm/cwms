@@ -279,8 +279,9 @@ public class ReceiptService implements TestDataInitiableService{
         if (receipt != null && receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
 
             receipt.setReceiptStatus(ReceiptStatus.CHECK_IN);
-            receipt.setCheckInTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
-            logger.debug("update the receipt to check in");
+            receipt.setCheckInTime(ZonedDateTime.now(ZoneOffset.UTC));
+            logger.debug("update the receipt to check in @ {}",
+                    receipt.getCheckInTime());
             if (recalculateQCDuringCheckin()) {
                 recalculateQCQuantity(receipt);
             }

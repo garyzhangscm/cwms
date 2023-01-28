@@ -525,6 +525,14 @@ public class DBBasedIntegration implements Integration{
                 warehouseId, companyCode, warehouseName
         );
     }
+
+    public  IntegrationReceiptConfirmationData saveInventoryReceiptConfirmationResult(Long id, boolean succeed, String errorMessage) {
+
+        return dbBasedReceiptConfirmationIntegration.saveReceiptConfirmationResult(
+                id, succeed, errorMessage
+        );
+    }
+
     public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
 
         return dbBasedReceiptConfirmationIntegration.findById(id);

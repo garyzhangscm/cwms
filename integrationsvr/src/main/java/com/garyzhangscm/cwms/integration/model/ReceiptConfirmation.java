@@ -45,6 +45,8 @@ public class ReceiptConfirmation implements Serializable{
 
     private String supplierName;
 
+    private String quickbookVendorListId;
+
     private List<ReceiptLineConfirmation> receiptLines = new ArrayList<>();
 
 
@@ -121,6 +123,14 @@ public class ReceiptConfirmation implements Serializable{
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public String getQuickbookVendorListId() {
+        return quickbookVendorListId;
+    }
+
+    public void setQuickbookVendorListId(String quickbookVendorListId) {
+        this.quickbookVendorListId = quickbookVendorListId;
     }
 
     public List<ReceiptLineConfirmation> getReceiptLines() {

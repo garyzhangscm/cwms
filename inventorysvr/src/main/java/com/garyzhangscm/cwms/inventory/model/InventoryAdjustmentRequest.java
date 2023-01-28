@@ -158,7 +158,7 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
         setInventoryQuantityChangeType(inventoryQuantityChangeType);
         setStatus(InventoryAdjustmentRequestStatus.PENDING);
         setRequestedByUsername(username);
-        setRequestedByDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+        setRequestedByDateTime(ZonedDateTime.now(ZoneOffset.UTC));
         setDocumentNumber(documentNumber);
         setComment(comment);
     }

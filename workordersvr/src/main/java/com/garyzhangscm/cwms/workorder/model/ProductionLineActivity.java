@@ -73,7 +73,7 @@ public class ProductionLineActivity extends AuditibleEntity<String>{
         this.username = username;
         this.workingTeamMemberCount = workingTeamMemberCount;
         this.type = type;
-        this.transactionTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
+        this.transactionTime = ZonedDateTime.now(ZoneOffset.UTC);
 
     }
     public Long getId() {

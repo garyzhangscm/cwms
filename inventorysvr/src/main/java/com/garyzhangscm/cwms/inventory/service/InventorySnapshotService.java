@@ -298,7 +298,7 @@ public class InventorySnapshotService  {
         inventorySnapshot.setBatchNumber(batchNumber);
 
         inventorySnapshot.setStatus(InventorySnapshotStatus.PROCESSING);
-        inventorySnapshot.setStartTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+        inventorySnapshot.setStartTime(ZonedDateTime.now(ZoneOffset.UTC));
         InventorySnapshot savedInventorySnapshot = saveOrUpdate(inventorySnapshot);
 
         logger.debug("  inventory snapshot with batch number {} is generated",
@@ -373,7 +373,7 @@ public class InventorySnapshotService  {
                 new ArrayList<>(inventorySnapshotDetailMap.values())
         );
         inventorySnapshot.setStatus(InventorySnapshotStatus.DONE);
-        inventorySnapshot.setCompleteTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+        inventorySnapshot.setCompleteTime(ZonedDateTime.now(ZoneOffset.UTC));
 
         // save the result
         logger.debug(">>   3 start to save details to batch {}",
@@ -506,7 +506,7 @@ public class InventorySnapshotService  {
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, int maxRecordNumber) {
 
         if (Objects.isNull(endTime)) {
-            endTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
+            endTime = ZonedDateTime.now(ZoneOffset.UTC);
         }
         // by default, we will get 90 days' data
         if (Objects.isNull(startTime)) {

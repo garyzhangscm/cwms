@@ -83,7 +83,7 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
 
     public LocationUtilizationSnapshotBatch(Long warehouseId, String number) {
         this(warehouseId, number, 0.0, 0.0, 0, LocationUtilizationSnapshotStatus.PROCESSING,
-                LocalDateTime.now().atZone(ZoneOffset.UTC));
+                ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     public LocationUtilizationSnapshotBatch(Long warehouseId, String number, Double netVolume,

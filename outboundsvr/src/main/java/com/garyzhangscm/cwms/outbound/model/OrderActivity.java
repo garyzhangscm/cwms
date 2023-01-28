@@ -191,14 +191,14 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
         return new OrderActivity(warehouseId, transactionGroupId, number)
                 .withUsername(SecurityContextHolder.getContext().getAuthentication().getName())
-                .withActivityDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+                .withActivityDateTime(ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     public static OrderActivity build(Long warehouseId, String transactionGroupId, String number, String username) {
 
         return new OrderActivity(warehouseId, transactionGroupId, number)
                 .withUsername(username)
-                .withActivityDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+                .withActivityDateTime(ZonedDateTime.now(ZoneOffset.UTC));
     }
     public OrderActivity withActivityDateTime(ZonedDateTime activityDateTime) {
         setActivityDateTime(activityDateTime);

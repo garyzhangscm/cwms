@@ -180,7 +180,7 @@ public class KafkaReceiver {
     }
 
     public void processReceiptConfirmationIntegration(String receiptConfirmationJsonRepresent)  {
-        logger.info("# received inventory adjustment confirmation data: {}", receiptConfirmationJsonRepresent);
+        logger.info("# received receipt confirmation data: {}", receiptConfirmationJsonRepresent);
 
         try {
             ReceiptConfirmation receiptConfirmation

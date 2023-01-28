@@ -90,7 +90,7 @@ public class InventoryAdjustmentRequest implements Serializable {
         setInventoryQuantityChangeType(inventoryQuantityChangeType);
         setStatus(InventoryAdjustmentRequestStatus.PENDING);
         setRequestedByUsername(username);
-        setRequestedByDateTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
+        setRequestedByDateTime(ZonedDateTime.now(ZoneOffset.UTC));
         setDocumentNumber(documentNumber);
         setComment(comment);
     }

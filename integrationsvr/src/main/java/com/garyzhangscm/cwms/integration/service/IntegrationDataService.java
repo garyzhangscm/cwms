@@ -302,6 +302,11 @@ public class IntegrationDataService {
                 warehouseId, companyCode, warehouseName);
     }
 
+    public IntegrationReceiptConfirmationData saveInventoryReceiptConfirmationResult(Long id, boolean succeed, String errorMessage) {
+        return integration.saveInventoryReceiptConfirmationResult(
+                id, succeed, errorMessage);
+    }
+
 
     public IntegrationReceiptConfirmationData getIntegrationReceiptConfirmationData(Long id){
         return integration.getIntegrationReceiptConfirmationData(id);

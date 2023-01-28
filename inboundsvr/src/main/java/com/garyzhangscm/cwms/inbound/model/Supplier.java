@@ -42,6 +42,8 @@ public class Supplier implements Serializable {
     private String addressLine2;
     private String addressPostcode;
 
+    private String quickbookListId;
+
     public Long getId() {
         return id;
     }
@@ -136,5 +138,13 @@ public class Supplier implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 }

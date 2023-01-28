@@ -224,7 +224,7 @@ public class CancelledPickService {
         cancelledPick.setPickList(pick.getPickList());
 
         cancelledPick.setCancelledUsername(userService.getCurrentUserName());
-        cancelledPick.setCancelledDate(LocalDateTime.now().atZone(ZoneOffset.UTC));
+        cancelledPick.setCancelledDate(ZonedDateTime.now(ZoneOffset.UTC));
 
         return cancelledPick;
     }

@@ -152,5 +152,17 @@ public class ReceiptIntegrationDataController {
         return integrationDataService.getPendingIntegrationReceiptConfirmationData(warehouseId, companyCode, warehouseName);
     }
 
+    @RequestMapping(value="/receipt-confirmations/{id}/result", method = RequestMethod.POST)
+    public ResponseBodyWrapper saveInventoryReceiptConfirmationResult(@PathVariable Long id,
+                                                                         boolean succeed,
+                                                                         String errorMessage) {
+
+        IntegrationReceiptConfirmationData integrationReceiptConfirmationData =
+                integrationDataService.saveInventoryReceiptConfirmationResult(id, succeed, errorMessage);
+
+        return ResponseBodyWrapper.success(String.valueOf(integrationReceiptConfirmationData.getId()));
+    }
+
+
 
 }
