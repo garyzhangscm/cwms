@@ -287,7 +287,7 @@ public class PurchaseOrderService {
                         purchaseOrder.getNumber() + " as the line " + purchaseOrderLineId
                         + " has no open quantity");
             }
-            else if (openQuantity <= receiptQuantity){
+            else if (openQuantity < receiptQuantity){
                 throw ReceiptOperationException.raiseException("Can't create from the purchase order " +
                         purchaseOrder.getNumber() + " as the line " + purchaseOrderLineId
                         + " 's open quantity " + openQuantity + " is less than passed in quantity " + receiptQuantity);

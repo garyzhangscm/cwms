@@ -92,6 +92,9 @@ public class DBBasedSupplier extends AuditibleEntity<String> implements Serializ
     @Column(name = "user_defined_field_5")
     private String userDefinedField5;
 
+    @Column(name = "quickbook_listid")
+    private String quickbookListId;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -277,6 +280,13 @@ public class DBBasedSupplier extends AuditibleEntity<String> implements Serializ
         this.status = status;
     }
 
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
+    }
 
     public String getErrorMessage() {
         return errorMessage;

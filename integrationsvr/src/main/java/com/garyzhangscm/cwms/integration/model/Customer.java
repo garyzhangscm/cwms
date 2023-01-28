@@ -44,6 +44,7 @@ public class Customer implements Serializable {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+    private String quickbookListId;
 
     public String getName() {
         return name;
@@ -155,6 +156,14 @@ public class Customer implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 
     public Long getCompanyId() {

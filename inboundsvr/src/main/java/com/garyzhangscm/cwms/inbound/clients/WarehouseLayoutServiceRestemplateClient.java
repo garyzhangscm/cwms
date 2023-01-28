@@ -333,7 +333,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/locations");
+                        .path("/api/layout/locations")
+                .queryParam("warehouseId", receipt.getWarehouseId());
 
         ResponseBodyWrapper<Location> responseBodyWrapper
                 = null;

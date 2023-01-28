@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,10 +50,17 @@ public class ReceiptConfirmation implements Serializable{
 
 
     private Boolean allowUnexpectedItem;
+    private String quickbookTxnID;
 
     public ReceiptConfirmation() {}
     public ReceiptConfirmation(Receipt receipt) {
         setNumber(receipt.getNumber());
+
+        if (Objects.nonNull(receipt.getPurchaseOrder())) {
+            setQuickbookTxnID(
+                    receipt.getPurchaseOrder().getQuickbookTxnID()
+            );
+        }
 
         setWarehouseId(receipt.getWarehouseId());
         if (Objects.nonNull(receipt.getWarehouse())) {
@@ -167,5 +175,11 @@ public class ReceiptConfirmation implements Serializable{
         this.allowUnexpectedItem = allowUnexpectedItem;
     }
 
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
 
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
+    }
 }

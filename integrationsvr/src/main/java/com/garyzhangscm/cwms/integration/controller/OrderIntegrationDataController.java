@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.integration.controller;
 
 
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.service.IntegrationDataService;
@@ -73,9 +74,11 @@ public class OrderIntegrationDataController {
         return integrationDataService.resendOrderData(id);
     }
     @RequestMapping(value="/orders", method = RequestMethod.PUT)
-    public IntegrationOrderData addIntegrationOrderData(@RequestBody Order order) {
+    public ResponseBodyWrapper addIntegrationOrderData(@RequestBody Order order) {
 
-        return integrationDataService.addOrderData(order);
+        IntegrationOrderData orderData =
+                integrationDataService.addOrderData(order);
+        return ResponseBodyWrapper.success(String.valueOf(orderData.getId()));
     }
 
     /**

@@ -1958,5 +1958,8 @@
   "labelCopyCount": "标签数量",
   "schedulePickupAfterManifest": "打包后发送提货请求",
   "minPickupTime": "最早提货时间",
-  "maxPickupTime": "最晚提货时间"
+  "maxPickupTime": "最晚提货时间",
+  "item-not-ready-for-receiving": "无法收入该商品",
+  "no-item-on-receipt-line": "当前单据上没有该商品",
+  "no-item-packate-type-setup": "包装规格没有维护，无法收入该商品"
 }

@@ -78,7 +78,7 @@ public class DBBasedWorkOrderService {
                     String result = "";
                     String errorMessage = "";
                      try {
-                         result = integrationServiceRestemplateClient.sendIntegrationData("work-order", dbBasedWorkOrder);
+                         result = integrationServiceRestemplateClient.sendIntegrationData("work-orders", dbBasedWorkOrder);
                          logger.debug("# get result " + result);
                      }
                      catch (Exception ex) {

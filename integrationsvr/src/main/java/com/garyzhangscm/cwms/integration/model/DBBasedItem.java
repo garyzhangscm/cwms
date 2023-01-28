@@ -207,13 +207,16 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
 
         String[] fieldNames = {
                 "name","description","clientId","clientName","unitCost","warehouseId","warehouseName",
+                "companyId", "companyCode",
                 "quickbookListId"
         };
 
         ObjectCopyUtil.copyValue(item, this, fieldNames);
 
-        setItemFamily(new DBBasedItemFamily(item.getItemFamily()));
-        getItemFamily().setStatus(IntegrationStatus.ATTACHED);
+        if (Objects.nonNull(item.getItemFamily())) {
+            setItemFamily(new DBBasedItemFamily(item.getItemFamily()));
+            getItemFamily().setStatus(IntegrationStatus.ATTACHED);
+        }
 
         item.getItemPackageTypes().forEach(itemPackageType -> {
             DBBasedItemPackageType dbBasedItemPackageType

@@ -92,6 +92,10 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
     @Column(name = "user_defined_field_5")
     private String userDefinedField5;
 
+    // quickbook unique id
+    @Column(name = "quickbook_listid")
+    private String quickbookListId;
+
     @Override
     public String toString() {
         try {
@@ -285,5 +289,13 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
 
     public void setListPickEnabledFlag(Boolean listPickEnabledFlag) {
         this.listPickEnabledFlag = listPickEnabledFlag;
+    }
+
+    public String getQuickbookListId() {
+        return quickbookListId;
+    }
+
+    public void setQuickbookListId(String quickbookListId) {
+        this.quickbookListId = quickbookListId;
     }
 }

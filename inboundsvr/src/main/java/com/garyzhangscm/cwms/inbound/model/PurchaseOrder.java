@@ -71,6 +71,8 @@ public class PurchaseOrder extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private PurchaseOrderStatus status  = PurchaseOrderStatus.OPEN;
 
+    @Column(name = "quickbook_txnid")
+    private String quickbookTxnID;
 
     public Long getId() {
         return id;
@@ -150,5 +152,13 @@ public class PurchaseOrder extends AuditibleEntity<String>{
 
     public void setStatus(PurchaseOrderStatus status) {
         this.status = status;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 }

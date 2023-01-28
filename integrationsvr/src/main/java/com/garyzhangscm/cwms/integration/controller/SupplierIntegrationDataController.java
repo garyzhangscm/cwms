@@ -73,9 +73,11 @@ public class SupplierIntegrationDataController {
     }
 
     @RequestMapping(value="/suppliers", method = RequestMethod.PUT)
-    public IntegrationSupplierData addIntegrationSupplierData(@RequestBody Supplier supplier) {
+    public ResponseBodyWrapper addIntegrationSupplierData(@RequestBody Supplier supplier) {
 
-        return integrationDataService.addIntegrationSupplierData(supplier);
+        IntegrationSupplierData supplierData =
+                integrationDataService.addIntegrationSupplierData(supplier);
+        return ResponseBodyWrapper.success(String.valueOf(supplierData.getId()));
     }
 
     /**

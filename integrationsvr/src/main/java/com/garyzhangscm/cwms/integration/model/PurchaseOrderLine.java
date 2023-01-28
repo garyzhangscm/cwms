@@ -34,6 +34,7 @@ public class PurchaseOrderLine {
     private Item item;
 
     private Long expectedQuantity;
+    private String quickbookTxnLineID;
 
 
     @Override
@@ -101,5 +102,13 @@ public class PurchaseOrderLine {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 }

@@ -75,6 +75,19 @@ public class WorkOrderIntegrationDataController {
 
         return integrationDataService.resendWorkOrderData(id);
     }
+
+    @RequestMapping(value="/work-orders", method = RequestMethod.PUT)
+    public ResponseBodyWrapper saveIntegrationWorkOrderData(
+            @RequestBody DBBasedWorkOrder dbBasedWorkOrder
+    ){
+
+
+        IntegrationWorkOrderData workOrderData =
+                integrationDataService.addIntegrationWorkOrderData(dbBasedWorkOrder);
+
+        return ResponseBodyWrapper.success(String.valueOf(workOrderData.getId()));
+    }
+
     /**
     @RequestMapping(value="/dblink/work-order", method = RequestMethod.PUT)
     public ResponseBodyWrapper saveIntegrationWorkOrderData(

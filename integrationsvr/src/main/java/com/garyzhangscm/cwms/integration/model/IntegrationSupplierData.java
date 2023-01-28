@@ -29,5 +29,6 @@ public interface IntegrationSupplierData {
 
 
     public IntegrationStatus getStatus();
+    public String getQuickbookListId();
 
 }

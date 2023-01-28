@@ -51,6 +51,8 @@ public class ReceiptLineConfirmation implements Serializable {
     private ZonedDateTime insertTime;
     private ZonedDateTime lastUpdateTime;
     private String errorMessage;
+    private String quickbookTxnLineID;
+
 
     @Override
     public String toString() {
@@ -172,5 +174,13 @@ public class ReceiptLineConfirmation implements Serializable {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 }
