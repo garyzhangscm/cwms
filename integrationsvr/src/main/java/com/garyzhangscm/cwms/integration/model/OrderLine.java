@@ -32,6 +32,8 @@ public class OrderLine implements Serializable {
 
     private Long warehouseId;
     private String warehouseName;
+    private String companyCode;
+    private Long companyId;
 
 
     private Long expectedQuantity;
@@ -54,6 +56,22 @@ public class OrderLine implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public String getNumber() {

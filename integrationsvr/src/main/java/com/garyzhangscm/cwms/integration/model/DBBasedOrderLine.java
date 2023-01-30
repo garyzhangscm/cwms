@@ -118,6 +118,8 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
         setWarehouseId(orderLine.getWarehouseId());
         setWarehouseName(orderLine.getWarehouseName());
+        setCompanyId(orderLine.getCompanyId());
+        setCompanyCode(orderLine.getCompanyCode());
 
         setItemId(orderLine.getItemId());
         setItemName(orderLine.getItemName());

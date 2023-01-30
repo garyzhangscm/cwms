@@ -135,6 +135,15 @@ public class IntegrationService {
             // inventory. instead we will send integration data for the whole receipt
             return;
         }**/
+        // if there's no need to trigger the inventory adjustment configuration integraiton
+        // then return. Examples:
+        // 1. receiving
+        // 2. producing.
+        // the quantity will be sent back along with the receipt or work order so we don't need
+        // to trigger an inventory quantity change integration here
+        if (!inventoryQuantityChangeType.triggerInventoryAdjustmentIntegration()) {
+            return;
+        }
         Warehouse warehouse = inventory.getWarehouse();
         if (Objects.isNull(warehouse)) {
             warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(inventory.getWarehouseId());

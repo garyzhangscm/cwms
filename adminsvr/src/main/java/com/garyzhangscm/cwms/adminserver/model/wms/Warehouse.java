@@ -18,9 +18,8 @@
 
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 
@@ -40,6 +39,17 @@ public class Warehouse implements Serializable {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public Long getId() {
         return id;

@@ -19,8 +19,6 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
-
-import javax.persistence.Column;
 import java.io.Serializable;
 
 
@@ -31,6 +29,9 @@ public class Supplier implements Serializable {
 
     private Long warehouseId;
     private Long companyId;
+
+    private String warehouseName;
+    private String companyCode;
 
     private String name;
 
@@ -69,6 +70,22 @@ public class Supplier implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public String getDescription() {

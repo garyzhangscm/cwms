@@ -181,6 +181,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
 
         String[] fieldNames = {
                 "number", "shipToCustomerId", "shipToCustomerName", "warehouseId", "warehouseName",
+                "companyId", "companyCode",
                 "billToCustomerId", "billToCustomerName", "shipToContactorFirstname", "shipToContactorLastname",
                 "shipToAddressCountry", "shipToAddressState", "shipToAddressCounty", "shipToAddressCity", "shipToAddressDistrict",
                 "shipToAddressLine1", "shipToAddressLine2", "shipToAddressPostcode", "billToContactorFirstname",
