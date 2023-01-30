@@ -37,15 +37,19 @@ public class InventoryStatus extends AuditibleEntity<String> implements Serializ
 
     private Long warehouseId;
 
+    private Boolean availableStatusFlag;
+
     @Transient
     private Warehouse warehouse;
 
     public InventoryStatus(){}
-    public InventoryStatus(String name, String description, Long warehouseId, Warehouse warehouse) {
+    public InventoryStatus(String name, String description, Long warehouseId, Warehouse warehouse,
+                           Boolean availableStatusFlag) {
         this.name = name;
         this.description = description;
         this.warehouseId = warehouseId;
         this.warehouse = warehouse;
+        this.availableStatusFlag = Boolean.TRUE.equals(availableStatusFlag);
     }
 
     @Override

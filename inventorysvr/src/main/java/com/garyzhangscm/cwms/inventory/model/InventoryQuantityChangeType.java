@@ -2,26 +2,31 @@ package com.garyzhangscm.cwms.inventory.model;
 
 public enum InventoryQuantityChangeType {
 
-    RECEIVING(true),
-    REVERSE_RECEIVING(true),
-    PRODUCING(true),
-    PRODUCING_BY_PRODUCT(true),
-    RETURN_MATERAIL(true),
-    CONSUME_MATERIAL(true),
-    INVENTORY_ADJUST(false),
-    CYCLE_COUNT(false),
-    AUDIT_COUNT(false),
-    REVERSE_PRODUCTION(true),
-    REVERSE_BY_PRODUCT(true),
-    UNKNOWN(false);
+    RECEIVING(true, false),
+    REVERSE_RECEIVING(true, false),
+    PRODUCING(true, false),
+    PRODUCING_BY_PRODUCT(true, false),
+    RETURN_MATERAIL(true, false),
+    CONSUME_MATERIAL(true, false),
+    INVENTORY_ADJUST(false, true),
+    CYCLE_COUNT(false, true),
+    AUDIT_COUNT(false, true),
+    REVERSE_PRODUCTION(true, false),
+    REVERSE_BY_PRODUCT(true, false),
+    UNKNOWN(false, true);
 
     private boolean noApprovalNeeded;
+    private boolean triggerInventoryAdjustmentIntegration;
 
-    InventoryQuantityChangeType(boolean noApprovalNeeded) {
+    InventoryQuantityChangeType(boolean noApprovalNeeded, boolean triggerInventoryAdjustmentIntegration) {
         this.noApprovalNeeded = noApprovalNeeded;
+        this.triggerInventoryAdjustmentIntegration = triggerInventoryAdjustmentIntegration;
     }
 
     public boolean isNoApprovalNeeded() {
         return noApprovalNeeded;
+    }
+    public boolean triggerInventoryAdjustmentIntegration() {
+        return triggerInventoryAdjustmentIntegration;
     }
 }

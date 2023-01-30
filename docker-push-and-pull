@@ -2,6 +2,8 @@
 NEW TAG:
 // Flow https://www.docker.com/blog/multi-arch-images/ to enable multiple arch build
 // current multiple arch buildx name is multiArch
+// > docker buildx create --name multiArch
+// > docker buildx use multiArch
 // > docker buildx inspect --bootstrap
 // support platform
 // Platforms: linux/amd64, linux/amd64/v2, linux/amd64/v3, linux/amd64/v4, linux/arm64, linux/riscv64, linux/ppc64le,

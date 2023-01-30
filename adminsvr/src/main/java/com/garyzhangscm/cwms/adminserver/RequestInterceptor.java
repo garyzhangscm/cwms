@@ -65,7 +65,7 @@ public class RequestInterceptor implements ClientHttpRequestInterceptor {
         HttpHeaders headers = request.getHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        headers.set("Authorization", "Bearer "+token);
+        headers.add("Authorization", "Bearer "+token);
         headers.add("innerCall", "true");
 
         // Add

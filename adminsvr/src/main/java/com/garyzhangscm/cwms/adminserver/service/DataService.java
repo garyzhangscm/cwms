@@ -112,6 +112,8 @@ public class DataService {
                 
                 Warehouse warehouse = initiateWarehouse(company, warehouseName);
 
+                logger.debug("Warehouse created! \n{}", warehouse);
+
                 initiateSystemControllerNumber(warehouse);
 
                 List<UnitOfMeasure> unitOfMeasures = initiateUnitOfMeasure(warehouse);
@@ -349,12 +351,12 @@ public class DataService {
             Warehouse warehouse, LocationGroup storageLocationGroup) {
         // we will setup default putaway configuration so everything will
         // go into the storage areas
-        logger.debug("Start setup putaway configuration");
+        logger.debug("Start setup putaway configuration for warehouse {}",
+                warehouse.getId());
 
         InventoryStatus availableInventoryStatus =
-                inventoryServiceRestemplateClient.getInventoryStatusByName(
-                        warehouse.getId(),
-                        "AVAL"
+                inventoryServiceRestemplateClient.getAvailableInventoryStatus(
+                        warehouse.getId()
                 );
 
         logger.debug("find available inventory status : {}",

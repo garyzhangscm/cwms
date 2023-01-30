@@ -5,8 +5,13 @@ FROM openjdk:20-ea-13-jdk-slim
 
 # MAINTAINER Gary Zhang <gzhang1999@gmail.com>
 
+RUN mkdir -p /usr/local/reports
+RUN mkdir -p /usr/local/reports/templates
+RUN mkdir -p /usr/local/reports/templates_temp
+
 RUN mkdir -p /usr/local/service
 
 ADD target/resourceserver-v1.1.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/resourceserver-v1.1.jar"]
+# ENTRYPOINT ["java","-jar","/usr/local/service/resourceserver-v1.1.jar"]
+ENTRYPOINT ["java",   "-jar", "/usr/local/service/resourceserver-v1.1.jar", "-Dfile.encoding=UTF-8", "-Dloader.path=/usr/local/reports/templates/", "org.springframework.boot.loader.PropertiesLauncher"]

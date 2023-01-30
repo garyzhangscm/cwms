@@ -566,11 +566,13 @@ public class WarehouseService implements TestDataInitiableService {
         List<InventoryStatus> inventoryStatusList = new ArrayList<>();
         InventoryStatus available = new InventoryStatus(
                 "AVAL", "Available",
-                newWarehouse.getId(), newWarehouse
+                newWarehouse.getId(), newWarehouse,
+                true
         );
         InventoryStatus damaged = new InventoryStatus(
                 "DMG", "Damaged",
-                newWarehouse.getId(), newWarehouse
+                newWarehouse.getId(), newWarehouse,
+                false
         );
         try {
             inventoryStatusList.add(

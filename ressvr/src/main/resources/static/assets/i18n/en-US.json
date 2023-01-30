@@ -1961,5 +1961,5 @@
   "maxPickupTime": "Max PickUp Time",
   "item-not-ready-for-receiving": "Item is NOT Ready for Receiving",
   "no-item-on-receipt-line": "There's no item on this receipt line",
-  "no-item-packate-type-setup": "There's no item package type setup for the item, please setup the item package type first"
+  "no-item-packate-type-setup": "There's no item package type setup for the item, please setup the item package type first",
 }

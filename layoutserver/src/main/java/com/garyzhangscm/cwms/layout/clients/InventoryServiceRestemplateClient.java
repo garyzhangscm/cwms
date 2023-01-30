@@ -161,7 +161,8 @@ public class InventoryServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/inventory-status");
+                        .path("/api/inventory/inventory-statuses")
+                .queryParam("warehouseId", inventoryStatus.getWarehouseId());
 
         ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
                 = restTemplate.exchange(

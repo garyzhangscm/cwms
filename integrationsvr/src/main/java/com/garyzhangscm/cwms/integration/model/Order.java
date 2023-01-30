@@ -40,6 +40,8 @@ public class Order implements Serializable {
 
     private Long warehouseId;
     private String warehouseName;
+    private Long companyId;
+    private String companyCode;
 
 
 
@@ -426,5 +428,21 @@ public class Order implements Serializable {
 
     public void setTransferReceiptWarehouseId(Long transferReceiptWarehouseId) {
         this.transferReceiptWarehouseId = transferReceiptWarehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 }
