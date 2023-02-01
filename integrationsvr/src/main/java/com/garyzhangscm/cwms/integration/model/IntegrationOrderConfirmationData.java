@@ -18,4 +18,9 @@ public interface IntegrationOrderConfirmationData {
 
     public IntegrationStatus getStatus() ;
 
+
+    public String getQuickbookTxnID();
+
+    public String getQuickbookCustomerListId();
+
 }

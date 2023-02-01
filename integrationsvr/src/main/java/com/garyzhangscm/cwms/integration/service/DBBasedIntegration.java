@@ -476,6 +476,10 @@ public class DBBasedIntegration implements Integration{
         return dbBasedOrderConfirmationIntegration.sendIntegrationOrderConfirmationData(orderConfirmation);
     }
 
+    public IntegrationOrderConfirmationData saveOrderConfirmationResult(Long id, boolean succeed, String errorMessage){
+        return dbBasedOrderConfirmationIntegration.saveOrderConfirmationResult(id, succeed, errorMessage);
+    }
+
     @Override
     public List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(
             Long warehouseId, String warehouseName, String number,

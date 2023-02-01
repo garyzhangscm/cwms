@@ -21,6 +21,9 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.service.OrderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,12 +32,17 @@ import java.util.Objects;
 
 public class OrderConfirmation  extends AuditibleEntity<String> implements Serializable {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderConfirmation.class);
     private String number;
 
     private Long warehouseId;
 
     private String warehouseName;
 
+    // quickbook customer list id
+    private String quickbookCustomerListId;
+
+    private String quickbookTxnID;
 
     private List<OrderLineConfirmation> orderLines = new ArrayList<>();
 
@@ -44,6 +52,10 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
     public OrderConfirmation(Order order){
         this.number = order.getNumber();
         this.warehouseId = order.getWarehouseId();
+        setQuickbookTxnID(order.getQuickbookTxnID());
+        setQuickbookCustomerListId(order.getQuickbookCustomerListId());
+
+
         if (Objects.nonNull(order.getWarehouse())) {
             this.warehouseName = order.getWarehouse().getName();
         }
@@ -57,6 +69,19 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
     public OrderConfirmation(Shipment shipment){
         this.number = shipment.getOrderNumber();
         this.warehouseId = shipment.getWarehouseId();
+        if (Objects.nonNull(shipment.getOrder())) {
+            logger.debug("setup the quickbook related information when complete the order");
+
+            setQuickbookTxnID(shipment.getOrder().getQuickbookTxnID());
+            setQuickbookCustomerListId(shipment.getOrder().getQuickbookCustomerListId());
+        }
+        else {
+
+            logger.debug("FAIL to setup the quickbook related information when complete the order" +
+                    ", as the order is not setup on the shipment");
+        }
+
+
         if (Objects.nonNull(shipment.getWarehouse())) {
             this.warehouseName = shipment.getWarehouse().getName();
         }
@@ -112,5 +137,19 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
         this.orderLines.add(orderLine);
     }
 
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
 
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
+    }
+
+    public String getQuickbookCustomerListId() {
+        return quickbookCustomerListId;
+    }
+
+    public void setQuickbookCustomerListId(String quickbookCustomerListId) {
+        this.quickbookCustomerListId = quickbookCustomerListId;
+    }
 }

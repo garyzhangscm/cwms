@@ -124,6 +124,10 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name = "actual_return_quantity")
     private Long actualReturnQuantity = 0L;
 
+
+    @Column(name = "quickbook_txnlineid")
+    private String quickbookTxnLineID;
+
     @Override
     public String toString() {
         try {
@@ -324,5 +328,13 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setActualReturnQuantity(Long actualReturnQuantity) {
         this.actualReturnQuantity = actualReturnQuantity;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 }

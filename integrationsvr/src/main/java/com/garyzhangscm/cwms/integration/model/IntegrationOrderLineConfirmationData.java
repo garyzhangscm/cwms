@@ -31,6 +31,7 @@ public interface IntegrationOrderLineConfirmationData {
 
     public String getCarrierName();
     public Long getCarrierServiceLevelId();
+    public String getQuickbookTxnLineID();
 
     public String getCarrierServiceLevelName();
 

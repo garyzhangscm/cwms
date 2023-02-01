@@ -163,6 +163,7 @@ public interface Integration {
     IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(Long id);
     IntegrationOrderConfirmationData resendOrderConfirmationData(Long id);
     IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation);
+    IntegrationOrderConfirmationData saveOrderConfirmationResult(Long id, boolean succeed, String errorMessage);
 
     // Work Order Confirmation Data
     List<? extends IntegrationWorkOrderConfirmationData> getIntegrationWorkOrderConfirmationData(

@@ -244,4 +244,16 @@ public class DBBasedOrderConfirmationIntegration {
                 warehouse.getId(), warehouse.getName()
         );
     }
+
+    public IntegrationOrderConfirmationData saveOrderConfirmationResult(Long id, boolean succeed, String errorMessage) {
+        DBBasedOrderConfirmation dbBasedOrderConfirmation =
+                findById(id);
+        logger.debug("save dbBasedOrderConfirmation result, id {}, succeed: {}, error message: {}",
+                id, succeed, errorMessage);
+        dbBasedOrderConfirmation.setStatus(
+                succeed ? IntegrationStatus.COMPLETED : IntegrationStatus.ERROR
+        );
+        dbBasedOrderConfirmation.setErrorMessage(errorMessage);
+        return save(dbBasedOrderConfirmation);
+    }
 }

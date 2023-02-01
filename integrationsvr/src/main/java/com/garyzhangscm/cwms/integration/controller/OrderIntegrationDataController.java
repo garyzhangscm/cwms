@@ -139,5 +139,16 @@ public class OrderIntegrationDataController {
         return integrationDataService.getPendingIntegrationOrderConfirmationData(warehouseId, companyCode, warehouseName);
     }
 
+    @RequestMapping(value="/order-confirmations/{id}/result", method = RequestMethod.POST)
+    public ResponseBodyWrapper saveInventoryReceiptConfirmationResult(@PathVariable Long id,
+                                                                      boolean succeed,
+                                                                      String errorMessage) {
+
+        IntegrationOrderConfirmationData integrationOrderConfirmationData =
+                integrationDataService.saveOrderConfirmationResult(id, succeed, errorMessage);
+
+        return ResponseBodyWrapper.success(String.valueOf(integrationOrderConfirmationData.getId()));
+    }
+
 
 }

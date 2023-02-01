@@ -99,6 +99,7 @@ public class Order implements Serializable {
     private Long stageLocationGroupId;
     private String stageLocationGroupName;
     private String quickbookTxnID;
+    private String quickbookCustomerListId;
 
     public Long getId() {
         return id;
@@ -444,5 +445,13 @@ public class Order implements Serializable {
 
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
+    }
+
+    public String getQuickbookCustomerListId() {
+        return quickbookCustomerListId;
+    }
+
+    public void setQuickbookCustomerListId(String quickbookCustomerListId) {
+        this.quickbookCustomerListId = quickbookCustomerListId;
     }
 }

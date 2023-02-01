@@ -262,6 +262,11 @@ public class IntegrationDataService {
     public IntegrationOrderConfirmationData sendIntegrationOrderConfirmationData(OrderConfirmation orderConfirmation){
         return integration.sendIntegrationOrderConfirmationData(orderConfirmation);
     }
+    public IntegrationOrderConfirmationData saveOrderConfirmationResult(Long id, boolean succeed, String errorMessage) {
+        return integration.saveOrderConfirmationResult(
+                id, succeed, errorMessage);
+    }
+
 
 
 

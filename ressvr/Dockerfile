@@ -1,5 +1,8 @@
 
-FROM openjdk:20-ea-13-jdk-slim
+# FROM openjdk:20-ea-13-jdk-slim
+FROM openjdk:20-ea-13-oracle
+# RUN apk update && apk upgrade && apk add libfreetype6
+
 # RUN  apk update && apk upgrade && apk add netcat-openbsd && apk add curl
 # RUN  apk update && apk upgrade
 
