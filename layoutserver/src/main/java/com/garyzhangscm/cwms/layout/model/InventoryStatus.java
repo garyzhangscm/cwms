@@ -101,4 +101,12 @@ public class InventoryStatus extends AuditibleEntity<String> implements Serializ
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
     }
+
+    public Boolean getAvailableStatusFlag() {
+        return availableStatusFlag;
+    }
+
+    public void setAvailableStatusFlag(Boolean availableStatusFlag) {
+        this.availableStatusFlag = availableStatusFlag;
+    }
 }

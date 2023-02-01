@@ -58,6 +58,13 @@ public class DBBasedOrderConfirmation extends AuditibleEntity<String> implements
     private String warehouseName;
 
 
+    @Column(name = "quickbook_customer_list_id")
+    private String quickbookCustomerListId;
+
+    @Column(name = "quickbook_txnid")
+    private String quickbookTxnID;
+
+
     @OneToMany(
             mappedBy = "order",
             cascade = CascadeType.ALL,
@@ -83,6 +90,8 @@ public class DBBasedOrderConfirmation extends AuditibleEntity<String> implements
         setNumber(orderConfirmation.getNumber());
         setWarehouseId(orderConfirmation.getWarehouseId());
         setWarehouseName(orderConfirmation.getWarehouseName());
+        setQuickbookCustomerListId(orderConfirmation.getQuickbookCustomerListId());
+        setQuickbookTxnID(orderConfirmation.getQuickbookTxnID());
 
 
         orderConfirmation.getOrderLines().forEach(orderLineConfirmation -> {
@@ -172,6 +181,22 @@ public class DBBasedOrderConfirmation extends AuditibleEntity<String> implements
 
     public void setOrderLines(List<DBBasedOrderLineConfirmation> orderLines) {
         this.orderLines = orderLines;
+    }
+
+    public String getQuickbookCustomerListId() {
+        return quickbookCustomerListId;
+    }
+
+    public void setQuickbookCustomerListId(String quickbookCustomerListId) {
+        this.quickbookCustomerListId = quickbookCustomerListId;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 
     @Override

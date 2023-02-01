@@ -97,6 +97,9 @@ public class DBBasedOrderLineConfirmation extends AuditibleEntity<String> implem
     private String carrierServiceLevelName;
 
 
+    @Column(name = "quickbook_txnlineid")
+    private String quickbookTxnLineID;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -110,6 +113,7 @@ public class DBBasedOrderLineConfirmation extends AuditibleEntity<String> implem
     public DBBasedOrderLineConfirmation(OrderLineConfirmation orderLineConfirmation){
 
         setNumber(orderLineConfirmation.getNumber());
+        setQuickbookTxnLineID(orderLineConfirmation.getQuickbookTxnLineID());
 
         setItemId(orderLineConfirmation.getItemId());
         setItemName(orderLineConfirmation.getItemName());
@@ -297,6 +301,14 @@ public class DBBasedOrderLineConfirmation extends AuditibleEntity<String> implem
 
     public void setCarrierServiceLevelName(String carrierServiceLevelName) {
         this.carrierServiceLevelName = carrierServiceLevelName;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 
     @Override

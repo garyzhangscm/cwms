@@ -34,6 +34,11 @@ public class OrderConfirmation implements Serializable {
 
     private String warehouseName;
 
+    // quickbook customer list id
+    private String quickbookCustomerListId;
+
+    private String quickbookTxnID;
+
 
     private List<OrderLineConfirmation> orderLines = new ArrayList<>();
 
@@ -114,5 +119,21 @@ public class OrderConfirmation implements Serializable {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getQuickbookCustomerListId() {
+        return quickbookCustomerListId;
+    }
+
+    public void setQuickbookCustomerListId(String quickbookCustomerListId) {
+        this.quickbookCustomerListId = quickbookCustomerListId;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
     }
 }

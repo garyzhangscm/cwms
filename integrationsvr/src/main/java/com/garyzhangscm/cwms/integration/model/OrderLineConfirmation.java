@@ -58,6 +58,8 @@ public class OrderLineConfirmation implements Serializable {
     private Long carrierServiceLevelId;
 
     private String carrierServiceLevelName;
+    private String quickbookTxnLineID;
+
 
     private IntegrationStatus status;
     private ZonedDateTime insertTime;
@@ -232,5 +234,13 @@ public class OrderLineConfirmation implements Serializable {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 }

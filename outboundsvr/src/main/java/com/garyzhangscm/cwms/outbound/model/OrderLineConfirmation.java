@@ -62,6 +62,8 @@ public class OrderLineConfirmation implements Serializable {
 
     private String carrierServiceLevelName;
 
+    private String quickbookTxnLineID;
+
 
     public OrderLineConfirmation() {}
 
@@ -106,12 +108,15 @@ public class OrderLineConfirmation implements Serializable {
             this.carrierServiceLevelName = orderLine.getCarrierServiceLevel().getName();
         }
 
+        setQuickbookTxnLineID(orderLine.getQuickbookTxnLineID());
+
     }
 
     public OrderLineConfirmation(ShipmentLine shipmentLine) {
         OrderLine orderLine = shipmentLine.getOrderLine();
 
         this.number = orderLine.getNumber();
+        setQuickbookTxnLineID(orderLine.getQuickbookTxnLineID());
 
         this.itemId = orderLine.getItemId();
         if (Objects.nonNull(orderLine.getItem())) {
@@ -152,6 +157,7 @@ public class OrderLineConfirmation implements Serializable {
             this.carrierServiceLevelName = orderLine.getCarrierServiceLevel().getName();
         }
 
+        setQuickbookTxnLineID(orderLine.getQuickbookTxnLineID());
     }
 
     @Override
@@ -298,5 +304,13 @@ public class OrderLineConfirmation implements Serializable {
 
     public void setOrderShippedQuantity(Long orderShippedQuantity) {
         this.orderShippedQuantity = orderShippedQuantity;
+    }
+
+    public String getQuickbookTxnLineID() {
+        return quickbookTxnLineID;
+    }
+
+    public void setQuickbookTxnLineID(String quickbookTxnLineID) {
+        this.quickbookTxnLineID = quickbookTxnLineID;
     }
 }

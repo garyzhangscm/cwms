@@ -163,6 +163,9 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     @Column(name="stage_location_group_name")
     private String stageLocationGroupName;
 
+    @Column(name = "quickbook_customer_list_id")
+    private String quickbookCustomerListId;
+
     @Column(name = "quickbook_txnid")
     private String quickbookTxnID;
 
@@ -188,7 +191,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty",
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2", "billToAddressPostcode",
                 "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName",
-                "category", "transferReceiptWarehouseId", "quickbookTxnID"
+                "category", "transferReceiptWarehouseId", "quickbookTxnID", "quickbookCustomerListId"
         };
 
         ObjectCopyUtil.copyValue(order, this, fieldNames);
@@ -222,7 +225,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2",
                 "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
                 "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
-                "warehouseId","warehouseName", "quickbookTxnID"
+                "warehouseId","warehouseName", "quickbookTxnID", "quickbookCustomerListId"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);
@@ -652,5 +655,13 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
 
     public void setTransferReceiptWarehouseName(String transferReceiptWarehouseName) {
         this.transferReceiptWarehouseName = transferReceiptWarehouseName;
+    }
+
+    public String getQuickbookCustomerListId() {
+        return quickbookCustomerListId;
+    }
+
+    public void setQuickbookCustomerListId(String quickbookCustomerListId) {
+        this.quickbookCustomerListId = quickbookCustomerListId;
     }
 }

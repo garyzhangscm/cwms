@@ -48,6 +48,8 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     @Column(name = "ship_to_customer_id")
     private Long shipToCustomerId;
+    @Column(name = "quickbook_customer_list_id")
+    private String quickbookCustomerListId;
 
     @Transient
     private Customer shipToCustomer;
@@ -192,6 +194,11 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     @Transient
     private Location stageLocation;
+
+
+    @Column(name = "quickbook_txnid")
+    private String quickbookTxnID;
+
 
 
     // Some statistics numbers that we can show
@@ -694,5 +701,21 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setOrderDocuments(List<OrderDocument> orderDocuments) {
         this.orderDocuments = orderDocuments;
+    }
+
+    public String getQuickbookTxnID() {
+        return quickbookTxnID;
+    }
+
+    public void setQuickbookTxnID(String quickbookTxnID) {
+        this.quickbookTxnID = quickbookTxnID;
+    }
+
+    public String getQuickbookCustomerListId() {
+        return quickbookCustomerListId;
+    }
+
+    public void setQuickbookCustomerListId(String quickbookCustomerListId) {
+        this.quickbookCustomerListId = quickbookCustomerListId;
     }
 }
