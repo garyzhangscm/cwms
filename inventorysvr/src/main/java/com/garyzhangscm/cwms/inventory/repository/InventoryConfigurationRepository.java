@@ -32,18 +32,6 @@ import java.util.List;
 @Repository
 public interface InventoryConfigurationRepository extends JpaRepository<InventoryConfiguration, Long>, JpaSpecificationExecutor<InventoryConfiguration> {
 
-    @Query("select ic from InventoryConfiguration ic " +
-            " where ic.type = :type " +
-            "  and ic.companyId is null "  +
-            "  and ic.warehouseId is null")
-    InventoryConfiguration findDefaultConfigurationByType(InventoryConfigurationType type);
-
-    @Query("select ic from InventoryConfiguration ic " +
-            " where ic.type = :type " +
-            "  and ic.companyId = :companyId "  +
-            "  and ic.warehouseId is null")
-    InventoryConfiguration findByCompanyIdAndType(Long companyId, InventoryConfigurationType type);
-
-    InventoryConfiguration findByCompanyIdAndWarehouseIdAndType(Long companyId, Long warehouseId, InventoryConfigurationType type);
+    InventoryConfiguration findByWarehouseId(Long warehouseId);
 
 }

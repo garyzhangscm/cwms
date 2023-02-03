@@ -18,34 +18,39 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "item_unit_of_measure")
-public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serializable {
+@Table(name = "item_default_package_uom")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ItemDefaultPackageUOM extends AuditibleEntity<String> implements Serializable {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "item_unit_of_measure_id")
+    @Column(name = "item_default_package_uom_id")
     @JsonProperty(value="id")
     private Long id;
+
+
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_configuration_id")
+    private InventoryConfiguration inventoryConfiguration;
+
 
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
 
     @Transient
     private UnitOfMeasure unitOfMeasure;
-
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_package_type_id")
-    private ItemPackageType itemPackageType;
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -84,51 +89,6 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Column(name = "case_flag")
     private Boolean caseFlag = false;
 
-
-
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
-
-    @Column(name = "company_id")
-    private Long companyId;
-
-    @Transient
-    private Warehouse warehouse;
-
-    public ItemUnitOfMeasure(){}
-
-    public ItemUnitOfMeasure(Long companyId, Long warehouseId,
-                             ItemDefaultPackageUOM itemDefaultPackageUOM) {
-        setCompanyId(companyId);
-        setWarehouseId(warehouseId);
-        setUnitOfMeasureId(itemDefaultPackageUOM.getUnitOfMeasureId());
-        setQuantity(itemDefaultPackageUOM.getQuantity());
-        setWeight(itemDefaultPackageUOM.getWeight());
-        setWeightUnit(itemDefaultPackageUOM.getWeightUnit());
-
-        setLength(itemDefaultPackageUOM.getLength());
-        setLengthUnit(itemDefaultPackageUOM.getLengthUnit());
-        setWidth(itemDefaultPackageUOM.getWidth());
-        setWidthUnit(itemDefaultPackageUOM.getWidthUnit());
-        setHeight(itemDefaultPackageUOM.getHeight());
-        setHeightUnit(itemDefaultPackageUOM.getHeightUnit());
-
-        setDefaultForWorkOrderReceiving(itemDefaultPackageUOM.getDefaultForWorkOrderReceiving());
-        setDefaultForInboundReceiving(itemDefaultPackageUOM.getDefaultForInboundReceiving());
-        setTrackingLpn(itemDefaultPackageUOM.getTrackingLpn());
-        setCaseFlag(itemDefaultPackageUOM.getCaseFlag());
-
-    }
-    @Override
-    public String toString() {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public Long getId() {
         return id;
     }
@@ -137,6 +97,13 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
         this.id = id;
     }
 
+    public InventoryConfiguration getInventoryConfiguration() {
+        return inventoryConfiguration;
+    }
+
+    public void setInventoryConfiguration(InventoryConfiguration inventoryConfiguration) {
+        this.inventoryConfiguration = inventoryConfiguration;
+    }
 
     public Long getUnitOfMeasureId() {
         return unitOfMeasureId;
@@ -170,12 +137,28 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
         this.weight = weight;
     }
 
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
+    }
+
     public Double getLength() {
         return length;
     }
 
     public void setLength(Double length) {
         this.length = length;
+    }
+
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
     }
 
     public Double getWidth() {
@@ -186,6 +169,14 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
         this.width = width;
     }
 
+    public String getWidthUnit() {
+        return widthUnit;
+    }
+
+    public void setWidthUnit(String widthUnit) {
+        this.widthUnit = widthUnit;
+    }
+
     public Double getHeight() {
         return height;
     }
@@ -194,36 +185,12 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
         this.height = height;
     }
 
-    public ItemPackageType getItemPackageType() {
-        return itemPackageType;
+    public String getHeightUnit() {
+        return heightUnit;
     }
 
-    public void setItemPackageType(ItemPackageType itemPackageType) {
-        this.itemPackageType = itemPackageType;
-    }
-
-    public Long getWarehouseId() {
-        return warehouseId;
-    }
-
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
-    }
-
-    public Warehouse getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(Warehouse warehouse) {
-        this.warehouse = warehouse;
-    }
-
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
+    public void setHeightUnit(String heightUnit) {
+        this.heightUnit = heightUnit;
     }
 
     public Boolean getDefaultForInboundReceiving() {
@@ -256,37 +223,5 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setCaseFlag(Boolean caseFlag) {
         this.caseFlag = caseFlag;
-    }
-
-    public String getWeightUnit() {
-        return weightUnit;
-    }
-
-    public void setWeightUnit(String weightUnit) {
-        this.weightUnit = weightUnit;
-    }
-
-    public String getLengthUnit() {
-        return lengthUnit;
-    }
-
-    public void setLengthUnit(String lengthUnit) {
-        this.lengthUnit = lengthUnit;
-    }
-
-    public String getWidthUnit() {
-        return widthUnit;
-    }
-
-    public void setWidthUnit(String widthUnit) {
-        this.widthUnit = widthUnit;
-    }
-
-    public String getHeightUnit() {
-        return heightUnit;
-    }
-
-    public void setHeightUnit(String heightUnit) {
-        this.heightUnit = heightUnit;
     }
 }

@@ -45,6 +45,7 @@ import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -1073,6 +1074,14 @@ public class InventoryService implements TestDataInitiableService{
     public Inventory reverseReceiving(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
         return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment);
+    }
+    public List<Inventory> removeInventoryByLocation(Long locationId) {
+        List<Inventory> inventories = findByLocationId(locationId);
+        inventories.forEach(
+                inventory -> removeInventory(inventory, "", "")
+        );
+
+        return inventories;
     }
     // To remove inventory, we won't actually remove the record.
     // Instead we move the inventory to a 'logical' location
@@ -2713,12 +2722,11 @@ public class InventoryService implements TestDataInitiableService{
             throw InventoryException.raiseException("LPN " + lpn + " already exists");
         }
         // see if we defined any rules to validate the LPN
-        InventoryConfiguration inventoryConfiguration = inventoryConfigurationService.getLPNValidationRule(
-                warehouse.getCompanyId(), warehouse.getId()
-        );
+        InventoryConfiguration inventoryConfiguration =
+                inventoryConfigurationService.getLPNValidationRule(warehouse.getId());
         if (Objects.nonNull(inventoryConfiguration)) {
             // ok we have some rule defined to validate the lpn
-            String lpnValidationRule = inventoryConfiguration.getStringValue();
+            String lpnValidationRule = inventoryConfiguration.getLpnValidationRule();
 
             Pattern pattern = Pattern.compile(lpnValidationRule, Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(lpn);
@@ -2940,5 +2948,41 @@ public class InventoryService implements TestDataInitiableService{
         );
 
         return inventorySummaries;
+    }
+
+    public List<Inventory> uploadInventoryData(Long warehouseId,
+                                               File file, Boolean removeExistingInventory) throws IOException {
+
+        List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
+
+        return inventoryCSVWrappers.stream().map(inventoryCSVWrapper -> {
+
+            try{
+
+                Location destination =
+                        warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                warehouseId,
+                                inventoryCSVWrapper.getLocation()
+                        );
+                // the location should be a valid location . otherwise, let's just skip this one
+                if (Objects.nonNull(destination)) {
+
+                    if (Boolean.TRUE.equals(removeExistingInventory)) {
+                        removeInventoryByLocation(destination.getId());
+                    }
+                    Inventory savedInvenotry = saveOrUpdate(convertFromWrapper(inventoryCSVWrapper));
+                    // re-calculate the size of the location
+
+                    recalculateLocationSizeForInventoryMovement(null, destination, savedInvenotry.getSize());
+                    return savedInvenotry;
+                }
+
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return null;
+        }).filter(inventory -> Objects.nonNull(inventory)).collect(Collectors.toList());
+
     }
 }

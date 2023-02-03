@@ -127,7 +127,7 @@ public class WorkOrderQCSampleService   {
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
                 ,
-                Sort.by(Sort.Direction.DESC, "number")
+                Sort.by(Sort.Direction.DESC, "createdTime", "number")
         );
         if (workOrderQCSamples.size() > 0 && loadDetail) {
             loadAttribute(workOrderQCSamples);

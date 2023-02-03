@@ -1,7 +1,5 @@
 package com.garyzhangscm.cwms.resources.model;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class LocationFileUpload extends FileUploadType {
 

@@ -38,42 +38,26 @@ public class InventoryConfigurationController {
     InventoryConfigurationService inventoryConfigurationService;
 
     @RequestMapping(value="/inventory_configuration", method = RequestMethod.GET)
-    public List<InventoryConfiguration> findAll(
-            @RequestParam Long companyId,
-            @RequestParam Long warehouseId,
-            @RequestParam(name = "type", required = false, defaultValue = "") String type) {
-        return inventoryConfigurationService.findAll(companyId, warehouseId, type);
+    public InventoryConfiguration findInventoryConfiguration(
+            @RequestParam Long warehouseId) {
+        return inventoryConfigurationService.findByWarehouseId(warehouseId);
     }
-
-    @RequestMapping(value="/inventory_configuration/{type}", method = RequestMethod.GET)
-    public InventoryConfiguration findByType(
-            @RequestParam Long companyId,
-            @RequestParam Long warehouseId,
-            @PathVariable String type) {
-        return inventoryConfigurationService.findByCompanyAndWarehouseAndType(companyId, warehouseId,
-                InventoryConfigurationType.valueOf(type));
-    }
-
 
     @BillableEndpoint
     @RequestMapping(value="/inventory_configuration", method = RequestMethod.PUT)
-    public List<InventoryConfiguration> saveInventoryConfigurations(
-            @RequestParam Long companyId,
+    public InventoryConfiguration addInventoryConfigurations(
             @RequestParam Long warehouseId,
-            @RequestBody List<InventoryConfiguration> inventoryConfigurations) {
-        return inventoryConfigurationService.saveInventoryConfiguration(
-                companyId, warehouseId, inventoryConfigurations);
+            @RequestBody InventoryConfiguration inventoryConfigurations) {
+        return inventoryConfigurationService.addInventoryConfigurations(
+                warehouseId, inventoryConfigurations);
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/inventory_configuration/{type}", method = RequestMethod.PUT)
-    public InventoryConfiguration saveInventoryConfiguration(
-            @RequestParam Long companyId,
+    @RequestMapping(value="/inventory_configuration/{id}", method = RequestMethod.POST)
+    public InventoryConfiguration changeInventoryConfigurations(
             @RequestParam Long warehouseId,
             @RequestBody InventoryConfiguration inventoryConfiguration) {
-        return inventoryConfigurationService.saveInventoryConfiguration(
-
-                companyId, warehouseId, inventoryConfiguration);
+        return inventoryConfigurationService.changeInventoryConfigurations(warehouseId, inventoryConfiguration);
     }
 
 

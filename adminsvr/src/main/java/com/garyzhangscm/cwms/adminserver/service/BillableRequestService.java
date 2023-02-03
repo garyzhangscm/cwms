@@ -30,10 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 
 @Service
@@ -118,6 +115,7 @@ public class BillableRequestService {
                     if (Objects.nonNull(date)) {
                         LocalDateTime dateStartTime = date.atStartOfDay();
                         LocalDateTime dateEndTime = date.plusDays(1).atStartOfDay().minusSeconds(1);
+
                         predicates.add(criteriaBuilder.between(
                                 root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
