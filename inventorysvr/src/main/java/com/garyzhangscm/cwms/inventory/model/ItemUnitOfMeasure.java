@@ -95,6 +95,30 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Transient
     private Warehouse warehouse;
 
+    public ItemUnitOfMeasure(){}
+
+    public ItemUnitOfMeasure(Long companyId, Long warehouseId,
+                             ItemDefaultPackageUOM itemDefaultPackageUOM) {
+        setCompanyId(companyId);
+        setWarehouseId(warehouseId);
+        setUnitOfMeasureId(itemDefaultPackageUOM.getUnitOfMeasureId());
+        setQuantity(itemDefaultPackageUOM.getQuantity());
+        setWeight(itemDefaultPackageUOM.getWeight());
+        setWeightUnit(itemDefaultPackageUOM.getWeightUnit());
+
+        setLength(itemDefaultPackageUOM.getLength());
+        setLengthUnit(itemDefaultPackageUOM.getLengthUnit());
+        setWidth(itemDefaultPackageUOM.getWidth());
+        setWidthUnit(itemDefaultPackageUOM.getWidthUnit());
+        setHeight(itemDefaultPackageUOM.getHeight());
+        setHeightUnit(itemDefaultPackageUOM.getHeightUnit());
+
+        setDefaultForWorkOrderReceiving(itemDefaultPackageUOM.getDefaultForWorkOrderReceiving());
+        setDefaultForInboundReceiving(itemDefaultPackageUOM.getDefaultForInboundReceiving());
+        setTrackingLpn(itemDefaultPackageUOM.getTrackingLpn());
+        setCaseFlag(itemDefaultPackageUOM.getCaseFlag());
+
+    }
     @Override
     public String toString() {
         try {

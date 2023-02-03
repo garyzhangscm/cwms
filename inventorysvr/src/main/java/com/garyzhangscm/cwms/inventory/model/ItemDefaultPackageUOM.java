@@ -1,0 +1,227 @@
+/**
+ * Copyright 2018
+ *
+ * @author gzhang
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.garyzhangscm.cwms.inventory.model;
+
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.codehaus.jackson.annotate.JsonProperty;
+
+import javax.persistence.*;
+import java.io.Serializable;
+
+@Entity
+@Table(name = "item_default_package_uom")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ItemDefaultPackageUOM extends AuditibleEntity<String> implements Serializable {
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "item_default_package_uom_id")
+    @JsonProperty(value="id")
+    private Long id;
+
+
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_configuration_id")
+    private InventoryConfiguration inventoryConfiguration;
+
+
+    @Column(name = "unit_of_measure_id")
+    private Long unitOfMeasureId;
+
+    @Transient
+    private UnitOfMeasure unitOfMeasure;
+
+    @Column(name = "quantity")
+    private Integer quantity;
+
+    @Column(name = "weight")
+    private Double weight;
+    @Column(name = "weight_unit")
+    private String weightUnit;
+
+    @Column(name = "length")
+    private Double length;
+    @Column(name = "length_unit")
+    private String lengthUnit;
+    @Column(name = "width")
+    private Double width;
+    @Column(name = "width_unit")
+    private String widthUnit;
+    @Column(name = "height")
+    private Double height;
+    @Column(name = "height_unit")
+    private String heightUnit;
+
+    @Column(name = "default_for_inbound_receiving")
+    private Boolean defaultForInboundReceiving = false;
+
+    @Column(name = "default_for_work_order_receiving")
+    private Boolean defaultForWorkOrderReceiving = false;
+
+    // whether we will need to tracking LPN at this level
+    @Column(name = "tracking_lpn")
+    private Boolean trackingLpn = false;
+
+    // whether this is a case(box)
+    // we may calculate the size of the inventory based on the
+    // case UOM
+    @Column(name = "case_flag")
+    private Boolean caseFlag = false;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public InventoryConfiguration getInventoryConfiguration() {
+        return inventoryConfiguration;
+    }
+
+    public void setInventoryConfiguration(InventoryConfiguration inventoryConfiguration) {
+        this.inventoryConfiguration = inventoryConfiguration;
+    }
+
+    public Long getUnitOfMeasureId() {
+        return unitOfMeasureId;
+    }
+
+    public void setUnitOfMeasureId(Long unitOfMeasureId) {
+        this.unitOfMeasureId = unitOfMeasureId;
+    }
+
+    public UnitOfMeasure getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(UnitOfMeasure unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
+    }
+
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
+    }
+
+    public Double getLength() {
+        return length;
+    }
+
+    public void setLength(Double length) {
+        this.length = length;
+    }
+
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
+    }
+
+    public Double getWidth() {
+        return width;
+    }
+
+    public void setWidth(Double width) {
+        this.width = width;
+    }
+
+    public String getWidthUnit() {
+        return widthUnit;
+    }
+
+    public void setWidthUnit(String widthUnit) {
+        this.widthUnit = widthUnit;
+    }
+
+    public Double getHeight() {
+        return height;
+    }
+
+    public void setHeight(Double height) {
+        this.height = height;
+    }
+
+    public String getHeightUnit() {
+        return heightUnit;
+    }
+
+    public void setHeightUnit(String heightUnit) {
+        this.heightUnit = heightUnit;
+    }
+
+    public Boolean getDefaultForInboundReceiving() {
+        return defaultForInboundReceiving;
+    }
+
+    public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
+        this.defaultForInboundReceiving = defaultForInboundReceiving;
+    }
+
+    public Boolean getDefaultForWorkOrderReceiving() {
+        return defaultForWorkOrderReceiving;
+    }
+
+    public void setDefaultForWorkOrderReceiving(Boolean defaultForWorkOrderReceiving) {
+        this.defaultForWorkOrderReceiving = defaultForWorkOrderReceiving;
+    }
+
+    public Boolean getTrackingLpn() {
+        return trackingLpn;
+    }
+
+    public void setTrackingLpn(Boolean trackingLpn) {
+        this.trackingLpn = trackingLpn;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
+    }
+}

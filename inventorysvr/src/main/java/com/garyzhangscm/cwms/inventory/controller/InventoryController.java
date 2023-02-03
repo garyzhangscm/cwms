@@ -22,13 +22,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.*;
+import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,6 +45,10 @@ public class InventoryController {
 
     @Autowired
     private HttpServletRequest httpServletRequest;
+
+
+    @Autowired
+    FileService fileService;
 
     @ClientValidationEndpoint
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
@@ -498,5 +506,24 @@ public class InventoryController {
         return inventoryService.getQuickbookDesktopInventorySummary(
                 companyCode, warehouseName
         );
+    }
+
+    /**
+     *
+     * Upload files to initialize the inventory
+     * @param warehouseId
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    @RequestMapping(method=RequestMethod.POST, value="/inventories/upload")
+    public ResponseBodyWrapper uploadInventories(Long warehouseId,
+                                                 @RequestParam("file") MultipartFile file,
+                                                 @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+        List<Inventory> inventoryList = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
+        return  ResponseBodyWrapper.success(inventoryList.size() + "");
     }
 }

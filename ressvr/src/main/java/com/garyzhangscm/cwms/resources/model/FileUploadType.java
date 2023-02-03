@@ -31,6 +31,7 @@ public class FileUploadType {
         fileUploadTypes.add(new ItemFileUpload());
         fileUploadTypes.add(new ItemUnitOfMeasureFileUpload());
         fileUploadTypes.add(new BillOfMaterialFileUpload());
+        fileUploadTypes.add(new InventoryFileUpload());
 
 
         return fileUploadTypes;
