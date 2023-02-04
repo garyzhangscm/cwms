@@ -2955,6 +2955,10 @@ public class InventoryService implements TestDataInitiableService{
 
         List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
 
+        // if we will remove the inventory from the location before we add inventory, make sure
+        // we will only remove the inventory
+        Set<Long> locationsHaveInventoryRemoved = new HashSet<>();
+
         return inventoryCSVWrappers.stream().map(inventoryCSVWrapper -> {
 
             try{
@@ -2967,11 +2971,18 @@ public class InventoryService implements TestDataInitiableService{
                 // the location should be a valid location . otherwise, let's just skip this one
                 if (Objects.nonNull(destination)) {
 
-                    if (Boolean.TRUE.equals(removeExistingInventory)) {
+                    if (Boolean.TRUE.equals(removeExistingInventory) && !locationsHaveInventoryRemoved.contains(destination.getId())) {
                         removeInventoryByLocation(destination.getId());
+                        locationsHaveInventoryRemoved.add(destination.getId());
+                        logger.debug("Inventory from location {} is cleared!",
+                                destination.getName());
                     }
                     Inventory savedInvenotry = saveOrUpdate(convertFromWrapper(inventoryCSVWrapper));
                     // re-calculate the size of the location
+                    logger.debug("Save inventory with LPN {}, id {} / {}",
+                            inventoryCSVWrapper.getItem(),
+                            savedInvenotry.getId(),
+                            savedInvenotry.getItem().getName());
 
                     recalculateLocationSizeForInventoryMovement(null, destination, savedInvenotry.getSize());
                     return savedInvenotry;

@@ -34,7 +34,7 @@ public class IntegrationProcessingJob {
     // 1. dblink tools: internal tools used for ERP integration via database
     // 2. quickbook online: internal tools to connect to quickbook online
     // 3. quickbook local plugin: local plugin to connect to quickbook desktop
-    /**
+    /***
     @Scheduled(fixedDelay = 2000)
     public void processOutboundIntegration() {
 

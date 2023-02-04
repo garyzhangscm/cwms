@@ -21,6 +21,9 @@ package com.garyzhangscm.cwms.dblink.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.dblink.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.dblink.model.DBBasedInventoryAdjustmentConfirmation;
+import com.garyzhangscm.cwms.dblink.model.DBBasedOrderConfirmation;
+import com.garyzhangscm.cwms.dblink.model.DBBasedReceiptConfirmation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 
 @Component
 public class IntegrationServiceRestemplateClient {
@@ -46,6 +51,22 @@ public class IntegrationServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
+
+
+    @Value("${cwms_app_server:prod.claytechsuite.com}")
+    String appServerURL;
+
+    @Value("${cwms_app_server_scheme:http}")
+    String appServerScheme;
+
+    @Value("${cwms_app_server_port:80}")
+    String appServerPort;
+
+
+    @Value("${cwms_company_code:00001}")
+    String companyCode;
+    @Value("${cwms_warehouse_name:NotExist}")
+    String warehouseName;
 
     @Autowired
     RestTemplate restTemplate;
@@ -76,7 +97,83 @@ public class IntegrationServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public String saveIntegrationResult(String subUrl, long id, boolean succeed, String errorMessage) {
 
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(appServerScheme).host(appServerURL).port(appServerPort)
+                        // .scheme("http").host("10.0.10.37").port(32262)
+                        .path("/api/integration/integration-data/" + subUrl + "/{id}/result")
+                        .queryParam("succeed", succeed)
+                        .queryParam("errorMessage", errorMessage);
+
+
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
+
+    public List<DBBasedInventoryAdjustmentConfirmation> getPendingInventoryAdjustmentConfirmationIntegrationData() {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(appServerScheme).host(appServerURL).port(appServerPort)
+                        .path("/api/integration/integration-data/inventory-adjustment-confirmations/query/pending")
+                        .queryParam("companyCode", companyCode)
+                        .queryParam("warehouseName", warehouseName);
+
+        ResponseBodyWrapper<List<DBBasedInventoryAdjustmentConfirmation>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<DBBasedInventoryAdjustmentConfirmation>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+    public List<DBBasedReceiptConfirmation> getPendingReceiptConfirmationIntegrationData() {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(appServerScheme).host(appServerURL).port(appServerPort)
+                        .path("/api/integration/integration-data/receipt-confirmations/query/pending")
+                        .queryParam("companyCode", companyCode)
+                        .queryParam("warehouseName", warehouseName);
+
+        ResponseBodyWrapper<List<DBBasedReceiptConfirmation>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<DBBasedReceiptConfirmation>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    public List<DBBasedOrderConfirmation> getPendingSalesOrderConfirmationIntegrationData() {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(appServerScheme).host(appServerURL).port(appServerPort)
+                        .path("/api/integration/integration-data/order-confirmations/query/pending")
+                        .queryParam("companyCode", companyCode)
+                        .queryParam("warehouseName", warehouseName);
+
+        ResponseBodyWrapper<List<DBBasedOrderConfirmation>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<DBBasedOrderConfirmation>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
