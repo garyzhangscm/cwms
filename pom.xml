@@ -27,7 +27,9 @@
         <!-- Common Service: Common Business Entites-->
         <module>commonsvr</module>
         <!-- configuration service -->
+        <!--
         <module>confsvr</module>
+        -->
         <!-- Inbound Service: Inbound Entites-->
         <module>inboundsvr</module>
         <!-- Outbound Service: Outbound Entites-->

@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>layoutserver</artifactId>
-	<version>v1.1</version>
+	<version>v1.2</version>
 	<name>Layout Server</name>
 	<description>Layout Server - including warehouse / building / area / etc</description>
 
