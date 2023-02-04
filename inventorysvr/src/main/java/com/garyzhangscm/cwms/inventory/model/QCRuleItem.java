@@ -58,6 +58,10 @@ public class QCRuleItem extends AuditibleEntity<String> implements Serializable 
     @Column(name = "expected_value")
     private String expectedValue;
 
+    @Column(name = "enabled")
+    private Boolean enabled = true;
+
+
     @Column(name = "qc_rule_item_comparator")
     @Enumerated(EnumType.STRING)
     private QCRuleItemComparator qcRuleItemComparator;
@@ -124,5 +128,13 @@ public class QCRuleItem extends AuditibleEntity<String> implements Serializable 
 
     public void setQcRule(QCRule qcRule) {
         this.qcRule = qcRule;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }
