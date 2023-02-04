@@ -478,6 +478,20 @@ public class QCInspectionRequestService {
         // return both passed qc inspection and failed qc inspection
         passedQCInspectionRequest.addAll(failedQCInspectionRequest);
 
+        Collections.sort(passedQCInspectionRequest,
+                (request1, request2) -> {
+                    if (Objects.isNull(request1.getQcTime())) {
+                        return -1;
+                    }
+                    else if (Objects.isNull(request2.getQcTime())) {
+                        return 1;
+                    }
+                    else {
+                        return request2.getQcTime().compareTo(request1.getQcTime());
+                    }
+
+                });
+
         return passedQCInspectionRequest;
 
     }
