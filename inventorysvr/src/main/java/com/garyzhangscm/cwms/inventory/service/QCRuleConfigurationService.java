@@ -283,35 +283,54 @@ public class QCRuleConfigurationService {
             return false;
         }
 
+        // we will very item's name. As long as the item name match, then this is a match
+        // as we may define the item at the global level while the qc rule may be defined
+        // for the warehouse item
         if (Objects.nonNull(qcRuleConfiguration.getItem()) &&
-                !Objects.equals(qcRuleConfiguration.getItem(), inventory.getItem())) {
-            logger.debug("qc rule configuration id {} has item id defined {}, " +
-                            " which doesn't match with the item id passed in: {}",
+                !qcRuleConfiguration.getItem().getName().equals(inventory.getItem().getName())) {
+            logger.debug("qc rule configuration id {} has item id defined {} / {}, " +
+                            " which doesn't match with the item id passed in: {} / {}",
                     qcRuleConfiguration.getId(),
                     qcRuleConfiguration.getItem().getId(),
-                    inventory.getItem().getId());
+                    qcRuleConfiguration.getItem().getName(),
+                    inventory.getItem().getId(),
+                    inventory.getItem().getName());
             return false;
         }
 
+
+        // we will very item family's name. As long as the item family name match, then this is a match
+        // as we may define the item family at the global level while the qc rule may be defined
+        // for the warehouse item family
         if (Objects.nonNull(qcRuleConfiguration.getItemFamily()) &&
-                !Objects.equals(qcRuleConfiguration.getItemFamily(), inventory.getItem().getItemFamily())) {
-            logger.debug("qc rule configuration id {} has item family id defined {}, " +
-                            " which doesn't match with the item family id passed in: {}",
+                !qcRuleConfiguration.getItemFamily().getName().equals(
+                        Objects.isNull(inventory.getItem().getItemFamily()) ? "" :
+                            inventory.getItem().getItemFamily().getName())) {
+            logger.debug("qc rule configuration id {} has item family id defined {} / {}, " +
+                            " which doesn't match with the item family id passed in: {} / {}",
                     qcRuleConfiguration.getId(),
                     qcRuleConfiguration.getItemFamily().getId(),
+                    qcRuleConfiguration.getItemFamily().getName(),
                     Objects.isNull(inventory.getItem().getItemFamily()) ?
-                            "N/A" : inventory.getItem().getItemFamily().getId());
+                            "N/A" : inventory.getItem().getItemFamily().getId(),
+                    Objects.isNull(inventory.getItem().getItemFamily()) ?
+                            "N/A" : inventory.getItem().getItemFamily().getName());
             return false;
         }
 
         if (Objects.nonNull(qcRuleConfiguration.getInventoryStatus()) &&
-                !Objects.equals(qcRuleConfiguration.getInventoryStatus(), inventory.getInventoryStatus())) {
-            logger.debug("qc rule configuration id {} has inventory status id defined {}, " +
-                            " which doesn't match with the inventory status id passed in: {}",
+                qcRuleConfiguration.getInventoryStatus().getName().equals(
+                        inventory.getInventoryStatus().getName()
+                )) {
+            logger.debug("qc rule configuration id {} has inventory status id defined {} / {}, " +
+                            " which doesn't match with the inventory status id passed in: {} / {}",
                     qcRuleConfiguration.getId(),
                     qcRuleConfiguration.getInventoryStatus().getId(),
+                    qcRuleConfiguration.getInventoryStatus().getName(),
                     Objects.isNull(inventory.getInventoryStatus()) ?
-                        "N/A" : inventory.getInventoryStatus().getId());
+                        "N/A" : inventory.getInventoryStatus().getId(),
+                    Objects.isNull(inventory.getInventoryStatus()) ?
+                            "N/A" : inventory.getInventoryStatus().getName());
             return false;
         }
 

@@ -82,4 +82,17 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
             "group by item.name, item.quickbook_listid, inventory_status.name ",
             nativeQuery = true)
     List<Object[]> getQuickbookDesktopInventorySummary(Long warehouseId);
+
+    @Query(value =" select item.name itemName, item.quickbook_listid listId, " +
+            " inventory_status.name inventoryStatus, sum(inventory.quantity) quantity" +
+            " from inventory join item on inventory.item_id = item.item_id " +
+            " join inventory_status on inventory.inventory_status_id = inventory_status.inventory_status_id " +
+            "  where inventory.warehouse_id = :warehouseId " +
+            "    and item.quickbook_listid is not null " +
+            "    and item.quickbook_listid != '' " +
+            "    and inventory.virtual_inventory = false " +
+            "    and item.name = :itemName " +
+            "group by item.name, item.quickbook_listid, inventory_status.name ",
+            nativeQuery = true)
+    List<Object[]> getQuickbookDesktopInventorySummary(Long warehouseId, String itemName);
 }

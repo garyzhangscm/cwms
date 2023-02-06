@@ -500,11 +500,12 @@ public class InventoryController {
     public List<QuickbookDesktopInventorySummary> getQuickbookDesktopInventorySummary(
 
             @RequestParam String companyCode,
-            @RequestParam String warehouseName) {
+            @RequestParam String warehouseName,
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
 
 
         return inventoryService.getQuickbookDesktopInventorySummary(
-                companyCode, warehouseName
+                companyCode, warehouseName, itemName
         );
     }
 

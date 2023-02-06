@@ -45,6 +45,7 @@ public class AuthServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/auth/users/company-access-validation")
                 .queryParam("companyId", companyId)
+                        .queryParam("companyId", companyId)
                         .queryParam("token", token);
 
         return restTemplate.exchange(
