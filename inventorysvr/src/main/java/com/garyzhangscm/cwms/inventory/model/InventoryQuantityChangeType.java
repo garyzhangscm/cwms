@@ -13,6 +13,7 @@ public enum InventoryQuantityChangeType {
     AUDIT_COUNT(false, true),
     REVERSE_PRODUCTION(true, false),
     REVERSE_BY_PRODUCT(true, false),
+    INVENTORY_UPLOAD(true, true),   // upload CSV file to create inventory, normally used when we first go live
     UNKNOWN(false, true);
 
     private boolean noApprovalNeeded;

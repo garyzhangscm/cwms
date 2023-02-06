@@ -2922,14 +2922,24 @@ public class InventoryService implements TestDataInitiableService{
 
     }
 
-    public List<QuickbookDesktopInventorySummary> getQuickbookDesktopInventorySummary(String companyCode, String warehouseName) {
+    public List<QuickbookDesktopInventorySummary> getQuickbookDesktopInventorySummary(String companyCode,
+                                                                                      String warehouseName,
+                                                                                      String itemName) {
 
         Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(companyCode, warehouseName).getId();
 
-        logger.debug("start get quickbook inventory summary by company {}, warehouse {}, warehouse id {}",
-                companyCode, warehouseName, warehouseId);
-        List<Object[]> inventorySummariesResult =
+        logger.debug("start get quickbook inventory summary by company {}, warehouse {}, warehouse id {}, item name: {}",
+                companyCode, warehouseName, warehouseId, itemName);
+        List<Object[]> inventorySummariesResult = new ArrayList<>();
+        if (Strings.isNotBlank(itemName)) {
+
+            inventorySummariesResult =
+                    inventoryRepository.getQuickbookDesktopInventorySummary(warehouseId, itemName);
+        }
+        else {
+            inventorySummariesResult =
                 inventoryRepository.getQuickbookDesktopInventorySummary(warehouseId);
+        }
 
         logger.debug("get {} inventory summary records", inventorySummariesResult.size());
 
@@ -2977,10 +2987,16 @@ public class InventoryService implements TestDataInitiableService{
                         logger.debug("Inventory from location {} is cleared!",
                                 destination.getName());
                     }
-                    Inventory savedInvenotry = saveOrUpdate(convertFromWrapper(inventoryCSVWrapper));
+
+                    Inventory savedInvenotry =
+                            addInventory(convertFromWrapper(inventoryCSVWrapper),
+                                    InventoryQuantityChangeType.INVENTORY_UPLOAD,
+                                    "", "");
+
+                    // Inventory savedInvenotry = saveOrUpdate(convertFromWrapper(inventoryCSVWrapper));
                     // re-calculate the size of the location
                     logger.debug("Save inventory with LPN {}, id {} / {}",
-                            inventoryCSVWrapper.getItem(),
+                            inventoryCSVWrapper.getLpn(),
                             savedInvenotry.getId(),
                             savedInvenotry.getItem().getName());
 

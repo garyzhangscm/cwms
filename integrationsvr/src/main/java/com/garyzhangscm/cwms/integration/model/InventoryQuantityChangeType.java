@@ -11,6 +11,7 @@ public enum InventoryQuantityChangeType {
     INVENTORY_ADJUST(false),
     CYCLE_COUNT(false),
     AUDIT_COUNT(false),
+    INVENTORY_UPLOAD(true),   // upload CSV file to create inventory, normally used when we first go live
     UNKNOWN(false);
 
     private boolean noApprovalNeeded;

@@ -7,6 +7,6 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/workorderserver-v1.2.jar /usr/local/service/
+ADD target/workorderserver-v1.3.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/workorderserver-v1.2.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/workorderserver-v1.3.jar"]
