@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.*;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
@@ -27,11 +28,13 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.kafka.common.protocol.types.Field;
 import org.apache.logging.log4j.util.Strings;
 import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
@@ -50,6 +53,10 @@ import java.util.stream.Stream;
 @Service
 public class WorkOrderService implements TestDataInitiableService {
     private static final Logger logger = LoggerFactory.getLogger(WorkOrderService.class);
+
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private WorkOrderRepository workOrderRepository;
@@ -107,6 +114,9 @@ public class WorkOrderService implements TestDataInitiableService {
     private FileService fileService;
     @Autowired
     private IntegrationService integrationService;
+
+    @Autowired
+    private SiloRestemplateClient siloRestemplateClient;
 
     @Value("${fileupload.test-data.work-order:work-order}")
     String testDataFile;
@@ -2127,5 +2137,24 @@ public class WorkOrderService implements TestDataInitiableService {
         return saveOrUpdate(workOrder, false);
 
 
+    }
+
+    public List<SiloInformation> getSiloMonitor(Long warehouseId, String token) {
+        String siloInformation =  siloRestemplateClient.getSiloInformation(token);
+
+        logger.debug("start to convert the information into POJO \n{}",
+                siloInformation);
+        // convert to object
+        try {
+            SiloInformationResponseWrapper siloInformationResponseWrapper
+                    = objectMapper.readValue(siloInformation, SiloInformationResponseWrapper.class);
+
+            return siloInformationResponseWrapper.getSiloInformations();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            logger.debug("can't pass the sile information");
+        }
+
+        return null;
     }
 }

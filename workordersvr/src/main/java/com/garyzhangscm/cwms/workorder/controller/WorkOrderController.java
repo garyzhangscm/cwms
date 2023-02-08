@@ -378,4 +378,15 @@ public class WorkOrderController {
         return ResponseBodyWrapper.success("success");
     }
 
+
+    @RequestMapping(value="/work-orders/silo-monitor", method = RequestMethod.GET)
+    public List<SiloInformation> getSiloMonitor(
+            @RequestParam Long warehouseId,
+            @RequestParam String token
+    ) {
+
+
+        return workOrderService.getSiloMonitor(warehouseId,token);
+    }
+
 }
