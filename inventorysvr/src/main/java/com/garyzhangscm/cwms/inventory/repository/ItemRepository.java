@@ -26,10 +26,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
     Item findByWarehouseIdAndName(Long warehouseId, String name);
+
+
+    @Query( "select i from Item i " +
+            "  where i.warehouseId is null and i.name = :name ")
+    Item findGlobalItemByName(String name);
 
     /**
      * Override a item family in the warehouse level. We will change the item's item family id to the new warehouse level
@@ -42,4 +48,6 @@ public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificat
     @Query(value = "update item set item_family_id = :newItemFamilyId where item_family_id = :oldItemFamilyId  and warehouse_id = :warehouseId",
             nativeQuery = true)
     void processItemFamilyOverride(Long oldItemFamilyId, Long newItemFamilyId, Long warehouseId);
+
+    List<Item> findByWarehouseId(Long warehouseId);
 }

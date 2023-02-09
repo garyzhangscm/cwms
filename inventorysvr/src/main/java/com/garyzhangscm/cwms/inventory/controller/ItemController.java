@@ -170,5 +170,19 @@ public class ItemController {
         return  ResponseBodyWrapper.success(items.size() + "");
     }
 
+    /**
+     * Manually process item override. We may need to update the item id in the receipt
+     * work order / orders / etc.
+     * @param id
+     * @return
+     */
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/items/process-item-override")
+    public ResponseBodyWrapper processItemOverride(@RequestParam Long warehouseId,
+                                                   @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId) {
+
+        itemService.processItemOverride(warehouseId, itemId);
+        return  ResponseBodyWrapper.success("Success");
+    }
 
 }

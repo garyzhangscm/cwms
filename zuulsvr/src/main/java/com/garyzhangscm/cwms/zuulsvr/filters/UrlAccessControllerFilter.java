@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.zuulsvr.filters;
 import com.garyzhangscm.cwms.zuulsvr.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.exception.SystemFatalException;
+import com.garyzhangscm.cwms.zuulsvr.exception.UnauthorizedException;
 import com.garyzhangscm.cwms.zuulsvr.model.Company;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
