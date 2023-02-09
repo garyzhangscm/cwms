@@ -1079,4 +1079,57 @@ public class ItemService implements TestDataInitiableService{
         return items;
 
     }
+
+    /**
+     * Manually process item override. We may need to update the item id in the receipt
+     * work order / orders / etc.
+     * @param warehouseId warehouse id
+     * @param itemId Item Id
+     * @return
+     */
+    public void processItemOverride(Long warehouseId, Long itemId) {
+        logger.debug("let's manually refresh all the data when we override the global item into a warehouse specific one");
+
+        if (Objects.isNull(itemId)) {
+
+            // item id is not passed in, we will refresh for all items in the warehouse
+            List<Item> warehouseItems = itemRepository.findByWarehouseId(warehouseId);
+            processItemOverride(warehouseItems);
+        }
+        else {
+            Item warehouseItem = findById(itemId);
+            if (Objects.isNull(warehouseItem.getWarehouseId())) {
+                throw ItemException.raiseException("please choose a warehouse item to start refresh");
+            }
+            else if (warehouseItem.getWarehouseId().equals(warehouseId)) {
+                throw ItemException.raiseException("the item selected doesn't match with the warehouse passed in");
+            }
+            else {
+                processItemOverride(warehouseItem);
+            }
+        }
+    }
+    public void processItemOverride(List<Item> warehouseItems) {
+        warehouseItems.forEach(
+                warehouseItem -> processItemOverride(warehouseItem)
+        );
+    }
+    public void processItemOverride(Item warehouseItem) {
+
+        logger.debug("item name", warehouseItem.getName());
+        logger.debug("warehouse specific item id {}", warehouseItem.getId());
+        // let's find the global item by name
+        Item globalItem = itemRepository.findGlobalItemByName(warehouseItem.getName());
+        if (Objects.isNull(globalItem)) {
+            return;
+        }
+
+        logger.debug("global item id {}", globalItem.getId());
+        // ok now we have the warehouse specific item and global item,
+
+        handleItemOverride(warehouseItem.getWarehouseId(),
+                globalItem.getId(), warehouseItem.getId());
+
+        logger.debug("refresh is done");
+    }
 }
