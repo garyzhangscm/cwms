@@ -270,14 +270,36 @@ public class DBBasedOrderIntegration {
     private void setupMissingField(Warehouse warehouse, OrderLine orderLine, DBBasedOrderLine dbBasedOrderLine) throws UnsupportedEncodingException {
 
         // 1. item Id
-        if(Objects.isNull(orderLine.getItemId())) {
-                orderLine.setItemId(
-                        inventoryServiceRestemplateClient.getItemByName(
-                                warehouse.getCompany().getId(),
-                                warehouse.getId(), dbBasedOrderLine.getItemName()
-                        ).getId()
+        if (Objects.isNull(orderLine.getItemId())) {
+            Item item = null;
+            logger.debug("item id is not passed in for line {}, let's set it up",
+                    orderLine.getNumber());
+
+            logger.debug("item name: {}", dbBasedOrderLine.getItemName());
+            logger.debug("item quickbook list id: {}", dbBasedOrderLine.getItemQuickbookListId());
+
+            if (Strings.isNotBlank(dbBasedOrderLine.getItemName())) {
+                item = inventoryServiceRestemplateClient.getItemByName(
+                        warehouse.getCompany().getId(),
+                        orderLine.getWarehouseId(), dbBasedOrderLine.getItemName()
                 );
+            }
+            else if (Strings.isNotBlank(dbBasedOrderLine.getItemQuickbookListId())) {
+                item = inventoryServiceRestemplateClient.getItemByQuickbookListId(
+                        warehouse.getCompany().getId(),
+                        orderLine.getWarehouseId(), dbBasedOrderLine.getItemQuickbookListId()
+                );
+            }
+            else {
+                throw MissingInformationException.raiseException("Either item id, or item name, or quickbook item list id " +
+                        " needs to be present in order to identify the item for this order line");
+            }
+            if (Objects.isNull(item)) {
+                throw ResourceNotFoundException.raiseException("Can't find item based on the order line's information");
+            }
+            orderLine.setItemId(item.getId());
         }
+
 
 
         // 2. warehouse Id

@@ -101,6 +101,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     private String shipToAddressLine1;
     @Column(name = "ship_to_address_line2")
     private String shipToAddressLine2;
+    @Column(name = "ship_to_address_line3")
+    private String shipToAddressLine3;
     @Column(name = "ship_to_address_postcode")
     private String shipToAddressPostcode;
 
@@ -125,6 +127,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     private String billToAddressLine1;
     @Column(name = "bill_to_address_line2")
     private String billToAddressLine2;
+    @Column(name = "bill_to_address_line3")
+    private String billToAddressLine3;
     @Column(name = "bill_to_address_postcode")
     private String billToAddressPostcode;
 
@@ -191,7 +195,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty",
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2", "billToAddressPostcode",
                 "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName",
-                "category", "transferReceiptWarehouseId", "quickbookTxnID", "quickbookCustomerListId"
+                "category", "transferReceiptWarehouseId", "quickbookTxnID", "quickbookCustomerListId",
+                "shipToAddressLine3", "billToAddressLine3"
         };
 
         ObjectCopyUtil.copyValue(order, this, fieldNames);
@@ -225,7 +230,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2",
                 "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
                 "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
-                "warehouseId","warehouseName", "quickbookTxnID", "quickbookCustomerListId"
+                "warehouseId","warehouseName", "quickbookTxnID", "quickbookCustomerListId",
+                "shipToAddressLine3", "billToAddressLine3"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);
@@ -611,6 +617,23 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
         this.orderLines.add(orderLine);
     }
 
+    @Override
+    public String getShipToAddressLine3() {
+        return shipToAddressLine3;
+    }
+
+    public void setShipToAddressLine3(String shipToAddressLine3) {
+        this.shipToAddressLine3 = shipToAddressLine3;
+    }
+
+    @Override
+    public String getBillToAddressLine3() {
+        return billToAddressLine3;
+    }
+
+    public void setBillToAddressLine3(String billToAddressLine3) {
+        this.billToAddressLine3 = billToAddressLine3;
+    }
 
     @Override
     public IntegrationStatus getStatus() {

@@ -56,6 +56,7 @@ public class ItemController {
                                    @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                    @RequestParam(name="name", required = false, defaultValue = "") String name,
                                    @RequestParam(name="description", required = false, defaultValue = "") String description,
+                                   @RequestParam(name="quickbookListId", required = false, defaultValue = "") String quickbookListId,
                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
                                    @RequestParam(name="itemFamilyIds", required = false, defaultValue = "") String itemFamilyIds,
                                    @RequestParam(name="itemIdList", required = false, defaultValue = "") String itemIdList,
@@ -76,7 +77,7 @@ public class ItemController {
                             .getWarehouseById(warehouseId).getCompanyId();
         }
 
-        return itemService.findAll(companyId, warehouseId, name, clientIds, itemFamilyIds, itemIdList, companyItem,
+        return itemService.findAll(companyId, warehouseId, name, quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
                 warehouseSpecificItem, description,  loadDetails);
     }
 
@@ -173,7 +174,6 @@ public class ItemController {
     /**
      * Manually process item override. We may need to update the item id in the receipt
      * work order / orders / etc.
-     * @param id
      * @return
      */
     @BillableEndpoint
@@ -181,7 +181,7 @@ public class ItemController {
     public ResponseBodyWrapper processItemOverride(@RequestParam Long warehouseId,
                                                    @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId) {
 
-        itemService.processItemOverride(warehouseId, itemId);
+        new Thread(() -> itemService.processItemOverride(warehouseId, itemId)).start();
         return  ResponseBodyWrapper.success("Success");
     }
 

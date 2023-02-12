@@ -100,6 +100,8 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     private String shipToAddressLine1;
     @Column(name = "ship_to_address_line2")
     private String shipToAddressLine2;
+    @Column(name = "ship_to_address_line3")
+    private String shipToAddressLine3;
     @Column(name = "ship_to_address_postcode")
     private String shipToAddressPostcode;
 
@@ -124,6 +126,8 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     private String billToAddressLine1;
     @Column(name = "bill_to_address_line2")
     private String billToAddressLine2;
+    @Column(name = "bill_to_address_line3")
+    private String billToAddressLine3;
     @Column(name = "bill_to_address_postcode")
     private String billToAddressPostcode;
 
@@ -337,6 +341,22 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setShipToAddressCountry(String shipToAddressCountry) {
         this.shipToAddressCountry = shipToAddressCountry;
+    }
+
+    public String getShipToAddressLine3() {
+        return shipToAddressLine3;
+    }
+
+    public void setShipToAddressLine3(String shipToAddressLine3) {
+        this.shipToAddressLine3 = shipToAddressLine3;
+    }
+
+    public String getBillToAddressLine3() {
+        return billToAddressLine3;
+    }
+
+    public void setBillToAddressLine3(String billToAddressLine3) {
+        this.billToAddressLine3 = billToAddressLine3;
     }
 
     public Long getSupplierId() {

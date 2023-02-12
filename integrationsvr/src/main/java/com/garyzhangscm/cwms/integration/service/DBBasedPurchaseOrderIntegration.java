@@ -4,6 +4,7 @@ import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.KafkaSender;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
 import com.garyzhangscm.cwms.integration.repository.DBBasedPurchaseOrderLineRepository;
@@ -166,7 +167,9 @@ public class DBBasedPurchaseOrderIntegration {
         try {
 
             PurchaseOrder purchaseOrder
-                    = dbBasedPurchaseOrder.convertToPurchaseOrder(warehouseLayoutServiceRestemplateClient);
+                    = dbBasedPurchaseOrder.convertToPurchaseOrder(
+                            warehouseLayoutServiceRestemplateClient,
+                    inventoryServiceRestemplateClient);
 
             // we will support host to send name
             // instead of id for the following field . In such case, we will
@@ -260,13 +263,34 @@ public class DBBasedPurchaseOrderIntegration {
                                    DBBasedPurchaseOrderLine dbBasedPurchaseOrderLine){
 
         // 1. item Id
-        if(Objects.isNull(purchaseOrderLine.getItemId())) {
-            purchaseOrderLine.setItemId(
-                        inventoryServiceRestemplateClient.getItemByName(
-                                warehouse.getCompany().getId(),
-                                warehouse.getId(), dbBasedPurchaseOrderLine.getItemName()
-                        ).getId()
+        if (Objects.isNull(purchaseOrderLine.getItemId())) {
+            Item item = null;
+            logger.debug("item id is not passed in for line {}, let's set it up",
+                    purchaseOrderLine.getNumber());
+
+            logger.debug("item name: {}", dbBasedPurchaseOrderLine.getItemName());
+            logger.debug("item quickbook list id: {}", dbBasedPurchaseOrderLine.getItemQuickbookListId());
+
+            if (Strings.isNotBlank(dbBasedPurchaseOrderLine.getItemName())) {
+                item = inventoryServiceRestemplateClient.getItemByName(
+                        warehouse.getCompany().getId(),
+                        purchaseOrderLine.getWarehouseId(), dbBasedPurchaseOrderLine.getItemName()
                 );
+            }
+            else if (Strings.isNotBlank(dbBasedPurchaseOrderLine.getItemQuickbookListId())) {
+                item = inventoryServiceRestemplateClient.getItemByQuickbookListId(
+                        warehouse.getCompany().getId(),
+                        purchaseOrderLine.getWarehouseId(), dbBasedPurchaseOrderLine.getItemQuickbookListId()
+                );
+            }
+            else {
+                throw MissingInformationException.raiseException("Either item id, or item name, or quickbook item list id " +
+                        " needs to be present in order to identify the item for this order line");
+            }
+            if (Objects.isNull(item)) {
+                throw ResourceNotFoundException.raiseException("Can't find item based on the order line's information");
+            }
+            purchaseOrderLine.setItemId(item.getId());
         }
 
         purchaseOrderLine.setItem(

@@ -524,7 +524,16 @@ public class InventoryController {
 
 
         File localFile = fileService.saveFile(file);
-        List<Inventory> inventoryList = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
-        return  ResponseBodyWrapper.success(inventoryList.size() + "");
+        new Thread(
+                () -> {
+
+                    try {
+                        List<Inventory> inventoryList = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+        ).start();
+        return  ResponseBodyWrapper.success("upload request send");
     }
 }

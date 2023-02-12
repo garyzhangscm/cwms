@@ -89,6 +89,9 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
     @Column(name="unit_cost")
     private Double unitCost;
 
+    @Column(name="non_inventory_item")
+    private Boolean nonInventoryItem;
+
     @Column(name = "company_id")
     private Long companyId;
 
@@ -136,7 +139,7 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
                 "unitCost",
                 "warehouseId","warehouseName",
                 "companyId","companyCode",
-                "quickbookListId"
+                "quickbookListId", "nonInventoryItem"
         };
 
         ObjectCopyUtil.copyValue(this, item,  fieldNames);
@@ -208,10 +211,15 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
         String[] fieldNames = {
                 "name","description","clientId","clientName","unitCost","warehouseId","warehouseName",
                 "companyId", "companyCode",
-                "quickbookListId"
+                "quickbookListId", "nonInventoryItem"
         };
 
         ObjectCopyUtil.copyValue(item, this, fieldNames);
+
+        // default the description to be same as the name if it is not passed in
+        if (Strings.isBlank(getDescription())) {
+            setDescription(getName());
+        }
 
         if (Objects.nonNull(item.getItemFamily())) {
             setItemFamily(new DBBasedItemFamily(item.getItemFamily()));
@@ -368,7 +376,13 @@ public class DBBasedItem extends AuditibleEntity<String> implements Serializable
         this.status = status;
     }
 
+    public Boolean getNonInventoryItem() {
+        return nonInventoryItem;
+    }
 
+    public void setNonInventoryItem(Boolean nonInventoryItem) {
+        this.nonInventoryItem = nonInventoryItem;
+    }
 
     public String getErrorMessage() {
         return errorMessage;

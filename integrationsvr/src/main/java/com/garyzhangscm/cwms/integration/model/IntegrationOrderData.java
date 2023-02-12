@@ -36,6 +36,7 @@ public interface IntegrationOrderData {
 
     String getShipToAddressLine1();
     String getShipToAddressLine2();
+    String getShipToAddressLine3();
     String getShipToAddressPostcode();
 
     String getBillToContactorFirstname();
@@ -49,8 +50,8 @@ public interface IntegrationOrderData {
     String getBillToAddressDistrict() ;
 
     String getBillToAddressLine1() ;
-
     String getBillToAddressLine2();
+    String getBillToAddressLine3();
     String getBillToAddressPostcode();
     Long getCarrierId() ;
 

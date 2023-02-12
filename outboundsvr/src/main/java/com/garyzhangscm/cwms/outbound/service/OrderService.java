@@ -596,7 +596,16 @@ public class OrderService implements TestDataInitiableService {
         // When we directly allocate the order, we will
         // 1. create a fake shipment for the order
         // 2. allocate the shipment
-        shipmentService.planShipments(order.getWarehouseId(), order.getOrderLines());
+        // we will only plan the allocatable order lines into the shipment lines
+        List<OrderLine> allocatableOrderLines =
+                order.getOrderLines().stream().filter(
+                        orderLine -> !Boolean.TRUE.equals(orderLine.getNonAllocatable())
+                ).collect(Collectors.toList());
+        if (allocatableOrderLines.size() == 0) {
+            throw OrderOperationException.raiseException("There's no allocatable order line in this order");
+
+        }
+        shipmentService.planShipments(order.getWarehouseId(),allocatableOrderLines);
 
         // ok, if we are here, we may ends up with multiple shipments
         // with lines for the order,

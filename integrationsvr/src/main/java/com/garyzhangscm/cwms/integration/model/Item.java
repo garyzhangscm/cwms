@@ -53,6 +53,7 @@ public class Item implements Serializable {
     private Long companyId;
     private String companyCode;
 
+    private Boolean nonInventoryItem;
 
     private String quickbookListId;
 
@@ -141,6 +142,14 @@ public class Item implements Serializable {
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
+    }
+
+    public Boolean getNonInventoryItem() {
+        return nonInventoryItem;
+    }
+
+    public void setNonInventoryItem(Boolean nonInventoryItem) {
+        this.nonInventoryItem = nonInventoryItem;
     }
 
     public String getWarehouseName() {

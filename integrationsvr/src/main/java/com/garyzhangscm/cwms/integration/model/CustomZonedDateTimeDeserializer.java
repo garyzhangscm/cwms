@@ -32,10 +32,13 @@ public class CustomZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateT
     public ZonedDateTime deserialize(JsonParser jsonParser,
                                      DeserializationContext deserializationContext)
             throws IOException {
-        Instant instant = Instant.parse(jsonParser.getText());
+        // Instant instant = Instant.parse(jsonParser.getText());
+        // return instant.atZone(ZoneOffset.UTC);
+
+
         // LocalDateTime localDateTime = LocalDateTime.parse(
         //         jsonParser.getText(), DateTimeFormatter.ISO_INSTANT);
 
-        return instant.atZone(ZoneOffset.UTC);
+        return ZonedDateTime.parse(jsonParser.getText());
     }
 }

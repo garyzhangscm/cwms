@@ -20,6 +20,7 @@ public interface IntegrationItemData extends IntegrationData{
     public Long getCompanyId();
     public String getCompanyCode() ;
 
+    public Boolean getNonInventoryItem();
 
 
     public IntegrationStatus getStatus() ;

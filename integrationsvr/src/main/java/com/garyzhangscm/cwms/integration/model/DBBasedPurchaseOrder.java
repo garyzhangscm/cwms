@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -96,7 +97,8 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
     private String errorMessage;
 
     public PurchaseOrder convertToPurchaseOrder(
-            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient) {
+            WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient) {
         PurchaseOrder purchaseOrder = new PurchaseOrder();
 
         String[] fieldNames = {
@@ -119,12 +121,10 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
 
         // Copy each order line as well
         getPurchaseOrderLines().forEach(dbBasedPurchaseOrderLine -> {
-            PurchaseOrderLine purchaseOrderLine = new PurchaseOrderLine();
-            String[] purchaseOrderLineFieldNames = {
-                    "number", "itemId", "warehouseId", "expectedQuantity",
-                    "quickbookTxnLineID"
-            };
-            ObjectCopyUtil.copyValue(dbBasedPurchaseOrderLine, purchaseOrderLine, purchaseOrderLineFieldNames);
+            PurchaseOrderLine purchaseOrderLine = dbBasedPurchaseOrderLine.convertToPurchaseOrderLine(
+                    purchaseOrder, warehouseLayoutServiceRestemplateClient,
+                    inventoryServiceRestemplateClient
+            );
             purchaseOrder.getPurchaseOrderLines().add(purchaseOrderLine);
         });
 

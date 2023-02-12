@@ -32,7 +32,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 
@@ -41,12 +43,10 @@ import java.util.*;
  * Access controller based on url.
  */
 @Component
-public class UrlAccessControllerFilter extends ZuulFilter {
+public class UrlAccessControllerFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlAccessControllerFilter.class);
 
-    private static final int      FILTER_ORDER =  1;
-    private static final boolean  SHOULD_FILTER=true;
 
     @Autowired
     private AuthServiceRestemplateClient authServiceRestemplateClient;
@@ -60,64 +60,48 @@ public class UrlAccessControllerFilter extends ZuulFilter {
     @Value("${site.company.singleCompany:false}")
     private Boolean singleCompanySite;
 
-    /****
-    @Autowired
-    FilterUtils filterUtils;
-***/
+
 
     @Override
-    public String filterType() {
-        return FilterUtils.PRE_FILTER_TYPE;
-    }
-
-    @Override
-    public int filterOrder() {
-        return FILTER_ORDER;
-    }
-
-    public boolean shouldFilter() {
-        return SHOULD_FILTER;
-    }
+    public void doFilter(ServletRequest servletRequest,
+                         ServletResponse servletResponse,
+                         FilterChain filterChain) throws IOException, ServletException {
+        HttpServletRequest httpServletRequest = (HttpServletRequest)servletRequest;
 
 
+        logger.debug("current request URL: " + httpServletRequest.getRequestURI());
 
-    public Object run() {
+        try {
 
-        RequestContext requestContext = RequestContext.getCurrentContext();
-        // logger.debug("ctx.getRequest().getContextPath(): " + requestContext.getRequest().getContextPath());
-        // logger.debug("ctx.getRequest().getPathInfo(): " + requestContext.getRequest().getPathInfo());
-        // logger.debug("ctx.getRequest().getPathTranslated(): " + requestContext.getRequest().getPathTranslated());
-        logger.debug("ctx.getRequest().getRequestURI(): " + requestContext.getRequest().getRequestURI());
-        // logger.debug("ctx.getRequest().getServletPath(): " + requestContext.getRequest().getServletPath());
-        // logger.debug("ctx.getRequest().getRemoteAddr(): " + requestContext.getRequest().getRemoteAddr());
-        // logger.debug("ctx.getRequest().getRequestURL().toString(): " + requestContext.getRequest().getRequestURL().toString());
-
-        validateAccess(requestContext);
-
-
-        /****
-         * not valid the URL for now
-        if (!resourceServiceRestemplateClient.validateURLAccess(ctx.getRequest().getRequestURI())) {
-            logger.debug("The current user doesn't have access to the url");
-            throw UserOperationException.raiseException("The current user doesn't have access to the url");
+            validateAccess((HttpServletRequest)servletRequest);
         }
-         ***/
-        return null;
+        catch (SystemFatalException ex) {
+            ex.printStackTrace();
+            ((HttpServletResponse)servletResponse).sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+        }
+        catch(UnauthorizedException ex) {
+            ex.printStackTrace();
+            ((HttpServletResponse)servletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+        }
+
+        filterChain.doFilter(httpServletRequest, servletResponse);
     }
 
 
-    private void validateAccess(RequestContext requestContext)  {
+
+
+    private void validateAccess(HttpServletRequest httpServletRequest)  {
 
 
         logger.debug("Start to validate http access");
-        String innerCall = requestContext.getRequest().getHeader("innerCall");
+        String innerCall = httpServletRequest.getHeader("innerCall");
         // logger.debug("innerCall? : {}", innerCall);
         if ("true".equalsIgnoreCase(innerCall)) {
             logger.debug("Skip validation if the call is from inner service");
             return;
         }
         // first, we will check if we have token in the http header
-        String token = requestContext.getRequest().getHeader("Authorization");
+        String token = httpServletRequest.getHeader("Authorization");
         logger.debug("token: " + token);
 
         if (Strings.isBlank(token)) {
@@ -140,68 +124,22 @@ public class UrlAccessControllerFilter extends ZuulFilter {
         // get the request's parameters,
         // normally we will have warehouse id or company id in the url
         // if there's no parameters, let's just ignore it for now
-        List<String> warehouseIdParameters =
-                Objects.isNull(requestContext.getRequestQueryParams()) ?
-                        null : requestContext.getRequestQueryParams().get("warehouseId");
-        List<String> companyIdParameters =
-                Objects.isNull(requestContext.getRequestQueryParams()) ?
-                        null : requestContext.getRequestQueryParams().get("companyId");
+        Long companyId = getLongValueFromRequest("companyId", httpServletRequest);
+        Long warehouseId = getLongValueFromRequest("warehouseId", httpServletRequest);
 
-        Long companyId = null;
-        try {
-            companyId =
-                    Objects.nonNull(companyIdParameters) && companyIdParameters.size() > 0 ?
-                            Long.parseLong(companyIdParameters.get(0)) :
-                            (Objects.isNull(requestContext.getRequest().getHeader("companyId")) ||
-                                    Strings.isBlank(requestContext.getRequest().getHeader("companyId"))) ?
-                                    null : Long.parseLong(requestContext.getRequest().getHeader("companyId"));
-        }
-        catch (Exception ex) {
-            logger.debug("error while get company id for request: {}",
-                    ex.getMessage());
-
-        }
         if (Objects.isNull(companyId)) {
-            // if company Id is not passed in but we can find the company code, then
-            // we will get the company ID from the code
-            logger.debug("company id is not passed in, let's see if we can find the company code");
-            List<String> companyCodeParameters =
-                    Objects.nonNull(requestContext.getRequestQueryParams()) ?
-                            requestContext.getRequestQueryParams().get("companyCode")
-                            : new ArrayList<>();
-
-            String companyCode =
-                    Objects.nonNull(companyCodeParameters) && companyCodeParameters.size() > 0 ?
-                            companyCodeParameters.get(0) :
-                            (Objects.isNull(requestContext.getRequest().getHeader("companyCode")) ||
-                                    Strings.isBlank(requestContext.getRequest().getHeader("companyCode"))) ?
-                                    "" : requestContext.getRequest().getHeader("companyCode");
+            // if company ID is not passed in, then see if the company code is passed in
+            String companyCode = getStringValueFromRequest("companyCode", httpServletRequest);
             logger.debug("company code: {}", companyCode);
             if (Strings.isNotBlank(companyCode)) {
                 Company company = layoutServiceRestemplateClient.getCompanyByCode(companyCode);
                 if (Objects.nonNull(company)) {
                     logger.debug("we find the company by code {}, let's set the company id to {}",
                             companyCode, company.getId());
-                    companyId = company.getId();
+                    companyId =  company.getId() ;
                 }
             }
         }
-        // for now, we won't validate warehouse
-        Long warehouseId = null;
-        try {
-            warehouseId =
-                    Objects.nonNull(warehouseIdParameters) && warehouseIdParameters.size() > 0 ?
-                            Long.parseLong(warehouseIdParameters.get(0)) :
-                            (Objects.isNull(requestContext.getRequest().getHeader("warehouseId")) ||
-                                    Strings.isBlank(requestContext.getRequest().getHeader("warehouseId"))) ?
-                                    null : Long.parseLong(requestContext.getRequest().getHeader("warehouseId"));
-        }
-        catch (Exception ex) {
-            logger.debug("error while get warehouse id for request: {}",
-                    ex.getMessage());
-
-        }
-        // check if the user is from the company
 
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
 
@@ -213,18 +151,53 @@ public class UrlAccessControllerFilter extends ZuulFilter {
 
             companyId = layoutServiceRestemplateClient.getCompanyId(warehouseId);
             if (Objects.isNull(companyId)) {
-                //
 
                 throw SystemFatalException.raiseException("can't get company ID from the request, not able to validate the request");
             }
         }
 
         logger.debug("check if token {} has access to company id {}", token, companyId);
-        validateCompanyAccess(requestContext.getRequest().getRequestURL().toString(), companyId, token);
+        validateCompanyAccess(httpServletRequest.getRequestURL().toString(), companyId, token);
 
         valdiateWarehouseAccess(companyId, warehouseId, token);
     }
 
+    /**
+     * Get the value of the name from the http request
+     * we will try from the parameters, then the header
+     * @param name
+     * @param httpServletRequest
+     * @return
+     */
+    private String getStringValueFromRequest(String name, HttpServletRequest httpServletRequest) {
+
+        // see if we can find from the parameters
+        Map<String, String[]> parameters =  httpServletRequest.getParameterMap();
+
+        if (parameters.containsKey(name) &&
+                parameters.get(name).length > 0) {
+            return parameters.get(name)[0];
+        }
+
+        // see if we can find from the header
+        return httpServletRequest.getHeader(name);
+
+    }
+    private Long getLongValueFromRequest(String name, HttpServletRequest httpServletRequest) {
+
+        // see if we can find from the parameters
+        Map<String, String[]> parameters =  httpServletRequest.getParameterMap();
+
+        if (parameters.containsKey(name) &&
+                parameters.get(name).length > 0) {
+            return Long.parseLong(parameters.get(name)[0]);
+        }
+
+        // see if we can find from the header
+        String value = httpServletRequest.getHeader(name);
+        return Strings.isBlank(value) ? null :  Long.parseLong(value);
+
+    }
     private void valdiateWarehouseAccess(Long companyId, Long warehouseId, String token) {
     }
 
@@ -241,7 +214,7 @@ public class UrlAccessControllerFilter extends ZuulFilter {
 
             logger.debug("access to url {} fail, the user {} can't access the company {}",
                     url, token, companyId);
-            throw SystemFatalException.raiseException("Erorr: current user doesn't have access to the company information");
+            throw UnauthorizedException.raiseException("Erorr: current user doesn't have access to the company information");
         }
         logger.debug("token {} has access to the company {}", token, companyId);
     }

@@ -67,6 +67,7 @@ public class Order implements Serializable {
     private String shipToAddressLine1;
 
     private String shipToAddressLine2;
+    private String shipToAddressLine3;
 
     private String shipToAddressPostcode;
 
@@ -81,6 +82,7 @@ public class Order implements Serializable {
     private String billToAddressDistrict;
     private String billToAddressLine1;
     private String billToAddressLine2;
+    private String billToAddressLine3;
     private String billToAddressPostcode;
 
     private Long carrierId;
@@ -453,5 +455,21 @@ public class Order implements Serializable {
 
     public void setQuickbookCustomerListId(String quickbookCustomerListId) {
         this.quickbookCustomerListId = quickbookCustomerListId;
+    }
+
+    public String getShipToAddressLine3() {
+        return shipToAddressLine3;
+    }
+
+    public void setShipToAddressLine3(String shipToAddressLine3) {
+        this.shipToAddressLine3 = shipToAddressLine3;
+    }
+
+    public String getBillToAddressLine3() {
+        return billToAddressLine3;
+    }
+
+    public void setBillToAddressLine3(String billToAddressLine3) {
+        this.billToAddressLine3 = billToAddressLine3;
     }
 }

@@ -29,6 +29,7 @@ public class OrderLine implements Serializable {
 
     private Long itemId;
     private String itemName;
+    private String itemQuickbookListId;
 
     private Long warehouseId;
     private String warehouseName;
@@ -49,6 +50,7 @@ public class OrderLine implements Serializable {
     private Long carrierServiceLevelId;
     private String carrierServiceLevelName;
     private String quickbookTxnLineID;
+    private Boolean nonAllocatable = false;
 
     public Long getId() {
         return id;
@@ -176,5 +178,21 @@ public class OrderLine implements Serializable {
 
     public void setQuickbookTxnLineID(String quickbookTxnLineID) {
         this.quickbookTxnLineID = quickbookTxnLineID;
+    }
+
+    public String getItemQuickbookListId() {
+        return itemQuickbookListId;
+    }
+
+    public void setItemQuickbookListId(String itemQuickbookListId) {
+        this.itemQuickbookListId = itemQuickbookListId;
+    }
+
+    public Boolean getNonAllocatable() {
+        return nonAllocatable;
+    }
+
+    public void setNonAllocatable(Boolean nonAllocatable) {
+        this.nonAllocatable = nonAllocatable;
     }
 }
