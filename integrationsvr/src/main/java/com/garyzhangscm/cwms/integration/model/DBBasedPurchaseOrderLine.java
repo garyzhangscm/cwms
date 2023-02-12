@@ -21,12 +21,19 @@ package com.garyzhangscm.cwms.integration.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 
 @Entity
@@ -61,6 +68,8 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
     @Column(name = "item_name")
     private String itemName;
 
+    @Column(name = "item_quickbook_list_id")
+    private String itemQuickbookListId;
 
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
@@ -92,9 +101,12 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
 
         setWarehouseId(purchaseOrderLine.getWarehouseId());
         setWarehouseName(purchaseOrderLine.getWarehouseName());
+        setCompanyId(purchaseOrderLine.getCompanyId());
+        setCompanyCode(purchaseOrderLine.getCompanyCode());
 
         setItemId(purchaseOrderLine.getItemId());
         setItemName(purchaseOrderLine.getItemName());
+        setItemQuickbookListId(purchaseOrderLine.getItemQuickbookListId());
 
         setExpectedQuantity(purchaseOrderLine.getExpectedQuantity());
         setQuickbookTxnLineID(purchaseOrderLine.getQuickbookTxnLineID());
@@ -103,6 +115,68 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
         setStatus(IntegrationStatus.PENDING);
         setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
     }
+
+
+    public PurchaseOrderLine convertToPurchaseOrderLine(PurchaseOrder purchaseOrder,
+                                        WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+                                        InventoryServiceRestemplateClient inventoryServiceRestemplateClient
+    ) {
+
+        // company ID or company code is required
+        if (Objects.isNull(companyId) && Strings.isBlank(companyCode)) {
+
+            throw MissingInformationException.raiseException("company information is required for item integration");
+        }
+        else if (Objects.isNull(companyId)) {
+            // if company Id is empty, but we have company code,
+            // then get the company id from the code
+            setCompanyId(
+                    warehouseLayoutServiceRestemplateClient
+                            .getCompanyByCode(companyCode).getId()
+            );
+        }
+
+        PurchaseOrderLine purchaseOrderLine = new PurchaseOrderLine();
+
+        String[] fieldNames = {
+                "number", "itemId", "warehouseId", "expectedQuantity",
+                "quickbookTxnLineID"
+        };
+
+        ObjectCopyUtil.copyValue(this, purchaseOrderLine, fieldNames);
+
+        purchaseOrderLine.setWarehouseId(purchaseOrder.getWarehouseId());
+
+        // in case item id is null, then we must have the item name or
+        // quickbook item list id(if we integration with quickbook
+        // so we can identify the unique item for this line
+        if (Objects.isNull(getItemId())) {
+            Item item = null;
+
+            if (Strings.isNotBlank(getItemName())) {
+                item = inventoryServiceRestemplateClient.getItemByName(
+                        getCompanyId(),
+                        purchaseOrderLine.getWarehouseId(), getItemName()
+                );
+            }
+            else if (Strings.isNotBlank(getItemQuickbookListId())) {
+                item = inventoryServiceRestemplateClient.getItemByQuickbookListId(
+                        getCompanyId(),
+                        purchaseOrderLine.getWarehouseId(), getItemQuickbookListId()
+                );
+            }
+            else {
+                throw MissingInformationException.raiseException("Either item id, or item name, or quickbook item list id " +
+                        " needs to be present in order to identify the item for this order line");
+            }
+            if (Objects.isNull(item)) {
+                throw ResourceNotFoundException.raiseException("Can't find item based on the order line's information");
+            }
+            purchaseOrderLine.setItemId(item.getId());
+        }
+        return purchaseOrderLine;
+    }
+
     @Override
     public String toString() {
         try {
@@ -226,5 +300,13 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getItemQuickbookListId() {
+        return itemQuickbookListId;
+    }
+
+    public void setItemQuickbookListId(String itemQuickbookListId) {
+        this.itemQuickbookListId = itemQuickbookListId;
     }
 }

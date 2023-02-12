@@ -148,6 +148,9 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "quickbook_listid")
     private String quickbookListId;
 
+    @Column(name="non_inventory_item")
+    private Boolean nonInventoryItem;
+
     @Transient
     private Warehouse warehouse;
 
@@ -427,5 +430,13 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setVelocityId(Long velocityId) {
         this.velocityId = velocityId;
+    }
+
+    public Boolean getNonInventoryItem() {
+        return nonInventoryItem;
+    }
+
+    public void setNonInventoryItem(Boolean nonInventoryItem) {
+        this.nonInventoryItem = nonInventoryItem;
     }
 }

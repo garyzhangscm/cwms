@@ -90,6 +90,8 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @JoinColumn(name = "outbound_order_id")
     private Order order;
 
+    @Column(name = "non_allocatable")
+    private Boolean nonAllocatable;
 
     @JsonIgnore
     @OneToMany(
@@ -336,5 +338,13 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setQuickbookTxnLineID(String quickbookTxnLineID) {
         this.quickbookTxnLineID = quickbookTxnLineID;
+    }
+
+    public Boolean getNonAllocatable() {
+        return nonAllocatable;
+    }
+
+    public void setNonAllocatable(Boolean nonAllocatable) {
+        this.nonAllocatable = nonAllocatable;
     }
 }

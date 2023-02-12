@@ -24,10 +24,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.controller.OrderIntegrationDataController;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -39,6 +43,7 @@ import java.util.Objects;
 @Table(name = "integration_order_line")
 public class DBBasedOrderLine extends AuditibleEntity<String> implements Serializable, IntegrationOrderLineData {
 
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedOrderLine.class);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "integration_order_line_id")
@@ -53,6 +58,8 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     @Column(name = "item_name")
     private String itemName;
 
+    @Column(name = "item_quickbook_list_id")
+    private String itemQuickbookListId;
 
     @Column(name = "company_id")
     private Long companyId;
@@ -102,6 +109,9 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     @Column(name = "quickbook_txnlineid")
     private String quickbookTxnLineID;
 
+    @Column(name = "non_allocatable")
+    private Boolean nonAllocatable;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -123,6 +133,8 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
         setItemId(orderLine.getItemId());
         setItemName(orderLine.getItemName());
+        setItemQuickbookListId(orderLine.getItemQuickbookListId());
+        setNonAllocatable(orderLine.getNonAllocatable());
 
         setExpectedQuantity(orderLine.getExpectedQuantity());
 
@@ -172,20 +184,57 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         String[] fieldNames = {
                 "number", "itemId",  "expectedQuantity",  "inventoryStatusId",
                 "carrierId", "carrierServiceLevelId",
-                "warehouseId","warehouseName", "quickbookTxnLineID"
+                "warehouseId","warehouseName", "quickbookTxnLineID","nonAllocatable"
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
 
         orderLine.setWarehouseId(order.getWarehouseId());
 
-        if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
-            orderLine.setItemId(
-                    inventoryServiceRestemplateClient.getItemByName(
-                            getCompanyId(),
-                            orderLine.getWarehouseId(), getItemName()
-                    ).getId()
-            );
+        // in case item id is null, then we must have the item name or
+        // quickbook item list id(if we integration with quickbook
+        // so we can identify the unique item for this line
+        if (Objects.isNull(getItemId())) {
+            Item item = null;
+            logger.debug("item id is not passed in for order {}, line {}, let's set it up",
+                    order.getNumber(),
+                    orderLine.getNumber());
+
+            logger.debug("item name: {}", getItemName());
+            logger.debug("item quickbook list id: {}", getItemQuickbookListId());
+
+            if (Strings.isNotBlank(getItemName())) {
+                item = inventoryServiceRestemplateClient.getItemByName(
+                        getCompanyId(),
+                        orderLine.getWarehouseId(), getItemName()
+                );
+            }
+            else if (Strings.isNotBlank(getItemQuickbookListId())) {
+                item = inventoryServiceRestemplateClient.getItemByQuickbookListId(
+                        getCompanyId(),
+                        orderLine.getWarehouseId(), getItemQuickbookListId()
+                );
+            }
+            else {
+                throw MissingInformationException.raiseException("Either item id, or item name, or quickbook item list id " +
+                        " needs to be present in order to identify the item for this order line");
+            }
+            if (Objects.isNull(item)) {
+                throw ResourceNotFoundException.raiseException("Can't find item based on the order line's information");
+            }
+            orderLine.setItemId(item.getId());
+            // if item is not inventory item, then set the non allocatable flag
+            // to ture so the order line won't be allocated
+            orderLine.setNonAllocatable(item.getNonInventoryItem());
+        }
+        else {
+            Item item = inventoryServiceRestemplateClient.getItemById(getItemId());
+            if (Objects.isNull(item)) {
+                throw ResourceNotFoundException.raiseException("Can't find item based on the order line's information");
+            }
+            // if item is not inventory item, then set the non allocatable flag
+            // to ture so the order line won't be allocated
+            orderLine.setNonAllocatable(item.getNonInventoryItem());
         }
 
         if (Objects.isNull(getInventoryStatusId()) && Objects.nonNull(getInventoryStatusName())) {
@@ -345,6 +394,15 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     }
 
     @Override
+    public String getItemQuickbookListId() {
+        return itemQuickbookListId;
+    }
+
+    public void setItemQuickbookListId(String itemQuickbookListId) {
+        this.itemQuickbookListId = itemQuickbookListId;
+    }
+
+    @Override
     public String getCarrierServiceLevelName() {
         return carrierServiceLevelName;
     }
@@ -377,5 +435,14 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    @Override
+    public Boolean getNonAllocatable() {
+        return nonAllocatable;
+    }
+
+    public void setNonAllocatable(Boolean nonAllocatable) {
+        this.nonAllocatable = nonAllocatable;
     }
 }

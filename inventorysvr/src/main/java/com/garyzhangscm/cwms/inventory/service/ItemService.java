@@ -127,6 +127,7 @@ public class ItemService implements TestDataInitiableService{
     public List<Item> findAll(Long companyId,
                               Long warehouseId,
                               String name,
+                              String quickbookListId,
                               String clientIds,
                               String itemFamilyIds,
                               String itemIdList,
@@ -158,6 +159,15 @@ public class ItemService implements TestDataInitiableService{
                     }
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                }
+
+                if (StringUtils.isNotBlank(quickbookListId)) {
+                    if (quickbookListId.contains("%")) {
+                        predicates.add(criteriaBuilder.like(root.get("quickbookListId"), quickbookListId));
+                    }
+                    else {
+                        predicates.add(criteriaBuilder.equal(root.get("quickbookListId"), quickbookListId));
                     }
                 }
                 // for description, we will always query by wild card
@@ -311,6 +321,8 @@ public class ItemService implements TestDataInitiableService{
         // default package type for this item
         if (Objects.isNull(newItem.getItemPackageTypes()) || newItem.getItemPackageTypes().size() == 0) {
             // let's see if we will need to setup a default item package type
+            logger.debug("item package type is not setup for this item {}, let's see if we will need to setup a default one",
+                    newItem.getName());
             if (setupDefaultItemPackageType(newItem)) {
                 logger.debug("default item package type is setup for the new item {}" +
                         ", let's save the result",
@@ -336,7 +348,7 @@ public class ItemService implements TestDataInitiableService{
         }
         InventoryConfiguration inventoryConfiguration =
                 inventoryConfigurationService.findByWarehouseId(
-                        newItem.getWarehouseId()
+                        newItem.getWarehouseId(), false
                 );
 
         if (Objects.isNull(inventoryConfiguration)) {
@@ -371,6 +383,7 @@ public class ItemService implements TestDataInitiableService{
 
         // ok we pass all the validation, let's copy the default item package type and add it
         // to the item
+        logger.debug("We found the default item package type and will assign it to the new item {}", newItem.getName());
         ItemPackageType itemPackageType = new ItemPackageType();
         itemPackageType.setItem(newItem);
         itemPackageType.setWarehouseId(newItem.getWarehouseId());
@@ -1069,11 +1082,11 @@ public class ItemService implements TestDataInitiableService{
 
         logger.debug("start to get item by name equals to the keyword");
         List<Item> items = findAll(companyId, warehouseId,
-                "%" + keyword + "%",  null, null,null,
+                "%" + keyword + "%",null,  null, null,null,
                 null,null, null, loadDetails);
         // query by description
         logger.debug("start to get item by description equals to the keyword");
-        items.addAll(findAll(companyId, warehouseId, null,null, null,null,
+        items.addAll(findAll(companyId, warehouseId, null,null,null, null,null,
                 null,null, keyword, loadDetails));
 
         return items;
@@ -1101,7 +1114,7 @@ public class ItemService implements TestDataInitiableService{
             if (Objects.isNull(warehouseItem.getWarehouseId())) {
                 throw ItemException.raiseException("please choose a warehouse item to start refresh");
             }
-            else if (warehouseItem.getWarehouseId().equals(warehouseId)) {
+            else if (!warehouseItem.getWarehouseId().equals(warehouseId)) {
                 throw ItemException.raiseException("the item selected doesn't match with the warehouse passed in");
             }
             else {

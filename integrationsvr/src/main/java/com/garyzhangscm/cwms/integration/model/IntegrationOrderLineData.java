@@ -9,6 +9,8 @@ public interface IntegrationOrderLineData {
     Long getItemId() ;
 
     String getItemName() ;
+    String getItemQuickbookListId();
+    Boolean getNonAllocatable();
 
 
     public Long getCompanyId();

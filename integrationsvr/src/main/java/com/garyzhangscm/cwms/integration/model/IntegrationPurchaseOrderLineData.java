@@ -16,6 +16,7 @@ public interface IntegrationPurchaseOrderLineData {
     Long getItemId() ;
 
     String getItemName();
+    String getItemQuickbookListId();
 
     Long getExpectedQuantity() ;
 

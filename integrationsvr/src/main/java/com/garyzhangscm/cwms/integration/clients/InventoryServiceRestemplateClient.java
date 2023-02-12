@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.integration.clients;
 import com.garyzhangscm.cwms.integration.exception.GenericException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.ItemFamily;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.client.RestTemplate;
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.InventoryStatus;
@@ -123,7 +124,10 @@ public class InventoryServiceRestemplateClient {
 
 
     public Item getItemByName(Long companyId, Long warehouseId, String name)  {
-        logger.debug("Start to get item by name");
+        logger.debug("Start to get item by name {}", name);
+        if (Strings.isBlank(name)) {
+            return null;
+        }
         try {
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
@@ -142,9 +146,11 @@ public class InventoryServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {
                     }).getBody();
 
-            logger.debug("get response from itembyname:\n {}",
-                    responseBodyWrapper);
+            // logger.debug("get response from itembyname:\n {}",
+            //         responseBodyWrapper);
             List<Item> items = responseBodyWrapper.getData();
+            logger.debug("get {} items by getItemByName with name {}",
+                    items.size(), name);
 
             if (items.size() == 0) {
                 return null;
@@ -155,6 +161,47 @@ public class InventoryServiceRestemplateClient {
         catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
             throw ResourceNotFoundException.raiseException("can't find the item by name " + name);
+        }
+    }
+
+    public Item getItemByQuickbookListId(Long companyId, Long warehouseId, String itemQuickbookListId)  {
+        logger.debug("Start to get item by quickbook list id {}", itemQuickbookListId);
+        if (Strings.isBlank(itemQuickbookListId)) {
+            return null;
+        }
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("zuulserver").port(5555)
+                            .path("/api/inventory/items")
+                            .queryParam("quickbookListId", URLEncoder.encode(itemQuickbookListId, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId)
+                            .queryParam("companyId", companyId);
+
+
+            ResponseBodyWrapper<List<Item>> responseBodyWrapper
+                    = restTemplate.exchange(
+                    builder.build(true).toUri(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {
+                    }).getBody();
+
+            // logger.debug("get response from getItemByQuickbookListId:\n {}",
+            //         responseBodyWrapper);
+            List<Item> items = responseBodyWrapper.getData();
+
+            logger.debug("Get {} items from getItemByQuickbookListId by list id {}",
+                    items.size(), itemQuickbookListId);
+            if (items.size() == 0) {
+                return null;
+            } else {
+                return items.get(0);
+            }
+        }
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by quickbook list id " + itemQuickbookListId);
         }
     }
 

@@ -29,8 +29,12 @@ public class PurchaseOrderLine {
     private Long warehouseId;
     private String warehouseName;
 
+    private Long companyId;
+    private String companyCode;
+
     private Long itemId;
     private String itemName;
+    private String itemQuickbookListId;
     private Item item;
 
     private Long expectedQuantity;
@@ -110,5 +114,29 @@ public class PurchaseOrderLine {
 
     public void setQuickbookTxnLineID(String quickbookTxnLineID) {
         this.quickbookTxnLineID = quickbookTxnLineID;
+    }
+
+    public String getItemQuickbookListId() {
+        return itemQuickbookListId;
+    }
+
+    public void setItemQuickbookListId(String itemQuickbookListId) {
+        this.itemQuickbookListId = itemQuickbookListId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 }
