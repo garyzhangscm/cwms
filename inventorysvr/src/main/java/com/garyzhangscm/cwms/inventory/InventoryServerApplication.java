@@ -11,13 +11,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -30,7 +27,6 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -102,12 +98,6 @@ public class InventoryServerApplication {
 	 ****/
 
 
-	@Bean
-	@Qualifier("noTokenRestTemplate")
-	public RestTemplate noTokenRestTemplate() {
-		RestTemplate restTemplate = new RestTemplate();
-		return restTemplate;
-	}
 
 	// setup the configuration for redis cache
 
@@ -122,6 +112,7 @@ public class InventoryServerApplication {
 				.disableCachingNullValues()
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
+
 	/**
 	 * Class to implement the JPA audit. Auto generate the
 	 * created by and last modified by username for any

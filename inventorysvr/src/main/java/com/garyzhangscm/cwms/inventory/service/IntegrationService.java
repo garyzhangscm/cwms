@@ -169,7 +169,13 @@ public class IntegrationService {
                         warehouse, inventory, originalQuantity, newQuantity,
                         documentNumber, comment);
 
-        logger.debug("Will send inventory adjust confirmation\n {}", inventoryAdjustmentConfirmation);
+        logger.debug("Will send inventory adjust confirmation\n " +
+                "item :{} / {}, quantity {}",
+                Objects.nonNull(inventoryAdjustmentConfirmation.getItem()) ?
+                        inventoryAdjustmentConfirmation.getItem().getId() : "",
+                Objects.nonNull(inventoryAdjustmentConfirmation.getItem()) ?
+                        inventoryAdjustmentConfirmation.getItem().getName() : "",
+                inventoryAdjustmentConfirmation.getAdjustQuantity());
         kafkaSender.send(inventoryAdjustmentConfirmation);
 
     }

@@ -414,10 +414,23 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
     public boolean isInventoryAdjustExceedThreshold(Inventory inventory, InventoryQuantityChangeType type,
                                                     Long oldQuantity, Long newQuantity) {
 
+        // check if there's user in the context. If not, it probably means we are working
+        // on some system bootstrap task and by default we allow the inventory adjust
+        String username = "";
+        try {
+            username = userService.getCurrentUserName();
+        }
+        catch (NullPointerException ex) {
+            logger.debug("Can't get user from the context, by default allow the inventory adjust");
+            return false;
+        }
         Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(
                 inventory.getWarehouseId()
         ).getCompanyId();
-        return isInventoryAdjustExceedThreshold(inventory, type, oldQuantity, newQuantity, userService.getCurrentUser(companyId));
+        return isInventoryAdjustExceedThreshold(inventory, type, oldQuantity, newQuantity,
+                resourceServiceRestemplateClient.getUserByUsername(
+                        companyId,
+                        username));
     }
 
     public boolean isInventoryAdjustExceedThreshold(Inventory inventory, InventoryQuantityChangeType type,

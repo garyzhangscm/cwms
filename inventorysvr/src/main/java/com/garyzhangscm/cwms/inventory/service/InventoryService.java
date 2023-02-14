@@ -52,6 +52,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -95,6 +96,7 @@ public class InventoryService implements TestDataInitiableService{
     @Autowired
     private QCRuleConfigurationService qcRuleConfigurationService;
 
+    private Map<String, Double> inventoryFileUploadProgress = new ConcurrentHashMap<>();
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -674,7 +676,15 @@ public class InventoryService implements TestDataInitiableService{
         logger.debug("Start to refresh location {}'s volume",
                 inventory.getLocationId());
 
-        warehouseLayoutServiceRestemplateClient.resetLocation(inventory.getLocationId());
+        if (Objects.nonNull(inventory.getLocation())) {
+            warehouseLayoutServiceRestemplateClient.resetLocation(
+                    inventory.getLocation()
+            );
+        }
+        else {
+
+            warehouseLayoutServiceRestemplateClient.resetLocation(inventory.getLocationId());
+        }
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we reset the location {}",
                 ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
@@ -944,7 +954,8 @@ public class InventoryService implements TestDataInitiableService{
 
     public List<Inventory> loadInventoryData(File  file) throws IOException {
         List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
-        return inventoryCSVWrappers.stream().map(inventoryCSVWrapper -> convertFromWrapper(inventoryCSVWrapper)).collect(Collectors.toList());
+        return inventoryCSVWrappers.stream().map(inventoryCSVWrapper -> convertFromWrapper(
+                inventoryCSVWrapper, null, null, null, null, null)).collect(Collectors.toList());
     }
 
     public List<InventoryCSVWrapper> loadData(File file) throws IOException {
@@ -990,7 +1001,8 @@ public class InventoryService implements TestDataInitiableService{
             InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
             List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(inputStream);
             inventoryCSVWrappers.stream().forEach(inventoryCSVWrapper -> {
-                Inventory savedInvenotry = saveOrUpdate(convertFromWrapper(inventoryCSVWrapper));
+                Inventory savedInvenotry = saveOrUpdate(
+                        convertFromWrapper(inventoryCSVWrapper, null, null, null, null, null));
                 // re-calculate the size of the location
 
                 Location destination =
@@ -1007,27 +1019,180 @@ public class InventoryService implements TestDataInitiableService{
         }
     }
 
+    private List<Inventory> convertFromWrapper(Long warehouseId,
+                                               List<InventoryCSVWrapper> inventoryCSVWrappers,
+                                               boolean preLoadDetails) {
+        if (!preLoadDetails) {
+            return inventoryCSVWrappers.stream().map(
+                    inventoryCSVWrapper -> convertFromWrapper(inventoryCSVWrapper)
+            ).collect(Collectors.toList());
+        }
+
+
+            // in case we have a big chunk of data in the list, we will preload all the
+            // item first, so that we don't have to get the data from database / API endpoint
+            // for each record. Instead we will bulk get the data
+            // 1. warehouse
+            // 2. item
+            // 3. item package type
+            // 4. inventory status
+            // 5. location
+
+
+        Map<String, Warehouse> warehouseIdMap = new HashMap<>();
+        Map<String, Item> itemMap = new HashMap<>();
+        Map<String, ItemPackageType> itemPackageTypeMap = new HashMap<>();
+        Map<String, InventoryStatus> inventoryStatusMap = new HashMap<>();
+        Map<String, Location> locationMap = new HashMap<>();
+
+        Warehouse warehouse = null;
+        for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
+
+            if (!warehouseIdMap.containsKey(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse())) {
+
+                warehouse =
+                        warehouseLayoutServiceRestemplateClient.getWarehouseByName(
+                                inventoryCSVWrapper.getCompany(),
+                                inventoryCSVWrapper.getWarehouse());
+                if (Objects.isNull(warehouse)) {
+                    // warehouse information is wrong, skip the line
+                    logger.debug("Can't find warehouse from company {}, warehouse {}",
+                            inventoryCSVWrapper.getCompany(),
+                            inventoryCSVWrapper.getWarehouse());
+                    continue;
+                }
+                else if (Objects.nonNull(warehouseId) && !warehouseId.equals(warehouse.getId())) {
+                    // the user will only allowed to upload the records from the same warehouse
+                    logger.debug("skip the record as current warehouse id is {}, but the warehouse id from the record is {}",
+                            warehouseId, warehouse.getId());
+                    continue;
+                }
+                warehouseIdMap.put(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse(),
+                        warehouse);
+            }
+            if (!itemMap.containsKey(inventoryCSVWrapper.getItem()) && Objects.nonNull(warehouse)) {
+
+                Item item = itemService.findByName(warehouse.getId(), inventoryCSVWrapper.getItem());
+                if (Objects.isNull(item)) {
+
+                    logger.debug("skip the record as we can't find the item by name {} from warehouse {} / {}",
+                            inventoryCSVWrapper.getItem(),
+                            warehouse.getId(), warehouse.getName());
+                    continue;
+                }
+                itemMap.put(inventoryCSVWrapper.getItem(),item);
+            }
+            if (!itemPackageTypeMap.containsKey(inventoryCSVWrapper.getItemPackageType())
+                    && Objects.nonNull(warehouse)) {
+                ItemPackageType itemPackageType = itemPackageTypeService.findByNaturalKeys(
+                        warehouse.getId(),
+                        inventoryCSVWrapper.getItemPackageType(),
+                        inventoryCSVWrapper.getItem());
+                if (Objects.isNull(itemPackageType)) {
+                    logger.debug("skip the record as we can't find item package type by " +
+                            "warehouse {} / {}, item {}, item package type {}",
+                            warehouse.getId(), warehouse.getName(),
+                            inventoryCSVWrapper.getItem(),
+                            inventoryCSVWrapper.getItemPackageType());
+                    continue;
+                }
+                itemPackageTypeMap.put(
+                        inventoryCSVWrapper.getItemPackageType(),
+                        itemPackageType
+                        );
+            }
+            if (!inventoryStatusMap.containsKey(inventoryCSVWrapper.getInventoryStatus())
+                    && Objects.nonNull(warehouse)) {
+
+                InventoryStatus inventoryStatus = inventoryStatusService.findByName(
+                        warehouse.getId(), inventoryCSVWrapper.getInventoryStatus());
+                if (Objects.isNull(inventoryStatus)) {
+                    logger.debug("Skip the record as we can't find the inventory status by" +
+                            "warehouse {} / {}, inventory status {}",
+                            warehouse.getId(), warehouse.getName(),
+                            inventoryCSVWrapper.getInventoryStatus());
+                    continue;
+                }
+                inventoryStatusMap.put(
+                        inventoryCSVWrapper.getInventoryStatus(),
+                        inventoryStatus
+                        );
+            }
+            if (!locationMap.containsKey(inventoryCSVWrapper.getLocation())
+                    && Objects.nonNull(warehouse)) {
+                Location location =
+                        warehouseLayoutServiceRestemplateClient.getLocationByName(
+                                warehouse.getId(), inventoryCSVWrapper.getLocation());
+                if (Objects.isNull(location)) {
+                    logger.debug("skip the record as we can't find the location by " +
+                            "warehosue {} / {}, location name {}",
+                            warehouse.getId(), warehouse.getName(),
+                            inventoryCSVWrapper.getLocation());
+                    continue;
+                }
+                locationMap.put(
+                        inventoryCSVWrapper.getLocation(), location);
+            }
+        }
+
+        // only process the record if we have all the value ready
+        return inventoryCSVWrappers.stream().filter(
+                inventoryCSVWrapper ->  warehouseIdMap.containsKey(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse()) &&
+                itemMap.containsKey(inventoryCSVWrapper.getItem()) &&
+                itemPackageTypeMap.containsKey(inventoryCSVWrapper.getItemPackageType()) &&
+                inventoryStatusMap.containsKey(inventoryCSVWrapper.getInventoryStatus()) &&
+                        locationMap.containsKey(inventoryCSVWrapper.getLocation())
+        ).map(
+                inventoryCSVWrapper -> convertFromWrapper(inventoryCSVWrapper,
+                        warehouseIdMap.get(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse()),
+                        itemMap.get(inventoryCSVWrapper.getItem()),
+                        itemPackageTypeMap.get(inventoryCSVWrapper.getItemPackageType()),
+                        inventoryStatusMap.get(inventoryCSVWrapper.getInventoryStatus()),
+                        locationMap.get(inventoryCSVWrapper.getLocation()))
+        ).collect(Collectors.toList());
+
+
+
+    }
     private Inventory convertFromWrapper(InventoryCSVWrapper inventoryCSVWrapper) {
+        return convertFromWrapper(inventoryCSVWrapper, null, null, null, null, null);
+    }
+    private Inventory convertFromWrapper(InventoryCSVWrapper inventoryCSVWrapper,
+                                         Warehouse warehouse,
+                                         Item item,
+                                         ItemPackageType itemPackageType,
+                                         InventoryStatus inventoryStatus,
+                                         Location location) {
         Inventory inventory = new Inventory();
         inventory.setLpn(inventoryCSVWrapper.getLpn());
         inventory.setQuantity(inventoryCSVWrapper.getQuantity());
         inventory.setVirtual(false);
 
         // warehouse is a mandate field
-        Warehouse warehouse =
+        if (Objects.isNull(warehouse)) {
+            warehouse =
                     warehouseLayoutServiceRestemplateClient.getWarehouseByName(
                             inventoryCSVWrapper.getCompany(),
                             inventoryCSVWrapper.getWarehouse());
+        }
         inventory.setWarehouseId(warehouse.getId());
+        inventory.setWarehouse(warehouse);
+
 
         // item
-        if (!inventoryCSVWrapper.getItem().isEmpty()) {
+        if (Objects.nonNull(item)) {
+            inventory.setItem(item);
+        }
+        else if (Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
             inventory.setItem(itemService.findByName(warehouse.getId(), inventoryCSVWrapper.getItem()));
         }
 
         // itemPackageType
-        if (!inventoryCSVWrapper.getItemPackageType().isEmpty() &&
-                !inventoryCSVWrapper.getItem().isEmpty()) {
+        if (Objects.nonNull(itemPackageType)) {
+            inventory.setItemPackageType(itemPackageType);
+        }
+        else if (Strings.isNotBlank(inventoryCSVWrapper.getItemPackageType()) &&
+                Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
             inventory.setItemPackageType(
                     itemPackageTypeService.findByNaturalKeys(
                             warehouse.getId(),
@@ -1036,7 +1201,10 @@ public class InventoryService implements TestDataInitiableService{
         }
 
         // inventoryStatus
-        if (!inventoryCSVWrapper.getInventoryStatus().isEmpty()) {
+        if (Objects.nonNull(inventoryStatus)) {
+            inventory.setInventoryStatus(inventoryStatus);
+        }
+        else if (Strings.isNotBlank(inventoryCSVWrapper.getInventoryStatus())) {
             logger.debug("will set inventory status: {} / {}",
                     warehouse.getId(),
                     inventoryCSVWrapper.getInventoryStatus());
@@ -1045,12 +1213,18 @@ public class InventoryService implements TestDataInitiableService{
         }
 
         // location
-        if (!inventoryCSVWrapper.getLocation().isEmpty()) {
+        if (Objects.nonNull(location)) {
+
+            inventory.setLocationId(location.getId());
+            inventory.setLocation(location);
+        }
+        else if (Strings.isNotBlank(inventoryCSVWrapper.getLocation())) {
             logger.debug("start to get location by name: {}", inventoryCSVWrapper.getLocation());
-            Location location =
+            location =
                     warehouseLayoutServiceRestemplateClient.getLocationByName(
                             warehouse.getId(), inventoryCSVWrapper.getLocation());
             inventory.setLocationId(location.getId());
+            inventory.setLocation(location);
         }
 
         return inventory;
@@ -1076,7 +1250,10 @@ public class InventoryService implements TestDataInitiableService{
         return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment);
     }
     public List<Inventory> removeInventoryByLocation(Long locationId) {
-        List<Inventory> inventories = findByLocationId(locationId);
+        return removeInventoryByLocation(locationId, true);
+    }
+    public List<Inventory> removeInventoryByLocation(Long locationId, boolean loadDetail) {
+        List<Inventory> inventories = findByLocationId(locationId, loadDetail);
         inventories.forEach(
                 inventory -> removeInventory(inventory, "", "")
         );
@@ -1151,7 +1328,7 @@ public class InventoryService implements TestDataInitiableService{
 
         Location destination
                 = warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
-                inventoryQuantityChangeType, inventory.getWarehouseId()
+                inventoryQuantityChangeType, inventory.getWarehouseId().longValue()
         );
         inventory = moveInventory(inventory, destination);
 
@@ -1234,9 +1411,9 @@ public class InventoryService implements TestDataInitiableService{
                 destinationLpn,
                 inventory.getInventoryMovements().size());
 
-        logger.debug("==> Before the inventory move, the destination location {} 's volume is {}",
-                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
-                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getCurrentVolume());
+        // logger.debug("==> Before the inventory move, the destination location {} 's volume is {}",
+        //         warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
+        //         warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getCurrentVolume());
 
 
         // If we passed in a destination LPN, Let's replace the LPN first
@@ -1249,7 +1426,7 @@ public class InventoryService implements TestDataInitiableService{
 
         // quick check. If the source location equals the
         // destination, then we don't have to move
-        if (sourceLocation.equals(destination)) {
+        if (Objects.equals(sourceLocation, destination)) {
             return saveOrUpdate(inventory);
         }
         inventory.setLocationId(destination.getId());
@@ -1331,7 +1508,12 @@ public class InventoryService implements TestDataInitiableService{
         // consolidate the inventory at the destination, if necessary
         logger.debug("before consolidation, we still have {} movement path on the inventory {}",
                 inventory.getInventoryMovements().size(), inventory.getLpn());
-        Inventory consolidatedInventory = inventoryConsolidationService.consolidateInventoryAtLocation(destination, inventory);
+        logger.debug("if the destination location {} is in a virtual location group, we will skip the consolidation. Is virtual? {}",
+                destination.getName(),
+                Boolean.TRUE.equals(destination.getLocationGroup().getLocationGroupType().getVirtual()));
+        Inventory consolidatedInventory =
+                Boolean.TRUE.equals(destination.getLocationGroup().getLocationGroupType().getVirtual()) ?
+                        inventory : inventoryConsolidationService.consolidateInventoryAtLocation(destination, inventory);
 
         logger.debug("After consolidation, we still have {} movement path on the inventory {}",
                 consolidatedInventory.getInventoryMovements().size(), consolidatedInventory.getLpn());
@@ -1365,9 +1547,9 @@ public class InventoryService implements TestDataInitiableService{
          ***/
 
 
-        logger.debug("==> after the inventory move, the destination location {} 's volume is {}",
-                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
-                warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getCurrentVolume());
+        // logger.debug("==> after the inventory move, the destination location {} 's volume is {}",
+        //         warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getName(),
+        //         warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId()).getCurrentVolume());
         return save(consolidatedInventory);
 
     }
@@ -1764,6 +1946,12 @@ public class InventoryService implements TestDataInitiableService{
     @Transactional
     public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
                                   String documentNumber, String comment) {
+        return addInventory(userService.getCurrentUserName(), inventory, inventoryQuantityChangeType,
+                documentNumber, comment);
+    }
+    @Transactional
+    public Inventory addInventory(String username, Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                  String documentNumber, String comment) {
 
         logger.debug("Start to add inventory");
         // if inventory's LPN is not setup, get next LPN for it
@@ -1782,7 +1970,7 @@ public class InventoryService implements TestDataInitiableService{
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-            return processAddInventory(inventory, inventoryQuantityChangeType, documentNumber, comment);
+            return processAddInventory(username, inventory, inventoryQuantityChangeType, documentNumber, comment);
         }
     }
 
@@ -1854,9 +2042,17 @@ public class InventoryService implements TestDataInitiableService{
 
     public Inventory processAddInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
                                          String documentNumber, String comment) {
+        return processAddInventory(
+                userService.getCurrentUserName(),
+                inventory, inventoryQuantityChangeType,
+                documentNumber, comment);
+    }
+    public Inventory processAddInventory(String username,
+                                         Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                         String documentNumber, String comment) {
         Location location =
                 warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
-                        inventoryQuantityChangeType,inventory.getWarehouseId());
+                        inventoryQuantityChangeType, inventory.getWarehouseId());
         // consolidate the inventory at the destination, if necessary
 
         Location destinationLocation = inventory.getLocation();
@@ -1909,10 +2105,19 @@ public class InventoryService implements TestDataInitiableService{
             default:
                 inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
         }
-        inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
-                "quantity", "0", String.valueOf(inventory.getQuantity()),
-                documentNumber, comment);
+        try {
+            username = userService.getCurrentUserName();
 
+            inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
+                    username,
+                    "quantity", "0", String.valueOf(inventory.getQuantity()),
+                    documentNumber, comment);
+
+        }
+        catch (Exception ex) {
+            logger.debug("If we are not able to get the current user from the context, " +
+                    "then we will skip the inventory activity ");
+        }
 
         // send integration to add a new inventory
         integrationService.processInventoryAdjustment(inventoryQuantityChangeType, inventory,
@@ -2446,8 +2651,8 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setInventoryMovements(new ArrayList<>());
 
         // Remove the work task that related to the inventory movement
-
-        commonServiceRestemplateClient.removeWorkTask(inventory, WorkType.INVENTORY_MOVEMENT);
+        // TO-DO
+        // commonServiceRestemplateClient.removeWorkTask(inventory, WorkType.INVENTORY_MOVEMENT);
 
         return inventory;
     }
@@ -2960,11 +3165,166 @@ public class InventoryService implements TestDataInitiableService{
         return inventorySummaries;
     }
 
-    public List<Inventory> uploadInventoryData(Long warehouseId,
+
+    public String uploadInventoryData(Long warehouseId,
                                                File file, Boolean removeExistingInventory) throws IOException {
+
+        String fileUploadProgressKey = warehouseId + "-" + userService.getCurrentUserName() + "-" + System.currentTimeMillis();
+        inventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
 
         List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
 
+        logger.debug("get {} record from the file", inventoryCSVWrappers.size());
+        // let's clear all the empty space for the name
+        inventoryCSVWrappers.forEach(
+                inventoryCSVWrapper -> {
+                    inventoryCSVWrapper.setCompany(
+                            inventoryCSVWrapper.getCompany().trim()
+                    );
+                    inventoryCSVWrapper.setWarehouse(
+                            inventoryCSVWrapper.getWarehouse().trim()
+                    );
+                    inventoryCSVWrapper.setItem(
+                            inventoryCSVWrapper.getItem().trim()
+                    );
+                    inventoryCSVWrapper.setItemPackageType(
+                            inventoryCSVWrapper.getItemPackageType().trim()
+                    );
+                    inventoryCSVWrapper.setInventoryStatus(
+                            inventoryCSVWrapper.getInventoryStatus().trim()
+                    );
+                    inventoryCSVWrapper.setLocation(
+                            inventoryCSVWrapper.getLocation().trim()
+                    );
+                    inventoryCSVWrapper.setLpn(
+                            inventoryCSVWrapper.getLpn().trim()
+                    );
+                }
+        );
+        List<Inventory> inventories = convertFromWrapper(warehouseId, inventoryCSVWrappers, true);
+        logger.debug("convert {} of the records into inventory structure",
+                inventories.size());
+
+        Set<Long> locationIds = new HashSet<>();
+        Set<Long> locationGroupIds = new HashSet<>();
+
+        inventories.forEach(
+                inventory -> {
+                    locationIds.add(inventory.getLocationId());
+                    if (Objects.nonNull(inventory.getLocation()) &&
+                            Objects.nonNull(inventory.getLocation().getLocationGroup())) {
+                        locationGroupIds.add(inventory.getLocation().getLocationGroup().getId());
+                    }
+                }
+        );
+
+        // ok, we will need to remove the existing inventory.
+        // let's load the inventory but remove it later on in
+        // another thread
+        List<Inventory> inventoryToBeRemoved = new ArrayList<>();
+        if (Boolean.TRUE.equals(removeExistingInventory)) {
+
+            inventoryToBeRemoved = locationIds.stream().map(
+                    locationId -> findByLocationId(locationId)
+            ).flatMap(List::stream).collect(Collectors.toList());
+        }
+
+        logger.debug("Get {} location group ids to load, {}",
+                locationGroupIds.size(), locationGroupIds);
+
+
+        // we will use thread to save the inventory
+
+        // load the cache so that we won't need to do it again in the new thread as in the new
+        // thread, we will lose the request context
+        logger.debug("start to load cache so we don't have to request a http call " +
+                "in a non http context thread");
+        warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
+                InventoryQuantityChangeType.INVENTORY_UPLOAD,
+                warehouseId
+        );
+        warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
+                InventoryQuantityChangeType.INVENTORY_ADJUST,
+                warehouseId
+        );
+        logger.debug("we will need to load the consolidation strategy for {} location groups: {}",
+                locationGroupIds.size(), locationGroupIds);
+        for (Long locationGroupId : locationGroupIds) {
+            warehouseLayoutServiceRestemplateClient.getInventoryConsolidationStrategy(locationGroupId);
+        }
+
+        warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+
+        inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0);
+        // end of load cache
+
+        // get the username of the current user and pass it into the new thread
+        String username = userService.getCurrentUserName();
+        List<Inventory> finalInventoryToBeRemoved = inventoryToBeRemoved;
+        new Thread(() -> {
+            logger.debug("Get {} location ids to be cleared, {}",
+                    locationIds.size(), locationIds);
+            if (Boolean.TRUE.equals(removeExistingInventory) && !finalInventoryToBeRemoved.isEmpty()) {
+                // remove all the inventory from the location first
+
+                for (int i = 0; i < finalInventoryToBeRemoved.size(); i++) {
+                    removeInventory(finalInventoryToBeRemoved.get(0), "", "");
+
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + i * 20.0 / finalInventoryToBeRemoved.size());
+                }
+                /***
+                finalInventoryToBeRemoved.forEach(
+                        inventory -> {
+                            removeInventory(inventory, "", "");
+
+                            logger.debug("inventory {} / lpn {} from location  {} is removed",
+                                    inventory.getId(), inventory.getLpn(),
+                                    inventory.getLocation().getName());
+                        }
+                );
+                 **/
+                /**
+                for (Long locationId : locationIds) {
+                    logger.debug("Start to remove inventory from location {}", locationId);
+                    removeInventoryByLocation(locationId, false);
+                }**/
+                logger.debug("cleared {} locations( {} inventory records) so we can load the inventory into those locations",
+                        locationIds.size(),
+                        finalInventoryToBeRemoved.size());
+            }
+            else {
+                logger.debug("There's no need to clear those locations");
+            }
+            inventoryFileUploadProgress.put(fileUploadProgressKey, 40.0);
+            for (int i = 0; i < inventories.size(); i++) {
+
+                addInventory(username, inventories.get(i),
+                        InventoryQuantityChangeType.INVENTORY_UPLOAD,
+                        "", "");
+
+                inventoryFileUploadProgress.put(fileUploadProgressKey, 40.0 + i * 60.0 / inventories.size());
+            }
+
+            // once we complete, we will remove from the map
+
+            inventoryFileUploadProgress.remove(fileUploadProgressKey);
+            /**
+            inventories.stream().forEach(
+                    inventory -> {
+
+                        addInventory(username, inventory,
+                                InventoryQuantityChangeType.INVENTORY_UPLOAD,
+                                "", "");
+
+                    });
+             **/
+        }).start();
+        logger.debug("we will return the key {}", fileUploadProgressKey);
+
+        return fileUploadProgressKey;
+
+        /***
         // if we will remove the inventory from the location before we add inventory, make sure
         // we will only remove the inventory
         Set<Long> locationsHaveInventoryRemoved = new HashSet<>();
@@ -3011,5 +3371,10 @@ public class InventoryService implements TestDataInitiableService{
             return null;
         }).filter(inventory -> Objects.nonNull(inventory)).collect(Collectors.toList());
 
+         **/
+    }
+
+    public double getInventoryFileUploadProgress(String key) {
+        return inventoryFileUploadProgress.getOrDefault(key, 100.0);
     }
 }

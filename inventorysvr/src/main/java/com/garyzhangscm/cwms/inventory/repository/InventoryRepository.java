@@ -79,6 +79,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
             "    and item.quickbook_listid is not null " +
             "    and item.quickbook_listid != '' " +
             "    and inventory.virtual_inventory = false " +
+            "    and item.non_inventory_item = 0 " +
             "group by item.name, item.quickbook_listid, inventory_status.name ",
             nativeQuery = true)
     List<Object[]> getQuickbookDesktopInventorySummary(Long warehouseId);
@@ -92,6 +93,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
             "    and item.quickbook_listid != '' " +
             "    and inventory.virtual_inventory = false " +
             "    and item.name = :itemName " +
+            "    and item.non_inventory_item = 0 " +
             "group by item.name, item.quickbook_listid, inventory_status.name ",
             nativeQuery = true)
     List<Object[]> getQuickbookDesktopInventorySummary(Long warehouseId, String itemName);

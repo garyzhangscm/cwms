@@ -18,7 +18,11 @@
 
 package com.garyzhangscm.cwms.inventory.clients;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.garyzhangscm.cwms.inventory.model.LoginCredential;
 import com.garyzhangscm.cwms.inventory.model.LoginResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.User;
@@ -26,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -45,28 +50,19 @@ public class AuthServiceRestemplateClient {
 
     private User currentLoginUser;
 
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
-
-    // User a new rest template for login. The global auto-wirable
-    // rest template will try to add an user token to the http header
-    // which will call the getCurrentLoginUser() to get the token.
-    // if the user has not login in yet, then it will call login()
-    // to login a specific user for the integration, which will make
-    // the call a infinite recursive call.
-    @Autowired
-    @Qualifier("noTokenRestTemplate")
-    RestTemplate restTemplate;
-
-
     public User login() throws IOException {
-        LoginCredential loginCredential = new LoginCredential(1L,"GZHANG", "GZHANG");
+        LoginCredential loginCredential = new LoginCredential(-1L,"GZHANG", "GZHANG");
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/auth/login?")
                 .append("_allow_anonymous=true");
+
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new ParameterNamesModule())
+                .registerModule(new Jdk8Module())
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         String requestBody = objectMapper.writeValueAsString(loginCredential);
         logger.debug("LOGIN WITH: {}", requestBody);
@@ -77,6 +73,7 @@ public class AuthServiceRestemplateClient {
         HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
 
 
+        RestTemplate restTemplate = new RestTemplate();
         LoginResponseBodyWrapper loginResponseBodyWrapper = restTemplate.exchange(
                 url.toString(),
                 HttpMethod.POST, httpEntity,

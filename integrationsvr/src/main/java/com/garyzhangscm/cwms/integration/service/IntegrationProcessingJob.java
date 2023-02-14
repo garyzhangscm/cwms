@@ -21,10 +21,13 @@ public class IntegrationProcessingJob {
     private Integration integration;
 
     @Scheduled(fixedDelay = 2000)
-    public void processInboundIntegration() {
+    public void processIntegration() {
 
         logger.debug("# process inbound integration data @ local date {}", LocalDateTime.now());
         integration.listen();
+
+        logger.debug("# process outbound integration data @ local date {}", LocalDateTime.now());
+        processOutboundIntegration();
     }
 
 
@@ -34,11 +37,8 @@ public class IntegrationProcessingJob {
     // 1. dblink tools: internal tools used for ERP integration via database
     // 2. quickbook online: internal tools to connect to quickbook online
     // 3. quickbook local plugin: local plugin to connect to quickbook desktop
-    /***
-    @Scheduled(fixedDelay = 2000)
     public void processOutboundIntegration() {
 
-        logger.debug("# process outbound integration data @ local date {}", LocalDateTime.now());
 
         if (Boolean.TRUE.equals(hostAPIEnabled)) {
 
@@ -48,7 +48,6 @@ public class IntegrationProcessingJob {
             logger.debug("Host API Endpoint is not enabled");
         }
     }
-    **/
 
 
 }

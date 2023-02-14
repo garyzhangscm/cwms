@@ -24,7 +24,6 @@ import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +36,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
@@ -121,9 +116,8 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "inventory_location", unless="#result == null")
     public Location getLocationByName(Long warehouseId, String name) {
-
-
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -184,7 +178,8 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    public Warehouse getWarehouseById(Long warehouseId)   {
+    @Cacheable(cacheNames = "warehouse", unless="#result == null")
+    public Warehouse getWarehouseById(long warehouseId)   {
 
 
         UriComponentsBuilder builder =
@@ -203,8 +198,10 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
     @Cacheable(cacheNames = "inventory_warehouse_configuration", unless="#result == null")
-    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
+    public WarehouseConfiguration getWarehouseConfiguration(long warehouseId)   {
 
+        logger.debug("start to get warehouse configuration from warehouse id {}",
+                warehouseId);
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -409,19 +406,27 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
     public void resetLocation(Long locationId) {
-        resetLocationVolume(locationId);
+        Location location = getLocationById(locationId);
+        resetLocation(location);
+    }
+    public void resetLocation(Location location) {
+        resetLocationVolume(location);
     }
 
     private Location resetLocationVolume(Long locationId) {
-
         Location location = getLocationById(locationId);
-        logger.debug("See if we will need to recalculate the location {} 's volume {}",
+        return resetLocationVolume(location);
+    }
+
+    private Location resetLocationVolume(Location location) {
+
+        logger.debug("See if we will need to recalculate the location {} 's volume? {}",
                 location.getName(), location.getLocationGroup().getTrackingVolume());
         if (!location.getLocationGroup().getTrackingVolume()) {
             return location;
         }
 
-        List<Inventory> inventories = inventoryService.findByLocationId(locationId);
+        List<Inventory> inventories = inventoryService.findByLocationId(location.getId());
         Long totalQuantity = 0L;
         Double totalSize = 0.0;
         for (Inventory inventory : inventories) {
@@ -439,7 +444,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         ResponseBodyWrapper<Location> responseBodyWrapper =
                 restTemplate.exchange(
-                        builder.buildAndExpand(locationId).toUriString(),
+                        builder.buildAndExpand(location.getId()).toUriString(),
                         HttpMethod.PUT,
                         null,
                         new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
@@ -448,7 +453,10 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    public Location getDefaultRemovedInventoryLocation(Long warehouseId) {
+    // @Cacheable(cacheNames = "default_removed_inventory_location", unless="#result == null")
+    @Cacheable("default_removed_inventory_location")
+    public Location getDefaultRemovedInventoryLocation(long warehouseId) {
+        logger.debug("Start to get default removed inventory location by warehouse id {}", warehouseId);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -533,7 +541,10 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Location getLogicalLocationForAdjustInventory(InventoryQuantityChangeType inventoryQuantityChangeType, Long warehouseId) {
+    @Cacheable("logic_location_for_adjust_inventory")
+    public Location getLogicalLocationForAdjustInventory(InventoryQuantityChangeType inventoryQuantityChangeType, long warehouseId) {
+        logger.debug("getLogicalLocationForAdjustInventory with inventoryQuantityChangeType: {}, warehouse id {}",
+                inventoryQuantityChangeType, warehouseId);
         switch (inventoryQuantityChangeType){
             case INVENTORY_ADJUST:
             case REVERSE_PRODUCTION:
@@ -697,7 +708,11 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public InventoryConsolidationStrategy getInventoryConsolidationStrategy(LocationGroup locationGroup) {
+    @Cacheable(cacheNames = "inventory-consolidation-strategy", unless="#result == null")
+    public String getInventoryConsolidationStrategy(long locationGroupId) {
+
+        logger.debug("start to load inventory consolidation stragety with location group id {}",
+                locationGroupId);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -705,12 +720,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         ResponseBodyWrapper<InventoryConsolidationStrategy> responseBodyWrapper
                 = restTemplate.exchange(
-                builder.buildAndExpand(locationGroup.getId()).toUriString(),
+                builder.buildAndExpand(locationGroupId).toUriString(),
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<InventoryConsolidationStrategy>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+        return responseBodyWrapper.getData().toString();
 
     }
 
