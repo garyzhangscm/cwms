@@ -44,7 +44,9 @@ public class InventoryConsolidationService {
         if (!consolidatedInventory.equals(inventory)) {
             // we made a consolidation, let's log an activitity record
             InventoryConsolidationStrategy inventoryConsolidationStrategy =
-                    warehouseLayoutServiceRestemplateClient.getInventoryConsolidationStrategy(location.getLocationGroup());
+                    InventoryConsolidationStrategy.valueOf(
+                            warehouseLayoutServiceRestemplateClient.getInventoryConsolidationStrategy(location.getLocationGroup().getId())
+                    );
             switch (inventoryConsolidationStrategy) {
                 case CONSOLIDATE_BY_INVENTORY:
                     inventoryActivityService.logInventoryActivitiy(
@@ -65,8 +67,11 @@ public class InventoryConsolidationService {
     }
     private InventoryConsolidationHandler getInventoryConsolidationHandler(Location location) {
 
+
         InventoryConsolidationStrategy inventoryConsolidationStrategy =
-                warehouseLayoutServiceRestemplateClient.getInventoryConsolidationStrategy(location.getLocationGroup());
+                InventoryConsolidationStrategy.valueOf(
+                    warehouseLayoutServiceRestemplateClient.getInventoryConsolidationStrategy(location.getLocationGroup().getId())
+                );
         switch (inventoryConsolidationStrategy) {
             case CONSOLIDATE_BY_LPN:
                 return new InventoryConsolidationByLPN();

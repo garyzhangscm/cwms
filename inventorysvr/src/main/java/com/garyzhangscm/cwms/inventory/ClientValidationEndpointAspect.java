@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.inventory;
 
 import com.garyzhangscm.cwms.inventory.clients.KafkaSender;
+import com.garyzhangscm.cwms.inventory.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.BillableRequest;
 import com.garyzhangscm.cwms.inventory.model.ClientRestriction;
@@ -36,6 +37,8 @@ public class ClientValidationEndpointAspect {
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     // aspect method who have the annotation @Delegate
     @Around(value = "@annotation(com.garyzhangscm.cwms.inventory.model.ClientValidationEndpoint)")
@@ -113,8 +116,10 @@ public class ClientValidationEndpointAspect {
         boolean nonClientDataAccessible = true;
         if(Objects.nonNull(companyId)) {
 
-
-            User user = userService.getCurrentUser(companyId);
+            User user = resourceServiceRestemplateClient.getUserByUsername(
+                    companyId,
+                    userService.getCurrentUserName());
+            // User user = userService.getCurrentUser(companyId);
             if (Objects.nonNull(user)) {
                 accessibleClientIds = user.getRoles().stream().map(
                                                     role -> role.getClientAccesses()

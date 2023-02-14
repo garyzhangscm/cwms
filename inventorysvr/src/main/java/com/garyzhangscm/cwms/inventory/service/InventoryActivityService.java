@@ -383,18 +383,45 @@ public class InventoryActivityService{
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
                                       String valueType, String fromValue, String toValue) {
-        logInventoryActivitiy(inventory, inventoryActivityType,
-                ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
-                valueType, fromValue, toValue, "", "");
+        try {
+            String username = userService.getCurrentUserName();
+
+            logInventoryActivitiy(inventory, inventoryActivityType,
+                    ZonedDateTime.now(ZoneId.of("UTC")), username,
+                    valueType, fromValue, toValue, "", "");
+        }
+        catch (Exception ex) {
+            logger.debug("skip error while log inventory activity: {}", ex.getMessage());
+        }
     }
 
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
-                                       String valueType, String fromValue, String toValue,
+                                      String username,
+                                      String valueType, String fromValue, String toValue,
                                       String documentNumber, String comment) {
         logInventoryActivitiy(inventory, inventoryActivityType,
-                ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
+                ZonedDateTime.now(ZoneId.of("UTC")),
+                Strings.isBlank(username)? userService.getCurrentUserName() : username,
                 valueType, fromValue, toValue, documentNumber, comment);
+    }
+
+    public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
+                                       String valueType, String fromValue, String toValue,
+                                      String documentNumber, String comment) {
+
+        try {
+            logInventoryActivitiy(inventory, inventoryActivityType,
+                    ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
+                    valueType, fromValue, toValue, documentNumber, comment);
+        }
+        catch(NullPointerException ex) {
+            ex.printStackTrace();
+            logger.debug("null point exception, which probably due to the no user in the context" +
+                    ". we will ignore it for now");
+
+        }
+
     }
 
     public void processInventoryActivityMessage(InventoryActivity inventoryActivity){

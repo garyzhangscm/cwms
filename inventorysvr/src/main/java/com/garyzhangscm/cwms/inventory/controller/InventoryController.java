@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -41,11 +40,6 @@ public class InventoryController {
     private static final Logger logger = LoggerFactory.getLogger(InventoryController.class);
     @Autowired
     InventoryService inventoryService;
-
-
-    @Autowired
-    private HttpServletRequest httpServletRequest;
-
 
     @Autowired
     FileService fileService;
@@ -524,9 +518,9 @@ public class InventoryController {
 
 
         File localFile = fileService.saveFile(file);
+        /**
         new Thread(
                 () -> {
-
                     try {
                         List<Inventory> inventoryList = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
                     } catch (IOException e) {
@@ -535,5 +529,19 @@ public class InventoryController {
                 }
         ).start();
         return  ResponseBodyWrapper.success("upload request send");
+         **/
+        String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/inventories/upload/progress")
+    public ResponseBodyWrapper getFileUploadProgress(Long warehouseId,
+                                                 String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",inventoryService.getInventoryFileUploadProgress(key)));
+    }
+
 }

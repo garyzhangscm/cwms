@@ -17,8 +17,6 @@ import java.util.Map;
 @Service
 public class UserService {
 
-    @Autowired
-    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -27,9 +25,11 @@ public class UserService {
     public String getCurrentUserName() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
+    /**
     public User getCurrentUser(Long companyId) {
         return resourceServiceRestemplateClient.getUserByUsername(companyId, getCurrentUserName());
     }
+     **/
     public void addUserServletRequestAttribute(String token, ServletRequestAttributes servletRequestAttributes) {
         userServletRequestAttributes.put(token, servletRequestAttributes);
         logger.debug("add token {} to the map", token);
