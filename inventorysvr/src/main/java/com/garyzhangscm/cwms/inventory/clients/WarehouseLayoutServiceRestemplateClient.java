@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -55,6 +56,17 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
+
+    // local cache mainly for uploading inventory file
+    // it takes long to upload a bulk inventory file when
+    // go live so the cache may expire. We will save
+    // some of the cache locally and clear after the file is
+    // uploaded
+    Map<String, Location> logicalLocationForAdjustInventoryMap = new ConcurrentHashMap<>();
+    Map<Long, String> inventoryConsolidationStrategyMap = new ConcurrentHashMap<>();
+    Map<Long, Warehouse> warehouseMap = new ConcurrentHashMap<>();
+    Map<Long, WarehouseConfiguration> warehouseConfigurationMap = new ConcurrentHashMap<>();
+
 
     public Company getCompanyByCode(String companyCode) {
 
@@ -181,7 +193,12 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Cacheable(cacheNames = "warehouse", unless="#result == null")
     public Warehouse getWarehouseById(long warehouseId)   {
 
+        if (warehouseMap.containsKey(warehouseId)) {
+            logger.debug("start to get warehouse from LOCAL cache by id {}", warehouseId);
+            return warehouseMap.get(warehouseId);
+        }
 
+        logger.debug("start to get warehouse by id {}", warehouseId);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -195,13 +212,20 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+
     }
 
     @Cacheable(cacheNames = "inventory_warehouse_configuration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(long warehouseId)   {
 
+        if (warehouseConfigurationMap.containsKey(warehouseId)) {
+            logger.debug("start to get warehouse configuration from Local cache by warehouse id {}",
+                    warehouseId);
+            return warehouseConfigurationMap.get(warehouseId);
+        }
         logger.debug("start to get warehouse configuration from warehouse id {}",
                 warehouseId);
+
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -543,16 +567,25 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     @Cacheable("logic_location_for_adjust_inventory")
     public Location getLogicalLocationForAdjustInventory(InventoryQuantityChangeType inventoryQuantityChangeType, long warehouseId) {
+        if (logicalLocationForAdjustInventoryMap.containsKey(
+                inventoryQuantityChangeType + "-" + warehouseId
+        )) {
+            logger.debug("getLogicalLocationForAdjustInventory from local cache inventoryQuantityChangeType: {}, warehouse id {}",
+                    inventoryQuantityChangeType, warehouseId);
+            return logicalLocationForAdjustInventoryMap.get(
+                    inventoryQuantityChangeType + "-" + warehouseId);
+        }
         logger.debug("getLogicalLocationForAdjustInventory with inventoryQuantityChangeType: {}, warehouse id {}",
                 inventoryQuantityChangeType, warehouseId);
+
         switch (inventoryQuantityChangeType){
             case INVENTORY_ADJUST:
             case REVERSE_PRODUCTION:
                 return getLocationForInventoryAdjustment(warehouseId);
             case AUDIT_COUNT:
-                return getLocationForAuditCount(warehouseId);
+                return   getLocationForAuditCount(warehouseId);
             case CYCLE_COUNT:
-                return getLocationForCount(warehouseId);
+                return  getLocationForCount(warehouseId);
             case RECEIVING:
             case PRODUCING:
             case RETURN_MATERAIL:
@@ -710,6 +743,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     @Cacheable(cacheNames = "inventory-consolidation-strategy", unless="#result == null")
     public String getInventoryConsolidationStrategy(long locationGroupId) {
+        if (inventoryConsolidationStrategyMap.containsKey(locationGroupId)) {
+
+            logger.debug("start to load inventory consolidation stragety from LOCAL cache with location group id {}",
+                    locationGroupId);
+            return inventoryConsolidationStrategyMap.get(locationGroupId);
+        }
 
         logger.debug("start to load inventory consolidation stragety with location group id {}",
                 locationGroupId);
@@ -726,6 +765,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<InventoryConsolidationStrategy>>() {}).getBody();
 
         return responseBodyWrapper.getData().toString();
+
 
     }
 
@@ -864,4 +904,59 @@ public class WarehouseLayoutServiceRestemplateClient {
         return new HttpEntity<String>(requestBody, headers);
     }
 
+    /**
+     * Setup local cache. This is mainly for the inventory upload during go live.
+     * inventory upload may take a while when go live so the standard cache may expired
+     * we will save the value locally in the http request thread and then we can use
+     * when creating the inventory in a separate thread which is not in http context
+     */
+    public void setupLocalCache(Long warehouseId, Set<Long> locationGroupIds) {
+        // clear the cache so that we can get the latest value
+        clearLocalCache();
+
+        // start to get value and fill up the cache
+        Location locationForInventoryUpload = getLogicalLocationForAdjustInventory(
+                InventoryQuantityChangeType.INVENTORY_UPLOAD,
+                warehouseId
+        );
+        if (Objects.nonNull(locationForInventoryUpload)) {
+            logicalLocationForAdjustInventoryMap.put(
+                    InventoryQuantityChangeType.INVENTORY_UPLOAD + "-" + warehouseId,
+                    locationForInventoryUpload);
+        }
+
+        Location locationForInventoryAdjust = getLogicalLocationForAdjustInventory(
+                InventoryQuantityChangeType.INVENTORY_ADJUST,
+                warehouseId
+        );
+        if (Objects.nonNull(locationForInventoryAdjust)) {
+            logicalLocationForAdjustInventoryMap.put(
+                    InventoryQuantityChangeType.INVENTORY_ADJUST + "-" + warehouseId,
+                    locationForInventoryAdjust);
+        }
+
+        logger.debug("we will need to load the consolidation strategy for {} location groups: {}",
+                locationGroupIds.size(), locationGroupIds);
+        for (Long locationGroupId : locationGroupIds) {
+            String strategy
+                    = getInventoryConsolidationStrategy(locationGroupId);
+            inventoryConsolidationStrategyMap.put(locationGroupId, strategy);
+
+        }
+
+        Warehouse warehouse = getWarehouseById(warehouseId);
+        if (Objects.nonNull(warehouse)) {
+            warehouseMap.put(warehouseId, warehouse);
+        }
+        WarehouseConfiguration warehouseConfiguration = getWarehouseConfiguration(warehouseId);
+        if (Objects.nonNull(warehouseConfiguration)) {
+            warehouseConfigurationMap.put(warehouseId, warehouseConfiguration);
+        }
+    }
+    public void clearLocalCache() {
+        logicalLocationForAdjustInventoryMap.clear();
+        inventoryConsolidationStrategyMap.clear();
+        warehouseMap.clear();
+        warehouseConfigurationMap.clear();
+    }
 }
