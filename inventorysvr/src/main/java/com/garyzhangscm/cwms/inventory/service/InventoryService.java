@@ -1953,7 +1953,8 @@ public class InventoryService implements TestDataInitiableService{
     public Inventory addInventory(String username, Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
                                   String documentNumber, String comment) {
 
-        logger.debug("Start to add inventory");
+        logger.debug("Start to add inventory with LPN {}",
+                Strings.isBlank(inventory.getLpn()) ? "N/A" : inventory.getLpn());
         // if inventory's LPN is not setup, get next LPN for it
         if (Strings.isBlank(inventory.getLpn())) {
 
@@ -3233,32 +3234,19 @@ public class InventoryService implements TestDataInitiableService{
                 locationGroupIds.size(), locationGroupIds);
 
 
-        // we will use thread to save the inventory
 
         // load the cache so that we won't need to do it again in the new thread as in the new
         // thread, we will lose the request context
         logger.debug("start to load cache so we don't have to request a http call " +
                 "in a non http context thread");
-        warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
-                InventoryQuantityChangeType.INVENTORY_UPLOAD,
-                warehouseId
-        );
-        warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
-                InventoryQuantityChangeType.INVENTORY_ADJUST,
-                warehouseId
-        );
-        logger.debug("we will need to load the consolidation strategy for {} location groups: {}",
-                locationGroupIds.size(), locationGroupIds);
-        for (Long locationGroupId : locationGroupIds) {
-            warehouseLayoutServiceRestemplateClient.getInventoryConsolidationStrategy(locationGroupId);
-        }
+        warehouseLayoutServiceRestemplateClient.setupLocalCache(warehouseId,
+                locationGroupIds);
 
-        warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
-        warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
 
         inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0);
         // end of load cache
 
+        // we will use thread to save the inventory
         // get the username of the current user and pass it into the new thread
         String username = userService.getCurrentUserName();
         List<Inventory> finalInventoryToBeRemoved = inventoryToBeRemoved;
@@ -3269,7 +3257,11 @@ public class InventoryService implements TestDataInitiableService{
                 // remove all the inventory from the location first
 
                 for (int i = 0; i < finalInventoryToBeRemoved.size(); i++) {
-                    removeInventory(finalInventoryToBeRemoved.get(0), "", "");
+                    removeInventory(finalInventoryToBeRemoved.get(i), "", "");
+                    logger.debug("LPN {} is removed from location {}",
+                            finalInventoryToBeRemoved.get(0).getLpn(),
+                                Objects.nonNull(finalInventoryToBeRemoved.get(i).getLocation()) ?
+                                finalInventoryToBeRemoved.get(i).getLocation().getName() : "UNKNOWN");
 
                     inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + i * 20.0 / finalInventoryToBeRemoved.size());
                 }
@@ -3299,6 +3291,8 @@ public class InventoryService implements TestDataInitiableService{
             inventoryFileUploadProgress.put(fileUploadProgressKey, 40.0);
             for (int i = 0; i < inventories.size(); i++) {
 
+                logger.debug("start to add inventory {} from the uploaded file",
+                        inventories.get(i).getLpn());
                 addInventory(username, inventories.get(i),
                         InventoryQuantityChangeType.INVENTORY_UPLOAD,
                         "", "");
@@ -3309,6 +3303,8 @@ public class InventoryService implements TestDataInitiableService{
             // once we complete, we will remove from the map
 
             inventoryFileUploadProgress.remove(fileUploadProgressKey);
+            // and clear the local cache
+            warehouseLayoutServiceRestemplateClient.clearLocalCache();
             /**
             inventories.stream().forEach(
                     inventory -> {
