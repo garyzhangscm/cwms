@@ -203,16 +203,16 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
             logger.debug("item name: {}", getItemName());
             logger.debug("item quickbook list id: {}", getItemQuickbookListId());
 
-            if (Strings.isNotBlank(getItemName())) {
-                item = inventoryServiceRestemplateClient.getItemByName(
-                        getCompanyId(),
-                        orderLine.getWarehouseId(), getItemName()
-                );
-            }
-            else if (Strings.isNotBlank(getItemQuickbookListId())) {
+            if (Strings.isNotBlank(getItemQuickbookListId())) {
                 item = inventoryServiceRestemplateClient.getItemByQuickbookListId(
                         getCompanyId(),
                         orderLine.getWarehouseId(), getItemQuickbookListId()
+                );
+            }
+            else if (Strings.isNotBlank(getItemName())) {
+                item = inventoryServiceRestemplateClient.getItemByName(
+                        getCompanyId(),
+                        orderLine.getWarehouseId(), getItemName()
                 );
             }
             else {

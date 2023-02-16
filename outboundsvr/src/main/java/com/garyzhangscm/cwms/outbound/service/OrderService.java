@@ -115,6 +115,9 @@ public class OrderService implements TestDataInitiableService {
                                ZonedDateTime startCompleteTime,
                                ZonedDateTime endCompleteTime,
                                LocalDate specificCompleteDate,
+                               ZonedDateTime startCreatedTime,
+                               ZonedDateTime endCreatedTime,
+                               LocalDate specificCreatedDate,
                                String category,
                                String customerName,
                                Long customerId,
@@ -165,6 +168,26 @@ public class OrderService implements TestDataInitiableService {
                                 root.get("completeTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
                     }
+
+                    if (Objects.nonNull(startCreatedTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("createdTime"), startCreatedTime));
+
+                    }
+
+                    if (Objects.nonNull(endCreatedTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("createdTime"), endCreatedTime));
+
+                    }
+                    if (Objects.nonNull(specificCreatedDate)) {
+                        LocalDateTime dateStartTime = specificCreatedDate.atStartOfDay();
+                        LocalDateTime dateEndTime = specificCreatedDate.atStartOfDay().plusDays(1).minusSeconds(1);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+
+                    }
+
                     if (Objects.nonNull(customerId)) {
 
                         predicates.add(criteriaBuilder.equal(
@@ -197,9 +220,14 @@ public class OrderService implements TestDataInitiableService {
 
     public List<Order> findAll(Long warehouseId, String number, String status,
                                ZonedDateTime startCompleteTime, ZonedDateTime endCompleteTime,
-                               LocalDate specificCompleteDate, String category, String customerName, Long customerId) {
-        return findAll(warehouseId, number, status, startCompleteTime, endCompleteTime,
-                specificCompleteDate, category, customerName, customerId, true);
+                               LocalDate specificCompleteDate,
+                               ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime,
+                               LocalDate specificCreatedDate,
+                               String category, String customerName, Long customerId) {
+        return findAll(warehouseId, number, status,
+                startCompleteTime, endCompleteTime, specificCompleteDate,
+                startCreatedTime, endCreatedTime, specificCreatedDate,
+                category, customerName, customerId, true);
     }
 
 

@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.common.exception.SupplierException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.SupplierRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -66,7 +67,7 @@ public class SupplierService implements  TestDataInitiableService{
     }
 
     public List<Supplier> findAll( Long companyId, Long warehouseId,
-                                  String name) {
+                                  String name, String quickbookListId) {
         List<Supplier> suppliers = supplierRepository.findAll(
                 (Root<Supplier> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -79,6 +80,10 @@ public class SupplierService implements  TestDataInitiableService{
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("name"), name));
                         }
+                    }
+                    if (Strings.isNotBlank(quickbookListId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("quickbookListId"), quickbookListId));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
 
@@ -133,7 +138,7 @@ public class SupplierService implements  TestDataInitiableService{
     }
 
     public Supplier findByName(Long companyId, Long warehouseId, String name){
-        List<Supplier> suppliers = findAll(companyId, warehouseId, name);
+        List<Supplier> suppliers = findAll(companyId, warehouseId, name, "");
         // we should only get one customer with specific company and name combination
         if (suppliers.isEmpty()) {
             return null;

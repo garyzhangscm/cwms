@@ -85,6 +85,9 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
     @Column(name = "allow_unexpected_item")
     private Boolean allowUnexpectedItem;
 
+    @Column(name = "quickbook_vendor_list_id")
+    private String quickbookVendorListId;
+
 
     @Column(name = "quickbook_txnid")
     private String quickbookTxnID;
@@ -103,7 +106,8 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
 
         String[] fieldNames = {
                 "number", "warehouseId", "clientId", "supplierId", "allowUnexpectedItem",
-                "quickbookTxnID"
+                "quickbookTxnID",
+                "quickbookVendorListId"
         };
 
         ObjectCopyUtil.copyValue(this, purchaseOrder, fieldNames);
@@ -142,6 +146,7 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
         setCompanyId(purchaseOrder.getCompanyId());
         setCompanyCode(purchaseOrder.getCompanyCode());
         setQuickbookTxnID(purchaseOrder.getQuickbookTxnID());
+        setQuickbookVendorListId(purchaseOrder.getQuickbookVendorListId());
 
         setClientId(purchaseOrder.getClientId());
         setClientName(purchaseOrder.getClientName());
@@ -311,5 +316,13 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
     @Override
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getQuickbookVendorListId() {
+        return quickbookVendorListId;
+    }
+
+    public void setQuickbookVendorListId(String quickbookVendorListId) {
+        this.quickbookVendorListId = quickbookVendorListId;
     }
 }

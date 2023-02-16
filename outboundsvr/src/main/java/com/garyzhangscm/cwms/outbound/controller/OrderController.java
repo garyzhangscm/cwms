@@ -56,9 +56,14 @@ public class OrderController {
                                      @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                      @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCompleteTime,
                                      @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCompleteTime,
-                                     @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate) {
+                                     @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate,
+                                     @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
+                                     @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
+                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate) {
         logger.debug("Start to find order by number {}", number);
-        return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,  category,  customerName, customerId, loadDetails);
+        return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,
+                startCreatedTime, endCreatedTime, specificCreatedDate,
+                category,  customerName, customerId, loadDetails);
     }
 
     @BillableEndpoint

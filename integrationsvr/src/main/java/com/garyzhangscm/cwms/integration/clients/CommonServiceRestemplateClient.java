@@ -222,4 +222,23 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+
+    public Supplier getSupplierByQuickbookListId(Long warehouseId, String quickbookListId) throws UnsupportedEncodingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("quickbookListId", URLEncoder.encode(quickbookListId, "UTF-8"));
+        ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
+        List<Supplier> suppliers = responseBodyWrapper.getData();
+        if (suppliers.size() == 0) {
+            throw MissingInformationException.raiseException("can't find supplier with warehouse id " +
+                    warehouseId + ", quickbook list id " + quickbookListId);
+        }
+        else {
+            return suppliers.get(0);
+
+        }
+    }
+
 }

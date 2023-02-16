@@ -408,7 +408,7 @@ public class ShipmentService {
                     orderListMap.put(order, existingOrderLines);
                     logger.debug("now we have {} orders", orderListMap.keySet().size());
                 });
-        logger.debug("we get {} orders out of {} order lines",
+        logger.debug("we get {} orders out of {} order lines for planning orders into shipment",
                 orderListMap.keySet().size(), orderLines.size());
         return orderListMap;
     }
