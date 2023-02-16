@@ -43,7 +43,8 @@ public class SupplierController {
     @RequestMapping(value="/suppliers", method = RequestMethod.GET)
     public List<Supplier> findAllSuppliers(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                            @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
-                                           @RequestParam(name = "name", required = false, defaultValue = "") String name) {
+                                           @RequestParam(name = "name", required = false, defaultValue = "") String name,
+                                           @RequestParam(name = "quickbookListId", required = false, defaultValue = "") String quickbookListId) {
 
         // company ID or warehouse id is required
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
@@ -58,7 +59,7 @@ public class SupplierController {
                             .getWarehouseById(warehouseId).getCompanyId();
         }
 
-        return supplierService.findAll(companyId, warehouseId, name);
+        return supplierService.findAll(companyId, warehouseId, name, quickbookListId);
     }
 
     @RequestMapping(value="/suppliers/{id}", method = RequestMethod.GET)

@@ -152,17 +152,16 @@ public class DBBasedPurchaseOrderLine extends AuditibleEntity<String> implements
         // so we can identify the unique item for this line
         if (Objects.isNull(getItemId())) {
             Item item = null;
-
-            if (Strings.isNotBlank(getItemName())) {
-                item = inventoryServiceRestemplateClient.getItemByName(
-                        getCompanyId(),
-                        purchaseOrderLine.getWarehouseId(), getItemName()
-                );
-            }
-            else if (Strings.isNotBlank(getItemQuickbookListId())) {
+            if (Strings.isNotBlank(getItemQuickbookListId())) {
                 item = inventoryServiceRestemplateClient.getItemByQuickbookListId(
                         getCompanyId(),
                         purchaseOrderLine.getWarehouseId(), getItemQuickbookListId()
+                );
+            }
+            else if (Strings.isNotBlank(getItemName())) {
+                item = inventoryServiceRestemplateClient.getItemByName(
+                        getCompanyId(),
+                        purchaseOrderLine.getWarehouseId(), getItemName()
                 );
             }
             else {

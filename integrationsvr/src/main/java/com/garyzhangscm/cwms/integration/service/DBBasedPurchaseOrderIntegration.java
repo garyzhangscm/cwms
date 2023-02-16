@@ -223,15 +223,30 @@ public class DBBasedPurchaseOrderIntegration {
 
     private void setupMissingField(PurchaseOrder purchaseOrder, DBBasedPurchaseOrder dbBasedPurchaseOrder) throws UnsupportedEncodingException {
 
-        if (Objects.isNull(purchaseOrder.getSupplierId()) &&
-               Objects.nonNull(dbBasedPurchaseOrder.getSupplierName())) {
-            purchaseOrder.setSupplierId(
-
-                    commonServiceRestemplateClient.getSupplierByName(
-                            purchaseOrder.getWarehouseId(),
-                            dbBasedPurchaseOrder.getSupplierName()
-                    ).getId()
-            );
+        if (Objects.isNull(purchaseOrder.getSupplierId())) {
+            // if the supplier id is not set up
+            // let's get the supplier from the
+            // 1. quickbook list id if the integration is from quickbook
+            // 2. by name
+            Supplier supplier = null;
+            if (Strings.isNotBlank(purchaseOrder.getQuickbookVendorListId())) {
+                supplier = commonServiceRestemplateClient.getSupplierByQuickbookListId(
+                        purchaseOrder.getWarehouseId(),
+                        purchaseOrder.getQuickbookVendorListId()
+                );
+                logger.debug("Get supplier {} by quickbook list id {}",
+                        supplier.getName(),
+                        purchaseOrder.getQuickbookVendorListId());
+            }
+            else if (Strings.isNotBlank(dbBasedPurchaseOrder.getSupplierName())) {
+                supplier = commonServiceRestemplateClient.getSupplierByName(
+                        purchaseOrder.getWarehouseId(),
+                        dbBasedPurchaseOrder.getSupplierName()
+                );
+            }
+            if (Objects.nonNull(supplier)) {
+                purchaseOrder.setSupplierId(supplier.getId());
+            }
         }
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(purchaseOrder.getWarehouseId());
@@ -271,16 +286,16 @@ public class DBBasedPurchaseOrderIntegration {
             logger.debug("item name: {}", dbBasedPurchaseOrderLine.getItemName());
             logger.debug("item quickbook list id: {}", dbBasedPurchaseOrderLine.getItemQuickbookListId());
 
-            if (Strings.isNotBlank(dbBasedPurchaseOrderLine.getItemName())) {
-                item = inventoryServiceRestemplateClient.getItemByName(
-                        warehouse.getCompany().getId(),
-                        purchaseOrderLine.getWarehouseId(), dbBasedPurchaseOrderLine.getItemName()
-                );
-            }
-            else if (Strings.isNotBlank(dbBasedPurchaseOrderLine.getItemQuickbookListId())) {
+            if (Strings.isNotBlank(dbBasedPurchaseOrderLine.getItemQuickbookListId())) {
                 item = inventoryServiceRestemplateClient.getItemByQuickbookListId(
                         warehouse.getCompany().getId(),
                         purchaseOrderLine.getWarehouseId(), dbBasedPurchaseOrderLine.getItemQuickbookListId()
+                );
+            }
+            else if (Strings.isNotBlank(dbBasedPurchaseOrderLine.getItemName())) {
+                item = inventoryServiceRestemplateClient.getItemByName(
+                        warehouse.getCompany().getId(),
+                        purchaseOrderLine.getWarehouseId(), dbBasedPurchaseOrderLine.getItemName()
                 );
             }
             else {

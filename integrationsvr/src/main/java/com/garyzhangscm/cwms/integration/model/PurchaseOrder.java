@@ -48,6 +48,7 @@ public class PurchaseOrder {
 
     private Boolean allowUnexpectedItem;
     private String quickbookTxnID;
+    private String quickbookVendorListId;
 
     @Override
     public String toString() {
@@ -161,5 +162,13 @@ public class PurchaseOrder {
 
     public void setQuickbookTxnID(String quickbookTxnID) {
         this.quickbookTxnID = quickbookTxnID;
+    }
+
+    public String getQuickbookVendorListId() {
+        return quickbookVendorListId;
+    }
+
+    public void setQuickbookVendorListId(String quickbookVendorListId) {
+        this.quickbookVendorListId = quickbookVendorListId;
     }
 }

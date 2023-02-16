@@ -2249,6 +2249,12 @@ public class InventoryService implements TestDataInitiableService{
             logger.debug("Will increase the quantity from {} to {}",
                     inventory.getQuantity(), newQuantity);
 
+            /***
+             * NOTE: We will no long to create the inventory from the logic location with added quantity then
+             * move it to the current location. Instead we will directly change the quantity of the original
+             * inventory
+             *
+             *
             String newLpn = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
             // Trick: Split 0 quantity from original inventory, which is
             // actually a copy
@@ -2266,6 +2272,16 @@ public class InventoryService implements TestDataInitiableService{
             else {
                 resultInventory =  newInventory;
             }
+
+             **/
+
+            // send integration to add a new inventory
+            integrationService.processInventoryAdjustment(InventoryQuantityChangeType.INVENTORY_ADJUST, inventory,
+                    inventory.getQuantity(), newQuantity,
+                    documentNumber, comment);
+
+            inventory.setQuantity(newQuantity);
+            return saveOrUpdate(inventory);
         }
 
         // integration will be process by
