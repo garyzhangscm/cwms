@@ -18,8 +18,11 @@
 
 package com.garyzhangscm.cwms.zuulsvr.filters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.zuulsvr.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.zuulsvr.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.clients.LayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.zuulsvr.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.exception.SystemFatalException;
 import com.garyzhangscm.cwms.zuulsvr.exception.UnauthorizedException;
 import com.garyzhangscm.cwms.zuulsvr.model.Company;
@@ -30,12 +33,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
@@ -53,6 +59,9 @@ public class UrlAccessControllerFilter implements Filter {
 
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
+
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
 
     // for single company server(server that host by the company, not
@@ -74,20 +83,47 @@ public class UrlAccessControllerFilter implements Filter {
         try {
 
             validateAccess((HttpServletRequest)servletRequest);
+            filterChain.doFilter(httpServletRequest, servletResponse);
         }
         catch (SystemFatalException ex) {
+            logger.debug("Get SystemFatalException while validate the URL {}",
+                    httpServletRequest.getRequestURI());
             ex.printStackTrace();
-            ((HttpServletResponse)servletResponse).sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+            // ((HttpServletResponse)servletResponse).sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+            sendErrorToClient(servletResponse, 403, ex.getMessage());
+
         }
         catch(UnauthorizedException ex) {
+            logger.debug("Get UnauthorizedException while validate the URL {}",
+                    httpServletRequest.getRequestURI());
             ex.printStackTrace();
-            ((HttpServletResponse)servletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+            // ((HttpServletResponse)servletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+            sendErrorToClient(servletResponse, 401, ex.getMessage());
         }
 
-        filterChain.doFilter(httpServletRequest, servletResponse);
     }
 
+    private void sendErrorToClient(ServletResponse servletResponse, int errorCode, String errorMessage) throws IOException {
+        HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
+
+        httpServletResponse.setStatus(HttpStatus.OK.value());
+        httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        logger.info("Adding CORS Headers ........................");
+        httpServletResponse.setHeader("Access-Control-Allow-Origin", "*");
+        httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        httpServletResponse.setHeader("Access-Control-Max-Age", "3600");
+        httpServletResponse.setHeader("Access-Control-Allow-Headers", "X-PINGOTHER,Content-Type,X-Requested-With,accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization");
+        httpServletResponse.addHeader("Access-Control-Expose-Headers", "xsrf-token");
+
+        logger.debug("start to return 200 http code with 401 error to the user");
+        String responseMessage =  new ObjectMapper().writeValueAsString(
+                ResponseBodyWrapper.error(errorCode, errorMessage)
+        );
+        logger.debug("responseMessage:\n{}", responseMessage);
+
+        httpServletResponse.getOutputStream().write(responseMessage.getBytes(StandardCharsets.UTF_8));
+    }
 
 
     private void validateAccess(HttpServletRequest httpServletRequest)  {
@@ -119,6 +155,8 @@ public class UrlAccessControllerFilter implements Filter {
         if (token.startsWith("Bearer")) {
             token = token.substring(7).trim();
         }
+
+        // check if the current user is a sys admin.
 
         logger.debug("start to validate warehouse and company access by token {}", token);
         // get the request's parameters,
@@ -157,6 +195,23 @@ public class UrlAccessControllerFilter implements Filter {
         }
 
         logger.debug("check if token {} has access to company id {}", token, companyId);
+        // ok, now let's get the username out of the toke and company. We will first validate
+        // if the user is a system admin. System admin will have a full access to everything and
+        // ignore any restriction in the system
+        String username = authServiceRestemplateClient.getUserNameByToken(companyId, token);
+        if (Strings.isBlank(username)) {
+
+            // as long as we have the token, we should be able to get the username
+            throw SystemFatalException.raiseException("can't get username from the token");
+        }
+        // validate if the user is a system admin
+        Boolean isSystemAdmin = resourceServiceRestemplateClient.isSystemAdmin(username);
+        if (Boolean.TRUE.equals(isSystemAdmin)) {
+            logger.debug("Current user {} is system admin, skip any validation. System admin is allowed to access any resource",
+                    username);
+            return;
+        }
+
         validateCompanyAccess(httpServletRequest.getRequestURL().toString(), companyId, token);
 
         valdiateWarehouseAccess(companyId, warehouseId, token);
@@ -209,6 +264,17 @@ public class UrlAccessControllerFilter implements Filter {
             // cloud, then we won't need to validate the company
             logger.debug("skip the company validation if this is a single company server");
             return;
+        }
+        if (!Boolean.TRUE.equals(layoutServiceRestemplateClient.isCompanyEnabled(companyId))) {
+
+            logger.debug("the company {} is NOT enabled", companyId);
+            throw SystemFatalException.raiseException("Error: current company is not enabled");
+        }
+        if (!authServiceRestemplateClient.validateCompanyAccess(companyId, token)) {
+
+            logger.debug("access to url {} fail, the user {} can't access the company {}",
+                    url, token, companyId);
+            throw UnauthorizedException.raiseException("Error: current user doesn't have access to the company information");
         }
         if (!authServiceRestemplateClient.validateCompanyAccess(companyId, token)) {
 

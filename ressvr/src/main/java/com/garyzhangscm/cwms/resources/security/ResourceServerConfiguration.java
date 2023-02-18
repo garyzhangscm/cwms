@@ -35,6 +35,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/email/test").permitAll()
                 .antMatchers(HttpMethod.GET, "/rf-app-version/latest-version").permitAll()
                 .antMatchers(HttpMethod.GET, "/printing-request/pending").permitAll()
+                .antMatchers(HttpMethod.GET, "/users/is-system-admin").permitAll()
           .anyRequest()
           .authenticated();
     }

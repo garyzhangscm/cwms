@@ -23,6 +23,8 @@ public class Company   {
     private String addressLine2;
     private String addressPostcode;
 
+    private Boolean enabled;
+
     public Long getId() {
         return id;
     }
@@ -65,6 +67,14 @@ public class Company   {
 
     public String getContactorLastname() {
         return contactorLastname;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void setContactorLastname(String contactorLastname) {

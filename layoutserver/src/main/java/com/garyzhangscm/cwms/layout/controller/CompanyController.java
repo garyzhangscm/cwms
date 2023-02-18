@@ -88,5 +88,19 @@ public class CompanyController {
         return ResponseBodyWrapper.success(nextCompanyCode);
     }
 
+    @RequestMapping(value="/companies/{id}/enable", method = RequestMethod.POST)
+    public Company enableCompany(@PathVariable long id) {
+        return companyService.enableCompany(id, true);
+    }
+    @RequestMapping(value="/companies/{id}/disable", method = RequestMethod.POST)
+    public Company disableCompany(@PathVariable long id) {
+        return companyService.enableCompany(id, false);
+    }
+
+    @RequestMapping(value="/companies/{id}/is-enabled", method = RequestMethod.GET)
+    public Boolean isCompanyEnabled(@PathVariable long id) {
+        return companyService.isCompanyEnabled(id);
+    }
+
 
 }

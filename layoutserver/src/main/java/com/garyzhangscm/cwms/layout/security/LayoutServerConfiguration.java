@@ -23,6 +23,7 @@ public class LayoutServerConfiguration extends ResourceServerConfigurerAdapter {
           .antMatchers("/actuator").permitAll()
                 .antMatchers(HttpMethod.GET, "/companies").permitAll()
            .antMatchers("/companies/validate").permitAll()
+                .antMatchers("//companies/*/is-enabled").permitAll()
           .antMatchers("/warehouses/accessible/**").permitAll()
                 .antMatchers("/probe/**").permitAll()
                 .antMatchers("/warehouses/*/company-id").permitAll()

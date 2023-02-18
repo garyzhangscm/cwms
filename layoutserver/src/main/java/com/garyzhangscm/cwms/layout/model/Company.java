@@ -52,6 +52,10 @@ public class Company extends AuditibleEntity<String> {
     @Column(name = "production")
     private Boolean production;
 
+
+    @Column(name = "enabled")
+    private Boolean enabled = true;
+
     public Long getId() {
         return id;
     }
@@ -170,5 +174,13 @@ public class Company extends AuditibleEntity<String> {
 
     public void setProduction(Boolean production) {
         this.production = production;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

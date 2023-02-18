@@ -43,6 +43,12 @@ public class ResponseBodyWrapper<T> implements Serializable {
         return new ResponseBodyWrapper<String>(0,  "", body);
     }
 
+    public static ResponseBodyWrapper error(int errorCode, String errorMessage, String body) {
+        return new ResponseBodyWrapper<String>(errorCode,  errorMessage, body);
+    }
+    public static ResponseBodyWrapper error(int errorCode, String errorMessage) {
+        return new ResponseBodyWrapper<String>(errorCode,  errorMessage, "");
+    }
 
     public int getResult() {
         return result;
