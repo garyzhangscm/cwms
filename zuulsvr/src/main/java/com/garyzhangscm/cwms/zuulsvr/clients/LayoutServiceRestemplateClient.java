@@ -39,12 +39,32 @@ public class LayoutServiceRestemplateClient {
     private RestTemplate restTemplate;
 
 
+    @Cacheable(cacheNames = "company_enabled", unless="#result == null")
+    public Boolean isCompanyEnabled(Long companyId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout//companies/{id}/is-enabled")
+                        .queryParam("innerCall", "true");
+
+        ResponseBodyWrapper<Boolean> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(companyId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Boolean>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     @Cacheable(cacheNames = "company_by_warehouse_id", unless="#result == null")
     public Long getCompanyId(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/warehouses/{warehouseId}/company-id");
+                        .path("/api/layout/warehouses/{warehouseId}/company-id")
+                        .queryParam("innerCall", "true");
 
         ResponseBodyWrapper<Long> responseBodyWrapper
                 = restTemplate.exchange(
@@ -64,7 +84,8 @@ public class LayoutServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/companies")
-                .queryParam("code", companyCode);
+                .queryParam("code", companyCode)
+                        .queryParam("innerCall", "true");
 
         ResponseBodyWrapper<List<Company>> responseBodyWrapper =
                 restTemplate.exchange(

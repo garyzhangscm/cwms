@@ -183,4 +183,13 @@ public class CompanyService implements TestDataInitiableService{
 
     }
 
+    public Company enableCompany(long id, boolean enabled) {
+        Company company = findById(id);
+        company.setEnabled(enabled);
+        return saveOrUpdate(company);
+    }
+
+    public Boolean isCompanyEnabled(long id) {
+        return Boolean.TRUE.equals(findById(id).getEnabled());
+    }
 }

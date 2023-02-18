@@ -44,9 +44,9 @@ public class AuthServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/auth/users/company-access-validation")
-                .queryParam("companyId", companyId)
                         .queryParam("companyId", companyId)
-                        .queryParam("token", token);
+                        .queryParam("token", token)
+                        .queryParam("innerCall", "true");
 
         return restTemplate.exchange(
                     builder.toUriString(),
@@ -59,6 +59,24 @@ public class AuthServiceRestemplateClient {
 
 
 
+    @Cacheable(cacheNames = "user_by_token", unless="#result == null")
+    public String getUserNameByToken(Long companyId, String token)  {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/auth/users/username-by-token")
+                        .queryParam("companyId", companyId)
+                        .queryParam("token", token)
+                .queryParam("innerCall", "true");
+
+        return restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<String>() {}).getBody();
+
+
+    }
 
 
 }

@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(value = "/users")
@@ -58,6 +59,19 @@ public class UserController {
     public Boolean validateCompanyAccess(@RequestParam Long companyId,
                                          @RequestParam String token) {
         return userService.validateCompanyAccess(companyId, token);
+    }
+
+
+    @RequestMapping(value = "/username-by-token", method =  RequestMethod.GET)
+    public String getUserNameByToken(@RequestParam Long companyId,
+                                         @RequestParam String token) {
+        User user = userService.findByToken(companyId, token);
+        if (Objects.nonNull(user)) {
+            return  user.getUsername();
+        }
+        else {
+            return "";
+        }
     }
 
 }
