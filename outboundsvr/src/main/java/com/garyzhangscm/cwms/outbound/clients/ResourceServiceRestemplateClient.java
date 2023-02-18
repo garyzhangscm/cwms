@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.Report;
 import com.garyzhangscm.cwms.outbound.model.ReportHistory;
 import com.garyzhangscm.cwms.outbound.model.ReportType;
+import com.garyzhangscm.cwms.outbound.model.User;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 
 @Component
@@ -105,6 +107,31 @@ public class ResourceServiceRestemplateClient {
 
     }
 
+    public User getUserByUsername(Long companyId, String username) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/users")
+                        .queryParam("username", username)
+                        .queryParam("companyId", companyId);
+
+        ResponseBodyWrapper<List<User>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
+
+        List<User> users = responseBodyWrapper.getData();
+
+        if (users.size() != 1) {
+            return null;
+        }
+        else {
+            return users.get(0);
+        }
+
+    }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

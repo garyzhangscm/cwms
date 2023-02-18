@@ -56,6 +56,14 @@ public class Role extends AuditibleEntity<String>  {
     @Column(name = "non_client_data_accessible")
     private Boolean nonClientDataAccessible;
 
+    // whether the user has access to all client
+    // this happens in a 3pl environment that
+    // the client specific account may only have access
+    // to their own item / order / receipt while
+    // the warehouse will have access to all client's data
+    @Column(name = "all_client_access")
+    private Boolean allClientAccess = true;
+
     // Place holder to accept the JSON object from the web client
     // when creating a new role with assigned menu
     // and users
@@ -180,5 +188,13 @@ public class Role extends AuditibleEntity<String>  {
 
     public void setNonClientDataAccessible(Boolean nonClientDataAccessible) {
         this.nonClientDataAccessible = nonClientDataAccessible;
+    }
+
+    public Boolean getAllClientAccess() {
+        return allClientAccess;
+    }
+
+    public void setAllClientAccess(Boolean allClientAccess) {
+        this.allClientAccess = allClientAccess;
     }
 }

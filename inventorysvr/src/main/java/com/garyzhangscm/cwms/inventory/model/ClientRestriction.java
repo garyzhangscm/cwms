@@ -25,11 +25,14 @@ import java.io.Serializable;
 public class ClientRestriction extends  AuditibleEntity<String> implements Serializable {
     Boolean threePartyLogisticsFlag;
     Boolean nonClientDataAccessible;
+    Boolean allClientAccess;
     String clientAccesses;
 
-    public ClientRestriction(Boolean threePartyLogisticsFlag, Boolean nonClientDataAccessible, String clientAccesses) {
+    public ClientRestriction(Boolean threePartyLogisticsFlag, Boolean nonClientDataAccessible,
+                             Boolean allClientAccess, String clientAccesses) {
         this.threePartyLogisticsFlag = threePartyLogisticsFlag;
         this.nonClientDataAccessible = nonClientDataAccessible;
+        this.allClientAccess = allClientAccess;
         this.clientAccesses = clientAccesses;
     }
 

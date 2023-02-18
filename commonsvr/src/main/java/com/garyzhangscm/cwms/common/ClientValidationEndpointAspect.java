@@ -93,7 +93,8 @@ public class ClientValidationEndpointAspect {
             // in a non 3pl logistics environment, the user will always have access to
             // all information regardless of the client id configuration
             // other restriction will still be applied
-            return new ClientRestriction(false, true, "");
+            // return new ClientRestriction(false, true, true, "");
+            return null;
 
         }
 
@@ -103,6 +104,7 @@ public class ClientValidationEndpointAspect {
         // the user so we don't know whether the user has access to any client's data
         String accessibleClientIds = "";
         boolean nonClientDataAccessible = true;
+        boolean allClientAccessible = true;
         if(Objects.nonNull(companyId)) {
 
 
@@ -115,7 +117,9 @@ public class ClientValidationEndpointAspect {
 
             }
             if (Objects.nonNull(user)) {
-                accessibleClientIds = user.getRoles().stream().map(
+                accessibleClientIds = user.getRoles().stream().filter(
+                        role -> Boolean.TRUE.equals(role.getEnabled())
+                ).map(
                                                     role -> role.getClientAccesses()
                                             )
                                             .flatMap(List::stream)
@@ -127,11 +131,16 @@ public class ClientValidationEndpointAspect {
                 nonClientDataAccessible = user.getRoles().stream().filter(
                         role -> Boolean.TRUE.equals(role.getEnabled())
                 ).anyMatch(role -> Boolean.TRUE.equals(role.getNonClientDataAccessible()));
+
+                // the user has access to the all client data as long as one role has the access
+                allClientAccessible = user.getRoles().stream().filter(
+                        role -> Boolean.TRUE.equals(role.getEnabled())
+                ).anyMatch(role -> Boolean.TRUE.equals(role.getAllClientAccess()));
             }
         }
 
 
-        return new ClientRestriction(true, nonClientDataAccessible, accessibleClientIds);
+        return new ClientRestriction(true, nonClientDataAccessible, allClientAccessible, accessibleClientIds);
 
 
     }

@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.workorder.model;
 
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User implements Serializable {
 
@@ -38,6 +40,11 @@ public class User implements Serializable {
 
     private boolean locked;
 
+
+    private Boolean isAdmin = false;
+    private Boolean isSystemAdmin = false;
+
+    private List<Role> roles = new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -93,5 +100,29 @@ public class User implements Serializable {
 
     public void setLocked(boolean locked) {
         this.locked = locked;
+    }
+
+    public Boolean getAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        isAdmin = admin;
+    }
+
+    public Boolean getSystemAdmin() {
+        return isSystemAdmin;
+    }
+
+    public void setSystemAdmin(Boolean systemAdmin) {
+        isSystemAdmin = systemAdmin;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 }

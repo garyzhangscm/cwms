@@ -1,27 +1,22 @@
 package com.garyzhangscm.cwms.inventory;
 
-import com.garyzhangscm.cwms.inventory.clients.KafkaSender;
-import com.garyzhangscm.cwms.inventory.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.model.BillableRequest;
 import com.garyzhangscm.cwms.inventory.model.ClientRestriction;
 import com.garyzhangscm.cwms.inventory.model.User;
 import com.garyzhangscm.cwms.inventory.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.inventory.service.UserService;
 import org.apache.logging.log4j.util.Strings;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Aspect // indicate the component is used for aspect
@@ -37,8 +32,6 @@ public class ClientValidationEndpointAspect {
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
-    @Autowired
-    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     // aspect method who have the annotation @Delegate
     @Around(value = "@annotation(com.garyzhangscm.cwms.inventory.model.ClientValidationEndpoint)")
@@ -73,18 +66,14 @@ public class ClientValidationEndpointAspect {
                         Long.parseLong(httpServletRequest.getParameter("warehouseId")) :
                             null;
 
-        logger.debug("get warehouse id {}", Objects.isNull(warehouseId) ? "N/A" : warehouseId);
+        logger.debug("get warehouse id {}", warehouseId);
 
-        Long companyId =
-                Objects.isNull(httpServletRequest.getHeader("companyId")) ||
-                        Objects.isNull(httpServletRequest.getParameter("companyId")) ?
-                        null :
-                        Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
-                            Long.parseLong(httpServletRequest.getHeader("companyId")) :
-                            Strings.isNotBlank(httpServletRequest.getParameter("companyId")) ?
-                                    Long.parseLong(httpServletRequest.getParameter("companyId")) : null;
+        Long companyId = Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
+                Long.parseLong(httpServletRequest.getHeader("companyId")) :
+                Strings.isNotBlank(httpServletRequest.getParameter("companyId")) ?
+                        Long.parseLong(httpServletRequest.getParameter("companyId")) : null;
 
-        logger.debug("get company id {}", Objects.isNull(companyId) ? "N/A" : companyId);
+        logger.debug("get company id {}", warehouseId);
 
         // for some reason we can't get the warehouse id from the http request,
         // then we will allow the user to access non 3pl data(client id is null)
@@ -104,7 +93,8 @@ public class ClientValidationEndpointAspect {
             // in a non 3pl logistics environment, the user will always have access to
             // all information regardless of the client id configuration
             // other restriction will still be applied
-            return new ClientRestriction(false, true, "");
+            // return new ClientRestriction(false, true, true, "");
+            return null;
 
         }
 
@@ -114,14 +104,22 @@ public class ClientValidationEndpointAspect {
         // the user so we don't know whether the user has access to any client's data
         String accessibleClientIds = "";
         boolean nonClientDataAccessible = true;
+        boolean allClientAccessible = true;
         if(Objects.nonNull(companyId)) {
 
-            User user = resourceServiceRestemplateClient.getUserByUsername(
-                    companyId,
-                    userService.getCurrentUserName());
-            // User user = userService.getCurrentUser(companyId);
+
+            User user = userService.getCurrentUser(companyId);
+            if (Boolean.TRUE.equals(user.getAdmin()) ||
+                    Boolean.TRUE.equals(user.getSystemAdmin())) {
+                // user is admin, admin has full access to everything inside the company
+                // null restriction means there's no restriction
+                return null;
+
+            }
             if (Objects.nonNull(user)) {
-                accessibleClientIds = user.getRoles().stream().map(
+                accessibleClientIds = user.getRoles().stream().filter(
+                        role -> Boolean.TRUE.equals(role.getEnabled())
+                ).map(
                                                     role -> role.getClientAccesses()
                                             )
                                             .flatMap(List::stream)
@@ -133,11 +131,16 @@ public class ClientValidationEndpointAspect {
                 nonClientDataAccessible = user.getRoles().stream().filter(
                         role -> Boolean.TRUE.equals(role.getEnabled())
                 ).anyMatch(role -> Boolean.TRUE.equals(role.getNonClientDataAccessible()));
+
+                // the user has access to the all client data as long as one role has the access
+                allClientAccessible = user.getRoles().stream().filter(
+                        role -> Boolean.TRUE.equals(role.getEnabled())
+                ).anyMatch(role -> Boolean.TRUE.equals(role.getAllClientAccess()));
             }
         }
 
 
-        return new ClientRestriction(true, nonClientDataAccessible, accessibleClientIds);
+        return new ClientRestriction(true, nonClientDataAccessible, allClientAccessible, accessibleClientIds);
 
 
     }

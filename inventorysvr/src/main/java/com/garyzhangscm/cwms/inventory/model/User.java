@@ -46,6 +46,7 @@ public class User {
     private int refreshIn;
 
     private Boolean isAdmin = false;
+    private Boolean isSystemAdmin = false;
 
 
     private List<Role> roles = new ArrayList<>();
@@ -178,5 +179,13 @@ public class User {
 
     public void setRefreshIn(int refreshIn) {
         this.refreshIn = refreshIn;
+    }
+
+    public Boolean getSystemAdmin() {
+        return isSystemAdmin;
+    }
+
+    public void setSystemAdmin(Boolean systemAdmin) {
+        isSystemAdmin = systemAdmin;
     }
 }

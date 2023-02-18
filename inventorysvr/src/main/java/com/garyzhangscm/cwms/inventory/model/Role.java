@@ -24,6 +24,7 @@ public class Role {
     private List<RoleClientAccess> clientAccesses = new ArrayList<>();
 
     private Boolean nonClientDataAccessible;
+    private Boolean allClientAccess;
 
     public Long getId() {
         return id;
@@ -79,5 +80,13 @@ public class Role {
 
     public void setNonClientDataAccessible(Boolean nonClientDataAccessible) {
         this.nonClientDataAccessible = nonClientDataAccessible;
+    }
+
+    public Boolean getAllClientAccess() {
+        return allClientAccess;
+    }
+
+    public void setAllClientAccess(Boolean allClientAccess) {
+        this.allClientAccess = allClientAccess;
     }
 }
