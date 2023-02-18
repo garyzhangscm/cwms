@@ -405,6 +405,25 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "common_warehouse_configuration", unless="#result == null")
+    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout//warehouse-configuration/by-warehouse/{id}");
+
+        ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");

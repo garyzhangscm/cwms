@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.outbound.model;
 
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class User {
@@ -40,6 +42,10 @@ public class User {
     private String name;
     private Timestamp time;
     private int refreshIn;
+
+    private Boolean isAdmin = false;
+    private Boolean isSystemAdmin = false;
+    private List<Role> roles = new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -143,5 +149,29 @@ public class User {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Boolean getAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        isAdmin = admin;
+    }
+
+    public Boolean getSystemAdmin() {
+        return isSystemAdmin;
+    }
+
+    public void setSystemAdmin(Boolean systemAdmin) {
+        isSystemAdmin = systemAdmin;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 }

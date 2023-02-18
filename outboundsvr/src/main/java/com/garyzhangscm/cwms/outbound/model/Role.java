@@ -1,15 +1,10 @@
-package com.garyzhangscm.cwms.inventory.model;
+package com.garyzhangscm.cwms.outbound.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import javax.persistence.*;
 import java.util.ArrayList;
-
 import java.util.List;
+import java.util.Objects;
 
-
-public class Role {
+public class Role extends AuditibleEntity<String>  {
 
     private Long id;
 
@@ -19,12 +14,19 @@ public class Role {
 
     private Boolean enabled;
 
-    private List<User> users = new ArrayList<>();
-
     private List<RoleClientAccess> clientAccesses = new ArrayList<>();
 
     private Boolean nonClientDataAccessible;
     private Boolean allClientAccess;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return Objects.equals(id, role.id);
+    }
+
 
     public Long getId() {
         return id;
@@ -56,14 +58,6 @@ public class Role {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
     }
 
     public List<RoleClientAccess> getClientAccesses() {

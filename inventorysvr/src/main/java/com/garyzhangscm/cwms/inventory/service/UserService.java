@@ -1,7 +1,6 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.ResourceServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.model.Role;
 import com.garyzhangscm.cwms.inventory.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 public class UserService {
 
+
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -45,6 +46,10 @@ public class UserService {
             logger.debug(">> 2 {}", stringServletRequestAttributesEntry.getKey());
         }
         return userServletRequestAttributes.get(token);
+    }
+
+    public User getCurrentUser(Long companyId) {
+        return resourceServiceRestemplateClient.getUserByUsername(companyId, getCurrentUserName());
     }
 
 }

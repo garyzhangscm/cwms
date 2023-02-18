@@ -16,50 +16,31 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.inventory.model;
+package com.garyzhangscm.cwms.inbound.model;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User {
+public class User extends AuditibleEntity<String>  {
 
     private Long id;
 
+
     private String username;
-    private String password;
     private String firstname;
     private String lastname;
-    private String email;
-
-    private boolean enabled;
-    private boolean locked;
-
-    private String token;
-    private String refreshToken;
-    private String name;
-    private Timestamp time;
-    private int refreshIn;
-
     private Boolean isAdmin = false;
     private Boolean isSystemAdmin = false;
 
 
-    private List<Role> roles = new ArrayList<>();
+    private String email;
 
-    @Override
-    public String toString() {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
+    private boolean enabled;
+    private boolean locked;
+
+
+    private List<Role> roles = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -67,6 +48,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Boolean getAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        isAdmin = admin;
     }
 
     public String getUsername() {
@@ -93,14 +82,6 @@ public class User {
         this.lastname = lastname;
     }
 
-    public Boolean getAdmin() {
-        return isAdmin;
-    }
-
-    public void setAdmin(Boolean admin) {
-        isAdmin = admin;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -108,6 +89,7 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
 
     public boolean isEnabled() {
         return enabled;
@@ -125,60 +107,15 @@ public class User {
         this.locked = locked;
     }
 
+
+    public String getName() {return username;}
+
     public List<Role> getRoles() {
         return roles;
     }
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Timestamp getTime() {
-        return time;
-    }
-
-    public void setTime(Timestamp time) {
-        this.time = time;
-    }
-
-    public int getRefreshIn() {
-        return refreshIn;
-    }
-
-    public void setRefreshIn(int refreshIn) {
-        this.refreshIn = refreshIn;
     }
 
     public Boolean getSystemAdmin() {

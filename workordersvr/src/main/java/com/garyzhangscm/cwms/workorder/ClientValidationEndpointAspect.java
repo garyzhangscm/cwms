@@ -1,10 +1,10 @@
-package com.garyzhangscm.cwms.common;
+package com.garyzhangscm.cwms.workorder;
 
-import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.common.model.ClientRestriction;
-import com.garyzhangscm.cwms.common.model.User;
-import com.garyzhangscm.cwms.common.model.WarehouseConfiguration;
-import com.garyzhangscm.cwms.common.service.UserService;
+import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.model.ClientRestriction;
+import com.garyzhangscm.cwms.workorder.model.User;
+import com.garyzhangscm.cwms.workorder.model.WarehouseConfiguration;
+import com.garyzhangscm.cwms.workorder.service.UserService;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -34,7 +34,7 @@ public class ClientValidationEndpointAspect {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     // aspect method who have the annotation @Delegate
-    @Around(value = "@annotation(com.garyzhangscm.cwms.common.model.ClientValidationEndpoint)")
+    @Around(value = "@annotation(com.garyzhangscm.cwms.workorder.model.ClientValidationEndpoint)")
     public Object handle(ProceedingJoinPoint joinPoint) throws Throwable {
 
 

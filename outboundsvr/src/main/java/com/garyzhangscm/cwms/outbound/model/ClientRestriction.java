@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.common.model;
+package com.garyzhangscm.cwms.outbound.model;
 
 
 import java.io.Serializable;
