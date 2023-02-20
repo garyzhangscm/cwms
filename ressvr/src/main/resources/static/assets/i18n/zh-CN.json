@@ -1968,5 +1968,6 @@
   "process-item-override": "刷新仓库商品信息",
   "created-time": "创建时间",
   "created-date": "创建日期",
-  "complete-date": "完成日期"
+  "complete-date": "完成日期",
+  "allClientAccess": "允许操作所有客户的数据"
 }

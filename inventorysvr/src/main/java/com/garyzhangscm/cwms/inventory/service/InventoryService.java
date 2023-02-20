@@ -387,7 +387,8 @@ public class InventoryService implements TestDataInitiableService{
                     Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
 
                     if (Objects.isNull(clientRestriction) ||
-                            !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag())) {
+                            !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag()) ||
+                            Boolean.TRUE.equals(clientRestriction.getAllClientAccess())) {
                         // not a 3pl warehouse, let's not put any restriction on the client
                         // (unless the client restriction is from the web request, which we already
                         // handled previously
@@ -744,6 +745,16 @@ public class InventoryService implements TestDataInitiableService{
      logger.debug("========> @ {} start to load inventory details for lpn {}",
      currentLocalDateTime, inventory.getLpn());
 
+        // Load location information
+        if (Objects.nonNull(inventory.getClientId()) &&
+                Objects.isNull(inventory.getClient())) {
+
+            inventory.setClient(
+                    commonServiceRestemplateClient.getClientById(
+                            inventory.getClientId()
+                    ));
+
+        }
 
      // Load location information
      if (Objects.nonNull(inventory.getLocationId()) &&
@@ -955,7 +966,7 @@ public class InventoryService implements TestDataInitiableService{
     public List<Inventory> loadInventoryData(File  file) throws IOException {
         List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
         return inventoryCSVWrappers.stream().map(inventoryCSVWrapper -> convertFromWrapper(
-                inventoryCSVWrapper, null, null, null, null, null)).collect(Collectors.toList());
+                inventoryCSVWrapper, null, null, null, null, null, null)).collect(Collectors.toList());
     }
 
     public List<InventoryCSVWrapper> loadData(File file) throws IOException {
@@ -979,6 +990,7 @@ public class InventoryService implements TestDataInitiableService{
         CsvSchema schema = CsvSchema.builder().
                 addColumn("company").
                 addColumn("warehouse").
+                addColumn("client").
                 addColumn("lpn").
                 addColumn("location").
                 addColumn("item").
@@ -1002,7 +1014,7 @@ public class InventoryService implements TestDataInitiableService{
             List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(inputStream);
             inventoryCSVWrappers.stream().forEach(inventoryCSVWrapper -> {
                 Inventory savedInvenotry = saveOrUpdate(
-                        convertFromWrapper(inventoryCSVWrapper, null, null, null, null, null));
+                        convertFromWrapper(inventoryCSVWrapper, null, null, null, null, null, null));
                 // re-calculate the size of the location
 
                 Location destination =
@@ -1044,6 +1056,7 @@ public class InventoryService implements TestDataInitiableService{
         Map<String, ItemPackageType> itemPackageTypeMap = new HashMap<>();
         Map<String, InventoryStatus> inventoryStatusMap = new HashMap<>();
         Map<String, Location> locationMap = new HashMap<>();
+        Map<String, Client> clientMap = new HashMap<>();
 
         Warehouse warehouse = null;
         for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
@@ -1070,9 +1083,24 @@ public class InventoryService implements TestDataInitiableService{
                 warehouseIdMap.put(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse(),
                         warehouse);
             }
+
+            Client client = null;
+            if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
+                if (!clientMap.containsKey(inventoryCSVWrapper.getClient())) {
+                    client = commonServiceRestemplateClient.getClientByName(warehouse.getId(), inventoryCSVWrapper.getClient());
+                    clientMap.put(inventoryCSVWrapper.getClient(), client);
+                }
+                else {
+                    // load the client for current row so that we can load the right item
+                    // based on the warehouse and client infomration along with the item name
+                    client = clientMap.get(inventoryCSVWrapper.getClient());
+                }
+            }
+
             if (!itemMap.containsKey(inventoryCSVWrapper.getItem()) && Objects.nonNull(warehouse)) {
 
-                Item item = itemService.findByName(warehouse.getId(), inventoryCSVWrapper.getItem());
+                Item item = itemService.findByName(warehouse.getId(),
+                        client.getId(), inventoryCSVWrapper.getItem());
                 if (Objects.isNull(item)) {
 
                     logger.debug("skip the record as we can't find the item by name {} from warehouse {} / {}",
@@ -1148,21 +1176,23 @@ public class InventoryService implements TestDataInitiableService{
                         itemMap.get(inventoryCSVWrapper.getItem()),
                         itemPackageTypeMap.get(inventoryCSVWrapper.getItemPackageType()),
                         inventoryStatusMap.get(inventoryCSVWrapper.getInventoryStatus()),
-                        locationMap.get(inventoryCSVWrapper.getLocation()))
+                        locationMap.get(inventoryCSVWrapper.getLocation()),
+                        clientMap.get(inventoryCSVWrapper.getClient()))
         ).collect(Collectors.toList());
 
 
 
     }
     private Inventory convertFromWrapper(InventoryCSVWrapper inventoryCSVWrapper) {
-        return convertFromWrapper(inventoryCSVWrapper, null, null, null, null, null);
+        return convertFromWrapper(inventoryCSVWrapper, null, null, null, null, null, null);
     }
     private Inventory convertFromWrapper(InventoryCSVWrapper inventoryCSVWrapper,
                                          Warehouse warehouse,
                                          Item item,
                                          ItemPackageType itemPackageType,
                                          InventoryStatus inventoryStatus,
-                                         Location location) {
+                                         Location location,
+                                         Client client) {
         Inventory inventory = new Inventory();
         inventory.setLpn(inventoryCSVWrapper.getLpn());
         inventory.setQuantity(inventoryCSVWrapper.getQuantity());
@@ -1178,13 +1208,25 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setWarehouseId(warehouse.getId());
         inventory.setWarehouse(warehouse);
 
+        // client
+        if (Objects.nonNull(client)) {
+            inventory.setClientId(client.getId());
+        }
+        else if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(warehouse.getId(),
+                    inventoryCSVWrapper.getClient());
+            if (Objects.nonNull(client)) {
+                inventory.setClientId(client.getId());
+            }
+        }
 
         // item
         if (Objects.nonNull(item)) {
             inventory.setItem(item);
         }
         else if (Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
-            inventory.setItem(itemService.findByName(warehouse.getId(), inventoryCSVWrapper.getItem()));
+            inventory.setItem(itemService.findByName(warehouse.getId(), inventory.getClientId(),
+                    inventoryCSVWrapper.getItem()));
         }
 
         // itemPackageType

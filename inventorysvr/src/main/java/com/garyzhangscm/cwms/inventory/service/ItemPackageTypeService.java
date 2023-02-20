@@ -261,7 +261,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
             itemPackageType.setSupplierId(supplier.getId());
         }
         if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getItem())) {
-            Item item = itemService.findByName(warehouse.getId(), itemPackageTypeCSVWrapper.getItem());
+            Item item = itemService.findByName(warehouse.getId(), itemPackageType.getClientId(), itemPackageTypeCSVWrapper.getItem());
             itemPackageType.setItem(item);
         }
         return itemPackageType;

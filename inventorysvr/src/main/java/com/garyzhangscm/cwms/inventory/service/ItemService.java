@@ -295,15 +295,19 @@ public class ItemService implements TestDataInitiableService{
     }
 
 
-    public Item findByName(Long warehouseId, String name, boolean includeDetails){
-        Item item = itemRepository.findByWarehouseIdAndName(warehouseId, name);
+    public Item findByName(Long warehouseId, Long clientId, String name, boolean includeDetails){
+
+        Item item = Objects.isNull(clientId) ?
+                itemRepository.findByWarehouseIdAndName(warehouseId, name)
+        :
+                itemRepository.findByWarehouseIdAndClientIdAndName(warehouseId, clientId, name);
         if (item != null && includeDetails) {
             loadAttribute(item);
         }
         return item;
     }
-    public Item findByName(Long warehouseId, String name){
-        return findByName(warehouseId, name, true);
+    public Item findByName(Long warehouseId, Long clientId, String name){
+        return findByName(warehouseId, clientId, name, true);
     }
 
     public Item save(Item item) {
@@ -312,8 +316,8 @@ public class ItemService implements TestDataInitiableService{
 
 
     public Item saveOrUpdate(Item item) {
-        if (item.getId() == null && findByName(item.getWarehouseId(), item.getName()) != null) {
-            item.setId(findByName(item.getWarehouseId(), item.getName()).getId());
+        if (item.getId() == null && findByName(item.getWarehouseId(), item.getClientId(), item.getName()) != null) {
+            item.setId(findByName(item.getWarehouseId(), item.getClientId(), item.getName()).getId());
         }
         Item newItem = save(item);
 
@@ -589,10 +593,10 @@ public class ItemService implements TestDataInitiableService{
         boolean newWarehouseItem = false;
         Long globalItemId = null;
         if (Objects.nonNull(item.getWarehouseId()) &&
-                Objects.isNull(findByName(item.getWarehouseId(), item.getName()))) {
+                Objects.isNull(findByName(item.getWarehouseId(), item.getClientId(), item.getName()))) {
             newWarehouseItem = true;
             // see if we can find the global item with the same name
-            Item globalItem = findByName(null, item.getName(), false);
+            Item globalItem = findByName(null, item.getClientId(), item.getName(), false);
             if (Objects.nonNull(globalItem)) {
                 globalItemId = globalItem.getId();
             }
@@ -873,10 +877,10 @@ public class ItemService implements TestDataInitiableService{
 
     }
 
-    public String validateNewItemName(Long warehouseId, String itemName) {
+    public String validateNewItemName(Long warehouseId, Long clientId, String itemName) {
 
         Item item =
-                findByName(warehouseId, itemName, false);
+                findByName(warehouseId, clientId,  itemName, false);
 
         return Objects.isNull(item) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
@@ -952,7 +956,7 @@ public class ItemService implements TestDataInitiableService{
     public void processIntegration(Item item) {
 
         // if the item already exists, then update it
-        Item existingItem = findByName(item.getWarehouseId(), item.getName(), false);
+        Item existingItem = findByName(item.getWarehouseId(), item.getClientId(), item.getName(), false);
         if (Objects.nonNull(existingItem)) {
             // we found item with the same name, let's update the item
             item.setId(existingItem.getId());

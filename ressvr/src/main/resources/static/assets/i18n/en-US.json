@@ -1968,5 +1968,6 @@
   "process-item-override": "Process Item Override",
   "created-time": "Create Time",
   "created-date": "Create Date",
-  "complete-date": "Complete Date"
+  "complete-date": "Complete Date",
+  "allClientAccess": "Allow Access All Clients"
 }

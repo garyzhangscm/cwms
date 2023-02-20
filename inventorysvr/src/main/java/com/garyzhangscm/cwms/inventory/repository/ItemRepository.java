@@ -30,7 +30,17 @@ import java.util.List;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
+
+    // return the item by warehouse id and name. only return the non client specific item
+    // if the user want to get the client specific item, call the function
+    // findByWarehouseIdAndClientIdAndName
+    @Query( "select i from Item i " +
+            "  where i.warehouseId = :warehouseId " +
+            "    and i.name = :name " +
+            "    and i.clientId is null")
     Item findByWarehouseIdAndName(Long warehouseId, String name);
+
+    Item findByWarehouseIdAndClientIdAndName(Long warehouseId, Long clientId, String name);
 
 
     @Query( "select i from Item i " +
@@ -50,4 +60,5 @@ public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificat
     void processItemFamilyOverride(Long oldItemFamilyId, Long newItemFamilyId, Long warehouseId);
 
     List<Item> findByWarehouseId(Long warehouseId);
+
 }
