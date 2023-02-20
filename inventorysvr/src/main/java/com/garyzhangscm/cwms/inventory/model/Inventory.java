@@ -51,6 +51,9 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "lpn")
     private String lpn;
 
+    @Transient
+    private Client client;
+
     @Column(name = "client_id")
     private Long clientId;
 
@@ -208,6 +211,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         return Objects.hash(id);
     }
 
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
 
     public Long getClientId() {
         return clientId;

@@ -40,6 +40,8 @@ public class InventoryCSVWrapper implements Serializable {
     private String warehouse;
     private String company;
 
+    private String client;
+
     @Override
     public String toString() {
         try {
@@ -112,5 +114,13 @@ public class InventoryCSVWrapper implements Serializable {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 }

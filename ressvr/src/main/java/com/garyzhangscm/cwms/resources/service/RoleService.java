@@ -250,9 +250,12 @@ public class RoleService implements TestDataInitiableService{
     }
 
 
-    public Role processClients(Long roleId, String assignedClientIds, String deassignedClientIds, Boolean nonClientDataAccessible) {
+    public Role processClients(Long roleId, String assignedClientIds,
+                               String deassignedClientIds, Boolean nonClientDataAccessible,
+                               Boolean allClientAccess) {
         Role role = findById(roleId);
         role.setNonClientDataAccessible(nonClientDataAccessible);
+        role.setAllClientAccess(allClientAccess);
 
 
         Iterator<RoleClientAccess> existingRoleClientAccessIterator = role.getClientAccesses().iterator();

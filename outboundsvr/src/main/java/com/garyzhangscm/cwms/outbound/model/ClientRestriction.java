@@ -60,4 +60,12 @@ public class ClientRestriction extends  AuditibleEntity<String> implements Seria
     public void setClientAccesses(String clientAccesses) {
         this.clientAccesses = clientAccesses;
     }
+
+    public Boolean getAllClientAccess() {
+        return allClientAccess;
+    }
+
+    public void setAllClientAccess(Boolean allClientAccess) {
+        this.allClientAccess = allClientAccess;
+    }
 }

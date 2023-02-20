@@ -67,7 +67,8 @@ public class IntegrationService {
             matchedItem = itemService.findById(item.getId());
         }
         else {
-            matchedItem = itemService.findByName(item.getWarehouseId(), item.getName());
+            matchedItem = itemService.findByName(item.getWarehouseId(),
+                    item.getClientId(), item.getName());
 
 
         }

@@ -29,6 +29,7 @@ import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryAdjustmentThresholdRepository;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -310,6 +311,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
 
         CsvSchema schema = CsvSchema.builder().
                 addColumn("company").
+                addColumn("client").
                 addColumn("item").
                 addColumn("client").
                 addColumn("itemFamily").
@@ -355,9 +357,17 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
             );
         inventoryAdjustmentThreshold.setWarehouseId(warehouse.getId());
 
+        Client client = null;
+        if (Strings.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(warehouse.getId(),
+                    inventoryAdjustmentThresholdCSVWrapper.getClient());
+        }
+
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getItem())) {
             inventoryAdjustmentThreshold.setItem(
-                    itemService.findByName(warehouse.getId(), inventoryAdjustmentThresholdCSVWrapper.getItem())
+                    itemService.findByName(warehouse.getId(),
+                            Objects.isNull(client) ?  null : client.getId(),
+                            inventoryAdjustmentThresholdCSVWrapper.getItem())
             );
         }
         if (StringUtils.isNotBlank(inventoryAdjustmentThresholdCSVWrapper.getClient())) {

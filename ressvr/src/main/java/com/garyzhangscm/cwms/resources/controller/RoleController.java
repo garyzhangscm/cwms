@@ -98,10 +98,12 @@ public class RoleController {
     @RequestMapping(value="/roles/{id}/clients", method = RequestMethod.POST)
     public ResponseBodyWrapper processClients(@PathVariable Long id,
                                               @RequestParam Boolean nonClientDataAccessible,
+                                              @RequestParam Boolean allClientAccess,
                                             @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedClientIds,
                                             @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedClientIds) {
 
-        roleService.processClients(id, assignedClientIds, deassignedClientIds, nonClientDataAccessible);
+        roleService.processClients(id, assignedClientIds, deassignedClientIds,
+                nonClientDataAccessible, allClientAccess);
         return ResponseBodyWrapper.success("success");
     }
 

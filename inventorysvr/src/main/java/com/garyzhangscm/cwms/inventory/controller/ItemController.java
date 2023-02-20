@@ -155,9 +155,10 @@ public class ItemController {
 
     @RequestMapping(method=RequestMethod.POST, value="/items/validate-new-item-name")
     public ResponseBodyWrapper<String> validateNewItemName(@RequestParam Long warehouseId,
-                                                      @RequestParam String itemName)  {
+                                                           @RequestParam String itemName,
+                                                           @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId)  {
 
-        return ResponseBodyWrapper.success(itemService.validateNewItemName(warehouseId, itemName));
+        return ResponseBodyWrapper.success(itemService.validateNewItemName(warehouseId,clientId,  itemName));
     }
 
 
