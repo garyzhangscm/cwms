@@ -262,6 +262,13 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         }
         if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getItem())) {
             Item item = itemService.findByName(warehouse.getId(), itemPackageType.getClientId(), itemPackageTypeCSVWrapper.getItem());
+            if (Objects.isNull(item)) {
+                item = itemService.createItem(itemPackageTypeCSVWrapper);
+                logger.debug("Item is not created yet, let's create on the fly while loading item package type data");
+                logger.debug(" ============       item package data ================");
+                logger.debug(itemPackageTypeCSVWrapper.toString());
+                logger.debug("item created: {} / {}", item.getId(), item.getName());
+            }
             itemPackageType.setItem(item);
         }
         return itemPackageType;
@@ -276,12 +283,40 @@ public class ItemPackageTypeService implements TestDataInitiableService{
      */
     public ItemPackageType createItemPackageType(ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
         ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper = new ItemPackageTypeCSVWrapper();
+
+        itemPackageTypeCSVWrapper.setCompany(itemUnitOfMeasureCSVWrapper.getCompany());
+        itemPackageTypeCSVWrapper.setWarehouse(itemUnitOfMeasureCSVWrapper.getWarehouse());
+
+        itemPackageTypeCSVWrapper.setClient(itemUnitOfMeasureCSVWrapper.getClient());
+
         itemPackageTypeCSVWrapper.setName(itemUnitOfMeasureCSVWrapper.getItemPackageType());
         itemPackageTypeCSVWrapper.setDescription(itemUnitOfMeasureCSVWrapper.getItemPackageTypeDescription());
+
         itemPackageTypeCSVWrapper.setItem(itemUnitOfMeasureCSVWrapper.getItem());
-        itemPackageTypeCSVWrapper.setWarehouse(itemUnitOfMeasureCSVWrapper.getWarehouse());
-        itemPackageTypeCSVWrapper.setCompany(itemUnitOfMeasureCSVWrapper.getCompany());
-        itemPackageTypeCSVWrapper.setClient(itemUnitOfMeasureCSVWrapper.getClient());
+        itemPackageTypeCSVWrapper.setItemDescription(
+                Strings.isBlank(itemUnitOfMeasureCSVWrapper.getItemDescription()) ?
+                        itemUnitOfMeasureCSVWrapper.getItem() :
+                        itemUnitOfMeasureCSVWrapper.getItemDescription());
+        itemPackageTypeCSVWrapper.setItemFamily(itemUnitOfMeasureCSVWrapper.getItemFamily());
+
+        itemPackageTypeCSVWrapper.setTrackingColorFlag(
+                itemUnitOfMeasureCSVWrapper.getTrackingColorFlag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultColor(
+                itemUnitOfMeasureCSVWrapper.getDefaultColor()
+        );
+        itemPackageTypeCSVWrapper.setTrackingProductSizeFlag(
+                itemUnitOfMeasureCSVWrapper.getTrackingProductSizeFlag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultProductSize(
+                itemUnitOfMeasureCSVWrapper.getDefaultProductSize()
+        );
+        itemPackageTypeCSVWrapper.setTrackingStyleFlag(
+                itemUnitOfMeasureCSVWrapper.getTrackingStyleFlag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultStyle(
+                itemUnitOfMeasureCSVWrapper.getDefaultStyle()
+        );
 
 
         return saveOrUpdate(convertFromWrapper(itemPackageTypeCSVWrapper));

@@ -53,6 +53,17 @@ public class ItemCSVWrapper implements Serializable {
     private Integer shelfLifeDays;
     private boolean trackingExpirationDateFlag;
 
+    private boolean trackingColorFlag;
+    private String defaultColor;
+
+    private boolean trackingProductSizeFlag ;
+    private String defaultProductSize;
+
+    private boolean trackingStyleFlag;
+    private String defaultStyle;
+
+
+
     private String imageUrl;
 
     private String thumbnailUrl;
@@ -137,6 +148,54 @@ public class ItemCSVWrapper implements Serializable {
 
     public void setAllowAllocationByLPN(Boolean allowAllocationByLPN) {
         this.allowAllocationByLPN = allowAllocationByLPN;
+    }
+
+    public boolean isTrackingColorFlag() {
+        return trackingColorFlag;
+    }
+
+    public void setTrackingColorFlag(boolean trackingColorFlag) {
+        this.trackingColorFlag = trackingColorFlag;
+    }
+
+    public String getDefaultColor() {
+        return defaultColor;
+    }
+
+    public void setDefaultColor(String defaultColor) {
+        this.defaultColor = defaultColor;
+    }
+
+    public boolean isTrackingProductSizeFlag() {
+        return trackingProductSizeFlag;
+    }
+
+    public void setTrackingProductSizeFlag(boolean trackingProductSizeFlag) {
+        this.trackingProductSizeFlag = trackingProductSizeFlag;
+    }
+
+    public String getDefaultProductSize() {
+        return defaultProductSize;
+    }
+
+    public void setDefaultProductSize(String defaultProductSize) {
+        this.defaultProductSize = defaultProductSize;
+    }
+
+    public boolean isTrackingStyleFlag() {
+        return trackingStyleFlag;
+    }
+
+    public void setTrackingStyleFlag(boolean trackingStyleFlag) {
+        this.trackingStyleFlag = trackingStyleFlag;
+    }
+
+    public String getDefaultStyle() {
+        return defaultStyle;
+    }
+
+    public void setDefaultStyle(String defaultStyle) {
+        this.defaultStyle = defaultStyle;
     }
 
     public String getAllocationRoundUpStrategyType() {

@@ -29,6 +29,16 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
     private String description;
 
     private String item;
+    private String itemDescription;
+    private String itemFamily;
+    private String trackingColorFlag;
+    private String defaultColor;
+    private String trackingProductSizeFlag;
+    private String defaultProductSize;
+    private String trackingStyleFlag;
+    private String defaultStyle;
+
+
     private String client;
     private String supplier;
 
@@ -85,6 +95,54 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
         this.client = client;
     }
 
+    public String getTrackingColorFlag() {
+        return trackingColorFlag;
+    }
+
+    public void setTrackingColorFlag(String trackingColorFlag) {
+        this.trackingColorFlag = trackingColorFlag;
+    }
+
+    public String getDefaultColor() {
+        return defaultColor;
+    }
+
+    public void setDefaultColor(String defaultColor) {
+        this.defaultColor = defaultColor;
+    }
+
+    public String getTrackingProductSizeFlag() {
+        return trackingProductSizeFlag;
+    }
+
+    public void setTrackingProductSizeFlag(String trackingProductSizeFlag) {
+        this.trackingProductSizeFlag = trackingProductSizeFlag;
+    }
+
+    public String getDefaultProductSize() {
+        return defaultProductSize;
+    }
+
+    public void setDefaultProductSize(String defaultProductSize) {
+        this.defaultProductSize = defaultProductSize;
+    }
+
+    public String getTrackingStyleFlag() {
+        return trackingStyleFlag;
+    }
+
+    public void setTrackingStyleFlag(String trackingStyleFlag) {
+        this.trackingStyleFlag = trackingStyleFlag;
+    }
+
+    public String getDefaultStyle() {
+        return defaultStyle;
+    }
+
+    public void setDefaultStyle(String defaultStyle) {
+        this.defaultStyle = defaultStyle;
+    }
+
     public String getSupplier() {
         return supplier;
     }
@@ -99,5 +157,21 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getItemDescription() {
+        return itemDescription;
+    }
+
+    public void setItemDescription(String itemDescription) {
+        this.itemDescription = itemDescription;
+    }
+
+    public String getItemFamily() {
+        return itemFamily;
+    }
+
+    public void setItemFamily(String itemFamily) {
+        this.itemFamily = itemFamily;
     }
 }

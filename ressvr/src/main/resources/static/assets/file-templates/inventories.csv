@@ -1,1 +1,1 @@
-company,warehouse,lpn,location,item,itemPackageType,quantity,inventoryStatus
+company,warehouse,client,lpn,location,item,itemPackageType,quantity,inventoryStatus,color,productSize,style

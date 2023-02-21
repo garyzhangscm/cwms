@@ -56,6 +56,7 @@ public class CommonServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Cacheable(cacheNames = "client")
     public Client getClientById(Long id) {
 
         UriComponentsBuilder builder =
@@ -73,6 +74,8 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
+    @Cacheable(cacheNames = "client")
     public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -115,6 +118,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "supplier")
     public Supplier getSupplierById(Long supplierId) {
 
 
@@ -133,6 +137,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "supplier")
     public Supplier getSupplierByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -159,7 +164,9 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "inventory_unitOfMeasure", unless="#result == null")
+    // @Cacheable(cacheNames = "inventory_unitOfMeasure", unless="#result == null")
+
+    @Cacheable(cacheNames = "unitOfMeasure")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
         UriComponentsBuilder builder =
@@ -177,7 +184,9 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "inventory_velocity", unless="#result == null",  key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
+    // @Cacheable(cacheNames = "inventory_velocity", unless="#result == null",  key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
+
+    @Cacheable(cacheNames = "velocity", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
     public List<Velocity> getVelocitesByWarehouse(Long warehouseId) {
 
         UriComponentsBuilder builder =
@@ -196,6 +205,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    @Cacheable(cacheNames = "velocity")
     public Velocity getVelocityById(Long id) {
 
         UriComponentsBuilder builder =
@@ -214,7 +224,8 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "inventory_abc-category", unless="#result == null", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
+    // @Cacheable(cacheNames = "inventory_abc-category", unless="#result == null", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
+    @Cacheable(cacheNames = "abc-category", unless="#result == null", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
     public List<ABCCategory> getABCCategoriesByWarehouse(Long warehouseId) {
 
         UriComponentsBuilder builder =
@@ -232,7 +243,7 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-
+    @Cacheable(cacheNames = "abc-category")
     public ABCCategory getABCCategoryById(Long id) {
 
         UriComponentsBuilder builder =
@@ -252,9 +263,11 @@ public class CommonServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "unitOfMeasure")
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
         return getUnitOfMeasureByName(null, warehouseId, name, null, null);
     }
+    @Cacheable(cacheNames = "unitOfMeasure")
     public UnitOfMeasure getUnitOfMeasureByName(Long companyId,
                                                 Long warehouseId, String name,
                                                 Boolean companyUnitOfMeasure,

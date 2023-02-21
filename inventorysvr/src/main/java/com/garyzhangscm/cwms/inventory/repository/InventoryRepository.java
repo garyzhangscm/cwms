@@ -97,4 +97,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
             "group by item.name, item.quickbook_listid, inventory_status.name ",
             nativeQuery = true)
     List<Object[]> getQuickbookDesktopInventorySummary(Long warehouseId, String itemName);
+
+    @Transactional
+    long deleteByLocationId(Long locationId);
 }

@@ -509,6 +509,32 @@ public class InventoryService implements TestDataInitiableService{
         return inventoryRepository.findPendingInventoryByLocationId(locationId);
     }
 
+    public List<Inventory> findInventoryByLocationIds(Long warehouseId, String locationIds) {
+        return findAll(warehouseId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                locationIds,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+    }
+
     public List<Inventory> findPickableInventories(Long itemId, Long inventoryStatusId) {
         return findPickableInventories(itemId, inventoryStatusId, true);
     }
@@ -717,6 +743,11 @@ public class InventoryService implements TestDataInitiableService{
                 delete(id);
             }
         }
+    }
+
+    @Transactional
+    public void deleteInventoryByLocation(Long locationId) {
+        inventoryRepository.deleteByLocationId(locationId);
     }
 
 
@@ -974,12 +1005,16 @@ public class InventoryService implements TestDataInitiableService{
         CsvSchema schema = CsvSchema.builder().
                 addColumn("company").
                 addColumn("warehouse").
+                addColumn("client").
                 addColumn("lpn").
                 addColumn("location").
                 addColumn("item").
                 addColumn("itemPackageType").
                 addColumn("quantity").
                 addColumn("inventoryStatus").
+                addColumn("color").
+                addColumn("productSize").
+                addColumn("style").
                 build().withHeader();
         return fileService.loadData(file, schema, InventoryCSVWrapper.class);
     }
@@ -997,6 +1032,9 @@ public class InventoryService implements TestDataInitiableService{
                 addColumn("itemPackageType").
                 addColumn("quantity").
                 addColumn("inventoryStatus").
+                addColumn("color").
+                addColumn("productSize").
+                addColumn("style").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, InventoryCSVWrapper.class);
@@ -1197,6 +1235,10 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setLpn(inventoryCSVWrapper.getLpn());
         inventory.setQuantity(inventoryCSVWrapper.getQuantity());
         inventory.setVirtual(false);
+
+        inventory.setColor(inventoryCSVWrapper.getColor());
+        inventory.setProductSize(inventoryCSVWrapper.getProductSize());
+        inventory.setStyle(inventoryCSVWrapper.getStyle());
 
         // warehouse is a mandate field
         if (Objects.isNull(warehouse)) {
@@ -3225,6 +3267,7 @@ public class InventoryService implements TestDataInitiableService{
     }
 
 
+    @Transactional
     public String uploadInventoryData(Long warehouseId,
                                                File file, Boolean removeExistingInventory) throws IOException {
 
@@ -3267,26 +3310,22 @@ public class InventoryService implements TestDataInitiableService{
         Set<Long> locationIds = new HashSet<>();
         Set<Long> locationGroupIds = new HashSet<>();
 
-        inventories.forEach(
-                inventory -> {
-                    locationIds.add(inventory.getLocationId());
-                    if (Objects.nonNull(inventory.getLocation()) &&
-                            Objects.nonNull(inventory.getLocation().getLocationGroup())) {
-                        locationGroupIds.add(inventory.getLocation().getLocationGroup().getId());
-                    }
-                }
-        );
+        for (Inventory inventory : inventories) {
+            locationIds.add(inventory.getLocationId());
+            if (Objects.nonNull(inventory.getLocation()) &&
+                    Objects.nonNull(inventory.getLocation().getLocationGroup())) {
+                locationGroupIds.add(inventory.getLocation().getLocationGroup().getId());
+            }
+        }
 
         // ok, we will need to remove the existing inventory.
-        // let's load the inventory but remove it later on in
-        // another thread
-        List<Inventory> inventoryToBeRemoved = new ArrayList<>();
-        if (Boolean.TRUE.equals(removeExistingInventory)) {
+        // let's find the locations that have inventory
+        String locationIdString = locationIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        locationIds = findInventoryByLocationIds(warehouseId, locationIdString)
+                .stream().map(inventory -> inventory.getLocationId()).collect(Collectors.toSet());
 
-            inventoryToBeRemoved = locationIds.stream().map(
-                    locationId -> findByLocationId(locationId)
-            ).flatMap(List::stream).collect(Collectors.toList());
-        }
+
+        logger.debug("we have   {} locations of inventory that we will remove the inventory", locationIds.size());
 
         logger.debug("Get {} location group ids to load, {}",
                 locationGroupIds.size(), locationGroupIds);
@@ -3307,8 +3346,30 @@ public class InventoryService implements TestDataInitiableService{
         // we will use thread to save the inventory
         // get the username of the current user and pass it into the new thread
         String username = userService.getCurrentUserName();
-        List<Inventory> finalInventoryToBeRemoved = inventoryToBeRemoved;
+        // List<Inventory> finalInventoryToBeRemoved = inventoryToBeRemoved;
+        Set<Long> finalLocationIds = locationIds;
         new Thread(() -> {
+            logger.debug("Get {} location ids to be cleared, {}",
+                    finalLocationIds.size(), finalLocationIds);
+            if (Boolean.TRUE.equals(removeExistingInventory) && !finalLocationIds.isEmpty()) {
+                // remove all the inventory from the location first
+
+                int i = 0;
+                for (Long finalLocationId : finalLocationIds) {
+
+                    deleteInventoryByLocation(finalLocationId);
+                    logger.debug("inventory is removed from location {}",  finalLocationId);
+
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + i * 20.0 / finalLocationIds.size());
+                    i++;
+                }
+                logger.debug("cleared {} locations so we can load the inventory into those locations",
+                        finalLocationIds.size() );
+            }
+            else {
+                logger.debug("There's no need to clear those locations");
+            }
+            /**
             logger.debug("Get {} location ids to be cleared, {}",
                     locationIds.size(), locationIds);
             if (Boolean.TRUE.equals(removeExistingInventory) && !finalInventoryToBeRemoved.isEmpty()) {
@@ -3323,22 +3384,6 @@ public class InventoryService implements TestDataInitiableService{
 
                     inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + i * 20.0 / finalInventoryToBeRemoved.size());
                 }
-                /***
-                finalInventoryToBeRemoved.forEach(
-                        inventory -> {
-                            removeInventory(inventory, "", "");
-
-                            logger.debug("inventory {} / lpn {} from location  {} is removed",
-                                    inventory.getId(), inventory.getLpn(),
-                                    inventory.getLocation().getName());
-                        }
-                );
-                 **/
-                /**
-                for (Long locationId : locationIds) {
-                    logger.debug("Start to remove inventory from location {}", locationId);
-                    removeInventoryByLocation(locationId, false);
-                }**/
                 logger.debug("cleared {} locations( {} inventory records) so we can load the inventory into those locations",
                         locationIds.size(),
                         finalInventoryToBeRemoved.size());
@@ -3346,6 +3391,7 @@ public class InventoryService implements TestDataInitiableService{
             else {
                 logger.debug("There's no need to clear those locations");
             }
+             */
             inventoryFileUploadProgress.put(fileUploadProgressKey, 40.0);
             for (int i = 0; i < inventories.size(); i++) {
 

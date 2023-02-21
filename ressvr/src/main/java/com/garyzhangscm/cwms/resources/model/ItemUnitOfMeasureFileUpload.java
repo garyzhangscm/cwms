@@ -32,6 +32,49 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
                 String.class, 100, false
         ));
 
+
+        addColumn(new FileUploadTemplateColumn(
+                "itemDescription", "Item Description(only needed for new item)",
+                String.class, 100, false
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "itemFamily", "Item Name(only needed for new item)",
+                String.class, 100, false
+        ));
+
+
+        addColumn(new FileUploadTemplateColumn(
+                "trackingColorFlag", "Tracking Color?(only needed for new item)",
+                String.class, 100, false
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultColor", "Default Color(only needed for new item)",
+                String.class, 100, false
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "trackingProductSizeFlag", "Tracking Product Size?(only needed for new item)",
+                String.class, 100, false
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultProductSize", "Default Product Size(only needed for new item)",
+                String.class, 100, false
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "trackingStyleFlag", "Tracking Style?(only needed for new item)",
+                String.class, 100, false
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultStyle", "Default Style(only needed for new item)",
+                String.class, 100, false
+        ));
+
+
         addColumn(new FileUploadTemplateColumn(
                  "itemPackageType", "Item Package Type Name",
                 String.class, 100, false
@@ -39,7 +82,7 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
 
         // only necessary if the item package type doesn't exist yet
         addColumn(new FileUploadTemplateColumn(
-                "itemPackageTypeDescription", "Item Package Type Description",
+                "itemPackageTypeDescription", "Item Package Type Description(only needed for new item package type)",
                 String.class, 100, true
         ));
 

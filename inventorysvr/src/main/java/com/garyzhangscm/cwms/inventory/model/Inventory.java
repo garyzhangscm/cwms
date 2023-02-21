@@ -136,6 +136,16 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Warehouse warehouse;
 
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
+
 
     @OneToMany(
             mappedBy = "inventory",
@@ -192,6 +202,10 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setReceiptLineId(getReceiptLineId());
         inventory.setClientId(getClientId());
 
+        inventory.setColor(getColor());
+        inventory.setProductSize(getProductSize());
+        inventory.setColor(getColor());
+
         setQuantity(getQuantity() - newQuantity);
 
         return inventory;
@@ -236,6 +250,30 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 
     public Long getId() {

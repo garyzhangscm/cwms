@@ -106,6 +106,14 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
                 addColumn("warehouse").
                 addColumn("client").
                 addColumn("item").
+                addColumn("itemDescription").
+                addColumn("itemFamily").
+                addColumn("trackingColorFlag").
+                addColumn("defaultColor").
+                addColumn("trackingProductSizeFlag").
+                addColumn("defaultProductSize").
+                addColumn("trackingStyleFlag").
+                addColumn("defaultStyle").
                 addColumn("itemPackageType").
                 // only needed if the item package type doesn't exists and we need to
                 // create one
@@ -123,6 +131,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
                         addColumn("defaultForWorkOrderReceiving").
                         addColumn("trackingLpn").
                         addColumn("caseFlag").
+                        addColumn("defaultForDisplay").
                 build().withHeader();
         return fileService.loadData(file, schema, ItemUnitOfMeasureCSVWrapper.class);
     }
@@ -133,6 +142,14 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
                 addColumn("warehouse").
                 addColumn("client").
                 addColumn("item").
+                addColumn("itemDescription").
+                addColumn("itemFamily").
+                addColumn("trackingColorFlag").
+                addColumn("defaultColor").
+                addColumn("trackingProductSizeFlag").
+                addColumn("defaultProductSize").
+                addColumn("trackingStyleFlag").
+                addColumn("defaultStyle").
                 addColumn("itemPackageType").
                 // only needed if the item package type doesn't exists and we need to
                 // create one
@@ -150,6 +167,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
                         addColumn("defaultForWorkOrderReceiving").
                         addColumn("trackingLpn").
                         addColumn("caseFlag").
+                        addColumn("defaultForDisplay").
                 build().withHeader();
 
         return fileService.loadData(inputStream, schema, ItemUnitOfMeasureCSVWrapper.class);
@@ -188,24 +206,6 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         itemUnitOfMeasure.setLength(itemUnitOfMeasureCSVWrapper.getLength());
         itemUnitOfMeasure.setWidth(itemUnitOfMeasureCSVWrapper.getWidth());
         itemUnitOfMeasure.setHeight(itemUnitOfMeasureCSVWrapper.getHeight());
-        itemUnitOfMeasure.setDefaultForInboundReceiving(
-                Objects.isNull(itemUnitOfMeasureCSVWrapper.getDefaultForInboundReceiving()) ?
-                        false : itemUnitOfMeasureCSVWrapper.getDefaultForInboundReceiving()
-        );
-
-        itemUnitOfMeasure.setDefaultForWorkOrderReceiving(
-                Objects.isNull(itemUnitOfMeasureCSVWrapper.getDefaultForWorkOrderReceiving()) ?
-                        false : itemUnitOfMeasureCSVWrapper.getDefaultForWorkOrderReceiving()
-        );
-        itemUnitOfMeasure.setTrackingLpn(
-                Objects.isNull(itemUnitOfMeasureCSVWrapper.getTrackingLpn()) ?
-                        false : itemUnitOfMeasureCSVWrapper.getTrackingLpn()
-        );
-        itemUnitOfMeasure.setCaseFlag(
-                Objects.isNull(itemUnitOfMeasureCSVWrapper.getCaseFlag()) ?
-                        false : itemUnitOfMeasureCSVWrapper.getCaseFlag()
-        );
-
 
         Company company = warehouseLayoutServiceRestemplateClient.getCompanyByCode(
                 itemUnitOfMeasureCSVWrapper.getCompany()
@@ -217,6 +217,40 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
                         itemUnitOfMeasureCSVWrapper.getCompany(),
                         itemUnitOfMeasureCSVWrapper.getWarehouse());
         itemUnitOfMeasure.setWarehouseId(warehouse.getId());
+
+
+        itemUnitOfMeasure.setDefaultForInboundReceiving(
+                Strings.isBlank(itemUnitOfMeasureCSVWrapper.getDefaultForInboundReceiving()) ?
+                        false :
+                        itemUnitOfMeasureCSVWrapper.getDefaultForInboundReceiving().trim().equals("1") ||
+                                itemUnitOfMeasureCSVWrapper.getDefaultForInboundReceiving().trim().equalsIgnoreCase("true")
+        );
+
+        itemUnitOfMeasure.setDefaultForWorkOrderReceiving(
+                Strings.isBlank(itemUnitOfMeasureCSVWrapper.getDefaultForWorkOrderReceiving()) ?
+                        false :
+                        itemUnitOfMeasureCSVWrapper.getDefaultForWorkOrderReceiving().trim().equals("1") ||
+                                itemUnitOfMeasureCSVWrapper.getDefaultForWorkOrderReceiving().trim().equalsIgnoreCase("true")
+        );
+        itemUnitOfMeasure.setTrackingLpn(
+                Strings.isBlank(itemUnitOfMeasureCSVWrapper.getTrackingLpn()) ?
+                        false :
+                        itemUnitOfMeasureCSVWrapper.getTrackingLpn().trim().equals("1") ||
+                                itemUnitOfMeasureCSVWrapper.getTrackingLpn().trim().equalsIgnoreCase("true")
+        );
+        itemUnitOfMeasure.setCaseFlag(
+                Strings.isBlank(itemUnitOfMeasureCSVWrapper.getCaseFlag()) ?
+                        false :
+                        itemUnitOfMeasureCSVWrapper.getCaseFlag().trim().equals("1") ||
+                                itemUnitOfMeasureCSVWrapper.getCaseFlag().trim().equalsIgnoreCase("true")
+        );
+
+        itemUnitOfMeasure.setDefaultForDisplay(
+                Strings.isBlank(itemUnitOfMeasureCSVWrapper.getDefaultForDisplay()) ?
+                        false :
+                        itemUnitOfMeasureCSVWrapper.getDefaultForDisplay().trim().equals("1") ||
+                                itemUnitOfMeasureCSVWrapper.getDefaultForDisplay().trim().equalsIgnoreCase("true")
+        );
 
         if (Strings.isNotBlank(itemUnitOfMeasureCSVWrapper.getUnitOfMeasure())) {
             UnitOfMeasure unitOfMeasure =
