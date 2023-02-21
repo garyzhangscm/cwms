@@ -1969,5 +1969,11 @@
   "created-time": "Create Time",
   "created-date": "Create Date",
   "complete-date": "Complete Date",
-  "allClientAccess": "Allow Access All Clients"
+  "allClientAccess": "Allow Access All Clients",
+  "trackingColorFlag": "Tracking Color",
+  "defaultColor": "Default Color",
+  "trackingProductSizeFlag": "Tracking Product Size",
+  "defaultProductSize": "Default Product",
+  "trackingStyleFlag": "Tracking Style",
+  "defaultStyle": "Default Style"
 }

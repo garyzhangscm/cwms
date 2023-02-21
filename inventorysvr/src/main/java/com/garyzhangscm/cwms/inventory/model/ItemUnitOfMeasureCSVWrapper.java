@@ -31,10 +31,18 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
 
     private String client;
     private String item;
+    private String itemDescription;
+    private String itemFamily;
+    private String trackingColorFlag;
+    private String defaultColor;
+    private String trackingProductSizeFlag;
+    private String defaultProductSize;
+    private String trackingStyleFlag;
+    private String defaultStyle;
 
     private String itemPackageType;
     private String itemPackageTypeDescription;
-    private Boolean defaultItemPackageType;
+    private String defaultItemPackageType;
 
     private String unitOfMeasure;
     private Integer quantity;
@@ -44,10 +52,11 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
     private Double height;
 
 
-    private Boolean defaultForInboundReceiving;
-    private Boolean defaultForWorkOrderReceiving;
-    private Boolean trackingLpn;
-    private Boolean caseFlag;
+    private String defaultForInboundReceiving;
+    private String defaultForWorkOrderReceiving;
+    private String trackingLpn;
+    private String caseFlag;
+    private String defaultForDisplay;
 
 
     @Override
@@ -156,43 +165,115 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
         this.itemPackageTypeDescription = itemPackageTypeDescription;
     }
 
-    public Boolean getDefaultItemPackageType() {
+    public String getItemFamily() {
+        return itemFamily;
+    }
+
+    public void setItemFamily(String itemFamily) {
+        this.itemFamily = itemFamily;
+    }
+
+    public String getDefaultItemPackageType() {
         return defaultItemPackageType;
     }
 
-    public void setDefaultItemPackageType(Boolean defaultItemPackageType) {
+    public void setDefaultItemPackageType(String defaultItemPackageType) {
         this.defaultItemPackageType = defaultItemPackageType;
     }
 
-    public Boolean getDefaultForInboundReceiving() {
+    public String getDefaultForInboundReceiving() {
         return defaultForInboundReceiving;
     }
 
-    public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
+    public void setDefaultForInboundReceiving(String defaultForInboundReceiving) {
         this.defaultForInboundReceiving = defaultForInboundReceiving;
     }
 
-    public Boolean getDefaultForWorkOrderReceiving() {
+    public String getDefaultForWorkOrderReceiving() {
         return defaultForWorkOrderReceiving;
     }
 
-    public void setDefaultForWorkOrderReceiving(Boolean defaultForWorkOrderReceiving) {
+    public void setDefaultForWorkOrderReceiving(String defaultForWorkOrderReceiving) {
         this.defaultForWorkOrderReceiving = defaultForWorkOrderReceiving;
     }
 
-    public Boolean getTrackingLpn() {
+    public String getTrackingLpn() {
         return trackingLpn;
     }
 
-    public void setTrackingLpn(Boolean trackingLpn) {
+    public void setTrackingLpn(String trackingLpn) {
         this.trackingLpn = trackingLpn;
     }
 
-    public Boolean getCaseFlag() {
+    public String getCaseFlag() {
         return caseFlag;
     }
 
-    public void setCaseFlag(Boolean caseFlag) {
+    public void setCaseFlag(String caseFlag) {
         this.caseFlag = caseFlag;
+    }
+
+    public String getItemDescription() {
+        return itemDescription;
+    }
+
+    public void setItemDescription(String itemDescription) {
+        this.itemDescription = itemDescription;
+    }
+
+    public String getTrackingColorFlag() {
+        return trackingColorFlag;
+    }
+
+    public void setTrackingColorFlag(String trackingColorFlag) {
+        this.trackingColorFlag = trackingColorFlag;
+    }
+
+    public String getDefaultColor() {
+        return defaultColor;
+    }
+
+    public void setDefaultColor(String defaultColor) {
+        this.defaultColor = defaultColor;
+    }
+
+    public String getTrackingProductSizeFlag() {
+        return trackingProductSizeFlag;
+    }
+
+    public void setTrackingProductSizeFlag(String trackingProductSizeFlag) {
+        this.trackingProductSizeFlag = trackingProductSizeFlag;
+    }
+
+    public String getDefaultProductSize() {
+        return defaultProductSize;
+    }
+
+    public void setDefaultProductSize(String defaultProductSize) {
+        this.defaultProductSize = defaultProductSize;
+    }
+
+    public String getTrackingStyleFlag() {
+        return trackingStyleFlag;
+    }
+
+    public void setTrackingStyleFlag(String trackingStyleFlag) {
+        this.trackingStyleFlag = trackingStyleFlag;
+    }
+
+    public String getDefaultStyle() {
+        return defaultStyle;
+    }
+
+    public void setDefaultStyle(String defaultStyle) {
+        this.defaultStyle = defaultStyle;
+    }
+
+    public String getDefaultForDisplay() {
+        return defaultForDisplay;
+    }
+
+    public void setDefaultForDisplay(String defaultForDisplay) {
+        this.defaultForDisplay = defaultForDisplay;
     }
 }

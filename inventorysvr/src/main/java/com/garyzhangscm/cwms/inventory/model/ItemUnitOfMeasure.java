@@ -78,6 +78,10 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Column(name = "tracking_lpn")
     private Boolean trackingLpn = false;
 
+    // whether we will display at this UOM level
+    @Column(name = "default_for_display")
+    private Boolean defaultForDisplay = false;
+
     // whether this is a case(box)
     // we may calculate the size of the inventory based on the
     // case UOM
@@ -288,5 +292,13 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setHeightUnit(String heightUnit) {
         this.heightUnit = heightUnit;
+    }
+
+    public Boolean getDefaultForDisplay() {
+        return defaultForDisplay;
+    }
+
+    public void setDefaultForDisplay(Boolean defaultForDisplay) {
+        this.defaultForDisplay = defaultForDisplay;
     }
 }

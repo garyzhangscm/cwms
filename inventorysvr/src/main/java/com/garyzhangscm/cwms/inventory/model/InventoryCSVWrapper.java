@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 
 public class InventoryCSVWrapper implements Serializable {
@@ -41,6 +42,11 @@ public class InventoryCSVWrapper implements Serializable {
     private String company;
 
     private String client;
+
+
+    private String color;
+    private String productSize;
+    private String style;
 
     @Override
     public String toString() {
@@ -122,5 +128,29 @@ public class InventoryCSVWrapper implements Serializable {
 
     public void setClient(String client) {
         this.client = client;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

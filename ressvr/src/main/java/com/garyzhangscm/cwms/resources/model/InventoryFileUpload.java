@@ -22,6 +22,11 @@ public class InventoryFileUpload extends FileUploadType {
                 String.class, 100, false
         ));
 
+        addColumn(new FileUploadTemplateColumn(
+                "client", "Client",
+                String.class, 100, false
+        ));
+
 
         addColumn(new FileUploadTemplateColumn(
                  "lpn", "LPN",
@@ -50,6 +55,19 @@ public class InventoryFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "inventoryStatus", "Inventory Status",
+                String.class, 100, false
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "color", "Color",
+                String.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "productSize", "Product Size",
+                String.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "style", "Style",
                 String.class, 100, false
         ));
 

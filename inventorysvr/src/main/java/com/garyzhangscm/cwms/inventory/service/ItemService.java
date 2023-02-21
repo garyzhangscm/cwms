@@ -1149,4 +1149,58 @@ public class ItemService implements TestDataInitiableService{
 
         logger.debug("refresh is done");
     }
+
+    public Item createItem(ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper) {
+        ItemCSVWrapper itemCSVWrapper = new ItemCSVWrapper();
+        itemCSVWrapper.setCompany(itemPackageTypeCSVWrapper.getCompany());
+        itemCSVWrapper.setWarehouse(itemPackageTypeCSVWrapper.getWarehouse());
+        itemCSVWrapper.setName(itemPackageTypeCSVWrapper.getItem());
+        itemCSVWrapper.setDescription(itemPackageTypeCSVWrapper.getItemDescription());
+        itemCSVWrapper.setClient(itemPackageTypeCSVWrapper.getClient());
+        itemCSVWrapper.setItemFamily(itemPackageTypeCSVWrapper.getItemFamily());
+        itemCSVWrapper.setUnitCost(0.0);
+        itemCSVWrapper.setAllowCartonization(false);
+        itemCSVWrapper.setAllowAllocationByLPN(false);
+        itemCSVWrapper.setTrackingVolumeFlag(true);
+        itemCSVWrapper.setTrackingLotNumberFlag(false);
+        itemCSVWrapper.setTrackingExpirationDateFlag(false);
+        itemCSVWrapper.setTrackingManufactureDateFlag(false);
+
+        itemCSVWrapper.setTrackingColorFlag(
+
+                Strings.isBlank(itemPackageTypeCSVWrapper.getTrackingColorFlag()) ?
+                        false :
+                        itemPackageTypeCSVWrapper.getTrackingColorFlag().trim().equals("1") ||
+                                itemPackageTypeCSVWrapper.getTrackingColorFlag().trim().equalsIgnoreCase("true")
+
+
+        );
+        itemCSVWrapper.setDefaultColor(
+                itemPackageTypeCSVWrapper.getDefaultColor()
+        );
+        itemCSVWrapper.setTrackingProductSizeFlag(
+
+                Strings.isBlank(itemPackageTypeCSVWrapper.getTrackingProductSizeFlag()) ?
+                        false :
+                        itemPackageTypeCSVWrapper.getTrackingProductSizeFlag().trim().equals("1") ||
+                                itemPackageTypeCSVWrapper.getTrackingProductSizeFlag().trim().equalsIgnoreCase("true")
+
+        );
+        itemCSVWrapper.setDefaultProductSize(
+                itemPackageTypeCSVWrapper.getDefaultProductSize()
+        );
+        itemCSVWrapper.setTrackingStyleFlag(
+                Strings.isBlank(itemPackageTypeCSVWrapper.getTrackingStyleFlag()) ?
+                        false :
+                        itemPackageTypeCSVWrapper.getTrackingStyleFlag().trim().equals("1") ||
+                                itemPackageTypeCSVWrapper.getTrackingStyleFlag().trim().equalsIgnoreCase("true")
+        );
+        itemCSVWrapper.setDefaultStyle(
+                itemPackageTypeCSVWrapper.getDefaultStyle()
+        );
+
+
+        return saveOrUpdate(convertFromWrapper(itemCSVWrapper));
+
+    }
 }

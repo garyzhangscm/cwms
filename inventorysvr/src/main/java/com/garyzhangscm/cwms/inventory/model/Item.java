@@ -84,6 +84,21 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name="tracking_manufacture_date_flag")
     private boolean trackingManufactureDateFlag = false;
 
+    @Column(name="tracking_color_flag")
+    private boolean trackingColorFlag = false;
+    @Column(name="default_color")
+    private String defaultColor;
+
+    @Column(name="tracking_product_size_flag")
+    private boolean trackingProductSizeFlag = false;
+    @Column(name="default_product_size")
+    private String defaultProductSize;
+
+    @Column(name="tracking_style_flag")
+    private boolean trackingStyleFlag = false;
+    @Column(name="default_style")
+    private String defaultStyle;
+
     @Column(name="shelf_life_days")
     private Integer shelfLifeDays = 0;
 
@@ -438,5 +453,57 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setNonInventoryItem(Boolean nonInventoryItem) {
         this.nonInventoryItem = nonInventoryItem;
+    }
+
+    public boolean isTrackingColorFlag() {
+        return trackingColorFlag;
+    }
+
+    public void setTrackingColorFlag(boolean trackingColorFlag) {
+        this.trackingColorFlag = trackingColorFlag;
+    }
+
+    public String getDefaultColor() {
+        return defaultColor;
+    }
+
+    public void setDefaultColor(String defaultColor) {
+        this.defaultColor = defaultColor;
+    }
+
+    public boolean isTrackingProductSizeFlag() {
+        return trackingProductSizeFlag;
+    }
+
+    public void setTrackingProductSizeFlag(boolean trackingProductSizeFlag) {
+        this.trackingProductSizeFlag = trackingProductSizeFlag;
+    }
+
+    public String getDefaultProductSize() {
+        return defaultProductSize;
+    }
+
+    public void setDefaultProductSize(String defaultProductSize) {
+        this.defaultProductSize = defaultProductSize;
+    }
+
+    public boolean isTrackingStyleFlag() {
+        return trackingStyleFlag;
+    }
+
+    public void setTrackingStyleFlag(boolean trackingStyleFlag) {
+        this.trackingStyleFlag = trackingStyleFlag;
+    }
+
+    public String getDefaultStyle() {
+        return defaultStyle;
+    }
+
+    public void setDefaultStyle(String defaultStyle) {
+        this.defaultStyle = defaultStyle;
+    }
+
+    public void setDefaultItemPackageType(ItemPackageType defaultItemPackageType) {
+        this.defaultItemPackageType = defaultItemPackageType;
     }
 }
