@@ -18,20 +18,18 @@
 
 package com.garyzhangscm.cwms.resources.clients;
 
+import com.garyzhangscm.cwms.resources.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.Company;
 import com.garyzhangscm.cwms.resources.model.Location;
 import com.garyzhangscm.cwms.resources.model.Warehouse;
-import com.garyzhangscm.cwms.resources.model.WarehouseConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
@@ -44,7 +42,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "ResourceService_Company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -62,7 +60,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
     }
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "ResourceService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
 
         UriComponentsBuilder builder =
@@ -104,7 +102,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "ResourceService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -133,7 +131,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     }
 
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "ResourceService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -161,7 +159,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         }
     }
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "ResourceService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -292,7 +290,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     }
 
 
-    @Cacheable(cacheNames = "WarehouseConfiguration", unless="#result == null")
+    @Cacheable(cacheNames = "ResourceService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId) {
 
         UriComponentsBuilder builder =

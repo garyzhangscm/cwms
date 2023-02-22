@@ -124,8 +124,8 @@ public class ShipmentService {
                         predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
                     }
                     if (StringUtils.isNotBlank(number)) {
-                        if (number.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
 
                         }
                         else {
@@ -139,8 +139,8 @@ public class ShipmentService {
                         Join<ShipmentLine, OrderLine> joinOrderLine = joinShipmentLine.join("orderLine", JoinType.INNER);
                         Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
 
-                        if (orderNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber));
+                        if (orderNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber.replaceAll("\\*", "%")));
 
                         }
                         else {

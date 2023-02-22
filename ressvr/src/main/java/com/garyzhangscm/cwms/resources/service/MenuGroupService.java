@@ -38,7 +38,6 @@ import java.io.InputStream;
 import java.util.*;
 
 @Service
-@CacheConfig(cacheNames = "menu")
 public class MenuGroupService implements TestDataInitiableService{
     private static final Logger logger = LoggerFactory.getLogger(MenuGroupService.class);
 

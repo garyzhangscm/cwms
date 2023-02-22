@@ -24,6 +24,8 @@ import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,6 +58,13 @@ public class OrderLineController {
      */
     @BillableEndpoint
     @RequestMapping(value="/orders/lines/{id}/production-plan-line/register", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public OrderLine registerProductionPlanLine(@PathVariable Long id,
                                           @RequestParam Long productionPlanLineQuantity) {
         return orderLineService.registerProductionPlanLine(id, productionPlanLineQuantity);
@@ -63,6 +72,13 @@ public class OrderLineController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/lines/{id}/production-plan/produced", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public OrderLine registerProductionPlanProduced(@PathVariable Long id,
                                             @RequestParam Long producedQuantity) {
         return orderLineService.registerProductionPlanProduced(id, producedQuantity);
@@ -89,6 +105,13 @@ public class OrderLineController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/lines/{id}/add-request-return-quantity", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public OrderLine addRequestReturnQuantity(
             @RequestParam Long warehouseId,
             @PathVariable Long orderLineId,
@@ -100,6 +123,13 @@ public class OrderLineController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/lines/{id}/add-actual-return-quantity", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public OrderLine addActualReturnQuantity(
             @RequestParam Long warehouseId,
             @PathVariable Long orderLineId,

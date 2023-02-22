@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.service.WorkingTeamService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,12 +55,22 @@ public class WorkingTeamController {
 
     @BillableEndpoint
     @RequestMapping(value="/working-teams/{id}/disable", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_WorkingTeam", allEntries = true),
+            }
+    )
     public WorkingTeam disableWorkingTeam(@PathVariable Long id) {
         return workingTeamService.disableWorkingTeam(id);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/working-teams/{id}/enable", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_WorkingTeam", allEntries = true),
+            }
+    )
     public WorkingTeam enableWorkingTeam(@PathVariable Long id) {
         return workingTeamService.enableWorkingTeam(id);
     }
@@ -68,6 +80,11 @@ public class WorkingTeamController {
 
     @BillableEndpoint
     @RequestMapping(value="/working-teams/{id}/users", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_WorkingTeam", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper processUsers(@PathVariable Long id,
                                         @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedUserIds,
                                         @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedUserIds) {

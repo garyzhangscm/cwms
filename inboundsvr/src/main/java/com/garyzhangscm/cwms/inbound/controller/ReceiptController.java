@@ -26,6 +26,8 @@ import com.garyzhangscm.cwms.inbound.service.ReceiptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,6 +89,12 @@ public class ReceiptController {
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public Receipt changeReceipt(@PathVariable Long id,
                                  @RequestBody Receipt receipt){
         return receiptService.changeReceipt(id, receipt);
@@ -94,12 +102,24 @@ public class ReceiptController {
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/complete", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public Receipt completeReceipt(@PathVariable Long id){
         return receiptService.completeReceipt(id);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/receipts", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public void removeReceipts(@RequestParam(name = "receipt_ids", required = false, defaultValue = "") String receiptIds) {
         receiptService.removeReceipts(receiptIds);
     }
@@ -112,6 +132,12 @@ public class ReceiptController {
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/lines", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public ReceiptLine addReceiptLine(@PathVariable Long id,
                                       @RequestBody ReceiptLine receiptLine) {
         return receiptLineService.addReceiptLine(id, receiptLine);
@@ -126,6 +152,12 @@ public class ReceiptController {
      */
     @BillableEndpoint
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/receive", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,
                                @RequestBody Inventory inventory) {
@@ -143,6 +175,12 @@ public class ReceiptController {
      */
     @BillableEndpoint
     @RequestMapping(value="/receipts/lines/{receiptLineId}/recalculate-qc-quantity", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public ReceiptLine recalculateQCQuantity(@PathVariable Long receiptLineId,
                                            @RequestParam(name = "qcQuantity", required = false, defaultValue = "") Long qcQuantity,
                                            @RequestParam(name = "qcPercentage", required = false, defaultValue = "") Double qcPercentage) {
@@ -158,6 +196,12 @@ public class ReceiptController {
      */
     @BillableEndpoint
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/receive-multiple-lpns", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public List<Inventory> receive(@PathVariable Long receiptId,
                              @PathVariable Long receiptLineId,
                              @RequestBody List<Inventory> inventoryList) {
@@ -166,6 +210,12 @@ public class ReceiptController {
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}/reverse", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public ReceiptLine reverseReceivedInventory(@PathVariable Long receiptId,
                                                  @PathVariable Long receiptLineId,
                                                  @RequestParam Long quantity,
@@ -176,6 +226,12 @@ public class ReceiptController {
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/{id}/check-in", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public Receipt checkInReceipt(@PathVariable Long id){
 
             return receiptService.checkInReceipt(id);
@@ -188,6 +244,12 @@ public class ReceiptController {
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/lines", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
     public void removeReceiptLine(@RequestParam String receiptLineIds) {
         receiptLineService.delete(receiptLineIds);
     }

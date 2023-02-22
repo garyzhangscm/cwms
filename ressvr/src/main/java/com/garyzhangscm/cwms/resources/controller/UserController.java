@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.User;
 import com.garyzhangscm.cwms.resources.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -82,6 +84,17 @@ public class UserController {
 
     @BillableEndpoint
     @RequestMapping(value="/users/{id}", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
     public User changeUser(@PathVariable Long id,
                            @RequestBody User user) {
         return userService.changeUser(user);
@@ -103,6 +116,17 @@ public class UserController {
 
     @BillableEndpoint
     @RequestMapping(value="/users/{id}/roles", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper processRoles(@PathVariable Long id,
                                             @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedRoleIds,
                                             @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedRoleIds) {
@@ -123,12 +147,34 @@ public class UserController {
 
     @BillableEndpoint
     @RequestMapping(value="/users/disable", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
     public List<User> disableUsers(@RequestParam String userIds) {
 
         return userService.disableUsers(userIds);
     }
     @BillableEndpoint
     @RequestMapping(value="/users/enable", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
     public List<User> enableUsers(@RequestParam String userIds) {
 
         return userService.enableUsers(userIds);
@@ -137,12 +183,34 @@ public class UserController {
 
     @BillableEndpoint
     @RequestMapping(value="/users/lock", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
     public List<User> lockUsers(@RequestParam String userIds) {
 
         return userService.lockUsers(userIds);
     }
     @BillableEndpoint
     @RequestMapping(value="/users/unlock", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
     public List<User> unlockUsers(@RequestParam String userIds) {
 
         return userService.unlockUsers(userIds);

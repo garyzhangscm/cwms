@@ -28,6 +28,8 @@ import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -71,12 +73,28 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder changeWorkOrder(@RequestBody WorkOrder workOrder){
         return workOrderService.changeWorkOrder(workOrder);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public void removeWorkOrders(@RequestParam(name = "workOrderIds", required = false, defaultValue = "") String workOrderIds) {
         workOrderService.delete(workOrderIds);
     }
@@ -107,6 +125,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/allocate", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder allocateWorkOrder(@PathVariable Long id,
                                        @RequestBody List<ProductionLineAllocationRequest> productionLineAllocationRequests) {
         logger.debug("Get request for allocate work order by id {}, productionLineAllocationRequest: {} ",
@@ -116,6 +142,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/short-allocation-cancelled", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public void registerShortAllocationCancelled(@PathVariable Long id,
                                            @RequestParam Long cancelledQuantity) {
         workOrderLineService.registerShortAllocationCancelled(id, cancelledQuantity);
@@ -128,6 +162,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/inventory-being-delivered", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrderMaterialConsumeTiming changeDeliveredQuantity(@PathVariable Long id,
                                                  @RequestParam Long quantityBeingDelivered,
                                                  @RequestParam Long deliveredLocationId,
@@ -138,6 +180,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/pick-cancelled", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public void registerPickCancelled(@PathVariable Long id,
                                       @RequestParam Long cancelledQuantity,
                                       @RequestParam Long destinationLocationId) {
@@ -189,6 +239,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/modify-lines", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder modifyWorkOrderLines(@PathVariable Long id,
                                           @RequestBody WorkOrder workOrder) {
         return workOrderService.modifyWorkOrderLines(id, workOrder);
@@ -196,6 +254,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/add-qc-quantity", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder addQCQuantity(@PathVariable Long id,
                                    @RequestParam Long  qcQuantity) {
         return workOrderService.addQCQuantity(id, qcQuantity);
@@ -203,6 +269,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/reverse-production", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder reverseProduction(@PathVariable Long id,
                                        @RequestParam String lpn) {
         return workOrderService.reverseProduction(id, lpn);
@@ -210,6 +284,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/reverse-by-product", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder reverseByProduct(@PathVariable Long id,
                                        @RequestParam String lpn) {
         return workOrderService.reverseByProduct(id, lpn);
@@ -217,6 +299,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/unpick-inventory", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public Inventory unpickInventory(@PathVariable Long id,
                                            @RequestParam Long inventoryId,
                                            @RequestParam(name = "unpickedQuantity", required = false, defaultValue = "") Long unpickedQuantity,
@@ -257,6 +347,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{id}/consume-method", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder changeConsumeMethod(
             @PathVariable Long id,
             @RequestParam String materialConsumeTiming,
@@ -311,6 +409,14 @@ public class WorkOrderController {
      */
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{workOrderId}/recalculate-qc-quantity", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrder recalculateQCQuantity(@PathVariable Long workOrderId,
                                              @RequestParam(name = "qcQuantity", required = false, defaultValue = "") Long qcQuantity,
                                              @RequestParam(name = "qcPercentage", required = false, defaultValue = "") Double qcPercentage) {
@@ -330,6 +436,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/{workOrderId}/generate-manual-pick", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public List<Pick> generateManualPick(@PathVariable  Long workOrderId,
                                          @RequestParam String lpn,
                                          @RequestParam Long productionLineId,
@@ -359,6 +473,14 @@ public class WorkOrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/work-orders/lines/{id}/spare-parts", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public WorkOrderLine changeSpareParts(@PathVariable Long id,
                                           @RequestBody List<WorkOrderLineSparePart> workOrderLineSpareParts) {
         return workOrderLineService.changeSpareParts(id, workOrderLineSpareParts);
@@ -366,6 +488,14 @@ public class WorkOrderController {
 
 
     @RequestMapping(value="/work-orders/item-override", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper<String> handleItemOverride(
             @RequestParam Long warehouseId,
             @RequestParam Long oldItemId,

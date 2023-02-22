@@ -45,7 +45,7 @@ public class ResourceServiceRestemplateClient {
     private RestTemplate restTemplate;
 
 
-    @Cacheable(cacheNames = "is_system_admin", unless="#result == null")
+    @Cacheable(cacheNames = "ZuulService_isSystemAdmin", unless="#result == null")
     public Boolean isSystemAdmin(String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

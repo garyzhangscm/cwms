@@ -41,7 +41,7 @@ public class OutbuondServiceRestemplateClient {
     RestTemplate restTemplate;
 
 
-    @Cacheable(cacheNames = "Order", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Order", unless="#result == null")
     public Order getOrderById(Long id) {
 
         UriComponentsBuilder builder =
@@ -60,7 +60,7 @@ public class OutbuondServiceRestemplateClient {
 
 
     }
-    @Cacheable(cacheNames = "Order", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Order", unless="#result == null")
     public Order getOrderByNumber(Long warehosueId, String number) {
 
         UriComponentsBuilder builder =

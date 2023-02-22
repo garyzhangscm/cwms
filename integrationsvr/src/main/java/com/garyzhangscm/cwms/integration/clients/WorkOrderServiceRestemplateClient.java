@@ -46,7 +46,7 @@ public class WorkOrderServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     RestTemplate restTemplate;
 
-    @Cacheable(cacheNames = "WorkOrder", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderByNumber(Long warehouseId, String number)  {
         logger.debug("Start to get work order by number");
         try {

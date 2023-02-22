@@ -128,8 +128,8 @@ public class QCInspectionRequestService {
 
                 if (Strings.isNotBlank(number)) {
 
-                    if (number.contains("%")) {
-                        predicates.add(criteriaBuilder.like(root.get("number"), number));
+                    if (number.contains("*")) {
+                        predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
                     }
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("number"), number));
@@ -164,8 +164,8 @@ public class QCInspectionRequestService {
 
                     Join<QCInspectionRequest, Inventory> joinInventory = root.join("inventory", JoinType.INNER);
 
-                    if (lpn.contains("%")) {
-                        predicates.add(criteriaBuilder.like(joinInventory.get("lpn"), lpn));
+                    if (lpn.contains("*")) {
+                        predicates.add(criteriaBuilder.like(joinInventory.get("lpn"), lpn.replaceAll("\\*", "%")));
                     }
                     else {
                         predicates.add(criteriaBuilder.equal(joinInventory.get("lpn"), lpn));

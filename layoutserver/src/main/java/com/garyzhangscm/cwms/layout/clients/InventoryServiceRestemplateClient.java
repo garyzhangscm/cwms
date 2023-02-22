@@ -63,7 +63,7 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    @Cacheable(cacheNames = "Item", unless="#result == null")
+    @Cacheable(cacheNames = "LayoutService_Item", unless="#result == null")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -81,7 +81,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "Item", unless="#result == null")
+    @Cacheable(cacheNames = "LayoutService_Item", unless="#result == null")
     public Item getItemByName(Long warehouseId, String name) {
 
         try {

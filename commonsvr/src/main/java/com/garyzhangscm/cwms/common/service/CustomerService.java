@@ -69,8 +69,8 @@ public class CustomerService implements  TestDataInitiableService{
                     predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
                     if (StringUtils.isNotBlank(name)) {
-                        if (name.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        if (name.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("name"), name));

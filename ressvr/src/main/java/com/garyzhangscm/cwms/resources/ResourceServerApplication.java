@@ -113,7 +113,7 @@ public class ResourceServerApplication {
 	 *
 	 * @return
 	 */
-	/**
+
 	@Bean
 	public RedisCacheConfiguration cacheConfiguration() {
 		return RedisCacheConfiguration.defaultCacheConfig()
@@ -121,7 +121,6 @@ public class ResourceServerApplication {
 				.disableCachingNullValues()
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
-**/
 	/***
 	@Bean
 	public JavaMailSender getJavaMailSender() {

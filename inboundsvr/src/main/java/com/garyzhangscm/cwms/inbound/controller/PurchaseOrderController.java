@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,7 @@ public class PurchaseOrderController {
                                          @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
                                          @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
                                          @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+
         return purchaseOrderService.findAll(warehouseId, number, purchasOrderStatusList, supplierId,
                 supplierName,  loadDetails);
     }

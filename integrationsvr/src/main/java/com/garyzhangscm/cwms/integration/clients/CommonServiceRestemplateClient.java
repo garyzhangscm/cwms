@@ -45,7 +45,7 @@ public class CommonServiceRestemplateClient {
     @Autowired
     RestTemplate restTemplate;
 
-    @Cacheable(cacheNames = "Client", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Client", unless="#result == null")
     public Client getClientById(Long id) {
 
         ResponseBodyWrapper<Client> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/clients/{id}",
@@ -54,7 +54,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "Client", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder
@@ -72,7 +72,7 @@ public class CommonServiceRestemplateClient {
             return clients.get(0);
         }
     }
-    @Cacheable(cacheNames = "Supplier", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {
 
         ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/suppliers/{id}",
@@ -80,7 +80,7 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    @Cacheable(cacheNames = "Supplier", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Supplier", unless="#result == null")
     public Supplier getSupplierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
@@ -99,7 +99,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/unit-of-measures/{id}",
@@ -108,7 +108,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureByName(Long companyId, Long warehouseId, String name) throws UnsupportedEncodingException {
 
         UriComponentsBuilder builder =
@@ -137,7 +137,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Customer", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Customer", unless="#result == null")
     public Customer getCustomerByName(Long companyId, Long warehouseId, String name) {
 
         try {
@@ -175,7 +175,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Carrier", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Carrier", unless="#result == null")
     public Carrier getCarrierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -199,7 +199,7 @@ public class CommonServiceRestemplateClient {
             return carriers.get(0);
         }
     }
-    @Cacheable(cacheNames = "Carrier", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Carrier", unless="#result == null")
     public Carrier getCarrierById(Long id) {
 
         ResponseBodyWrapper<Carrier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/carriers/{id}",
@@ -208,7 +208,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "CarrierServiceLevel", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_CarrierServiceLevel", unless="#result == null")
     public CarrierServiceLevel getCarrierServiceLevelByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

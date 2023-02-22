@@ -71,6 +71,16 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper uploadLocations(@RequestParam("file") MultipartFile file) throws IOException {
 
 
@@ -151,7 +161,7 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/order-locations/{orderNumber}")
-    public Location findOrderLocation(@RequestParam Long warehouseId,
+    public Location createOrderLocation(@RequestParam Long warehouseId,
                                       @PathVariable String orderNumber) {
 
         return locationService.createOrderLocation(warehouseId, orderNumber);
@@ -159,7 +169,7 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/shipped-inventory/trailer/{trailerNumber}")
-    public Location findShippedTrailerLocation(@RequestParam Long warehouseId,
+    public Location createShippedTrailerLocation(@RequestParam Long warehouseId,
                                       @PathVariable String trailerNumber) {
 
         return locationService.createShippedTrailerLocation(warehouseId, trailerNumber);
@@ -167,7 +177,7 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/shipped-inventory/trailer-appointment/{trailerAppointmentNumber}")
-    public Location findShippedTrailerAppointmentLocation(@RequestParam Long warehouseId,
+    public Location createShippedTrailerAppointmentLocation(@RequestParam Long warehouseId,
                                                @PathVariable String trailerAppointmentNumber) {
 
         return locationService.createShippedTrailerAppointmentLocation(warehouseId, trailerAppointmentNumber);
@@ -189,7 +199,12 @@ public class LocationController {
     @RequestMapping(method=RequestMethod.DELETE, value="/locations")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "outbound_locationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
             }
     )
     public ResponseBodyWrapper removeLocations(@RequestParam Long warehouseId,
@@ -212,9 +227,12 @@ public class LocationController {
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "workorder_location", allEntries = true),
-                    @CacheEvict(cacheNames = "inventory_location", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_location", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
             }
     )
     public Location updateLocation(@PathVariable Long id,
@@ -246,9 +264,12 @@ public class LocationController {
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "workorder_location", allEntries = true),
-                    @CacheEvict(cacheNames = "inventory_location", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_location", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
             }
     )
     public Location changeLocation(@RequestBody Location location) {
@@ -282,6 +303,16 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locations/rf")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public Location removeRFLocation(@RequestParam Long warehouseId,
                                   @RequestParam String rfCode) {
 
@@ -291,6 +322,16 @@ public class LocationController {
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserve")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reservedCode") String reservedCode) {
 
@@ -308,6 +349,16 @@ public class LocationController {
      */
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/unreserve")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public List<Location> unreserveLocation(@RequestParam Long warehouseId,
                                             @RequestParam(name = "reservedCode", required = false, defaultValue = "") String reservedCode,
                                             @RequestParam(name = "locationId", required = false, defaultValue = "") Long locationId,
@@ -322,6 +373,16 @@ public class LocationController {
     // Reserve a location. This is normally to reserve hop locations for certain inventory
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/reserveWithVolume")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public Location reserveLocation(@PathVariable Long id,
                                     @RequestParam(name = "reservedCode") String reservedCode,
                                     @RequestParam(name = "pendingSize") Double pendingSize,
@@ -338,6 +399,16 @@ public class LocationController {
     // location
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/locations/{id}/allocate")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public Location allocateLocation(@PathVariable Long id,
                                      @RequestParam(name = "inventorySize") Double inventorySize) {
 
@@ -348,6 +419,16 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/pending-volume")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public Location changePendingVolume(@PathVariable Long id,
                                         @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedPendingVolume,
                                         @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedPendingVolume) {
@@ -359,6 +440,16 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/volume")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public Location changeVolume(@PathVariable Long id,
                                  @RequestParam(name = "reduce", required = false, defaultValue = "0.0") Double reducedVolume,
                                  @RequestParam(name = "increase", required = false, defaultValue = "0.0") Double increasedVolume,
@@ -372,6 +463,16 @@ public class LocationController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/lock")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
     public Location processLocationLock(@PathVariable Long id,
                                  @RequestParam Boolean locked) {
 

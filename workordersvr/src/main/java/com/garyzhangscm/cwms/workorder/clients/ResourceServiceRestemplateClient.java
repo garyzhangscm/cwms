@@ -78,7 +78,7 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "User", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_User", unless="#result == null")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

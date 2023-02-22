@@ -26,6 +26,8 @@ import com.garyzhangscm.cwms.workorder.model.WorkOrderQCSample;
 import com.garyzhangscm.cwms.workorder.service.MouldService;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderQCSampleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -70,6 +72,11 @@ public class WorkOrderQCSampleController {
 
     @BillableEndpoint
     @RequestMapping(value="/qc-samples/{id}", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrderQCSample", allEntries = true),
+            }
+    )
     public WorkOrderQCSample changeWorkOrderQCSample(@PathVariable Long id,
                                                @RequestBody WorkOrderQCSample workOrderQCSample){
         return workOrderQCSampleService.changeWorkOrderQCSample(id, workOrderQCSample);
@@ -77,6 +84,11 @@ public class WorkOrderQCSampleController {
 
     @BillableEndpoint
     @RequestMapping(value="/qc-samples/{id}", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrderQCSample", allEntries = true),
+            }
+    )
     public void removeWorkOrderQCSample(@PathVariable Long id) {
         workOrderQCSampleService.removeQCSample(id);
     }
@@ -101,6 +113,11 @@ public class WorkOrderQCSampleController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/qc-samples/{productionLineAssignmentId}/images")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrderQCSample", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper uploadQCSampleImage(
             @PathVariable Long productionLineAssignmentId,
             @RequestParam("file") MultipartFile file) throws IOException {

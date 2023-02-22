@@ -70,9 +70,9 @@ public class InventoryStatusService implements TestDataInitiableService{
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(name)) {
-                        if (name.contains("%")) {
+                        if (name.contains("*")) {
 
-                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                            predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
 

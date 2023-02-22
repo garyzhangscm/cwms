@@ -56,7 +56,7 @@ public class OutbuondServiceRestemplateClient {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
-    @Cacheable(cacheNames = "Order")
+    @Cacheable(cacheNames = "AdminService_Order", unless="#result == null")
     public Order getOrderByNumber(Long warehouseId, String orderNumber) {
 
         UriComponentsBuilder builder =
@@ -82,7 +82,7 @@ public class OutbuondServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Pick")
+    // @Cacheable(cacheNames = "AdminService_Pick", unless="#result == null")
     public Pick getPickById(Long id) {
 
         UriComponentsBuilder builder =

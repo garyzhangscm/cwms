@@ -154,8 +154,8 @@ public class ItemService implements TestDataInitiableService{
                 }
 
                 if (StringUtils.isNotBlank(name)) {
-                    if (name.contains("%")) {
-                        predicates.add(criteriaBuilder.like(root.get("name"), name));
+                    if (name.contains("*")) {
+                        predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                     }
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
@@ -163,8 +163,8 @@ public class ItemService implements TestDataInitiableService{
                 }
 
                 if (StringUtils.isNotBlank(quickbookListId)) {
-                    if (quickbookListId.contains("%")) {
-                        predicates.add(criteriaBuilder.like(root.get("quickbookListId"), quickbookListId));
+                    if (quickbookListId.contains("*")) {
+                        predicates.add(criteriaBuilder.like(root.get("quickbookListId"), quickbookListId.replaceAll("\\*", "%")));
                     }
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("quickbookListId"), quickbookListId));
@@ -172,7 +172,7 @@ public class ItemService implements TestDataInitiableService{
                 }
                 // for description, we will always query by wild card
                 if (StringUtils.isNotBlank(description)) {
-                    String queryByDescription = description;
+                    String queryByDescription = description.replaceAll("\\*", "%");
                     if (!queryByDescription.startsWith("%")) {
                         queryByDescription = "%" + queryByDescription;
                     }
@@ -1086,7 +1086,7 @@ public class ItemService implements TestDataInitiableService{
 
         logger.debug("start to get item by name equals to the keyword");
         List<Item> items = findAll(companyId, warehouseId,
-                "%" + keyword + "%",null,  null, null,null,
+                "*" + keyword + "*",null,  null, null,null,
                 null,null, null, loadDetails);
         // query by description
         logger.debug("start to get item by description equals to the keyword");

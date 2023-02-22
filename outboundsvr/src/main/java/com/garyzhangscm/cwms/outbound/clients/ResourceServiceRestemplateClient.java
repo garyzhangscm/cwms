@@ -108,7 +108,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "User", unless="#result == null")
+    @Cacheable(cacheNames = "OutboundService_User", unless="#result == null")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

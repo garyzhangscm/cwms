@@ -32,7 +32,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -57,7 +56,7 @@ public class CommonServiceRestemplateClient {
     private ObjectMapper objectMapper;
 
 
-    @Cacheable(cacheNames = "Client")
+    @Cacheable(cacheNames = "AdminService_Client", unless="#result == null")
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -75,13 +74,19 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Client")
+    @Cacheable(cacheNames = "AdminService_Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/clients")
-                        .queryParam("name", name);
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/common/clients")
+                    .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -99,7 +104,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "Supplier")
+    @Cacheable(cacheNames = "AdminService_Supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -117,7 +122,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Supplier")
+    @Cacheable(cacheNames = "AdminService_Supplier", unless="#result == null")
     public Supplier getSupplierByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -141,7 +146,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "Carrier")
+    @Cacheable(cacheNames = "AdminService_Carrier", unless="#result == null")
     public Carrier getCarrierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -159,7 +164,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "CarrierServiceLevel")
+    @Cacheable(cacheNames = "AdminService_CarrierServiceLevel", unless="#result == null")
     public CarrierServiceLevel getCarrierServiceLevelById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -177,7 +182,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Customer")
+    @Cacheable(cacheNames = "AdminService_Customer", unless="#result == null")
     public Customer getCustomerById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -194,7 +199,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "Customer")
+    @Cacheable(cacheNames = "AdminService_Customer", unless="#result == null")
     public Customer getCustomerByName(Long companyId, Long warehouseId, String name) {
 
         try {
@@ -232,7 +237,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "UnitOfMeasure")
+    @Cacheable(cacheNames = "AdminService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
         UriComponentsBuilder builder =
@@ -267,7 +272,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "UnitOfMeasure")
+    @Cacheable(cacheNames = "AdminService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =

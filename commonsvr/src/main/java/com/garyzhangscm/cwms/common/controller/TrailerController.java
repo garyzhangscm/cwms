@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.common.exception.MissingInformationException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.service.TrailerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -77,12 +79,24 @@ public class TrailerController {
 
     @BillableEndpoint
     @RequestMapping(value="/trailers/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "OutboundService_Trailer", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_TrailerAppointment", allEntries = true),
+            }
+    )
     public Trailer changeTrailer(@RequestBody Trailer trailerContainer){
         return trailerService.save(trailerContainer);
     }
 
 
     @RequestMapping(value="/trailers/{id}/add-appointment", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "OutboundService_Trailer", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_TrailerAppointment", allEntries = true),
+            }
+    )
     public TrailerAppointment addTrailerAppointment(@PathVariable Long id,
                                                     @RequestBody TrailerAppointment trailerAppointment){
         return trailerService.addTrailerAppointment(id, trailerAppointment);
@@ -100,6 +114,12 @@ public class TrailerController {
 
     @BillableEndpoint
     @RequestMapping(value="/trailers/{id}", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "OutboundService_Trailer", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_TrailerAppointment", allEntries = true),
+            }
+    )
     public void removeTrailer(@PathVariable Long id) {
         trailerService.delete(id);
     }
@@ -107,6 +127,12 @@ public class TrailerController {
 
     @BillableEndpoint
     @RequestMapping(value="/trailers/{trailerId}/appointments/{trailerAppointmentId}/cancel", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "OutboundService_Trailer", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_TrailerAppointment", allEntries = true),
+            }
+    )
     public TrailerAppointment cancelTrailerAppointment(@PathVariable Long trailerId,
                                                        @PathVariable Long trailerAppointmentId) {
         return  trailerService.cancelTrailerAppointment(trailerId, trailerAppointmentId);
@@ -114,6 +140,12 @@ public class TrailerController {
 
     @BillableEndpoint
     @RequestMapping(value="/trailers/{trailerId}/appointments/{trailerAppointmentId}/complete", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "OutboundService_Trailer", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_TrailerAppointment", allEntries = true),
+            }
+    )
     public TrailerAppointment completeTrailerAppointment(@PathVariable Long trailerId,
                                                          @PathVariable Long trailerAppointmentId) {
         return  trailerService.completeTrailerAppointment(trailerId, trailerAppointmentId);

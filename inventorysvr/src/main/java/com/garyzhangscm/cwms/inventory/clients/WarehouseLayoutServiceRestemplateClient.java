@@ -68,7 +68,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     Map<Long, WarehouseConfiguration> warehouseConfigurationMap = new ConcurrentHashMap<>();
 
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
 
         UriComponentsBuilder builder =
@@ -93,7 +93,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -111,7 +111,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Location", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Location", unless="#result == null")
     public Location getLocationById(Long id) {
         logger.debug("Will get location by id {}", id);
         UriComponentsBuilder builder =
@@ -130,7 +130,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Location", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Location", unless="#result == null")
     public Location getLocationByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -160,7 +160,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name)   {
 
 
@@ -193,7 +193,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseById(long warehouseId)   {
 
         if (warehouseMap.containsKey(warehouseId)) {
@@ -218,7 +218,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "WarehouseConfiguration", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(long warehouseId)   {
 
         if (warehouseConfigurationMap.containsKey(warehouseId)) {
@@ -599,7 +599,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 return getDefaultRemovedInventoryLocation(warehouseId);
         }
     }
-    @Cacheable( cacheNames = "LocationGroupType", unless="#result == null")
+    @Cacheable( cacheNames = "InventoryService_LocationGroupType", unless="#result == null")
     public LocationGroupType getLocationGroupTypeById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -615,7 +615,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    @Cacheable( cacheNames = "LocationGroup", unless="#result == null")
+    @Cacheable( cacheNames = "InventoryService_LocationGroup", unless="#result == null")
     public LocationGroup getLocationGroupById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -631,7 +631,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    @Cacheable( cacheNames = "LocationGroup", unless="#result == null")
+    @Cacheable( cacheNames = "InventoryService_LocationGroup", unless="#result == null")
     public LocationGroup getLocationGroupByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

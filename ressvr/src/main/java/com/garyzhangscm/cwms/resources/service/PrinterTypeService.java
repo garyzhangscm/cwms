@@ -68,9 +68,9 @@ public class PrinterTypeService  {
                     predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
 
                     if (!StringUtils.isBlank(name)) {
-                        if (name.contains("%")) {
+                        if (name.contains("*")) {
 
-                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                            predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
 

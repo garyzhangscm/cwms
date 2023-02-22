@@ -115,7 +115,7 @@ public class OutboundServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "OrderLine", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_OrderLine", unless="#result == null")
     public OrderLine getOrderLineById(Long orderLineId) {
 
         UriComponentsBuilder builder =

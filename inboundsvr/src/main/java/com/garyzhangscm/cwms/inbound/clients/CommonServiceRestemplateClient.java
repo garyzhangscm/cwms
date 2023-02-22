@@ -33,6 +33,8 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,7 +48,7 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    @Cacheable(cacheNames = "Client", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Client", unless="#result == null")
     public Client getClientById(Long id) {
 
         UriComponentsBuilder builder =
@@ -64,7 +66,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "Client", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -89,7 +91,7 @@ public class CommonServiceRestemplateClient {
             return clients.get(0);
         }
     }
-    @Cacheable(cacheNames = "Supplier", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {
 
         UriComponentsBuilder builder =
@@ -106,15 +108,21 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    @Cacheable(cacheNames = "Supplier", unless="#result == null")
-    public Supplier getSupplierByName(Long warehouseId, String name) {
+    @Cacheable(cacheNames = "InboundService_Supplier", unless="#result == null")
+    public Supplier getSupplierByName(Long warehouseId, String name)  {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/suppliers")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("name", name);
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/common/suppliers")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -133,7 +141,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "Policy", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Policy", unless="#result == null")
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

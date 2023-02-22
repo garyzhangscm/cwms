@@ -104,9 +104,9 @@ public class WaveService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (Strings.isNotBlank(number)) {
-                        if (number.contains("%")) {
+                        if (number.contains("*")) {
 
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("number"), number));

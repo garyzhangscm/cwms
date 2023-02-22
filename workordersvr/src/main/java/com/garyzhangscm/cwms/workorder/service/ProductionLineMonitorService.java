@@ -63,8 +63,8 @@ public class ProductionLineMonitorService  {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(name)) {
-                        if (name.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        if (name.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("name"), name));
@@ -72,8 +72,8 @@ public class ProductionLineMonitorService  {
 
                     }
                     if (StringUtils.isNotBlank(description)) {
-                        if (description.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("description"), description));
+                        if (description.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("description"), description.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("description"), description));
@@ -83,8 +83,8 @@ public class ProductionLineMonitorService  {
                     if (StringUtils.isNotBlank(productionLineName)) {
 
                         Join<ProductionLineMonitor, ProductionLine> joinProductionLine = root.join("productionLine", JoinType.INNER);
-                        if (productionLineName.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinProductionLine.get("name"), productionLineName));
+                        if (productionLineName.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinProductionLine.get("name"), productionLineName.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinProductionLine.get("name"), productionLineName));

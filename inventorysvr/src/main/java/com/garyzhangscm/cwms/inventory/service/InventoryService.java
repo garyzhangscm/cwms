@@ -236,8 +236,8 @@ public class InventoryService implements TestDataInitiableService{
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (StringUtils.isNotBlank(itemName)) {
 
-                                if (itemName.contains("%")) {
-                                    predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName));
+                                if (itemName.contains("*")) {
+                                    predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName.replaceAll("\\*", "%")));
                                 }
                                 else {
                                     predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
@@ -353,9 +353,9 @@ public class InventoryService implements TestDataInitiableService{
                     if (StringUtils.isNotBlank(lpn)) {
 
                         logger.debug("lpn {} , lpn.contains(%) ? {}",
-                                lpn, lpn.contains("%"));
-                        if (lpn.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("lpn"), lpn));
+                                lpn, lpn.contains("*"));
+                        if (lpn.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("lpn"), lpn.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));

@@ -27,6 +27,8 @@ import com.garyzhangscm.cwms.outbound.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -86,6 +88,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper<String> removeOrder(@PathVariable Long id) {
 
          orderService.removeOrder(id);
@@ -94,12 +103,26 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public Order changeOrder(@RequestBody Order order){
         return orderService.save(order);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/allocate", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public Order allocateOrder(@PathVariable Long id){
 
         return orderService.allocate(id);
@@ -107,6 +130,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/change-stage-loctions", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public Order changeAssignedStageLocations(@PathVariable Long id,
                                       @RequestParam(name = "locationGroupId", required = false, defaultValue = "") Long locationGroupId,
                                       @RequestParam(name = "locationId", required = false, defaultValue = "") Long locationId){
@@ -116,6 +146,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/complete", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public Order completeOrder(@PathVariable Long id,
                                @RequestBody Order order){
         return orderService.completeOrder(id, order);
@@ -123,6 +160,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/stage", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public Order stageOrder(@PathVariable Long id,
                             @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return orderService.stage(id, ignoreUnfinishedPicks);
@@ -130,6 +174,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/load", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public Order loadOrder(@PathVariable Long id,
                            @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return orderService.load(id, ignoreUnfinishedPicks);
@@ -137,6 +188,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/dispatch", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public Order dispatchOrder(@PathVariable Long id,
                                @RequestParam(name = "ignoreUnfinishedPicks", required = false, defaultValue = "false") boolean ignoreUnfinishedPicks){
         return orderService.dispatch(id, ignoreUnfinishedPicks);
@@ -212,6 +270,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{orderId}/generate-manual-pick", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public List<Pick> generateManualPick(@PathVariable  Long orderId,
                                          @RequestParam String lpn,
                                          @RequestParam Boolean pickWholeLPN) {
@@ -225,6 +290,13 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper uploadOrders(Long warehouseId,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 

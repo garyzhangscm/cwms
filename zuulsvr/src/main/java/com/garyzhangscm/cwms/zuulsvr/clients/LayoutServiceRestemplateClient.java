@@ -39,7 +39,7 @@ public class LayoutServiceRestemplateClient {
     private RestTemplate restTemplate;
 
 
-    @Cacheable(cacheNames = "CompanyEnabled", unless="#result == null")
+    @Cacheable(cacheNames = "ZuulService_CompanyEnabled", unless="#result == null")
     public Boolean isCompanyEnabled(Long companyId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -58,7 +58,7 @@ public class LayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "CompanyByWarehouseId", unless="#result == null")
+    @Cacheable(cacheNames = "ZuulService_CompanyByWarehouseId", unless="#result == null")
     public Long getCompanyId(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -77,7 +77,7 @@ public class LayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "ZuulService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
 
         UriComponentsBuilder builder =

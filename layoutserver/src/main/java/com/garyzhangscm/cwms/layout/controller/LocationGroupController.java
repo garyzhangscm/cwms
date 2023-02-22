@@ -69,11 +69,6 @@ public class LocationGroupController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locationgroups")
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "outbound_locationGroup", allEntries = true),
-            }
-    )
     public LocationGroup addLocationGroups(@RequestBody LocationGroup locationGroup) {
         return locationGroupService.addLocationGroups(locationGroup);
     }
@@ -82,7 +77,10 @@ public class LocationGroupController {
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "outbound_locationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
             }
     )
     public LocationGroup changeLocationGroups(@PathVariable long id,
@@ -97,13 +95,28 @@ public class LocationGroupController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups/{id}")
-    @CacheEvict(cacheNames = "locationGroup")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
+            }
+    )
     public void removeLocationGroup(@PathVariable long id) {
         locationGroupService.removeLocationGroup(id);
     }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/locationgroups")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
+            }
+    )
     public void removeLocationGroups(@RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds) {
         locationGroupService.delete(locationGroupIds);
     }
@@ -116,9 +129,10 @@ public class LocationGroupController {
     @RequestMapping(method=RequestMethod.PUT, value="/locationgroups/{id}/reserve")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "workorder_location", allEntries = true),
-                    @CacheEvict(cacheNames = "inventory_location", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_location", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
             }
     )
     public Location reserveLocation(@PathVariable Long id,

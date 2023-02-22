@@ -53,11 +53,6 @@ public class VelocityController {
 
     @BillableEndpoint
     @RequestMapping(value="/velocities", method = RequestMethod.POST)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "inventory_velocity", allEntries = true),
-            }
-    )
     public Velocity addVelocity(@RequestBody Velocity velocity) {
         return velocityService.addVelocity(velocity);
     }
@@ -67,7 +62,8 @@ public class VelocityController {
     @RequestMapping(value="/velocities/{id}", method = RequestMethod.PUT)
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "inventory_velocity", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Velocities", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Velocity", allEntries = true),
             }
     )
     public Velocity changeVelocity(@PathVariable Long id, @RequestBody Velocity velocity) {
@@ -82,7 +78,8 @@ public class VelocityController {
     @RequestMapping(method=RequestMethod.DELETE, value="/velocities/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "inventory_velocity", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Velocities", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Velocity", allEntries = true),
             }
     )
     public void removeVelocity(@PathVariable Long id) {

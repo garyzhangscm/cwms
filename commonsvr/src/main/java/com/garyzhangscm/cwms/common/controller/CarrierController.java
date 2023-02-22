@@ -26,6 +26,8 @@ import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.service.CarrierService;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,6 +57,13 @@ public class CarrierController {
 
     @BillableEndpoint
     @RequestMapping(value="/carriers/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Carrier", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Carrier", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Carrier", allEntries = true),
+            }
+    )
     public Carrier changeCarrier(@PathVariable Long id, @RequestBody Carrier carrier) {
         if (Objects.nonNull(carrier.getId()) && !Objects.equals(carrier.getId(), id)) {
             throw RequestValidationFailException.raiseException(

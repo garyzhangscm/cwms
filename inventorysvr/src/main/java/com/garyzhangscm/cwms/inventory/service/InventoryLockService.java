@@ -71,8 +71,8 @@ public class InventoryLockService {
 
 
                 if (StringUtils.isNotBlank(name)) {
-                    if (name.contains("%")) {
-                        predicates.add(criteriaBuilder.like(root.get("name"), name));
+                    if (name.contains("*")) {
+                        predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                     }
                     else {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));

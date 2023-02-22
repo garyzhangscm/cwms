@@ -43,7 +43,7 @@ public class ResourceServiceRestemplateClient {
     OAuth2RestOperations restTemplate;
 
 
-    @Cacheable(cacheNames = "User", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_User", unless="#result == null")
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -60,7 +60,7 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "User", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_User", unless="#result == null")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -87,7 +87,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Role", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_Role", unless="#result == null")
     public Role getRoleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -107,7 +107,7 @@ public class ResourceServiceRestemplateClient {
 
 
 
-    @Cacheable(cacheNames = "Role", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_Role", unless="#result == null")
     public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -135,7 +135,7 @@ public class ResourceServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "WorkingTeam", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_WorkingTeam", unless="#result == null")
     public WorkingTeam getWorkingTeamById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -152,7 +152,7 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "WorkingTeam", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_WorkingTeam", unless="#result == null")
     public WorkingTeam getWorkingTeamByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

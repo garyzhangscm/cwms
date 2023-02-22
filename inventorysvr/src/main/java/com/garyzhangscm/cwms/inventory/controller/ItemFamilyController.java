@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
-import com.garyzhangscm.cwms.inventory.BillableEndpointAspect;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
@@ -28,6 +27,8 @@ import com.garyzhangscm.cwms.inventory.service.ItemFamilyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -82,6 +83,14 @@ public class ItemFamilyController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.PUT, value="/item-family/{id}")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_ItemFamily", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemFamily", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemFamily", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_ItemFamily", allEntries = true),
+            }
+    )
     public ItemFamily changeItemFamily(@PathVariable long id,
                                        @RequestBody ItemFamily itemFamily) {
         if (itemFamily.getId() != null && itemFamily.getId() != id) {
@@ -93,6 +102,14 @@ public class ItemFamilyController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/item-family")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_ItemFamily", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemFamily", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemFamily", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_ItemFamily", allEntries = true),
+            }
+    )
     public void removeItemFamilies(@RequestParam(name = "item_family_ids", required = false, defaultValue = "") String itemFamilyIds) {
         itemFamilyService.removeItemFamilies(itemFamilyIds);
     }

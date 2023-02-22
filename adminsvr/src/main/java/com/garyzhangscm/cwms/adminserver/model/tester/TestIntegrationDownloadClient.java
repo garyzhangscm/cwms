@@ -3,7 +3,6 @@ package com.garyzhangscm.cwms.adminserver.model.tester;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.adminserver.clients.IntegrationServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.exception.TestFailException;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;

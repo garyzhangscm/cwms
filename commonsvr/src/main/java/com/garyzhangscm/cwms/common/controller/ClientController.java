@@ -74,7 +74,7 @@ public class ClientController {
 
     @BillableEndpoint
     @RequestMapping(value="/clients", method = RequestMethod.POST)
-    @CachePut(cacheNames = "Client", key="#root.caches[0].id")
+    //@CachePut(cacheNames = "Client", key="#root.caches[0].id")
     public Client addClient(@RequestBody Client client) {
         return clientService.save(client);
     }
@@ -82,7 +82,17 @@ public class ClientController {
 
     @BillableEndpoint
     @RequestMapping(value="/clients/{id}", method = RequestMethod.PUT)
-    @CachePut(cacheNames = "Client", key="#root.caches[0].id")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Client", allEntries = true),
+            }
+    )
     public Client changeClient(@PathVariable Long id, @RequestBody Client client) {
         if (Objects.nonNull(client.getId()) && !Objects.equals(client.getId(), id)) {
             throw RequestValidationFailException.raiseException(
@@ -93,7 +103,17 @@ public class ClientController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/clients")
-    @CacheEvict(cacheNames = "Client", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Client", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Client", allEntries = true),
+            }
+    )
     public void deleteClients(@RequestParam(name = "clientIds", required = false, defaultValue = "") String clientIds) {
         clientService.delete(clientIds);
     }

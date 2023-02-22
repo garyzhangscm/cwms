@@ -39,7 +39,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @Component
-@CacheConfig(cacheNames = "warehouse_layout")
 public class WarehouseLayoutServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WarehouseLayoutServiceRestemplateClient.class);
@@ -54,7 +53,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_Company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -129,7 +128,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         String locationName = "TRLR-" + trailerId;
         return getLocationByName(warehouseId, locationName);
     }
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -156,7 +155,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -174,7 +173,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "WarehouseConfiguration", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
 
 
@@ -193,7 +192,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "Location", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_Location", unless="#result == null")
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -210,7 +209,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "Location", unless="#result == null")
+    @Cacheable(cacheNames = "CommonService_Location", unless="#result == null")
     public Location getLocationByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =

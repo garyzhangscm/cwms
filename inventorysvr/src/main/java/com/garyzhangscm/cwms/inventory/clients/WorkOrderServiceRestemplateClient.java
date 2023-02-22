@@ -46,7 +46,7 @@ public class WorkOrderServiceRestemplateClient {
     private OAuth2RestOperations restTemplate;
 
 
-    @Cacheable(cacheNames = "WorkOrder", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -65,7 +65,7 @@ public class WorkOrderServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "WorkOrderQCSample", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_WorkOrderQCSample", unless="#result == null")
     public WorkOrderQCSample getWorkOrderQCSampleByNumber(Long warehouseId,
                                                           String number) {
         UriComponentsBuilder builder =
@@ -91,7 +91,7 @@ public class WorkOrderServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "WorkOrderQCSample", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_WorkOrderQCSample", unless="#result == null")
     public WorkOrderQCSample getWorkOrderQCSampleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

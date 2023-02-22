@@ -80,8 +80,8 @@ public class WorkOrderLineSparePartDetailService {
                     predicates.add(criteriaBuilder.equal(joinWorkOrderLine.get("id"), workOrderLineId));
 
                     if (Strings.isNotBlank(name)) {
-                        if (name.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinWorkOrderLineSparePart.get("name"), name));
+                        if (name.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinWorkOrderLineSparePart.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinWorkOrderLineSparePart.get("name"), name));

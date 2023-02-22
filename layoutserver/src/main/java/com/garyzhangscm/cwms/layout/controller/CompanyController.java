@@ -31,8 +31,10 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -91,15 +93,41 @@ public class CompanyController {
     }
 
     @RequestMapping(value="/companies/{id}/enable", method = RequestMethod.POST)
-    // @CachePut(cacheNames = "Company", key="#id")
-    @Cacheable(cacheNames = "Company", key="#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_CompanyEnabled", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_CompanyByWarehouseId", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_Company", allEntries = true),
+            }
+    )
     public Company enableCompany(@PathVariable long id) {
         return companyService.enableCompany(id, true);
     }
 
     @RequestMapping(value="/companies/{id}/disable", method = RequestMethod.POST)
-    @Cacheable(cacheNames = "Company", key="#id")
-    //@CachePut(cacheNames = "Company", key="#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Company", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_CompanyEnabled", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_CompanyByWarehouseId", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_Company", allEntries = true),
+            }
+    )
     public Company disableCompany(@PathVariable long id) {
         return companyService.enableCompany(id, false);
     }

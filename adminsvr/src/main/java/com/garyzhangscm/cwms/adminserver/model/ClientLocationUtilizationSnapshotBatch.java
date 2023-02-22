@@ -18,13 +18,7 @@
 
 package com.garyzhangscm.cwms.adminserver.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
     private Long id;

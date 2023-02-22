@@ -68,7 +68,7 @@ public class CommonServiceRestemplateClient {
         return getNextNumber(warehouseId, "work-order-number");
     }
 
-    @Cacheable(cacheNames = "Client", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_Client", unless="#result == null")
     public Client getClientById(Long id) {
 
 
@@ -89,7 +89,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
 
@@ -108,7 +108,7 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
