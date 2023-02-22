@@ -37,7 +37,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "inventory")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer"}, ignoreUnknown = true)
 public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(Inventory.class);

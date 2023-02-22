@@ -58,8 +58,14 @@ public class LayoutServiceRestemplateClient {
 
     }
 
+    /**
+     * Please note since Redis will always return int when the value is within the int range
+     * we will need to change the return type to Number and may need to cast when we call this command
+     * @param warehouseId
+     * @return
+     */
     @Cacheable(cacheNames = "ZuulService_CompanyByWarehouseId", unless="#result == null")
-    public Long getCompanyId(Long warehouseId) {
+    public Number getCompanyIdByWarehouseId(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
