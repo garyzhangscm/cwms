@@ -187,7 +187,7 @@ public class UrlAccessControllerFilter implements Filter {
             // in case the company ID is not pass in, see if we can get from the warehouse id
             logger.debug("let's see if we can find the company id from warehouse id {}", warehouseId);
 
-            companyId = layoutServiceRestemplateClient.getCompanyId(warehouseId);
+            companyId = layoutServiceRestemplateClient.getCompanyIdByWarehouseId(warehouseId).longValue();
             if (Objects.isNull(companyId)) {
 
                 throw SystemFatalException.raiseException("can't get company ID from the request, not able to validate the request");
