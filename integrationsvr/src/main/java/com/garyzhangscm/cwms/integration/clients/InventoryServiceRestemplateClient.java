@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.integration.exception.GenericException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.ItemFamily;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.client.RestTemplate;
 import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.InventoryStatus;
@@ -52,6 +53,7 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     RestTemplate restTemplate;
 
+    @Cacheable(cacheNames = "ItemFamily", unless="#result == null")
     public ItemFamily getItemFamilyByName(Long companyId, Long warehouseId, String name)  {
         logger.debug("Start to get item family by name");
         try {
@@ -87,6 +89,7 @@ public class InventoryServiceRestemplateClient {
             throw ResourceNotFoundException.raiseException("can't find the item family by name " + name);
         }
     }
+    @Cacheable(cacheNames = "ItemFamily", unless="#result == null")
     public ItemFamily getItemFamilyById(Long id)  {
 
         UriComponentsBuilder builder =
@@ -104,6 +107,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    @Cacheable(cacheNames = "Item", unless="#result == null")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -123,6 +127,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "Item", unless="#result == null")
     public Item getItemByName(Long companyId, Long warehouseId, String name)  {
         logger.debug("Start to get item by name {}", name);
         if (Strings.isBlank(name)) {
@@ -206,6 +211,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "InventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -230,6 +236,7 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "ItemPackageType", unless="#result == null")
     public ItemPackageType getItemPackageTypeByName(Long companyId, Long warehouseId, Long itemId, String name) {
         try{
 

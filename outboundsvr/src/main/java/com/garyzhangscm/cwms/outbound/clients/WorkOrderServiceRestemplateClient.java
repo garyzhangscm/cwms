@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -42,6 +43,7 @@ public class WorkOrderServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Cacheable(cacheNames = "WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderById(Long id) {
 
         UriComponentsBuilder builder =
@@ -59,6 +61,7 @@ public class WorkOrderServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "WorkOrderLine", unless="#result == null")
     public WorkOrderLine getWorkOrderLineById(Long id) {
 
         UriComponentsBuilder builder =
@@ -76,6 +79,7 @@ public class WorkOrderServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderByNumber(Long warehouseId, String number) {
 
         UriComponentsBuilder builder =

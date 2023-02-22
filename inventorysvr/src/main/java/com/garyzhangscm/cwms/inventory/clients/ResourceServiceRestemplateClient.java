@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -55,6 +56,7 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Cacheable(cacheNames = "User")
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -71,6 +73,7 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "User")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -97,6 +100,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Role")
     public Role getRoleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -116,6 +120,7 @@ public class ResourceServiceRestemplateClient {
 
 
 
+    @Cacheable(cacheNames = "Role")
     public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

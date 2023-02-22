@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -56,6 +57,7 @@ public class CommonServiceRestemplateClient {
     private ObjectMapper objectMapper;
 
 
+    @Cacheable(cacheNames = "Client")
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -72,7 +74,9 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    public Client getClientByName(String name) {
+
+    @Cacheable(cacheNames = "Client")
+    public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -94,6 +98,8 @@ public class CommonServiceRestemplateClient {
             return clients.get(0);
         }
     }
+
+    @Cacheable(cacheNames = "Supplier")
     public Supplier getSupplierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -110,6 +116,8 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+
+    @Cacheable(cacheNames = "Supplier")
     public Supplier getSupplierByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -133,6 +141,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "Carrier")
     public Carrier getCarrierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -150,6 +159,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "CarrierServiceLevel")
     public CarrierServiceLevel getCarrierServiceLevelById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -167,6 +177,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Customer")
     public Customer getCustomerById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -183,6 +194,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    @Cacheable(cacheNames = "Customer")
     public Customer getCustomerByName(Long companyId, Long warehouseId, String name) {
 
         try {
@@ -220,6 +232,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "UnitOfMeasure")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
         UriComponentsBuilder builder =
@@ -253,6 +266,8 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    @Cacheable(cacheNames = "UnitOfMeasure")
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =

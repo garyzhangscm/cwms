@@ -1,6 +1,10 @@
-package com.garyzhangscm.cwms.inventory;
+package com.garyzhangscm.cwms.zuulsvr;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +18,6 @@ import java.time.Duration;
 @Configuration
 public class RedisConfig {
 
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
 
     /**
     @Bean
@@ -37,6 +38,12 @@ public class RedisConfig {
 
     @Bean
     public RedisCacheConfiguration cacheConfiguration() {
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new ParameterNamesModule())
+                .registerModule(new Jdk8Module())
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         return RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(2))

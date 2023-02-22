@@ -44,11 +44,11 @@ public class TestIntegrationDownloadClient extends TestScenario{
                 logger.debug("Created client integration data: {}", integrationData.getId());
             });
 
-            assertResult(integrationDataList);
+            assertResult(integrationDataList, warehouse);
 
     }
 
-    private void assertResult(List<IntegrationData> integrationDataList) {
+    private void assertResult(List<IntegrationData> integrationDataList, Warehouse warehouse) {
 
         // we will need to make sure
         // 1. all the integration data has been saved, immediately
@@ -56,7 +56,7 @@ public class TestIntegrationDownloadClient extends TestScenario{
         // 3. data has been saved in certain table, within certain time period
         assertResultSaved(integrationDataList);
         assertResultProcessed(integrationDataList);
-        assertResultConfirmed();
+        assertResultConfirmed(warehouse);
 
 
 
@@ -69,7 +69,7 @@ public class TestIntegrationDownloadClient extends TestScenario{
         integrationUtil.assertResultProcessed(integrationDataList, Client.class);
     }
 
-    private void assertResultConfirmed() {
+    private void assertResultConfirmed(Warehouse warehouse) {
 
         // Let's check from the inventory service to see if our item has been saved correctly
         // if we are here, we will assume we already passed assetResultProcessed()
@@ -89,7 +89,7 @@ public class TestIntegrationDownloadClient extends TestScenario{
                 for (String clientName : clientNames) {
 
                     // Get the supplier information
-                    Client client = commonServiceRestemplateClient.getClientByName(clientName);
+                    Client client = commonServiceRestemplateClient.getClientByName(warehouse.getId(), clientName);
                     if (Objects.isNull(client) || !client.getName().equals(clientName)) {
                         allProcessed = false;
                         break;

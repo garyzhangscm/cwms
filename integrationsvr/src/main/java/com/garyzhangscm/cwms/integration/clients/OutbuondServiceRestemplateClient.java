@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.integration.model.Order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,7 @@ public class OutbuondServiceRestemplateClient {
     RestTemplate restTemplate;
 
 
+    @Cacheable(cacheNames = "Order", unless="#result == null")
     public Order getOrderById(Long id) {
 
         UriComponentsBuilder builder =
@@ -58,6 +60,7 @@ public class OutbuondServiceRestemplateClient {
 
 
     }
+    @Cacheable(cacheNames = "Order", unless="#result == null")
     public Order getOrderByNumber(Long warehosueId, String number) {
 
         UriComponentsBuilder builder =

@@ -169,7 +169,7 @@ public class ItemController {
 
         File localFile = fileService.saveFile(file);
         List<Item> items = itemService.saveItemData(localFile);
-        return  ResponseBodyWrapper.success(items.size() + "");
+        return  ResponseBodyWrapper.success(String.valueOf(items.size()));
     }
 
     /**

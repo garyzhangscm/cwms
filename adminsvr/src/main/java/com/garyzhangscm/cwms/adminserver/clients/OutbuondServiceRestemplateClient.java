@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -55,6 +56,7 @@ public class OutbuondServiceRestemplateClient {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
+    @Cacheable(cacheNames = "Order")
     public Order getOrderByNumber(Long warehouseId, String orderNumber) {
 
         UriComponentsBuilder builder =
@@ -80,6 +82,7 @@ public class OutbuondServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "Pick")
     public Pick getPickById(Long id) {
 
         UriComponentsBuilder builder =

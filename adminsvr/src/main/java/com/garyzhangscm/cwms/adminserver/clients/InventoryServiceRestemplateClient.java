@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -62,6 +63,7 @@ public class InventoryServiceRestemplateClient {
     // private OAuth2RestOperations restTemplate;
      RestTemplate restTemplate;
 
+    @Cacheable(cacheNames = "Item")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -80,6 +82,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Item")
     public Item getItemByName(Long warehouseId, String name) {
 
         try {
@@ -115,6 +118,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "ItemFamily")
     public ItemFamily getItemFamilyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -131,6 +135,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "ItemFamily")
     public ItemFamily getItemFamilyByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -156,6 +161,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "Inventory")
     public Inventory getInventoryById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -193,6 +199,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    @Cacheable(cacheNames = "InventoryStatus")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -210,6 +217,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "InventoryStatus")
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -235,6 +243,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "AvailableInventoryStatus")
     public InventoryStatus getAvailableInventoryStatus(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -728,6 +737,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "CycleCountRequest")
     public CycleCountRequest getCycleCountRequestById(long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -744,6 +754,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "AuditCountRequest")
     public AuditCountRequest getAuditCountRequestById(long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

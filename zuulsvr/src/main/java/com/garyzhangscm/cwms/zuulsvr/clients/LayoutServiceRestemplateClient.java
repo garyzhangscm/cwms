@@ -39,12 +39,12 @@ public class LayoutServiceRestemplateClient {
     private RestTemplate restTemplate;
 
 
-    @Cacheable(cacheNames = "company_enabled", unless="#result == null")
+    @Cacheable(cacheNames = "CompanyEnabled", unless="#result == null")
     public Boolean isCompanyEnabled(Long companyId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout//companies/{id}/is-enabled")
+                        .path("/api/layout/companies/{id}/is-enabled")
                         .queryParam("innerCall", "true");
 
         ResponseBodyWrapper<Boolean> responseBodyWrapper
@@ -58,7 +58,7 @@ public class LayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "company_by_warehouse_id", unless="#result == null")
+    @Cacheable(cacheNames = "CompanyByWarehouseId", unless="#result == null")
     public Long getCompanyId(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -77,7 +77,7 @@ public class LayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "company_by_code", unless="#result == null")
+    @Cacheable(cacheNames = "Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
 
         UriComponentsBuilder builder =

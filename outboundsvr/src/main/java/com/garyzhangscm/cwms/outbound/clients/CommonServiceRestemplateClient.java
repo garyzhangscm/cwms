@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
@@ -51,6 +52,7 @@ public class CommonServiceRestemplateClient {
     @Qualifier("autoLoginRestTemplate")
     RestTemplate autoLoginRestTemplate;
 
+    @Cacheable(cacheNames = "Trailer", unless="#result == null")
     public Trailer getTrailerById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -68,6 +70,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Client", unless="#result == null")
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -84,6 +87,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -107,6 +111,7 @@ public class CommonServiceRestemplateClient {
             return clients.get(0);
         }
     }
+    @Cacheable(cacheNames = "Supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -124,6 +129,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Carrier", unless="#result == null")
     public Carrier getCarrierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -141,6 +147,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "CarrierServiceLevel", unless="#result == null")
     public CarrierServiceLevel getCarrierServiceLevelById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -158,6 +165,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Customer", unless="#result == null")
     public Customer getCustomerById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -173,6 +181,7 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+    @Cacheable(cacheNames = "Customer", unless="#result == null")
     public Customer getCustomerByName(Long companyId, Long warehouseId, String name) {
 
         logger.debug("Start to find customer by name {}", name);
@@ -212,6 +221,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -238,6 +248,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
         UriComponentsBuilder builder =
@@ -291,6 +302,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "TrailerAppointment", unless="#result == null")
     public TrailerAppointment getTrailerAppointmentById(Long trailerAppointmentId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

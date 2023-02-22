@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.inventory;
+package com.garyzhangscm.cwms.workorder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -166,6 +166,7 @@ public class ResourceServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "UserByName")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -192,6 +193,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "UserByToken")
     public User getUserByUsernameAndToken(String username, String token) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

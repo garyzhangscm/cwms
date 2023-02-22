@@ -59,6 +59,7 @@ public class InboundServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Cacheable(cacheNames = "Receipt")
     public Receipt getReceiptById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -93,6 +94,7 @@ public class InboundServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Receipt")
     public Receipt getReceiptByNumber(Long warehouseId, String receiptNumber) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
