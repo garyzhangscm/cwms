@@ -46,7 +46,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-@CacheConfig(cacheNames = "location_groups")
 public class LocationGroupService implements TestDataInitiableService {
 
     private static final Logger logger = LoggerFactory.getLogger(LocationGroupService.class);

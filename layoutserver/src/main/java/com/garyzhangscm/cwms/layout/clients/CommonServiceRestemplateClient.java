@@ -57,6 +57,7 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Cacheable(cacheNames = "Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -82,6 +83,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+    @Cacheable(cacheNames = "Client", unless="#result == null")
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -99,6 +101,7 @@ public class CommonServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "Policy", unless="#result == null")
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

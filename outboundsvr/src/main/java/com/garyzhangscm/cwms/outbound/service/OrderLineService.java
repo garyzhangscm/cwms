@@ -255,6 +255,52 @@ public class OrderLineService implements TestDataInitiableService{
         }
     }
 
+    /**
+     * Load both line data and order data in one file and create the order if necessary
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+    public List<OrderLineCSVWrapper> loadDataWithOrder(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
+                addColumn("order").
+                addColumn("shipToCustomer").
+                addColumn("billToCustomerSameAsShipToCustomer").
+                addColumn("billToCustomer").
+                addColumn("shipToContactorFirstname").
+                addColumn("shipToContactorLastname").
+                addColumn("shipToAddressCountry").
+                addColumn("shipToAddressState").
+                addColumn("shipToAddressCounty").
+                addColumn("shipToAddressCity").
+                addColumn("shipToAddressDistrict").
+                addColumn("shipToAddressLine1").
+                addColumn("shipToAddressLine2").
+                addColumn("shipToAddressPostcode").
+                addColumn("billToAddressSameAsShipToAddress").
+                addColumn("billToContactorFirstname").
+                addColumn("billToContactorLastname").
+                addColumn("billToAddressCountry").
+                addColumn("billToAddressState").
+                addColumn("billToAddressCounty").
+                addColumn("billToAddressCity").
+                addColumn("billToAddressDistrict").
+                addColumn("billToAddressLine1").
+                addColumn("billToAddressLine2").
+                addColumn("billToAddressPostcode").
+                addColumn("client").
+                addColumn("number").
+                addColumn("item").
+                addColumn("expectedQuantity").
+                addColumn("inventoryStatus").
+                addColumn("allocationStrategyType").
+                build().withHeader();
+
+        return fileService.loadData(inputStream, schema, OrderLineCSVWrapper.class);
+    }
 
     public List<OrderLineCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
@@ -289,6 +335,10 @@ public class OrderLineService implements TestDataInitiableService{
     }
 
     private OrderLine convertFromWrapper(OrderLineCSVWrapper orderLineCSVWrapper) {
+        return convertFromWrapper(orderLineCSVWrapper, null);
+    }
+    private OrderLine convertFromWrapper(OrderLineCSVWrapper orderLineCSVWrapper,
+                                         Order order) {
 
         OrderLine orderLine = new OrderLine();
         orderLine.setNumber(orderLineCSVWrapper.getNumber());
@@ -305,8 +355,8 @@ public class OrderLineService implements TestDataInitiableService{
 
         orderLine.setWarehouseId(warehouse.getId());
 
-        if (!StringUtils.isBlank(orderLineCSVWrapper.getOrder())) {
-            Order order = orderService.findByNumber(warehouse.getId(), orderLineCSVWrapper.getOrder());
+        if (Objects.isNull(order) && !StringUtils.isBlank(orderLineCSVWrapper.getOrder())) {
+            order = orderService.findByNumber(warehouse.getId(), orderLineCSVWrapper.getOrder());
             orderLine.setOrder(order);
         }
         if (!StringUtils.isBlank(orderLineCSVWrapper.getItem())) {
@@ -453,5 +503,12 @@ public class OrderLineService implements TestDataInitiableService{
         logger.debug("start to process item override for order line, current warehouse {}, from item id {} to item id {}",
                 warehouseId, oldItemId, newItemId);
         orderLineRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
+
+    public void saveOrderLineData(Long warehouseId, Order order, OrderLineCSVWrapper orderLineCSVWrapper) {
+
+        saveOrUpdate(
+                convertFromWrapper(orderLineCSVWrapper, order)
+        );
     }
 }

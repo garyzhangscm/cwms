@@ -96,8 +96,6 @@ public class OutboundServiceRestemplateClient {
 
     }
 
-
-    @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
     public Pick cancelPick(Long pickId){
 
         UriComponentsBuilder builder =
@@ -117,6 +115,7 @@ public class OutboundServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "OrderLine", unless="#result == null")
     public OrderLine getOrderLineById(Long orderLineId) {
 
         UriComponentsBuilder builder =

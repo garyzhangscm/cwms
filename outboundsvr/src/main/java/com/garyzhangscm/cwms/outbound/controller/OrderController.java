@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.service.FileService;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 import com.garyzhangscm.cwms.outbound.service.OrderService;
 import org.slf4j.Logger;
@@ -28,10 +29,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -44,6 +47,8 @@ public class OrderController {
     OrderService orderService;
     @Autowired
     OrderLineService orderLineService;
+    @Autowired
+    FileService fileService;
 
 
     @RequestMapping(value="/orders", method = RequestMethod.GET)
@@ -215,5 +220,17 @@ public class OrderController {
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
         return orderService.generateManualPick(orderId, lpn, pickWholeLPN);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/items/upload")
+    public ResponseBodyWrapper uploadOrders(Long warehouseId,
+                                            @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+        orderService.saveOrderData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success("success");
     }
 }

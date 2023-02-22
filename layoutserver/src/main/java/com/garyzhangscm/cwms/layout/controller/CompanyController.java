@@ -31,6 +31,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -89,10 +91,15 @@ public class CompanyController {
     }
 
     @RequestMapping(value="/companies/{id}/enable", method = RequestMethod.POST)
+    // @CachePut(cacheNames = "Company", key="#id")
+    @Cacheable(cacheNames = "Company", key="#id")
     public Company enableCompany(@PathVariable long id) {
         return companyService.enableCompany(id, true);
     }
+
     @RequestMapping(value="/companies/{id}/disable", method = RequestMethod.POST)
+    @Cacheable(cacheNames = "Company", key="#id")
+    //@CachePut(cacheNames = "Company", key="#id")
     public Company disableCompany(@PathVariable long id) {
         return companyService.enableCompany(id, false);
     }

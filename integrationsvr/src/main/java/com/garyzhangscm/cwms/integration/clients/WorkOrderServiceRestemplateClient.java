@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.integration.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,7 @@ public class WorkOrderServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     RestTemplate restTemplate;
 
+    @Cacheable(cacheNames = "WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderByNumber(Long warehouseId, String number)  {
         logger.debug("Start to get work order by number");
         try {

@@ -29,6 +29,7 @@ import com.garyzhangscm.cwms.common.model.ClientValidationEndpoint;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,11 +74,7 @@ public class ClientController {
 
     @BillableEndpoint
     @RequestMapping(value="/clients", method = RequestMethod.POST)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "workorder_client", allEntries = true),
-            }
-    )
+    @CachePut(cacheNames = "Client", key="#root.caches[0].id")
     public Client addClient(@RequestBody Client client) {
         return clientService.save(client);
     }
@@ -85,11 +82,7 @@ public class ClientController {
 
     @BillableEndpoint
     @RequestMapping(value="/clients/{id}", method = RequestMethod.PUT)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "workorder_client", allEntries = true),
-            }
-    )
+    @CachePut(cacheNames = "Client", key="#root.caches[0].id")
     public Client changeClient(@PathVariable Long id, @RequestBody Client client) {
         if (Objects.nonNull(client.getId()) && !Objects.equals(client.getId(), id)) {
             throw RequestValidationFailException.raiseException(
@@ -100,11 +93,7 @@ public class ClientController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/clients")
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "workorder_client", allEntries = true),
-            }
-    )
+    @CacheEvict(cacheNames = "Client", allEntries = true)
     public void deleteClients(@RequestParam(name = "clientIds", required = false, defaultValue = "") String clientIds) {
         clientService.delete(clientIds);
     }

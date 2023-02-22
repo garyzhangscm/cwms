@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@CacheConfig(cacheNames = "common")
 public class CommonServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
@@ -47,7 +46,7 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    @Cacheable(cacheNames = "inbound_client", unless="#result == null")
+    @Cacheable(cacheNames = "Client", unless="#result == null")
     public Client getClientById(Long id) {
 
         UriComponentsBuilder builder =
@@ -65,6 +64,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+    @Cacheable(cacheNames = "Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -89,7 +89,7 @@ public class CommonServiceRestemplateClient {
             return clients.get(0);
         }
     }
-    @Cacheable(cacheNames = "inbound_supplier", unless="#result == null")
+    @Cacheable(cacheNames = "Supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {
 
         UriComponentsBuilder builder =
@@ -106,6 +106,7 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+    @Cacheable(cacheNames = "Supplier", unless="#result == null")
     public Supplier getSupplierByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
@@ -132,7 +133,7 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "inbound_policy", unless="#result == null")
+    @Cacheable(cacheNames = "Policy", unless="#result == null")
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

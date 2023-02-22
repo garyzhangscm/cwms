@@ -38,7 +38,7 @@ public class AuthServiceRestemplateClient {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Cacheable(cacheNames = "company_access", unless="#result == null")
+    @Cacheable(cacheNames = "CompanyAccess", unless="#result == null")
     public Boolean validateCompanyAccess(Long companyId, String token)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -59,7 +59,7 @@ public class AuthServiceRestemplateClient {
 
 
 
-    @Cacheable(cacheNames = "user_by_token", unless="#result == null")
+    @Cacheable(cacheNames = "UserByToken", unless="#result == null")
     public String getUserNameByToken(Long companyId, String token)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

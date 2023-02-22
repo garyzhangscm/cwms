@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.common.service.ABCCategoryService;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,11 +54,8 @@ public class ABCCategoryController {
 
     @BillableEndpoint
     @RequestMapping(value="/abc-categories", method = RequestMethod.POST)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "inventory_abc-category", allEntries = true),
-            }
-    )
+    @CacheEvict(cacheNames = "ABCCategories", allEntries = true)
+    @CachePut(cacheNames = "ABCCategory", key="#root.caches[0].id")
     public ABCCategory addABCCategory(@RequestBody ABCCategory abcCategory) {
         return abcCategoryService.addABCCategory(abcCategory);
     }
@@ -65,11 +63,8 @@ public class ABCCategoryController {
 
     @BillableEndpoint
     @RequestMapping(value="/abc-categories/{id}", method = RequestMethod.PUT)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "inventory_abc-category", allEntries = true),
-            }
-    )
+    @CacheEvict(cacheNames = "ABCCategories", allEntries = true)
+    @CachePut(cacheNames = "ABCCategory", key="#root.caches[0].id")
     public ABCCategory changeABCCategory(@PathVariable Long id, @RequestBody ABCCategory abcCategory) {
         if (Objects.nonNull(abcCategory.getId()) && !Objects.equals(abcCategory.getId(), id)) {
             throw RequestValidationFailException.raiseException(
@@ -82,7 +77,8 @@ public class ABCCategoryController {
     @RequestMapping(method=RequestMethod.DELETE, value="/abc-categories/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "inventory_abc-category", allEntries = true),
+                    @CacheEvict(cacheNames = "ABCCategories", allEntries = true),
+                    @CacheEvict(cacheNames = "ABCCategory", key="#id")
             }
     )
     public void removeABCCategory(@PathVariable Long id) {

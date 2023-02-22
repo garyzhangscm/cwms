@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.persistence.Transient;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -491,6 +492,59 @@ public class OrderService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, OrderCSVWrapper.class);
     }
 
+
+    private List<OrderLineCSVWrapper> loadDataWithLine(InputStream inputStream) throws IOException {
+
+        CsvSchema schema = getCsvSchemaWithLine();
+
+        return fileService.loadData(inputStream, schema, OrderLineCSVWrapper.class);
+    }
+
+
+    private List<OrderLineCSVWrapper> loadDataWithLine(File file) throws IOException {
+
+
+        return fileService.loadData(file, getCsvSchemaWithLine(), OrderLineCSVWrapper.class);
+    }
+
+    private CsvSchema getCsvSchemaWithLine() {
+        return CsvSchema.builder().
+                addColumn("company").
+                addColumn("warehouse").
+                addColumn("order").
+                addColumn("shipToCustomer").
+                addColumn("billToCustomerSameAsShipToCustomer").
+                addColumn("billToCustomer").
+                addColumn("shipToContactorFirstname").
+                addColumn("shipToContactorLastname").
+                addColumn("shipToAddressCountry").
+                addColumn("shipToAddressState").
+                addColumn("shipToAddressCounty").
+                addColumn("shipToAddressCity").
+                addColumn("shipToAddressDistrict").
+                addColumn("shipToAddressLine1").
+                addColumn("shipToAddressLine2").
+                addColumn("shipToAddressPostcode").
+                addColumn("billToAddressSameAsShipToAddress").
+                addColumn("billToContactorFirstname").
+                addColumn("billToContactorLastname").
+                addColumn("billToAddressCountry").
+                addColumn("billToAddressState").
+                addColumn("billToAddressCounty").
+                addColumn("billToAddressCity").
+                addColumn("billToAddressDistrict").
+                addColumn("billToAddressLine1").
+                addColumn("billToAddressLine2").
+                addColumn("billToAddressPostcode").
+                addColumn("client").
+                addColumn("number").
+                addColumn("item").
+                addColumn("expectedQuantity").
+                addColumn("inventoryStatus").
+                addColumn("allocationStrategyType").
+                build().withHeader();
+    }
+
     public void initTestData(Long companyId, String warehouseName) {
         try {
 
@@ -586,6 +640,91 @@ public class OrderService implements TestDataInitiableService {
         if (!StringUtils.isBlank(orderCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(
                     warehouse.getId(), orderCSVWrapper.getClient());
+            order.setClientId(client.getId());
+            order.setClient(client);
+        }
+
+        return order;
+    }
+
+    private Order convertFromWrapper(Long warehouseId,
+                                     OrderLineCSVWrapper orderLineCSVWrapper) {
+
+        Order order = new Order();
+        order.setNumber(orderLineCSVWrapper.getOrder());
+
+
+        Warehouse warehouse =
+                warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
+        order.setWarehouseId(warehouse.getId());
+
+
+        // if we specify the ship to customer, we load information with the customer
+        if (!StringUtils.isBlank(orderLineCSVWrapper.getShipToCustomer())) {
+            Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(),
+                    warehouse.getId(), orderLineCSVWrapper.getShipToCustomer());
+
+            order.setShipToCustomer(shipToCustomer);
+            order.setShipToCustomerId(shipToCustomer.getId());
+
+            order.setShipToContactorFirstname(shipToCustomer.getContactorFirstname());
+            order.setShipToContactorLastname(shipToCustomer.getContactorLastname());
+            order.setShipToAddressCountry(shipToCustomer.getAddressCountry());
+            order.setShipToAddressState(shipToCustomer.getAddressState());
+            order.setShipToAddressCounty(shipToCustomer.getAddressCounty());
+            order.setShipToAddressCity(shipToCustomer.getAddressCity());
+            order.setShipToAddressDistrict(shipToCustomer.getAddressDistrict());
+            order.setShipToAddressLine1(shipToCustomer.getAddressLine1());
+            order.setShipToAddressLine2(shipToCustomer.getAddressLine2());
+            order.setShipToAddressPostcode(shipToCustomer.getAddressPostcode());
+        } else {
+            order.setShipToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname());
+            order.setShipToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname());
+            order.setShipToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry());
+            order.setShipToAddressState(orderLineCSVWrapper.getShipToAddressState());
+            order.setShipToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty());
+            order.setShipToAddressCity(orderLineCSVWrapper.getShipToAddressCity());
+            order.setShipToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict());
+            order.setShipToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1());
+            order.setShipToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2());
+            order.setShipToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode());
+        }
+
+        if (!StringUtils.isBlank(orderLineCSVWrapper.getBillToCustomer())) {
+            Customer billToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(), warehouse.getId(),
+                    orderLineCSVWrapper.getBillToCustomer());
+
+            order.setBillToCustomer(billToCustomer);
+            order.setBillToCustomerId(billToCustomer.getId());
+
+            order.setBillToContactorFirstname(billToCustomer.getContactorFirstname());
+            order.setBillToContactorLastname(billToCustomer.getContactorLastname());
+            order.setBillToAddressCountry(billToCustomer.getAddressCountry());
+            order.setBillToAddressState(billToCustomer.getAddressState());
+            order.setBillToAddressCounty(billToCustomer.getAddressCounty());
+            order.setBillToAddressCity(billToCustomer.getAddressCity());
+            order.setBillToAddressDistrict(billToCustomer.getAddressDistrict());
+            order.setBillToAddressLine1(billToCustomer.getAddressLine1());
+            order.setBillToAddressLine2(billToCustomer.getAddressLine2());
+            order.setBillToAddressPostcode(billToCustomer.getAddressPostcode());
+        } else {
+            order.setBillToContactorFirstname(orderLineCSVWrapper.getBillToContactorFirstname());
+            order.setBillToContactorLastname(orderLineCSVWrapper.getBillToContactorLastname());
+            order.setBillToAddressCountry(orderLineCSVWrapper.getBillToAddressCountry());
+            order.setBillToAddressState(orderLineCSVWrapper.getBillToAddressState());
+            order.setBillToAddressCounty(orderLineCSVWrapper.getBillToAddressCounty());
+            order.setBillToAddressCity(orderLineCSVWrapper.getBillToAddressCity());
+            order.setBillToAddressDistrict(orderLineCSVWrapper.getBillToAddressDistrict());
+            order.setBillToAddressLine1(orderLineCSVWrapper.getBillToAddressLine1());
+            order.setBillToAddressLine2(orderLineCSVWrapper.getBillToAddressLine2());
+            order.setBillToAddressPostcode(orderLineCSVWrapper.getBillToAddressPostcode());
+        }
+
+
+        if (!StringUtils.isBlank(orderLineCSVWrapper.getClient())) {
+            Client client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(), orderLineCSVWrapper.getClient());
             order.setClientId(client.getId());
             order.setClient(client);
         }
@@ -1941,5 +2080,29 @@ public class OrderService implements TestDataInitiableService {
                     order.getNumber() + " as its status is " +
                     order.getStatus() + " and not suitable for pick");
         }
+    }
+
+    public void saveOrderData(Long warehouseId,
+                                     File localFile) throws IOException {
+
+        List<OrderLineCSVWrapper> orderLineCSVWrappers = loadDataWithLine(localFile);
+        logger.debug("start to save {} order lines ", orderLineCSVWrappers.size());
+        // see if we need to create order
+        for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
+            Order order = findByNumber(warehouseId, orderLineCSVWrapper.getOrder());
+            if (Objects.isNull(order)) {
+                logger.debug("order {} is not created yet, let's create the order on the fly ", orderLineCSVWrapper.getOrder());
+                // the order is not created yet, let's
+                order = saveOrUpdate(convertFromWrapper(warehouseId, orderLineCSVWrapper));
+            }
+            logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
+                    orderLineCSVWrapper.getNumber(),
+                    orderLineCSVWrapper.getItem(),
+                    orderLineCSVWrapper.getExpectedQuantity(),
+                    order.getNumber());
+            orderLineService.saveOrderLineData(warehouseId, order, orderLineCSVWrapper);
+        }
+
+
     }
 }
