@@ -80,9 +80,9 @@ public class AlertService {
                     }
                     if (Strings.isNotBlank(keyWords)) {
 
-                        if (keyWords.contains("%")) {
+                        if (keyWords.contains("*")) {
 
-                            predicates.add(criteriaBuilder.like(root.get("keyWords"), keyWords));
+                            predicates.add(criteriaBuilder.like(root.get("keyWords"), keyWords.replaceAll("\\*", "%")));
                         }
                         else {
 

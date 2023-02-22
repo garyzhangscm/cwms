@@ -132,7 +132,7 @@ public class AuthServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "CompanyAccess", unless="#result == null")
+    @Cacheable(cacheNames = "ResourceService_CompanyAccess", unless="#result == null")
     public Boolean validateCompanyAccess(Long companyId, String token)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

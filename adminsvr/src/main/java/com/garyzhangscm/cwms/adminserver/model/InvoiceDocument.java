@@ -1,21 +1,10 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
-import com.garyzhangscm.cwms.adminserver.model.wms.Company;
-import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Billable web request call

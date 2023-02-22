@@ -59,15 +59,6 @@ public class WarehouseController {
 
     @BillableEndpoint
     @RequestMapping(value="/warehouses", method=RequestMethod.POST)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "admin_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "workorder_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "common_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "inbound_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_warehouse", allEntries = true),
-            }
-    )
     public Warehouse addWarehouses(@RequestParam Long companyId,
                                    @RequestBody Warehouse warehouse) throws JsonProcessingException {
         return warehouseService.addWarehouses(companyId, warehouse);
@@ -77,11 +68,14 @@ public class WarehouseController {
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.PUT)
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "admin_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "workorder_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "common_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "inbound_warehouse", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Warehouse", allEntries = true),
             }
     )
     public Warehouse changeWarehouse(@PathVariable long id, @RequestBody Warehouse warehouse) {
@@ -94,7 +88,18 @@ public class WarehouseController {
 
     @BillableEndpoint
     @RequestMapping(value="/warehouses/{id}", method=RequestMethod.DELETE)
-    @CacheEvict(cacheNames = "warehouse", key = "#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Warehouse", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Warehouse", allEntries = true),
+            }
+    )
     public Warehouse removeWarehouses(@PathVariable long id) {
         Warehouse removedWarehouse = warehouseService.removeWarehouses(id);
         return removedWarehouse;

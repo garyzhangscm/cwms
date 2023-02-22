@@ -107,7 +107,6 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Inventory")
     public Inventory getInventoryById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

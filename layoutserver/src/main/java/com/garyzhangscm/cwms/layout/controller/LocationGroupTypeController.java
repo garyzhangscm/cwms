@@ -49,11 +49,6 @@ public class LocationGroupTypeController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locationgrouptypes")
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "outbound_locationGroupType", allEntries = true),
-            }
-    )
     public LocationGroupType addLocationGroupTypes(@RequestBody LocationGroupType locationGroupType) {
         return locationGroupTypeService.saveOrUpdate(locationGroupType);
     }

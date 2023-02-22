@@ -369,7 +369,8 @@ public class PutawayConfigurationService implements TestDataInitiableService{
             // doesn't meet with the strategy
 
             logger.debug("Step 2.1.2 - Start to filter by strategy");
-            locations = putawayConfigurationStrategyService.fitlerLocationByStrategy(locations, inventory, putawayConfigurationStrategy);
+            locations = putawayConfigurationStrategyService.fitlerLocationByStrategy(putawayConfiguration.getWarehouseId(),
+                    locations, inventory, putawayConfigurationStrategy);
             logger.debug("Step 2.1.2 Result - Get totally {} locations according to the strategy {}", locations.size(), putawayConfigurationStrategy);
 
             for(Location location : locations) {

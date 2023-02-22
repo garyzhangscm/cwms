@@ -166,7 +166,7 @@ public class ResourceServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "UserByName")
+    @Cacheable(cacheNames = "AdminService_UserByName", unless="#result == null")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -193,7 +193,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "UserByToken")
+    @Cacheable(cacheNames = "AdminService_UserByToken", unless="#result == null")
     public User getUserByUsernameAndToken(String username, String token) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -214,7 +214,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "admin_warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "AdminService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

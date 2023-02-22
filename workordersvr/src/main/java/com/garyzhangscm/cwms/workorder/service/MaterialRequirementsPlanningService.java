@@ -72,8 +72,8 @@ public class MaterialRequirementsPlanningService   {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(number)) {
-                        if (number.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("number"), number));
@@ -83,8 +83,8 @@ public class MaterialRequirementsPlanningService   {
                     }
 
                     if (StringUtils.isNotBlank(description)) {
-                        if (description.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("description"), description));
+                        if (description.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("description"), description.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("description"), description));
@@ -95,8 +95,8 @@ public class MaterialRequirementsPlanningService   {
 
                         Join<MaterialRequirementsPlanning, MasterProductionSchedule> joinMasterProductionSchedule
                                 = root.join("masterProductionSchedule", JoinType.INNER);
-                        if (mpsNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinMasterProductionSchedule.get("number"), mpsNumber));
+                        if (mpsNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinMasterProductionSchedule.get("number"), mpsNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinMasterProductionSchedule.get("number"), mpsNumber));

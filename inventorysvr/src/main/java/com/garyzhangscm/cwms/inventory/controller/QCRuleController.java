@@ -53,6 +53,11 @@ public class QCRuleController {
 
     @BillableEndpoint
     @RequestMapping(value="/qc-rules/{id}", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "WorkOrderService_QCRule", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper<String> deleteQCRule(@PathVariable Long id) {
 
         qcRuleService.delete(id);
@@ -67,6 +72,11 @@ public class QCRuleController {
 
     @BillableEndpoint
     @RequestMapping(value="/qc-rules/{id}", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "WorkOrderService_QCRule", allEntries = true),
+            }
+    )
     public QCRule changeQCRule(@PathVariable Long id, @RequestBody QCRule qcRule) {
 
         return qcRuleService.changeQCRule(id, qcRule);

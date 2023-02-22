@@ -105,7 +105,6 @@ public class InventoryServerApplication {
 	 *
 	 * @return
 	 */
-	/**
 	@Bean
 	public RedisCacheConfiguration cacheConfiguration() {
 		return RedisCacheConfiguration.defaultCacheConfig()
@@ -113,7 +112,6 @@ public class InventoryServerApplication {
 				.disableCachingNullValues()
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
-	*/
 
 	/**
 	 * Class to implement the JPA audit. Auto generate the

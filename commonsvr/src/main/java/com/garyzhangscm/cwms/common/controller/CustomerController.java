@@ -28,6 +28,8 @@ import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.service.CustomerService;
 import com.garyzhangscm.cwms.common.service.SupplierService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,6 +76,13 @@ public class CustomerController {
 
     @BillableEndpoint
     @RequestMapping(value="/customers/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Customer", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Customer", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Customer", allEntries = true),
+            }
+    )
     public Customer changeCustomer(@PathVariable Long id, @RequestBody Customer customer) {
         if (Objects.nonNull(customer.getId()) && !Objects.equals(customer.getId(), id)) {
             throw RequestValidationFailException.raiseException(
@@ -84,6 +93,13 @@ public class CustomerController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/customers")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Customer", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Customer", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Customer", allEntries = true),
+            }
+    )
     public void deleteCustomers(@RequestParam(name = "customerIds", required = false, defaultValue = "") String customerIds) {
         customerService.delete(customerIds);
     }

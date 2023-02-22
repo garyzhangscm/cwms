@@ -69,10 +69,13 @@ public class WarehouseConfigurationController {
     @RequestMapping(value="/warehouse-configuration", method=RequestMethod.POST)
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "inventory_warehouse_configuration", allEntries = true),
-                    @CacheEvict(cacheNames = "common_warehouse_configuration", allEntries = true),
-                    @CacheEvict(cacheNames = "work_order_warehouse_configuration", allEntries = true),
-                    @CacheEvict(cacheNames = "admin_warehouse_configuration", allEntries = true)
+                    @CacheEvict(cacheNames = "AdminService_WarehouseConfiguration", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_WarehouseConfiguration", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_WarehouseConfiguration", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WarehouseConfiguration", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WarehouseConfiguration", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_WarehouseConfiguration", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_WarehouseConfiguration", allEntries = true),
             }
     )
     public WarehouseConfiguration changeWarehouseConfiguration(@RequestParam Long companyId,

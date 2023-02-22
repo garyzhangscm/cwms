@@ -98,7 +98,17 @@ public class ItemController {
 
     @BillableEndpoint
     @RequestMapping(value="/items/{id}", method = RequestMethod.DELETE)
-    @CacheEvict(cacheNames = "item", key = "#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+            }
+    )
     public Item deleteItem(@PathVariable Long id) {
         return itemService.deleteItem(id);
     }
@@ -107,9 +117,13 @@ public class ItemController {
     @RequestMapping(method=RequestMethod.POST, value="/items/{id}/images/upload")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "workorder_item", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_item", allEntries = true),
-                    @CacheEvict(cacheNames = "inbound_item", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
             }
     )
     public Item uploadItemImages(@PathVariable Long id,
@@ -122,19 +136,23 @@ public class ItemController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/items")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+            }
+    )
     public void removeItems(@RequestParam(name = "item_ids", required = false, defaultValue = "") String itemIds) {
         itemService.delete(itemIds);
     }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items")
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "workorder_item", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_item", allEntries = true),
-                    @CacheEvict(cacheNames = "inbound_item", allEntries = true),
-            }
-    )
     public Item addItem(@RequestBody Item item) {
         return itemService.addItem(item);
     }
@@ -143,9 +161,13 @@ public class ItemController {
     @RequestMapping(value="/items/{id}", method = RequestMethod.PUT)
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "workorder_item", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_item", allEntries = true),
-                    @CacheEvict(cacheNames = "inbound_item", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
             }
     )
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
@@ -164,6 +186,17 @@ public class ItemController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper uploadItems(@RequestParam("file") MultipartFile file) throws IOException {
 
 
@@ -179,6 +212,17 @@ public class ItemController {
      */
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/items/process-item-override")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper processItemOverride(@RequestParam Long warehouseId,
                                                    @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId) {
 

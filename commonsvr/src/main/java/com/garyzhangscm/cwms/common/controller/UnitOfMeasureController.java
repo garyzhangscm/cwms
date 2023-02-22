@@ -77,12 +77,6 @@ public class UnitOfMeasureController {
 
     @BillableEndpoint
     @RequestMapping(value="/unit-of-measures", method = RequestMethod.POST)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "inventory_unitOfMeasure", allEntries = true),
-                    @CacheEvict(cacheNames = "workorder_unitOfMeasure", allEntries = true),
-            }
-    )
     public UnitOfMeasure addUnitOfMeasure(@RequestBody UnitOfMeasure unitOfMeasure) {
         return unitOfMeasureService.save(unitOfMeasure);
     }
@@ -91,8 +85,11 @@ public class UnitOfMeasureController {
     @RequestMapping(value="/unit-of-measures/{id}", method = RequestMethod.PUT)
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "inventory_unitOfMeasure", allEntries = true),
-                    @CacheEvict(cacheNames = "workorder_unitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_UnitOfMeasure", allEntries = true),
             }
     )
     public UnitOfMeasure changeUnitOfMeasure(@PathVariable Long id, @RequestBody UnitOfMeasure unitOfMeasure) {
@@ -105,6 +102,15 @@ public class UnitOfMeasureController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/unit-of-measures")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_UnitOfMeasure", allEntries = true),
+            }
+    )
     public void removeUnitOfMeasures(@RequestParam(name = "unitOfMeasureIds", required = false, defaultValue = "") String unitOfMeasureIds) {
         unitOfMeasureService.delete(unitOfMeasureIds);
     }

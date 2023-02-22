@@ -147,9 +147,9 @@ public class InvoiceService {
                         predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
                     }
                     if (StringUtils.isNotBlank(number)) {
-                        if (number.contains("%")) {
+                        if (number.contains("*")) {
 
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
                         }
                         else {
 

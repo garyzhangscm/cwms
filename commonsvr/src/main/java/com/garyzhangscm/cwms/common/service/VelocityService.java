@@ -60,8 +60,8 @@ public class VelocityService {
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
                     if (StringUtils.isNotBlank(name)) {
-                        if (name.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        if (name.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("name"), name));
@@ -69,8 +69,8 @@ public class VelocityService {
                     }
 
                     if (StringUtils.isNotBlank(description)) {
-                        if (description.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("description"), description));
+                        if (description.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("description"), description.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("description"), description));

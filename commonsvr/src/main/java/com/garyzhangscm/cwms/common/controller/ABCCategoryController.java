@@ -54,8 +54,8 @@ public class ABCCategoryController {
 
     @BillableEndpoint
     @RequestMapping(value="/abc-categories", method = RequestMethod.POST)
-    @CacheEvict(cacheNames = "ABCCategories", allEntries = true)
-    @CachePut(cacheNames = "ABCCategory", key="#root.caches[0].id")
+    @CacheEvict(cacheNames = "InventoryService_ABCCategories", allEntries = true)
+    // @CachePut(cacheNames = "ABCCategory", key="#root.caches[0].id")
     public ABCCategory addABCCategory(@RequestBody ABCCategory abcCategory) {
         return abcCategoryService.addABCCategory(abcCategory);
     }
@@ -63,8 +63,13 @@ public class ABCCategoryController {
 
     @BillableEndpoint
     @RequestMapping(value="/abc-categories/{id}", method = RequestMethod.PUT)
-    @CacheEvict(cacheNames = "ABCCategories", allEntries = true)
-    @CachePut(cacheNames = "ABCCategory", key="#root.caches[0].id")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_ABCCategories", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_ABCCategory", allEntries = true),
+            }
+    )
+    //@CachePut(cacheNames = "ABCCategory", key="#root.caches[0].id")
     public ABCCategory changeABCCategory(@PathVariable Long id, @RequestBody ABCCategory abcCategory) {
         if (Objects.nonNull(abcCategory.getId()) && !Objects.equals(abcCategory.getId(), id)) {
             throw RequestValidationFailException.raiseException(
@@ -77,8 +82,8 @@ public class ABCCategoryController {
     @RequestMapping(method=RequestMethod.DELETE, value="/abc-categories/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "ABCCategories", allEntries = true),
-                    @CacheEvict(cacheNames = "ABCCategory", key="#id")
+                    @CacheEvict(cacheNames = "InventoryService_ABCCategories", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_ABCCategory", allEntries = true),
             }
     )
     public void removeABCCategory(@PathVariable Long id) {

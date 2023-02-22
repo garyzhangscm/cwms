@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
 import com.garyzhangscm.cwms.resources.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,12 +58,24 @@ public class RoleController {
 
     @BillableEndpoint
     @RequestMapping(value="/roles/{id}/disable", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+            }
+    )
     public Role disableRole(@PathVariable Long id) {
         return roleService.disableRole(id);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/roles/{id}/enable", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+            }
+    )
     public Role enableRole(@PathVariable Long id) {
         return roleService.enableRole(id);
     }
@@ -76,6 +90,12 @@ public class RoleController {
 
     @BillableEndpoint
     @RequestMapping(value="/roles/{id}/menus", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper processMenus(@PathVariable Long id,
                                         @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedMenuIds,
                                         @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedMenuIds) {
@@ -86,6 +106,12 @@ public class RoleController {
 
     @BillableEndpoint
     @RequestMapping(value="/roles/{id}/users", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper processUsers(@PathVariable Long id,
                                             @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedUserIds,
                                             @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedUserIds) {
@@ -96,6 +122,12 @@ public class RoleController {
 
     @BillableEndpoint
     @RequestMapping(value="/roles/{id}/clients", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper processClients(@PathVariable Long id,
                                               @RequestParam Boolean nonClientDataAccessible,
                                               @RequestParam Boolean allClientAccess,

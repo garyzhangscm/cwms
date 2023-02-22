@@ -27,14 +27,21 @@ import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.Supplier;
 import com.garyzhangscm.cwms.common.service.ClientService;
 import com.garyzhangscm.cwms.common.service.SupplierService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
 @RestController
 public class SupplierController {
+    private static final Logger logger = LoggerFactory.getLogger(SupplierController.class);
     @Autowired
     SupplierService supplierService;
     @Autowired
@@ -45,6 +52,13 @@ public class SupplierController {
                                            @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                            @RequestParam(name = "name", required = false, defaultValue = "") String name,
                                            @RequestParam(name = "quickbookListId", required = false, defaultValue = "") String quickbookListId) {
+        try {
+            logger.debug("start to find purchase order by supplier {} , after decode {}",
+                    name,
+                    java.net.URLDecoder.decode(name, StandardCharsets.UTF_8.name()));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
         // company ID or warehouse id is required
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
@@ -75,6 +89,15 @@ public class SupplierController {
 
     @BillableEndpoint
     @RequestMapping(value="/suppliers/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Supplier", allEntries = true),
+            }
+    )
     public Supplier changeSupplier(@PathVariable Long id, @RequestBody Supplier supplier) {
         if (Objects.nonNull(supplier.getId()) && !Objects.equals(supplier.getId(), id)) {
             throw RequestValidationFailException.raiseException(
@@ -86,6 +109,15 @@ public class SupplierController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/suppliers")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Supplier", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Supplier", allEntries = true),
+            }
+    )
     public void deleteSuppliers(@RequestParam Long warehouseId,
                                 @RequestParam(name = "supplierIds", required = false, defaultValue = "") String supplierIds) {
         supplierService.delete(warehouseId, supplierIds);

@@ -34,16 +34,17 @@ public class PutawayConfigurationStrategyService {
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
-    public List<Location> fitlerLocationByStrategy(List<Location> locations, Inventory inventory, PutawayConfigurationStrategy putawayConfigurationStrategy) {
+    public List<Location> fitlerLocationByStrategy(Long warehouseId,
+                                                   List<Location> locations, Inventory inventory, PutawayConfigurationStrategy putawayConfigurationStrategy) {
 
 
         switch (putawayConfigurationStrategy) {
             case EMPTY_LOCATIONS:
                 return fitlerLocationByStrategyEmptyLocation(locations);
             case PARTIAL_LOCATIONS:
-                return fitlerLocationByStrategyPartialLocation(locations, inventory);
+                return fitlerLocationByStrategyPartialLocation(warehouseId, locations, inventory);
             case PARTIAL_LOCATIONS_MIX_ITEM:
-                return fitlerLocationByStrategyPartialLocationMixItem(locations, inventory);
+                return fitlerLocationByStrategyPartialLocationMixItem(warehouseId, locations, inventory);
             default:
                 return fitlerLocationByStrategyEmptyLocation(locations);
         }
@@ -54,12 +55,13 @@ public class PutawayConfigurationStrategyService {
                 .collect(Collectors.toList());
     }
 
-    private List<Location> fitlerLocationByStrategyPartialLocation(List<Location> locations, Inventory inventory) {
+    private List<Location> fitlerLocationByStrategyPartialLocation(Long warehouseId,
+                                                                   List<Location> locations, Inventory inventory) {
 
         // Get all the existing inventory with the same ite. Then filter the locations
         // with the locations that has those inventory
 
-        List<Inventory> existingInventories = inventoryServiceRestemplateClient.findInventoryByItem(inventory.getItem());
+        List<Inventory> existingInventories = inventoryServiceRestemplateClient.findInventoryByItem(warehouseId, inventory.getItem());
         List<String> existingInventoryLocationNames = existingInventories.stream()
                                                         .map(existingInventory -> existingInventory.getLocation().getName())
                                                         .collect(Collectors.toList());
@@ -69,11 +71,13 @@ public class PutawayConfigurationStrategyService {
     }
 
 
-    private List<Location> fitlerLocationByStrategyPartialLocationMixItem(List<Location> locations, Inventory inventory) {
+    private List<Location> fitlerLocationByStrategyPartialLocationMixItem(Long warehouseId,
+                                                                          List<Location> locations, Inventory inventory) {
 
         // Get all the existing inventory with the same ite. Then filter the locations
         // with the locations that doesn't have those inventory but is not empty
-        List<Inventory> existingInventories = inventoryServiceRestemplateClient.findInventoryByItem(inventory.getItem());
+        List<Inventory> existingInventories = inventoryServiceRestemplateClient.findInventoryByItem(
+                warehouseId, inventory.getItem());
         List<String> existingInventoryLocationNames = existingInventories.stream()
                 .map(existingInventory -> existingInventory.getLocation().getName())
                 .collect(Collectors.toList());

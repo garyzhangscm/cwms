@@ -80,9 +80,9 @@ public class OrderDocumentService {
 
                         }
                         if (Strings.isNotBlank(orderNumber)) {
-                            if (orderNumber.contains("%")) {
+                            if (orderNumber.contains("*")) {
 
-                                predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber));
+                                predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber.replaceAll("\\*", "%")));
                             }
                             else {
 

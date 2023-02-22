@@ -93,48 +93,48 @@ public class AllocationTransactionHistoryService   {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(number)) {
-                        if (number.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("number"), number));
                         }
                     }
                     if (StringUtils.isNotBlank(transactionGroupId)) {
-                        if (transactionGroupId.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("transactionGroupId"), transactionGroupId));
+                        if (transactionGroupId.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("transactionGroupId"), transactionGroupId.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("transactionGroupId"), transactionGroupId));
                         }
                     }
                     if (StringUtils.isNotBlank(orderNumber)) {
-                        if (orderNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("orderNumber"), orderNumber));
+                        if (orderNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("orderNumber"), orderNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("orderNumber"), orderNumber));
                         }
                     }
                     if (StringUtils.isNotBlank(workOrderNumber)) {
-                        if (workOrderNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("workOrderNumber"), workOrderNumber));
+                        if (workOrderNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("workOrderNumber"), workOrderNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("workOrderNumber"), workOrderNumber));
                         }
                     }
                     if (StringUtils.isNotBlank(itemName)) {
-                        if (itemName.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("itemName"), itemName));
+                        if (itemName.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("itemName"), itemName.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("itemName"), itemName));
                         }
                     }
                     if (StringUtils.isNotBlank(locationName)) {
-                        if (locationName.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("locationName"), locationName));
+                        if (locationName.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("locationName"), locationName.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("locationName"), locationName));

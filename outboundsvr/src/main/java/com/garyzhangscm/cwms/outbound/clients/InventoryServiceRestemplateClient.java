@@ -64,7 +64,7 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
-    @Cacheable(cacheNames = "Item", unless="#result == null")
+    @Cacheable(cacheNames = "OutboundService_Item", unless="#result == null")
     public Item getItemById(Long id) {
 
 
@@ -84,7 +84,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Item", unless="#result == null")
+    @Cacheable(cacheNames = "OutboundService_Item", unless="#result == null")
      public Item getItemByName(Long warehouseId, String name) {
 
         try {
@@ -120,7 +120,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "ItemFamily", unless="#result == null")
+    @Cacheable(cacheNames = "OutboundService_ItemFamily", unless="#result == null")
     public ItemFamily getItemFamilyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -137,7 +137,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "ItemFamily", unless="#result == null")
+    @Cacheable(cacheNames = "OutboundService_ItemFamily", unless="#result == null")
     public ItemFamily getItemFamilyByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -163,7 +163,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "InventoryStatus", unless="#result == null")
+    @Cacheable(cacheNames = "OutboundService_InventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -181,7 +181,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "InventoryStatus", unless="#result == null")
+    @Cacheable(cacheNames = "OutboundService_InventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

@@ -51,7 +51,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     RestTemplate restTemplate;
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
 
         UriComponentsBuilder builder =
@@ -72,7 +72,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
 
         UriComponentsBuilder builder =
@@ -94,7 +94,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(Long companyId, String name) {
 
         UriComponentsBuilder builder =
@@ -149,7 +149,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return Objects.isNull(warehouse) ? null : warehouse.getId();
 
     }
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "IntegrationService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
 
         UriComponentsBuilder builder =

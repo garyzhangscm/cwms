@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.model.User;
 
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 

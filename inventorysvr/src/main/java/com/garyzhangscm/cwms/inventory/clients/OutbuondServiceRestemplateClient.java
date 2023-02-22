@@ -43,7 +43,7 @@ public class OutbuondServiceRestemplateClient {
     OAuth2RestOperations restTemplate;
 
 
-    @Cacheable(cacheNames = "Pick", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Pick", unless="#result == null")
     public Pick getPickById(Long id) {
 
         UriComponentsBuilder builder =

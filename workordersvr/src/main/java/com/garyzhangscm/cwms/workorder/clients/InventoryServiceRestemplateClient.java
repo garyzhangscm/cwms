@@ -60,7 +60,7 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Cacheable(cacheNames = "Inventory", unless="#result == null")
+    // @Cacheable(cacheNames = "WorkOrderService_Inventory", unless="#result == null")
     public Inventory getInventoryById(Long id) {
 
         UriComponentsBuilder builder =
@@ -79,7 +79,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "QCRule", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_QCRule", unless="#result == null")
     public QCRule getQCRuleById(Long id) {
 
         UriComponentsBuilder builder =
@@ -98,7 +98,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Item", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_Item", unless="#result == null")
     public Item getItemById(Long id) {
 
         UriComponentsBuilder builder =
@@ -117,7 +117,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Item", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_Item", unless="#result == null")
     public Item getItemByName(Long warehouseId, String name) {
 
         try {
@@ -153,7 +153,7 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "InventoryStatus", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_InventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -171,7 +171,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "InventoryStatus", unless="#result == null")
+    @Cacheable(cacheNames = "WorkOrderService_InventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

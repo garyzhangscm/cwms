@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
+// package com.garyzhangscm.cwms.resources.model;
 package com.garyzhangscm.cwms.resources.model;
 
-
 import java.io.Serializable;
+
 
 public class WarehouseConfiguration extends AuditibleEntity<String> implements Serializable {
 

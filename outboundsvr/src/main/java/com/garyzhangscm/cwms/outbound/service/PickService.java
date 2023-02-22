@@ -148,8 +148,8 @@ public class PickService {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, OrderLine> joinOrderLine= joinShipmentLine.join("orderLine", JoinType.INNER);
                         Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
-                        if (orderNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber));
+                        if (orderNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
@@ -174,8 +174,8 @@ public class PickService {
                     if (Strings.isNotBlank(shipmentNumber)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, Shipment> joinShipment= joinShipmentLine.join("shipment", JoinType.INNER);
-                        if (shipmentNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinShipment.get("number"), shipmentNumber));
+                        if (shipmentNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinShipment.get("number"), shipmentNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinShipment.get("number"), shipmentNumber));
@@ -193,8 +193,8 @@ public class PickService {
                     if (Strings.isNotBlank(waveNumber)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
                         Join<ShipmentLine, Wave> joinWave = joinShipmentLine.join("wave", JoinType.INNER);
-                        if (waveNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinWave.get("number"), waveNumber));
+                        if (waveNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinWave.get("number"), waveNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinWave.get("number"), waveNumber));
@@ -214,8 +214,8 @@ public class PickService {
                     }
                     if (Strings.isNotBlank(cartonizationNumber)) {
                         Join<Pick, Cartonization> joinCartonization = root.join("cartonization", JoinType.INNER);
-                        if (cartonizationNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinCartonization.get("number"), cartonizationNumber));
+                        if (cartonizationNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinCartonization.get("number"), cartonizationNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinCartonization.get("number"), cartonizationNumber));

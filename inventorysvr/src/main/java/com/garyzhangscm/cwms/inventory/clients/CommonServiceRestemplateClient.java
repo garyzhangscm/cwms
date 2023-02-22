@@ -40,6 +40,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import org.springframework.cache.interceptor.SimpleKey;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
 
@@ -56,7 +58,7 @@ public class CommonServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Cacheable(cacheNames = "Client", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Client", unless="#result == null")
     public Client getClientById(Long id) {
 
         UriComponentsBuilder builder =
@@ -75,14 +77,20 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Client", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/clients")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("name", name);
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/common/clients")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -118,7 +126,7 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Supplier", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Supplier", unless="#result == null")
     public Supplier getSupplierById(Long supplierId) {
 
 
@@ -137,15 +145,21 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "Supplier", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Supplier", unless="#result == null")
     public Supplier getSupplierByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
-            UriComponentsBuilder.newInstance()
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
                     .scheme("http").host("zuulserver").port(5555)
                     .path("/api/common/suppliers")
                     .queryParam("warehouseId", warehouseId)
-                    .queryParam("name", name);
+                    .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper
                 = restTemplate.exchange(
@@ -166,7 +180,7 @@ public class CommonServiceRestemplateClient {
 
     // @Cacheable(cacheNames = "inventory_unitOfMeasure", unless="#result == null")
 
-    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureById(Long id) {
 
         UriComponentsBuilder builder =
@@ -186,7 +200,7 @@ public class CommonServiceRestemplateClient {
 
     // @Cacheable(cacheNames = "inventory_velocity", unless="#result == null",  key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
 
-    @Cacheable(cacheNames = "Velocities", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
+    @Cacheable(cacheNames = "InventoryService_Velocities", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
     public List<Velocity> getVelocitesByWarehouse(Long warehouseId) {
 
         UriComponentsBuilder builder =
@@ -205,7 +219,7 @@ public class CommonServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "Velocity", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_Velocity", unless="#result == null")
     public Velocity getVelocityById(Long id) {
 
         UriComponentsBuilder builder =
@@ -225,7 +239,7 @@ public class CommonServiceRestemplateClient {
     }
 
     // @Cacheable(cacheNames = "inventory_abc-category", unless="#result == null", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
-    @Cacheable(cacheNames = "ABCCategories", unless="#result == null", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
+    @Cacheable(cacheNames = "InventoryService_ABCCategories", unless="#result == null", key = "new org.springframework.cache.interceptor.SimpleKey('warehouse_', #warehouseId.toString())")
     public List<ABCCategory> getABCCategoriesByWarehouse(Long warehouseId) {
 
         UriComponentsBuilder builder =
@@ -243,7 +257,7 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    @Cacheable(cacheNames = "ABCCategory", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_ABCCategory", unless="#result == null")
     public ABCCategory getABCCategoryById(Long id) {
 
         UriComponentsBuilder builder =
@@ -263,11 +277,11 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureByName(Long warehouseId, String name) {
         return getUnitOfMeasureByName(null, warehouseId, name, null, null);
     }
-    @Cacheable(cacheNames = "UnitOfMeasure", unless="#result == null")
+    @Cacheable(cacheNames = "InventoryService_UnitOfMeasure", unless="#result == null")
     public UnitOfMeasure getUnitOfMeasureByName(Long companyId,
                                                 Long warehouseId, String name,
                                                 Boolean companyUnitOfMeasure,

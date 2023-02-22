@@ -118,8 +118,8 @@ public class OrderActivityService {
 
                         Join<OrderActivity, Order> joinOrder = root.join("order", JoinType.INNER);
 
-                        if (orderNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber));
+                        if (orderNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinOrder.get("number"), orderNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinOrder.get("number"), orderNumber));
@@ -137,8 +137,8 @@ public class OrderActivityService {
                         Join<OrderActivity, Shipment> joinShipment = root.join("shipment", JoinType.INNER);
 
 
-                        if (shipmentNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinShipment.get("number"), shipmentNumber));
+                        if (shipmentNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinShipment.get("number"), shipmentNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinShipment.get("number"), shipmentNumber));
@@ -157,15 +157,15 @@ public class OrderActivityService {
                         Join<OrderActivity, Shipment> joinShipment = root.join("shipment", JoinType.INNER);
                         Join<Shipment, ShipmentLine> joinShipmentLine = joinShipment.join("shipmentLine", JoinType.INNER);
 
-                        if (shipmentNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinShipment.get("number"), shipmentNumber));
+                        if (shipmentNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinShipment.get("number"), shipmentNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinShipment.get("number"), shipmentNumber));
                         }
 
-                        if (shipmentLineNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinShipmentLine.get("number"), shipmentLineNumber));
+                        if (shipmentLineNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinShipmentLine.get("number"), shipmentLineNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinShipmentLine.get("number"), shipmentLineNumber));
@@ -182,8 +182,8 @@ public class OrderActivityService {
 
                         Join<OrderActivity, Pick> joinPick = root.join("pick", JoinType.INNER);
 
-                        if (pickNumber.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinPick.get("number"), pickNumber));
+                        if (pickNumber.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinPick.get("number"), pickNumber.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinPick.get("number"), pickNumber));
@@ -197,8 +197,8 @@ public class OrderActivityService {
                     }
 
                     if (!StringUtils.isBlank(username)) {
-                        if (username.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("username"), username));
+                        if (username.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("username"), username.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("username"), username));
@@ -208,8 +208,8 @@ public class OrderActivityService {
 
                     if (!StringUtils.isBlank(rfCode)) {
 
-                        if (rfCode.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("rfCode"), rfCode));
+                        if (rfCode.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("rfCode"), rfCode.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("rfCode"), rfCode));

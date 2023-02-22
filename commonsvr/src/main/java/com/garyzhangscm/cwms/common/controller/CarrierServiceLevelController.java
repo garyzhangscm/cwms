@@ -23,6 +23,8 @@ import com.garyzhangscm.cwms.common.model.BillableEndpoint;
 import com.garyzhangscm.cwms.common.model.CarrierServiceLevel;
 import com.garyzhangscm.cwms.common.service.CarrierServiceLevelService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,6 +54,13 @@ public class CarrierServiceLevelController {
 
     @BillableEndpoint
     @RequestMapping(value="/carrier-service-levels/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_CarrierServiceLevel", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_CarrierServiceLevel", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_CarrierServiceLevel", allEntries = true),
+            }
+    )
     public CarrierServiceLevel changeCarrierServiceLevel(@PathVariable Long id, @RequestBody CarrierServiceLevel carrierServiceLevel) {
         if (Objects.nonNull(carrierServiceLevel.getId()) && !Objects.equals(carrierServiceLevel.getId(), id)) {
             throw RequestValidationFailException.raiseException(
@@ -62,6 +71,13 @@ public class CarrierServiceLevelController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/carrier-service-levels")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_CarrierServiceLevel", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_CarrierServiceLevel", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_CarrierServiceLevel", allEntries = true),
+            }
+    )
     public void deleteCarrierServiceLevels(@RequestParam(name = "carrierServiceLevelIds", required = false, defaultValue = "") String carrierServiceLevelIds) {
         carrierServiceLevelService.delete(carrierServiceLevelIds);
     }

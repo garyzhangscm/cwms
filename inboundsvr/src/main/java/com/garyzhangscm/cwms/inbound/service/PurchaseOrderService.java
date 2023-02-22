@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,6 +89,7 @@ public class PurchaseOrderService {
                                        Long supplierId, String supplierName,
                                  boolean loadDetails) {
 
+
         List<PurchaseOrder> purchaseOrders =  purchaseOrderRepository.findAll(
                 (Root<PurchaseOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -96,8 +98,8 @@ public class PurchaseOrderService {
 
                     if (StringUtils.isNotBlank(number)) {
 
-                        if (number.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("number"), number));
@@ -111,6 +113,9 @@ public class PurchaseOrderService {
                     if (StringUtils.isNotBlank(supplierName)) {
 
                         Supplier supplier = commonServiceRestemplateClient.getSupplierByName(warehouseId, supplierName);
+                        logger.debug("we found supplier {} by name {}",
+                                Objects.nonNull(supplier) ?  supplier.getId() : "N/A",
+                                supplierName);
                         if (Objects.nonNull(supplier)) {
                             predicates.add(criteriaBuilder.equal(root.get("supplierId"), supplier.getId()));
 
@@ -133,7 +138,9 @@ public class PurchaseOrderService {
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
-                }
+                },
+                Sort.by(Sort.Direction.DESC, "createdTime")
+
         );
         if (purchaseOrders.size() > 0 && loadDetails) {
             loadReceiptAttribute(purchaseOrders);

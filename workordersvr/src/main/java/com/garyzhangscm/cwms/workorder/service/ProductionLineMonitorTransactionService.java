@@ -76,8 +76,9 @@ public class ProductionLineMonitorTransactionService {
 
                         Join<ProductionLineMonitorTransaction, ProductionLineMonitor>
                                 joinProductionLineMonitor = root.join("productionLineMonitor", JoinType.INNER);
-                        if (productionLineMonitorName.contains("%")) {
-                            predicates.add(criteriaBuilder.like(joinProductionLineMonitor.get("name"), productionLineMonitorName));
+                        if (productionLineMonitorName.contains("*")) {
+                            predicates.add(criteriaBuilder.like(joinProductionLineMonitor.get("name"),
+                                    productionLineMonitorName.replaceAll("\\*", "%")));
                         }
                         else {
                             predicates.add(criteriaBuilder.equal(joinProductionLineMonitor.get("name"), productionLineMonitorName));
@@ -89,8 +90,8 @@ public class ProductionLineMonitorTransactionService {
                         Join<ProductionLineMonitorTransaction, ProductionLine> joinProductionLine = root.join("productionLine", JoinType.INNER);
                         if (StringUtils.isNotBlank(productionLineName)) {
 
-                            if (productionLineName.contains("%")) {
-                                predicates.add(criteriaBuilder.like(joinProductionLine.get("name"), productionLineName));
+                            if (productionLineName.contains("*")) {
+                                predicates.add(criteriaBuilder.like(joinProductionLine.get("name"), productionLineName.replaceAll("\\*", "%")));
                             }
                             else {
                                 predicates.add(criteriaBuilder.equal(joinProductionLine.get("name"), productionLineName));

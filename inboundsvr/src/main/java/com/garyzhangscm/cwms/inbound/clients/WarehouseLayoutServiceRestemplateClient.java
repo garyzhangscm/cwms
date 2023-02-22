@@ -61,7 +61,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
-    @Cacheable(cacheNames = "Company", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -79,7 +79,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Location", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Location", unless="#result == null")
     public Location getLocationById(Long id) {
 
         UriComponentsBuilder builder =
@@ -98,7 +98,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Location", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Location", unless="#result == null")
     public Location getLocationByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -125,7 +125,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseById(Long id) {
 
         UriComponentsBuilder builder =
@@ -146,7 +146,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "Warehouse", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -234,7 +234,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "LocationGroup", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_LocationGroup", unless="#result == null")
     public LocationGroup getLocationGroupById(Long id) {
 
         UriComponentsBuilder builder =
@@ -252,7 +252,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
-    @Cacheable(cacheNames = "LocationGroup", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_LocationGroup", unless="#result == null")
     public LocationGroup getLocationGroupByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -279,7 +279,7 @@ public class WarehouseLayoutServiceRestemplateClient {
             return locationGroups[0];
         }
     }
-    @Cacheable(cacheNames = "LocationGroupType", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_LocationGroupType", unless="#result == null")
     public LocationGroupType getLocationGroupTypeById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -296,7 +296,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    @Cacheable(cacheNames = "LocationGroupType", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_LocationGroupType", unless="#result == null")
     public LocationGroupType getLocationGroupTypeByName(String name) {
 
         UriComponentsBuilder builder =
@@ -411,7 +411,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
-    @Cacheable(cacheNames = "WarehouseConfiguration", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
 
 

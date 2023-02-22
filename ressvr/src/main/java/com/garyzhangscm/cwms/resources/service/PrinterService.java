@@ -18,18 +18,17 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
+import com.garyzhangscm.cwms.resources.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.resources.PrinterConfiguration;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.PrinterRepository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
@@ -76,9 +75,9 @@ public class PrinterService  {
 
                     if (Strings.isNotBlank(name)) {
 
-                        if (name.contains("%")) {
+                        if (name.contains("*")) {
 
-                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                            predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
 
@@ -89,9 +88,9 @@ public class PrinterService  {
                     if (Strings.isNotBlank(printerType)) {
                         Join<Printer, PrinterType> joinPrinterType= root.join("reportType", JoinType.INNER);
 
-                        if (printerType.contains("%")) {
+                        if (printerType.contains("*")) {
 
-                            predicates.add(criteriaBuilder.like(joinPrinterType.get("name"), printerType));
+                            predicates.add(criteriaBuilder.like(joinPrinterType.get("name"), printerType.replaceAll("\\*", "%")));
                         }
                         else {
 

@@ -93,7 +93,6 @@ public class InboundServerApplication {
 	 *
 	 * @return
 	 */
-	/**
 	@Bean
 	public RedisCacheConfiguration cacheConfiguration() {
 		return RedisCacheConfiguration.defaultCacheConfig()
@@ -101,7 +100,6 @@ public class InboundServerApplication {
 				.disableCachingNullValues()
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
-	**/
 	/**
 	 * Class to implement the JPA audit. Auto generate the
 	 * created by and last modified by username for any

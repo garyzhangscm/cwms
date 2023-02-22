@@ -51,6 +51,14 @@ public class InventoryStatusController {
         return inventoryStatusService.findById(id);
     }
     @RequestMapping(value="/inventory-statuses/{id}", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_InventoryStatus", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper<String> removeInventoryStatus(@PathVariable Long id,
                                                              @RequestParam Long warehouseId) {
         InventoryStatus inventoryStatus =
@@ -60,12 +68,6 @@ public class InventoryStatusController {
     }
 
     @RequestMapping(value="/inventory-statuses", method = RequestMethod.PUT)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_inventoryStatus", allEntries = true),
-            }
-    )
     public InventoryStatus createInventoryStatus(@RequestParam Long warehouseId,
                                                  @RequestBody InventoryStatus inventoryStatus) {
         return inventoryStatusService.createInventoryStatus(inventoryStatus);
@@ -75,8 +77,10 @@ public class InventoryStatusController {
     @RequestMapping(method=RequestMethod.POST, value="/inventory-statuses/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(cacheNames = "workorder_inventoryStatus", allEntries = true),
-                    @CacheEvict(cacheNames = "outbound_inventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "AdminService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_InventoryStatus", allEntries = true),
             }
     )
     public InventoryStatus changeInventoryStatus(@PathVariable long id,
@@ -92,6 +96,14 @@ public class InventoryStatusController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/inventory-statuses")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_InventoryStatus", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_InventoryStatus", allEntries = true),
+            }
+    )
     public void removeInventoryStatuses(@RequestParam(name = "inventory-status-ids", required = false, defaultValue = "") String inventoryStatusIds) {
         inventoryStatusService.delete(inventoryStatusIds);
     }

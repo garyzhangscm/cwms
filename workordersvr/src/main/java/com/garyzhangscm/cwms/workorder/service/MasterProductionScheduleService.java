@@ -120,8 +120,8 @@ public class MasterProductionScheduleService   {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (StringUtils.isNotBlank(number)) {
-                        if (number.contains("%")) {
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
 
                         }
                         else {

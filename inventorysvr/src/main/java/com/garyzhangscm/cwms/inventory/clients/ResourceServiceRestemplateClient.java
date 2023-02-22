@@ -56,7 +56,7 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Cacheable(cacheNames = "User")
+    @Cacheable(cacheNames = "InventoryService_User")
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -73,7 +73,7 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-    @Cacheable(cacheNames = "User")
+    @Cacheable(cacheNames = "InventoryService_User")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -100,7 +100,7 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "Role")
+    @Cacheable(cacheNames = "InventoryService_Role")
     public Role getRoleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -120,7 +120,7 @@ public class ResourceServiceRestemplateClient {
 
 
 
-    @Cacheable(cacheNames = "Role")
+    @Cacheable(cacheNames = "InventoryService_Role")
     public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
