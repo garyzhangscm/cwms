@@ -32,10 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
 
@@ -45,7 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class LocationService implements TestDataInitiableService {
+public class LocationService {
 
     private static final Logger logger = LoggerFactory.getLogger(LocationService.class);
     @Autowired
@@ -307,10 +305,10 @@ public class LocationService implements TestDataInitiableService {
         }
     }
 
-    public List<Location> loadLocationData(File file) throws IOException {
+    public List<Location> loadLocationData(Long warehouseId, File file) throws IOException {
         List<LocationCSVWrapper> locationCSVWrappers = loadData(file);
         return locationCSVWrappers.stream()
-                .map(locationCSVWrapper -> saveOrUpdate(convertFromWrapper(locationCSVWrapper)))
+                .map(locationCSVWrapper -> saveOrUpdate(convertFromWrapper(warehouseId, locationCSVWrapper)))
                 .collect(Collectors.toList());
     }
 
@@ -345,6 +343,7 @@ public class LocationService implements TestDataInitiableService {
                 build().withHeader();
     }
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = companyService.findById(companyId).getCode();
@@ -362,8 +361,10 @@ public class LocationService implements TestDataInitiableService {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
-    private Location convertFromWrapper(LocationCSVWrapper locationCSVWrapper) {
+    private Location convertFromWrapper(Long warehouseId,
+                                        LocationCSVWrapper locationCSVWrapper) {
         Location location = new Location();
         location.setName(locationCSVWrapper.getName());
         location.setX(locationCSVWrapper.getX());
@@ -382,21 +383,18 @@ public class LocationService implements TestDataInitiableService {
         location.setCurrentVolume(0.0);
         location.setPendingVolume(0.0);
 
-        location.setWarehouse(warehouseService.findByName(
-                locationCSVWrapper.getCompany(), locationCSVWrapper.getWarehouse()));
+        location.setWarehouse(warehouseService.findById(warehouseId));
 
         logger.debug("process location {} with group {}",
                 locationCSVWrapper.getName(),
                 locationCSVWrapper.getLocationGroup());
         if (StringUtils.isNotBlank(locationCSVWrapper.getLocationGroup())) {
             LocationGroup locationGroup = locationGroupService.findByName(
-                    warehouseService.findByName(
-                            locationCSVWrapper.getCompany(), locationCSVWrapper.getWarehouse()).getId(),
+                    warehouseId,
                     locationCSVWrapper.getLocationGroup());
             logger.debug("Get location group id {} by warehouse {} / name {}",
                     locationGroup.getId(),
-                    warehouseService.findByName(
-                            locationCSVWrapper.getCompany(), locationCSVWrapper.getWarehouse()).getId(),
+                    warehouseId,
                     locationCSVWrapper.getLocationGroup());
             location.setLocationGroup(locationGroup);
         }

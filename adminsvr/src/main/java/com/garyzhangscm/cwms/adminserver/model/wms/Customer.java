@@ -19,13 +19,13 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
 import java.io.Serializable;
 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Customer implements Serializable {
 
     private Long id;

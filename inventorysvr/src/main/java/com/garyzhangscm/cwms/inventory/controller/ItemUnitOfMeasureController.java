@@ -47,11 +47,12 @@ public class ItemUnitOfMeasureController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/item-unit-of-measures/upload")
-    public ResponseBodyWrapper uploadItemUnitOfMeasures(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseBodyWrapper uploadItemUnitOfMeasures(Long warehouseId,
+                                                        @RequestParam("file") MultipartFile file) throws IOException {
 
 
         File localFile = fileService.saveFile(file);
-        List<ItemUnitOfMeasure> itemUnitOfMeasures = itemUnitOfMeasureService.saveItemUnitOfMeasureData(localFile);
+        List<ItemUnitOfMeasure> itemUnitOfMeasures = itemUnitOfMeasureService.saveItemUnitOfMeasureData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(itemUnitOfMeasures.size() + "");
     }
 

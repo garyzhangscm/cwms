@@ -3,7 +3,7 @@ package com.garyzhangscm.cwms.resources.model;
 public class BillOfMaterialFileUpload extends FileUploadType {
 
     public BillOfMaterialFileUpload(){
-        super("BOMs", "BOM upload",
+        super("BOMs", "BOM",
                 "workorder/bill-of-materials/upload",
                 "resource/assets/file-templates/boms.csv");
         setupColumns();
@@ -11,15 +11,6 @@ public class BillOfMaterialFileUpload extends FileUploadType {
 
     private void setupColumns() {
 
-        addColumn(new FileUploadTemplateColumn(
-                "company", "Company Code",
-                String.class, 100, false
-        ));
-
-        addColumn(new FileUploadTemplateColumn(
-                "warehouse", "Warehouse Name",
-                String.class, 100, false
-        ));
 
         addColumn(new FileUploadTemplateColumn(
                 "billOfMaterial", "BOM Number",

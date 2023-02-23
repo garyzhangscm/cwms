@@ -19,11 +19,13 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
     private Integer id;

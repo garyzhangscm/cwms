@@ -1,9 +1,5 @@
 package com.garyzhangscm.cwms.outbound.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
 
 public class WorkOrderLineSparePartDetail extends AuditibleEntity<String>{
 

@@ -18,9 +18,12 @@
 
 package com.garyzhangscm.cwms.inbound.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
 // Entity that will be persist in Common service
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UnitOfMeasure implements Serializable {
 
     private Long id;

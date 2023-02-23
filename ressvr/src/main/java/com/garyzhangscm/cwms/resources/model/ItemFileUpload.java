@@ -3,7 +3,7 @@ package com.garyzhangscm.cwms.resources.model;
 public class ItemFileUpload extends FileUploadType {
 
     public ItemFileUpload(){
-        super("items", "item upload",
+        super("items", "Item",
                 "inventory/items/upload",
                 "resource/assets/file-templates/items.csv");
         setupColumns();
@@ -11,16 +11,6 @@ public class ItemFileUpload extends FileUploadType {
 
     private void setupColumns() {
 
-        addColumn(new FileUploadTemplateColumn(
-                "company", "Company Code",
-                String.class, 100, false
-        ));
-
-
-        addColumn(new FileUploadTemplateColumn(
-                "warehouse", "Warehouse Name",
-                String.class, 100, true
-        ));
 
 
         addColumn(new FileUploadTemplateColumn(

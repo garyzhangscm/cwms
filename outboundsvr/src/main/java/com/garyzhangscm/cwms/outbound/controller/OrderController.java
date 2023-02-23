@@ -289,7 +289,7 @@ public class OrderController {
 
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.POST, value="/items/upload")
+    @RequestMapping(method=RequestMethod.POST, value="/orders/upload")
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),

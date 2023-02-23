@@ -18,9 +18,10 @@
 
 package com.garyzhangscm.cwms.layout.model;
 
-import javax.persistence.Column;
-import javax.persistence.Transient;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Policy {
 
     private Long id;

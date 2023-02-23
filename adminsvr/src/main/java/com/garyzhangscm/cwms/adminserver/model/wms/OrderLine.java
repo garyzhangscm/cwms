@@ -19,15 +19,13 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderLine implements Serializable {
 
     private Long id;

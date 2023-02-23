@@ -19,10 +19,12 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
-import javax.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Warehouse implements Serializable {
 
     private Long id;

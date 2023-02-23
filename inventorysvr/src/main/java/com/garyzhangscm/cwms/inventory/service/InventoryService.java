@@ -62,7 +62,7 @@ import java.util.stream.Stream;
  *
  */
 @Service
-public class InventoryService implements TestDataInitiableService{
+public class InventoryService {
     private static final Logger logger = LoggerFactory.getLogger(InventoryService.class);
 
     @Autowired
@@ -1040,6 +1040,7 @@ public class InventoryService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, InventoryCSVWrapper.class);
     }
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
@@ -1068,6 +1069,7 @@ public class InventoryService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
     private List<Inventory> convertFromWrapper(Long warehouseId,
                                                List<InventoryCSVWrapper> inventoryCSVWrappers,
@@ -1089,38 +1091,15 @@ public class InventoryService implements TestDataInitiableService{
             // 5. location
 
 
-        Map<String, Warehouse> warehouseIdMap = new HashMap<>();
         Map<String, Item> itemMap = new HashMap<>();
         Map<String, ItemPackageType> itemPackageTypeMap = new HashMap<>();
         Map<String, InventoryStatus> inventoryStatusMap = new HashMap<>();
         Map<String, Location> locationMap = new HashMap<>();
         Map<String, Client> clientMap = new HashMap<>();
 
-        Warehouse warehouse = null;
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
         for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
-
-            if (!warehouseIdMap.containsKey(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse())) {
-
-                warehouse =
-                        warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                                inventoryCSVWrapper.getCompany(),
-                                inventoryCSVWrapper.getWarehouse());
-                if (Objects.isNull(warehouse)) {
-                    // warehouse information is wrong, skip the line
-                    logger.debug("Can't find warehouse from company {}, warehouse {}",
-                            inventoryCSVWrapper.getCompany(),
-                            inventoryCSVWrapper.getWarehouse());
-                    continue;
-                }
-                else if (Objects.nonNull(warehouseId) && !warehouseId.equals(warehouse.getId())) {
-                    // the user will only allowed to upload the records from the same warehouse
-                    logger.debug("skip the record as current warehouse id is {}, but the warehouse id from the record is {}",
-                            warehouseId, warehouse.getId());
-                    continue;
-                }
-                warehouseIdMap.put(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse(),
-                        warehouse);
-            }
 
             Client client = null;
             if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
@@ -1203,14 +1182,14 @@ public class InventoryService implements TestDataInitiableService{
 
         // only process the record if we have all the value ready
         return inventoryCSVWrappers.stream().filter(
-                inventoryCSVWrapper ->  warehouseIdMap.containsKey(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse()) &&
-                itemMap.containsKey(inventoryCSVWrapper.getItem()) &&
-                itemPackageTypeMap.containsKey(inventoryCSVWrapper.getItemPackageType()) &&
-                inventoryStatusMap.containsKey(inventoryCSVWrapper.getInventoryStatus()) &&
+                inventoryCSVWrapper ->
+                        itemMap.containsKey(inventoryCSVWrapper.getItem()) &&
+                        itemPackageTypeMap.containsKey(inventoryCSVWrapper.getItemPackageType()) &&
+                        inventoryStatusMap.containsKey(inventoryCSVWrapper.getInventoryStatus()) &&
                         locationMap.containsKey(inventoryCSVWrapper.getLocation())
         ).map(
                 inventoryCSVWrapper -> convertFromWrapper(inventoryCSVWrapper,
-                        warehouseIdMap.get(inventoryCSVWrapper.getCompany() + "-" + inventoryCSVWrapper.getWarehouse()),
+                        warehouse,
                         itemMap.get(inventoryCSVWrapper.getItem()),
                         itemPackageTypeMap.get(inventoryCSVWrapper.getItemPackageType()),
                         inventoryStatusMap.get(inventoryCSVWrapper.getInventoryStatus()),
@@ -1240,13 +1219,6 @@ public class InventoryService implements TestDataInitiableService{
         inventory.setProductSize(inventoryCSVWrapper.getProductSize());
         inventory.setStyle(inventoryCSVWrapper.getStyle());
 
-        // warehouse is a mandate field
-        if (Objects.isNull(warehouse)) {
-            warehouse =
-                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                            inventoryCSVWrapper.getCompany(),
-                            inventoryCSVWrapper.getWarehouse());
-        }
         inventory.setWarehouseId(warehouse.getId());
         inventory.setWarehouse(warehouse);
 
@@ -3280,12 +3252,6 @@ public class InventoryService implements TestDataInitiableService{
         // let's clear all the empty space for the name
         inventoryCSVWrappers.forEach(
                 inventoryCSVWrapper -> {
-                    inventoryCSVWrapper.setCompany(
-                            inventoryCSVWrapper.getCompany().trim()
-                    );
-                    inventoryCSVWrapper.setWarehouse(
-                            inventoryCSVWrapper.getWarehouse().trim()
-                    );
                     inventoryCSVWrapper.setItem(
                             inventoryCSVWrapper.getItem().trim()
                     );

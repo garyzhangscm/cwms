@@ -1,10 +1,12 @@
 package com.garyzhangscm.cwms.inventory.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.Transient;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkOrderLine {
     private Long id;
 

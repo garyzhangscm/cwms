@@ -21,7 +21,6 @@ package com.garyzhangscm.cwms.layout.model;
 
 public class LocationCSVWrapper {
 
-    private String company;
 
     private String name;
 
@@ -46,15 +45,6 @@ public class LocationCSVWrapper {
 
     private Boolean enabled;
 
-    private String warehouse;
-
-    public String getCompany() {
-        return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
-    }
 
     public String getName() {
         return name;
@@ -176,11 +166,4 @@ public class LocationCSVWrapper {
         this.enabled = enabled;
     }
 
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
-    }
 }

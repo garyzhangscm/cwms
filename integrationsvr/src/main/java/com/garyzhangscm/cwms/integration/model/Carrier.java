@@ -1,12 +1,12 @@
 package com.garyzhangscm.cwms.integration.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Carrier {
 
 

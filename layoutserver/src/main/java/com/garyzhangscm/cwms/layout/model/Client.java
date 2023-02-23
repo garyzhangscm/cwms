@@ -19,11 +19,12 @@
 package com.garyzhangscm.cwms.layout.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Client  implements Serializable {
 
     private Long id;

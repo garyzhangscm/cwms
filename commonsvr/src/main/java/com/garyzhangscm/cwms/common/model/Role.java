@@ -1,10 +1,12 @@
 package com.garyzhangscm.cwms.common.model;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Role extends AuditibleEntity<String>  {
 
     private Long id;

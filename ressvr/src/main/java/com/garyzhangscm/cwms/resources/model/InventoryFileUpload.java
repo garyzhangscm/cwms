@@ -4,23 +4,13 @@ package com.garyzhangscm.cwms.resources.model;
 public class InventoryFileUpload extends FileUploadType {
 
     public InventoryFileUpload(){
-        super("inventory", "inventory",
+        super("inventory", "Inventory",
                 "inventory/inventories/upload",
                 "resource/assets/file-templates/inventories.csv");
         setupColumns();
     }
 
     private void setupColumns() {
-
-        addColumn(new FileUploadTemplateColumn(
-                "company", "Company Code",
-                String.class, 100, false
-        ));
-
-        addColumn(new FileUploadTemplateColumn(
-                "warehouse", "Warehouse Name",
-                String.class, 100, false
-        ));
 
         addColumn(new FileUploadTemplateColumn(
                 "client", "Client",

@@ -22,22 +22,19 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.OrderLineRepository;
-import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
@@ -49,7 +46,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class OrderLineService implements TestDataInitiableService{
+public class OrderLineService{
     private static final Logger logger = LoggerFactory.getLogger(OrderLineService.class);
 
     @Autowired
@@ -318,6 +315,7 @@ public class OrderLineService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, OrderLineCSVWrapper.class);
     }
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
 
@@ -333,11 +331,9 @@ public class OrderLineService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
-    private OrderLine convertFromWrapper(OrderLineCSVWrapper orderLineCSVWrapper) {
-        return convertFromWrapper(orderLineCSVWrapper, null);
-    }
-    private OrderLine convertFromWrapper(OrderLineCSVWrapper orderLineCSVWrapper,
+    private OrderLine convertFromWrapper(Long warehouseId, OrderLineCSVWrapper orderLineCSVWrapper,
                                          Order order) {
 
         OrderLine orderLine = new OrderLine();
@@ -348,33 +344,43 @@ public class OrderLineService implements TestDataInitiableService{
         orderLine.setShippedQuantity(0L);
 
 
-        Warehouse warehouse =
-                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                        orderLineCSVWrapper.getCompany(),
-                        orderLineCSVWrapper.getWarehouse());
+        orderLine.setWarehouseId(warehouseId);
 
-        orderLine.setWarehouseId(warehouse.getId());
-
-        if (Objects.isNull(order) && !StringUtils.isBlank(orderLineCSVWrapper.getOrder())) {
-            order = orderService.findByNumber(warehouse.getId(), orderLineCSVWrapper.getOrder());
+        if (Objects.nonNull(order)) {
+            orderLine.setOrder(order);
+        }
+        else if (Strings.isNotBlank(orderLineCSVWrapper.getOrder())) {
+            order = orderService.findByNumber(warehouseId, orderLineCSVWrapper.getOrder());
             orderLine.setOrder(order);
         }
         if (!StringUtils.isBlank(orderLineCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(
-                    warehouse.getId(), orderLineCSVWrapper.getItem());
+                    warehouseId, orderLineCSVWrapper.getItem());
             orderLine.setItemId(item.getId());
         }
-        if (!StringUtils.isBlank(orderLineCSVWrapper.getInventoryStatus())) {
-            InventoryStatus inventoryStatus =
+
+        InventoryStatus inventoryStatus = null;
+        if (Strings.isNotBlank(orderLineCSVWrapper.getInventoryStatus())) {
+            inventoryStatus =
                     inventoryServiceRestemplateClient.getInventoryStatusByName(
-                            warehouse.getId(), orderLineCSVWrapper.getInventoryStatus());
+                            warehouseId, orderLineCSVWrapper.getInventoryStatus());
+        }
+        else {
+            // default to available inventory status
+            inventoryStatus =
+                    inventoryServiceRestemplateClient.getAvailableInventoryStatus(warehouseId);
+
+        }
+        if (Objects.nonNull(inventoryStatus)) {
             orderLine.setInventoryStatusId(inventoryStatus.getId());
         }
+
         logger.debug("orderLineCSVWrapper.getAllocationStrategyType(): {} / {} : {}",
                 orderLineCSVWrapper.getOrder(),
                 orderLineCSVWrapper.getNumber(),
                 orderLineCSVWrapper.getAllocationStrategyType());
-        if (StringUtils.isNotBlank(orderLineCSVWrapper.getAllocationStrategyType())) {
+
+        if (Strings.isNotBlank(orderLineCSVWrapper.getAllocationStrategyType())) {
             orderLine.setAllocationStrategyType(AllocationStrategyType.valueOf(
                     orderLineCSVWrapper.getAllocationStrategyType()
             ));
@@ -508,7 +514,7 @@ public class OrderLineService implements TestDataInitiableService{
     public void saveOrderLineData(Long warehouseId, Order order, OrderLineCSVWrapper orderLineCSVWrapper) {
 
         saveOrUpdate(
-                convertFromWrapper(orderLineCSVWrapper, order)
+                convertFromWrapper(warehouseId, orderLineCSVWrapper, order)
         );
     }
 }

@@ -18,10 +18,9 @@
 
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LocationGroupType {
 
     private Long id;

@@ -509,9 +509,13 @@ public class OrderService implements TestDataInitiableService {
 
     private CsvSchema getCsvSchemaWithLine() {
         return CsvSchema.builder().
-                addColumn("company").
-                addColumn("warehouse").
+                addColumn("client").
                 addColumn("order").
+                addColumn("number").
+                addColumn("item").
+                addColumn("expectedQuantity").
+                addColumn("inventoryStatus").
+                addColumn("allocationStrategyType").
                 addColumn("shipToCustomer").
                 addColumn("billToCustomerSameAsShipToCustomer").
                 addColumn("billToCustomer").
@@ -536,12 +540,6 @@ public class OrderService implements TestDataInitiableService {
                 addColumn("billToAddressLine1").
                 addColumn("billToAddressLine2").
                 addColumn("billToAddressPostcode").
-                addColumn("client").
-                addColumn("number").
-                addColumn("item").
-                addColumn("expectedQuantity").
-                addColumn("inventoryStatus").
-                addColumn("allocationStrategyType").
                 build().withHeader();
     }
 
@@ -658,6 +656,35 @@ public class OrderService implements TestDataInitiableService {
                 warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
 
         order.setWarehouseId(warehouse.getId());
+
+        boolean billToCustomerSameAsShipToCustomer =
+                Strings.isNotBlank(orderLineCSVWrapper.getBillToCustomerSameAsShipToCustomer()) &&
+                        (orderLineCSVWrapper.getBillToCustomerSameAsShipToCustomer().equalsIgnoreCase("1") ||
+                            orderLineCSVWrapper.getBillToCustomerSameAsShipToCustomer().equalsIgnoreCase("true"));
+
+        boolean billToAddressSameAsShipToAddress =
+                Strings.isNotBlank(orderLineCSVWrapper.getBillToAddressSameAsShipToAddress()) &&
+                        (orderLineCSVWrapper.getBillToAddressSameAsShipToAddress().equalsIgnoreCase("1") ||
+                        orderLineCSVWrapper.getBillToAddressSameAsShipToAddress().equalsIgnoreCase("true"));
+
+        logger.debug("billToCustomerSameAsShipToCustomer?: {}, billToAddressSameAsShipToAddress?: {}");
+        if (billToCustomerSameAsShipToCustomer) {
+            orderLineCSVWrapper.setBillToCustomer(
+                    orderLineCSVWrapper.getShipToCustomer()
+            );
+        }
+        if (billToAddressSameAsShipToAddress) {
+            orderLineCSVWrapper.setBillToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname());
+            orderLineCSVWrapper.setBillToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname());
+            orderLineCSVWrapper.setBillToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry());
+            orderLineCSVWrapper.setBillToAddressState(orderLineCSVWrapper.getShipToAddressState());
+            orderLineCSVWrapper.setBillToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty());
+            orderLineCSVWrapper.setBillToAddressCity(orderLineCSVWrapper.getShipToAddressCity());
+            orderLineCSVWrapper.setBillToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict());
+            orderLineCSVWrapper.setBillToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1());
+            orderLineCSVWrapper.setBillToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2());
+            orderLineCSVWrapper.setBillToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode());
+        }
 
 
         // if we specify the ship to customer, we load information with the customer

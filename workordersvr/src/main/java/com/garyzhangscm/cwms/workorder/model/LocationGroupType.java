@@ -19,9 +19,11 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
-import javax.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LocationGroupType implements Serializable {
 
     private Long id;

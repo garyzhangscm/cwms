@@ -4,23 +4,13 @@ package com.garyzhangscm.cwms.resources.model;
 public class LocationFileUpload extends FileUploadType {
 
     public LocationFileUpload(){
-        super("locations", "warehouse locations",
+        super("locations", "Warehouse Locations",
                 "layout/locations/upload",
                 "resource/assets/file-templates/locations.csv");
         setupColumns();
     }
 
     private void setupColumns() {
-
-        addColumn(new FileUploadTemplateColumn(
-                "company", "Company Code",
-                String.class, 100, false
-        ));
-
-        addColumn(new FileUploadTemplateColumn(
-                "warehouse", "Warehouse Name",
-                String.class, 100, false
-        ));
 
 
         addColumn(new FileUploadTemplateColumn(

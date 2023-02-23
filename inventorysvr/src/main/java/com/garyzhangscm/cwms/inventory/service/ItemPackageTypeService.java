@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class ItemPackageTypeService implements TestDataInitiableService{
+public class ItemPackageTypeService {
     private static final Logger logger = LoggerFactory.getLogger(ItemPackageTypeService.class);
 
     @Autowired
@@ -185,10 +185,12 @@ public class ItemPackageTypeService implements TestDataInitiableService{
     }
 
 
+    /**
     public List<ItemPackageType> loadItemPackageTypeData(File  file) throws IOException {
         List<ItemPackageTypeCSVWrapper> itemPackageTypeCSVWrappers = loadData(file);
         return itemPackageTypeCSVWrappers.stream().map(itemPackageTypeCSVWrapper -> convertFromWrapper(itemPackageTypeCSVWrapper)).collect(Collectors.toList());
     }
+     **/
 
 
     public List<ItemPackageTypeCSVWrapper> loadData(File file) throws IOException {
@@ -220,6 +222,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ItemPackageTypeCSVWrapper.class);
     }
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
@@ -235,21 +238,18 @@ public class ItemPackageTypeService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
-    private ItemPackageType convertFromWrapper(ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper) {
+    private ItemPackageType convertFromWrapper(Long warehouseId, ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper) {
         ItemPackageType itemPackageType = new ItemPackageType();
         itemPackageType.setName(itemPackageTypeCSVWrapper.getName());
         itemPackageType.setDescription(itemPackageTypeCSVWrapper.getDescription());
 
-        Company company = warehouseLayoutServiceRestemplateClient.getCompanyByCode(
-                itemPackageTypeCSVWrapper.getCompany()
-        );
-        itemPackageType.setCompanyId(company.getId());
         // warehouse is mandate
         Warehouse warehouse =
-                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                        itemPackageTypeCSVWrapper.getCompany(),
-                        itemPackageTypeCSVWrapper.getWarehouse());
+                warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
+        itemPackageType.setCompanyId(warehouse.getCompanyId());
         itemPackageType.setWarehouseId(warehouse.getId());
 
         if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getClient())) {
@@ -263,7 +263,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getItem())) {
             Item item = itemService.findByName(warehouse.getId(), itemPackageType.getClientId(), itemPackageTypeCSVWrapper.getItem());
             if (Objects.isNull(item)) {
-                item = itemService.createItem(itemPackageTypeCSVWrapper);
+                item = itemService.createItem(warehouseId, itemPackageTypeCSVWrapper);
                 logger.debug("Item is not created yet, let's create on the fly while loading item package type data");
                 logger.debug(" ============       item package data ================");
                 logger.debug(itemPackageTypeCSVWrapper.toString());
@@ -281,11 +281,9 @@ public class ItemPackageTypeService implements TestDataInitiableService{
      * @param itemUnitOfMeasureCSVWrapper
      * @return
      */
-    public ItemPackageType createItemPackageType(ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
+    public ItemPackageType createItemPackageType(Long warehouseId,
+                                                 ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
         ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper = new ItemPackageTypeCSVWrapper();
-
-        itemPackageTypeCSVWrapper.setCompany(itemUnitOfMeasureCSVWrapper.getCompany());
-        itemPackageTypeCSVWrapper.setWarehouse(itemUnitOfMeasureCSVWrapper.getWarehouse());
 
         itemPackageTypeCSVWrapper.setClient(itemUnitOfMeasureCSVWrapper.getClient());
 
@@ -319,7 +317,7 @@ public class ItemPackageTypeService implements TestDataInitiableService{
         );
 
 
-        return saveOrUpdate(convertFromWrapper(itemPackageTypeCSVWrapper));
+        return saveOrUpdate(convertFromWrapper(warehouseId, itemPackageTypeCSVWrapper));
 
     }
 

@@ -18,9 +18,12 @@
 
 package com.garyzhangscm.cwms.integration.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkOrderLine implements Serializable {
 
     private String number;

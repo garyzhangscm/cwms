@@ -18,13 +18,11 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReceiptLine {
 
     private Long id;

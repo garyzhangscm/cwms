@@ -19,13 +19,11 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
-import java.util.Objects;
 
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InventoryStatus implements Serializable {
 
 

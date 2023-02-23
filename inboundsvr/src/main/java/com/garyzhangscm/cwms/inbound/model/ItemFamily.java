@@ -19,11 +19,11 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ItemFamily implements Serializable {
     private Long id;
 

@@ -1,13 +1,10 @@
 package com.garyzhangscm.cwms.integration.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TrailerAppointment  {
 
 

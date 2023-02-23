@@ -1,9 +1,13 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.util.List;
 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Carrier implements Serializable {
     private Long id;
 

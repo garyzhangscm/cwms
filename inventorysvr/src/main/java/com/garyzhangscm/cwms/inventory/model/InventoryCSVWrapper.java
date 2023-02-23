@@ -38,9 +38,6 @@ public class InventoryCSVWrapper implements Serializable {
 
     private String inventoryStatus;
 
-    private String warehouse;
-    private String company;
-
     private String client;
 
 
@@ -56,14 +53,6 @@ public class InventoryCSVWrapper implements Serializable {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public String getCompany() {
-        return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
     }
 
     public String getLpn() {
@@ -114,13 +103,6 @@ public class InventoryCSVWrapper implements Serializable {
         this.inventoryStatus = inventoryStatus;
     }
 
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
-    }
 
     public String getClient() {
         return client;

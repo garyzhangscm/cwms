@@ -1,5 +1,8 @@
 package com.garyzhangscm.cwms.inbound.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Company {
 
     private Long id;

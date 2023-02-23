@@ -18,11 +18,10 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Location extends AuditibleEntity<String>{
     private Long id;
 

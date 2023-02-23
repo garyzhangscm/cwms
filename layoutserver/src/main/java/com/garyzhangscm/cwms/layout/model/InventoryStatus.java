@@ -19,14 +19,14 @@
 package com.garyzhangscm.cwms.layout.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InventoryStatus extends AuditibleEntity<String> implements Serializable {
 
     private Long id;

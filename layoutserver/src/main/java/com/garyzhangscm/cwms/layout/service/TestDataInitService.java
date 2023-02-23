@@ -58,8 +58,6 @@ public class TestDataInitService {
         serviceNames.add("location_group_type");
         initiableServices.put("location_group", locationGroupService);
         serviceNames.add("location_group");
-        initiableServices.put("location", locationService);
-        serviceNames.add("location");
     }
     public String[] getTestDataNames() {
         return serviceNames.toArray(new String[0]);

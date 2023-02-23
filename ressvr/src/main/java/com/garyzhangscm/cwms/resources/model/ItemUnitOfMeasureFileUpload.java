@@ -3,24 +3,13 @@ package com.garyzhangscm.cwms.resources.model;
 public class ItemUnitOfMeasureFileUpload extends FileUploadType {
 
     public ItemUnitOfMeasureFileUpload(){
-        super("itemUnitOfMeasure", "item unit of measure upload",
+        super("itemUnitOfMeasure", "Item Unit of Measure",
                 "inventory/item-unit-of-measures/upload",
                 "resource/assets/file-templates/item-unit-of-measures.csv");
         setupColumns();
     }
 
     private void setupColumns() {
-
-        addColumn(new FileUploadTemplateColumn(
-                "company", "Company Code",
-                String.class, 100, false
-        ));
-
-
-        addColumn(new FileUploadTemplateColumn(
-                "warehouse", "Warehouse Name",
-                String.class, 100, true
-        ));
 
         addColumn(new FileUploadTemplateColumn(
                 "client", "Client name(3PL)",

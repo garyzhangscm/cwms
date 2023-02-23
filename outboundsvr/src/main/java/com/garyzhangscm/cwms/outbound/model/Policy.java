@@ -18,10 +18,10 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Policy {
 
     private Long id;

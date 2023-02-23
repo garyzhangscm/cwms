@@ -24,13 +24,11 @@ import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemUnitOfMeasureRepository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -41,7 +39,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class ItemUnitOfMeasureService implements TestDataInitiableService{
+public class ItemUnitOfMeasureService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemUnitOfMeasureService.class);
 
@@ -173,6 +171,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ItemUnitOfMeasureCSVWrapper.class);
     }
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
@@ -192,11 +191,13 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
-    private ItemUnitOfMeasure convertFromWrapper(ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
-        return convertFromWrapper(itemUnitOfMeasureCSVWrapper, false);
+    private ItemUnitOfMeasure convertFromWrapper(Long warehouseId, ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
+        return convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, false);
     }
-    private ItemUnitOfMeasure convertFromWrapper(ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper,
+    private ItemUnitOfMeasure convertFromWrapper(Long warehouseId,
+                                                 ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper,
                                                  boolean autoCreateItemPackageType) {
         logger.debug("===>Start to create item unit of measure with \n item: {}, packate type: {}",
                 itemUnitOfMeasureCSVWrapper.getItem(), itemUnitOfMeasureCSVWrapper.getItemPackageType());
@@ -207,15 +208,11 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         itemUnitOfMeasure.setWidth(itemUnitOfMeasureCSVWrapper.getWidth());
         itemUnitOfMeasure.setHeight(itemUnitOfMeasureCSVWrapper.getHeight());
 
-        Company company = warehouseLayoutServiceRestemplateClient.getCompanyByCode(
-                itemUnitOfMeasureCSVWrapper.getCompany()
-        );
-        itemUnitOfMeasure.setCompanyId(company.getId());
         // warehouse  is mandate
         Warehouse warehouse =
-                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                        itemUnitOfMeasureCSVWrapper.getCompany(),
-                        itemUnitOfMeasureCSVWrapper.getWarehouse());
+                warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
+        itemUnitOfMeasure.setCompanyId(warehouse.getCompanyId());
         itemUnitOfMeasure.setWarehouseId(warehouse.getId());
 
 
@@ -266,7 +263,7 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
             // item package type first. We allow the user to create the item package type
             // when load item unit of measure from CSV files
             if (Objects.isNull(itemPackageType) && autoCreateItemPackageType) {
-                itemPackageType = createItemPackageType(itemUnitOfMeasureCSVWrapper);
+                itemPackageType = createItemPackageType(warehouseId, itemUnitOfMeasureCSVWrapper);
 
             }
             itemUnitOfMeasure.setItemPackageType(itemPackageType);
@@ -274,17 +271,18 @@ public class ItemUnitOfMeasureService implements TestDataInitiableService{
         return itemUnitOfMeasure;
     }
 
-    private ItemPackageType createItemPackageType(ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
+    private ItemPackageType createItemPackageType(Long warehouseId, ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
 
-        return itemPackageTypeService.createItemPackageType(itemUnitOfMeasureCSVWrapper);
+        return itemPackageTypeService.createItemPackageType(warehouseId, itemUnitOfMeasureCSVWrapper);
     }
 
 
-    public List<ItemUnitOfMeasure> saveItemUnitOfMeasureData(File file) throws IOException {
+    public List<ItemUnitOfMeasure> saveItemUnitOfMeasureData(Long warehouseId,
+                                                             File file) throws IOException {
 
         List<ItemUnitOfMeasureCSVWrapper> itemUnitOfMeasureCSVWrappers = loadData(file);
         return itemUnitOfMeasureCSVWrappers.stream()
-                .map(itemUnitOfMeasureCSVWrapper -> saveOrUpdate(convertFromWrapper(itemUnitOfMeasureCSVWrapper, true)))
+                .map(itemUnitOfMeasureCSVWrapper -> saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true)))
                 .collect(Collectors.toList());
     }
 }
