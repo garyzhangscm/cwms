@@ -19,11 +19,10 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WarehouseConfiguration extends AuditibleEntity<String> implements Serializable {
 
     private Long id;

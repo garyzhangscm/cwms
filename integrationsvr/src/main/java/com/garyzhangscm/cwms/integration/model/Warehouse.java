@@ -19,8 +19,11 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Warehouse implements Serializable {
 
     private Long id;

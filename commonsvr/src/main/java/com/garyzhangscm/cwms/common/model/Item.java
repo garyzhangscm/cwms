@@ -18,10 +18,13 @@
 
 package com.garyzhangscm.cwms.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Item implements Serializable {
 
     private Long id;

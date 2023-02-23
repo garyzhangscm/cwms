@@ -73,16 +73,8 @@ public class TestDataInitService {
 
         initiableServices.put("Item_Family", itemFamilyService);
         serviceNames.add("Item_Family");
-        initiableServices.put("Item", itemService);
-        serviceNames.add("Item");
-        initiableServices.put("Item_Package_Type", itemPackageTypeService);
-        serviceNames.add("Item_Package_Type");
-        initiableServices.put("Item_Unit_of_Measure", itemUnitOfMeasureService);
-        serviceNames.add("Item_Unit_of_Measure");
         initiableServices.put("Inventory_status", inventoryStatusService);
         serviceNames.add("Inventory_status");
-        initiableServices.put("Inventory", inventoryService);
-        serviceNames.add("Inventory");
         initiableServices.put("Movement_Path", movementPathService);
         serviceNames.add("Movement_Path");
         initiableServices.put("Inventory_Adjustment_Threshold", inventoryAdjustmentThresholdService);

@@ -18,15 +18,14 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Receipt {
 
     private Long id;

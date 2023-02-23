@@ -1,9 +1,9 @@
 package com.garyzhangscm.cwms.integration.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Trailer  {
 
     private Long companyId;

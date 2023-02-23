@@ -26,8 +26,6 @@ import java.io.Serializable;
 
 public class ItemUnitOfMeasureCSVWrapper implements Serializable {
 
-    private String company;
-    private String warehouse;
 
     private String client;
     private String item;
@@ -69,13 +67,6 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
         return null;
     }
 
-    public String getCompany() {
-        return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
-    }
 
     public String getItem() {
         return item;
@@ -149,13 +140,6 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
         this.client = client;
     }
 
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
-    }
 
     public String getItemPackageTypeDescription() {
         return itemPackageTypeDescription;

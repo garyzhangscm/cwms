@@ -197,11 +197,12 @@ public class ItemController {
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadItems(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseBodyWrapper uploadItems(Long warehouseId,
+                                           @RequestParam("file") MultipartFile file) throws IOException {
 
 
         File localFile = fileService.saveFile(file);
-        List<Item> items = itemService.saveItemData(localFile);
+        List<Item> items = itemService.saveItemData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(String.valueOf(items.size()));
     }
 

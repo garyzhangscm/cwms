@@ -19,12 +19,14 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 
 // Entity that will be persist in Common service
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Supplier implements Serializable {
 
     private Long id;

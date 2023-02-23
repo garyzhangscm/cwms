@@ -1,9 +1,8 @@
 package com.garyzhangscm.cwms.inventory.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Company extends AuditibleEntity<String> {
 
     private Long id;

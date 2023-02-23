@@ -18,12 +18,14 @@
 
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Warehouse implements Serializable {
     private Long id;
 

@@ -1,11 +1,10 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Trailer {
 
     private Long id;

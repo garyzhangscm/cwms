@@ -19,9 +19,12 @@
 package com.garyzhangscm.cwms.zuulsvr.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Warehouse implements Serializable {
 
     private Long id;

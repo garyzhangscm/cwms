@@ -46,7 +46,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class ItemService implements TestDataInitiableService{
+public class ItemService {
     private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
 
     @Autowired
@@ -428,14 +428,15 @@ public class ItemService implements TestDataInitiableService{
 
     }
 
-    public List<Item> loadItemData(File  file) throws IOException {
+    public List<Item> loadItemData(Long warehouseId, File  file) throws IOException {
         List<ItemCSVWrapper> itemCSVWrappers = loadData(file);
         return itemCSVWrappers.stream()
-                .map(itemCSVWrapper -> convertFromWrapper(itemCSVWrapper)).collect(Collectors.toList());
+                .map(itemCSVWrapper -> convertFromWrapper(warehouseId, itemCSVWrapper)).collect(Collectors.toList());
     }
 
-    public List<Item> saveItemData(File  file) throws IOException {
-        List<Item> items = loadItemData(file);
+    public List<Item> saveItemData(Long warehouseId,
+                                   File  file) throws IOException {
+        List<Item> items = loadItemData(warehouseId, file);
         return items.stream().map(this::saveOrUpdate).collect(Collectors.toList());
     }
 
@@ -474,6 +475,7 @@ public class ItemService implements TestDataInitiableService{
                 build().withHeader();
     }
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
@@ -489,8 +491,10 @@ public class ItemService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
-    private Item convertFromWrapper(ItemCSVWrapper itemCSVWrapper) {
+    private Item convertFromWrapper(Long warehouseId,
+                                    ItemCSVWrapper itemCSVWrapper) {
         Item item = new Item();
         BeanUtils.copyProperties(itemCSVWrapper, item);
         /***
@@ -506,14 +510,10 @@ public class ItemService implements TestDataInitiableService{
         item.setTrackingExpirationDateFlag(itemCSVWrapper.isTrackingExpirationDateFlag());
         item.setShelfLifeDays(itemCSVWrapper.getShelfLifeDays());
 **/
-        Company company = warehouseLayoutServiceRestemplateClient.getCompanyByCode(
-                itemCSVWrapper.getCompany());
-        item.setCompanyId(company.getId());
         // warehouse
         Warehouse warehouse =
-                    warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                            itemCSVWrapper.getCompany(),
-                            itemCSVWrapper.getWarehouse());
+                warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        item.setCompanyId(warehouse.getCompanyId());
 
         item.setWarehouseId(warehouse.getId());
 
@@ -1150,10 +1150,8 @@ public class ItemService implements TestDataInitiableService{
         logger.debug("refresh is done");
     }
 
-    public Item createItem(ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper) {
+    public Item createItem(Long warehouseId, ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper) {
         ItemCSVWrapper itemCSVWrapper = new ItemCSVWrapper();
-        itemCSVWrapper.setCompany(itemPackageTypeCSVWrapper.getCompany());
-        itemCSVWrapper.setWarehouse(itemPackageTypeCSVWrapper.getWarehouse());
         itemCSVWrapper.setName(itemPackageTypeCSVWrapper.getItem());
         itemCSVWrapper.setDescription(itemPackageTypeCSVWrapper.getItemDescription());
         itemCSVWrapper.setClient(itemPackageTypeCSVWrapper.getClient());
@@ -1200,7 +1198,7 @@ public class ItemService implements TestDataInitiableService{
         );
 
 
-        return saveOrUpdate(convertFromWrapper(itemCSVWrapper));
+        return saveOrUpdate(convertFromWrapper(warehouseId, itemCSVWrapper));
 
     }
 }

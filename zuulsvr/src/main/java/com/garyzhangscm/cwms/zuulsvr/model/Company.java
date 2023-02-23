@@ -1,5 +1,9 @@
 package com.garyzhangscm.cwms.zuulsvr.model;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Company   {
 
     private Long id;

@@ -19,8 +19,11 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Customer implements Serializable {
 
     private Long id;

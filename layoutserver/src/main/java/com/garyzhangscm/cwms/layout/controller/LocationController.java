@@ -81,11 +81,12 @@ public class LocationController {
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadLocations(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseBodyWrapper uploadLocations(Long warehouseId,
+                                               @RequestParam("file") MultipartFile file) throws IOException {
 
 
         File localFile = fileService.saveFile(file);
-        List<Location> locations = locationService.loadLocationData(localFile);
+        List<Location> locations = locationService.loadLocationData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(locations.size() + "");
     }
 

@@ -18,9 +18,11 @@
 
 package com.garyzhangscm.cwms.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LocationGroupType {
 
     private Long id;

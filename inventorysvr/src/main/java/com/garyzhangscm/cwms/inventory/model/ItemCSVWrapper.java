@@ -38,9 +38,6 @@ public class ItemCSVWrapper implements Serializable {
     private Double unitCost;
     private Boolean allowCartonization;
 
-    private String warehouse;
-    private String company;
-
     private Boolean allowAllocationByLPN;
     private String allocationRoundUpStrategyType;
     private Double allocationRoundUpStrategyValue;
@@ -78,13 +75,6 @@ public class ItemCSVWrapper implements Serializable {
         return null;
     }
 
-    public String getCompany() {
-        return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
-    }
 
     public String getName() {
         return name;
@@ -126,13 +116,6 @@ public class ItemCSVWrapper implements Serializable {
         this.unitCost = unitCost;
     }
 
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
-    }
 
     public Boolean getAllowCartonization() {
         return allowCartonization;

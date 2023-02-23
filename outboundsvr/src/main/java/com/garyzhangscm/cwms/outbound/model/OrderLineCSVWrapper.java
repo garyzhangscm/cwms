@@ -20,8 +20,6 @@ package com.garyzhangscm.cwms.outbound.model;
 
 
 public class OrderLineCSVWrapper {
-    private String company;
-    private String warehouse;
     private String client;
     private String order;
 
@@ -65,13 +63,6 @@ public class OrderLineCSVWrapper {
     private String billToAddressPostcode;
 
 
-    public String getCompany() {
-        return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
-    }
 
     public String getOrder() {
         return order;
@@ -113,13 +104,6 @@ public class OrderLineCSVWrapper {
         this.inventoryStatus = inventoryStatus;
     }
 
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
-    }
 
     public String getAllocationStrategyType() {
         return allocationStrategyType;

@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Policy {
 
     private Long id;

@@ -19,7 +19,9 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Location {
     private Long id;
     private String name;

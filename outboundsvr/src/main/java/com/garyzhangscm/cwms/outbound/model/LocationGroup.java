@@ -19,8 +19,11 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LocationGroup {
 
     private Long id;

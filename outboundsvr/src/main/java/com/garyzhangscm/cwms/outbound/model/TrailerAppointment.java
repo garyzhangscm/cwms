@@ -2,10 +2,12 @@ package com.garyzhangscm.cwms.outbound.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TrailerAppointment extends AuditibleEntity<String>{
 
     private Long id;

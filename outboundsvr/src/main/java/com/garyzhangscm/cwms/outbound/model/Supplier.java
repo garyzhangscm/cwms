@@ -19,9 +19,12 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
 // Entity that will be persist in Common service
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Supplier implements Serializable {
 
     private Long id;

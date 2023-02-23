@@ -543,6 +543,23 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public InventoryStatus getAvailableInventoryStatus(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory-statuses/available")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<InventoryStatus>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");

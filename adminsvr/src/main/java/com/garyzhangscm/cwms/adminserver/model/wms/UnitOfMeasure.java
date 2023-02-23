@@ -19,11 +19,11 @@
 package com.garyzhangscm.cwms.adminserver.model.wms;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UnitOfMeasure implements Serializable {
 
     private Long id;

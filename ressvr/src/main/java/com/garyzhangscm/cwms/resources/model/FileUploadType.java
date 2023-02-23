@@ -27,11 +27,12 @@ public class FileUploadType {
 
         List<FileUploadType> fileUploadTypes = new ArrayList<>();
 
-        fileUploadTypes.add(new LocationFileUpload());
+        fileUploadTypes.add(new BillOfMaterialFileUpload());
         fileUploadTypes.add(new ItemFileUpload());
         fileUploadTypes.add(new ItemUnitOfMeasureFileUpload());
-        fileUploadTypes.add(new BillOfMaterialFileUpload());
         fileUploadTypes.add(new InventoryFileUpload());
+        fileUploadTypes.add(new OrderFileUpload());
+        fileUploadTypes.add(new LocationFileUpload());
 
 
         return fileUploadTypes;

@@ -93,8 +93,6 @@ public class TestDataInitService {
 
         initiableServices.put("Order", orderService);
         serviceNames.add("Order");
-        initiableServices.put("Order_Line", orderLineService);
-        serviceNames.add("Order_Line");
         initiableServices.put("Allocation_Configuration", allocationConfigurationService);
         serviceNames.add("Allocation_Configuration");
         initiableServices.put("Shipping_Stage_Area_Configuration", shippingStageAreaConfigurationService);
