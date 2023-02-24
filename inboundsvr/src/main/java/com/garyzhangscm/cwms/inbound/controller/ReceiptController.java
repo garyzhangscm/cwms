@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inbound.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.model.*;
+import com.garyzhangscm.cwms.inbound.service.FileService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptLineService;
 import com.garyzhangscm.cwms.inbound.service.ReceiptService;
 import org.slf4j.Logger;
@@ -30,7 +31,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -42,6 +46,9 @@ public class ReceiptController {
     ReceiptService receiptService;
     @Autowired
     ReceiptLineService receiptLineService;
+
+    @Autowired
+    FileService fileService;
 
 
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
@@ -347,5 +354,22 @@ public class ReceiptController {
 
         return receiptLineService.getAvailableReceiptLinesForMPS(warehouseId,
                 itemId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/orders/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
+    public ResponseBodyWrapper uploadReceipts(Long warehouseId,
+                                            @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+        receiptService.saveReceiptData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success("success");
     }
 }

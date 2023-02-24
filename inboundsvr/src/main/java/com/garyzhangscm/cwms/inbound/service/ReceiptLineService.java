@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptLineRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class ReceiptLineService implements TestDataInitiableService{
+public class ReceiptLineService {
     private static final Logger logger = LoggerFactory.getLogger(ReceiptLineService.class);
 
     @Autowired
@@ -180,7 +181,7 @@ public class ReceiptLineService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, ReceiptLineCSVWrapper.class);
     }
 
-    @Transactional
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
@@ -196,13 +197,16 @@ public class ReceiptLineService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
-    private ReceiptLine convertFromWrapper(ReceiptLineCSVWrapper receiptLineCSVWrapper) {
+    private ReceiptLine convertFromWrapper(Long warehouseId,
+                                           ReceiptLineCSVWrapper receiptLineCSVWrapper,
+                                           Receipt receipt) {
 
         ReceiptLine receiptLine = new ReceiptLine();
-        receiptLine.setNumber(receiptLineCSVWrapper.getNumber());
+        receiptLine.setNumber(receiptLineCSVWrapper.getLine());
         receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity());
-        receiptLine.setReceivedQuantity(receiptLineCSVWrapper.getReceivedQuantity());
+        receiptLine.setReceivedQuantity(0L);
 
 
         receiptLine.setOverReceivingQuantity(receiptLineCSVWrapper.getOverReceivingQuantity());
@@ -210,19 +214,21 @@ public class ReceiptLineService implements TestDataInitiableService{
 
         // Warehouse is mandate
         Warehouse warehouse =
-                warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                        receiptLineCSVWrapper.getCompany(),
-                        receiptLineCSVWrapper.getWarehouse());
+                warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
         receiptLine.setWarehouseId(warehouse.getId());
 
         logger.debug("Start to create receipt line {} with item {}, in receipt {} / warehouse id: {}",
-                receiptLineCSVWrapper.getNumber(),
+                receiptLineCSVWrapper.getLine(),
                 receiptLineCSVWrapper.getItem(), receiptLineCSVWrapper.getReceipt(),
                 warehouse.getId());
-        if (!StringUtils.isBlank(receiptLineCSVWrapper.getReceipt())) {
-            Receipt receipt = receiptService.findByNumber(warehouse.getId(), receiptLineCSVWrapper.getReceipt());
+        if (Objects.isNull(receipt) && Strings.isNotBlank(receiptLineCSVWrapper.getReceipt())) {
+            receipt = receiptService.findByNumber(warehouse.getId(), receiptLineCSVWrapper.getReceipt());
+        }
+        if (Objects.nonNull(receipt)) {
             receiptLine.setReceipt(receipt);
         }
+
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getItem())) {
             Item item =
                     inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), receiptLineCSVWrapper.getItem());

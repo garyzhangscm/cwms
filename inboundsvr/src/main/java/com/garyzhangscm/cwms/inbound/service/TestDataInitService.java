@@ -54,8 +54,6 @@ public class TestDataInitService {
 
         initiableServices.put("Receipt", receiptService);
         serviceNames.add("Receipt");
-        initiableServices.put("Receipt_Line", receiptLineService);
-        serviceNames.add("Receipt_Line");
 
         initiableServices.put("Putaway_Configuration", putawayConfigurationService);
         serviceNames.add("Putaway_Configuration");

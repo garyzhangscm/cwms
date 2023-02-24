@@ -90,9 +90,6 @@ public class TestDataInitService {
 
         this.trailerTemplateService = trailerTemplateService;
 
-
-        initiableServices.put("Order", orderService);
-        serviceNames.add("Order");
         initiableServices.put("Allocation_Configuration", allocationConfigurationService);
         serviceNames.add("Allocation_Configuration");
         initiableServices.put("Shipping_Stage_Area_Configuration", shippingStageAreaConfigurationService);

@@ -23,7 +23,7 @@ public class OrderLineCSVWrapper {
     private String client;
     private String order;
 
-    private String number;
+    private String line;
     private String item;
     private Long expectedQuantity;
     private String inventoryStatus;
@@ -72,12 +72,12 @@ public class OrderLineCSVWrapper {
         this.order = order;
     }
 
-    public String getNumber() {
-        return number;
+    public String getLine() {
+        return line;
     }
 
-    public void setNumber(String number) {
-        this.number = number;
+    public void setLine(String line) {
+        this.line = line;
     }
 
     public String getItem() {
