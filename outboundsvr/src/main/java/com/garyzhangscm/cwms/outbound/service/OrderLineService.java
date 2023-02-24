@@ -337,7 +337,7 @@ public class OrderLineService{
                                          Order order) {
 
         OrderLine orderLine = new OrderLine();
-        orderLine.setNumber(orderLineCSVWrapper.getNumber());
+        orderLine.setNumber(orderLineCSVWrapper.getLine());
         orderLine.setExpectedQuantity(orderLineCSVWrapper.getExpectedQuantity());
         orderLine.setOpenQuantity(orderLineCSVWrapper.getExpectedQuantity());
         orderLine.setInprocessQuantity(0L);
@@ -377,7 +377,7 @@ public class OrderLineService{
 
         logger.debug("orderLineCSVWrapper.getAllocationStrategyType(): {} / {} : {}",
                 orderLineCSVWrapper.getOrder(),
-                orderLineCSVWrapper.getNumber(),
+                orderLineCSVWrapper.getLine(),
                 orderLineCSVWrapper.getAllocationStrategyType());
 
         if (Strings.isNotBlank(orderLineCSVWrapper.getAllocationStrategyType())) {

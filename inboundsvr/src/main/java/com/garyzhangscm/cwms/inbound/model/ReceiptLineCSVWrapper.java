@@ -19,25 +19,17 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 public class ReceiptLineCSVWrapper {
+    private String client;
+    private String supplier;
     private String receipt;
-    private String number;
+    private String line;
     private String item;
+    private String inventoryStatus;
     private Long expectedQuantity;
-    private Long receivedQuantity;
-    private String warehouse;
-
-    private String company;
 
     private Long overReceivingQuantity;
     private Double overReceivingPercent;
 
-    public String getCompany() {
-        return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
-    }
 
     public String getReceipt() {
         return receipt;
@@ -47,13 +39,6 @@ public class ReceiptLineCSVWrapper {
         this.receipt = receipt;
     }
 
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
 
     public String getItem() {
         return item;
@@ -71,21 +56,6 @@ public class ReceiptLineCSVWrapper {
         this.expectedQuantity = expectedQuantity;
     }
 
-    public Long getReceivedQuantity() {
-        return receivedQuantity;
-    }
-
-    public void setReceivedQuantity(Long receivedQuantity) {
-        this.receivedQuantity = receivedQuantity;
-    }
-
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
-    }
 
     public Long getOverReceivingQuantity() {
         return overReceivingQuantity;
@@ -101,5 +71,29 @@ public class ReceiptLineCSVWrapper {
 
     public void setOverReceivingPercent(Double overReceivingPercent) {
         this.overReceivingPercent = overReceivingPercent;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public String getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(String supplier) {
+        this.supplier = supplier;
+    }
+
+    public String getLine() {
+        return line;
+    }
+
+    public void setLine(String line) {
+        this.line = line;
     }
 }

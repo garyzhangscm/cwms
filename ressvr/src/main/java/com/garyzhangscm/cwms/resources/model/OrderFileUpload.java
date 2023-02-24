@@ -21,7 +21,7 @@ public class OrderFileUpload extends FileUploadType {
                 String.class, 100, false
         ));
         addColumn(new FileUploadTemplateColumn(
-                "number", "Line Number",
+                "line", "Line Number",
                 String.class, 100, false
         ));
         addColumn(new FileUploadTemplateColumn(

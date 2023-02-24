@@ -59,7 +59,7 @@ import java.util.stream.Stream;
 
 
 @Service
-public class OrderService implements TestDataInitiableService {
+public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
@@ -91,8 +91,6 @@ public class OrderService implements TestDataInitiableService {
     @Autowired
     private IntegrationService integrationService;
 
-    @Value("${fileupload.test-data.orders:orders}")
-    String testDataFile;
 
     public Order findById(Long id, boolean loadDetails) {
         Order order = orderRepository.findById(id)
@@ -457,7 +455,7 @@ public class OrderService implements TestDataInitiableService {
         }
     }
 
-
+/**
     public List<OrderCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -492,21 +490,15 @@ public class OrderService implements TestDataInitiableService {
         return fileService.loadData(inputStream, schema, OrderCSVWrapper.class);
     }
 
-
-    private List<OrderLineCSVWrapper> loadDataWithLine(InputStream inputStream) throws IOException {
-
-        CsvSchema schema = getCsvSchemaWithLine();
-
-        return fileService.loadData(inputStream, schema, OrderLineCSVWrapper.class);
-    }
-
+**/
 
     private List<OrderLineCSVWrapper> loadDataWithLine(File file) throws IOException {
 
 
-        return fileService.loadData(file, getCsvSchemaWithLine(), OrderLineCSVWrapper.class);
+        // return fileService.loadData(file, getCsvSchemaWithLine(), OrderLineCSVWrapper.class);
+        return fileService.loadData(file, OrderLineCSVWrapper.class);
     }
-
+/**
     private CsvSchema getCsvSchemaWithLine() {
         return CsvSchema.builder().
                 addColumn("client").
@@ -542,7 +534,9 @@ public class OrderService implements TestDataInitiableService {
                 addColumn("billToAddressPostcode").
                 build().withHeader();
     }
+ **/
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
 
@@ -559,7 +553,8 @@ public class OrderService implements TestDataInitiableService {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
-
+     **/
+/**
     private Order convertFromWrapper(OrderCSVWrapper orderCSVWrapper) {
 
         Order order = new Order();
@@ -644,7 +639,7 @@ public class OrderService implements TestDataInitiableService {
 
         return order;
     }
-
+**/
     private Order convertFromWrapper(Long warehouseId,
                                      OrderLineCSVWrapper orderLineCSVWrapper) {
 
@@ -2123,7 +2118,7 @@ public class OrderService implements TestDataInitiableService {
                 order = saveOrUpdate(convertFromWrapper(warehouseId, orderLineCSVWrapper));
             }
             logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
-                    orderLineCSVWrapper.getNumber(),
+                    orderLineCSVWrapper.getLine(),
                     orderLineCSVWrapper.getItem(),
                     orderLineCSVWrapper.getExpectedQuantity(),
                     order.getNumber());

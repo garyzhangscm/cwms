@@ -32,6 +32,7 @@ public class FileUploadType {
         fileUploadTypes.add(new ItemUnitOfMeasureFileUpload());
         fileUploadTypes.add(new InventoryFileUpload());
         fileUploadTypes.add(new OrderFileUpload());
+        fileUploadTypes.add(new ReceiptFileUpload());
         fileUploadTypes.add(new LocationFileUpload());
 
 

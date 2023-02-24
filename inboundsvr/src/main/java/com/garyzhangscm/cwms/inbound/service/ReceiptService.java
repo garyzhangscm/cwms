@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -1166,5 +1167,46 @@ public class ReceiptService implements TestDataInitiableService{
             }
         }
         return saveOrUpdate(receipt);
+    }
+
+    public void saveReceiptData(Long warehouseId, File localFile) throws IOException {
+
+        List<ReceiptLineCSVWrapper> receiptLineCSVWrappers = loadDataWithLine(localFile);
+        logger.debug("start to save {} receipt lines ", receiptLineCSVWrappers.size());
+        // see if we need to create order
+        for (ReceiptLineCSVWrapper receiptLineCSVWrapper : receiptLineCSVWrappers) {
+            Receipt receipt = findByNumber(warehouseId, receiptLineCSVWrapper.getReceipt());
+            if (Objects.isNull(receipt)) {
+                logger.debug("receipt {} is not created yet, let's create the order on the fly ", receiptLineCSVWrapper.getReceipt());
+
+            }
+            logger.debug("start to create receipt line {} for item {}, quantity {}, for receipt {}",
+                    receiptLineCSVWrapper.getLine(),
+                    receiptLineCSVWrapper.getItem(),
+                    receiptLineCSVWrapper.getExpectedQuantity(),
+                    receiptLineCSVWrapper.getReceipt());
+        }
+
+    }
+
+    private List<ReceiptLineCSVWrapper> loadDataWithLine(File file) throws IOException {
+
+
+        // return fileService.loadData(file, getCsvSchemaWithLine(), ReceiptLineCSVWrapper.class);
+        return fileService.loadData(file, ReceiptLineCSVWrapper.class);
+    }
+
+    private CsvSchema getCsvSchemaWithLine() {
+        return CsvSchema.builder().
+                addColumn("client").
+                addColumn("supplier").
+                addColumn("receipt").
+                addColumn("line").
+                addColumn("item").
+                addColumn("expectedQuantity").
+                addColumn("inventoryStatus").
+                addColumn("overReceivingQuantity").
+                addColumn("overReceivingPercent").
+                build().withHeader();
     }
 }
