@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Item implements Serializable {
@@ -40,6 +41,7 @@ public class Item implements Serializable {
     private ItemFamily itemFamily;
 
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
+    private ItemPackageType defaultItemPackageType;
 
     private double unitCost;
 
@@ -134,5 +136,16 @@ public class Item implements Serializable {
 
     public void setQuickbookListId(String quickbookListId) {
         this.quickbookListId = quickbookListId;
+    }
+
+
+    public ItemPackageType getDefaultItemPackageType() {
+        // if the default item package type is not setup for this item
+        // then return the first available item package type
+        return Objects.nonNull(defaultItemPackageType) ?
+                defaultItemPackageType :
+                getItemPackageTypes().isEmpty() ?
+                        null :
+                        getItemPackageTypes().get(0);
     }
 }

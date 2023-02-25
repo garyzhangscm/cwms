@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.Column;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 import java.util.Comparator;
@@ -37,6 +38,10 @@ public class Inventory implements Serializable {
 
 
     private Long id;
+
+    private Client client;
+
+    private Long clientId;
 
     private String lpn;
 
@@ -69,6 +74,10 @@ public class Inventory implements Serializable {
     private Boolean inboundQCRequired = false;
 
 
+    private String color;
+    private String productSize;
+
+    private String style;
 
     public Double getSize() {
         if (itemPackageType == null) {
@@ -251,4 +260,46 @@ public class Inventory implements Serializable {
     public void setCustomerReturnOrderLineId(Long customerReturnOrderLineId) {
         this.customerReturnOrderLineId = customerReturnOrderLineId;
     }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+
 }

@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inbound;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
 
 public class ResponseBodyWrapper<T> {
@@ -43,6 +45,17 @@ public class ResponseBodyWrapper<T> {
     }
     public static ResponseBodyWrapper success(String body) {
         return new ResponseBodyWrapper<String>(0,  "", body);
+    }
+
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

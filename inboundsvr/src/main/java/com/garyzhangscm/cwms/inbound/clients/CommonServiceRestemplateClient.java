@@ -48,6 +48,9 @@ public class CommonServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Cacheable(cacheNames = "InboundService_Client", unless="#result == null")
     public Client getClientById(Long id) {
 
@@ -174,8 +177,9 @@ public class CommonServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/system-controlled-number/{variable}/next")
                         .queryParam("warehouseId", warehouseId);
+
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(variable).toUriString(),
                 HttpMethod.GET,
                 null,

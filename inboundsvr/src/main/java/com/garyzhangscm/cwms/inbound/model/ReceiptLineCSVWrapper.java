@@ -30,6 +30,8 @@ public class ReceiptLineCSVWrapper {
     private Long overReceivingQuantity;
     private Double overReceivingPercent;
 
+    private String allowUnexpectedItem;
+
 
     public String getReceipt() {
         return receipt;
@@ -56,6 +58,13 @@ public class ReceiptLineCSVWrapper {
         this.expectedQuantity = expectedQuantity;
     }
 
+    public String getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(String inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
+    }
 
     public Long getOverReceivingQuantity() {
         return overReceivingQuantity;
@@ -63,6 +72,14 @@ public class ReceiptLineCSVWrapper {
 
     public void setOverReceivingQuantity(Long overReceivingQuantity) {
         this.overReceivingQuantity = overReceivingQuantity;
+    }
+
+    public String getAllowUnexpectedItem() {
+        return allowUnexpectedItem;
+    }
+
+    public void setAllowUnexpectedItem(String allowUnexpectedItem) {
+        this.allowUnexpectedItem = allowUnexpectedItem;
     }
 
     public Double getOverReceivingPercent() {

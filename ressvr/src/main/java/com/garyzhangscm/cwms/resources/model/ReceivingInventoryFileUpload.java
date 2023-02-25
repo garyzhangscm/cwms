@@ -1,26 +1,25 @@
 package com.garyzhangscm.cwms.resources.model;
- 
 
-public class InventoryFileUpload extends FileUploadType {
+public class ReceivingInventoryFileUpload extends FileUploadType {
 
-    public InventoryFileUpload(){
-        super("inventory", "Inventory",
-                "inventory/inventories/upload",
-                "resource/assets/file-templates/inventories.csv",
-                "inventory/inventories/upload/progress");
+    public ReceivingInventoryFileUpload(){
+        super("receiving-inventories", "Receiving Inventory",
+                "inbound/receipts/receiving-inventory/upload",
+                "resource/assets/file-templates/receiving-inventories.csv",
+                "inbound/receipts/receiving-inventory/upload/progress");
         setupColumns();
     }
 
     private void setupColumns() {
 
         addColumn(new FileUploadTemplateColumn(
-                "client", "Client",
+                "receipt", "Receipt Number",
                 String.class, 100, false
         ));
 
 
         addColumn(new FileUploadTemplateColumn(
-                 "lpn", "LPN",
+                "lpn", "LPN",
                 String.class, 100, false
         ));
 
@@ -64,6 +63,7 @@ public class InventoryFileUpload extends FileUploadType {
 
 
     }
+
 
 
 

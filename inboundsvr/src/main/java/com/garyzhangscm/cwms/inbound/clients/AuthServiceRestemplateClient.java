@@ -16,22 +16,19 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.inventory.clients;
+package com.garyzhangscm.cwms.inbound.clients;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.garyzhangscm.cwms.inventory.model.LoginCredential;
-import com.garyzhangscm.cwms.inventory.model.LoginResponseBodyWrapper;
-import com.garyzhangscm.cwms.inventory.model.User;
+import com.garyzhangscm.cwms.inbound.model.LoginCredential;
+import com.garyzhangscm.cwms.inbound.model.LoginResponseBodyWrapper;
+import com.garyzhangscm.cwms.inbound.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
