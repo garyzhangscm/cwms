@@ -200,8 +200,8 @@ public class ReceiptLineService {
      **/
 
     private ReceiptLine convertFromWrapper(Long warehouseId,
-                                           ReceiptLineCSVWrapper receiptLineCSVWrapper,
-                                           Receipt receipt) {
+                                           Receipt receipt,
+                                           ReceiptLineCSVWrapper receiptLineCSVWrapper) {
 
         ReceiptLine receiptLine = new ReceiptLine();
         receiptLine.setNumber(receiptLineCSVWrapper.getLine());
@@ -209,8 +209,14 @@ public class ReceiptLineService {
         receiptLine.setReceivedQuantity(0L);
 
 
-        receiptLine.setOverReceivingQuantity(receiptLineCSVWrapper.getOverReceivingQuantity());
-        receiptLine.setOverReceivingPercent(receiptLineCSVWrapper.getOverReceivingPercent());
+        receiptLine.setOverReceivingQuantity(
+                Objects.isNull(receiptLineCSVWrapper.getOverReceivingQuantity()) ?
+                0l :
+                receiptLineCSVWrapper.getOverReceivingQuantity());
+        receiptLine.setOverReceivingPercent(
+                Objects.isNull(receiptLineCSVWrapper.getOverReceivingPercent())?
+                0.0d :
+                receiptLineCSVWrapper.getOverReceivingPercent());
 
         // Warehouse is mandate
         Warehouse warehouse =
@@ -258,11 +264,19 @@ public class ReceiptLineService {
     }
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
-                             Inventory inventory){
+                             Inventory inventory) {
         // Receive inventory and save it on the receipt
 
         Receipt receipt = receiptService.findById(receiptId);
         ReceiptLine receiptLine = findById(receiptLineId);
+        return receive(receipt, receiptLine, inventory);
+    }
+    @Transactional
+    public Inventory receive(Receipt receipt,
+                             ReceiptLine receiptLine,
+                             Inventory inventory){
+        // Receive inventory and save it on the receipt
+
         // If the inventory has location passed in, we will directly receive the inventory into
         // the location.
         // Otherwise, we will receive the location on the receipt and let the putaway logic
@@ -317,8 +331,8 @@ public class ReceiptLineService {
         inventory.setVirtual(false);
         // Everytime when we check in a receipt, we will create a location with the same name so that
         // we can receive inventory on this receipt
-        inventory.setReceiptId(receiptId);
-        inventory.setReceiptLineId(receiptLineId);
+        inventory.setReceiptId(receipt.getId());
+        inventory.setReceiptLineId(receiptLine.getId());
         inventory.setWarehouseId(receipt.getWarehouseId());
 
         logger.debug("Will receive inventory\n {}", inventory);
@@ -567,5 +581,24 @@ public class ReceiptLineService {
         logger.debug("start to process item override for receipt line, current warehouse {}, from item id {} to item id {}",
                 warehouseId, oldItemId, newItemId);
         receiptLineRepository.processItemOverride(oldItemId, newItemId, warehouseId);
+    }
+
+    public void saveReceiptLineData(Long warehouseId, Receipt receipt, ReceiptLineCSVWrapper receiptLineCSVWrapper) {
+
+        saveOrUpdate(
+                convertFromWrapper(warehouseId, receipt, receiptLineCSVWrapper)
+        );
+    }
+
+    public Long getOpenQuantity(ReceiptLine receiptLine) {
+        Long overReceivingQuantityAllowed =
+                Objects.isNull(receiptLine.getOverReceivingQuantity()) ?
+                        0l : receiptLine.getOverReceivingQuantity();
+        if (Objects.nonNull(receiptLine.getOverReceivingPercent()) &&
+            receiptLine.getExpectedQuantity() * receiptLine.getOverReceivingPercent() * 1.0/ 100 > overReceivingQuantityAllowed) {
+            overReceivingQuantityAllowed = (long)(receiptLine.getExpectedQuantity() * receiptLine.getOverReceivingPercent() * 1.0/ 100);
+        }
+        return (receiptLine.getExpectedQuantity() + overReceivingQuantityAllowed - receiptLine.getReceivedQuantity()) > 0 ?
+                receiptLine.getExpectedQuantity() + overReceivingQuantityAllowed - receiptLine.getReceivedQuantity() : 0;
     }
 }

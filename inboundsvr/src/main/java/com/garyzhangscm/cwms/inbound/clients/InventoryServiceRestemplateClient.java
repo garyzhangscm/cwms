@@ -62,6 +62,9 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Cacheable(cacheNames = "InboundService_Item", unless="#result == null")
     public Item getItemById(Long id) {
 
@@ -72,7 +75,7 @@ public class InventoryServiceRestemplateClient {
 
 
         ResponseBodyWrapper<Item> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                         null,
@@ -82,8 +85,10 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    @Cacheable(cacheNames = "InboundService_Item", unless="#result == null")
+    @Cacheable(cacheNames = "InboundService_Item", unless="#result == null" )
     public Item getItemByName(Long warehouseId, String name) {
+        logger.debug("Start to get item by name {} / {}",
+                warehouseId, name);
 
         try {
             UriComponentsBuilder builder =
@@ -94,20 +99,21 @@ public class InventoryServiceRestemplateClient {
                             .queryParam("warehouseId", warehouseId);
 
 
-            // logger.debug("Start to get item: {} / {}", name, warehouseId);
             ResponseBodyWrapper<List<Item>> responseBodyWrapper
-                    = restTemplate.exchange(
+                    = restTemplateProxy.getRestTemplate().exchange(
                     builder.build(true).toUri(),
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
 
             List<Item> items = responseBodyWrapper.getData();
-            // logger.debug(">> get {} item", items.size());
-            if (items.size() == 0) {
+            logger.debug(">> get {} item", items.size());
+
+            if (Objects.isNull(items) || items.size() == 0) {
                 return null;
             }
             else {
+
                 return items.get(0);
             }
         }
@@ -207,6 +213,23 @@ public class InventoryServiceRestemplateClient {
         else {
             return inventoryStatuses.get(0);
         }
+    }
+
+    public InventoryStatus getAvailableInventoryStatus(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory-statuses/available")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<InventoryStatus>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
     }
 
     public Inventory receiveInventory(Inventory inventory) {

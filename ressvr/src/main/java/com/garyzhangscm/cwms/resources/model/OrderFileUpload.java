@@ -5,7 +5,8 @@ public class OrderFileUpload extends FileUploadType {
     public OrderFileUpload(){
         super("orders", "Order",
                 "outbound/orders/upload",
-                "resource/assets/file-templates/orders.csv");
+                "resource/assets/file-templates/orders.csv",
+                "");
         setupColumns();
     }
 

@@ -51,21 +51,27 @@ public class ReceiptController {
     FileService fileService;
 
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/receipts", method = RequestMethod.GET)
     public List<Receipt> findAllReceipts(@RequestParam Long warehouseId,
                                          @RequestParam(name="number", required = false, defaultValue = "") String number,
                                          @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
                                          @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
+                                         @RequestParam(name="clientName", required = false, defaultValue = "") String clientName,
+                                         @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                          @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList,
                                          @RequestParam(name = "checkInStartTime", required = false, defaultValue = "")
-                                             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime checkInStartTime,
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime checkInStartTime,
                                          @RequestParam(name = "checkInEndTime", required = false, defaultValue = "")
-                                             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime checkInEndTime,
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime checkInEndTime,
                                          @RequestParam(name = "checkInDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
                                          @RequestParam(name = "purchaseOrderId", required = false, defaultValue = "") Long purchaseOrderId,
-                                         @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
-        return receiptService.findAll(warehouseId, number, receiptStatusList, supplierId,
-                supplierName, checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, loadDetails);
+                                         @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                         ClientRestriction clientRestriction) {
+        return receiptService.findAll(warehouseId, number, receiptStatusList,
+                supplierId, supplierName,
+                clientId, clientName,
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, loadDetails, clientRestriction);
     }
 
 
@@ -357,7 +363,7 @@ public class ReceiptController {
     }
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.POST, value="/orders/upload")
+    @RequestMapping(method=RequestMethod.POST, value="/receipts/upload")
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
@@ -371,5 +377,33 @@ public class ReceiptController {
         File localFile = fileService.saveFile(file);
         receiptService.saveReceiptData(warehouseId, localFile);
         return  ResponseBodyWrapper.success("success");
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/receipts/receiving-inventory/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
+    public ResponseBodyWrapper updateReceivingInventory(Long warehouseId,
+                                              @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+
+        String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/receipts/receiving-inventory/upload/progress")
+    public ResponseBodyWrapper getFileUploadProgress(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",receiptService.getReceivingInventoryFileUploadProgress(key)));
     }
 }

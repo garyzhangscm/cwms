@@ -53,6 +53,7 @@ public class OrderController {
     FileService fileService;
 
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/orders", method = RequestMethod.GET)
     public List<Order> findAllOrders(@RequestParam Long warehouseId,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
@@ -66,11 +67,13 @@ public class OrderController {
                                      @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate,
                                      @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
                                      @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
-                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate) {
+                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate,
+                                     ClientRestriction clientRestriction) {
         logger.debug("Start to find order by number {}", number);
         return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
-                category,  customerName, customerId, loadDetails);
+                category,  customerName, customerId, loadDetails,
+                clientRestriction);
     }
 
     @BillableEndpoint

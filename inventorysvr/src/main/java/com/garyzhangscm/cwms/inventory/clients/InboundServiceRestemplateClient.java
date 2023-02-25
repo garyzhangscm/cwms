@@ -110,6 +110,7 @@ public class InboundServiceRestemplateClient {
 
     }
 
+
     public ReportHistory printLPNLabel(Long receiptLineId, String lpn, Long quantity, String printerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

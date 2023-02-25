@@ -518,18 +518,6 @@ public class InventoryController {
 
 
         File localFile = fileService.saveFile(file);
-        /**
-        new Thread(
-                () -> {
-                    try {
-                        List<Inventory> inventoryList = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-        ).start();
-        return  ResponseBodyWrapper.success("upload request send");
-         **/
         String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }

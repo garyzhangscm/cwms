@@ -49,13 +49,14 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class ReceiptService implements TestDataInitiableService{
+public class ReceiptService {
     private static final Logger logger = LoggerFactory.getLogger(ReceiptService.class);
 
     @Autowired
@@ -78,8 +79,11 @@ public class ReceiptService implements TestDataInitiableService{
     @Autowired
     private IntegrationService integrationService;
 
-    @Value("${fileupload.test-data.receipts:receipts}")
-    String testDataFile;
+    @Autowired
+    private UserService userService;
+
+
+    private Map<String, Double> receivingInventoryFileUploadProgress = new ConcurrentHashMap<>();
 
     public Receipt findById(Long id, boolean loadDetails) {
         Receipt receipt =  receiptRepository.findById(id)
@@ -97,20 +101,24 @@ public class ReceiptService implements TestDataInitiableService{
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
                                  Long supplierId, String supplierName,
+                                 Long clientId, String clientName,
                                  ZonedDateTime checkInStartTime,
                                  ZonedDateTime checkInEndTime,
-                                 LocalDate checkInDate, Long purchaseOrderId) {
+                                 LocalDate checkInDate, Long purchaseOrderId,
+                                 ClientRestriction clientRestriction) {
         return findAll(warehouseId, number, receiptStatusList, supplierId, supplierName,
-                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, true);
+                clientId, clientName,
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, true, clientRestriction);
     }
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
                                  Long supplierId, String supplierName,
+                                 Long clientId, String clientName,
                                  ZonedDateTime checkInStartTime,
                                  ZonedDateTime checkInEndTime,
                                  LocalDate checkInDate,
                                  Long purchaseOrderId,
-                                 boolean loadDetails) {
+                                 boolean loadDetails, ClientRestriction clientRestriction) {
 
 
 
@@ -145,6 +153,24 @@ public class ReceiptService implements TestDataInitiableService{
 
                             // we can't find the supplier by name,
                             predicates.add(criteriaBuilder.equal(root.get("supplierId"), -1));
+                        }
+                    }
+
+                    if (Objects.nonNull(clientId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+
+                    }
+                    if (StringUtils.isNotBlank(clientName)) {
+
+                        Client client = commonServiceRestemplateClient.getClientByName(warehouseId, clientName);
+                        if (Objects.nonNull(client)) {
+                            predicates.add(criteriaBuilder.equal(root.get("clientId"), client.getId()));
+
+                        }
+                        else {
+
+                            // we can't find the client by name,
+                            predicates.add(criteriaBuilder.equal(root.get("clientId"), -1));
                         }
                     }
 
@@ -183,7 +209,52 @@ public class ReceiptService implements TestDataInitiableService{
 
 
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    if (Objects.isNull(clientRestriction) ||
+                            !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag()) ||
+                            Boolean.TRUE.equals(clientRestriction.getAllClientAccess())) {
+                        // not a 3pl warehouse, let's not put any restriction on the client
+                        // (unless the client restriction is from the web request, which we already
+                        // handled previously
+                        return predicate;
+                    }
+
+
+                    // build the accessible client list predicated based on the
+                    // client ID that the user has access
+                    Predicate accessibleClientListPredicate;
+                    if (clientRestriction.getClientAccesses().trim().isEmpty()) {
+                        // the user can't access any client, then the user
+                        // can only access the non 3pl data
+                        accessibleClientListPredicate = criteriaBuilder.isNull(root.get("clientId"));
+                    }
+                    else {
+                        CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+                        for(String id : clientRestriction.getClientAccesses().trim().split(",")) {
+                            inClientIds.value(Long.parseLong(id));
+                        }
+                        accessibleClientListPredicate = criteriaBuilder.and(inClientIds);
+                    }
+
+                    if (Boolean.TRUE.equals(clientRestriction.getNonClientDataAccessible())) {
+                        // the user can access the non 3pl data
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(root.get("clientId")),
+                                        accessibleClientListPredicate));
+                    }
+                    else {
+
+                        // the user can NOT access the non 3pl data
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.and(
+                                        criteriaBuilder.isNotNull(root.get("clientId")),
+                                        accessibleClientListPredicate));
+                    }
+
                 }
         );
         if (receipts.size() > 0 && loadDetails) {
@@ -358,6 +429,7 @@ public class ReceiptService implements TestDataInitiableService{
         }
     }
 
+    /**
     public List<ReceiptCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
         CsvSchema schema = CsvSchema.builder().
@@ -371,7 +443,8 @@ public class ReceiptService implements TestDataInitiableService{
 
         return fileService.loadData(inputStream, schema, ReceiptCSVWrapper.class);
     }
-
+*/
+    /**
     @Transactional
     public void initTestData(Long companyId, String warehouseName) {
         try {
@@ -388,27 +461,34 @@ public class ReceiptService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+**/
 
-    private Receipt convertFromWrapper(ReceiptCSVWrapper receiptCSVWrapper) {
+    private Receipt convertFromWrapper(Long warehouseId,
+                                       ReceiptLineCSVWrapper receiptLineCSVWrapper) {
 
         Receipt receipt = new Receipt();
-        receipt.setNumber(receiptCSVWrapper.getNumber());
+        receipt.setNumber(receiptLineCSVWrapper.getReceipt());
         receipt.setReceiptStatus(ReceiptStatus.OPEN);
-        receipt.setAllowUnexpectedItem(receiptCSVWrapper.getAllowUnexpectedItem());
 
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                    receiptCSVWrapper.getCompany(),
-                    receiptCSVWrapper.getWarehouse());
-        receipt.setWarehouseId(warehouse.getId());
+        boolean allowUnexpectedItem =
+                Strings.isNotBlank(receiptLineCSVWrapper.getAllowUnexpectedItem()) &&
+                        (
+                                receiptLineCSVWrapper.getAllowUnexpectedItem().equalsIgnoreCase("1") ||
+                                        receiptLineCSVWrapper.getAllowUnexpectedItem().equalsIgnoreCase("true")
+                                );
 
-        if (!StringUtils.isBlank(receiptCSVWrapper.getClient())) {
+        receipt.setAllowUnexpectedItem(allowUnexpectedItem);
+
+        receipt.setWarehouseId(warehouseId);
+
+        if (!StringUtils.isBlank(receiptLineCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(
-                    warehouse.getId(), receiptCSVWrapper.getClient());
+                    warehouseId, receiptLineCSVWrapper.getClient());
             receipt.setClientId(client.getId());
         }
-        if (!StringUtils.isBlank(receiptCSVWrapper.getSupplier())) {
+        if (!StringUtils.isBlank(receiptLineCSVWrapper.getSupplier())) {
             Supplier supplier = commonServiceRestemplateClient.getSupplierByName(
-                    warehouse.getId(), receiptCSVWrapper.getSupplier());
+                    warehouseId, receiptLineCSVWrapper.getSupplier());
             receipt.setSupplierId(supplier.getId());
         }
         return receipt;
@@ -1075,7 +1155,8 @@ public class ReceiptService implements TestDataInitiableService{
                             " to get the receipt count for the supplier");
         }
         return findAll(warehouseId, null, null, supplierId,
-                supplierName, null, null, null, null, false).size();
+                supplierName, null, null, null,
+                null, null, null, false, null).size();
     }
 
     /**
@@ -1178,13 +1259,16 @@ public class ReceiptService implements TestDataInitiableService{
             Receipt receipt = findByNumber(warehouseId, receiptLineCSVWrapper.getReceipt());
             if (Objects.isNull(receipt)) {
                 logger.debug("receipt {} is not created yet, let's create the order on the fly ", receiptLineCSVWrapper.getReceipt());
-
+                receipt = saveOrUpdate(
+                        convertFromWrapper(warehouseId, receiptLineCSVWrapper)
+                );
             }
             logger.debug("start to create receipt line {} for item {}, quantity {}, for receipt {}",
                     receiptLineCSVWrapper.getLine(),
                     receiptLineCSVWrapper.getItem(),
                     receiptLineCSVWrapper.getExpectedQuantity(),
                     receiptLineCSVWrapper.getReceipt());
+            receiptLineService.saveReceiptLineData(warehouseId, receipt, receiptLineCSVWrapper);
         }
 
     }
@@ -1196,17 +1280,198 @@ public class ReceiptService implements TestDataInitiableService{
         return fileService.loadData(file, ReceiptLineCSVWrapper.class);
     }
 
-    private CsvSchema getCsvSchemaWithLine() {
-        return CsvSchema.builder().
-                addColumn("client").
-                addColumn("supplier").
-                addColumn("receipt").
-                addColumn("line").
-                addColumn("item").
-                addColumn("expectedQuantity").
-                addColumn("inventoryStatus").
-                addColumn("overReceivingQuantity").
-                addColumn("overReceivingPercent").
-                build().withHeader();
+    public String saveReceivingInventoryData(Long warehouseId, File file) throws IOException {
+
+        String username = userService.getCurrentUserName();
+        String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
+
+        receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
+
+        List<InventoryCSVWrapper> inventoryCSVWrappers =
+                fileService.loadData(file, InventoryCSVWrapper.class).stream().filter(
+                        inventoryCSVWrapper -> validateInventoryCSVWrapperForReceiving(inventoryCSVWrapper)
+                ).collect(Collectors.toList());
+
+        receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 5.0);
+
+
+        new Thread(() -> {
+            int totalInventoryCount = inventoryCSVWrappers.size();
+            int index = 0;
+            for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
+                // let's get the receipt and reciept line
+                // make sure all the necessary data exists
+                logger.debug("start to process inventory {}", inventoryCSVWrapper);
+                Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                        inventoryCSVWrapper.getItem());
+                if (Objects.isNull(item)) {
+                    // skip the item if the name is wrong
+                    logger.debug("can't find item by name {}, skip current line",
+                            inventoryCSVWrapper.getItem());
+                    continue;
+                }
+                logger.debug("got item {} by name {}", item.getId(), item.getName());
+                Receipt receipt = findByNumber(warehouseId, inventoryCSVWrapper.getReceipt());
+                logger.debug("got receipt by number {}", receipt.getNumber());
+                // get the first matched line that has enough open quantity
+                Optional<ReceiptLine> matchedReceiptLineOptional = receipt.getReceiptLines().stream().filter(
+                        receiptLine ->
+                                receiptLine.getItem().getName().equalsIgnoreCase(inventoryCSVWrapper.getItem()) &&
+                                        item.getId().equals(receiptLine.getItemId()) &&
+                                        receiptLineService.getOpenQuantity(receiptLine) > 0
+                ).sorted(Comparator.comparing(a -> receiptLineService.getOpenQuantity(a)))
+                        .findFirst();
+                if (matchedReceiptLineOptional.isEmpty()) {
+                    logger.debug("can't find an open line from receipt {} for item {} with quantity",
+                            receipt.getNumber(),
+                            inventoryCSVWrapper.getItem(),
+                            inventoryCSVWrapper.getQuantity());
+                    continue;
+                }
+                ReceiptLine matchedReceiptLine = matchedReceiptLineOptional.get();
+                logger.debug("we found the matched line, number is {}",
+                        matchedReceiptLine.getNumber());
+
+                Inventory inventory = convertFromWrapper(warehouseId, inventoryCSVWrapper,
+                        receipt, matchedReceiptLine);
+
+                logger.debug("created inventory from the csv line, will start to receive against this inventory" +
+                        " ================           Inventory ================\n{}", inventory);
+                receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory);
+                // we complete this inventory
+                logger.debug("Inventory received, continue with next line");
+                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+            }
+        }).start();
+
+        return fileUploadProgressKey;
+
+
+    }
+
+    private boolean validateInventoryCSVWrapperForReceiving(InventoryCSVWrapper inventoryCSVWrapper) {
+        if (Strings.isBlank(inventoryCSVWrapper.getReceipt())) {
+            return false;
+        }
+        if (Strings.isBlank(inventoryCSVWrapper.getItem())) {
+            return false;
+        }
+        if (Objects.isNull(inventoryCSVWrapper.getQuantity())) {
+            return false;
+        }
+
+        // optional field
+        // 1. lpn: get the next available number if it is not passed in
+        // 2. location: receive into receipt if it is not passed in
+        // 3. itemPackageType: get the default item package type if it is not passed in
+        // 4. inventoryStatus: get the available inventory status
+        // 5. color
+        // 6. productSize
+        // 7. style
+        return true;
+    }
+
+    private Inventory convertFromWrapper(Long warehouseId,
+                                         InventoryCSVWrapper inventoryCSVWrapper,
+                                         Receipt receipt,
+                                         ReceiptLine receiptLine) {
+        Inventory inventory = new Inventory();
+        if (Strings.isNotBlank(inventoryCSVWrapper.getLpn())) {
+            inventory.setLpn(inventoryCSVWrapper.getLpn());
+        }
+        else {
+            // if inventory is not passed in, let's get
+            // the automatically generated one
+            inventory.setLpn(
+                    commonServiceRestemplateClient.getNextNumber(warehouseId,
+                            "lpn")
+            );
+
+        }
+
+        inventory.setQuantity(inventoryCSVWrapper.getQuantity());
+        inventory.setVirtual(false);
+
+        inventory.setColor(inventoryCSVWrapper.getColor());
+        inventory.setProductSize(inventoryCSVWrapper.getProductSize());
+        inventory.setStyle(inventoryCSVWrapper.getStyle());
+
+        inventory.setWarehouseId(warehouseId);
+
+        // client
+        if (Objects.nonNull(receipt.getClientId())) {
+            inventory.setClientId(receipt.getClientId());
+        }
+
+        // item
+        inventory.setItem(receiptLine.getItem());
+
+        // itemPackageType
+        // if the item package type is passed in, use it
+        // otherwise, use the default item package type
+        ItemPackageType itemPackageType = null;
+        if (Strings.isNotBlank(inventoryCSVWrapper.getItemPackageType())) {
+            itemPackageType = receiptLine.getItem().getItemPackageTypes()
+                    .stream().filter(
+                            existingItemPackageType -> existingItemPackageType.getName().equalsIgnoreCase(
+                                    inventoryCSVWrapper.getItemPackageType()
+                            )
+                    ).findFirst().orElse(null);
+
+        }
+        else {
+
+            // item package type is not passed in, let's
+            // get the default item package type from the item
+            itemPackageType = receiptLine.getItem().getDefaultItemPackageType();
+        }
+        if (Objects.nonNull(itemPackageType)) {
+            inventory.setItemPackageType(itemPackageType);
+        }
+
+        // inventoryStatus
+        InventoryStatus inventoryStatus = null;
+        if (Strings.isNotBlank(inventoryCSVWrapper.getInventoryStatus())) {
+            inventoryStatus = inventoryServiceRestemplateClient.getInventoryStatusByName(
+                    warehouseId, inventoryCSVWrapper.getInventoryStatus()
+            );
+        }
+        else {
+            logger.debug("will set inventory status: {} / {}",
+                    warehouseId,
+                    inventoryCSVWrapper.getInventoryStatus());
+            inventoryStatus =
+                    inventoryServiceRestemplateClient.getAvailableInventoryStatus(
+                    warehouseId );
+        }
+        if (Objects.nonNull(inventoryStatus)) {
+            inventory.setInventoryStatus(inventoryStatus);
+        }
+
+        // location
+        Location location = null;
+        if (Strings.isNotBlank(inventoryCSVWrapper.getLocation())) {
+
+            location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                    warehouseId, inventoryCSVWrapper.getLocation()
+            );
+        }
+        else {
+            location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                    warehouseId, receipt.getNumber()
+            );
+        }
+        if (Objects.nonNull(location)) {
+
+            inventory.setLocationId(location.getId());
+            inventory.setLocation(location);
+        }
+
+        return inventory;
+
+    }
+
+    public double getReceivingInventoryFileUploadProgress(String key) {
+        return receivingInventoryFileUploadProgress.getOrDefault(key, 100.0);
     }
 }

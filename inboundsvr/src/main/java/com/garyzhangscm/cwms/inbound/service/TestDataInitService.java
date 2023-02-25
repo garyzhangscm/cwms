@@ -52,8 +52,6 @@ public class TestDataInitService {
         this.receiptLineService = receiptLineService;
         this.putawayConfigurationService = putawayConfigurationService;
 
-        initiableServices.put("Receipt", receiptService);
-        serviceNames.add("Receipt");
 
         initiableServices.put("Putaway_Configuration", putawayConfigurationService);
         serviceNames.add("Putaway_Configuration");
