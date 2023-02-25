@@ -1975,5 +1975,10 @@
   "trackingProductSizeFlag": "Tracking Product Size",
   "defaultProductSize": "Default Product",
   "trackingStyleFlag": "Tracking Style",
-  "defaultStyle": "Default Style"
+  "defaultStyle": "Default Style",
+  "removeExistingInventory": "Remove Existing Inventory",
+  "Login": "Login",
+  "color": "Color",
+  "productSize": "Product Size",
+  "style": "Style"
 }

@@ -36,11 +36,11 @@ public class RestTemplateProxy {
     private static final Logger logger = LoggerFactory.getLogger(RestTemplateProxy.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
+    private OAuth2RestOperations restTemplate;
 
     @Autowired
     @Qualifier("autoLoginRestTemplate")
-    RestTemplate autoLoginRestTemplate;
+    private RestTemplate autoLoginRestTemplate;
 
     public RestOperations getRestTemplate()  {
 

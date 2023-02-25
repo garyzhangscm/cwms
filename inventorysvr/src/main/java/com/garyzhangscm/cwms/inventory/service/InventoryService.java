@@ -878,7 +878,7 @@ public class InventoryService {
                                                boolean preLoadDetails) {
         if (!preLoadDetails) {
             return inventoryCSVWrappers.stream().map(
-                    inventoryCSVWrapper -> convertFromWrapper(inventoryCSVWrapper)
+                    inventoryCSVWrapper -> convertFromWrapper(warehouseId, inventoryCSVWrapper)
             ).collect(Collectors.toList());
         }
 
@@ -991,7 +991,7 @@ public class InventoryService {
                         locationMap.containsKey(inventoryCSVWrapper.getLocation())
         ).map(
                 inventoryCSVWrapper -> convertFromWrapper(inventoryCSVWrapper,
-                        warehouse,
+                        warehouse.getId(),
                         itemMap.get(inventoryCSVWrapper.getItem()),
                         itemPackageTypeMap.get(inventoryCSVWrapper.getItemPackageType()),
                         inventoryStatusMap.get(inventoryCSVWrapper.getInventoryStatus()),
@@ -1002,11 +1002,11 @@ public class InventoryService {
 
 
     }
-    private Inventory convertFromWrapper(InventoryCSVWrapper inventoryCSVWrapper) {
-        return convertFromWrapper(inventoryCSVWrapper, null, null, null, null, null, null);
+    private Inventory convertFromWrapper(Long warehouseId, InventoryCSVWrapper inventoryCSVWrapper) {
+        return convertFromWrapper(inventoryCSVWrapper, warehouseId, null, null, null, null, null);
     }
     private Inventory convertFromWrapper(InventoryCSVWrapper inventoryCSVWrapper,
-                                         Warehouse warehouse,
+                                         Long warehouseId,
                                          Item item,
                                          ItemPackageType itemPackageType,
                                          InventoryStatus inventoryStatus,
@@ -1021,15 +1021,14 @@ public class InventoryService {
         inventory.setProductSize(inventoryCSVWrapper.getProductSize());
         inventory.setStyle(inventoryCSVWrapper.getStyle());
 
-        inventory.setWarehouseId(warehouse.getId());
-        inventory.setWarehouse(warehouse);
+        inventory.setWarehouseId(warehouseId);
 
         // client
         if (Objects.nonNull(client)) {
             inventory.setClientId(client.getId());
         }
         else if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
-            client = commonServiceRestemplateClient.getClientByName(warehouse.getId(),
+            client = commonServiceRestemplateClient.getClientByName(warehouseId,
                     inventoryCSVWrapper.getClient());
             if (Objects.nonNull(client)) {
                 inventory.setClientId(client.getId());
@@ -1041,9 +1040,10 @@ public class InventoryService {
             inventory.setItem(item);
         }
         else if (Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
-            inventory.setItem(itemService.findByName(warehouse.getId(), inventory.getClientId(),
+            inventory.setItem(itemService.findByName(warehouseId, inventory.getClientId(),
                     inventoryCSVWrapper.getItem()));
         }
+
 
         // itemPackageType
         if (Objects.nonNull(itemPackageType)) {
@@ -1053,9 +1053,16 @@ public class InventoryService {
                 Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
             inventory.setItemPackageType(
                     itemPackageTypeService.findByNaturalKeys(
-                            warehouse.getId(),
+                            warehouseId,
                             inventoryCSVWrapper.getItemPackageType(),
                             inventoryCSVWrapper.getItem()));
+        }
+        else {
+            // set the inventory's item package type to the item's default item package type
+            logger.debug("set the inventory's item package type to default item package type");
+            inventory.setItemPackageType(
+                    inventory.getItem().getDefaultItemPackageType()
+            );
         }
 
         // inventoryStatus
@@ -1064,10 +1071,16 @@ public class InventoryService {
         }
         else if (Strings.isNotBlank(inventoryCSVWrapper.getInventoryStatus())) {
             logger.debug("will set inventory status: {} / {}",
-                    warehouse.getId(),
+                    warehouseId,
                     inventoryCSVWrapper.getInventoryStatus());
             inventory.setInventoryStatus(inventoryStatusService.findByName(
-                    warehouse.getId(), inventoryCSVWrapper.getInventoryStatus()));
+                    warehouseId, inventoryCSVWrapper.getInventoryStatus()));
+        }
+        else {
+            // inventory status is not passed in, let's get the default available inventory
+            inventory.setInventoryStatus(
+                    inventoryStatusService.getAvailableInventoryStatus(warehouseId).get());
+
         }
 
         // location
@@ -1080,7 +1093,7 @@ public class InventoryService {
             logger.debug("start to get location by name: {}", inventoryCSVWrapper.getLocation());
             location =
                     warehouseLayoutServiceRestemplateClient.getLocationByName(
-                            warehouse.getId(), inventoryCSVWrapper.getLocation());
+                            warehouseId, inventoryCSVWrapper.getLocation());
             inventory.setLocationId(location.getId());
             inventory.setLocation(location);
         }
@@ -3201,7 +3214,7 @@ public class InventoryService {
                 // 2. the location has not been cleared yet
                 if (Boolean.TRUE.equals(removeExistingInventory) &&
                         !inventoryRemovedLocationIdSet.contains(inventory.getLocationId())) {
-                    removeInventoryByLocation(inventory.getLocationId(), false);
+                    removeInventoryByLocation(inventory.getLocationId());
                     // add the location to the set so that we won't remove it again
                     inventoryRemovedLocationIdSet.add(inventory.getLocationId());
                 }
@@ -3215,6 +3228,7 @@ public class InventoryService {
 
                 // we complete this inventory
                 inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+                index++;
             }
             // after we process all inventory, mark the progress to 100%
             inventoryFileUploadProgress.put(fileUploadProgressKey, 100.0);

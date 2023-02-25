@@ -62,11 +62,14 @@ public class WarehouseLayoutServiceRestemplateClient {
     // go live so the cache may expire. We will save
     // some of the cache locally and clear after the file is
     // uploaded
-    Map<String, Location> logicalLocationForAdjustInventoryMap = new ConcurrentHashMap<>();
-    Map<Long, String> inventoryConsolidationStrategyMap = new ConcurrentHashMap<>();
-    Map<Long, Warehouse> warehouseMap = new ConcurrentHashMap<>();
-    Map<Long, WarehouseConfiguration> warehouseConfigurationMap = new ConcurrentHashMap<>();
 
+    // Map<String, Location> logicalLocationForAdjustInventoryMap = new ConcurrentHashMap<>();
+    // Map<Long, String> inventoryConsolidationStrategyMap = new ConcurrentHashMap<>();
+    // Map<Long, Warehouse> warehouseMap = new ConcurrentHashMap<>();
+    // Map<Long, WarehouseConfiguration> warehouseConfigurationMap = new ConcurrentHashMap<>();
+
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
 
     @Cacheable(cacheNames = "InventoryService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
@@ -120,7 +123,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/locations/{id}");
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                         null,
@@ -195,12 +198,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     @Cacheable(cacheNames = "InventoryService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseById(long warehouseId)   {
-
+/**
         if (warehouseMap.containsKey(warehouseId)) {
             logger.debug("start to get warehouse from LOCAL cache by id {}", warehouseId);
             return warehouseMap.get(warehouseId);
         }
-
+**/
         logger.debug("start to get warehouse by id {}", warehouseId);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -208,7 +211,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/warehouses/{id}");
 
         ResponseBodyWrapper<Warehouse> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(warehouseId).toUriString(),
                 HttpMethod.GET,
                 null,
@@ -220,12 +223,13 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     @Cacheable(cacheNames = "InventoryService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(long warehouseId)   {
-
+/**
         if (warehouseConfigurationMap.containsKey(warehouseId)) {
             logger.debug("start to get warehouse configuration from Local cache by warehouse id {}",
                     warehouseId);
             return warehouseConfigurationMap.get(warehouseId);
         }
+ **/
         logger.debug("start to get warehouse configuration from warehouse id {}",
                 warehouseId);
 
@@ -490,7 +494,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                         null,
@@ -544,7 +548,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                         null,
@@ -572,6 +576,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
     public Location getLogicalLocationForAdjustInventory(InventoryQuantityChangeType inventoryQuantityChangeType, long warehouseId) {
+        /**
         if (logicalLocationForAdjustInventoryMap.containsKey(
                 inventoryQuantityChangeType + "-" + warehouseId
         )) {
@@ -580,6 +585,7 @@ public class WarehouseLayoutServiceRestemplateClient {
             return logicalLocationForAdjustInventoryMap.get(
                     inventoryQuantityChangeType + "-" + warehouseId);
         }
+         **/
         logger.debug("getLogicalLocationForAdjustInventory with inventoryQuantityChangeType: {}, warehouse id {}",
                 inventoryQuantityChangeType, warehouseId);
 
@@ -750,12 +756,13 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
     public String getInventoryConsolidationStrategy(long locationGroupId) {
+        /**
         if (inventoryConsolidationStrategyMap.containsKey(locationGroupId)) {
 
             logger.debug("start to load inventory consolidation stragety from LOCAL cache with location group id {}",
                     locationGroupId);
             return inventoryConsolidationStrategyMap.get(locationGroupId);
-        }
+        }**/
 
         logger.debug("start to load inventory consolidation stragety with location group id {}",
                 locationGroupId);
@@ -765,7 +772,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/locationgroups/{id}/inventory-consolidation-strategy");
 
         ResponseBodyWrapper<InventoryConsolidationStrategy> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(locationGroupId).toUriString(),
                 HttpMethod.GET,
                 null,
@@ -917,6 +924,7 @@ public class WarehouseLayoutServiceRestemplateClient {
      * we will save the value locally in the http request thread and then we can use
      * when creating the inventory in a separate thread which is not in http context
      */
+    /**
     public void setupLocalCache(Long warehouseId, Set<Long> locationGroupIds) {
         // clear the cache so that we can get the latest value
         clearLocalCache();
@@ -944,6 +952,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         logger.debug("we will need to load the consolidation strategy for {} location groups: {}",
                 locationGroupIds.size(), locationGroupIds);
+
         for (Long locationGroupId : locationGroupIds) {
             String strategy
                     = getInventoryConsolidationStrategy(locationGroupId);
@@ -960,10 +969,14 @@ public class WarehouseLayoutServiceRestemplateClient {
             warehouseConfigurationMap.put(warehouseId, warehouseConfiguration);
         }
     }
+     **/
+
+    /**
     public void clearLocalCache() {
         logicalLocationForAdjustInventoryMap.clear();
         inventoryConsolidationStrategyMap.clear();
         warehouseMap.clear();
         warehouseConfigurationMap.clear();
     }
+     **/
 }
