@@ -223,7 +223,7 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
                 HttpMethod.GET,
                 null,
@@ -252,7 +252,7 @@ public class InventoryServiceRestemplateClient {
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = null;
         try {
-            responseBodyWrapper = restTemplate.exchange(
+            responseBodyWrapper = restTemplateProxy.getRestTemplate().exchange(
                     builder.toUriString(),
                     HttpMethod.PUT,
                     getHttpEntity(objectMapper.writeValueAsString(inventory)),

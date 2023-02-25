@@ -56,6 +56,9 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
@@ -108,7 +111,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<Location[]> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                         null,
@@ -135,7 +138,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
         ResponseBodyWrapper<Warehouse> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                     null,
@@ -156,7 +159,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                     null,

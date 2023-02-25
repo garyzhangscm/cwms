@@ -51,6 +51,7 @@ public class CommonServiceRestemplateClient {
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
+
     @Cacheable(cacheNames = "InboundService_Client", unless="#result == null")
     public Client getClientById(Long id) {
 
@@ -60,7 +61,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/clients/{id}");
 
         ResponseBodyWrapper<Client> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                     null,

@@ -335,7 +335,10 @@ public class ReceiptLineService {
         inventory.setReceiptLineId(receiptLine.getId());
         inventory.setWarehouseId(receipt.getWarehouseId());
 
-        logger.debug("Will receive inventory\n {}", inventory);
+        logger.debug("==========      Will receive inventory===============" +
+                        "\n lpn： {} , qty: {}, location: {}",
+                inventory.getLpn(), inventory.getQuantity(), inventory.getLocation().getName());
+
         Inventory newInventory =
                 inventoryServiceRestemplateClient.receiveInventory(inventory, receipt.getNumber());
         // Note here when we receive, the inventory may already consolidate with existing inventory

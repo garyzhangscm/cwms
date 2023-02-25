@@ -1,14 +1,17 @@
 package com.garyzhangscm.cwms.inventory;
 
 
+import com.garyzhangscm.cwms.inventory.usercontext.UserContextInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -34,7 +37,11 @@ public class RestTemplateConfiguration {
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
 
-        restTemplate.setInterceptors(Collections.singletonList(requestInterceptor));
+        restTemplate.setInterceptors(
+                Arrays.asList(new ClientHttpRequestInterceptor[]{
+                        new JsonMimeInterceptor(),
+                        new UserContextInterceptor(),
+                        requestInterceptor}));
         return restTemplate;
     }
 
