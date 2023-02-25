@@ -1336,12 +1336,19 @@ public class ReceiptService {
                         receipt, matchedReceiptLine);
 
                 logger.debug("created inventory from the csv line, will start to receive against this inventory" +
-                        " ================           Inventory ================\n{}", inventory);
+                        " ================           Inventory ================\nlpn： {} , qty: {}, location: {}",
+                        inventory.getLpn(),
+                        inventory.getQuantity(),
+                        inventory.getLocation().getName());
                 receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory);
                 // we complete this inventory
                 logger.debug("Inventory received, continue with next line");
                 receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+                index++;
             }
+
+            logger.debug("All lines are processed");
+            receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 100.0);
         }).start();
 
         return fileUploadProgressKey;
