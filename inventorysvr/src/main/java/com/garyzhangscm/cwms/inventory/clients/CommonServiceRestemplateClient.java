@@ -58,6 +58,9 @@ public class CommonServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Cacheable(cacheNames = "InventoryService_Client", unless="#result == null")
     public Client getClientById(Long id) {
 
@@ -372,7 +375,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/system-controlled-number/{variable}/next")
                 .queryParam("warehouseId", warehouseId);
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(variable).toUriString(),
                 HttpMethod.GET,
                 null,

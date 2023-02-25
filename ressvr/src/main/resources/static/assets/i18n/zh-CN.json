@@ -1975,5 +1975,10 @@
   "trackingProductSizeFlag": "跟踪商品尺寸",
   "defaultProductSize": "默认商品尺寸",
   "trackingStyleFlag": "跟踪风格",
-  "defaultStyle": "默认风格"
+  "defaultStyle": "默认风格",
+  "removeExistingInventory": "移除库位内已经存在的库存",
+  "Login": "登录",
+  "color": "颜色",
+  "productSize": "商品尺寸",
+  "style": "风格"
 }
