@@ -6,7 +6,8 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
         super("receiving-inventories", "Receiving Inventory",
                 "inbound/receipts/receiving-inventory/upload",
                 "resource/assets/file-templates/receiving-inventories.csv",
-                "inbound/receipts/receiving-inventory/upload/progress");
+                "inbound/receipts/receiving-inventory/upload/progress",
+                "inbound/receipts/receiving-inventory/upload/result");
         setupColumns();
     }
 

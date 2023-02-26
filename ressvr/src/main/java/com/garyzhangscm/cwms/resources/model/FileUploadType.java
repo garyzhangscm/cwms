@@ -9,6 +9,7 @@ public class FileUploadType {
     private String destinationUrl;
     private String templateFileUrl;
     private String trackingProgressUrl;
+    private String resultUrl;
 
     private List<FileUploadTemplateColumn> columns = new ArrayList<>();
 
@@ -18,12 +19,14 @@ public class FileUploadType {
                           String description,
                           String destinationUrl,
                           String templateFileUrl,
-                          String trackingProgressUrl) {
+                          String trackingProgressUrl,
+                          String resultUrl) {
         this.name = name;
         this.description = description;
         this.destinationUrl = destinationUrl;
         this.templateFileUrl = templateFileUrl;
         this.trackingProgressUrl = trackingProgressUrl;
+        this.resultUrl = resultUrl;
     }
 
     public static List<FileUploadType> getAvailableFileUploadTypes() {
@@ -93,5 +96,13 @@ public class FileUploadType {
 
     public void setTrackingProgressUrl(String trackingProgressUrl) {
         this.trackingProgressUrl = trackingProgressUrl;
+    }
+
+    public String getResultUrl() {
+        return resultUrl;
+    }
+
+    public void setResultUrl(String resultUrl) {
+        this.resultUrl = resultUrl;
     }
 }

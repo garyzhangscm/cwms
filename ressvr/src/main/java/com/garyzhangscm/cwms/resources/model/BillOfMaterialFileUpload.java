@@ -6,6 +6,7 @@ public class BillOfMaterialFileUpload extends FileUploadType {
         super("BOMs", "BOM",
                 "workorder/bill-of-materials/upload",
                 "resource/assets/file-templates/boms.csv",
+                "",
                 "");
         setupColumns();
     }

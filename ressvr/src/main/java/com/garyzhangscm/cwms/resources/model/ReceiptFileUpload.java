@@ -6,6 +6,7 @@ public class ReceiptFileUpload extends FileUploadType {
         super("receipts", "Receipt",
                 "inbound/receipts/receiving-inventory/upload",
                 "resource/assets/file-templates/receipts.csv",
+                "",
                 "");
         setupColumns();
     }

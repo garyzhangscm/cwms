@@ -29,6 +29,7 @@ public class User extends AuditibleEntity<String>  {
 
     private Long id;
 
+    private Long companyId;
 
     private String username;
     private String firstname;
@@ -58,6 +59,14 @@ public class User extends AuditibleEntity<String>  {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Boolean getAdmin() {

@@ -53,6 +53,9 @@ public class WarehouseLayoutServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Cacheable(cacheNames = "CommonService_Company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
@@ -163,7 +166,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/warehouses/{id}");
 
         ResponseBodyWrapper<Warehouse> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
                 null,

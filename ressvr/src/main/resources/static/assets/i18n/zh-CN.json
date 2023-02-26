@@ -1980,5 +1980,22 @@
   "Login": "登录",
   "color": "颜色",
   "productSize": "商品尺寸",
-  "style": "风格"
+  "style": "风格",
+  "menu.main.inventory.mix-restriction": "库存混合限制",
+  "criteria": "条件",
+  "inventory-mix-restriction": "库存混合限制",
+  "inventory-mix-restriction.lines.description": "定义不能混合的库存属性",
+  "BY-LPN": "按LPN",
+  "BY-LOCATION": "按库位",
+  "INVENTORY_ATTRIBUTE-clientId": "客户",
+  "INVENTORY_ATTRIBUTE-receiptLineId": "入库单",
+  "INVENTORY_ATTRIBUTE-item": "商品",
+  "INVENTORY_ATTRIBUTE-itemPackageType": "商品包装规格",
+  "INVENTORY_ATTRIBUTE-inventoryStatus": "库存状态",
+  "INVENTORY_ATTRIBUTE-color": "颜色",
+  "INVENTORY_ATTRIBUTE-productSize": "商品尺寸",
+  "INVENTORY_ATTRIBUTE-style": "风格",
+  "lineNumber": "行号",
+  "record": "记录",
+  "result": "结果"
 }

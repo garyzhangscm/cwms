@@ -30,6 +30,7 @@ public class User implements Serializable {
 
 
     private Integer id;
+    private Long companyId;
 
     private String username;
 
@@ -48,6 +49,14 @@ public class User implements Serializable {
     private Boolean isSystemAdmin = false;
 
     private List<Role> roles = new ArrayList<>();
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
 
     public Integer getId() {
         return id;

@@ -531,5 +531,12 @@ public class InventoryController {
         return  ResponseBodyWrapper.success(
                 String.format("%.2f",inventoryService.getInventoryFileUploadProgress(key)));
     }
+    @RequestMapping(method=RequestMethod.GET, value="/inventories/upload/result")
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+        return inventoryService.getFileUploadResult(warehouseId, key);
+    }
 
 }

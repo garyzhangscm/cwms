@@ -6,6 +6,7 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
         super("itemUnitOfMeasure", "Item Unit of Measure",
                 "inventory/item-unit-of-measures/upload",
                 "resource/assets/file-templates/item-unit-of-measures.csv",
+                "",
                 "");
         setupColumns();
     }

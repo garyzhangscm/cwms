@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.inventory;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.ClientRestriction;
 import com.garyzhangscm.cwms.inventory.model.User;
+import com.garyzhangscm.cwms.inventory.model.Warehouse;
 import com.garyzhangscm.cwms.inventory.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.inventory.service.UserService;
 import org.apache.logging.log4j.util.Strings;
@@ -52,6 +53,7 @@ public class ClientValidationEndpointAspect {
         return joinPoint.proceed(arguments);
     }
 
+
     /**
      * Setup the clients that the user has access
      */
@@ -62,18 +64,21 @@ public class ClientValidationEndpointAspect {
         // let's check if the current user can access the non 3pl data
         Long warehouseId = Strings.isNotBlank(httpServletRequest.getHeader("warehouseId")) ?
                 Long.parseLong(httpServletRequest.getHeader("warehouseId")) :
-                    Strings.isNotBlank(httpServletRequest.getParameter("warehouseId")) ?
+                Strings.isNotBlank(httpServletRequest.getParameter("warehouseId")) ?
                         Long.parseLong(httpServletRequest.getParameter("warehouseId")) :
-                            null;
+                        null;
 
         logger.debug("get warehouse id {}", warehouseId);
 
-        Long companyId = Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
-                Long.parseLong(httpServletRequest.getHeader("companyId")) :
+        String companyIdString =  Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
+                httpServletRequest.getHeader("companyId") :
                 Strings.isNotBlank(httpServletRequest.getParameter("companyId")) ?
-                        Long.parseLong(httpServletRequest.getParameter("companyId")) : null;
+                        httpServletRequest.getParameter("companyId") : "";
 
-        logger.debug("get company id {}", warehouseId);
+        logger.debug("companyIdString {}", companyIdString);
+        Long companyId = Strings.isNotBlank(companyIdString) ?
+                Long.parseLong(companyIdString) : null;
+
 
         // for some reason we can't get the warehouse id from the http request,
         // then we will allow the user to access non 3pl data(client id is null)
@@ -105,12 +110,31 @@ public class ClientValidationEndpointAspect {
         String accessibleClientIds = "";
         boolean nonClientDataAccessible = true;
         boolean allClientAccessible = true;
+
+        if (Objects.isNull(companyId) && Objects.nonNull(warehouseId)) {
+            // can't get company id but we got the warehouse id, let's get
+            // the company ID by warehouse id
+            logger.debug("We can't get the company id but we have the warehouse id {}, " +
+                            "let's see if we can get the company id from the warehouse id",
+                    warehouseId);
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+            if (Objects.nonNull(warehouse)) {
+                logger.debug("We get the warehouse {} by id {}",
+                        warehouse.getName(), warehouseId);
+                companyId = warehouse.getCompanyId();
+            }
+            else {
+                logger.debug("fail to get company id out from the warehouse id {}",
+                        warehouseId);
+            }
+        }
         if(Objects.nonNull(companyId)) {
 
 
             User user = userService.getCurrentUser(companyId);
             if (Boolean.TRUE.equals(user.getAdmin()) ||
-                    Boolean.TRUE.equals(user.getSystemAdmin())) {
+                    Boolean.TRUE.equals(user.getSystemAdmin()) ||
+                    user.getCompanyId() < 0) {
                 // user is admin, admin has full access to everything inside the company
                 // null restriction means there's no restriction
                 return null;
@@ -120,12 +144,12 @@ public class ClientValidationEndpointAspect {
                 accessibleClientIds = user.getRoles().stream().filter(
                         role -> Boolean.TRUE.equals(role.getEnabled())
                 ).map(
-                                                    role -> role.getClientAccesses()
-                                            )
-                                            .flatMap(List::stream)
-                                                    .map(roleClientAccess -> roleClientAccess.getClientId())
-                                                    .map(String::valueOf)
-                                                    .collect(Collectors.joining(","));
+                        role -> role.getClientAccesses()
+                )
+                        .flatMap(List::stream)
+                        .map(roleClientAccess -> roleClientAccess.getClientId())
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","));
 
                 // the user has access to the non client data as long as one role has the access
                 nonClientDataAccessible = user.getRoles().stream().filter(
@@ -144,4 +168,5 @@ public class ClientValidationEndpointAspect {
 
 
     }
+
 }
