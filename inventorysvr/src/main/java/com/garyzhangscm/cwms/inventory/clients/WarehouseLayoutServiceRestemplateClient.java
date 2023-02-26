@@ -145,7 +145,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
         ResponseBodyWrapper<Location[]> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                         null,
@@ -755,7 +755,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public String getInventoryConsolidationStrategy(long locationGroupId) {
+    public InventoryConsolidationStrategy getInventoryConsolidationStrategy(long locationGroupId) {
         /**
         if (inventoryConsolidationStrategyMap.containsKey(locationGroupId)) {
 
@@ -778,7 +778,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<InventoryConsolidationStrategy>>() {}).getBody();
 
-        return responseBodyWrapper.getData().toString();
+        return responseBodyWrapper.getData();
 
 
     }

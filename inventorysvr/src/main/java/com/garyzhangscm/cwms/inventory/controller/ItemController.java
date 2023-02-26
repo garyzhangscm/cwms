@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
+import com.garyzhangscm.cwms.inventory.model.ClientValidationEndpoint;
 import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
 import com.garyzhangscm.cwms.inventory.service.FileService;
@@ -51,6 +52,7 @@ public class ItemController {
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/items", method = RequestMethod.GET)
     public List<Item> findAllItems(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                    @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,

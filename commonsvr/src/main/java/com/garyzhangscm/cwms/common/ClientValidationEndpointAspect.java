@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.common;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.model.ClientRestriction;
 import com.garyzhangscm.cwms.common.model.User;
+import com.garyzhangscm.cwms.common.model.Warehouse;
 import com.garyzhangscm.cwms.common.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.common.service.UserService;
 import org.apache.logging.log4j.util.Strings;
@@ -68,12 +69,15 @@ public class ClientValidationEndpointAspect {
 
         logger.debug("get warehouse id {}", warehouseId);
 
-        Long companyId = Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
-                Long.parseLong(httpServletRequest.getHeader("companyId")) :
+        String companyIdString =  Strings.isNotBlank(httpServletRequest.getHeader("companyId")) ?
+                httpServletRequest.getHeader("companyId") :
                 Strings.isNotBlank(httpServletRequest.getParameter("companyId")) ?
-                        Long.parseLong(httpServletRequest.getParameter("companyId")) : null;
+                         httpServletRequest.getParameter("companyId") : "";
 
-        logger.debug("get company id {}", warehouseId);
+        logger.debug("companyIdString {}", companyIdString);
+        Long companyId = Strings.isNotBlank(companyIdString) ?
+                Long.parseLong(companyIdString) : null;
+
 
         // for some reason we can't get the warehouse id from the http request,
         // then we will allow the user to access non 3pl data(client id is null)
@@ -105,12 +109,31 @@ public class ClientValidationEndpointAspect {
         String accessibleClientIds = "";
         boolean nonClientDataAccessible = true;
         boolean allClientAccessible = true;
+
+        if (Objects.isNull(companyId) && Objects.nonNull(warehouseId)) {
+            // can't get company id but we got the warehouse id, let's get
+            // the company ID by warehouse id
+            logger.debug("We can't get the company id but we have the warehouse id {}, " +
+                    "let's see if we can get the company id from the warehouse id",
+                    warehouseId);
+            Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+            if (Objects.nonNull(warehouse)) {
+                logger.debug("We get the warehouse {} by id {}",
+                        warehouse.getName(), warehouseId);
+                companyId = warehouse.getCompanyId();
+            }
+            else {
+                logger.debug("fail to get company id out from the warehouse id {}",
+                        warehouseId);
+            }
+        }
         if(Objects.nonNull(companyId)) {
 
 
             User user = userService.getCurrentUser(companyId);
             if (Boolean.TRUE.equals(user.getAdmin()) ||
-                    Boolean.TRUE.equals(user.getSystemAdmin())) {
+                    Boolean.TRUE.equals(user.getSystemAdmin()) ||
+                    user.getCompanyId() < 0) {
                 // user is admin, admin has full access to everything inside the company
                 // null restriction means there's no restriction
                 return null;

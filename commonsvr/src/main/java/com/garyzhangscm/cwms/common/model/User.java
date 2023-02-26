@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class User extends AuditibleEntity<String>  {
 
     private Long id;
 
+    private Long companyId;
 
     private String username;
     private String firstname;
@@ -42,6 +44,11 @@ public class User extends AuditibleEntity<String>  {
     private boolean enabled;
     private boolean locked;
 
+    private String token;
+    private String refreshToken;
+    private String name;
+    private Timestamp time;
+    private int refreshIn;
 
     private List<Role> roles = new ArrayList<>();
 
@@ -51,6 +58,14 @@ public class User extends AuditibleEntity<String>  {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Boolean getAdmin() {
@@ -127,5 +142,41 @@ public class User extends AuditibleEntity<String>  {
 
     public void setSystemAdmin(Boolean systemAdmin) {
         isSystemAdmin = systemAdmin;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Timestamp getTime() {
+        return time;
+    }
+
+    public void setTime(Timestamp time) {
+        this.time = time;
+    }
+
+    public int getRefreshIn() {
+        return refreshIn;
+    }
+
+    public void setRefreshIn(int refreshIn) {
+        this.refreshIn = refreshIn;
     }
 }

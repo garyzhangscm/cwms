@@ -96,7 +96,9 @@ public class InventoryService {
     @Autowired
     private QCRuleConfigurationService qcRuleConfigurationService;
 
+    private final static int INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> inventoryFileUploadProgress = new ConcurrentHashMap<>();
+    private Map<String, List<FileUploadResult>> inventoryFileUploadResults = new ConcurrentHashMap<>();
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -110,6 +112,8 @@ public class InventoryService {
     private InboundServiceRestemplateClient inboundServiceRestemplateClient;
     @Autowired
     private QCInspectionRequestService qcInspectionRequestService;
+    @Autowired
+    private InventoryMixRestrictionService inventoryMixRestrictionService;
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
@@ -1031,7 +1035,11 @@ public class InventoryService {
             client = commonServiceRestemplateClient.getClientByName(warehouseId,
                     inventoryCSVWrapper.getClient());
             if (Objects.nonNull(client)) {
+                logger.debug("client is setup to {}", client.getName());
                 inventory.setClientId(client.getId());
+            }
+            else {
+                logger.debug("fail to get client by name {}", inventoryCSVWrapper.getClient());
             }
         }
 
@@ -1040,6 +1048,10 @@ public class InventoryService {
             inventory.setItem(item);
         }
         else if (Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
+            logger.debug("start to get item from inventoryCSVWrapper.getItem(): {}, warehouseId: {}, client id: {}",
+                    inventoryCSVWrapper.getItem(),
+                    warehouseId,
+                    inventory.getClientId());
             inventory.setItem(itemService.findByName(warehouseId, inventory.getClientId(),
                     inventoryCSVWrapper.getItem()));
         }
@@ -1230,6 +1242,10 @@ public class InventoryService {
     }
 
     public Inventory moveInventory(Inventory inventory, Location destination) {
+        if (!inventoryMixRestrictionService.checkMovementAllowed(inventory, destination)) {
+            throw InventoryException.raiseException("Inventory " + inventory.getLpn() + " is not allowed " +
+                    " to move into location " + destination.getName() + " due to the movement restriction");
+        }
         return moveInventory(inventory, destination, null, true, null);
     }
     public Inventory moveInventory(Long inventoryId, Location destination, Long pickId, boolean immediateMove,
@@ -3185,19 +3201,22 @@ public class InventoryService {
         String username = userService.getCurrentUserName();
 
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
+        // before we add new
+        clearInventoryFileUploadMap();
         inventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
+        inventoryFileUploadResults.put(fileUploadProgressKey, new ArrayList<>());
 
         List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
-        inventoryFileUploadProgress.put(fileUploadProgressKey, 5.0);
+        inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0);
 
         logger.debug("get {} record from the file", inventoryCSVWrappers.size());
 
-        List<Inventory> inventories = convertFromWrapper(warehouseId, inventoryCSVWrappers, false);
-        logger.debug("convert {} of the records into inventory structure",
-                inventories.size());
+        // List<Inventory> inventories = convertFromWrapper(warehouseId, inventoryCSVWrappers, false);
+        // logger.debug("convert {} of the records into inventory structure",
+        //        inventories.size());
 
         // 10% after we setup all the inventory structure
-        inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0);
+        // inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0);
 
         // start a new thread to process the inventory
         new Thread(() -> {
@@ -3206,29 +3225,62 @@ public class InventoryService {
             Set<Long> inventoryRemovedLocationIdSet = new HashSet<>();
 
             // loop through each inventory
-            int totalInventoryCount = inventories.size();
+            int totalInventoryCount = inventoryCSVWrappers.size();
             int index = 0;
-            for (Inventory inventory : inventories) {
-                // check if we will need to clear the location only if
-                // 1. the removeExistingInventory is passed in and set to true
-                // 2. the location has not been cleared yet
-                if (Boolean.TRUE.equals(removeExistingInventory) &&
-                        !inventoryRemovedLocationIdSet.contains(inventory.getLocationId())) {
-                    removeInventoryByLocation(inventory.getLocationId());
-                    // add the location to the set so that we won't remove it again
-                    inventoryRemovedLocationIdSet.add(inventory.getLocationId());
+            for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
+                // in case anything goes wrong, we will continue with the next record
+                // and save the result with error message to the result set
+                try {
+                    Inventory inventory = convertFromWrapper(warehouseId, inventoryCSVWrapper);
+
+                    // check if we will need to clear the location only if
+                    // 1. the removeExistingInventory is passed in and set to true
+                    // 2. the location has not been cleared yet
+                    if (Boolean.TRUE.equals(removeExistingInventory) &&
+                            !inventoryRemovedLocationIdSet.contains(inventory.getLocationId())) {
+                        removeInventoryByLocation(inventory.getLocationId());
+                        // add the location to the set so that we won't remove it again
+                        inventoryRemovedLocationIdSet.add(inventory.getLocationId());
+                    }
+
+                    // we are half way through creating the inventory
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1) / 2);
+
+                    addInventory(username, inventory,
+                            InventoryQuantityChangeType.INVENTORY_UPLOAD,
+                            "", "");
+
+                    // we complete this inventory
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+
+                    List<FileUploadResult> fileUploadResults = inventoryFileUploadResults.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            inventoryCSVWrapper.toString(),
+                            "success", ""
+                    ));
+                    inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
+
+                    index++;
                 }
+                catch(Exception ex) {
 
-                // we are half way through creating the inventory
-                inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1) / 2);
-
-                addInventory(username, inventory,
-                        InventoryQuantityChangeType.INVENTORY_UPLOAD,
-                        "", "");
-
-                // we complete this inventory
-                inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
-                index++;
+                    ex.printStackTrace();
+                    logger.debug("Error while process inventory upload fiel record: {}, \n error message: {}",
+                            inventoryCSVWrapper,
+                            ex.getMessage());
+                    List<FileUploadResult> fileUploadResults = inventoryFileUploadResults.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            inventoryCSVWrapper.toString(),
+                            "fail", ex.getMessage()
+                    ));
+                    inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
+                }
             }
             // after we process all inventory, mark the progress to 100%
             inventoryFileUploadProgress.put(fileUploadProgressKey, 100.0);
@@ -3237,7 +3289,48 @@ public class InventoryService {
         return fileUploadProgressKey;
     }
 
+    private void clearInventoryFileUploadMap() {
+
+        if (inventoryFileUploadProgress.size() > INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = inventoryFileUploadProgress.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (inventoryFileUploadResults.size() > INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = inventoryFileUploadResults.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
     public double getInventoryFileUploadProgress(String key) {
         return inventoryFileUploadProgress.getOrDefault(key, 100.0);
+    }
+
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId, String key) {
+        return inventoryFileUploadResults.getOrDefault(key, new ArrayList<>());
     }
 }

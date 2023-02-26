@@ -6,6 +6,9 @@ import java.sql.Timestamp;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
+
+    private Long companyId;
+
     private String token;
     private String refreshToken;
     private String name;
@@ -14,17 +17,12 @@ public class User {
     private Timestamp time;
     private int refreshIn;
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "token='" + token + '\'' +
-                ", refreshToken='" + refreshToken + '\'' +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", id=" + id +
-                ", time=" + time +
-                ", refreshIn=" + refreshIn +
-                '}';
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public String getToken() {

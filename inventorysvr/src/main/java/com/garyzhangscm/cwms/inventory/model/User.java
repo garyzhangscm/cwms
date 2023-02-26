@@ -31,6 +31,7 @@ import java.util.List;
 public class User {
 
     private Long id;
+    private Long companyId;
 
     private String username;
     private String password;
@@ -61,6 +62,14 @@ public class User {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Long getId() {

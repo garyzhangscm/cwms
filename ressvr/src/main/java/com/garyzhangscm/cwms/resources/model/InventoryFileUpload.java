@@ -7,7 +7,8 @@ public class InventoryFileUpload extends FileUploadType {
         super("inventory", "Inventory",
                 "inventory/inventories/upload",
                 "resource/assets/file-templates/inventories.csv",
-                "inventory/inventories/upload/progress");
+                "inventory/inventories/upload/progress",
+                "inventory/inventories/upload/result");
         setupColumns();
     }
 

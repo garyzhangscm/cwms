@@ -24,12 +24,13 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Trigger Replenishment Configuration",menu.main.inventory.replenishment.trigger.config,/inventory/replenishment/trigger/config,11,Main-Menu-Inventory,Inventory-TriggerReplConfig,,true,false
 "Replenishment Display",menu.main.inventory.replenishment.display,/inventory/replenishment,12,Main-Menu-Inventory,Inventory-ReplDisplay,,true,false
 "Inventory Configuration",menu.main.inventory.configuration,/inventory/configuration,13,Main-Menu-Inventory,Inventory-Configuration,,true,false
-"Inventory Allocation Summary",menu.main.inventory.allocation-summary,/inventory/inventory-allocation-summary,14,Main-Menu-Inventory,Inventory-Allocation-Summary,,true,false
-"Inventory Snapshot",menu.main.inventory.snapshot,/inventory/snapshot,15,Main-Menu-Inventory,Inventory-Snapshot,,true,false
-"Inventory Sampling",menu.main.inventory.item-sampling,/inventory/item-sampling,16,Main-Menu-Inventory,Inventory-ItemSampling,,true,false
-"Location Utilization Snapshot",menu.main.inventory.location-util,/inventory/location-utilization-snapshot,17,Main-Menu-Inventory,Location-Utilization-Snapshot,,true,false
-"Inventory Status",menu.main.inventory.status,/inventory/status,18,Main-Menu-Inventory,Inventory-Status,,true,false
-"Lock",menu.main.inventory.lock,/inventory/lock,19,Main-Menu-Inventory,Inventory-Lock,,true,false
+"Inventory Mix Restriction",menu.main.inventory.mix-restriction,/inventory/mix-restriction,14,Main-Menu-Inventory,Inventory-Mix-Restriction,,true,false
+"Inventory Allocation Summary",menu.main.inventory.allocation-summary,/inventory/inventory-allocation-summary,15,Main-Menu-Inventory,Inventory-Allocation-Summary,,true,false
+"Inventory Snapshot",menu.main.inventory.snapshot,/inventory/snapshot,16,Main-Menu-Inventory,Inventory-Snapshot,,true,false
+"Inventory Sampling",menu.main.inventory.item-sampling,/inventory/item-sampling,17,Main-Menu-Inventory,Inventory-ItemSampling,,true,false
+"Location Utilization Snapshot",menu.main.inventory.location-util,/inventory/location-utilization-snapshot,18,Main-Menu-Inventory,Location-Utilization-Snapshot,,true,false
+"Inventory Status",menu.main.inventory.status,/inventory/status,19,Main-Menu-Inventory,Inventory-Status,,true,false
+"Lock",menu.main.inventory.lock,/inventory/lock,20,Main-Menu-Inventory,Inventory-Lock,,true,false
 "QC Rule Maintenance",menu.main.qc.qc-rule,/qc/rules,1,Main-Menu-QC,QC-Rule,,true,false
 "QC Rule Configuration",menu.main.qc.qc-rule-configuration,/qc/rules/configuration,2,Main-Menu-QC,QC-Rule-Configuration,,true,false
 "QC Configuration",menu.main.qc.qc-configuration,/qc/configuration,2,Main-Menu-QC,QC-Configuration,,true,false

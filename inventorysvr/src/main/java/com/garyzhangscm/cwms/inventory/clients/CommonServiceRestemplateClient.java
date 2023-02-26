@@ -70,7 +70,7 @@ public class CommonServiceRestemplateClient {
                     .path("/api/common/clients/{id}");
 
         ResponseBodyWrapper<Client> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                         null,
@@ -96,7 +96,7 @@ public class CommonServiceRestemplateClient {
         }
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                 null,
@@ -192,7 +192,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/unit-of-measures/{id}");
 
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                         null,

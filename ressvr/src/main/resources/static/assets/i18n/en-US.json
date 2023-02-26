@@ -1980,5 +1980,22 @@
   "Login": "Login",
   "color": "Color",
   "productSize": "Product Size",
-  "style": "Style"
+  "style": "Style",
+  "menu.main.inventory.mix-restriction": "Inventory Mix Restriction",
+  "criteria": "Criteria",
+  "inventory-mix-restriction": "Inventory Mix Restriction",
+  "inventory-mix-restriction.lines.description": "Define the inventory attribute that not allowed to be mixed",
+  "BY_LPN": "By LPN",
+  "BY_LOCATION": "By Location",
+  "INVENTORY_ATTRIBUTE-clientId": "Client",
+  "INVENTORY_ATTRIBUTE-receiptLineId": "Receipt Line",
+  "INVENTORY_ATTRIBUTE-item": "Item",
+  "INVENTORY_ATTRIBUTE-itemPackageType": "Item Package Type",
+  "INVENTORY_ATTRIBUTE-inventoryStatus": "Inventory Status",
+  "INVENTORY_ATTRIBUTE-color": "Color",
+  "INVENTORY_ATTRIBUTE-productSize": "Product Size",
+  "INVENTORY_ATTRIBUTE-style": "Style",
+  "lineNumber": "Line Number",
+  "record": "Record",
+  "result": "Result"
 }
