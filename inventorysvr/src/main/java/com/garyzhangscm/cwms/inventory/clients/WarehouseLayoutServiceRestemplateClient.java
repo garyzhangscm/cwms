@@ -240,7 +240,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout//warehouse-configuration/by-warehouse/{id}");
 
         ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
-             = restTemplate.exchange(
+             = restTemplateProxy.getRestTemplate().exchange(
                    builder.buildAndExpand(warehouseId).toUriString(),
                    HttpMethod.GET,
                  null,

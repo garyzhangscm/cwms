@@ -21,10 +21,11 @@ package com.garyzhangscm.cwms.inventory.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 
-public class InventoryCSVWrapper implements Serializable {
+public class InventoryPutawayCSVWrapper implements Serializable {
+
+    private String client;
 
     private String lpn;
 
@@ -39,12 +40,11 @@ public class InventoryCSVWrapper implements Serializable {
 
     private String inventoryStatus;
 
-    private String client;
-
-
     private String color;
     private String productSize;
     private String style;
+
+    private String destinationLocation;
 
     @Override
     public String toString() {
@@ -54,6 +54,14 @@ public class InventoryCSVWrapper implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 
     public String getLpn() {
@@ -96,14 +104,6 @@ public class InventoryCSVWrapper implements Serializable {
         this.quantity = quantity;
     }
 
-    public String getInventoryStatus() {
-        return inventoryStatus;
-    }
-
-    public void setInventoryStatus(String inventoryStatus) {
-        this.inventoryStatus = inventoryStatus;
-    }
-
     public String getUnitOfMeasure() {
         return unitOfMeasure;
     }
@@ -112,12 +112,21 @@ public class InventoryCSVWrapper implements Serializable {
         this.unitOfMeasure = unitOfMeasure;
     }
 
-    public String getClient() {
-        return client;
+    public String getInventoryStatus() {
+        return inventoryStatus;
     }
 
-    public void setClient(String client) {
-        this.client = client;
+    public void setInventoryStatus(String inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
+    }
+
+
+    public String getDestinationLocation() {
+        return destinationLocation;
+    }
+
+    public void setDestinationLocation(String destinationLocation) {
+        this.destinationLocation = destinationLocation;
     }
 
     public String getColor() {

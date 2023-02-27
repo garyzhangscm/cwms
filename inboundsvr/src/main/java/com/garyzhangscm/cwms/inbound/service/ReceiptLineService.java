@@ -205,7 +205,6 @@ public class ReceiptLineService {
 
         ReceiptLine receiptLine = new ReceiptLine();
         receiptLine.setNumber(receiptLineCSVWrapper.getLine());
-        receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity());
         receiptLine.setReceivedQuantity(0L);
 
 
@@ -239,6 +238,20 @@ public class ReceiptLineService {
             Item item =
                     inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), receiptLineCSVWrapper.getItem());
             receiptLine.setItemId(item.getId());
+
+
+            int unitOfMeasureQuantity = 1;
+            if (Strings.isNotBlank(receiptLineCSVWrapper.getUnitOfMeasure()) &&
+                Objects.nonNull(item)) {
+                unitOfMeasureQuantity = item.getDefaultItemPackageType().getItemUnitOfMeasures()
+                        .stream().filter(itemUnitOfMeasure ->
+                                itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(
+                                        receiptLineCSVWrapper.getUnitOfMeasure()
+                                ))
+                        .map(itemUnitOfMeasure -> itemUnitOfMeasure.getQuantity())
+                        .findFirst().orElse(1);
+            }
+            receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity() * unitOfMeasureQuantity);
         }
         return receiptLine;
     }

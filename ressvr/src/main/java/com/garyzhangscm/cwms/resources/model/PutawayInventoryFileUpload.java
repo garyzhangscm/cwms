@@ -1,27 +1,26 @@
 package com.garyzhangscm.cwms.resources.model;
 
-public class ReceivingInventoryFileUpload extends FileUploadType {
+public class PutawayInventoryFileUpload extends FileUploadType {
 
-    public ReceivingInventoryFileUpload(){
-        super("receiving-inventories", "Receiving Inventory",
-                "inbound/receipts/receiving-inventory/upload",
-                "resource/assets/file-templates/receiving-inventories.csv",
-                "inbound/receipts/receiving-inventory/upload/progress",
-                "inbound/receipts/receiving-inventory/upload/result");
+    public PutawayInventoryFileUpload(){
+        super("putaway-inventories", "Putaway Inventory",
+                "inventory/inventories/putaway-inventory/upload",
+                "resource/assets/file-templates/putaway-inventories.csv",
+                "inventory/inventories/putaway-inventory/upload/progress",
+                "inventory/inventories/putaway-inventory/upload/result");
         setupColumns();
     }
 
     private void setupColumns() {
 
         addColumn(new FileUploadTemplateColumn(
-                "receipt", "Receipt Number",
-                String.class, 100, false
+                "client", "Client",
+                String.class, 100, true
         ));
-
 
         addColumn(new FileUploadTemplateColumn(
                 "lpn", "LPN",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
@@ -63,6 +62,10 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "style", "Style",
+                String.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "destinationLocation", "Destination Location",
                 String.class, 100, false
         ));
 

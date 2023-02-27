@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.inbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ReceiptLineCSVWrapper {
     private String client;
     private String supplier;
@@ -26,12 +29,22 @@ public class ReceiptLineCSVWrapper {
     private String item;
     private String inventoryStatus;
     private Long expectedQuantity;
+    private String unitOfMeasure;
 
     private Long overReceivingQuantity;
     private Double overReceivingPercent;
 
     private String allowUnexpectedItem;
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public String getReceipt() {
         return receipt;
@@ -72,6 +85,14 @@ public class ReceiptLineCSVWrapper {
 
     public void setOverReceivingQuantity(Long overReceivingQuantity) {
         this.overReceivingQuantity = overReceivingQuantity;
+    }
+
+    public String getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(String unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
     }
 
     public String getAllowUnexpectedItem() {

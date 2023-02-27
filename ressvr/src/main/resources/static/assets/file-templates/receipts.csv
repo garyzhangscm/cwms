@@ -1,1 +1,1 @@
-client,supplier,receipt,line,item,expectedQuantity,inventoryStatus,overReceivingQuantity,overReceivingPercent
+client,supplier,receipt,line,item,expectedQuantity,unitOfMeasure,inventoryStatus,overReceivingQuantity,overReceivingPercent

@@ -81,7 +81,7 @@ public class CommonServiceRestemplateClient {
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                     builder.toUriString(),
                     HttpMethod.GET,
                 null,

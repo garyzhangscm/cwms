@@ -100,6 +100,9 @@ public class InventoryService {
     private Map<String, Double> inventoryFileUploadProgress = new ConcurrentHashMap<>();
     private Map<String, List<FileUploadResult>> inventoryFileUploadResults = new ConcurrentHashMap<>();
 
+    private Map<String, Double> inventoryPutawayFileUploadProgress = new ConcurrentHashMap<>();
+    private Map<String, List<FileUploadResult>> inventoryPutawayFileUploadResults = new ConcurrentHashMap<>();
+
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
@@ -872,7 +875,7 @@ public class InventoryService {
 
      }
 
-    public List<InventoryCSVWrapper> loadData(File file) throws IOException {
+    public List<InventoryCSVWrapper> loadInventoryData(File file) throws IOException {
 
         return fileService.loadData(file, InventoryCSVWrapper.class);
     }
@@ -1018,7 +1021,7 @@ public class InventoryService {
                                          Client client) {
         Inventory inventory = new Inventory();
         inventory.setLpn(inventoryCSVWrapper.getLpn());
-        inventory.setQuantity(inventoryCSVWrapper.getQuantity());
+
         inventory.setVirtual(false);
 
         inventory.setColor(inventoryCSVWrapper.getColor());
@@ -1076,6 +1079,20 @@ public class InventoryService {
                     inventory.getItem().getDefaultItemPackageType()
             );
         }
+
+
+        int unitOfMeasureQuantity = 1;
+        if (Strings.isNotBlank(inventoryCSVWrapper.getUnitOfMeasure())) {
+            unitOfMeasureQuantity = inventory.getItemPackageType().getItemUnitOfMeasures()
+                    .stream().filter(itemUnitOfMeasure ->
+                            itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(
+                                    inventoryCSVWrapper.getUnitOfMeasure()
+                            ))
+                    .map(itemUnitOfMeasure -> itemUnitOfMeasure.getQuantity())
+                    .findFirst().orElse(1);
+        }
+        inventory.setQuantity(inventoryCSVWrapper.getQuantity() * unitOfMeasureQuantity);
+
 
         // inventoryStatus
         if (Objects.nonNull(inventoryStatus)) {
@@ -3068,132 +3085,6 @@ public class InventoryService {
 
         return inventorySummaries;
     }
-
-
-    /**
-    @Transactional
-    public String uploadInventoryData(Long warehouseId,
-                                               File file, Boolean removeExistingInventory) throws IOException {
-
-        String fileUploadProgressKey = warehouseId + "-" + userService.getCurrentUserName() + "-" + System.currentTimeMillis();
-        inventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
-
-        List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
-
-        logger.debug("get {} record from the file", inventoryCSVWrappers.size());
-        // let's clear all the empty space for the name
-        inventoryCSVWrappers.forEach(
-                inventoryCSVWrapper -> {
-                    inventoryCSVWrapper.setItem(
-                            inventoryCSVWrapper.getItem().trim()
-                    );
-                    inventoryCSVWrapper.setItemPackageType(
-                            inventoryCSVWrapper.getItemPackageType().trim()
-                    );
-                    inventoryCSVWrapper.setInventoryStatus(
-                            inventoryCSVWrapper.getInventoryStatus().trim()
-                    );
-                    inventoryCSVWrapper.setLocation(
-                            inventoryCSVWrapper.getLocation().trim()
-                    );
-                    inventoryCSVWrapper.setLpn(
-                            inventoryCSVWrapper.getLpn().trim()
-                    );
-                }
-        );
-        List<Inventory> inventories = convertFromWrapper(warehouseId, inventoryCSVWrappers, true);
-        logger.debug("convert {} of the records into inventory structure",
-                inventories.size());
-
-        Set<Long> locationIds = new HashSet<>();
-        Set<Long> locationGroupIds = new HashSet<>();
-
-        for (Inventory inventory : inventories) {
-            locationIds.add(inventory.getLocationId());
-            if (Objects.nonNull(inventory.getLocation()) &&
-                    Objects.nonNull(inventory.getLocation().getLocationGroup())) {
-                locationGroupIds.add(inventory.getLocation().getLocationGroup().getId());
-            }
-        }
-
-        // ok, we will need to remove the existing inventory.
-        // let's find the locations that have inventory
-        String locationIdString = locationIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-        locationIds = findInventoryByLocationIds(warehouseId, locationIdString)
-                .stream().map(inventory -> inventory.getLocationId()).collect(Collectors.toSet());
-
-
-        logger.debug("we have   {} locations of inventory that we will remove the inventory", locationIds.size());
-
-        logger.debug("Get {} location group ids to load, {}",
-                locationGroupIds.size(), locationGroupIds);
-
-
-
-        // load the cache so that we won't need to do it again in the new thread as in the new
-        // thread, we will lose the request context
-        logger.debug("start to load cache so we don't have to request a http call " +
-                "in a non http context thread");
-        warehouseLayoutServiceRestemplateClient.setupLocalCache(warehouseId,
-                locationGroupIds);
-
-
-        inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0);
-        // end of load cache
-
-        // we will use thread to save the inventory
-        // get the username of the current user and pass it into the new thread
-        String username = userService.getCurrentUserName();
-        // List<Inventory> finalInventoryToBeRemoved = inventoryToBeRemoved;
-        Set<Long> finalLocationIds = locationIds;
-        new Thread(() -> {
-            logger.debug("Get {} location ids to be cleared, {}",
-                    finalLocationIds.size(), finalLocationIds);
-            if (Boolean.TRUE.equals(removeExistingInventory) && !finalLocationIds.isEmpty()) {
-                // remove all the inventory from the location first
-
-                int i = 0;
-                for (Long finalLocationId : finalLocationIds) {
-
-                    deleteInventoryByLocation(finalLocationId);
-                    logger.debug("inventory is removed from location {}",  finalLocationId);
-
-                    inventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + i * 20.0 / finalLocationIds.size());
-                    i++;
-                }
-                logger.debug("cleared {} locations so we can load the inventory into those locations",
-                        finalLocationIds.size() );
-            }
-            else {
-                logger.debug("There's no need to clear those locations");
-            }
-
-            inventoryFileUploadProgress.put(fileUploadProgressKey, 40.0);
-            for (int i = 0; i < inventories.size(); i++) {
-
-                logger.debug("start to add inventory {} from the uploaded file",
-                        inventories.get(i).getLpn());
-                addInventory(username, inventories.get(i),
-                        InventoryQuantityChangeType.INVENTORY_UPLOAD,
-                        "", "");
-
-                inventoryFileUploadProgress.put(fileUploadProgressKey, 40.0 + i * 60.0 / inventories.size());
-            }
-
-            // once we complete, we will remove from the map
-
-            inventoryFileUploadProgress.remove(fileUploadProgressKey);
-            // and clear the local cache
-            warehouseLayoutServiceRestemplateClient.clearLocalCache();
-        }).start();
-        logger.debug("we will return the key {}", fileUploadProgressKey);
-
-        return fileUploadProgressKey;
-
-
-    }
-
-**/
     public String uploadInventoryData(Long warehouseId,
                                       File file,
                                       Boolean removeExistingInventory) throws IOException {
@@ -3206,7 +3097,7 @@ public class InventoryService {
         inventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
         inventoryFileUploadResults.put(fileUploadProgressKey, new ArrayList<>());
 
-        List<InventoryCSVWrapper> inventoryCSVWrappers = loadData(file);
+        List<InventoryCSVWrapper> inventoryCSVWrappers = loadInventoryData(file);
         inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0);
 
         logger.debug("get {} record from the file", inventoryCSVWrappers.size());
@@ -3230,8 +3121,10 @@ public class InventoryService {
             for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
                 // in case anything goes wrong, we will continue with the next record
                 // and save the result with error message to the result set
+                inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index));
                 try {
                     Inventory inventory = convertFromWrapper(warehouseId, inventoryCSVWrapper);
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.25));
 
                     // check if we will need to clear the location only if
                     // 1. the removeExistingInventory is passed in and set to true
@@ -3244,7 +3137,7 @@ public class InventoryService {
                     }
 
                     // we are half way through creating the inventory
-                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1) / 2);
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.5));
 
                     addInventory(username, inventory,
                             InventoryQuantityChangeType.INVENTORY_UPLOAD,
@@ -3263,12 +3156,11 @@ public class InventoryService {
                     ));
                     inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
 
-                    index++;
                 }
                 catch(Exception ex) {
 
                     ex.printStackTrace();
-                    logger.debug("Error while process inventory upload fiel record: {}, \n error message: {}",
+                    logger.debug("Error while process inventory upload file record: {}, \n error message: {}",
                             inventoryCSVWrapper,
                             ex.getMessage());
                     List<FileUploadResult> fileUploadResults = inventoryFileUploadResults.getOrDefault(
@@ -3280,6 +3172,10 @@ public class InventoryService {
                             "fail", ex.getMessage()
                     ));
                     inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
+                }
+                finally {
+
+                    index++;
                 }
             }
             // after we process all inventory, mark the progress to 100%
@@ -3326,11 +3222,332 @@ public class InventoryService {
         }
     }
 
+
+
     public double getInventoryFileUploadProgress(String key) {
         return inventoryFileUploadProgress.getOrDefault(key, 100.0);
     }
 
     public List<FileUploadResult> getFileUploadResult(Long warehouseId, String key) {
         return inventoryFileUploadResults.getOrDefault(key, new ArrayList<>());
+    }
+
+    public String uploadPutawayInventoryData(Long warehouseId, File file) throws IOException {
+
+        String username = userService.getCurrentUserName();
+
+        String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
+        // before we add new
+        clearInventoryPutawayFileUploadMap();
+        inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 0.0);
+        inventoryPutawayFileUploadResults.put(fileUploadProgressKey, new ArrayList<>());
+
+
+        List<InventoryPutawayCSVWrapper> inventoryPutawayCSVWrappers = loadInventoryPutawayData(file);
+        inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0);
+
+        logger.debug("get {} record from the file", inventoryPutawayCSVWrappers.size());
+
+        new Thread(() -> {
+
+            // loop through each inventory
+            int totalInventoryCount = inventoryPutawayCSVWrappers.size();
+            int index = 0;
+            for (InventoryPutawayCSVWrapper inventoryPutawayCSVWrapper : inventoryPutawayCSVWrappers) {
+                // in case anything goes wrong, we will continue with the next record
+                // and save the result with error message to the result set
+                inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index));
+                try {
+
+                    if (Strings.isBlank(inventoryPutawayCSVWrapper.getDestinationLocation())) {
+                        throw InventoryException.raiseException("can't move the inventory as the destination location is empty");
+                    }
+
+                    Inventory inventory = findBestInventoryForPutaway(warehouseId, inventoryPutawayCSVWrapper);
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.25));
+
+                    Location destinationLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                            warehouseId, inventoryPutawayCSVWrapper.getDestinationLocation()
+                    );
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.5));
+                    if (Objects.isNull(destinationLocation)) {
+                        throw InventoryException.raiseException("can't move the inventory as destination location " +
+                                inventoryPutawayCSVWrapper.getDestinationLocation() + " is not valid");
+                    }
+                    moveInventory(inventory, destinationLocation);
+                    // we complete this inventory
+                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+
+                    List<FileUploadResult> fileUploadResults = inventoryFileUploadResults.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            inventoryPutawayCSVWrapper.toString(),
+                            "success", ""
+                    ));
+                    inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
+
+                }
+                catch(Exception ex) {
+
+                    ex.printStackTrace();
+                    logger.debug("Error while process inventory upload file record: {}, \n error message: {}",
+                            inventoryPutawayCSVWrapper,
+                            ex.getMessage());
+                    List<FileUploadResult> fileUploadResults = inventoryFileUploadResults.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            inventoryPutawayCSVWrapper.toString(),
+                            "fail", ex.getMessage()
+                    ));
+                    inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
+                }
+                finally {
+
+                    index++;
+                }
+            }
+            // after we process all inventory, mark the progress to 100%
+            inventoryFileUploadProgress.put(fileUploadProgressKey, 100.0);
+        }).start();
+
+        return fileUploadProgressKey;
+
+    }
+
+    private Inventory findBestInventoryForPutaway(Long warehouseId, InventoryPutawayCSVWrapper inventoryPutawayCSVWrapper) {
+        // find the best inventory based on the passed in value from the CSV file
+        // 1. LPN: by LPN
+        // 2. Location: if LPN is not passed in, then by location + item + quantity + other attribute
+        if (Strings.isBlank(inventoryPutawayCSVWrapper.getLocation()) && Strings.isBlank(inventoryPutawayCSVWrapper.getLpn())) {
+            throw InventoryException.raiseException("Can't putaway the inventory as at least one of LPN or Location needs to be passed in");
+        }
+        List<Inventory> inventories = null;
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getLpn())) {
+            inventories = findByLpn(warehouseId, inventoryPutawayCSVWrapper.getLpn());
+        }
+        else if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getLocation())) {
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                    warehouseId, inventoryPutawayCSVWrapper.getLocation()
+            );
+            if (Objects.isNull(location)) {
+                throw InventoryException.raiseException("Can't find location by name " + inventoryPutawayCSVWrapper.getLocation());
+            }
+            inventories = findByLocationId(location.getId());
+        }
+
+        if (Objects.isNull(inventories) || inventories.isEmpty()) {
+            throw InventoryException.raiseException("can't find the inventory by LPN: " +
+                    inventoryPutawayCSVWrapper.getLpn() + ", location: " +
+                    inventoryPutawayCSVWrapper.getLocation());
+        }
+
+        // we get a list of inventory, then loop through the CSV line and see if we can find one that
+        // has exact match. If there're multiple lines match, we will just return the first line
+        Inventory inventory = findFirstMatchedInventoryForCSVPutaway(inventories, inventoryPutawayCSVWrapper);
+        if (Objects.isNull(inventory)) {
+            throw InventoryException.raiseException("Can't find matched inventory  by LPN: " +
+                    inventoryPutawayCSVWrapper.getLpn() + ", location: " +
+                    inventoryPutawayCSVWrapper.getLocation());
+        }
+        return inventory;
+    }
+
+    /**
+     * Find the first inventory from the list that matches with the CSV record
+     * @param inventories
+     * @param inventoryPutawayCSVWrapper
+     * @return
+     */
+    private Inventory findFirstMatchedInventoryForCSVPutaway(List<Inventory> inventories, InventoryPutawayCSVWrapper inventoryPutawayCSVWrapper) {
+        return inventories.stream().filter(
+                inventory -> isMatch(inventory, inventoryPutawayCSVWrapper)
+        ).findFirst().orElse(null);
+    }
+
+    /**
+     * check if the inventory matches with the CSV record line
+     * @param inventory
+     * @param inventoryPutawayCSVWrapper
+     * @return
+     */
+    private boolean isMatch(Inventory inventory, InventoryPutawayCSVWrapper inventoryPutawayCSVWrapper) {
+
+        // if the CSV line has the client setup, then only return the inventory
+        // that is not empty and match with the client from the CSV line
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getClient()) &&
+                (Objects.isNull(inventory.getClient()) ||
+                        !inventoryPutawayCSVWrapper.getClient().equalsIgnoreCase(
+                                inventory.getClient().getName()
+                        )
+                )) {
+            logger.debug(">> Not Match(client), Inventory's client: {}" +
+                            ", CSV Line's client: {}",
+                    Objects.isNull(inventory.getClient()) ?
+                        "N/A" : inventory.getClient().getName(),
+                    inventoryPutawayCSVWrapper.getClient());
+            return false;
+
+        }
+        if (Strings.isBlank(inventoryPutawayCSVWrapper.getClient()) &&
+                Objects.nonNull(inventory.getClientId())) {
+            logger.debug(">> Not Match(client), Inventory's client: {}" +
+                            ", CSV Line has not client setup",
+                    inventory.getClientId());
+            return false;
+        }
+
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getLpn()) &&
+                !inventoryPutawayCSVWrapper.getLpn().equalsIgnoreCase(inventory.getLpn())) {
+            logger.debug(">> Not Match(LPN), Inventory's lpn: {}" +
+                            ", CSV Line's lpn: {}",
+                    inventory.getLpn(),
+                    inventoryPutawayCSVWrapper.getLpn());
+            return false;
+
+        }
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getLocation()) &&
+                !inventoryPutawayCSVWrapper.getLocation().equalsIgnoreCase(inventory.getLocation().getName())) {
+            logger.debug(">> Not Match(Location), Inventory's Location: {}" +
+                            ", CSV Line's Location: {}",
+                    inventory.getLocation().getName(),
+                    inventoryPutawayCSVWrapper.getLocation());
+            return false;
+
+        }
+
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getItem()) &&
+                !inventoryPutawayCSVWrapper.getItem().equalsIgnoreCase(inventory.getItem().getName())) {
+            logger.debug(">> Not Match(Item), Inventory's Item: {}" +
+                            ", CSV Line's Item: {}",
+                    inventory.getItem().getName(),
+                    inventoryPutawayCSVWrapper.getItem());
+            return false;
+
+        }
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getItemPackageType()) &&
+                !inventoryPutawayCSVWrapper.getItemPackageType().equalsIgnoreCase(inventory.getItemPackageType().getName())) {
+            logger.debug(">> Not Match(Item Package Type), Inventory's Item Package Type: {}" +
+                            ", CSV Line's Item Package Type: {}",
+                    inventory.getItemPackageType().getName(),
+                    inventoryPutawayCSVWrapper.getItemPackageType());
+            return false;
+
+        }
+        if (Objects.nonNull(inventoryPutawayCSVWrapper.getQuantity())) {
+            // if the unit of measure is pass in, calculate the quantity based on the
+            // unit of measure and quantity. Otherwise, the quantity is the unit quantity
+            int unitOfMeasureQuantity = 1;
+            if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getUnitOfMeasure())) {
+                unitOfMeasureQuantity = inventory.getItemPackageType().getItemUnitOfMeasures()
+                        .stream().filter(itemUnitOfMeasure ->
+                                inventoryPutawayCSVWrapper.getUnitOfMeasure().equalsIgnoreCase(
+                                        itemUnitOfMeasure.getUnitOfMeasure().getName()
+                                )).map(itemUnitOfMeasure -> itemUnitOfMeasure.getQuantity()
+                        ).findFirst().orElse(1);
+            }
+            if (inventory.getQuantity() != inventoryPutawayCSVWrapper.getQuantity() * unitOfMeasureQuantity) {
+                logger.debug(">> Not Match(Quantity), Inventory's Quantity: {}" +
+                                ", CSV Line's Quantity: {}, unit of measure: {}, " +
+                                " unit of measure quantity: {}, total quantity: {}",
+                        inventory.getQuantity(),
+                        inventoryPutawayCSVWrapper.getQuantity(),
+                        inventoryPutawayCSVWrapper.getUnitOfMeasure(),
+                        unitOfMeasureQuantity,
+                        inventoryPutawayCSVWrapper.getQuantity() * unitOfMeasureQuantity
+                );
+                return false;
+            }
+        }
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getInventoryStatus()) &&
+                !inventoryPutawayCSVWrapper.getInventoryStatus().equalsIgnoreCase(inventory.getInventoryStatus().getName())) {
+            logger.debug(">> Not Match(Inventory Status), Inventory's Inventory Status: {}" +
+                            ", CSV Line's Inventory Status: {}",
+                    inventory.getInventoryStatus().getName(),
+                    inventoryPutawayCSVWrapper.getInventoryStatus());
+            return false;
+
+        }
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getColor()) &&
+                !inventoryPutawayCSVWrapper.getColor().equalsIgnoreCase(inventory.getColor())) {
+            logger.debug(">> Not Match(Color), Inventory's Color: {}" +
+                            ", CSV Line's Color: {}",
+                    inventory.getColor(),
+                    inventoryPutawayCSVWrapper.getColor());
+            return false;
+
+        }
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getProductSize()) &&
+                !inventoryPutawayCSVWrapper.getProductSize().equalsIgnoreCase(inventory.getProductSize())) {
+            logger.debug(">> Not Match(Product Size), Inventory's Product Size: {}" +
+                            ", CSV Line's Product Size: {}",
+                    inventory.getProductSize(),
+                    inventoryPutawayCSVWrapper.getProductSize());
+            return false;
+
+        }
+        if (Strings.isNotBlank(inventoryPutawayCSVWrapper.getStyle()) &&
+                !inventoryPutawayCSVWrapper.getStyle().equalsIgnoreCase(inventory.getStyle())) {
+            logger.debug(">> Not Match(Style), Inventory's Style: {}" +
+                            ", CSV Line's Style: {}",
+                    inventory.getStyle(),
+                    inventoryPutawayCSVWrapper.getStyle());
+            return false;
+
+        }
+        return true;
+    }
+
+    public List<InventoryPutawayCSVWrapper> loadInventoryPutawayData(File file) throws IOException {
+
+        return fileService.loadData(file, InventoryPutawayCSVWrapper.class);
+    }
+
+    public Object getPutawayInventoryFileUploadProgress(String key) {
+        return inventoryPutawayFileUploadProgress.getOrDefault(key, 100.0);
+    }
+
+    public List<FileUploadResult> getPutawayFileUploadResult(Long warehouseId, String key) {
+        return inventoryPutawayFileUploadResults.getOrDefault(key, new ArrayList<>());
+    }
+
+    private void clearInventoryPutawayFileUploadMap() {
+
+        if (inventoryPutawayFileUploadProgress.size() > INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = inventoryPutawayFileUploadProgress.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (inventoryPutawayFileUploadResults.size() > INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = inventoryPutawayFileUploadResults.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 }

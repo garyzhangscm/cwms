@@ -46,6 +46,10 @@ public class InventoryFileUpload extends FileUploadType {
                 Long.class, 100, false
         ));
         addColumn(new FileUploadTemplateColumn(
+                "unitOfMeasure", "Unit Of Measure",
+                String.class, 10, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
                 "inventoryStatus", "Inventory Status",
                 String.class, 100, false
         ));
