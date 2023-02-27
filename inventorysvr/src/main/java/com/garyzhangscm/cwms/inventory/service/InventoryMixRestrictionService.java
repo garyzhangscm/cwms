@@ -217,6 +217,9 @@ public class InventoryMixRestrictionService {
      */
     public boolean checkMovementAllowed(Inventory inventory, Location destinationLocation) {
         // get the inventory in the destination location
+        logger.debug("start to check if we can move inventory {} into location {} via mixing restriction",
+                inventory.getLpn(),
+                destinationLocation.getName());
         List<Inventory> destinationInventory = inventoryService.findByLocationId(
                 destinationLocation.getId(), false
         );
@@ -316,6 +319,9 @@ public class InventoryMixRestrictionService {
         List<InventoryMixRestriction> allInventoryMixRestriction = findAll(inventory.getWarehouseId(),
                 null, null, null, null, null, null, false);
 
+        logger.debug("We have {} mixing restriction setup for this warehouse {}" +
+                        ", let's see if any of any match with the current inventory",
+                allInventoryMixRestriction.size(), inventory.getWarehouseId());
         return allInventoryMixRestriction.stream().filter(
                 inventoryMixRestriction -> isMatch(inventoryMixRestriction, inventory, destinationLocation)
         ).collect(Collectors.toList());
@@ -331,20 +337,53 @@ public class InventoryMixRestrictionService {
 
         // the client id should match. Either both empty, or for the same client
         if (!Objects.equals(inventoryMixRestriction.getClientId(), inventory.getClientId())) {
+            logger.debug(">> Not Match(client id), mixing restriction id : {}, mixing restriction's client id: {}" +
+                    ", inventory's client id: {}",
+                    inventoryMixRestriction.getId(),
+                    Objects.isNull(inventoryMixRestriction.getClientId()) ?
+                        "N/A" : inventoryMixRestriction.getClientId(),
+                    Objects.isNull(inventory.getClientId()) ?
+                            "N/A" : inventory.getClientId());
             return false;
         }
         if (Objects.nonNull(inventoryMixRestriction.getLocationGroupTypeId()) &&
                !inventoryMixRestriction.getLocationGroupTypeId().equals(destinationLocation.getLocationGroup().getLocationGroupType().getId())) {
+            logger.debug(">> Not Match(location group type id), mixing restriction id : {}, " +
+                            " mixing restriction's location group type id: {}" +
+                            ", destination location's location group type id: {}",
+                    inventoryMixRestriction.getId(),
+                    Objects.isNull(inventoryMixRestriction.getLocationGroupTypeId()) ?
+                            "N/A" : inventoryMixRestriction.getLocationGroupTypeId(),
+                    Objects.isNull(destinationLocation.getLocationGroup().getLocationGroupType().getId()) ?
+                            "N/A" : destinationLocation.getLocationGroup().getLocationGroupType().getId());
             return false;
         }
         if (Objects.nonNull(inventoryMixRestriction.getLocationGroupId()) &&
                 !inventoryMixRestriction.getLocationGroupId().equals(destinationLocation.getLocationGroup().getId())) {
+            logger.debug(">> Not Match(location group id), mixing restriction id : {}, " +
+                            " mixing restriction's location group id: {}" +
+                            ", destination location's location group id: {}",
+                    inventoryMixRestriction.getId(),
+                    Objects.isNull(inventoryMixRestriction.getLocationGroupId()) ?
+                            "N/A" : inventoryMixRestriction.getLocationGroupId(),
+                    Objects.isNull(destinationLocation.getLocationGroup().getId()) ?
+                            "N/A" : destinationLocation.getLocationGroup().getId());
             return false;
         }
         if (Objects.nonNull(inventoryMixRestriction.getLocationId()) &&
                 !inventoryMixRestriction.getLocationId().equals(destinationLocation.getId())) {
+            logger.debug(">> Not Match(location id), mixing restriction id : {}, " +
+                            " mixing restriction's location id: {}" +
+                            ", destination location's location id: {}",
+                    inventoryMixRestriction.getId(),
+                    Objects.isNull(inventoryMixRestriction.getLocationId()) ?
+                            "N/A" : inventoryMixRestriction.getLocationId(),
+                    Objects.isNull(destinationLocation.getId()) ?
+                            "N/A" : destinationLocation.getId());
             return false;
         }
+        logger.debug("last check, see if the warehouse is matching? {}",
+                inventoryMixRestriction.getWarehouseId().equals(inventory.getWarehouseId()));
         return inventoryMixRestriction.getWarehouseId().equals(inventory.getWarehouseId());
     }
 
