@@ -4,10 +4,10 @@ public class ReceiptFileUpload extends FileUploadType {
 
     public ReceiptFileUpload(){
         super("receipts", "Receipt",
-                "inbound/receipts/receiving-inventory/upload",
+                "inbound/receipts/upload",
                 "resource/assets/file-templates/receipts.csv",
-                "",
-                "");
+                "inbound/receipts/upload/progress",
+                "inbound/receipts/upload/result");
         setupColumns();
     }
 
@@ -45,6 +45,10 @@ public class ReceiptFileUpload extends FileUploadType {
                 String.class, 100, true
         ));
 
+        addColumn(new FileUploadTemplateColumn(
+                "unitOfMeasure", "Unit Of Measure",
+                String.class, 10, true
+        ));
         addColumn(new FileUploadTemplateColumn(
                 "inventoryStatus", "Inventory Status",
                 String.class, 100, true

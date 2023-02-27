@@ -375,9 +375,27 @@ public class ReceiptController {
 
 
         File localFile = fileService.saveFile(file);
-        receiptService.saveReceiptData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success("success");
+        String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/receipts/upload/progress")
+    public ResponseBodyWrapper getReceiptFileUploadProgress(Long warehouseId,
+                                                                       String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",receiptService.getReceiptFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/receipts/upload/result")
+    public List<FileUploadResult> getReceiptFileUploadResult(Long warehouseId,
+                                                      String key) throws IOException {
+
+
+        return receiptService.getReceiptFileUploadResult(warehouseId, key);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/receipts/receiving-inventory/upload")
@@ -398,12 +416,19 @@ public class ReceiptController {
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/receipts/receiving-inventory/upload/progress")
-    public ResponseBodyWrapper getFileUploadProgress(Long warehouseId,
+    public ResponseBodyWrapper getReceivingInventoryFileUploadProgress(Long warehouseId,
                                                      String key) throws IOException {
 
 
 
         return  ResponseBodyWrapper.success(
                 String.format("%.2f",receiptService.getReceivingInventoryFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/receipts/receiving-inventory/upload/result")
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+        return receiptService.getReceivingInventoryFileUploadResult(warehouseId, key);
     }
 }

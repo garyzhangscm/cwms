@@ -539,4 +539,41 @@ public class InventoryController {
         return inventoryService.getFileUploadResult(warehouseId, key);
     }
 
+    /**
+     *
+     * Upload files to putaway the inventory
+     * @param warehouseId
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    @RequestMapping(method=RequestMethod.POST, value="/inventories/putaway-inventory/upload")
+    public ResponseBodyWrapper uploadPutawayInventories(Long warehouseId,
+                                                 @RequestParam("file") MultipartFile file,
+                                                 @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+        String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/inventories/putaway-inventory/upload/progress")
+    public ResponseBodyWrapper getPutawayFileUploadProgress(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",inventoryService.getPutawayInventoryFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/inventories/putaway-inventory/upload/result")
+    public List<FileUploadResult> getPutawayFileUploadResult(Long warehouseId,
+                                                      String key) throws IOException {
+
+
+        return inventoryService.getPutawayFileUploadResult(warehouseId, key);
+    }
+
+
 }

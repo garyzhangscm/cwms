@@ -35,6 +35,7 @@ public class InventoryCSVWrapper implements Serializable {
     private String itemPackageType;
 
     private Long quantity;
+    private String unitOfMeasure;
 
     private String inventoryStatus;
 
@@ -103,6 +104,13 @@ public class InventoryCSVWrapper implements Serializable {
         this.inventoryStatus = inventoryStatus;
     }
 
+    public String getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(String unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
+    }
 
     public String getClient() {
         return client;
