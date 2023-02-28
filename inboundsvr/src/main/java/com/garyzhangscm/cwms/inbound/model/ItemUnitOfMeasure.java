@@ -48,6 +48,7 @@ public class ItemUnitOfMeasure implements Serializable {
 
     private Boolean defaultForWorkOrderReceiving;
     private Boolean trackingLpn;
+    private Boolean defaultForDisplay;
 
     public Long getId() {
         return id;
@@ -128,6 +129,14 @@ public class ItemUnitOfMeasure implements Serializable {
 
     public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
         this.defaultForInboundReceiving = defaultForInboundReceiving;
+    }
+
+    public Boolean getDefaultForDisplay() {
+        return defaultForDisplay;
+    }
+
+    public void setDefaultForDisplay(Boolean defaultForDisplay) {
+        this.defaultForDisplay = defaultForDisplay;
     }
 
     public Boolean getDefaultForWorkOrderReceiving() {
