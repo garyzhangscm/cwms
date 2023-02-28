@@ -122,6 +122,27 @@ public class ItemPackageType implements Serializable {
         }
         return stockItemUnitOfMeasure;
     }
+
+
+    public ItemUnitOfMeasure getDisplayItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        // if there's item unit of measure marked as default for display
+        // return it.
+        // otherwise, return the smallest UOM
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemUnitOfMeasures.get(0);
+        for (ItemUnitOfMeasure itemUnitOfMeasure : itemUnitOfMeasures) {
+            if (Boolean.TRUE.equals(itemUnitOfMeasure.getDefaultForDisplay())) {
+                return itemUnitOfMeasure;
+            }
+            if (itemUnitOfMeasure.getQuantity() < stockItemUnitOfMeasure.getQuantity()) {
+                stockItemUnitOfMeasure = itemUnitOfMeasure;
+            }
+        }
+        return stockItemUnitOfMeasure;
+    }
     public Long getId() {
         return id;
     }
