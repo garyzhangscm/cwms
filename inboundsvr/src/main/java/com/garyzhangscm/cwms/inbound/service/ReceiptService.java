@@ -1414,6 +1414,10 @@ public class ReceiptService {
                     Inventory inventory = convertFromWrapper(warehouseId, inventoryCSVWrapper,
                             receipt, matchedReceiptLine);
 
+                    if (Objects.isNull(inventory.getLocation())) {
+                        throw ReceiptOperationException.raiseException("Can't get the location for the inventory. " +
+                                "if receive into the receipt, make sure that the receipt is already check in");
+                    }
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.75));
                     logger.debug("created inventory from the csv line, will start to receive against this inventory" +
                                     " ================           Inventory ================\nlpn： {} , qty: {}, location: {}",
