@@ -284,8 +284,21 @@ public class InventoryMixRestrictionService {
         }
 
         // validate the inventory against any other inventory in the location
+        // we allow mix only if all inventory in the location allow mix with the
+        // new inventory
         return destinationInventories.stream().noneMatch(
-                destinationInventory -> !checkMovementAllowed(inventoryMixRestrictionLine, inventory, destinationInventory)
+                destinationInventory -> {
+                    boolean allowMix = checkMovementAllowed(inventoryMixRestrictionLine, inventory, destinationInventory);
+                    logger.debug("start to check the inventory {} against destination inventory {} by attribute {} / {}, " +
+                                    "allow mix?: {}",
+                            inventory.getLpn(),
+                            destinationInventory.getLpn(),
+                            inventoryMixRestrictionLine.getType(),
+                            inventoryMixRestrictionLine.getAttribute(),
+                            allowMix);
+
+                    return !allowMix;
+                }
         );
 
     }
@@ -304,12 +317,34 @@ public class InventoryMixRestrictionService {
 
             Object valueForInventory = field.get(inventory);
             Object valueForDestinationInventory = field.get(destinationInventory);
+            if (clazz == java.lang.String.class) {
+                if (Strings.isBlank(valueForInventory.toString()) && Strings.isBlank(valueForInventory.toString())) {
+                    return true;
+                }
+                else if (Strings.isBlank(valueForInventory.toString()) && Strings.isNotBlank(valueForInventory.toString())) {
+                    return false;
+
+                }
+                else if (Strings.isNotBlank(valueForInventory.toString()) && Strings.isBlank(valueForInventory.toString())) {
+                    return false;
+
+                }
+                else {
+
+                    return clazz.cast(valueForInventory).equals(clazz.cast(valueForDestinationInventory));
+                }
+            }
+            else if (Objects.isNull(valueForInventory) && Objects.isNull(valueForDestinationInventory)) {
+                return true;
+            }
 
             return clazz.cast(valueForInventory).equals(clazz.cast(valueForDestinationInventory));
 
 
 
         } catch (NoSuchFieldException | IllegalAccessException e) {
+            logger.debug("Error while compare inventory with attribute {}, \n error message: {} ",
+                    inventoryAttributeName, e.getMessage());
             e.printStackTrace();
             return false;
         }

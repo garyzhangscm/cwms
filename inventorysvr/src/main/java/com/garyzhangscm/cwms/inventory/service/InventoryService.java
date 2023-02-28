@@ -3244,7 +3244,7 @@ public class InventoryService {
 
 
         List<InventoryPutawayCSVWrapper> inventoryPutawayCSVWrappers = loadInventoryPutawayData(file);
-        inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0);
+        inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 10.0);
 
         logger.debug("get {} record from the file", inventoryPutawayCSVWrappers.size());
 
@@ -3256,7 +3256,7 @@ public class InventoryService {
             for (InventoryPutawayCSVWrapper inventoryPutawayCSVWrapper : inventoryPutawayCSVWrappers) {
                 // in case anything goes wrong, we will continue with the next record
                 // and save the result with error message to the result set
-                inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index));
+                inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index));
                 try {
 
                     if (Strings.isBlank(inventoryPutawayCSVWrapper.getDestinationLocation())) {
@@ -3264,21 +3264,22 @@ public class InventoryService {
                     }
 
                     Inventory inventory = findBestInventoryForPutaway(warehouseId, inventoryPutawayCSVWrapper);
-                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.25));
+                    inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.25));
+
 
                     Location destinationLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
                             warehouseId, inventoryPutawayCSVWrapper.getDestinationLocation()
                     );
-                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.5));
+                    inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.5));
                     if (Objects.isNull(destinationLocation)) {
                         throw InventoryException.raiseException("can't move the inventory as destination location " +
                                 inventoryPutawayCSVWrapper.getDestinationLocation() + " is not valid");
                     }
                     moveInventory(inventory, destinationLocation);
                     // we complete this inventory
-                    inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+                    inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
 
-                    List<FileUploadResult> fileUploadResults = inventoryFileUploadResults.getOrDefault(
+                    List<FileUploadResult> fileUploadResults = inventoryPutawayFileUploadResults.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
                     );
                     fileUploadResults.add(new FileUploadResult(
@@ -3286,7 +3287,7 @@ public class InventoryService {
                             inventoryPutawayCSVWrapper.toString(),
                             "success", ""
                     ));
-                    inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
+                    inventoryPutawayFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
 
                 }
                 catch(Exception ex) {
@@ -3295,7 +3296,7 @@ public class InventoryService {
                     logger.debug("Error while process inventory upload file record: {}, \n error message: {}",
                             inventoryPutawayCSVWrapper,
                             ex.getMessage());
-                    List<FileUploadResult> fileUploadResults = inventoryFileUploadResults.getOrDefault(
+                    List<FileUploadResult> fileUploadResults = inventoryPutawayFileUploadResults.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
                     );
                     fileUploadResults.add(new FileUploadResult(
@@ -3303,7 +3304,7 @@ public class InventoryService {
                             inventoryPutawayCSVWrapper.toString(),
                             "fail", ex.getMessage()
                     ));
-                    inventoryFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
+                    inventoryPutawayFileUploadResults.put(fileUploadProgressKey, fileUploadResults);
                 }
                 finally {
 
@@ -3311,7 +3312,7 @@ public class InventoryService {
                 }
             }
             // after we process all inventory, mark the progress to 100%
-            inventoryFileUploadProgress.put(fileUploadProgressKey, 100.0);
+            inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 100.0);
         }).start();
 
         return fileUploadProgressKey;
@@ -3506,7 +3507,7 @@ public class InventoryService {
         return fileService.loadData(file, InventoryPutawayCSVWrapper.class);
     }
 
-    public Object getPutawayInventoryFileUploadProgress(String key) {
+    public double getPutawayInventoryFileUploadProgress(String key) {
         return inventoryPutawayFileUploadProgress.getOrDefault(key, 100.0);
     }
 
