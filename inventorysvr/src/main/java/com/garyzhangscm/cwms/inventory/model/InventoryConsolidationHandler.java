@@ -1,7 +1,5 @@
 package com.garyzhangscm.cwms.inventory.model;
 
-import com.garyzhangscm.cwms.inventory.service.InventoryService;
-
 import java.util.List;
 
 public interface InventoryConsolidationHandler {

@@ -32,10 +32,29 @@ public class InventoryConsolidationService {
 
         logger.debug("Check if we will need to consolidate inventory at location: {}", location.getName());
         // Let's get all the inventory that already in the location
-        List<Inventory> inventories = inventoryService.findByLocationId(location.getId(), false);
+        List<Inventory> inventoriesInTheLocation = inventoryService.findByLocationId(location.getId(), false);
 
-        logger.debug(">> we found {} existing inventory record in the location, included the current moved one", inventories.size());
-        Inventory consolidatedInventory = getInventoryConsolidationHandler(location).consolidate(inventory, inventories);
+        if (inventoriesInTheLocation.isEmpty()) {
+            logger.debug("there's nothing to be consolidated in the location {}", location.getName());
+            return inventory;
+        }
+
+        logger.debug(">> we found {} existing inventory record in the location, included the current moved one", inventoriesInTheLocation.size());
+        InventoryConsolidationHandler inventoryConsolidationHandler = getInventoryConsolidationHandler(location);
+        Inventory consolidatedInventory = inventoryConsolidationHandler.consolidate(inventory, inventoriesInTheLocation);
+        // if the inventory consolidation strategy is consolidate by inventory
+        // but there's nothing to be consolidated in this NON empty location(probably the inventory attribute doesn't match)
+        // then we will try to consolidate by LPN
+        if (inventoryConsolidationHandler instanceof InventoryConsolidationByInventory &&
+            consolidatedInventory.equals(inventory)) {
+            // the consolidated inventory is the same as source inventory, which means there's
+            // no consolidate happens yet
+            logger.debug("inventory {} is not able to be consolidated in the NON empty destination {}" +
+                    ", let's try consolidate by LPN",
+                    inventory.getLpn(), location.getName());
+            consolidatedInventory = (new InventoryConsolidationByLPN()).consolidate(inventory, inventoriesInTheLocation);
+
+        }
         logInventoryActivity(location, inventory, consolidatedInventory);
         return consolidatedInventory;
     }

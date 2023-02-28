@@ -318,24 +318,15 @@ public class InventoryMixRestrictionService {
             Object valueForInventory = field.get(inventory);
             Object valueForDestinationInventory = field.get(destinationInventory);
             if (clazz == java.lang.String.class) {
-                if (Strings.isBlank(valueForInventory.toString()) && Strings.isBlank(valueForInventory.toString())) {
-                    return true;
-                }
-                else if (Strings.isBlank(valueForInventory.toString()) && Strings.isNotBlank(valueForInventory.toString())) {
-                    return false;
-
-                }
-                else if (Strings.isNotBlank(valueForInventory.toString()) && Strings.isBlank(valueForInventory.toString())) {
-                    return false;
-
+                if (Strings.isBlank(valueForInventory.toString())){
+                    return Strings.isBlank(valueForDestinationInventory.toString());
                 }
                 else {
-
-                    return clazz.cast(valueForInventory).equals(clazz.cast(valueForDestinationInventory));
+                    return valueForInventory.toString().equalsIgnoreCase(valueForDestinationInventory.toString());
                 }
             }
-            else if (Objects.isNull(valueForInventory) && Objects.isNull(valueForDestinationInventory)) {
-                return true;
+            else if (Objects.isNull(valueForInventory)) {
+                return Objects.isNull(valueForDestinationInventory);
             }
 
             return clazz.cast(valueForInventory).equals(clazz.cast(valueForDestinationInventory));

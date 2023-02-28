@@ -3,10 +3,12 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.garyzhangscm.cwms.inventory.exception.InventoryConsolidationException;
 import com.garyzhangscm.cwms.inventory.service.InventoryConsolidationService;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class InventoryConsolidationByInventory implements InventoryConsolidationHandler {
@@ -63,6 +65,21 @@ public class InventoryConsolidationByInventory implements InventoryConsolidation
                 sourceInventory.getInventoryStatus().equals(destinationInventory.getInventoryStatus()));
         return sourceInventory.getItem().equals(destinationInventory.getItem()) &&
                 sourceInventory.getItemPackageType().equals(destinationInventory.getItemPackageType()) &&
-                sourceInventory.getInventoryStatus().equals(destinationInventory.getInventoryStatus());
+                sourceInventory.getInventoryStatus().equals(destinationInventory.getInventoryStatus()) &&
+                Objects.equals(sourceInventory.getClientId(), destinationInventory.getClientId()) &&
+                isInventoryStringAttributeMatch(sourceInventory.getProductSize(), destinationInventory.getProductSize()) &&
+                isInventoryStringAttributeMatch(sourceInventory.getColor(), destinationInventory.getColor()) &&
+                isInventoryStringAttributeMatch(sourceInventory.getStyle(), destinationInventory.getStyle())
+                ;
+    }
+
+    private boolean isInventoryStringAttributeMatch(String value1, String value2) {
+        if (Strings.isBlank(value1)) {
+            // value 1 is blank, return true only if value 2 is blank as well
+            return Strings.isBlank(value2);
+        }
+        else {
+            return value1.equalsIgnoreCase(value2);
+        }
     }
 }
