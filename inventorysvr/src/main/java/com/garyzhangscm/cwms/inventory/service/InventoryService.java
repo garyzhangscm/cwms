@@ -545,18 +545,26 @@ public class InventoryService {
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
                                                    boolean includeDetails) {
-        return findPickableInventories(itemId, inventoryStatusId, null, null, includeDetails);
-    }
-    public List<Inventory> findPickableInventories(Long itemId,
-                                                   Long inventoryStatusId,
-                                                   Long locationId,
-                                                   String lpn) {
-        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn, true);
+        return findPickableInventories(itemId, inventoryStatusId, null, null,
+                null, null, null, includeDetails);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
                                                    Long locationId,
                                                    String lpn,
+                                                   String color,
+                                                   String productSize,
+                                                   String style) {
+        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
+                color, productSize, style, true);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
+                                                   Long locationId,
+                                                   String lpn,
+                                                   String color,
+                                                   String productSize,
+                                                   String style,
                                                    boolean includeDetails) {
         List<Inventory> availableInventories =
                 Objects.isNull(locationId) ?
@@ -576,6 +584,7 @@ public class InventoryService {
                     }
                     return inventory;
                 }).filter(this::isLocationPickable)
+                .filter(inventory -> inventoryAttributeMatch(inventory, color, productSize, style))
                 .filter(inventory -> {
                     // if LPN is passed in, only return the inventory that match with the LPN
                     if(Strings.isNotBlank(lpn)) {
@@ -595,6 +604,19 @@ public class InventoryService {
                 pickableInventories.size(), itemId, inventoryStatusId);
         // only return inventory in the pickable location;
         return pickableInventories;
+    }
+
+    private boolean inventoryAttributeMatch(Inventory inventory, String color, String productSize, String style) {
+        if (Strings.isNotBlank(color) && !color.equalsIgnoreCase(inventory.getColor())) {
+            return false;
+        }
+        if (Strings.isNotBlank(productSize) && !productSize.equalsIgnoreCase(inventory.getProductSize())) {
+            return false;
+        }
+        if (Strings.isNotBlank(style) && !style.equalsIgnoreCase(inventory.getStyle())) {
+            return false;
+        }
+        return true;
     }
 
     /**

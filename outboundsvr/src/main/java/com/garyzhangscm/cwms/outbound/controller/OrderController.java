@@ -305,7 +305,23 @@ public class OrderController {
 
 
         File localFile = fileService.saveFile(file);
-        orderService.saveOrderData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success("success");
+        String fileUploadProgressKey = orderService.saveOrderData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/orders/upload/progress")
+    public ResponseBodyWrapper getOrderFileUploadProgress(Long warehouseId,
+                                                            String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",orderService.getOrderFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/orders/upload/result")
+    public List<FileUploadResult> getOrderFileUploadResult(Long warehouseId,
+                                                             String key) throws IOException {
+
+
+        return orderService.getOrderFileUploadResult(warehouseId, key);
     }
 }

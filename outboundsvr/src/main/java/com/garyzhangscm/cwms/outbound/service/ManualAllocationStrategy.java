@@ -72,7 +72,10 @@ public class ManualAllocationStrategy implements AllocationStrategy {
                 = inventoryServiceRestemplateClient.getPickableInventory(
                 item.getId(), inventoryStatus.getId(),
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId(),
-                allocationRequest.getLpn());
+                allocationRequest.getLpn(),
+                allocationRequest.getColor(),
+                allocationRequest.getProductSize(),
+                allocationRequest.getStyle());
 
         logger.debug("We have {} pickable inventory of this item, location specified? {}",
                 pickableInventory.size(),

@@ -52,6 +52,9 @@ public class CommonServiceRestemplateClient {
     @Qualifier("autoLoginRestTemplate")
     RestTemplate autoLoginRestTemplate;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Cacheable(cacheNames = "OutboundService_Trailer", unless="#result == null")
     public Trailer getTrailerById(Long id) {
         UriComponentsBuilder builder =
@@ -78,7 +81,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/clients/{id}");
 
         ResponseBodyWrapper<Client> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
                 null,
@@ -97,7 +100,7 @@ public class CommonServiceRestemplateClient {
                         .queryParam("name", name);
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
                 HttpMethod.GET,
                 null,

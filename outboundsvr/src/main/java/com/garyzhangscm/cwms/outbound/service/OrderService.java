@@ -54,6 +54,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -90,7 +91,13 @@ public class OrderService {
     private FileService fileService;
     @Autowired
     private IntegrationService integrationService;
+    @Autowired
+    private UserService userService;
 
+
+    private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
+    private Map<String, Double> fileUploadProgress = new ConcurrentHashMap<>();
+    private Map<String, List<FileUploadResult>> fileUploadResultMap = new ConcurrentHashMap<>();
 
     public Order findById(Long id, boolean loadDetails) {
         Order order = orderRepository.findById(id)
@@ -2150,27 +2157,128 @@ public class OrderService {
         }
     }
 
-    public void saveOrderData(Long warehouseId,
+    public String saveOrderData(Long warehouseId,
                                      File localFile) throws IOException {
 
-        List<OrderLineCSVWrapper> orderLineCSVWrappers = loadDataWithLine(localFile);
-        logger.debug("start to save {} order lines ", orderLineCSVWrappers.size());
-        // see if we need to create order
-        for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
-            Order order = findByNumber(warehouseId, orderLineCSVWrapper.getOrder());
-            if (Objects.isNull(order)) {
-                logger.debug("order {} is not created yet, let's create the order on the fly ", orderLineCSVWrapper.getOrder());
-                // the order is not created yet, let's
-                order = saveOrUpdate(convertFromWrapper(warehouseId, orderLineCSVWrapper));
-            }
-            logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
-                    orderLineCSVWrapper.getLine(),
-                    orderLineCSVWrapper.getItem(),
-                    orderLineCSVWrapper.getExpectedQuantity(),
-                    order.getNumber());
-            orderLineService.saveOrderLineData(warehouseId, order, orderLineCSVWrapper);
-        }
+        String username = userService.getCurrentUserName();
+        String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
 
+        clearFileUploadMap();
+
+        fileUploadProgress.put(fileUploadProgressKey, 0.0);
+        fileUploadResultMap.put(fileUploadProgressKey, new ArrayList<>());
+
+        List<OrderLineCSVWrapper> orderLineCSVWrappers = loadDataWithLine(localFile);
+
+        logger.debug("start to save {} order lines ", orderLineCSVWrappers.size());
+
+        fileUploadProgress.put(fileUploadProgressKey, 5.0);
+
+        new Thread(() -> {
+            int totalCount = orderLineCSVWrappers.size();
+            int index = 0;
+            for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
+
+                try {
+                    fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
+                    Order order = findByNumber(warehouseId, orderLineCSVWrapper.getOrder());
+                    if (Objects.isNull(order)) {
+                        logger.debug("order {} is not created yet, let's create the order on the fly ", orderLineCSVWrapper.getOrder());
+                        // the order is not created yet, let's
+                        order = saveOrUpdate(convertFromWrapper(warehouseId, orderLineCSVWrapper));
+                    }
+                    fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.5));
+                    logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
+                            orderLineCSVWrapper.getLine(),
+                            orderLineCSVWrapper.getItem(),
+                            orderLineCSVWrapper.getExpectedQuantity(),
+                            order.getNumber());
+                    orderLineService.saveOrderLineData(warehouseId, order, orderLineCSVWrapper);
+
+                    fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 1));
+
+                    List<FileUploadResult> fileUploadResults = fileUploadResultMap.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            orderLineCSVWrappers.toString(),
+                            "success", ""
+                    ));
+                    fileUploadResultMap.put(fileUploadProgressKey, fileUploadResults);
+
+                }
+                catch(Exception ex) {
+
+                    ex.printStackTrace();
+                    logger.debug("Error while process receiving order upload file record: {}, \n error message: {}",
+                            orderLineCSVWrappers,
+                            ex.getMessage());
+                    List<FileUploadResult> fileUploadResults = fileUploadResultMap.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            orderLineCSVWrappers.toString(),
+                            "fail", ex.getMessage()
+                    ));
+                    fileUploadResultMap.put(fileUploadProgressKey, fileUploadResults);
+                }
+                finally {
+
+                    index++;
+                }
+            }
+        }).start();
+
+        return fileUploadProgressKey;
 
     }
+
+    private void clearFileUploadMap() {
+
+        if (fileUploadProgress.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = fileUploadProgress.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (fileUploadResultMap.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = fileUploadResultMap.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+
+    public double getOrderFileUploadProgress(String key) {
+        return fileUploadProgress.getOrDefault(key, 100.0);
+    }
+
+    public List<FileUploadResult> getOrderFileUploadResult(Long warehouseId, String key) {
+        return fileUploadResultMap.getOrDefault(key, new ArrayList<>());
+    }
+
 }

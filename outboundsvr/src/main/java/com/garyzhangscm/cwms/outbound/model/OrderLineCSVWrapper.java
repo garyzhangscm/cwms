@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class OrderLineCSVWrapper {
     private String client;
     private String order;
@@ -26,6 +29,7 @@ public class OrderLineCSVWrapper {
     private String line;
     private String item;
     private Long expectedQuantity;
+    private String unitOfMeasure;
     private String inventoryStatus;
 
     private String allocationStrategyType;
@@ -63,6 +67,19 @@ public class OrderLineCSVWrapper {
     private String billToAddressPostcode;
 
 
+    private String color;
+    private String productSize;
+    private String style;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public String getOrder() {
         return order;
@@ -111,6 +128,14 @@ public class OrderLineCSVWrapper {
 
     public void setAllocationStrategyType(String allocationStrategyType) {
         this.allocationStrategyType = allocationStrategyType;
+    }
+
+    public String getUnitOfMeasure() {
+        return unitOfMeasure;
+    }
+
+    public void setUnitOfMeasure(String unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
     }
 
     public String getClient() {
@@ -311,5 +336,29 @@ public class OrderLineCSVWrapper {
 
     public void setBillToAddressPostcode(String billToAddressPostcode) {
         this.billToAddressPostcode = billToAddressPostcode;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

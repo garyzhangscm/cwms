@@ -7,6 +7,7 @@ import com.garyzhangscm.cwms.outbound.service.AllocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Column;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +43,12 @@ public class AllocationRequest {
 
     private boolean manualAllocation = false;
 
+
+    private String color;
+    private String productSize;
+    private String style;
+
+
     // will be setup if the allocation request is a
     // manual allocation for a specific LPN
     private String lpn = "";
@@ -70,9 +77,14 @@ public class AllocationRequest {
         this.warehouse = shipmentLine.getWarehouse();
         this.shipmentLines = Collections.singletonList(shipmentLine);
         this.inventoryStatus = shipmentLine.getOrderLine().getInventoryStatus();
+
         this.workOrderLines = new ArrayList<>();
         this.allocationStrategyTypes = Collections.singletonList(shipmentLine.getOrderLine().getAllocationStrategyType());
         this.quantity = shipmentLine.getOpenQuantity();
+
+        this.color = shipmentLine.getOrderLine().getColor();
+        this.productSize = shipmentLine.getOrderLine().getProductSize();
+        this.style = shipmentLine.getOrderLine().getStyle();
     }
 
 
@@ -254,5 +266,29 @@ public class AllocationRequest {
 
     public void setLpn(String lpn) {
         this.lpn = lpn;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }
