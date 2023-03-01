@@ -1351,6 +1351,10 @@ public class ReceiptService {
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
 
+        clearRecevingInventoryFileUploadMap();
+        receiptFileUploadProgress.put(fileUploadProgressKey, 0.0);
+        receivingInventoryFileUploadResult.put(fileUploadProgressKey, new ArrayList<>());
+
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
 
         List<InventoryCSVWrapper> inventoryCSVWrappers =
@@ -1661,7 +1665,7 @@ public class ReceiptService {
         }
     }
 
-    private void clearInventoryPutawayFileUploadMap() {
+    private void clearRecevingInventoryFileUploadMap() {
 
         if (receivingInventoryFileUploadProgress.size() > INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
             // start to clear the date that is already 1 hours old. The file upload should not

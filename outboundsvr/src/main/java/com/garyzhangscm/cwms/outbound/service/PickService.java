@@ -673,7 +673,11 @@ public class PickService {
                 inventorySummary.getLocation(),
                 inventorySummary.getInventoryStatus(),
                 quantity,
-                pickableUnitOfMeasure, lpn);
+                pickableUnitOfMeasure,
+                lpn,
+                inventorySummary.getColor(),
+                inventorySummary.getProductSize(),
+                inventorySummary.getStyle());
     }
     public Pick generateBasicPickInformation(Long warehouseId,
                                              Item item,
@@ -682,6 +686,22 @@ public class PickService {
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
                                              String lpn) {
+        return generateBasicPickInformation(warehouseId,
+                item, sourceLocation, inventoryStatus,
+                quantity, pickableUnitOfMeasure, lpn,
+                "", "", "");
+
+    }
+    public Pick generateBasicPickInformation(Long warehouseId,
+                                             Item item,
+                                             Location sourceLocation,
+                                             InventoryStatus inventoryStatus,
+                                             Long quantity,
+                                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                                             String lpn,
+                                             String color,
+                                             String productSize,
+                                             String style) {
 
         Pick pick = new Pick();
         pick.setWarehouseId(warehouseId);
@@ -694,6 +714,10 @@ public class PickService {
         pick.setNumber(getNextPickNumber(sourceLocation.getWarehouse().getId()));
         pick.setStatus(PickStatus.PENDING);
         pick.setInventoryStatusId(inventoryStatus.getId());
+
+        pick.setColor(color);
+        pick.setProductSize(productSize);
+        pick.setStyle(style);
 
 
         if (Objects.nonNull(pickableUnitOfMeasure)) {
@@ -1685,7 +1709,9 @@ public class PickService {
         List<Inventory> pickableInventory
                 = inventoryServiceRestemplateClient.getPickableInventory(
                 item.getId(), inventoryStatus.getId(),
-                Objects.isNull(sourceLocation) ?  null : sourceLocation.getId());
+                Objects.isNull(sourceLocation) ?  null : sourceLocation.getId(),
+                allocationRequest.getColor(), allocationRequest.getProductSize(),
+                allocationRequest.getStyle());
 
         long pickableInventoryQuantity = pickableInventory.stream().map(inventory -> inventory.getQuantity())
                 .filter(quantity -> quantity >=0 ).mapToLong(Long::longValue).sum();

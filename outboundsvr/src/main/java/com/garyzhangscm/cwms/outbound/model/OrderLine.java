@@ -130,6 +130,17 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name = "quickbook_txnlineid")
     private String quickbookTxnLineID;
 
+
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
+
     @Override
     public String toString() {
         try {
@@ -346,5 +357,29 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setNonAllocatable(Boolean nonAllocatable) {
         this.nonAllocatable = nonAllocatable;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

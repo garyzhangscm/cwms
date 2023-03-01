@@ -338,8 +338,7 @@ public class OrderLineService{
 
         OrderLine orderLine = new OrderLine();
         orderLine.setNumber(orderLineCSVWrapper.getLine());
-        orderLine.setExpectedQuantity(orderLineCSVWrapper.getExpectedQuantity());
-        orderLine.setOpenQuantity(orderLineCSVWrapper.getExpectedQuantity());
+
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
 
@@ -357,6 +356,21 @@ public class OrderLineService{
             Item item = inventoryServiceRestemplateClient.getItemByName(
                     warehouseId, orderLineCSVWrapper.getItem());
             orderLine.setItemId(item.getId());
+
+            long unitOfMeasureQuantity = 1l;
+            if (Strings.isNotBlank(orderLineCSVWrapper.getUnitOfMeasure()) &&
+                    Objects.nonNull(item)) {
+                unitOfMeasureQuantity = item.getDefaultItemPackageType().getItemUnitOfMeasures()
+                        .stream().filter(itemUnitOfMeasure ->
+                                itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(
+                                        orderLineCSVWrapper.getUnitOfMeasure()
+                                ))
+                        .map(itemUnitOfMeasure -> itemUnitOfMeasure.getQuantity())
+                        .findFirst().orElse(1l);
+            }
+            orderLine.setExpectedQuantity(orderLineCSVWrapper.getExpectedQuantity() * unitOfMeasureQuantity);
+            orderLine.setOpenQuantity(orderLine.getExpectedQuantity());
+
         }
 
         InventoryStatus inventoryStatus = null;

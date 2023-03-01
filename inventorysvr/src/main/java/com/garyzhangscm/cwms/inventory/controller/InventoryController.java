@@ -105,6 +105,9 @@ public class InventoryController {
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                             @RequestParam(name = "color", defaultValue = "", required = false) String color,
+                                             @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
+                                             @RequestParam(name = "style", defaultValue = "", required = false) String style,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
@@ -125,10 +128,14 @@ public class InventoryController {
     public List<Inventory> findPickableInventories(@RequestParam Long itemId,
                                                    @RequestParam Long inventoryStatusId,
                                                    @RequestParam(name = "lpn", defaultValue = "", required = false) String lpn,
+                                                   @RequestParam(name = "color", defaultValue = "", required = false) String color,
+                                                   @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
+                                                   @RequestParam(name = "style", defaultValue = "", required = false) String style,
                                                    @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId) {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
-        return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn);
+        return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
+                color, productSize, style);
     }
 
 

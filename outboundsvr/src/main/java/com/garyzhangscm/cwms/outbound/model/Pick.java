@@ -155,6 +155,14 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "work_id")
     private Long workId;
 
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
 
     @JsonIgnore
     public Double getSize() {
@@ -458,5 +466,29 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         else {
             return item.getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
         }
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

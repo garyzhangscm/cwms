@@ -6,8 +6,8 @@ public class OrderFileUpload extends FileUploadType {
         super("orders", "Order",
                 "outbound/orders/upload",
                 "resource/assets/file-templates/orders.csv",
-                "",
-                "");
+                "outbound/orders/upload/progress",
+                "outbound/orders/upload/result");
         setupColumns();
     }
 
@@ -33,6 +33,10 @@ public class OrderFileUpload extends FileUploadType {
         addColumn(new FileUploadTemplateColumn(
                 "expectedQuantity", "Order Quantity",
                 Long.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "unitOfMeasure", "Unit of Measure",
+                String.class, 20, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "inventoryStatus", "Inventory Status",
@@ -138,6 +142,20 @@ public class OrderFileUpload extends FileUploadType {
                 "billToAddressPostcode", "Bill to Customer Address - Zip Code",
                 String.class, 25, true
         ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "color", "Color",
+                String.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "productSize", "Product Size",
+                String.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "style", "Style",
+                String.class, 100, false
+        ));
+
     }
 
 

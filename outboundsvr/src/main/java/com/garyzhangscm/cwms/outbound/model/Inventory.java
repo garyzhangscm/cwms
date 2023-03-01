@@ -65,29 +65,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     private Warehouse warehouse;
 
+    private String color;
+    private String productSize;
+    private String style;
+
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
-    @Override
-    public String toString() {
-        return "Inventory{" +
-                "id=" + id +
-                ", lpn='" + lpn + '\'' +
-                ", locationId=" + locationId +
-                ", location=" + location +
-                ", receiptId=" + receiptId +
-                ", item=" + item +
-                ", itemPackageType=" + itemPackageType +
-                ", quantity=" + quantity +
-                ", virtual=" + virtual +
-                ", inventoryStatus=" + inventoryStatus +
-                ", pickId=" + pickId +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", pick=" + pick +
-                ", inventoryMovements=" + inventoryMovements +
-                '}';
-    }
 
     public Long getId() {
         return id;
@@ -236,5 +220,29 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setAllocatedByPick(Pick allocatedByPick) {
         this.allocatedByPick = allocatedByPick;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

@@ -64,6 +64,9 @@ public class InventoryServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Cacheable(cacheNames = "OutboundService_Item", unless="#result == null")
     public Item getItemById(Long id) {
 
@@ -74,7 +77,7 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/items/{id}");
 
         ResponseBodyWrapper<Item> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                         null,
@@ -98,7 +101,7 @@ public class InventoryServiceRestemplateClient {
 
             // logger.debug("Start to get item: {} / {}", name, warehouseId);
             ResponseBodyWrapper<List<Item>> responseBodyWrapper
-                    = restTemplate.exchange(
+                    = restTemplateProxy.getRestTemplate().exchange(
                     builder.build(true).toUri(),
                     HttpMethod.GET,
                     null,
@@ -171,7 +174,7 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/inventory-status/{id}");
 
         ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                         null,
@@ -206,11 +209,16 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
-    public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId) {
-        return getPickableInventory(itemId, inventoryStatusId, locationId, "");
+    public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId,
+                                                String color, String productSize,
+                                                String style) {
+        return getPickableInventory(itemId, inventoryStatusId, locationId, "",
+                color, productSize, style);
     }
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId,
-                                                Long locationId, String lpn) {
+                                                Long locationId, String lpn,
+                                                String color, String productSize,
+                                                String style) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -224,7 +232,15 @@ public class InventoryServiceRestemplateClient {
         }
         if (Strings.isNotBlank(lpn)) {
             builder = builder.queryParam("lpn", lpn);
-
+        }
+        if (Strings.isNotBlank(color)) {
+            builder = builder.queryParam("color", color);
+        }
+        if (Strings.isNotBlank(productSize)) {
+            builder = builder.queryParam("productSize", productSize);
+        }
+        if (Strings.isNotBlank(style)) {
+            builder = builder.queryParam("style", style);
         }
 
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
@@ -551,7 +567,7 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
                 HttpMethod.GET,
                 null,

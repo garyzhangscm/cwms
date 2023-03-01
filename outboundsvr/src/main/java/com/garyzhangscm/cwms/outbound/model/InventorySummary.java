@@ -53,6 +53,9 @@ public class InventorySummary implements Serializable {
     // value: inventory
     private Map<String, List<Inventory>> inventories = new HashMap<>();
 
+    private String color;
+    private String productSize;
+    private String style;
 
     public InventorySummary(){}
 
@@ -65,6 +68,9 @@ public class InventorySummary implements Serializable {
         setVirtual(inventory.getVirtual());
         setInventoryStatus(inventory.getInventoryStatus());
         setFifoDate(inventory.getCreatedTime());
+        setColor(inventory.getColor());
+        setProductSize(inventory.getProductSize());
+        setStyle(inventory.getStyle());
         addInventory(inventory);
     }
 
@@ -186,5 +192,29 @@ public class InventorySummary implements Serializable {
 
     public void setInventories(Map<String, List<Inventory>> inventories) {
         this.inventories = inventories;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.model.Inventory;
 import com.garyzhangscm.cwms.outbound.model.InventorySummary;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,13 @@ public class InventorySummaryService {
                 .append("-")
                 .append(inventory.getInventoryStatus().getId())
                 .append("-")
-                .append(inventory.getItemPackageType().getId());
+                .append(inventory.getItemPackageType().getId())
+                .append("-")
+                .append(inventory.getColor())
+                .append("-")
+                .append(inventory.getProductSize())
+                .append("-")
+                .append(inventory.getStyle()) ;
         return inventorySummaryKey.toString();
     }
 }
