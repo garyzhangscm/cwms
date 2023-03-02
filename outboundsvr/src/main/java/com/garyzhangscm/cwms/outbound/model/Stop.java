@@ -48,7 +48,7 @@ public class Stop  extends AuditibleEntity<String> {
     // if we respect the sequence of the stop
     // in the same trailer appointment
     @Column(name = "stop_sequence")
-    private Long sequence;
+    private Integer sequence;
 
     @Column(name = "trailer_appointment_id")
     private Long trailerAppointmentId;
@@ -279,11 +279,11 @@ public class Stop  extends AuditibleEntity<String> {
         this.trailerAppointmentId = trailerAppointmentId;
     }
 
-    public Long getSequence() {
+    public Integer getSequence() {
         return sequence;
     }
 
-    public void setSequence(Long sequence) {
+    public void setSequence(Integer sequence) {
         this.sequence = sequence;
     }
 

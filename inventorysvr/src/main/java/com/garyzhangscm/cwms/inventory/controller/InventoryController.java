@@ -65,6 +65,9 @@ public class InventoryController {
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                              @RequestParam(name="color", required = false, defaultValue = "") String color,
+                                              @RequestParam(name="productSize", required = false, defaultValue = "") String productSize,
+                                              @RequestParam(name="style", required = false, defaultValue = "") String style,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
@@ -77,7 +80,7 @@ public class InventoryController {
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId,  receiptId, customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, inventoryIds, notPutawayInventoryOnly,
+                pickIds, lpn, color, productSize, style, inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction,
                 includeDetails);
 
@@ -116,7 +119,8 @@ public class InventoryController {
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, customerReturnOrderId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false).size();
+                pickIds, lpn, color, productSize, style,
+                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
@@ -217,6 +221,9 @@ public class InventoryController {
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                                            @RequestParam(name = "color", defaultValue = "", required = false) String color,
+                                                            @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
+                                                            @RequestParam(name = "style", defaultValue = "", required = false) String style,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
@@ -228,7 +235,9 @@ public class InventoryController {
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId,  receiptId, customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, inventoryIds, notPutawayInventoryOnly,
+                pickIds, lpn,
+                color, productSize, style,
+                inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction);
 
         return ResponseBodyWrapper.success("success");

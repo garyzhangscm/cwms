@@ -172,6 +172,9 @@ public class InventoryService {
                                    String workOrderByProductIds,
                                    String pickIds,
                                    String lpn,
+                                   String color,
+                                   String productSize,
+                                   String style,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
@@ -181,7 +184,7 @@ public class InventoryService {
                 locationName, locationId, locationIds, locationGroupId,
                 receiptId, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
-                pickIds, lpn,
+                pickIds, lpn, color, productSize, style,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
                 true);
@@ -207,6 +210,9 @@ public class InventoryService {
                                    String workOrderByProductIds,
                                    String pickIds,
                                    String lpn,
+                                   String color,
+                                   String productSize,
+                                   String style,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
@@ -370,6 +376,30 @@ public class InventoryService {
 
                     }
 
+                    if (StringUtils.isNotBlank(color)) {
+                        if (color.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("color"), color.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("color"), color));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(productSize)) {
+                        if (productSize.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("productSize"), productSize.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("productSize"), productSize));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(style)) {
+                        if (style.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("style"), style.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("style"), style));
+                        }
+                    }
 
                     if (StringUtils.isNotBlank(inventoryIds)) {
 
@@ -525,6 +555,9 @@ public class InventoryService {
                 null,
                 null,
                 locationIds,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -692,6 +725,9 @@ public class InventoryService {
                 null,
                 null,
                 locationGroupId,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -2349,6 +2385,9 @@ public class InventoryService {
                         pickIds,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
                         null, null, null
                 );
                 // Let's remove those inventories
@@ -2396,6 +2435,9 @@ public class InventoryService {
                     null,
                     lpn,
                     null,
+                    null,
+                    null,
+                    null,
                     null, null, null
             );
             // we will only return the inventory without any pick attached to it
@@ -2428,6 +2470,9 @@ public class InventoryService {
                         null,
                         null,
                         pickIds,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null, null, null
@@ -2924,6 +2969,9 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 null, null);
 
 
@@ -3023,6 +3071,7 @@ public class InventoryService {
                                                             String workOrderByProductIds,
                                                             String pickIds,
                                                             String lpn,
+                                     String color, String productSize, String style,
                                                             String inventoryIds,
                                                             Boolean notPutawayInventoryOnly,
                                                             Boolean includeVirturalInventory,
@@ -3032,7 +3081,7 @@ public class InventoryService {
                 locationName, locationId, locationIds, locationGroupId,
                 receiptId, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
-                pickIds, lpn,
+                pickIds, lpn, color, productSize, style,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
                 false);

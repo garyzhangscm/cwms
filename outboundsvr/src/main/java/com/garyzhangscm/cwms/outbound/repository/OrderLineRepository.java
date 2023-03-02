@@ -32,8 +32,13 @@ import java.util.List;
 @Repository
 public interface OrderLineRepository extends JpaRepository<OrderLine, Long>, JpaSpecificationExecutor<OrderLine> {
 
-    @Query("select ol from OrderLine ol where order.id = :orderId and number = :number")
+    @Query("select ol from OrderLine ol where ol.order.id = :orderId and number = :number")
     OrderLine findByNaturalKey(Long orderId, String number);
+
+    @Query("select ol from OrderLine ol where ol.order.warehouseId = :warehouseId " +
+            " and ol.order.number = :orderNumber" +
+            " and ol.number = :lineNumber ")
+    OrderLine findByNumber(Long warehouseId, String orderNumber, String lineNumber);
 
 
     @Query("select ol from OrderLine ol inner join ol.order o where ol.itemId = :itemId " +

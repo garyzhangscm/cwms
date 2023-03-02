@@ -218,18 +218,24 @@ public class StopService {
         assignTrailerAppointment(findById(stopId), trailerAppointment);
     }
 
-    public Long getNextStopSequenceInTrailerAppointment(Long warehouseId, TrailerAppointment trailerAppointment) {
+    public Integer getNextStopSequenceInTrailerAppointment(Long warehouseId, TrailerAppointment trailerAppointment) {
         if (Objects.isNull(trailerAppointment.getId())) {
-            return 1l;
+            return 1;
         }
         List<Stop> stops = findAll(warehouseId, null,
                 trailerAppointment.getId(), null, null,null);
-        return stops.stream().mapToLong(stop -> Objects.isNull(stop.getSequence()) ? 0 : stop.getSequence())
-                .max().orElse(0l) + 1l;
+        return stops.stream().mapToInt(stop -> Objects.isNull(stop.getSequence()) ? 0 : stop.getSequence())
+                .max().orElse(0) + 1;
 
     }
 
     public void assignTrailerAppointment(Stop stop, TrailerAppointment trailerAppointment) {
+        assignTrailerAppointment(stop, trailerAppointment,
+                getNextStopSequenceInTrailerAppointment(stop.getWarehouseId(), trailerAppointment));
+    }
+
+    public void assignTrailerAppointment(Stop stop, TrailerAppointment trailerAppointment,
+                                         Integer stopSequence) {
         if (Objects.nonNull(stop.getTrailerAppointmentId())) {
             // if the stop is already assigned to some trailer appointment,
 
@@ -245,7 +251,7 @@ public class StopService {
             }
         }
         stop.setTrailerAppointmentId(trailerAppointment.getId());
-        stop.setSequence(getNextStopSequenceInTrailerAppointment(stop.getWarehouseId(), trailerAppointment));
+        stop.setSequence(stopSequence);
         save(stop);
     }
 

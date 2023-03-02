@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.common.service;
 
-import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
 import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.KafkaSender;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
@@ -26,7 +25,6 @@ import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.exception.TrailerException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.TrailerAppointmentRepository;
-import com.garyzhangscm.cwms.common.repository.TrailerRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -39,11 +37,14 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Service
@@ -56,11 +57,20 @@ public class TrailerAppointmentService {
     @Autowired
     private KafkaSender kafkaSender;
 
+    @Autowired
+    private FileService fileService;
+
+    @Autowired
+    private TrailerService trailerService;
+
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+
+    @Autowired
+    private UserService userService;
 
 
     public TrailerAppointment findById(Long id) {
@@ -196,5 +206,33 @@ public class TrailerAppointmentService {
         TrailerAppointment trailerAppointment = findById(id);
         trailerAppointment.setStatus(TrailerAppointmentStatus.valueOf(status));
         return saveOrUpdate(trailerAppointment);
+    }
+
+
+    public TrailerAppointment addTrailerAppointment(Long warehouseId, String trailerNumber,
+                                                    String number, String description,
+                                                    String type) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        // see if we already have the trailer, if not, create the trailer
+        Trailer trailer = trailerService.findByNumber(warehouseId, trailerNumber);
+        if (Objects.isNull(trailer)) {
+            trailer = trailerService.addTrailer(warehouse.getCompanyId(),
+                    warehouseId, trailerNumber,
+                    "create for appointment " + number);
+        }
+
+        TrailerAppointment trailerAppointment = new TrailerAppointment();
+        trailerAppointment.setCompanyId(warehouse.getCompanyId());
+        trailerAppointment.setWarehouseId(warehouseId);
+        trailerAppointment.setNumber(number);
+        trailerAppointment.setDescription(description);
+
+        trailerAppointment.setTrailer(trailer);
+        trailerAppointment.setType(TrailerAppointmentType.valueOf(type));
+        trailerAppointment.setStatus(TrailerAppointmentStatus.PLANNED);
+        return saveOrUpdate(trailerAppointment);
+
+
+
     }
 }

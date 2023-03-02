@@ -148,6 +148,11 @@ public class OrderLineService{
         return orderLines;
     }
 
+    public OrderLine findByNumber(Long warehouseId, String orderNumber, String lineNumber) {
+
+        return orderLineRepository.findByNumber(warehouseId,
+                orderNumber, lineNumber);
+    }
     public OrderLine findByNaturalKey(Long orderId, String number) {
         return orderLineRepository.findByNaturalKey(orderId, number);
 
@@ -338,6 +343,10 @@ public class OrderLineService{
 
         OrderLine orderLine = new OrderLine();
         orderLine.setNumber(orderLineCSVWrapper.getLine());
+
+        orderLine.setColor(orderLineCSVWrapper.getColor());
+        orderLine.setProductSize(orderLineCSVWrapper.getProductSize());
+        orderLine.setStyle(orderLineCSVWrapper.getStyle());
 
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);

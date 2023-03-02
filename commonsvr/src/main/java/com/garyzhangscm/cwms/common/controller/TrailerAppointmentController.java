@@ -19,11 +19,11 @@
 package com.garyzhangscm.cwms.common.controller;
 
 import com.garyzhangscm.cwms.common.model.TrailerAppointment;
+import com.garyzhangscm.cwms.common.service.FileService;
 import com.garyzhangscm.cwms.common.service.TrailerAppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -32,6 +32,9 @@ import java.util.List;
 public class TrailerAppointmentController {
     @Autowired
     TrailerAppointmentService trailerAppointmentService;
+
+    @Autowired
+    private FileService fileService;
 
     @RequestMapping(value="/trailer-appointments", method = RequestMethod.GET)
     public List<TrailerAppointment> findAllTrailerAppointments(
@@ -61,6 +64,15 @@ public class TrailerAppointmentController {
     public TrailerAppointment changeTrailerAppointmentStatus(@PathVariable Long id,
                                                              @RequestParam String status) {
         return trailerAppointmentService.changeTrailerAppointmentStatus(id, status);
+    }
+
+    @RequestMapping(value="/trailer-appointments/new", method = RequestMethod.POST)
+    public TrailerAppointment addTrailerAppointment(@RequestParam Long warehouseId,
+                                                    @RequestParam String trailerNumber,
+                                                    @RequestParam String number,
+                                                    @RequestParam String type,
+                                                    @RequestParam(name = "description", required = false, defaultValue = "")  String description) {
+        return trailerAppointmentService.addTrailerAppointment(warehouseId, trailerNumber, number, description, type);
     }
 
 

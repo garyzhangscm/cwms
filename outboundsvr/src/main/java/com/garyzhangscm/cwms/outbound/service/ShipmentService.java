@@ -301,10 +301,28 @@ public class ShipmentService {
         });
         return shipments;
     }
+
+    /**
+     * Plan order lines into a shipment. If the shipment number already exist, we will
+     * add the order lines into the existing shipment
+     * @param shipmentNumber
+     * @param orderLines
+     * @return
+     */
     @Transactional
     public Shipment planShipments(String shipmentNumber, List<OrderLine> orderLines){
         return planShipments(null, shipmentNumber, orderLines);
     }
+
+    /**
+     * Plan order lines into a shipment and plan the shipment into the wave.
+     * If the shipment number already exists, we will add order lines into the existing shipment
+     *
+     * @param wave
+     * @param shipmentNumber
+     * @param orderLines
+     * @return
+     */
     @Transactional
     public Shipment planShipments(Wave wave, String shipmentNumber, List<OrderLine> orderLines){
 
@@ -1248,5 +1266,20 @@ public class ShipmentService {
 
                 }
         );
+    }
+
+    /**
+     * Add order line into the existing shipment
+     * @param shipment
+     * @param orderLine
+     */
+    public void addOrderLine(Shipment shipment, OrderLine orderLine) {
+
+        ShipmentLine shipmentLine = shipmentLineService.createShipmentLine(
+                shipment, orderLine, orderLine.getOpenQuantity()
+        );
+        // Add the new shipment line to the shipment
+        shipment.getShipmentLines().add(shipmentLine);
+        save(shipment);
     }
 }

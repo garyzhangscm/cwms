@@ -1352,7 +1352,6 @@ public class ReceiptService {
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
 
         clearRecevingInventoryFileUploadMap();
-        receiptFileUploadProgress.put(fileUploadProgressKey, 0.0);
         receivingInventoryFileUploadResult.put(fileUploadProgressKey, new ArrayList<>());
 
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
