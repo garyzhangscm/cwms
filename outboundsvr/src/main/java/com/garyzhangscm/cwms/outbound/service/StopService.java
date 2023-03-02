@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Column;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -158,6 +159,69 @@ public class StopService {
         }
     }
 
+
+    public Stop createStop(Long warehouseId,
+                           int sequence,
+                           String contactorFirstname,
+                           String contactorLastname,
+                           String addressCountry,
+                           String addressState,
+                           String addressCounty,
+                           String addressCity,
+                           String addressDistrict,
+                           String addressLine1,
+                           String addressLine2,
+                           String addressPostcode) {
+
+        return createStop(
+                warehouseId,
+                commonServiceRestemplateClient.getNextNumber(warehouseId, "stop"),
+                sequence,
+                contactorFirstname,
+                contactorLastname,
+                addressCountry,
+                addressState,
+                addressCounty,
+                addressCity,
+                addressDistrict,
+                addressLine1,
+                addressLine2,
+                addressPostcode
+        );
+    }
+    public Stop createStop(Long warehouseId,
+                           String number,
+                           int sequence,
+                           String contactorFirstname,
+                           String contactorLastname,
+                           String addressCountry,
+                           String addressState,
+                           String addressCounty,
+                           String addressCity,
+                           String addressDistrict,
+                           String addressLine1,
+                           String addressLine2,
+                           String addressPostcode) {
+
+        Stop stop = new Stop();
+        stop.setWarehouseId(warehouseId);
+        stop.setNumber(number);
+        stop.setSequence(sequence);
+
+        stop.setContactorFirstname(contactorFirstname);
+        stop.setContactorLastname(contactorLastname);
+
+        stop.setAddressCountry(addressCountry);
+        stop.setAddressState(addressState);
+        stop.setAddressCounty(addressCounty);
+        stop.setAddressCity(addressCity);
+        stop.setAddressDistrict(addressDistrict);
+        stop.setAddressLine1(addressLine1);
+        stop.setAddressLine2(addressLine2);
+        stop.setAddressPostcode(addressPostcode);
+        return saveOrUpdate(stop);
+
+    }
     public Stop createStop(Shipment shipment) {
         Stop stop = new Stop();
         stop.setNumber(commonServiceRestemplateClient.getNextNumber(shipment.getWarehouseId(), "stop"));

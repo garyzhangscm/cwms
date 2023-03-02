@@ -261,5 +261,12 @@ public class TrailerService {
         return saveOrUpdate(trailer);
     }
 
+    public Trailer assignTrailerAppointment(Trailer trailer,
+                                            TrailerAppointment trailerAppointment) {
+
+        trailer.setCurrentAppointment(trailerAppointment);
+        return saveOrUpdate(trailer);
+    }
+
 
 }

@@ -355,8 +355,16 @@ public class TrailerAppointmentService {
                     if (Objects.isNull(trailerAppointment)) {
                         logger.debug("Trailer appointment {} is not created yet, let's create the order on the fly ",
                                 shippingTractorAppointmentLineCSVWrapper.getNumber());
+
                         trailerAppointment = commonServiceRestemplateClient.addTrailerAppointment(
-                                warehouseId, shippingTractorAppointmentLineCSVWrapper.getTrailer(),
+                                warehouseId,
+                                // if the trailer is not passed in and we need to create
+                                // a new trailer appointment, we will use the trailer appointment number
+                                // as the trailer number so the the common service will create the
+                                // trailer with the same number as the trailer appointment
+                                Strings.isBlank(shippingTractorAppointmentLineCSVWrapper.getTrailer()) ?
+                                    shippingTractorAppointmentLineCSVWrapper.getNumber() :
+                                        shippingTractorAppointmentLineCSVWrapper.getTrailer(),
                                 shippingTractorAppointmentLineCSVWrapper.getNumber(),
                                 shippingTractorAppointmentLineCSVWrapper.getDescription(),
                                 TrailerAppointmentType.SHIPPING
@@ -623,7 +631,22 @@ public class TrailerAppointmentService {
     private void attachShipmentToTrailerAppointment(Shipment existingShipment,
                                                     TrailerAppointment trailerAppointment,
                                                     Integer stopSequence) {
-        Stop stop = stopService.createStop(existingShipment);
+        Stop stop = stopService.createStop(existingShipment.getWarehouseId(),
+                stopSequence,
+                existingShipment.getShipToContactorFirstname(),
+                existingShipment.getShipToContactorLastname(),
+                existingShipment.getShipToAddressCountry(),
+                existingShipment.getShipToAddressState(),
+                existingShipment.getShipToAddressCounty(),
+                existingShipment.getShipToAddressCity(),
+                existingShipment.getShipToAddressDistrict(),
+                existingShipment.getShipToAddressLine1(),
+                existingShipment.getShipToAddressLine2(),
+                existingShipment.getShipToAddressPostcode());
+
+        // assign the shipment to the stop
+        shipmentService.assignShipmentToStop(stop, existingShipment);
+
 
         stopService.assignTrailerAppointment(stop, trailerAppointment,
                 stopSequence);
