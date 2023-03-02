@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.EmergencyReplenishmentConfiguration;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.ReportHistory;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +50,9 @@ public class OutboundController {
     @Autowired
     ShortAllocationService shortAllocationService;
 
+    @Autowired
+    private TrailerAppointmentService trailerAppointmentService;
+
 
     @RequestMapping(value="/outbound-configuration/item-override", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> handleItemOverride(
@@ -73,6 +73,17 @@ public class OutboundController {
                 oldItemId, newItemId);
         shortAllocationService.handleItemOverride(warehouseId,
                 oldItemId, newItemId);
+
+        return ResponseBodyWrapper.success("success");
+    }
+
+
+    @RequestMapping(value="/trailer-appointments/init", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> initTrailerAppointment(
+            @RequestBody TrailerAppointment trailerAppointment
+            ) {
+        trailerAppointmentService.initTrailerAppointment(trailerAppointment);
+
 
         return ResponseBodyWrapper.success("success");
     }

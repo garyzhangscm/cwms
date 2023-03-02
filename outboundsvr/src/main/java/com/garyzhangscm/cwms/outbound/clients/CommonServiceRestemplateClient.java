@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
@@ -321,6 +322,69 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+    @Cacheable(cacheNames = "OutboundService_TrailerAppointment", unless="#result == null")
+    public TrailerAppointment getTrailerAppointmentByNumber(Long warehouseId, String number) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/trailer-appointments")
+                .queryParam("warehouseId", warehouseId);
+        if (Strings.isNotBlank(number)) {
+            builder = builder.queryParam("number", number);
+        }
+
+        try {
+
+            ResponseBodyWrapper<List<TrailerAppointment>> responseBodyWrapper
+                    = restTemplateProxy.getRestTemplate().exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<List<TrailerAppointment>>>() {}).getBody();
+
+            List<TrailerAppointment> trailerAppointments =
+                    responseBodyWrapper.getData();
+            if (trailerAppointments.isEmpty() || trailerAppointments.size() > 1) {
+                return null;
+            }
+            else {
+                return trailerAppointments.get(0);
+            }
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            logger.debug("Error while get trailer by number {} / {}", warehouseId, number);
+            return null;
+        }
+    }
+    public TrailerAppointment addTrailerAppointment(Long warehouseId, String trailerNumber,
+                                                    String trailerAppointmentNumber,
+                                                    String trailerAppointmentDescription,
+                                                    TrailerAppointmentType type) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/trailer-appointments/new")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("trailerNumber", trailerNumber)
+                        .queryParam("number", trailerAppointmentNumber)
+                        .queryParam("type", type);
+        if (Strings.isNotBlank(trailerAppointmentDescription)) {
+            builder = builder.queryParam("description", trailerAppointmentDescription);
+        }
+
+
+        ResponseBodyWrapper<TrailerAppointment> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<TrailerAppointment>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     public TrailerAppointment changeTrailerAppointmentStatus(Long trailerAppointmentId,
                                                           TrailerAppointmentStatus trailerAppointmentStatus) {
         UriComponentsBuilder builder =

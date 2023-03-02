@@ -40,4 +40,6 @@ public interface TrailerRepository extends JpaRepository<Trailer, Long>, JpaSpec
                     "                 where tractor_appointment.status not in ('CANCELLED','COMPLETED') and trailer.trailer_id = tractor_appointment_trailer.trailer_id)" ,
             nativeQuery = true )
     List<Trailer> findTrailersOpenForTractor(Long companyId, Long warehouseId);
+
+    Trailer findByWarehouseIdAndNumber(Long warehouseId, String number);
 }

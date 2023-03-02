@@ -481,6 +481,15 @@ public class InventoryServiceRestemplateClient {
                 builder = builder.queryParam("lpn", pick.getLpn());
             }
 
+            if (StringUtils.isNotBlank(pick.getColor())) {
+                builder = builder.queryParam("color", pick.getColor());
+            }
+            if (StringUtils.isNotBlank(pick.getProductSize())) {
+                builder = builder.queryParam("productSize", pick.getProductSize());
+            }
+            if (StringUtils.isNotBlank(pick.getStyle())) {
+                builder = builder.queryParam("style", pick.getStyle());
+            }
 
             ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                     = restTemplate.exchange(

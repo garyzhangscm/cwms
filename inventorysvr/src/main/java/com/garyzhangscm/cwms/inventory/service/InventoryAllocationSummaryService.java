@@ -63,7 +63,7 @@ public class InventoryAllocationSummaryService {
         List<Inventory> inventories = inventoryService.findAll(warehouseId,
                 itemId, itemName,null,null,null,null, null,locationName,
                 locationId,null,null,null,null,null,
-                null,null,null,null,null, null,
+                null,null,null,null,null, null,null,null,null,
                 false, null);
         // key: location id + item id  + inventory status id
         Map<String, InventoryAllocationSummary> inventoryAllocationSummaryMap = new HashMap<>();

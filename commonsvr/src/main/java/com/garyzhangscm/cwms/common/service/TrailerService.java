@@ -115,6 +115,13 @@ public class TrailerService {
         return trailers;
     }
 
+    public Trailer findByNumber(Long warehouseId, String number) {
+
+        return trailerRepository.findByWarehouseIdAndNumber(
+                warehouseId, number
+        );
+    }
+
     /**
      * Remove the duplicated container record. If we have 2 record with the same container number
      * but different warehouse, then we will remove the one without any warehouse information
@@ -138,8 +145,18 @@ public class TrailerService {
         }
     }
 
-    public Trailer save(Trailer trailers) {
-        return trailerRepository.save(trailers);
+    public Trailer save(Trailer trailer) {
+        return trailerRepository.save(trailer);
+    }
+
+    public Trailer saveOrUpdate(Trailer trailer) {
+        if (Objects.isNull(trailer.getId()) &&
+            Objects.nonNull(findByNumber(trailer.getWarehouseId(), trailer.getNumber()))) {
+            trailer.setId(
+                    findByNumber(trailer.getWarehouseId(), trailer.getNumber()).getId()
+            );
+        }
+        return save(trailer);
     }
 
 
@@ -220,6 +237,29 @@ public class TrailerService {
         trailer.setDescription("AUTO created for tractor: " + tractor.getNumber());
         trailer.setSize(0.0);
 
-        return save(trailer);
+        return saveOrUpdate(trailer);
     }
+
+
+    public Trailer addTrailer(Long warehouseId,
+                              String number,
+                              String description) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        return addTrailer(warehouse.getCompanyId(),
+                warehouseId, number, description);
+    }
+    public Trailer addTrailer(Long companyId, Long warehouseId,
+                              String number,
+                              String description) {
+        Trailer trailer = new Trailer();
+        trailer.setCompanyId(companyId);
+        trailer.setWarehouseId(warehouseId);
+        trailer.setNumber(number);
+        trailer.setDescription(description);
+        trailer.setSize(0.0);
+
+        return saveOrUpdate(trailer);
+    }
+
+
 }

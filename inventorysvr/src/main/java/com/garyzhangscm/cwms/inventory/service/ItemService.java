@@ -904,6 +904,7 @@ public class ItemService {
                         null,null,null,null,null, null,
                         null,null,null,null,
                         null,null,null,null, null,null,null,
+                        null,null,null,
                         false, null)
                 .size() > 0) {
             logger.debug("There's inventory attached to this item  {}  , can't remove it",

@@ -84,7 +84,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                     .path("/api/layout/locations/{id}");
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.GET,
                         null,

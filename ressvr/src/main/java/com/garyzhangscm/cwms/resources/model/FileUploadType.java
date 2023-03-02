@@ -42,6 +42,7 @@ public class FileUploadType {
         fileUploadTypes.add(new ReceiptFileUpload());
         fileUploadTypes.add(new ReceivingInventoryFileUpload());
         fileUploadTypes.add(new LocationFileUpload());
+        fileUploadTypes.add(new ShippingTrailerAppointmentFileUpload());
 
 
         return fileUploadTypes;

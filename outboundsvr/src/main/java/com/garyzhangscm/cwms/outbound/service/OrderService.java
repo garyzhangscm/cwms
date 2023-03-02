@@ -2172,7 +2172,7 @@ public class OrderService {
 
         logger.debug("start to save {} order lines ", orderLineCSVWrappers.size());
 
-        fileUploadProgress.put(fileUploadProgressKey, 5.0);
+        fileUploadProgress.put(fileUploadProgressKey, 10.0);
 
         new Thread(() -> {
             int totalCount = orderLineCSVWrappers.size();
