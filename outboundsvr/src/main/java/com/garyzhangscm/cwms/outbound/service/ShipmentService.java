@@ -1262,12 +1262,15 @@ public class ShipmentService {
                             shipment.getId(),
                             shipment.getNumber(),
                             newStop.getNumber());
-                    shipmentRepository.assignShipmentToStop(newStop.getId(), shipment.getId());
+                    assignShipmentToStop(newStop, shipment);
 
                 }
         );
     }
 
+    public void assignShipmentToStop(Stop stop, Shipment shipment) {
+        shipmentRepository.assignShipmentToStop(stop.getId(), shipment.getId());
+    }
     /**
      * Add order line into the existing shipment
      * @param shipment

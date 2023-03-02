@@ -230,8 +230,15 @@ public class TrailerAppointmentService {
         trailerAppointment.setTrailer(trailer);
         trailerAppointment.setType(TrailerAppointmentType.valueOf(type));
         trailerAppointment.setStatus(TrailerAppointmentStatus.PLANNED);
-        return saveOrUpdate(trailerAppointment);
+        TrailerAppointment newTrailerAppointment = saveOrUpdate(trailerAppointment);
 
+        // the trailer doesn't have any appointment yet, let's assign
+        // the newly created appointment to this trailer
+        if (Objects.isNull(trailer.getCurrentAppointment())) {
+            trailerService.assignTrailerAppointment(trailer,
+                    trailerAppointment);
+        }
+        return newTrailerAppointment;
 
 
     }

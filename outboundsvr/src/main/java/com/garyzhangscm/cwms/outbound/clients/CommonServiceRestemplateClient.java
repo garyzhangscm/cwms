@@ -361,17 +361,17 @@ public class CommonServiceRestemplateClient {
     public TrailerAppointment addTrailerAppointment(Long warehouseId, String trailerNumber,
                                                     String trailerAppointmentNumber,
                                                     String trailerAppointmentDescription,
-                                                    TrailerAppointmentType type) {
+                                                    TrailerAppointmentType type) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/trailer-appointments/new")
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("trailerNumber", trailerNumber)
-                        .queryParam("number", trailerAppointmentNumber)
+                        .queryParam("trailerNumber", URLEncoder.encode(trailerNumber, "UTF-8") )
+                        .queryParam("number", URLEncoder.encode(trailerAppointmentNumber, "UTF-8") )
                         .queryParam("type", type);
         if (Strings.isNotBlank(trailerAppointmentDescription)) {
-            builder = builder.queryParam("description", trailerAppointmentDescription);
+            builder = builder.queryParam("description", URLEncoder.encode(trailerAppointmentDescription, "UTF-8") );
         }
 
 
