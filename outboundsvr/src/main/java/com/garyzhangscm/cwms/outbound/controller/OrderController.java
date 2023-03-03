@@ -61,6 +61,7 @@ public class OrderController {
                                      @RequestParam(name="category", required = false, defaultValue = "") String category,
                                      @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
                                      @RequestParam(name="customerId", required = false, defaultValue = "") Long customerId,
+                                     @RequestParam(name="trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
                                      @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                      @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCompleteTime,
                                      @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCompleteTime,
@@ -72,7 +73,7 @@ public class OrderController {
         logger.debug("Start to find order by number {}", number);
         return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
-                category,  customerName, customerId, loadDetails,
+                category,  customerName, customerId, trailerAppointmentId, loadDetails,
                 clientRestriction);
     }
 

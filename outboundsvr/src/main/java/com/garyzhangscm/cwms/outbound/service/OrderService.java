@@ -126,7 +126,7 @@ public class OrderService {
                                LocalDate specificCreatedDate,
                                String category,
                                String customerName,
-                               Long customerId,
+                               Long customerId, Long trailerAppointmentId,
                                Boolean loadDetails, ClientRestriction clientRestriction) {
 
         List<Order> orders =  orderRepository.findAll(
@@ -206,6 +206,15 @@ public class OrderService {
                             predicates.add(criteriaBuilder.equal(
                                     root.get("shipToCustomerId"), customer.getId()));
                     }
+                    if (Objects.nonNull(trailerAppointmentId)) {
+
+                        logger.debug("We will query by trailer appointment id {}", trailerAppointmentId);
+                        Join<Order, OrderLine> joinOrderLine = root.join("orderLines", JoinType.INNER);
+                        Join<OrderLine, ShipmentLine> joinShipmentLine = joinOrderLine.join("shipmentLines", JoinType.INNER);
+                        Join<ShipmentLine, Shipment> joinShipment = joinShipmentLine.join("shipment", JoinType.INNER);
+                        Join<Shipment, Stop> joinStop = joinShipment.join("stop", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinStop.get("trailerAppointmentId"), trailerAppointmentId));
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
 
@@ -275,11 +284,12 @@ public class OrderService {
                                ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime,
                                LocalDate specificCreatedDate,
                                String category, String customerName, Long customerId,
+                              Long trailerAppointmentId,
                               ClientRestriction clientRestriction) {
         return findAll(warehouseId, number, status,
                 startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
-                category, customerName, customerId, true, clientRestriction);
+                category, customerName, customerId, trailerAppointmentId, true, clientRestriction);
     }
 
 

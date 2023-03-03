@@ -104,7 +104,7 @@ public class TrailerService {
                     }
                 }
                 ,
-                Sort.by(Sort.Direction.ASC, "warehouseId", "number")
+                Sort.by(Sort.Direction.DESC, "warehouseId", "createdTime")
         );
 
         // we may get duplicated record from the above query when we pass in the warehouse id
