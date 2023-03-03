@@ -1268,8 +1268,10 @@ public class ShipmentService {
         );
     }
 
-    public void assignShipmentToStop(Stop stop, Shipment shipment) {
-        shipmentRepository.assignShipmentToStop(stop.getId(), shipment.getId());
+    public Shipment assignShipmentToStop(Stop stop, Shipment shipment) {
+        // shipmentRepository.assignShipmentToStop(stop.getId(), shipment.getId());
+        shipment.setStop(stop);
+        return save(shipment);
     }
     /**
      * Add order line into the existing shipment

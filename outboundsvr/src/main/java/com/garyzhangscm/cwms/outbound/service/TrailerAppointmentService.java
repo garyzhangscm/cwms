@@ -643,9 +643,16 @@ public class TrailerAppointmentService {
                 existingShipment.getShipToAddressLine1(),
                 existingShipment.getShipToAddressLine2(),
                 existingShipment.getShipToAddressPostcode());
+        logger.debug("stop {} / {} is created for shipment {} / {}",
+                stop.getId(), stop.getNumber(),
+                existingShipment.getId(), existingShipment.getNumber());
 
         // assign the shipment to the stop
-        shipmentService.assignShipmentToStop(stop, existingShipment);
+        existingShipment = shipmentService.assignShipmentToStop(stop, existingShipment);
+
+        logger.debug("shipment {} / {} is assigned to stop {} / {} ",
+                existingShipment.getId(), existingShipment.getNumber(),
+                existingShipment.getStop().getId(), existingShipment.getStop().getNumber());
 
 
         stopService.assignTrailerAppointment(stop, trailerAppointment,
