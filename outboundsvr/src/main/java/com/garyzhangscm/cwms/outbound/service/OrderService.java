@@ -132,6 +132,7 @@ public class OrderService {
         List<Order> orders =  orderRepository.findAll(
                 (Root<Order> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
+                    criteriaQuery.distinct(true);
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
@@ -219,6 +220,7 @@ public class OrderService {
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
+
                     Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
 
                     if (Objects.isNull(clientRestriction) ||
