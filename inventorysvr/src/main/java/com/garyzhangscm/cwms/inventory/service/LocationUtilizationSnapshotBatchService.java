@@ -19,9 +19,11 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.CustomRequestScopeAttr;
+import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.LocationUtilizationSnapshotBatchRepository;
@@ -31,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Service;
@@ -60,6 +63,8 @@ public class LocationUtilizationSnapshotBatchService {
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
+    @Autowired
+    private UnitService unitService;
 
     @Autowired
     AuthServiceRestemplateClient authServiceRestemplateClient;
@@ -114,6 +119,8 @@ public class LocationUtilizationSnapshotBatchService {
                 Predicate[] p = new Predicate[predicates.size()];
                 return criteriaBuilder.and(predicates.toArray(p));
             }
+                ,
+                Sort.by(Sort.Direction.DESC, "createdTime")
         );
     }
 
@@ -133,6 +140,46 @@ public class LocationUtilizationSnapshotBatchService {
             );
         }
         return locationUtilizationSnapshotBatchRepository.save(locationUtilizationSnapshotBatch);
+    }
+
+    private void loadAttribute(List<LocationUtilizationSnapshotBatch> locationUtilizationSnapshotBatches) {
+        locationUtilizationSnapshotBatches.forEach(
+                locationUtilizationSnapshotBatch -> loadAttribute(locationUtilizationSnapshotBatch)
+        );
+    }
+    private void loadAttribute(LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch) {
+
+        locationUtilizationSnapshotBatch.getClientLocationUtilizationSnapshotBatches().forEach(
+                clientLocationUtilizationSnapshotBatch -> loadAttribute(clientLocationUtilizationSnapshotBatch)
+        );
+    }
+    private void loadAttribute(ClientLocationUtilizationSnapshotBatch clientLocationUtilizationSnapshotBatch) {
+
+        if (Objects.nonNull(clientLocationUtilizationSnapshotBatch.getClientId()) &&
+                Objects.isNull(clientLocationUtilizationSnapshotBatch.getClient())) {
+            Client client = commonServiceRestemplateClient.getClientById(
+                    clientLocationUtilizationSnapshotBatch.getClientId()
+            );
+            if (Objects.nonNull(client)) {
+                clientLocationUtilizationSnapshotBatch.setClient(client);
+            }
+        }
+        clientLocationUtilizationSnapshotBatch.getLocationUtilizationSnapshots().forEach(
+                locationUtilizationSnapshot -> loadAttribute(locationUtilizationSnapshot)
+        );
+
+    }
+    private void loadAttribute(LocationUtilizationSnapshot locationUtilizationSnapshot) {
+
+        if (Objects.nonNull(locationUtilizationSnapshot.getClientId()) &&
+                Objects.isNull(locationUtilizationSnapshot.getClient())) {
+            Client client = commonServiceRestemplateClient.getClientById(
+                    locationUtilizationSnapshot.getClientId()
+            );
+            if (Objects.nonNull(client)) {
+                locationUtilizationSnapshot.setClient(client);
+            }
+        }
     }
 
 
@@ -197,16 +244,9 @@ public class LocationUtilizationSnapshotBatchService {
 
         // start to generate snapshot for each item
         new Thread(() -> {
-
-            try {
-                setupOAuth2Context();
-
                 logger.debug("Start to fill in the location utilization snapshot for warehouse {}, number {}",
                         warehouseId, number);
                 generateLocationUtilizationSnapshotBatch(locationUtilizationSnapshotBatch);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }).start();
 
 
@@ -237,12 +277,36 @@ public class LocationUtilizationSnapshotBatchService {
         Map<String, LocationUtilizationSnapshot> locationUtilizationSnapshotMap
                 = groupLocationUtilizationSnapshotDetail(locationUtilizationSnapshotDetails);
 
+        logger.debug("=========           locationUtilizationSnapshotMap  =============  ");
+        locationUtilizationSnapshotMap.forEach(
+                (key, value) -> {
+                    logger.debug("key: {}, value's: {} / {} / {} / {} / {}",
+                            key,
+                            value.getClientId(),
+                            Objects.isNull(value.getClient()) ? "N/A" : value.getClient().getName(),
+                            value.getNetVolume(),
+                            value.getGrossVolume(),
+                            value.getTotalLocations());
+                }
+        );
         // group the snapshot into client location utilization snapshot batch
         // group by warehouse id + client id
         Map<String, ClientLocationUtilizationSnapshotBatch> clientLocationUtilizationSnapshotBatchMap
                 = groupLocationUtilizationSnapshotByClient(locationUtilizationSnapshotMap);
 
 
+        logger.debug("=========           clientLocationUtilizationSnapshotBatchMap  =============  ");
+        clientLocationUtilizationSnapshotBatchMap.forEach(
+                (key, value) -> {
+                    logger.debug("key: {}, value's: {} / {} / {} / {} / {}",
+                            key,
+                            value.getClientId(),
+                            Objects.isNull(value.getClient()) ? "N/A" : value.getClient().getName(),
+                            value.getNetVolume(),
+                            value.getGrossVolume(),
+                            value.getTotalLocations());
+                }
+        );
         // group by warehouse
         // since warehouse is part of the argument, we know
         // we will only get one batch for the warehouse
@@ -250,6 +314,12 @@ public class LocationUtilizationSnapshotBatchService {
         locationUtilizationSnapshotBatch = groupClientLocationUtilizationSnapshots(
                 locationUtilizationSnapshotBatch, clientLocationUtilizationSnapshotBatchMap);
 
+        logger.debug("=========           locationUtilizationSnapshotBatch  =============  ");
+        logger.debug("net volume: {}, gross volume: {}, total locations: {}",
+                locationUtilizationSnapshotBatch.getNetVolume(),
+                    locationUtilizationSnapshotBatch.getGrossVolume(),
+                    locationUtilizationSnapshotBatch.getTotalLocations()
+                );
         completeLocationUtilizationSnapshotBatch(locationUtilizationSnapshotBatch);
     }
 
@@ -283,6 +353,9 @@ public class LocationUtilizationSnapshotBatchService {
                     locationUtilizationSnapshotBatch.setNetVolume(
                             locationUtilizationSnapshotBatch.getNetVolume() +
                                     clientLocationUtilizationSnapshotBatch.getNetVolume()
+                    );
+                    locationUtilizationSnapshotBatch.setCapacityUnit(
+                            clientLocationUtilizationSnapshotBatch.getCapacityUnit()
                     );
                     clientLocationUtilizationSnapshotBatch.getLocationUtilizationSnapshots().forEach(
                             locationUtilizationSnapshot -> {
@@ -389,7 +462,8 @@ public class LocationUtilizationSnapshotBatchService {
                                             locationUtilizationSnapshot.getClientId(),
                                             0.0,
                                             0.0,
-                                            0
+                                            0,
+                                            locationUtilizationSnapshot.getCapacityUnit()
                                     );
 
                     // net volume: the size of the inventory
@@ -481,7 +555,8 @@ public class LocationUtilizationSnapshotBatchService {
                                             locationUtilizationSnapshotDetail.getWarehouseId(), item,
                                             locationUtilizationSnapshotDetail.getClientId(),
                                             0.0,
-                                            0.0, 0
+                                            0.0, 0,
+                                            locationUtilizationSnapshotDetail.getCapacityUnit()
                                     );
                     existingLocationUtilizationSnapshot.setNetVolume(
                             existingLocationUtilizationSnapshot.getNetVolume() +
@@ -584,6 +659,7 @@ public class LocationUtilizationSnapshotBatchService {
                         entry.getKey(),
                         entry.getValue())
         );
+
         // for each location, we will load all the inventory and calculate the
         // LocationUtilizationSnapshotDetail structure
         utilizationTrackingLocations.entrySet().forEach(
@@ -667,16 +743,56 @@ public class LocationUtilizationSnapshotBatchService {
                             .toString();
                     // get the location size first
                     double locationSize = 0.0;
+
+                    Location location = warehouseLayoutServiceRestemplateClient.getLocationById(
+                            inventory.getLocationId()
+                    );
+
+                    logger.debug("start to process location {} with capacity unit {}",
+                            location.getName(),
+                            Strings.isBlank(location.getCapacityUnit()) ?
+                            "N/A" : location.getCapacityUnit());
+
                     if (locationSizes.containsKey(inventory.getLocationId())) {
                         locationSize = locationSizes.get(inventory.getLocationId());
                     }
                     else {
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationById(
-                                inventory.getLocationId()
-                        );
                         locationSize = location.getCapacity();
                         locationSizes.put(inventory.getLocationId(), locationSize);
                     }
+
+                    // convert the location size to cubic foot
+                    // by default we will display at cube foot
+                    Unit displayUnit = unitService.getCubeFoot(inventory.getWarehouseId());
+                    if (Objects.isNull(displayUnit)) {
+                        displayUnit = unitService.getBaseUnit(inventory.getWarehouseId(),
+                                UnitType.VOLUME);
+                    }
+
+                    if (Strings.isBlank(location.getCapacityUnit())) {
+                        // location's capacity unit is not setup, default to the
+                        // base unit
+                        Unit baseUnit = unitService.getBaseUnit(inventory.getWarehouseId(),
+                                UnitType.VOLUME);
+                        if (Objects.nonNull(baseUnit)) {
+                            location.setCapacityUnit(
+                                    baseUnit.getName()
+                            );
+                        }
+
+                    }
+                    double locationSizeInDisplayUnit = unitService.convert(
+                            inventory.getWarehouseId(),
+                            locationSize,
+                            location.getCapacityUnit(),
+                            displayUnit.getName()
+                    );
+
+                    logger.debug("Will display location {}'s volume in unit {}, value is {}",
+                            location.getName(),
+                            displayUnit.getName(),
+                            locationSizeInDisplayUnit);
+
                     // get the net volume and gross volume of the inventory
                     double netVolume = getNetVolume(inventory, itemVolumeTrackingLevel);
                     double grossVolume = getGrossVolume(inventory, itemVolumeTrackingLevel);
@@ -696,7 +812,8 @@ public class LocationUtilizationSnapshotBatchService {
                                     netVolume,
                                     grossVolume,
                                     inventory.getLocationId(),
-                                    locationSize
+                                    locationSizeInDisplayUnit,
+                                    displayUnit.getName()
                             )
                     );
 
@@ -735,9 +852,59 @@ public class LocationUtilizationSnapshotBatchService {
                     inventory.getItemPackageType().getName());
             return 0.0;
         }
+        return getVolumeByUOM(inventory.getWarehouseId(), stockUOM, inventory.getQuantity());
+        /**
         return stockUOM.getLength() * stockUOM.getWeight() * stockUOM.getHeight() * (
                 inventory.getQuantity() / stockUOM.getQuantity()
         );
+         **/
+    }
+
+    private double getVolumeByUOM(Long warehouseId, ItemUnitOfMeasure itemUnitOfMeasure, Long quantity) {
+
+        // convert the inventory UOM size to  foot
+        // by default we will display at cube foot
+        Unit baseUnit = unitService.getBaseUnit(warehouseId, UnitType.LENGTH);
+
+        Unit unit = unitService.getFoot(warehouseId);
+        if (Objects.isNull(unit)) {
+            unit = baseUnit;
+        }
+        if (Objects.isNull(unit)) {
+            throw InventoryException.raiseException("can't convert the length as we are not able to load the unit information");
+        }
+        // make sure we can get the unit for length / width / height
+        if (( Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ||
+                Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ||
+                Strings.isBlank(itemUnitOfMeasure.getHeightUnit())) &
+                Objects.isNull(baseUnit)) {
+
+            throw InventoryException.raiseException("unit is not setup for the inventory item unit of measure " +
+                       + itemUnitOfMeasure.getId() +
+                    " and there's no base unit setup");
+        }
+
+        return unitService.convert(warehouseId,
+                    itemUnitOfMeasure.getLength(),
+                    Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ?
+                            baseUnit.getName() : itemUnitOfMeasure.getLengthUnit(),
+                    unit.getName()
+                ) *
+                unitService.convert(warehouseId,
+                        itemUnitOfMeasure.getWidth(),
+                        Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ?
+                            baseUnit.getName() : itemUnitOfMeasure.getWidthUnit(),
+                        unit.getName()
+                ) *
+                unitService.convert(warehouseId,
+                        itemUnitOfMeasure.getHeight(),
+                        Strings.isBlank(itemUnitOfMeasure.getHeightUnit()) ?
+                            baseUnit.getName() : itemUnitOfMeasure.getHeightUnit(),
+                        unit.getName()
+                ) *
+                (
+                        quantity / itemUnitOfMeasure.getQuantity()
+                );
     }
 
     private double getNetVolumeByCase(Inventory inventory) {
@@ -753,10 +920,10 @@ public class LocationUtilizationSnapshotBatchService {
             return 0.0;
         }
 
+
+
         if (Objects.nonNull(caseUOM)) {
-            return caseUOM.getLength() * caseUOM.getWidth() * caseUOM.getHeight() * (
-                    inventory.getQuantity() / caseUOM.getQuantity()
-            );
+            return getVolumeByUOM(inventory.getWarehouseId(), caseUOM, inventory.getQuantity());
         }
         else {
             // case uom is not defined for this item, let's
@@ -765,4 +932,7 @@ public class LocationUtilizationSnapshotBatchService {
         }
     }
 
+    public void remove(Long warehouseId, Long id) {
+        locationUtilizationSnapshotBatchRepository.deleteById(id);
+    }
 }

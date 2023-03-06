@@ -911,7 +911,8 @@ public class LocationService {
                         null,
                         null,
                         null,
-                         false,
+                         true,   // note: we will need to include empty location as the location may not be actual empty
+                        // if the location's volume is not tracked
                         null,
                         null,
                         null,

@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotBatchService;
 import org.slf4j.Logger;
@@ -47,6 +48,15 @@ public class LocationUtilizationSnapshotBatchController {
             @RequestParam(name="startTime", required = false, defaultValue = "") LocalDateTime startTime,
             @RequestParam(name="endTime", required = false, defaultValue = "") LocalDateTime endTime) {
         return locationUtilizationSnapshotBatchService.findAll(warehouseId, status,  number, startTime, endTime);
+    }
+
+
+    @RequestMapping(value="/location-utilization-snapshot-batches/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeLocationUtilizationSnapshotBatch(
+            @RequestParam Long warehouseId, @PathVariable Long id) {
+        locationUtilizationSnapshotBatchService.remove(warehouseId, id);
+
+        return ResponseBodyWrapper.success("location utilization snapshot is removed");
     }
 
 

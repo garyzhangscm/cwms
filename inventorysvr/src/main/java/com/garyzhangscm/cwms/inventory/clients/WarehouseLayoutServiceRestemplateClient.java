@@ -791,7 +791,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<Map<String, String>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
                 HttpMethod.GET,
                 null,

@@ -53,6 +53,8 @@ public class Location {
     private Double pendingVolume;
     private LocationGroup locationGroup;
 
+    private String capacityUnit;
+
     private Boolean enabled;
 
     private String reservedCode;
@@ -287,5 +289,13 @@ public class Location {
 
     public void setLocked(Boolean locked) {
         this.locked = locked;
+    }
+
+    public String getCapacityUnit() {
+        return capacityUnit;
+    }
+
+    public void setCapacityUnit(String capacityUnit) {
+        this.capacityUnit = capacityUnit;
     }
 }

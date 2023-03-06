@@ -1996,5 +1996,7 @@
   "INVENTORY_ATTRIBUTE-productSize": "商品尺寸",
   "INVENTORY_ATTRIBUTE-style": "风格",
   "lineNumber": "行号",
-  "record": "记录"
+  "record": "记录",
+  "location-utilization-snapshot.created.result": "库位使用率快照 {{batchNumber}} 开始创建，请等待一段时间后到库位使用率快照界面查看或者下载",
+  "generate-invoice": "生成账单"
 }
