@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 
 @Service
 public interface BillingService {
-    public BillingRequest generateBillingRequest(ZonedDateTime startTime, ZonedDateTime endTime,
+    public BillingRequest generateBillingRequest(String startDate, String endDate,
                                                  Long companyId, Long warehouseId, Long clientId,
                                                  String number, Boolean serialize);
 

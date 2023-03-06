@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
+import com.garyzhangscm.cwms.inventory.model.InventorySnapshot;
 import com.garyzhangscm.cwms.inventory.model.LocationUtilizationSnapshot;
 import com.garyzhangscm.cwms.inventory.model.LocationUtilizationSnapshotBatch;
 import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotBatchService;
@@ -40,6 +41,7 @@ public class LocationUtilizationSnapshotController {
     @Autowired
     private LocationUtilizationSnapshotService locationUtilizationSnapshotService;
 
+
     @RequestMapping(value="/location-utilization-snapshots", method = RequestMethod.GET)
     public List<LocationUtilizationSnapshot> getLocationUtilizationSnapshot(
             @RequestParam Long warehouseId,
@@ -53,6 +55,8 @@ public class LocationUtilizationSnapshotController {
         return locationUtilizationSnapshotService.findAll(warehouseId,
                 itemName, itemId, clientName, clientId, startTime, endTime, loadDetails);
     }
+
+
 
 
 

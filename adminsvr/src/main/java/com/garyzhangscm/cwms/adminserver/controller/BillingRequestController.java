@@ -33,14 +33,14 @@ public class BillingRequestController {
     public List<BillingRequest> generateBillingRequests(
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
+            @RequestParam String startDate,
+            @RequestParam String endDate,
             @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
             @RequestParam(name = "number", required = false, defaultValue = "") String number,
             @RequestParam(name = "serialize", required = false, defaultValue = "") Boolean serialize
     )  {
         return billingRequestService.generateBillingRequest(
-                startTime, endTime,
+                startDate, endDate,
                 companyId, warehouseId, clientId, number,  serialize
         );
     }

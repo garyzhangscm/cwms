@@ -162,4 +162,10 @@ public class InventoryConfigurationService {
             );
         }
     }
+
+    public List<Long> findLocationUtilizationEnabledWarehouses() {
+        return inventoryConfigurationRepository.findAll().stream().map(
+                inventoryConfiguration -> inventoryConfiguration.getWarehouseId()
+        ).collect(Collectors.toList());
+    }
 }

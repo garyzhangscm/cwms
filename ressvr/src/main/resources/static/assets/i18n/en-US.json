@@ -1996,5 +1996,7 @@
   "INVENTORY_ATTRIBUTE-productSize": "Product Size",
   "INVENTORY_ATTRIBUTE-style": "Style",
   "lineNumber": "Line Number",
-  "record": "Record"
+  "record": "Record",
+  "location-utilization-snapshot.created.result": "Location Utiliziation {{batchNumber}} start processing, Please allow the system to take several minutes to create the snapshot and query the result from the Location Utiliziation Snapshot page",
+  "generate-invoice": "Generate Invoice"
 }

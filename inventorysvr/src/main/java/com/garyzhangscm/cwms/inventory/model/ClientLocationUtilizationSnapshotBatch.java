@@ -48,6 +48,8 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
     @Column(name = "gross_volume")
     private Double grossVolume;
 
+    @Column(name = "capacity_unit")
+    private String capacityUnit;
 
     @Column(name = "total_locations")
     private Integer totalLocations;
@@ -68,12 +70,15 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
 
 
     public ClientLocationUtilizationSnapshotBatch(){}
-    public ClientLocationUtilizationSnapshotBatch(Long warehouseId, Long clientId, Double netVolume, Double grossVolume, Integer totalLocations) {
+    public ClientLocationUtilizationSnapshotBatch(Long warehouseId, Long clientId, Double netVolume, Double grossVolume,
+                                                  Integer totalLocations,
+                                                  String capacityUnit) {
         this.warehouseId = warehouseId;
         this.clientId = clientId;
         this.netVolume = netVolume;
         this.grossVolume = grossVolume;
         this.totalLocations = totalLocations;
+        this.capacityUnit = capacityUnit;
     }
 
     public Long getId() {
@@ -150,5 +155,13 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
 
     public void setLocationUtilizationSnapshotBatch(LocationUtilizationSnapshotBatch locationUtilizationSnapshotBatch) {
         this.locationUtilizationSnapshotBatch = locationUtilizationSnapshotBatch;
+    }
+
+    public String getCapacityUnit() {
+        return capacityUnit;
+    }
+
+    public void setCapacityUnit(String capacityUnit) {
+        this.capacityUnit = capacityUnit;
     }
 }

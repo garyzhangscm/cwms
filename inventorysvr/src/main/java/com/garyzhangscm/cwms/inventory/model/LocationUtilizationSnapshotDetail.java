@@ -57,6 +57,8 @@ public class LocationUtilizationSnapshotDetail extends AuditibleEntity<String>{
     @Column(name = "location_size")
     private Double locationSize = 0.0;
 
+    @Column(name = "capacity_unit")
+    private String capacityUnit;
 
 
     @JsonIgnore
@@ -66,7 +68,9 @@ public class LocationUtilizationSnapshotDetail extends AuditibleEntity<String>{
 
     public LocationUtilizationSnapshotDetail(){}
     public LocationUtilizationSnapshotDetail(Long warehouseId, Long itemId, Long clientId,
-                                             Double netVolume, Double grossVolume, Long locationId, Double locationSize) {
+                                             Double netVolume, Double grossVolume, Long locationId,
+                                             Double locationSize,
+                                             String capacityUnit) {
         this.warehouseId = warehouseId;
         this.itemId = itemId;
         this.clientId = clientId;
@@ -74,6 +78,7 @@ public class LocationUtilizationSnapshotDetail extends AuditibleEntity<String>{
         this.grossVolume = grossVolume;
         this.locationId = locationId;
         this.locationSize = locationSize;
+        this.capacityUnit = capacityUnit;
     }
 
     public Long getId() {
@@ -146,5 +151,13 @@ public class LocationUtilizationSnapshotDetail extends AuditibleEntity<String>{
 
     public void setLocationUtilizationSnapshot(LocationUtilizationSnapshot locationUtilizationSnapshot) {
         this.locationUtilizationSnapshot = locationUtilizationSnapshot;
+    }
+
+    public String getCapacityUnit() {
+        return capacityUnit;
+    }
+
+    public void setCapacityUnit(String capacityUnit) {
+        this.capacityUnit = capacityUnit;
     }
 }

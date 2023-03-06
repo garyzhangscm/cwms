@@ -119,7 +119,7 @@ public class CommonServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId);
 
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
                 HttpMethod.GET,
                 null,
@@ -326,6 +326,26 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+
+    @Cacheable(cacheNames = "InventoryService_Unit", unless="#result == null")
+    public List<Unit> getUnitsByWarehouse(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/units")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Unit>> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Unit>>>() {}).getBody();
+
+
+        return responseBodyWrapper.getData();
+    }
 
     public UnitOfMeasure createUnitOfMeasure(UnitOfMeasure unitOfMeasure) throws JsonProcessingException {
 

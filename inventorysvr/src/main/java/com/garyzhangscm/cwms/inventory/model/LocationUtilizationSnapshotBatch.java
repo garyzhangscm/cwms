@@ -53,6 +53,9 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
     private Double grossVolume;
 
 
+    @Column(name = "capacity_unit")
+    private String capacityUnit;
+
     @Column(name = "total_locations")
     private Integer totalLocations;
 
@@ -83,13 +86,14 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
 
     public LocationUtilizationSnapshotBatch(Long warehouseId, String number) {
         this(warehouseId, number, 0.0, 0.0, 0, LocationUtilizationSnapshotStatus.PROCESSING,
-                ZonedDateTime.now(ZoneOffset.UTC));
+                ZonedDateTime.now(ZoneOffset.UTC), "");
     }
 
     public LocationUtilizationSnapshotBatch(Long warehouseId, String number, Double netVolume,
                                             Double grossVolume, Integer totalLocations,
                                             LocationUtilizationSnapshotStatus status,
-                                            ZonedDateTime startTime) {
+                                            ZonedDateTime startTime,
+                                            String capacityUnit) {
         this.warehouseId = warehouseId;
         this.number = number;
         this.netVolume = netVolume;
@@ -97,6 +101,7 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
         this.totalLocations = totalLocations;
         this.status = status;
         this.startTime = startTime;
+        this.capacityUnit = capacityUnit;
     }
 
     public Long getId() {
@@ -180,5 +185,13 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
 
     public void setStatus(LocationUtilizationSnapshotStatus status) {
         this.status = status;
+    }
+
+    public String getCapacityUnit() {
+        return capacityUnit;
+    }
+
+    public void setCapacityUnit(String capacityUnit) {
+        this.capacityUnit = capacityUnit;
     }
 }
