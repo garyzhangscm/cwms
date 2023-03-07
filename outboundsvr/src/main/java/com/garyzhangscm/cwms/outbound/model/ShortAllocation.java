@@ -89,6 +89,16 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
     @Column(name = "work_order_line_id")
     private Long workOrderLineId;
 
+
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
     @Override
     public String toString() {
         try {
@@ -242,5 +252,29 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
 
     public void setWorkOrderQuantity(Long workOrderQuantity) {
         this.workOrderQuantity = workOrderQuantity;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

@@ -1088,15 +1088,22 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
     }
 
-    private ShortAllocation generateShortAllocation(Item item, ShipmentLine shipmentLine, Long quantity) {
+    private ShortAllocation generateShortAllocation(Item item,
+                                                    ShipmentLine shipmentLine,
+                                                    AllocationRequest allocationRequest,
+                                                    Long quantity) {
 
-        return shortAllocationService.generateShortAllocation(item, shipmentLine, quantity);
+        return shortAllocationService.generateShortAllocation(item, shipmentLine, allocationRequest, quantity);
 
     }
 
-    private ShortAllocation generateShortAllocation(WorkOrder workOrder, Item item, WorkOrderLine workOrderLine, Long quantity) {
+    private ShortAllocation generateShortAllocation(WorkOrder workOrder, Item item,
+                                                    WorkOrderLine workOrderLine,
+                                                    AllocationRequest allocationRequest,
+                                                    Long quantity) {
 
-        return shortAllocationService.generateShortAllocation(workOrder, item, workOrderLine, quantity);
+        return shortAllocationService.generateShortAllocation(workOrder, item, workOrderLine,
+                allocationRequest, quantity);
 
     }
     /**
@@ -1112,13 +1119,14 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         // For now we will only support allocate one line by one line
         // either shipment line or work order line
         if (allocationRequest.getShipmentLines().size() > 0) {
-            return generateShortAllocation(item, allocationRequest.getShipmentLines().get(0), quantity);
+            return generateShortAllocation(item, allocationRequest.getShipmentLines().get(0), allocationRequest, quantity);
         }
 
         else if (Objects.nonNull(allocationRequest.getWorkOrder()) &&
                 allocationRequest.getWorkOrderLines().size() > 0) {
             return generateShortAllocation(allocationRequest.getWorkOrder(),
-                    item, allocationRequest.getWorkOrderLines().get(0), quantity);
+                    item, allocationRequest.getWorkOrderLines().get(0),
+                    allocationRequest, quantity);
 
         }
         else {

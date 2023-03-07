@@ -313,7 +313,16 @@ public class ShortAllocationService {
 
     }
 
-    public ShortAllocation generateShortAllocation(Item item, ShipmentLine shipmentLine, Long quantity) {
+    public ShortAllocation generateShortAllocation(Item item,
+                                                   ShipmentLine shipmentLine,
+                                                   Long quantity) {
+
+        return generateShortAllocation(item, shipmentLine, null, quantity);
+    }
+    public ShortAllocation generateShortAllocation(Item item,
+                                                   ShipmentLine shipmentLine,
+                                                   AllocationRequest allocationRequest,
+                                                   Long quantity) {
 
         ShortAllocation shortAllocation = new ShortAllocation();
         shortAllocation.setItem(item);
@@ -327,11 +336,26 @@ public class ShortAllocationService {
         shortAllocation.setWarehouseId(shipmentLine.getWarehouseId());
         shortAllocation.setAllocationCount(0L);
 
+        if (Objects.nonNull(allocationRequest)) {
+
+            shortAllocation.setColor(allocationRequest.getColor());
+            shortAllocation.setProductSize(allocationRequest.getProductSize());
+            shortAllocation.setStyle(allocationRequest.getStyle());
+        }
+
         return save(shortAllocation);
 
     }
 
-    public ShortAllocation generateShortAllocation(WorkOrder workOrder, Item item, WorkOrderLine workOrderLine, Long quantity) {
+    public ShortAllocation generateShortAllocation(WorkOrder workOrder, Item item,
+                                                   WorkOrderLine workOrderLine,
+                                                   Long quantity) {
+        return generateShortAllocation(workOrder, item, workOrderLine, null, quantity);
+    }
+    public ShortAllocation generateShortAllocation(WorkOrder workOrder, Item item,
+                                                   WorkOrderLine workOrderLine,
+                                                   AllocationRequest allocationRequest,
+                                                   Long quantity) {
 
         ShortAllocation shortAllocation = new ShortAllocation();
         shortAllocation.setItem(item);
@@ -344,6 +368,13 @@ public class ShortAllocationService {
         shortAllocation.setWarehouseId(workOrder.getWarehouseId());
         shortAllocation.setWorkOrderLineId(workOrderLine.getId());
         shortAllocation.setAllocationCount(0L);
+
+        if (Objects.nonNull(allocationRequest)) {
+
+            shortAllocation.setColor(allocationRequest.getColor());
+            shortAllocation.setProductSize(allocationRequest.getProductSize());
+            shortAllocation.setStyle(allocationRequest.getStyle());
+        }
 
         return save(shortAllocation);
 
