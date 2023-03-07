@@ -166,6 +166,15 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name="non_inventory_item")
     private Boolean nonInventoryItem;
 
+    @Column(name="receiving_rate_by_unit")
+    private Double receivingRateByUnit;
+
+    @Column(name="shipping_rate_by_unit")
+    private Double shippingRateByUnit;
+
+    @Column(name="handling_rate_by_unit")
+    private Double handlingRateByUnit;
+
     @Transient
     private Warehouse warehouse;
 
@@ -505,5 +514,29 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setDefaultItemPackageType(ItemPackageType defaultItemPackageType) {
         this.defaultItemPackageType = defaultItemPackageType;
+    }
+
+    public Double getReceivingRateByUnit() {
+        return receivingRateByUnit;
+    }
+
+    public void setReceivingRateByUnit(Double receivingRateByUnit) {
+        this.receivingRateByUnit = receivingRateByUnit;
+    }
+
+    public Double getShippingRateByUnit() {
+        return shippingRateByUnit;
+    }
+
+    public void setShippingRateByUnit(Double shippingRateByUnit) {
+        this.shippingRateByUnit = shippingRateByUnit;
+    }
+
+    public Double getHandlingRateByUnit() {
+        return handlingRateByUnit;
+    }
+
+    public void setHandlingRateByUnit(Double handlingRateByUnit) {
+        this.handlingRateByUnit = handlingRateByUnit;
     }
 }

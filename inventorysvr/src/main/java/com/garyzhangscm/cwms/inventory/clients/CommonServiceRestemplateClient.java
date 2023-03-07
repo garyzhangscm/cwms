@@ -436,7 +436,7 @@ public class CommonServiceRestemplateClient {
                         .queryParam("lpn", inventory.getWarehouseId())
                         .queryParam("workType", workType);
 
-        restTemplate.delete(
+        restTemplateProxy.getRestTemplate().delete(
                     builder.toUriString());
 
     }
