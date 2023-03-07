@@ -94,7 +94,8 @@ public class LocationService {
                                   String reservedCode,
                                   Boolean includeDisabledLocation,
                                   Boolean emptyReservedCodeOnly,
-                                  String code) {
+                                  String code,
+                                  String locationStatus) {
 
         List<Location> locations = locationRepository.findAll(
             (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -177,9 +178,7 @@ public class LocationService {
                 if (Objects.nonNull(emptyLocationOnly) && emptyLocationOnly == true) {
                     logger.debug("Will filter the location by emptyLocationOnly {}", emptyLocationOnly);
                     Expression<Double> totalVolume = criteriaBuilder.sum(root.get("currentVolume"), root.get("pendingVolume"));
-
                     predicates.add(criteriaBuilder.equal(totalVolume, 0.0));
-
                 }
                 if (Objects.nonNull(pickableLocationOnly) && pickableLocationOnly == true ) {
                     logger.debug("Will filter the location by pickableLocationOnly {}", pickableLocationOnly);
@@ -528,6 +527,12 @@ public class LocationService {
             logger.debug("# Will set location's pending volume to {} after we increase the location's volume by {}",
                     pendingVolume, increasedVolume);
         }
+        if (location.getCurrentVolume() < 0) {
+            location.setCurrentVolume(0.0);
+        }
+        if (location.getPendingVolume() < 0) {
+            location.setPendingVolume(0.0);
+        }
         logger.debug("afect adjusting location volume for location: {}, current volume: {}",
                 location.getName(), location.getCurrentVolume());
         return save(location);
@@ -716,6 +721,7 @@ public class LocationService {
                 null,
                 null,
                 null,
+                null,
                 null);
 
     }
@@ -793,6 +799,7 @@ public class LocationService {
                 null,
                 null,
                 reservedCode,
+                null,
                 null,
                 null,
                 null);
@@ -913,6 +920,7 @@ public class LocationService {
                         null,
                          true,   // note: we will need to include empty location as the location may not be actual empty
                         // if the location's volume is not tracked
+                        null,
                         null,
                         null,
                         null,

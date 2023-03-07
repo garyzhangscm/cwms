@@ -474,7 +474,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("inventorySize", totalSize);
 
         ResponseBodyWrapper<Location> responseBodyWrapper =
-                restTemplate.exchange(
+                restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(location.getId()).toUriString(),
                         HttpMethod.PUT,
                         null,
@@ -702,7 +702,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("reduce", pendingVolumeReduced);
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.POST,
                         null,
@@ -723,7 +723,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.POST,
                         null,
@@ -746,7 +746,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("fromPendingVolume", true);
 
         ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
                         HttpMethod.POST,
                         null,

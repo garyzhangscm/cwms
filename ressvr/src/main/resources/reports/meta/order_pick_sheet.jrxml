@@ -290,6 +290,13 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{item.description}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="290" y="20" width="100" height="20" uuid="f7b0d4cf-724d-486f-82ec-cac6f8abb215">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{color} $F{productSize} $F{style}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>
