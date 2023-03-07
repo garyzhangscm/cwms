@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 
@@ -32,6 +33,10 @@ public class Warehouse implements Serializable {
     private String name;
 
     private Double size;
+
+    private Company company;
+
+    private Long companyId;
 
     private String addressCountry;
     private String addressState;
@@ -139,5 +144,21 @@ public class Warehouse implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

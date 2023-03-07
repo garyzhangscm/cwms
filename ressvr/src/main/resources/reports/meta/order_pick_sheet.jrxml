@@ -24,6 +24,9 @@
 	<field name="item.name" class="java.lang.String"/>
 	<field name="defaultPickableStockUomName" class="java.lang.String"/>
 	<field name="item.description" class="java.lang.String"/>
+	<field name="color" class="java.lang.String"/>
+	<field name="productSize" class="java.lang.String"/>
+	<field name="style" class="java.lang.String"/>
 	<variable name="lineNumber" class="java.lang.Integer" incrementType="Group" incrementGroup="pickNumberGroup" calculation="Count"/>
 	<group name="pickNumberGroup">
 		<groupExpression><![CDATA[$F{number}]]></groupExpression>
@@ -295,7 +298,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{color} $F{productSize} $F{style}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{color} +"    " + $F{productSize} +"    " +  $F{style}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

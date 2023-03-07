@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,12 @@ public class Item implements Serializable {
 
     private Long warehouseId;
     private String warehouseName;
+
+    private Double receivingRateByUnit;
+
+    private Double shippingRateByUnit;
+
+    private Double handlingRateByUnit;
 
     @Override
     public String toString() {
@@ -134,5 +141,29 @@ public class Item implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public Double getReceivingRateByUnit() {
+        return receivingRateByUnit;
+    }
+
+    public void setReceivingRateByUnit(Double receivingRateByUnit) {
+        this.receivingRateByUnit = receivingRateByUnit;
+    }
+
+    public Double getShippingRateByUnit() {
+        return shippingRateByUnit;
+    }
+
+    public void setShippingRateByUnit(Double shippingRateByUnit) {
+        this.shippingRateByUnit = shippingRateByUnit;
+    }
+
+    public Double getHandlingRateByUnit() {
+        return handlingRateByUnit;
+    }
+
+    public void setHandlingRateByUnit(Double handlingRateByUnit) {
+        this.handlingRateByUnit = handlingRateByUnit;
     }
 }

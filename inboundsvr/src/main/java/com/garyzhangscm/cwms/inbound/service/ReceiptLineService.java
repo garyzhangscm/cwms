@@ -63,6 +63,9 @@ public class ReceiptLineService {
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private  BillableActivityService billableActivityService;
+
     @Value("${fileupload.test-data.receipt_lines:receipt_lines}")
     String testDataFile;
 
@@ -369,6 +372,19 @@ public class ReceiptLineService {
         receiptService.saveOrUpdate(receipt);
 
         newInventory.setInboundQCRequired(qcRequired);
+
+
+        billableActivityService.sendBillableActivity(
+                Objects.nonNull(receipt.getWarehouse()) ?
+                    receipt.getWarehouse().getCompanyId() : null,
+                receipt.getWarehouseId(),
+                receipt.getClientId(),
+                inventory.getQuantity(),
+                receipt.getNumber(),
+                Objects.nonNull(inventory.getItem()) ?
+                    inventory.getItem().getName() : null,
+                BillableCategory.RECEIVING_CHARGE_BY_QUANTITY);
+
         return newInventory;
     }
 

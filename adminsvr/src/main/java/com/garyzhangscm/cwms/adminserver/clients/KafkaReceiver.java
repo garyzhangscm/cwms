@@ -2,8 +2,10 @@ package com.garyzhangscm.cwms.adminserver.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.adminserver.model.BillableActivity;
 import com.garyzhangscm.cwms.adminserver.model.BillableRequest;
 import com.garyzhangscm.cwms.adminserver.model.WarehouseConfiguration;
+import com.garyzhangscm.cwms.adminserver.service.BillableActivityService;
 import com.garyzhangscm.cwms.adminserver.service.BillableRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,9 @@ public class KafkaReceiver {
 
     @Autowired
     private BillableRequestService billableRequestService;
+    @Autowired
+    private BillableActivityService billableActivityService;
+
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -69,5 +74,20 @@ public class KafkaReceiver {
     }
 
 
+    @KafkaListener(topics = {"BILLABLE_ACTIVITY"})
+    public void processBillableActivity(@Payload String billableActivityJsonRepresent)  {
+        logger.info("# received billable activity : {}", billableActivityJsonRepresent);
+
+        try {
+            BillableActivity billableActivity = objectMapper.readValue(billableActivityJsonRepresent, BillableActivity.class);
+            logger.info("billableActivity: {}", billableActivity);
+            billableActivityService.addBillableActivity(billableActivity);
+
+        }
+        catch (JsonProcessingException ex) {
+            logger.debug("JsonProcessingException: {}", ex.getMessage());
+        }
+
+    }
 
 }

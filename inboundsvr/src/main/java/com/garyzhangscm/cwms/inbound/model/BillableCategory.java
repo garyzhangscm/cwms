@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.adminserver.model;
+package com.garyzhangscm.cwms.inbound.model;
 
 public enum BillableCategory {
     STORAGE_FEE_BY_NET_VOLUME,

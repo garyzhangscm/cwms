@@ -2,8 +2,8 @@ package com.garyzhangscm.cwms.adminserver.controller;
 
 
 import com.garyzhangscm.cwms.adminserver.model.BillableRequest;
-import com.garyzhangscm.cwms.adminserver.model.BillableHTTPRequestSummaryByCompany;
-import com.garyzhangscm.cwms.adminserver.service.BillableHTTPRequestService;
+import com.garyzhangscm.cwms.adminserver.model.BillableRequestSummaryByCompany;
+import com.garyzhangscm.cwms.adminserver.service.BillableRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -16,16 +16,16 @@ import java.util.Collection;
 public class BillingController {
 
     @Autowired
-    BillableHTTPRequestService billableHTTPRequestService;
+    BillableRequestService billableRequestService;
 
     @RequestMapping(value="/billing/billable-request-summary/{companyId}", method = RequestMethod.GET)
-    public Collection<BillableHTTPRequestSummaryByCompany> getBillableRequestSummaryByCompany(
+    public Collection<BillableRequestSummaryByCompany> getBillableRequestSummaryByCompany(
             @PathVariable Long companyId,
             @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
             )  {
-        return billableHTTPRequestService.getBillableRequestSummaryByCompany(
+        return billableRequestService.getBillableRequestSummaryByCompany(
                 companyId, startTime, endTime, date
         );
     }
@@ -38,7 +38,7 @@ public class BillingController {
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date
     )  {
-        return billableHTTPRequestService.findAll(
+        return billableRequestService.findAll(
                 companyId, warehouseId, startTime, endTime, date
         );
     }
