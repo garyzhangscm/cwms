@@ -27,8 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -65,20 +67,58 @@ public abstract class StorageFeeBillingService implements BillingService {
             return null;
         }
 
+        // we will get daily rate and then get all the
+
+        double dailyRate = 0;
+
+
         switch (billingRate.getBillingCycle()) {
             case DAILY:
-                return generateBillingRequestByDailyBillingCycle(billingRate, startTime, endTime,
-                        companyId, warehouseId, clientId, number, serialize);
-            default:
-                return null;
+                dailyRate = billingRate.getRate();
+                break;
+            case WEEKLY:
+                dailyRate = billingRate.getRate() / 7;
+                break;
+            case BI_WEEKLY:
+                dailyRate = billingRate.getRate() / 14;
+                break;
+            case MONTHLY:
+                dailyRate = billingRate.getRate() / 30;
+                break;
+            case BI_MONTHLY:
+                dailyRate = billingRate.getRate() / 60;
+                break;
+            case QUARTERLY:
+                dailyRate = billingRate.getRate() / 90;
+                break;
+            case YEARLY:
+                dailyRate = billingRate.getRate() / 365;
+                break;
         }
+
+
+        if (dailyRate > 0) {
+            // ZonedDateTime startTime = startDate.atStartOfDay().atZone(ZoneOffset.UTC);
+            // ZonedDateTime endTime = endDate.plusDays(1).atStartOfDay().minusSeconds(1).atZone(ZoneOffset.UTC);
+            logger.debug("start to generate billing request between {} and {}, with daily rate {}, for category {}",
+                    startTime, endTime,
+                    dailyRate,
+                    billingRate.getBillableCategory());
+            return generateBillingRequestByDailyBillingCycle(billingRate,
+                    startTime,
+                    endTime,
+                    companyId, warehouseId, clientId, number, serialize, dailyRate);
+        }
+        return null;
+
     }
 
     private BillingRequest generateBillingRequestByDailyBillingCycle(
             BillingRate billingRate,
             ZonedDateTime startTime, ZonedDateTime endTime,
             Long companyId, Long warehouseId, Long clientId,
-            String number, Boolean serialize
+            String number, Boolean serialize,
+            double dailyRate
     ) {
         // let's get the location utilization snapshot first
         // since it is for daily billing cycle, we will get the
@@ -86,11 +126,7 @@ public abstract class StorageFeeBillingService implements BillingService {
         // until the date of the endTime, then sort the result
         // by date. If there's multiple records for the same day, then
         // we will average the number for each day
-        startTime = startTime.toLocalDate().atStartOfDay(ZoneOffset.UTC);
-        endTime = endTime.toLocalDate().plusDays(1).atStartOfDay(ZoneOffset.UTC).minusNanos(1);
 
-        logger.debug("Start to generate daily billing request for storage fee, time span: {} -- {}",
-                startTime, endTime);
         if (startTime.isAfter(endTime)) {
             // the user passed in the wrong date range
             return null;
@@ -113,6 +149,7 @@ public abstract class StorageFeeBillingService implements BillingService {
         clientLocationUtilizationSnapshotBatches.forEach(
                 clientLocationUtilizationSnapshotBatch -> {
                     LocalDate date = clientLocationUtilizationSnapshotBatch.getCreatedTime().toLocalDate();
+
                     List<Double> existingAmounts = dailyAmountMap.getOrDefault(date, new ArrayList<>());
                     switch (getBillableCategory()) {
                         case STORAGE_FEE_BY_NET_VOLUME:
@@ -148,13 +185,22 @@ public abstract class StorageFeeBillingService implements BillingService {
         BillingRequest billingRequest = new BillingRequest(companyId, warehouseId, clientId,
                 Strings.isNotBlank(number) ? number : billingRequestService.getNextNumber(warehouseId),
                 getBillableCategory(),
-                billingRate.getRate(), BillingCycle.DAILY,
+                dailyRate, BillingCycle.DAILY,
                 0.0, 0.0);
         dailyAverageAmountMap.entrySet().forEach(
                 entry -> {
+                    logger.debug("start to create billing request line with date {}, between {} and {}, " +
+                                    "UTC is between {} and {}",
+                            entry.getKey(),
+                            entry.getKey().atStartOfDay(),
+                            entry.getKey().plusDays(1).atStartOfDay().minusNanos(1),
+                            entry.getKey().atStartOfDay().atZone(ZoneOffset.UTC),
+                            entry.getKey().plusDays(1).atStartOfDay().minusNanos(1).atZone(ZoneOffset.UTC));
+
                     BillingRequestLine billingRequestLine = new BillingRequestLine(
                             billingRequest, entry.getKey().atStartOfDay().atZone(ZoneOffset.UTC),
                             entry.getKey().plusDays(1).atStartOfDay().minusNanos(1).atZone(ZoneOffset.UTC),
+                            entry.getKey(),
                             entry.getValue(),
                             entry.getValue() * billingRate.getRate()
                     );

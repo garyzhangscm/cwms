@@ -29,12 +29,13 @@ public class InvoiceController {
             @RequestParam(name = "warehouseId", required = false, defaultValue = "") Long warehouseId,
             @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
             @RequestParam(name = "number", required = false, defaultValue = "") String number,
-            @RequestParam(name = "includeDetails", required = false, defaultValue = "") Boolean includeDetails
+            @RequestParam(name = "companySpecific", required = false, defaultValue = "") Boolean companySpecific,
+            @RequestParam(name = "includeDetails", required = false, defaultValue = "true") Boolean includeDetails
             )  {
 
 
         return invoiceService.findAll(
-                companyId, warehouseId, clientId, number
+                companyId, warehouseId, clientId, number, companySpecific, includeDetails
         );
     }
 
@@ -43,8 +44,8 @@ public class InvoiceController {
             @RequestParam String number,
             @RequestParam(name = "referenceNumber", required = false, defaultValue = "") String referenceNumber,
             @RequestParam(name = "comment", required = false, defaultValue = "") String comment,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
             @RequestParam Long clientId
@@ -90,8 +91,8 @@ public class InvoiceController {
     @RequestMapping(value="/invoices/from-billing-request", method = RequestMethod.POST)
     public Invoice generateInvoiceFromBillingRequest(
             @RequestParam String number,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
             @RequestParam(name = "referenceNumber", required = false, defaultValue = "") String referenceNumber,

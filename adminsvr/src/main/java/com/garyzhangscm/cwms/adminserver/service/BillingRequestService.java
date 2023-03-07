@@ -33,6 +33,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -156,12 +157,12 @@ public class BillingRequestService {
     }
 
     public List<BillingRequest> generateBillingRequest(
-            String startDate, String endDate,
+            ZonedDateTime startTime, ZonedDateTime endTime,
             Long companyId, Long warehouseId, Long clientId,
             String number, Boolean serialize) {
         return billingServices.stream().map(
                 billingService -> billingService.generateBillingRequest(
-                        startDate, endDate, companyId, warehouseId,
+                        startTime, endTime, companyId, warehouseId,
                         clientId, number, serialize
                 )
         ).filter(billingRequest -> Objects.nonNull(billingRequest)).collect(Collectors.toList());

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -33,14 +34,14 @@ public class BillingRequestController {
     public List<BillingRequest> generateBillingRequests(
             @RequestParam Long companyId,
             @RequestParam Long warehouseId,
-            @RequestParam String startDate,
-            @RequestParam String endDate,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
             @RequestParam(name = "number", required = false, defaultValue = "") String number,
             @RequestParam(name = "serialize", required = false, defaultValue = "") Boolean serialize
     )  {
         return billingRequestService.generateBillingRequest(
-                startDate, endDate,
+                startTime, endTime,
                 companyId, warehouseId, clientId, number,  serialize
         );
     }
