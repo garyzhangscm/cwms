@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -120,8 +121,9 @@ public class InvoiceService {
     public List<Invoice> findAll(Long companyId,
                                      Long warehouseId,
                                      Long clientId,
-                                     String number) {
-        return findAll(companyId, warehouseId, clientId, number, true);
+                                     String number,
+                                 Boolean companySpecific) {
+        return findAll(companyId, warehouseId, clientId, number, companySpecific, true);
     }
 
 
@@ -129,7 +131,8 @@ public class InvoiceService {
                                      Long warehouseId,
                                      Long clientId,
                                      String number,
-                                     boolean includeDetails) {
+                                     Boolean companySpecific,
+                                 boolean includeDetails) {
 
         List<Invoice> invoices =  invoiceRepository.findAll(
                 (Root<Invoice> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -138,14 +141,14 @@ public class InvoiceService {
 
                     predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
-                    if (Objects.isNull(clientId)) {
-                        // if the client id is not passed in, then we will only return the
-                        // rate that defined for the warehouse, not for any client
+
+                    if (Boolean.TRUE.equals(companySpecific)) {
                         predicates.add(criteriaBuilder.isNull(root.get("clientId")));
                     }
-                    else {
+                    else if (Objects.nonNull(clientId)) {
                         predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
                     }
+
                     if (StringUtils.isNotBlank(number)) {
                         if (number.contains("*")) {
 
@@ -161,7 +164,7 @@ public class InvoiceService {
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
                 ,
-                Sort.by(Sort.Direction.ASC, "warehouseId", "clientId")
+                Sort.by(Sort.Direction.DESC, "warehouseId", "clientId", "number")
         );
 
         if (!invoices.isEmpty() && includeDetails) {
@@ -215,14 +218,17 @@ public class InvoiceService {
     }
 
     public Invoice generateInvoiceFromBillingRequest(
-            String number, String referenceNumber, String comment, ZonedDateTime startTime,
-            ZonedDateTime endTime, Long companyId, Long warehouseId, Long clientId,
+            String number, String referenceNumber, String comment,
+            ZonedDateTime startTime, ZonedDateTime endTime, Long companyId, Long warehouseId, Long clientId,
             List<BillingRequest> billingRequests) {
 
         Invoice invoice = new Invoice(
                 companyId, warehouseId,
                 clientId, number, referenceNumber,
-                comment, startTime, endTime, 0.0
+                comment,
+                startTime,
+                endTime,
+                0.0
         );
         billingRequests.forEach(
                 billingRequest -> {

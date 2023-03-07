@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /**
@@ -48,6 +51,13 @@ public class BillingRequestLine extends AuditibleEntity<String>{
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime endTime;
 
+
+    @Transient
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate date;
+
     // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     // @JsonSerialize(using = LocalDateTimeSerializer.class)
     // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
@@ -62,10 +72,27 @@ public class BillingRequestLine extends AuditibleEntity<String>{
 
     }
 
-    public BillingRequestLine(BillingRequest billingRequest, ZonedDateTime startTime, ZonedDateTime endTime, Double totalAmount, Double totalCharge) {
+    public BillingRequestLine(BillingRequest billingRequest,
+                              ZonedDateTime startTime,
+                              ZonedDateTime endTime,
+                              Double totalAmount,
+                              Double totalCharge) {
         this.billingRequest = billingRequest;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.totalAmount = totalAmount;
+        this.totalCharge = totalCharge;
+    }
+    public BillingRequestLine(BillingRequest billingRequest,
+                              ZonedDateTime startTime,
+                              ZonedDateTime endTime,
+                              LocalDate date,
+                              Double totalAmount,
+                              Double totalCharge) {
+        this.billingRequest = billingRequest;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.date = date;
         this.totalAmount = totalAmount;
         this.totalCharge = totalCharge;
     }
@@ -116,5 +143,13 @@ public class BillingRequestLine extends AuditibleEntity<String>{
 
     public void setTotalCharge(Double totalCharge) {
         this.totalCharge = totalCharge;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 }

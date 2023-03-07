@@ -88,12 +88,12 @@ public class BillingRateService {
                 findByCategory(billingRate.getCompanyId(),
                         billingRate.getWarehouseId(),
                         billingRate.getClientId(),
-                        billingRate.getBillableCateory(), true) != null) {
+                        billingRate.getBillableCategory(), true) != null) {
             billingRate.setId(
                     findByCategory(billingRate.getCompanyId(),
                             billingRate.getWarehouseId(),
                             billingRate.getClientId(),
-                            billingRate.getBillableCateory(), true).getId());
+                            billingRate.getBillableCategory(), true).getId());
         }
         return save(billingRate, loadDetails);
     }
@@ -208,14 +208,14 @@ public class BillingRateService {
         while(billingRateIterator.hasNext()) {
             BillingRate billingRate = billingRateIterator.next();
 
-            if (billingRateProcessed.contains(billingRate.getBillableCateory()) &&
+            if (billingRateProcessed.contains(billingRate.getBillableCategory()) &&
                     Objects.isNull(billingRate.getWarehouseId())) {
                 // ok, we already processed the item and the current
                 // record is a company level item, then we will remove
                 // this record from the result
                 billingRateIterator.remove();
             }
-            billingRateProcessed.add(billingRate.getBillableCateory());
+            billingRateProcessed.add(billingRate.getBillableCategory());
         }
     }
 

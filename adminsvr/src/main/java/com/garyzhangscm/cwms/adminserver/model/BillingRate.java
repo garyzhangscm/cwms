@@ -113,13 +113,6 @@ public class BillingRate extends AuditibleEntity<String>{
         this.client = client;
     }
 
-    public BillableCategory getBillableCateory() {
-        return billableCategory;
-    }
-
-    public void setBillableCateory(BillableCategory billableCategory) {
-        this.billableCategory = billableCategory;
-    }
 
     public Double getRate() {
         return rate;

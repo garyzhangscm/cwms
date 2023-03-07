@@ -64,12 +64,18 @@ public class Invoice extends AuditibleEntity<String>{
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime startTime;
 
+    @Column(name = "start_date")
+    private String startDate;
+
     @Column(name = "end_time")
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
     @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime endTime;
 
+
+    @Column(name = "end_date")
+    private String endDate;
 
     @Column(name = "invoice_date")
     @JsonDeserialize(using = LocalDateDeserializer.class)
@@ -117,6 +123,24 @@ public class Invoice extends AuditibleEntity<String>{
         this.lines = new ArrayList<>();
         this.documents = new ArrayList<>();
     }
+
+    public Invoice(Long companyId, Long warehouseId,
+                   Long clientId, String number, String referenceNumber,
+                   String comment, String startDate, String endDate,
+                   Double totalCharge) {
+        this.companyId = companyId;
+        this.warehouseId = warehouseId;
+        this.clientId = clientId;
+        this.number = number;
+        this.referenceNumber = referenceNumber;
+        this.comment = comment;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.totalCharge = totalCharge;
+        this.lines = new ArrayList<>();
+        this.documents = new ArrayList<>();
+    }
+
     public Invoice(Long companyId, Long warehouseId,
                    Long clientId, String number, String referenceNumber,
                    String comment, LocalDate invoiceDate, LocalDate dueDate,
@@ -277,5 +301,21 @@ public class Invoice extends AuditibleEntity<String>{
 
     public void addDocument(InvoiceDocument invoiceDocument) {
         documents.add(invoiceDocument);
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 }
