@@ -21,9 +21,7 @@ package com.garyzhangscm.cwms.inbound.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.model.*;
-import com.garyzhangscm.cwms.inbound.service.FileService;
-import com.garyzhangscm.cwms.inbound.service.ReceiptLineService;
-import com.garyzhangscm.cwms.inbound.service.ReceiptService;
+import com.garyzhangscm.cwms.inbound.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +44,11 @@ public class ReceiptController {
     ReceiptService receiptService;
     @Autowired
     ReceiptLineService receiptLineService;
+
+    @Autowired
+    ReceiptBillableActivityService receiptBillableActivityService;
+    @Autowired
+    ReceiptLineBillableActivityService receiptLineBillableActivityService;
 
     @Autowired
     FileService fileService;
@@ -431,4 +434,62 @@ public class ReceiptController {
 
         return receiptService.getReceivingInventoryFileUploadResult(warehouseId, key);
     }
+
+    @RequestMapping(method=RequestMethod.PUT, value="/receipts/{receiptId}/billable-activities")
+    public ReceiptBillableActivity addReceiptBillableActivity(Long warehouseId,
+                                                              @PathVariable Long receiptId,
+                                                              @RequestBody ReceiptBillableActivity receiptBillableActivity) throws IOException {
+
+
+        return receiptBillableActivityService.addReceiptBillableActivity(receiptId, receiptBillableActivity);
+    }
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/receipts/{receiptId}/billable-activities/{id}")
+    public ResponseBodyWrapper<String> removeReceiptBillableActivity(Long warehouseId,
+                                                              @PathVariable Long receiptId,
+                                                                     @PathVariable Long id) throws IOException {
+
+
+        receiptBillableActivityService.removeReceiptBillableActivity(id);
+        return ResponseBodyWrapper.success("receipt billable activity is removed");
+    }
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/receipts/{receiptId}/billable-activities/{id}")
+    public ReceiptBillableActivity changeReceiptBillableActivity(Long warehouseId,
+                                                              @PathVariable Long receiptId,
+                                                                 @PathVariable Long id,
+                                                              @RequestBody ReceiptBillableActivity receiptBillableActivity) throws IOException {
+
+
+        return receiptBillableActivityService.changeReceiptBillableActivity(receiptBillableActivity);
+    }
+
+    @RequestMapping(method=RequestMethod.PUT, value="/receipts/lines/{receiptLineId}/billable-activities")
+    public ReceiptLineBillableActivity addReceiptLineBillableActivity(Long warehouseId,
+                                                              @PathVariable Long receiptLineId,
+                                                              @RequestBody ReceiptLineBillableActivity receiptLineBillableActivity) throws IOException {
+
+
+        return receiptLineBillableActivityService.addReceiptLineBillableActivity(receiptLineId, receiptLineBillableActivity);
+    }
+    @RequestMapping(method=RequestMethod.DELETE, value="/receipts/lines/{receiptLineId}/billable-activities/{id}")
+    public ResponseBodyWrapper<String> removeReceiptLineBillableActivity(Long warehouseId,
+                                                                         @PathVariable Long receiptLineId,
+                                                                         @PathVariable Long id) throws IOException {
+
+
+        receiptLineBillableActivityService.removeReceiptLineBillableActivity(id);
+        return ResponseBodyWrapper.success("receipt billable activity is removed");
+    }
+    @RequestMapping(method=RequestMethod.POST, value="/receipts/lines/{receiptLineId}/billable-activities/{id}")
+    public ReceiptLineBillableActivity changeReceiptLineBillableActivity(Long warehouseId,
+                                                                 @PathVariable Long receiptId,
+                                                                 @PathVariable Long id,
+                                                                 @RequestBody ReceiptLineBillableActivity receiptLineBillableActivity) throws IOException {
+
+
+        return receiptLineBillableActivityService.changeReceiptLineBillableActivity(receiptLineBillableActivity);
+    }
+
 }

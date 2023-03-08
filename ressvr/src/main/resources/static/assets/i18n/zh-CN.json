@@ -1999,5 +1999,13 @@
   "record": "记录",
   "location-utilization-snapshot.created.result": "库位使用率快照 {{batchNumber}} 开始创建，请等待一段时间后到库位使用率快照界面查看或者下载",
   "generate-invoice": "生成账单",
-  "not-able-to-load-printers": "无法加载打印机"
+  "not-able-to-load-printers": "无法加载打印机",
+  "menu.main.billing.billable-activity-type": "付费项目",
+  "billable-activity-type": "付费项目",
+  "receipt.billable-activity-type": "付费项目",
+  "receipt.line.billable-activity-type": "行付费项目",
+  "billable-activity-type.add": "添加付费项目",
+  "billable-activity": "付费项目",
+  "billable-activity-type.line.add": "添加行付费项目",
+  "activityTime": "项目时间"
 }

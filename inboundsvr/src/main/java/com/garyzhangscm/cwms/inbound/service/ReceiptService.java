@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.inbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.inbound.clients.ResourceServiceRestemplateClient;
-import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inbound.clients.*;
 
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
@@ -81,6 +78,8 @@ public class ReceiptService {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private AdminServiceRestemplateClient adminServiceRestemplateClient;
 
 
     private final static int INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
@@ -306,6 +305,21 @@ public class ReceiptService {
         if (receipt.getReceiptLines().size() > 0) {
             receiptLineService.loadReceiptLineAttribute(receipt.getReceiptLines());
         }
+
+        receipt.getReceiptBillableActivities().forEach(
+                receiptBillableActivity -> {
+                    if (Objects.nonNull(receiptBillableActivity.getBillableActivityTypeId()) &&
+                        Objects.isNull(receiptBillableActivity.getBillableActivityType())) {
+
+                        receiptBillableActivity.setBillableActivityType(
+                                adminServiceRestemplateClient.getBillableActivityTypeById(
+                                        receiptBillableActivity.getBillableActivityTypeId()
+                                )
+                        );
+                    }
+
+                }
+        );
 
     }
 

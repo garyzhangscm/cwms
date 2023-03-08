@@ -51,6 +51,10 @@ public class BillableActivity extends AuditibleEntity<String>{
     @Column(name = "document_number")
     private String documentNumber;
 
+    @ManyToOne
+    @JoinColumn(name="billable_activity_type_id")
+    private BillableActivityType billableActivityType;
+
     @Column(name = "item_number")
     private String itemNumber;
 
@@ -141,5 +145,13 @@ public class BillableActivity extends AuditibleEntity<String>{
 
     public void setItemNumber(String itemNumber) {
         this.itemNumber = itemNumber;
+    }
+
+    public BillableActivityType getBillableActivityType() {
+        return billableActivityType;
+    }
+
+    public void setBillableActivityType(BillableActivityType billableActivityType) {
+        this.billableActivityType = billableActivityType;
     }
 }
