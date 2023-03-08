@@ -92,6 +92,15 @@ public class Receipt extends AuditibleEntity<String>{
     )
     private List<ReceiptLine> receiptLines = new ArrayList<>();
 
+
+    @OneToMany(
+            mappedBy = "receipt",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<ReceiptBillableActivity> receiptBillableActivities = new ArrayList<>();
+
     @Column(name = "status")
     private ReceiptStatus receiptStatus = ReceiptStatus.OPEN;
 
@@ -252,5 +261,13 @@ public class Receipt extends AuditibleEntity<String>{
 
     public void setCheckInTime(ZonedDateTime checkInTime) {
         this.checkInTime = checkInTime;
+    }
+
+    public List<ReceiptBillableActivity> getReceiptBillableActivities() {
+        return receiptBillableActivities;
+    }
+
+    public void setReceiptBillableActivities(List<ReceiptBillableActivity> receiptBillableActivities) {
+        this.receiptBillableActivities = receiptBillableActivities;
     }
 }

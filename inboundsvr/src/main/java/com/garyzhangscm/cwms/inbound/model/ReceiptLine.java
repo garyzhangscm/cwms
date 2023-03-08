@@ -24,6 +24,8 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -46,6 +48,13 @@ public class ReceiptLine extends AuditibleEntity<String>{
     @LazyCollection(LazyCollectionOption.FALSE)
     private PurchaseOrderLine purchaseOrderLine;
 
+    @OneToMany(
+            mappedBy = "receiptLine",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<ReceiptLineBillableActivity> receiptLineBillableActivities = new ArrayList<>();
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
@@ -227,5 +236,13 @@ public class ReceiptLine extends AuditibleEntity<String>{
 
     public void setReceiptNumber(String receiptNumber) {
         this.receiptNumber = receiptNumber;
+    }
+
+    public List<ReceiptLineBillableActivity> getReceiptLineBillableActivities() {
+        return receiptLineBillableActivities;
+    }
+
+    public void setReceiptLineBillableActivities(List<ReceiptLineBillableActivity> receiptLineBillableActivities) {
+        this.receiptLineBillableActivities = receiptLineBillableActivities;
     }
 }

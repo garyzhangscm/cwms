@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inbound.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.inbound.clients.AdminServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
@@ -65,6 +66,8 @@ public class ReceiptLineService {
 
     @Autowired
     private  BillableActivityService billableActivityService;
+    @Autowired
+    private AdminServiceRestemplateClient adminServiceRestemplateClient;
 
     @Value("${fileupload.test-data.receipt_lines:receipt_lines}")
     String testDataFile;
@@ -122,6 +125,21 @@ public class ReceiptLineService {
             receiptLine.setReceiptNumber(receiptLine.getReceipt().getNumber());
             receiptLine.setReceiptId(receiptLine.getReceipt().getId());
         }
+
+        receiptLine.getReceiptLineBillableActivities().forEach(
+                receiptLineBillableActivity -> {
+                    if (Objects.nonNull(receiptLineBillableActivity.getBillableActivityTypeId()) &&
+                            Objects.isNull(receiptLineBillableActivity.getBillableActivityType())) {
+
+                        receiptLineBillableActivity.setBillableActivityType(
+                                adminServiceRestemplateClient.getBillableActivityTypeById(
+                                        receiptLineBillableActivity.getBillableActivityTypeId()
+                                )
+                        );
+                    }
+
+                }
+        );
 
     }
 
