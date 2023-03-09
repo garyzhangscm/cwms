@@ -1,10 +1,14 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.time.ZonedDateTime;
 
 /**
  * Billable warehouse activity
@@ -31,6 +35,18 @@ public class BillableActivity extends AuditibleEntity<String>{
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Column(name = "billable_activity_type_id")
+    private Long billableActivityTypeId;
+
+    @Column(name = "activity_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime activityTime;
+
     @Transient
     private Warehouse warehouse;
 
@@ -52,8 +68,8 @@ public class BillableActivity extends AuditibleEntity<String>{
     private String documentNumber;
 
 
-    @Column(name = "item_number")
-    private String itemNumber;
+    @Column(name = "item_name")
+    private String itemName;
 
 
     public Long getId() {
@@ -86,6 +102,14 @@ public class BillableActivity extends AuditibleEntity<String>{
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 
     public Warehouse getWarehouse() {
@@ -136,12 +160,27 @@ public class BillableActivity extends AuditibleEntity<String>{
         this.documentNumber = documentNumber;
     }
 
-    public String getItemNumber() {
-        return itemNumber;
+    public String getItemName() {
+        return itemName;
     }
 
-    public void setItemNumber(String itemNumber) {
-        this.itemNumber = itemNumber;
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 
+    public Long getBillableActivityTypeId() {
+        return billableActivityTypeId;
+    }
+
+    public void setBillableActivityTypeId(Long billableActivityTypeId) {
+        this.billableActivityTypeId = billableActivityTypeId;
+    }
+
+    public ZonedDateTime getActivityTime() {
+        return activityTime;
+    }
+
+    public void setActivityTime(ZonedDateTime activityTime) {
+        this.activityTime = activityTime;
+    }
 }

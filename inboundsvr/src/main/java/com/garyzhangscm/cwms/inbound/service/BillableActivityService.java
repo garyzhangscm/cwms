@@ -25,6 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 @Service
 public class BillableActivityService {
     private static final Logger logger = LoggerFactory.getLogger(BillableActivityService.class);
@@ -78,7 +82,7 @@ public class BillableActivityService {
                                                    Long clientId,
                                                    Long amount,
                                                    String documentNumber,
-                                                   String itemNumber,
+                                                   String itemName,
                                                    BillableCategory billableCategory,
                                                    Double rate,
                                                    Double totalCharge) {
@@ -88,7 +92,8 @@ public class BillableActivityService {
         billableActivity.setClientId(clientId);
         billableActivity.setAmount(amount.doubleValue());
         billableActivity.setDocumentNumber(documentNumber);
-        billableActivity.setItemNumber(itemNumber);
+        billableActivity.setItemName(itemName);
+        billableActivity.setActivityTime(LocalDateTime.now().atZone(ZoneOffset.UTC));
 
         billableActivity.setBillableCategory(billableCategory);
         billableActivity.setRate(rate);

@@ -202,7 +202,8 @@ public abstract class StorageFeeBillingService implements BillingService {
                             entry.getKey().plusDays(1).atStartOfDay().minusNanos(1).atZone(ZoneOffset.UTC),
                             entry.getKey(),
                             entry.getValue(),
-                            entry.getValue() * billingRate.getRate()
+                            entry.getValue() * billingRate.getRate(),
+                            billingRate.getRate()
                     );
                     billingRequest.addBillingRequestLine(billingRequestLine);
                 }

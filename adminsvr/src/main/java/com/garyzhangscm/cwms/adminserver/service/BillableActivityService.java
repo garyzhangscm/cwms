@@ -64,6 +64,7 @@ public class BillableActivityService {
 
     public List<BillableActivity> findAll(Long companyId,
                                          Long warehouseId,
+                                         Long clientId,
                                          ZonedDateTime startTime,
                                          ZonedDateTime endTime,
                                          String category
@@ -76,6 +77,11 @@ public class BillableActivityService {
 
                     predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(clientId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+                    }
 
                     if (Objects.nonNull(startTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(

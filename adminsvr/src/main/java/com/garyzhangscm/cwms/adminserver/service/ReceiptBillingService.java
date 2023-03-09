@@ -28,15 +28,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
-public class ReceivingInventoryBillingService implements BillingService {
+public class ReceiptBillingService implements BillingService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReceivingInventoryBillingService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReceiptBillingService.class);
 
     @Autowired
     private BillableActivityService billableActivityService;
@@ -52,7 +53,7 @@ public class ReceivingInventoryBillingService implements BillingService {
 
     public BillableCategory getBillableCategory() {
 
-        return BillableCategory.RECEIVING_CHARGE_BY_QUANTITY;
+        return BillableCategory.RECEIPT_PROCESS_FEE;
     }
 
 
@@ -74,7 +75,7 @@ public class ReceivingInventoryBillingService implements BillingService {
                 0.0, BillingCycle.DAILY,
                 0.0, 0.0);
 
-        loadItemLevelActivity(billingRequest,
+        loadReceiptLevelActivity(billingRequest,
                 companyId, warehouseId, clientId, startTime, endTime);
 
         return billingRequest;
@@ -82,67 +83,43 @@ public class ReceivingInventoryBillingService implements BillingService {
 
     }
 
-
-    private void loadItemLevelActivity(BillingRequest billingRequest,
-                                       Long companyId, Long warehouseId, Long clientId,
-                                       ZonedDateTime startTime, ZonedDateTime endTime) {
+    private void loadReceiptLevelActivity(BillingRequest billingRequest,
+                                          Long companyId, Long warehouseId, Long clientId,
+                                          ZonedDateTime startTime, ZonedDateTime endTime) {
 
         // get all the item based billable activity
-        List<BillableActivity> billableActivities = billableActivityService.findAll(
-                companyId, warehouseId, clientId, startTime, endTime,
-                getBillableCategory().name()
+        List<BillableActivity> billableActivities = inboundServiceRestemplateClient.getBillableActivities(
+                  warehouseId, clientId, startTime, endTime, true
         );
 
-        logger.debug("Get billable activity by items \n{}",
+        logger.debug("Get billable activity by receipt / receipt line \n{}",
                 billableActivities);
 
-        // we will group by item and document and then create
-        // the lines for each item and document combination
-        // key: item-document number
-        // value: BillingRequestLine
-        Map<String, BillingRequestLine> billingRequestLineMap = new HashMap<>();
-        billableActivities.stream().filter(
-                billableActivity -> Strings.isNotBlank(billableActivity.getItemName())
-        ).forEach(
+
+        billableActivities.stream()
+            .forEach(
                 billableActivity -> {
-                    Item item = inventoryServiceRestemplateClient.getItemByName(
-                            warehouseId,  billableActivity.getItemName()
-                    );
-                    logger.debug("Get item by name : {} / {}, item\n{}",
-                            warehouseId,
-                            billableActivity.getItemName(),
-                            Objects.nonNull(item) ? item : "N/A");
 
-                    if (Objects.nonNull(item) && Objects.nonNull(item.getReceivingRateByUnit())
-                            && item.getReceivingRateByUnit() > 0) {
-                        String key = billableActivity.getItemName() + "-" + billableActivity.getDocumentNumber();
-                        logger.debug("Start to get from map by key: {}", key);
-
-                        BillingRequestLine billingRequestLine = billingRequestLineMap.getOrDefault(key,
+                        BillingRequestLine billingRequestLine =
                                 new BillingRequestLine(
                                         billingRequest,
-                                        startTime,
-                                        endTime,
+                                        billableActivity.getActivityTime(),
+                                        billableActivity.getActivityTime(),
                                         billableActivity.getDocumentNumber(),
                                         billableActivity.getItemName(),
-                                        0.0,
-                                        0.0,
-                                        item.getReceivingRateByUnit()
-                                ));
+                                        billableActivity.getAmount(),
+                                        billableActivity.getTotalCharge(),
+                                        billableActivity.getRate()
+                                ) ;
 
-                        billingRequestLine.addAmount(billableActivity.getAmount());
-                        logger.debug("create billing request line from this billable activity by item \n{}",
+                        logger.debug("create billing request line from this billable activity \n{}",
                                 billingRequestLine);
-                        billingRequestLineMap.put(key, billingRequestLine);
-                    }
+                        billingRequest.addBillingRequestLine(billingRequestLine);
 
                 }
         );
-        billingRequestLineMap.values().forEach(
-                billingRequestLine ->
-                        billingRequest.addBillingRequestLine(billingRequestLine)
-        );
 
     }
+
 
 }

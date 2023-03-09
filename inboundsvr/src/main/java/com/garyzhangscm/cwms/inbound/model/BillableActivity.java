@@ -1,8 +1,12 @@
 package com.garyzhangscm.cwms.inbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.time.ZonedDateTime;
 
 /**
  * Billable warehouse activity
@@ -18,6 +22,12 @@ public class BillableActivity extends AuditibleEntity<String>{
 
     private Long warehouseId;
 
+    private Long billableActivityTypeId;
+
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime activityTime;
 
     private Long clientId;
 
@@ -31,7 +41,7 @@ public class BillableActivity extends AuditibleEntity<String>{
 
     private String documentNumber;
 
-    private String itemNumber;
+    private String itemName;
 
 
     public Long getId() {
@@ -107,11 +117,27 @@ public class BillableActivity extends AuditibleEntity<String>{
         this.documentNumber = documentNumber;
     }
 
-    public String getItemNumber() {
-        return itemNumber;
+    public String getItemName() {
+        return itemName;
     }
 
-    public void setItemNumber(String itemNumber) {
-        this.itemNumber = itemNumber;
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public Long getBillableActivityTypeId() {
+        return billableActivityTypeId;
+    }
+
+    public void setBillableActivityTypeId(Long billableActivityTypeId) {
+        this.billableActivityTypeId = billableActivityTypeId;
+    }
+
+    public ZonedDateTime getActivityTime() {
+        return activityTime;
+    }
+
+    public void setActivityTime(ZonedDateTime activityTime) {
+        this.activityTime = activityTime;
     }
 }

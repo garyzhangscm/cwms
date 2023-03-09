@@ -41,6 +41,9 @@ public class ReceiptBillableActivity extends AuditibleEntity<String>{
     private Long id;
 
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
     @Column(name = "billable_activity_type_id")
     private Long billableActivityTypeId;
 
@@ -76,6 +79,14 @@ public class ReceiptBillableActivity extends AuditibleEntity<String>{
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public Long getBillableActivityTypeId() {

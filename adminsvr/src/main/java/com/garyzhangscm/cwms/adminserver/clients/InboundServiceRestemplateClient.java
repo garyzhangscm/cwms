@@ -229,10 +229,9 @@ public class InboundServiceRestemplateClient {
 
     }
 
-    public List<BillableActivity> findBillableActivities(
+    public List<BillableActivity> getBillableActivities(
             Long warehouseId, Long clientId, ZonedDateTime startTime,
-            ZonedDateTime endTime, Boolean includeLineActivity
-    ) throws JsonProcessingException {
+            ZonedDateTime endTime, Boolean includeLineActivity )   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)

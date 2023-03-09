@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.inbound.service;
 
+import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptBillableActivityRepository;
@@ -43,6 +44,9 @@ public class ReceiptLineBillableActivityService {
 
     @Autowired
     private ReceiptLineBillableActivityRepository receiptLineBillableActivityRepository;
+
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     @Autowired
     private ReceiptLineService receiptLineService;
@@ -181,7 +185,24 @@ public class ReceiptLineBillableActivityService {
         billableActivity.setRate(receiptLineBillableActivity.getRate());
         billableActivity.setAmount(receiptLineBillableActivity.getAmount());
         billableActivity.setTotalCharge(receiptLineBillableActivity.getTotalCharge());
+
+        billableActivity.setActivityTime(receiptLineBillableActivity.getActivityTime());
+        billableActivity.setBillableActivityTypeId(receiptLineBillableActivity.getBillableActivityTypeId());
+
         billableActivity.setDocumentNumber(receiptLineBillableActivity.getReceiptLine().getReceipt().getNumber());
+        if (Objects.isNull(receiptLineBillableActivity.getReceiptLine().getItem())) {
+            Item item = inventoryServiceRestemplateClient.getItemById(
+                    receiptLineBillableActivity.getReceiptLine().getItemId()
+            );
+            if (Objects.nonNull(item)) {
+
+                billableActivity.setItemName(item.getName());
+            }
+        }
+        else {
+
+            billableActivity.setItemName(receiptLineBillableActivity.getReceiptLine().getItem().getName());
+        }
         return billableActivity;
     }
 

@@ -38,6 +38,8 @@ public class ReceiptLineBillableActivity extends AuditibleEntity<String>{
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
 
     @Column(name = "billable_activity_type_id")
     private Long billableActivityTypeId;
@@ -74,6 +76,14 @@ public class ReceiptLineBillableActivity extends AuditibleEntity<String>{
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public Long getBillableActivityTypeId() {
