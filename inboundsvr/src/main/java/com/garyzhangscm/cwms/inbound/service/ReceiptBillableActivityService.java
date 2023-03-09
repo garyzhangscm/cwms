@@ -20,17 +20,23 @@ package com.garyzhangscm.cwms.inbound.service;
 
 import com.garyzhangscm.cwms.inbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
-import com.garyzhangscm.cwms.inbound.model.BillableActivity;
-import com.garyzhangscm.cwms.inbound.model.BillableCategory;
-import com.garyzhangscm.cwms.inbound.model.Receipt;
-import com.garyzhangscm.cwms.inbound.model.ReceiptBillableActivity;
+import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptBillableActivityRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ReceiptBillableActivityService {
@@ -40,48 +46,103 @@ public class ReceiptBillableActivityService {
     private ReceiptBillableActivityRepository receiptBillableActivityRepository;
 
     @Autowired
+    private ReceiptLineBillableActivityService receiptLineBillableActivityService;
+
+    @Autowired
     private ReceiptService receiptService;
 
+
+    public List<ReceiptBillableActivity> findAll(Long warehouseId,
+                                                 Long clientId,
+                                                 ZonedDateTime startTime,
+                                                 ZonedDateTime endTime,
+                                                 ClientRestriction clientRestriction) {
+
+
+
+        return receiptBillableActivityRepository.findAll(
+                (Root<ReceiptBillableActivity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(startTime)) {
+
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("activityTime"), startTime));
+                    }
+                    if (Objects.nonNull(endTime)) {
+
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("activityTime"), endTime));
+                    }
+                    if (Objects.nonNull(clientId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+                    }
+
+                    Predicate[] p = new Predicate[predicates.size()];
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    if (Objects.isNull(clientRestriction) ||
+                            !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag()) ||
+                            Boolean.TRUE.equals(clientRestriction.getAllClientAccess())) {
+                        // not a 3pl warehouse, let's not put any restriction on the client
+                        // (unless the client restriction is from the web request, which we already
+                        // handled previously
+                        return predicate;
+                    }
+
+
+                    // build the accessible client list predicated based on the
+                    // client ID that the user has access
+                    Predicate accessibleClientListPredicate;
+                    if (clientRestriction.getClientAccesses().trim().isEmpty()) {
+                        // the user can't access any client, then the user
+                        // can only access the non 3pl data
+                        accessibleClientListPredicate = criteriaBuilder.isNull(root.get("clientId"));
+                    }
+                    else {
+                        CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+                        for(String id : clientRestriction.getClientAccesses().trim().split(",")) {
+                            inClientIds.value(Long.parseLong(id));
+                        }
+                        accessibleClientListPredicate = criteriaBuilder.and(inClientIds);
+                    }
+
+                    if (Boolean.TRUE.equals(clientRestriction.getNonClientDataAccessible())) {
+                        // the user can access the non 3pl data
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(root.get("clientId")),
+                                        accessibleClientListPredicate));
+                    }
+                    else {
+
+                        // the user can NOT access the non 3pl data
+                        return criteriaBuilder.and(predicate,
+                                criteriaBuilder.and(
+                                        criteriaBuilder.isNotNull(root.get("clientId")),
+                                        accessibleClientListPredicate));
+                    }
+
+                }
+        );
+    }
 
     public ReceiptBillableActivity save(ReceiptBillableActivity receiptBillableActivity) {
         return receiptBillableActivityRepository.save(receiptBillableActivity);
     }
 
-    public ReceiptBillableActivity findByType(Long receiptId, Long billableActivityTypeId) {
-        return receiptBillableActivityRepository.findByType(receiptId, billableActivityTypeId);
-    }
-
-    public ReceiptBillableActivity saveOrUpdate(ReceiptBillableActivity receiptBillableActivity) {
-        if (Objects.isNull(receiptBillableActivity.getId()) &&
-                Objects.nonNull(findByType(receiptBillableActivity.getReceipt().getId(), receiptBillableActivity.getBillableActivityTypeId()))) {
-            receiptBillableActivity.setId(
-                    findByType(
-                            receiptBillableActivity.getReceipt().getId(),
-                            receiptBillableActivity.getBillableActivityTypeId()
-                    ).getId()
-            );
-        }
-
-        return save(receiptBillableActivity);
-    }
 
     public ReceiptBillableActivity addReceiptBillableActivity(Long receiptId, ReceiptBillableActivity receiptBillableActivity) {
-        ReceiptBillableActivity existingReceiptBillableActivity = findByType(
-                receiptId, receiptBillableActivity.getBillableActivityTypeId()
-        );
-        if (Objects.nonNull(existingReceiptBillableActivity)) {
-            // we already have the billable activity with same type, let's just change it instead of
-            // create a new activity record with same type in the same receipt
-            existingReceiptBillableActivity.setRate(receiptBillableActivity.getRate());
-            existingReceiptBillableActivity.setAmount(receiptBillableActivity.getAmount());
-            existingReceiptBillableActivity.setTotalCharge(receiptBillableActivity.getTotalCharge());
-            return saveOrUpdate(existingReceiptBillableActivity);
-        }
         // we don't have any existing billable activity with same type in this receipt, let's create one
         Receipt receipt = receiptService.findById(receiptId);
         receiptBillableActivity.setReceipt(receipt);
 
-        return saveOrUpdate(receiptBillableActivity);
+        return save(receiptBillableActivity);
 
     }
 
@@ -89,7 +150,7 @@ public class ReceiptBillableActivityService {
         if (Objects.isNull(receiptBillableActivity.getId())) {
             throw ReceiptOperationException.raiseException("Can't change an non exists billable activity");
         }
-        return saveOrUpdate(receiptBillableActivity);
+        return save(receiptBillableActivity);
 
     }
     public void removeReceiptBillableActivity(ReceiptBillableActivity receiptBillableActivity) {
@@ -103,4 +164,41 @@ public class ReceiptBillableActivityService {
         receiptBillableActivityRepository.deleteById(id);
 
     }
+
+    public List<BillableActivity> findBillableActivities(Long warehouseId, Long clientId,
+                                                         ZonedDateTime startTime, ZonedDateTime endTime,
+                                                         Boolean includeLineActivity, ClientRestriction clientRestriction) {
+
+        List<ReceiptBillableActivity> receiptBillableActivities = findAll(
+                warehouseId, clientId, startTime, endTime, clientRestriction
+        );
+
+        // convert from the receipt billable activity to billable activity
+        List<BillableActivity> billableActivities = receiptBillableActivities.stream()
+                .map(receiptBillableActivity -> convert(receiptBillableActivity)).collect(Collectors.toList());
+
+        if (Boolean.TRUE.equals(includeLineActivity)) {
+            List<BillableActivity> lineBillableActivity =
+                    receiptLineBillableActivityService.findBillableActivities(
+                            warehouseId, clientId, startTime, endTime, clientRestriction);
+            billableActivities.addAll(lineBillableActivity);
+
+
+        }
+        return billableActivities;
+    }
+
+    private BillableActivity convert(ReceiptBillableActivity receiptBillableActivity) {
+        BillableActivity billableActivity = new BillableActivity();
+        billableActivity.setWarehouseId(receiptBillableActivity.getReceipt().getWarehouseId());
+        billableActivity.setClientId(receiptBillableActivity.getReceipt().getClientId());
+        billableActivity.setBillableCategory(BillableCategory.RECEIPT_PROCESS_FEE);
+        billableActivity.setRate(receiptBillableActivity.getRate());
+        billableActivity.setAmount(receiptBillableActivity.getAmount());
+        billableActivity.setTotalCharge(receiptBillableActivity.getTotalCharge());
+        billableActivity.setDocumentNumber(receiptBillableActivity.getReceipt().getNumber());
+        return billableActivity;
+    }
+
+
 }

@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.adminserver.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.adminserver.model.BillableActivity;
 import com.garyzhangscm.cwms.adminserver.model.wms.Inventory;
 import com.garyzhangscm.cwms.adminserver.model.wms.Location;
 import com.garyzhangscm.cwms.adminserver.model.wms.PutawayConfiguration;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -40,9 +42,11 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Component
@@ -220,6 +224,31 @@ public class InboundServiceRestemplateClient {
                 HttpMethod.PUT,
                 getHttpEntity(objectMapper.writeValueAsString(putawayConfiguration)),
                 new ParameterizedTypeReference<ResponseBodyWrapper<PutawayConfiguration>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+    public List<BillableActivity> findBillableActivities(
+            Long warehouseId, Long clientId, ZonedDateTime startTime,
+            ZonedDateTime endTime, Boolean includeLineActivity
+    ) throws JsonProcessingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inbound/receipt-billable-activities/billable-activity")
+                .queryParam("warehouseId", warehouseId)
+                        .queryParam("clientId", clientId)
+                        .queryParam("startTime", startTime)
+                        .queryParam("endTime", endTime)
+                        .queryParam("includeLineActivity", includeLineActivity);
+
+        ResponseBodyWrapper<List<BillableActivity>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<BillableActivity>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 
