@@ -197,6 +197,8 @@ public class ReceiptBillableActivityService {
         billableActivity.setAmount(receiptBillableActivity.getAmount());
         billableActivity.setTotalCharge(receiptBillableActivity.getTotalCharge());
         billableActivity.setDocumentNumber(receiptBillableActivity.getReceipt().getNumber());
+        billableActivity.setActivityTime(receiptBillableActivity.getActivityTime());
+        billableActivity.setBillableActivityTypeId(receiptBillableActivity.getBillableActivityTypeId());
         return billableActivity;
     }
 

@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.adminserver.service;
 
+import com.garyzhangscm.cwms.adminserver.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.model.*;
 import com.garyzhangscm.cwms.adminserver.model.wms.Item;
@@ -42,6 +43,8 @@ public class ReceivingInventoryBillingService implements BillingService {
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
 
     @Autowired
     private BillingRequestService billingRequestService;
@@ -72,53 +75,74 @@ public class ReceivingInventoryBillingService implements BillingService {
                 0.0, 0.0);
 
         loadItemLevelActivity(billingRequest,
-                companyId, warehouseId, startTime, endTime);
-        loadReceiptLevelActivity(billingRequest,
-                companyId, warehouseId, startTime, endTime);
+                companyId, warehouseId, clientId, startTime, endTime);
 
         return billingRequest;
 
 
     }
 
-    private void loadReceiptLevelActivity(BillingRequest billingRequest,
-                                          Long companyId, Long warehouseId,
-                                          ZonedDateTime startTime, ZonedDateTime endTime) {
-    }
 
     private void loadItemLevelActivity(BillingRequest billingRequest,
-                                       Long companyId, Long warehouseId,
+                                       Long companyId, Long warehouseId, Long clientId,
                                        ZonedDateTime startTime, ZonedDateTime endTime) {
 
         // get all the item based billable activity
         List<BillableActivity> billableActivities = billableActivityService.findAll(
-                companyId, warehouseId, startTime, endTime,
+                companyId, warehouseId, clientId, startTime, endTime,
                 getBillableCategory().name()
         );
 
+        logger.debug("Get billable activity by items \n{}",
+                billableActivities);
+
+        // we will group by item and document and then create
+        // the lines for each item and document combination
+        // key: item-document number
+        // value: BillingRequestLine
+        Map<String, BillingRequestLine> billingRequestLineMap = new HashMap<>();
         billableActivities.stream().filter(
-                billableActivity -> Strings.isNotBlank(billableActivity.getItemNumber())
+                billableActivity -> Strings.isNotBlank(billableActivity.getItemName())
         ).forEach(
                 billableActivity -> {
                     Item item = inventoryServiceRestemplateClient.getItemByName(
-                            warehouseId,  billableActivity.getItemNumber()
+                            warehouseId,  billableActivity.getItemName()
                     );
+                    logger.debug("Get item by name : {} / {}, item\n{}",
+                            warehouseId,
+                            billableActivity.getItemName(),
+                            Objects.nonNull(item) ? item : "N/A");
+
                     if (Objects.nonNull(item) && Objects.nonNull(item.getReceivingRateByUnit())
                             && item.getReceivingRateByUnit() > 0) {
+                        String key = billableActivity.getItemName() + "-" + billableActivity.getDocumentNumber();
+                        logger.debug("Start to get from map by key: {}", key);
 
-                        BillingRequestLine billingRequestLine = new BillingRequestLine(
-                                billingRequest, billableActivity.getCreatedTime(),
-                                billableActivity.getCreatedTime(),
-                                billableActivity.getCreatedTime().toLocalDate(),
-                                billableActivity.getAmount(),
-                                billableActivity.getAmount() * item.getReceivingRateByUnit(),
-                                item.getReceivingRateByUnit()
-                        );
-                        billingRequest.addBillingRequestLine(billingRequestLine);
+                        BillingRequestLine billingRequestLine = billingRequestLineMap.getOrDefault(key,
+                                new BillingRequestLine(
+                                        billingRequest,
+                                        startTime,
+                                        endTime,
+                                        billableActivity.getDocumentNumber(),
+                                        billableActivity.getItemName(),
+                                        0.0,
+                                        0.0,
+                                        item.getReceivingRateByUnit()
+                                ));
+
+                        billingRequestLine.addAmount(billableActivity.getAmount());
+                        logger.debug("create billing request line from this billable activity by item \n{}",
+                                billingRequestLine);
+                        billingRequestLineMap.put(key, billingRequestLine);
                     }
 
                 }
         );
+        billingRequestLineMap.values().forEach(
+                billingRequestLine ->
+                        billingRequest.addBillingRequestLine(billingRequestLine)
+        );
+
     }
 
 }

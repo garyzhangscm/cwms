@@ -71,6 +71,13 @@ public class BillingRequestLine extends AuditibleEntity<String>{
     @Column(name = "rate")
     private Double rate;
 
+    @Column(name = "document_number")
+    private String documentNumber;
+
+
+    @Column(name = "item_name")
+    private String itemName;
+
     public BillingRequestLine(){
 
     }
@@ -78,27 +85,40 @@ public class BillingRequestLine extends AuditibleEntity<String>{
     public BillingRequestLine(BillingRequest billingRequest,
                               ZonedDateTime startTime,
                               ZonedDateTime endTime,
+                              String documentNumber,
+                              String itemName,
                               Double totalAmount,
-                              Double totalCharge) {
+                              Double totalCharge,
+                              Double rate) {
         this.billingRequest = billingRequest;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.documentNumber = documentNumber;
+        this.itemName = itemName;
         this.totalAmount = totalAmount;
         this.totalCharge = totalCharge;
+        this.rate = rate;
     }
     public BillingRequestLine(BillingRequest billingRequest,
                               ZonedDateTime startTime,
                               ZonedDateTime endTime,
                               LocalDate date,
+                              String documentNumber,
+                              String itemName,
                               Double totalAmount,
-                              Double totalCharge) {
+                              Double totalCharge,
+                              Double rate) {
         this.billingRequest = billingRequest;
         this.startTime = startTime;
         this.endTime = endTime;
         this.date = date;
+        this.documentNumber = documentNumber;
+        this.itemName = itemName;
         this.totalAmount = totalAmount;
         this.totalCharge = totalCharge;
+        this.rate = rate;
     }
+
     public BillingRequestLine(BillingRequest billingRequest,
                               ZonedDateTime startTime,
                               ZonedDateTime endTime,
@@ -178,5 +198,26 @@ public class BillingRequestLine extends AuditibleEntity<String>{
 
     public void setRate(Double rate) {
         this.rate = rate;
+    }
+
+    public String getDocumentNumber() {
+        return documentNumber;
+    }
+
+    public void setDocumentNumber(String documentNumber) {
+        this.documentNumber = documentNumber;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public void addAmount(Double amount) {
+        setTotalAmount(getTotalAmount() + amount);
+        setTotalCharge(getTotalAmount() * getRate());
     }
 }

@@ -103,7 +103,7 @@ public class InventoryServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<List<Item>>>() {}).getBody();
 
             List<Item> items = responseBodyWrapper.getData();
-            // logger.debug(">> get {} item", items.size());
+            logger.debug(">> get {} item", items.size());
             if (items.size() == 0) {
                 return null;
             }
