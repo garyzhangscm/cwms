@@ -58,11 +58,11 @@ public class ReceivingInventoryBillingService implements BillingService {
                                                  Long companyId, Long warehouseId, Long clientId,
                                                  String number, Boolean serialize) {
 
-        // get all the billable activity
-        List<BillableActivity> billableActivities = billableActivityService.findAll(
-                companyId, warehouseId, startTime, endTime,
-                getBillableCategory().name()
-        );
+        // we have 2 type of receiving billable activity.
+        // 1. item level: every time we receive the item, the system generates record in
+        //    BillableActivity table
+        // 2. receipt / receipt line level: billable activity will be record at the
+        //    receipt and receipt line
 
 
         BillingRequest billingRequest = new BillingRequest(companyId, warehouseId, clientId,
@@ -70,6 +70,31 @@ public class ReceivingInventoryBillingService implements BillingService {
                 getBillableCategory(),
                 0.0, BillingCycle.DAILY,
                 0.0, 0.0);
+
+        loadItemLevelActivity(billingRequest,
+                companyId, warehouseId, startTime, endTime);
+        loadReceiptLevelActivity(billingRequest,
+                companyId, warehouseId, startTime, endTime);
+
+        return billingRequest;
+
+
+    }
+
+    private void loadReceiptLevelActivity(BillingRequest billingRequest,
+                                          Long companyId, Long warehouseId,
+                                          ZonedDateTime startTime, ZonedDateTime endTime) {
+    }
+
+    private void loadItemLevelActivity(BillingRequest billingRequest,
+                                       Long companyId, Long warehouseId,
+                                       ZonedDateTime startTime, ZonedDateTime endTime) {
+
+        // get all the item based billable activity
+        List<BillableActivity> billableActivities = billableActivityService.findAll(
+                companyId, warehouseId, startTime, endTime,
+                getBillableCategory().name()
+        );
 
         billableActivities.stream().filter(
                 billableActivity -> Strings.isNotBlank(billableActivity.getItemNumber())
@@ -79,7 +104,7 @@ public class ReceivingInventoryBillingService implements BillingService {
                             warehouseId,  billableActivity.getItemNumber()
                     );
                     if (Objects.nonNull(item) && Objects.nonNull(item.getReceivingRateByUnit())
-                        && item.getReceivingRateByUnit() > 0) {
+                            && item.getReceivingRateByUnit() > 0) {
 
                         BillingRequestLine billingRequestLine = new BillingRequestLine(
                                 billingRequest, billableActivity.getCreatedTime(),
@@ -94,118 +119,6 @@ public class ReceivingInventoryBillingService implements BillingService {
 
                 }
         );
-
-        return billingRequest;
-
-
     }
-
-    private BillingRequest generateBillingRequestByDailyBillingCycle(
-            BillingRate billingRate,
-            ZonedDateTime startTime, ZonedDateTime endTime,
-            Long companyId, Long warehouseId, Long clientId,
-            String number, Boolean serialize,
-            double dailyRate
-    ) {
-        // let's get the location utilization snapshot first
-        // since it is for daily billing cycle, we will get the
-        // location utilization snapshot from the date of startTime
-        // until the date of the endTime, then sort the result
-        // by date. If there's multiple records for the same day, then
-        // we will average the number for each day
-
-        if (startTime.isAfter(endTime)) {
-            // the user passed in the wrong date range
-            return null;
-        }
-        List<ClientLocationUtilizationSnapshotBatch> clientLocationUtilizationSnapshotBatches =
-                inventoryServiceRestemplateClient.getLocationUtilizationSnapshotByClient(warehouseId, clientId, startTime, endTime);
-        logger.debug("we get {} clientLocationUtilizationSnapshotBatches",
-                clientLocationUtilizationSnapshotBatches.size());
-        if (clientLocationUtilizationSnapshotBatches.isEmpty()) {
-            // ok, nothing needs to be billed for the client but we will still
-            // generate a billing request with 0 charge
-            return new BillingRequest(companyId, warehouseId, clientId,
-                    Strings.isNotBlank(number) ? number : billingRequestService.getNextNumber(warehouseId),
-                    getBillableCategory(),
-                    billingRate.getRate(), BillingCycle.DAILY,
-                    0.0, 0.0);
-        }
-        // Now we will sort the location utilization snapshot by date
-        Map<LocalDate, List<Double>> dailyAmountMap = new HashMap<>();
-        clientLocationUtilizationSnapshotBatches.forEach(
-                clientLocationUtilizationSnapshotBatch -> {
-                    LocalDate date = clientLocationUtilizationSnapshotBatch.getCreatedTime().toLocalDate();
-
-                    List<Double> existingAmounts = dailyAmountMap.getOrDefault(date, new ArrayList<>());
-                    switch (getBillableCategory()) {
-                        case STORAGE_FEE_BY_NET_VOLUME:
-                            existingAmounts.add(clientLocationUtilizationSnapshotBatch.getNetVolume());
-                            break;
-                        case STORAGE_FEE_BY_GROSS_VOLUME:
-                            existingAmounts.add(clientLocationUtilizationSnapshotBatch.getGrossVolume());
-                            break;
-                        case STORAGE_FEE_BY_LOCATION_COUNT:
-                            existingAmounts.add(clientLocationUtilizationSnapshotBatch.getTotalLocations() * 1.0);
-                            break;
-                    }
-                    dailyAmountMap.put(date, existingAmounts);
-                }
-        );
-        logger.debug("after processed the clientLocationUtilizationSnapshotBatches map, we get daily number: \n {} ",
-                dailyAmountMap);
-        // OK, now let's get the average amount for each day
-        Map<LocalDate, Double> dailyAverageAmountMap = new HashMap<>();
-        dailyAmountMap.entrySet().stream().forEach(
-                entry -> {
-                    double averageAmount = entry.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                    if (averageAmount > 0) {
-                        dailyAverageAmountMap.put(
-                                entry.getKey(), averageAmount);
-                    }
-                }
-        );
-
-        logger.debug("after processed the daily number, we get daily average number \n {} ",
-                dailyAverageAmountMap);
-        // we will generate billing request from the daily average amount
-        BillingRequest billingRequest = new BillingRequest(companyId, warehouseId, clientId,
-                Strings.isNotBlank(number) ? number : billingRequestService.getNextNumber(warehouseId),
-                getBillableCategory(),
-                dailyRate, BillingCycle.DAILY,
-                0.0, 0.0);
-        dailyAverageAmountMap.entrySet().forEach(
-                entry -> {
-                    logger.debug("start to create billing request line with date {}, between {} and {}, " +
-                                    "UTC is between {} and {}",
-                            entry.getKey(),
-                            entry.getKey().atStartOfDay(),
-                            entry.getKey().plusDays(1).atStartOfDay().minusNanos(1),
-                            entry.getKey().atStartOfDay().atZone(ZoneOffset.UTC),
-                            entry.getKey().plusDays(1).atStartOfDay().minusNanos(1).atZone(ZoneOffset.UTC));
-
-                    BillingRequestLine billingRequestLine = new BillingRequestLine(
-                            billingRequest, entry.getKey().atStartOfDay().atZone(ZoneOffset.UTC),
-                            entry.getKey().plusDays(1).atStartOfDay().minusNanos(1).atZone(ZoneOffset.UTC),
-                            entry.getKey(),
-                            entry.getValue(),
-                            entry.getValue() * billingRate.getRate()
-                    );
-                    billingRequest.addBillingRequestLine(billingRequestLine);
-                }
-        );
-        logger.debug("we get billing request: \n{}", billingRequest);
-        logger.debug("we will serialize it? {}", serialize);
-        // by default, we will save the result into the database
-        if (Boolean.FALSE.equals(serialize)) {
-            return billingRequest;
-        }
-        else {
-
-            return billingRequestService.save(billingRequest);
-        }
-
-    }
-
 
 }

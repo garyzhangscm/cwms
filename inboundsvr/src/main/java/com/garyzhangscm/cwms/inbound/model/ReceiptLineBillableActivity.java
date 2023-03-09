@@ -45,6 +45,9 @@ public class ReceiptLineBillableActivity extends AuditibleEntity<String>{
     @Transient
     private BillableActivityType billableActivityType;
 
+    @Column(name = "client_id")
+    private Long clientId;
+
     @Column(name = "activity_time")
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
     @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
@@ -127,5 +130,13 @@ public class ReceiptLineBillableActivity extends AuditibleEntity<String>{
 
     public void setBillableActivityType(BillableActivityType billableActivityType) {
         this.billableActivityType = billableActivityType;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 }

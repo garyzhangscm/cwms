@@ -28,6 +28,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReceiptLineBillableActivityRepository extends JpaRepository<ReceiptLineBillableActivity, Long>, JpaSpecificationExecutor<ReceiptLineBillableActivity> {
 
-    @Query("select ba from ReceiptLineBillableActivity ba where ba.receiptLine.id = :receiptLineId and ba.billableActivityTypeId = :billableActivityTypeId")
-    ReceiptLineBillableActivity findByType(Long receiptLineId, Long billableActivityTypeId);
 }
