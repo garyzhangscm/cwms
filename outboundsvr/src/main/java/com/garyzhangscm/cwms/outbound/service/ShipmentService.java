@@ -78,6 +78,8 @@ public class ShipmentService {
     private ShortAllocationService shortAllocationService;
     @Autowired
     private KafkaSender kafkaSender;
+    @Autowired
+    private BillableActivityService billableActivityService;
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
@@ -1173,6 +1175,18 @@ public class ShipmentService {
             orderLine = orderLineService.saveOrUpdate(orderLine);
             // save the updated order line into map so we will always get the latest data
             orderLineMap.put(orderLine.getId(), orderLine);
+
+
+            billableActivityService.sendBillableActivity(
+                    Objects.nonNull(orderLine.getWarehouse()) ?
+                            orderLine.getWarehouse().getCompanyId() : null,
+                    orderLine.getWarehouseId(),
+                    orderLine.getOrder().getClientId(),
+                    inventory.getQuantity(),
+                    orderLine.getOrderNumber(),
+                    Objects.nonNull(inventory.getItem()) ?
+                            inventory.getItem().getName() : null,
+                    BillableCategory.SHIPPING_CHARGE_BY_QUANTITY);
         });
 
         shipment.setStatus(ShipmentStatus.DISPATCHED);
