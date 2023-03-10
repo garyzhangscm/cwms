@@ -18,10 +18,8 @@
 
 package com.garyzhangscm.cwms.adminserver.service;
 
-import com.garyzhangscm.cwms.adminserver.clients.InboundServiceRestemplateClient;
-import com.garyzhangscm.cwms.adminserver.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.adminserver.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.model.*;
-import com.garyzhangscm.cwms.adminserver.model.wms.Item;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,19 +27,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Service
-public class ReceiptBillingService implements BillingService {
+public class OrderBillingService implements BillingService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReceiptBillingService.class);
+    private static final Logger logger = LoggerFactory.getLogger(OrderBillingService.class);
 
 
     @Autowired
-    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
+    private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
 
     @Autowired
     private BillingRequestService billingRequestService;
@@ -49,7 +44,7 @@ public class ReceiptBillingService implements BillingService {
 
     public BillableCategory getBillableCategory() {
 
-        return BillableCategory.RECEIPT_PROCESS_FEE;
+        return BillableCategory.ORDER_PROCESS_FEE;
     }
 
 
@@ -71,7 +66,7 @@ public class ReceiptBillingService implements BillingService {
                 0.0, BillingCycle.DAILY,
                 0.0, 0.0);
 
-        loadReceiptLevelActivity(billingRequest,
+        loadOrderLevelActivity(billingRequest,
                 companyId, warehouseId, clientId, startTime, endTime);
 
         return billingRequest;
@@ -79,16 +74,16 @@ public class ReceiptBillingService implements BillingService {
 
     }
 
-    private void loadReceiptLevelActivity(BillingRequest billingRequest,
+    private void loadOrderLevelActivity(BillingRequest billingRequest,
                                           Long companyId, Long warehouseId, Long clientId,
                                           ZonedDateTime startTime, ZonedDateTime endTime) {
 
         // get all the item based billable activity
-        List<BillableActivity> billableActivities = inboundServiceRestemplateClient.getBillableActivities(
+        List<BillableActivity> billableActivities = outbuondServiceRestemplateClient.getBillableActivities(
                   warehouseId, clientId, startTime, endTime, true
         );
 
-        logger.debug("Get billable activity by receipt / receipt line \n{}",
+        logger.debug("Get billable activity by order / order line \n{}",
                 billableActivities);
 
 
@@ -108,7 +103,7 @@ public class ReceiptBillingService implements BillingService {
                                         billableActivity.getRate()
                                 ) ;
 
-                        logger.debug("create billing request line from this billable activity \n{}",
+                        logger.debug("create billing line from this billable activity \n{}",
                                 billingRequestLine);
                         billingRequest.addBillingRequestLine(billingRequestLine);
 
