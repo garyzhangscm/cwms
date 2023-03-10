@@ -85,6 +85,14 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Transient
     private InventoryStatus inventoryStatus;
 
+    @OneToMany(
+            mappedBy = "orderLine",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<OrderLineBillableActivity> orderLineBillableActivities = new ArrayList<>();
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "outbound_order_id")
@@ -381,5 +389,13 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public List<OrderLineBillableActivity> getOrderLineBillableActivities() {
+        return orderLineBillableActivities;
+    }
+
+    public void setOrderLineBillableActivities(List<OrderLineBillableActivity> orderLineBillableActivities) {
+        this.orderLineBillableActivities = orderLineBillableActivities;
     }
 }

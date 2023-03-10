@@ -19,8 +19,11 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
+import com.garyzhangscm.cwms.outbound.model.OrderLineBillableActivity;
+import com.garyzhangscm.cwms.outbound.service.OrderLineBillableActivityService;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -35,6 +39,8 @@ public class OrderLineController {
 
     @Autowired
     OrderLineService orderLineService;
+    @Autowired
+    private OrderLineBillableActivityService orderLineBillableActivityService;
 
 
     @RequestMapping(value="/orders/lines", method = RequestMethod.GET)
@@ -138,6 +144,31 @@ public class OrderLineController {
         return orderLineService.addActualReturnQuantity(warehouseId, orderLineId,
                 actualReturnQuantity);
     }
+    @RequestMapping(method=RequestMethod.PUT, value="/orders/lines/{orderLineId}/billable-activities")
+    public OrderLineBillableActivity addOrderLineBillableActivity(Long warehouseId,
+                                                                    @PathVariable Long orderLineId,
+                                                                    @RequestBody OrderLineBillableActivity orderLineBillableActivity) throws IOException {
 
+
+        return orderLineBillableActivityService.addOrderLineBillableActivity(orderLineId, orderLineBillableActivity);
+    }
+    @RequestMapping(method=RequestMethod.DELETE, value="/orders/lines/{orderLineId}/billable-activities/{id}")
+    public ResponseBodyWrapper<String> removeOrderLineBillableActivity(Long warehouseId,
+                                                                         @PathVariable Long orderLineId,
+                                                                         @PathVariable Long id) throws IOException {
+
+
+        orderLineBillableActivityService.removeOrderLineBillableActivity(id);
+        return ResponseBodyWrapper.success("order billable activity is removed");
+    }
+    @RequestMapping(method=RequestMethod.POST, value="/orders/lines/{orderLineId}/billable-activities/{id}")
+    public OrderLineBillableActivity changeOrderLineBillableActivity(Long warehouseId,
+                                                                         @PathVariable Long orderId,
+                                                                         @PathVariable Long id,
+                                                                         @RequestBody OrderLineBillableActivity orderLineBillableActivity) throws IOException {
+
+
+        return orderLineBillableActivityService.changeOrderLineBillableActivity(orderLineBillableActivity);
+    }
 
 }

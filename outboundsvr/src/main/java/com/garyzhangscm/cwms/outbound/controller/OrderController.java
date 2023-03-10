@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.FileService;
+import com.garyzhangscm.cwms.outbound.service.OrderBillableActivityService;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 import com.garyzhangscm.cwms.outbound.service.OrderService;
 import org.slf4j.Logger;
@@ -51,6 +52,8 @@ public class OrderController {
     OrderLineService orderLineService;
     @Autowired
     FileService fileService;
+    @Autowired
+    private OrderBillableActivityService orderBillableActivityService;
 
 
     @ClientValidationEndpoint
@@ -325,4 +328,37 @@ public class OrderController {
 
         return orderService.getOrderFileUploadResult(warehouseId, key);
     }
+
+    @RequestMapping(method=RequestMethod.PUT, value="/orders/{orderId}/billable-activities")
+    public OrderBillableActivity addOrderBillableActivity(Long warehouseId,
+                                                              @PathVariable Long orderId,
+                                                              @RequestBody OrderBillableActivity orderBillableActivity) throws IOException {
+
+
+        return orderBillableActivityService.addOrderBillableActivity(orderId, orderBillableActivity);
+    }
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/orders/{orderId}/billable-activities/{id}")
+    public ResponseBodyWrapper<String> removeOrderBillableActivity(Long warehouseId,
+                                                                     @PathVariable Long orderId,
+                                                                     @PathVariable Long id) throws IOException {
+
+
+        orderBillableActivityService.removeOrderBillableActivity(id);
+        return ResponseBodyWrapper.success("order billable activity is removed");
+    }
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/{orderId}/billable-activities/{id}")
+    public OrderBillableActivity changeOrderBillableActivity(Long warehouseId,
+                                                                 @PathVariable Long orderId,
+                                                                 @PathVariable Long id,
+                                                                 @RequestBody OrderBillableActivity orderBillableActivity) throws IOException {
+
+
+        return orderBillableActivityService.changeOrderBillableActivity(orderBillableActivity);
+    }
+
+
+
 }

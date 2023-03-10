@@ -67,6 +67,14 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     private Long transferReceiptWarehouseId;
 
 
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<OrderBillableActivity> orderBillableActivities = new ArrayList<>();
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.OPEN;
@@ -737,5 +745,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setQuickbookCustomerListId(String quickbookCustomerListId) {
         this.quickbookCustomerListId = quickbookCustomerListId;
+    }
+
+    public List<OrderBillableActivity> getOrderBillableActivities() {
+        return orderBillableActivities;
+    }
+
+    public void setOrderBillableActivities(List<OrderBillableActivity> orderBillableActivities) {
+        this.orderBillableActivities = orderBillableActivities;
     }
 }
