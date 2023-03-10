@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.adminserver.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.adminserver.model.BillableActivity;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Component
@@ -369,6 +371,31 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<EmergencyReplenishmentConfiguration>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+    }
+
+
+    public List<BillableActivity> getBillableActivities(
+            Long warehouseId, Long clientId, ZonedDateTime startTime,
+            ZonedDateTime endTime, Boolean includeLineActivity )   {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/order-billable-activities/billable-activity")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("clientId", clientId)
+                        .queryParam("startTime", startTime)
+                        .queryParam("endTime", endTime)
+                        .queryParam("includeLineActivity", includeLineActivity);
+
+        ResponseBodyWrapper<List<BillableActivity>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<BillableActivity>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
     }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {

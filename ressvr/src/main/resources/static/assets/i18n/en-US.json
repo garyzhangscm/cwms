@@ -2007,5 +2007,7 @@
   "billable-activity-type.add": "Add Billable Activity Type",
   "billable-activity": "Billable Activity",
   "billable-activity-type.line.add": "Add Line Billable Activity Type",
-  "activityTime": "Activity Time"
+  "activityTime": "Activity Time",
+  "order.billable-activity-type": "Billable Activity Type",
+  "order.line.billable-activity-type": "Line Billable Activity Type"
 }

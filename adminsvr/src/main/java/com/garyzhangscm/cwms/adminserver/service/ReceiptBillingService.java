@@ -39,11 +39,7 @@ public class ReceiptBillingService implements BillingService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReceiptBillingService.class);
 
-    @Autowired
-    private BillableActivityService billableActivityService;
 
-    @Autowired
-    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private InboundServiceRestemplateClient inboundServiceRestemplateClient;
 
