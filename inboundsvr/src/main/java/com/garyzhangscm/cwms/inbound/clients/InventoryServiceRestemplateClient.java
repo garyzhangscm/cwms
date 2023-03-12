@@ -380,6 +380,26 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+
+    public String validateNewLPN(Long warehouseId, String lpn) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories/validate-new-lpn")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn);
+
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     public Inventory clearMovementPath(long inventoryId) {
 
         UriComponentsBuilder builder =

@@ -1319,7 +1319,7 @@ public class ReceiptService {
                     );
                     fileUploadResults.add(new FileUploadResult(
                             index + 1,
-                            receiptLineCSVWrappers.toString(),
+                            receiptLineCSVWrapper.toString(),
                             "success", ""
                     ));
                     receiptFileUploadResult.put(fileUploadProgressKey, fileUploadResults);
@@ -1328,14 +1328,14 @@ public class ReceiptService {
 
                     ex.printStackTrace();
                     logger.debug("Error while process receipt line upload file record: {}, \n error message: {}",
-                            receiptLineCSVWrappers,
+                            receiptLineCSVWrapper,
                             ex.getMessage());
                     List<FileUploadResult> fileUploadResults = receiptFileUploadResult.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
                     );
                     fileUploadResults.add(new FileUploadResult(
                             index + 1,
-                            receiptLineCSVWrappers.toString(),
+                            receiptLineCSVWrapper.toString(),
                             "fail", ex.getMessage()
                     ));
                     receiptFileUploadResult.put(fileUploadProgressKey, fileUploadResults);
@@ -1387,6 +1387,17 @@ public class ReceiptService {
                     // let's get the receipt and reciept line
                     // make sure all the necessary data exists
                     logger.debug("start to process inventory {}", inventoryCSVWrapper);
+
+                    // first make sure the LPN is a new LPN
+                    // validateNewLPN will return the error message if the LPN is not a new LPN
+                    String validateNewLPNResult = inventoryServiceRestemplateClient.validateNewLPN(warehouseId, inventoryCSVWrapper.getLpn());
+                    if (Strings.isNotBlank(validateNewLPNResult)) {
+                        throw ReceiptOperationException.raiseException(
+                                "can't receiving into an existing LPN " + inventoryCSVWrapper.getLpn()
+                                        + ", skip current line");
+                    }
+
+
                     Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId,
                             inventoryCSVWrapper.getItem());
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.2));

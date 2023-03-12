@@ -447,9 +447,16 @@ public class InventoryController {
     @RequestMapping(method=RequestMethod.POST, value="/inventories/validate-new-lpn")
     public ResponseBodyWrapper<String> validateNewLPN(@RequestParam Long warehouseId,
                                                       @RequestParam String lpn)  {
-        inventoryService.validateLPN(warehouseId, lpn, true);
+        try {
 
-        return ResponseBodyWrapper.success("");
+            inventoryService.validateLPN(warehouseId, lpn, true);
+            return ResponseBodyWrapper.success("");
+        }
+        catch (Exception ex) {
+
+            return ResponseBodyWrapper.success(ex.getMessage());
+        }
+
     }
 
 
