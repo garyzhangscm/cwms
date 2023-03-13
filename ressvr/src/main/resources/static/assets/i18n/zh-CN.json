@@ -2009,5 +2009,6 @@
   "billable-activity-type.line.add": "添加行付费项目",
   "activityTime": "项目时间",
   "order.billable-activity-type": "付费项目",
-  "order.line.billable-activity-type": "行付费项目"
+  "order.line.billable-activity-type": "行付费项目",
+  "menu.mobile.inbound.barcode-receiving": "扫码入库"
 }
