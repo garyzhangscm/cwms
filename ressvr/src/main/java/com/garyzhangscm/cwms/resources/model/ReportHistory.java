@@ -33,6 +33,11 @@ public class ReportHistory extends AuditibleEntity<String> {
     @Transient
     private Warehouse warehouse;
 
+    @Column(name = "company_id")
+    private Long companyId;
+    @Transient
+    private Company company;
+
     @Column(name = "printed_date")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -66,7 +71,9 @@ public class ReportHistory extends AuditibleEntity<String> {
     public ReportHistory(Report report,
                          String fileName,
                          String printedUsername,
+                         Long companyId,
                          Long warehouseId) {
+        this.companyId = companyId;
         this.warehouseId = warehouseId;
 
         this.printedDate = LocalDateTime.now();
@@ -147,7 +154,21 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.printedUsername = printedUsername;
     }
 
+    public Long getCompanyId() {
+        return companyId;
+    }
 
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
 
     public String getDescription() {
         return description;

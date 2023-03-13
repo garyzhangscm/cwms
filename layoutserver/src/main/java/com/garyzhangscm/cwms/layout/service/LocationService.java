@@ -959,4 +959,9 @@ public class LocationService {
         location.setPendingVolume(0.0);
         return saveOrUpdate(location);
     }
+
+    public List<Location> findReceivingStageLocations(Long warehouseId) {
+
+        return locationRepository.getReceivingStageLocations(warehouseId);
+    }
 }

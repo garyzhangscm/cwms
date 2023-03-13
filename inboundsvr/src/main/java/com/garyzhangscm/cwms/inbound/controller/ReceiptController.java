@@ -176,8 +176,10 @@ public class ReceiptController {
     )
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,
-                               @RequestBody Inventory inventory) {
-            return receiptLineService.receive(receiptId, receiptLineId, inventory);
+                               @RequestBody Inventory inventory,
+                             @RequestParam(name = "receiveToStage", defaultValue = "false", required = false) Boolean receiveToStage,
+                             @RequestParam(name = "stageLocation", defaultValue = "", required = false) String stageLocation) {
+            return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation);
     }
 
 

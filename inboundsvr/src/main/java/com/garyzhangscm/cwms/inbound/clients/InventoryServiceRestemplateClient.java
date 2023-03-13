@@ -380,6 +380,26 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    public Inventory moveInventory(Inventory inventory, Location nextLocation) throws IOException {
+        return moveInventory(inventory, nextLocation, "");
+    }
+    public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn) throws IOException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory/{id}/move")
+                        .queryParam("destinationLpn", destinationLpn);
+
+        ResponseBodyWrapper<Inventory> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(inventory.getId()).toUriString(),
+                HttpMethod.POST,
+                getHttpEntity(objectMapper.writeValueAsString(nextLocation)),
+                new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
 
     public String validateNewLPN(Long warehouseId, String lpn) {
 

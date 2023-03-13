@@ -99,7 +99,15 @@ public class ReceiptLine extends AuditibleEntity<String>{
     @Column(name = "qc_quantity_requested")
     private Long qcQuantityRequested = 0L;
 
-    // filed for customer return
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
 
 
     public Long getId() {
@@ -244,5 +252,29 @@ public class ReceiptLine extends AuditibleEntity<String>{
 
     public void setReceiptLineBillableActivities(List<ReceiptLineBillableActivity> receiptLineBillableActivities) {
         this.receiptLineBillableActivities = receiptLineBillableActivities;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 }

@@ -923,12 +923,23 @@ public class ReceiptService {
     private Map<String, Object> getLPNDocumentContent(ReceiptLine receiptLine, String lpnNumber,
                                                    Long lpnQuantity) {
 
+        // QC barcode
+        StringBuilder qrCode = new StringBuilder();
+        qrCode.append("qrcode:");
+
         Map<String, Object> lpnLabelContent = new HashMap<>();
+
         lpnLabelContent.put("lpn", lpnNumber);
+        qrCode.append("lpn=").append(lpnNumber).append(";");
+
         lpnLabelContent.put("item_family", Objects.nonNull(receiptLine.getItem().getItemFamily()) ?
                 receiptLine.getItem().getItemFamily().getDescription() : "");
         lpnLabelContent.put("item_name", receiptLine.getItem().getName());
+        qrCode.append("itemName=").append(receiptLine.getItem().getName()).append(";");
+
         lpnLabelContent.put("receipt_number", receiptLine.getReceipt().getNumber());
+        qrCode.append("receiptId=").append(receiptLine.getReceipt().getId()).append(";");
+        qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
         lpnLabelContent.put("check_in_date", LocalDateTime.now().format(formatter));
@@ -957,6 +968,7 @@ public class ReceiptService {
         if (Objects.nonNull(lpnQuantity)) {
             logger.debug("LPN Quantity is passed in: {}", lpnQuantity);
             lpnLabelContent.put("quantity", lpnQuantity);
+            qrCode.append("quantity=").append(lpnQuantity).append(";");
 
         }
         else if (receiptLine.getItem().getItemPackageTypes().size() > 0){
@@ -973,6 +985,7 @@ public class ReceiptService {
                         lpnQuantityFromItemUOM, receiptLine.getItem().getName(),
                         itemPackageType.getName());
                 lpnLabelContent.put("quantity", lpnQuantityFromItemUOM);
+                qrCode.append("quantity=").append(lpnQuantityFromItemUOM).append(";");
             }
             else  {
 
@@ -986,6 +999,7 @@ public class ReceiptService {
             logger.debug("item {} have no item package type defined yet", receiptLine.getItem().getName());
             lpnLabelContent.put("quantity", 0);
         }
+        lpnLabelContent.put("barcode", qrCode.toString());
         return lpnLabelContent;
 
     }

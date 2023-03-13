@@ -177,7 +177,8 @@ public class ReportService implements TestDataInitiableService{
                     printerName, Objects.nonNull(printer) ? "Yes" : "N/A");
             if (Objects.nonNull(printer)) {
                 logger.debug(">> the printer {}'s type is {}",
-                        printer.getName(), printer.getPrinterType().getName());
+                        printer.getName(),
+                        Objects.isNull(printer.getPrinterType()) ? "N/A" : printer.getPrinterType().getName());
                 printerType = printer.getPrinterType();
             }
         }
@@ -591,11 +592,11 @@ public class ReportService implements TestDataInitiableService{
         logger.debug("will generate label file by content \n {}", labelContent);
 
         // save the result to local file
-        String reportResultFileName = writeResultFile(reportMetaData, labelContent);
+        String reportResultFileName = writeResultFile(companyId, warehouseId, reportMetaData, labelContent);
 
 
         // save the history information
-        return saveReportHistory(reportMetaData, reportResultFileName, warehouseId);
+        return saveReportHistory(reportMetaData, reportResultFileName, companyId, warehouseId);
     }
     /**
      * Generate label from the template
@@ -736,11 +737,11 @@ public class ReportService implements TestDataInitiableService{
         logger.debug("Report filled!");
 
         // save the result to local file
-        String reportResultFileName = writeResultFile(reportMetaData, jasperPrint);
+        String reportResultFileName = writeResultFile(companyId, warehouseId, reportMetaData, jasperPrint);
 
 
         // save the history information
-        return saveReportHistory(reportMetaData, reportResultFileName, warehouseId);
+        return saveReportHistory(reportMetaData, reportResultFileName, companyId, warehouseId);
 
     }
 
@@ -794,12 +795,12 @@ public class ReportService implements TestDataInitiableService{
      * @return
      * @throws JRException
      */
-    private String writeResultFile(Report reportMetaData, JasperPrint jasperPrint)
+    private String writeResultFile(Long companyId, Long warehouseId, Report reportMetaData, JasperPrint jasperPrint)
             throws JRException {
         String reportFileName =
                 getReportResultFileName(reportMetaData);
         String reportResultAbsoluteFileName =
-                getReportResultFolder(reportMetaData)
+                getReportResultFolder(companyId, warehouseId)
                         + reportFileName;
 
         File reportResultFile = new File(reportResultAbsoluteFileName);
@@ -830,11 +831,11 @@ public class ReportService implements TestDataInitiableService{
      * @param labelContent label's content
      * @return
      */
-    private String writeResultFile(Report reportMetaData, String labelContent) throws IOException {
+    private String writeResultFile(Long companyId, Long warehouseId, Report reportMetaData, String labelContent) throws IOException {
         String reportFileName =
                 getReportResultFileName(reportMetaData);
         String reportResultAbsoluteFileName =
-                getReportResultFolder(reportMetaData)
+                getReportResultFolder(companyId, warehouseId)
                         + reportFileName;
 
         File reportResultFile = new File(reportResultAbsoluteFileName);
@@ -857,19 +858,14 @@ public class ReportService implements TestDataInitiableService{
         return reportFileName;
 
     }
-    private String getReportResultFolder(Report report) {
+    private String getReportResultFolder(Long companyId, Long warehouseId) {
 
         String folder = reportResultFolder;
         if (!folder.endsWith("/")) {
             folder += "/";
         }
 
-        if (Objects.nonNull(report.getCompanyId())) {
-            folder += report.getCompanyId() + "/";
-        }
-        if (Objects.nonNull(report.getWarehouseId())) {
-            folder += report.getWarehouseId() + "/";
-        }
+        folder += companyId + "/" + warehouseId + "/";
 
         return folder;
     }
@@ -895,10 +891,10 @@ public class ReportService implements TestDataInitiableService{
     }
 
     private ReportHistory saveReportHistory(
-            Report reportMetaData, String reportFileName, Long warehouseId) {
+            Report reportMetaData, String reportFileName, Long companyId, Long warehouseId) {
 
         return reportHistoryService.saveReportHistory(
-                    reportMetaData, reportFileName, warehouseId
+                    reportMetaData, reportFileName, companyId, warehouseId
                     );
         // logger.debug("Report History saved: {}", reportHistory);
     }
