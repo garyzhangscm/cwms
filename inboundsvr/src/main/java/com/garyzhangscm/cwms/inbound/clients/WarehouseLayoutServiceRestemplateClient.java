@@ -414,6 +414,25 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
+    public List<Location> getReceivingStageLocations(Long warehouseId)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/receiving-stage")
+                .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Location>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     @Cacheable(cacheNames = "InboundService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
 

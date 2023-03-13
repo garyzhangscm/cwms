@@ -299,16 +299,26 @@ public class ReceiptLineService {
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
                              Inventory inventory) {
+        return receive(receiptId, receiptLineId, inventory, false, "");
+    }
+    @Transactional
+    public Inventory receive(Long receiptId, Long receiptLineId,
+                             Inventory inventory,
+                             Boolean receiveToStage,
+                             String stageLocation) {
         // Receive inventory and save it on the receipt
 
         Receipt receipt = receiptService.findById(receiptId);
         ReceiptLine receiptLine = findById(receiptLineId);
-        return receive(receipt, receiptLine, inventory);
+        return receive(receipt, receiptLine, inventory, receiveToStage, stageLocation);
+
     }
     @Transactional
     public Inventory receive(Receipt receipt,
                              ReceiptLine receiptLine,
-                             Inventory inventory){
+                             Inventory inventory,
+                             Boolean receiveToStage,
+                             String stageLocationName){
         // Receive inventory and save it on the receipt
 
         // If the inventory has location passed in, we will directly receive the inventory into
@@ -403,7 +413,43 @@ public class ReceiptLineService {
                     inventory.getItem().getName() : null,
                 BillableCategory.RECEIVING_CHARGE_BY_QUANTITY);
 
+        if (Boolean.TRUE.equals(receiveToStage)) {
+            newInventory = moveReceivedInventoryToStage(newInventory, stageLocationName);
+        }
         return newInventory;
+    }
+
+    /**
+     * Move newly received inventory into a receiving stage location. If the location name is specified, use the
+     * location, otherwise, pick one from the list, with less volume or empty
+     * @param newInventory
+     * @param stageLocationName
+     * @return
+     */
+    private Inventory moveReceivedInventoryToStage(Inventory newInventory, String stageLocationName) {
+        logger.debug("We will need to move the newly received LPN {} automatically to the stage right after receiving",
+                newInventory);
+        // let's automaticaly move the inventory to the stage location
+        Location stageLocation = null;
+        if (Strings.isNotBlank(stageLocationName)) {
+            stageLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(newInventory.getWarehouseId(),
+                    stageLocationName);
+        }
+        if (Objects.isNull(stageLocation)) {
+            List<Location> locations = warehouseLayoutServiceRestemplateClient.getReceivingStageLocations(newInventory.getWarehouseId());
+            if (Objects.isNull(locations) || locations.isEmpty()) {
+                throw ReceiptOperationException.raiseException("Can't receive into receiving stage as there's none receiving stage location defined in the system");
+            }
+            stageLocation = locations.get(0);
+        }
+        try {
+            return inventoryServiceRestemplateClient.moveInventory(newInventory, stageLocation);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw ReceiptOperationException.raiseException("Can't receive into receiving stage location " +
+                            stageLocation.getName() + " for inventory " + newInventory.getLpn());
+        }
+
     }
 
     private boolean checkQCRequired(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {

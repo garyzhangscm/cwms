@@ -18,22 +18,10 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.awt.print.PageFormat;
-import java.awt.print.Paper;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import java.awt.print.PrinterJob;
-import java.io.File;
-
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.printing.PDFPageable;
 
 @Service
 public class ReportHistoryService {
@@ -150,24 +138,24 @@ public class ReportHistoryService {
     public ReportHistory saveReportHistory(
             Report reportMetaData,
             String reportFileName,
-            Long warehouseId) {
+            Long companyId, Long warehouseId) {
 
 
         String printedUsername =
                 userService.getCurrentUserName();
         ReportHistory reportHistory =
                 new ReportHistory(reportMetaData, reportFileName,
-                        printedUsername, warehouseId);
+                        printedUsername, companyId, warehouseId);
         return save(reportHistory);
     }
 
-    public File getReportFile(String fileName) {
+    public File getReportFile(Long companyId, Long warehouseId, String fileName) {
         if (!verifyReportResultFileAccess(fileName)) {
             throw ReportAccessPermissionException.raiseException(
                     "Current user doesn't have access to the report file"
             );
         }
-        String fileUrl = reportResultFolder + "/" + fileName;
+        String fileUrl = reportResultFolder + "/" + companyId + "/" + warehouseId + "/" + fileName;
 
         logger.debug("Will return {} to the client",
                 fileUrl);
@@ -198,17 +186,17 @@ public class ReportHistoryService {
         // Report reportMetaData = reportService.findByType(companyId, warehouseId,
         //        ReportType.valueOf(type), null, false);
 
-        Report reportMetaData = reportService.findByType(companyId, warehouseId,
-                ReportType.valueOf(type), printerName, false);
+        // Report reportMetaData = reportService.findByType(companyId, warehouseId,
+         //       ReportType.valueOf(type), printerName, false);
 
-        String fileUrl = getReportResultFolder(reportMetaData) + filename;
+        String fileUrl = getReportResultFolder(companyId, warehouseId) + filename;
 
         logger.debug("Will return {} to the client",
                 fileUrl);
         return new File(fileUrl);
     }
 
-    private String getReportResultFolder(Report report) {
+    private String getReportResultFolder(Long companyId, Long warehouseId) {
 
         String folder;
         if (!reportResultFolder.endsWith("/")) {
@@ -217,22 +205,20 @@ public class ReportHistoryService {
         else  {
             folder = reportResultFolder;
         }
-        if (Objects.nonNull(report.getCompanyId())) {
-            folder += report.getCompanyId() + "/";
-        }
-        if (Objects.nonNull(report.getWarehouseId())) {
-            folder += report.getWarehouseId() + "/";
-        }
+
+        folder += companyId + "/" + warehouseId + "/";
 
         return folder;
     }
 
     public File getReportFile(Long reportHistoryId) {
 
-        String reportFileName
-                = findById(reportHistoryId, false).getFileName();
+        ReportHistory reportHistory = findById(reportHistoryId, false);
 
-        return getReportFile(reportFileName);
+        String reportFileName
+                = reportHistory.getFileName();
+
+        return getReportFile(reportHistory.getCompanyId(), reportHistory.getWarehouseId(), reportFileName);
     }
 
     public boolean verifyReportResultFileAccess(String filename) {

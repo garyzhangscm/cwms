@@ -511,4 +511,9 @@ public class LocationController {
     }
 
 
+    @RequestMapping(method=RequestMethod.GET, value="/locations/receiving-stage")
+    public List<Location> findReceivingStageLocations(@RequestParam Long warehouseId) {
+
+        return locationService.findReceivingStageLocations(warehouseId);
+    }
 }

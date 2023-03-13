@@ -59,4 +59,7 @@ public interface LocationRepository extends JpaRepository<Location, Long>, JpaSp
 
     @Query("select l from Location l inner join l.locationGroup.locationGroupType type where type.dock = true and l.enabled = true and l.warehouse.id = :warehouseId")
     List<Location> getDockLocations(Long warehouseId);
+
+    @Query("select l from Location l inner join l.locationGroup.locationGroupType type where type.receivingStage = true and l.enabled = true and l.warehouse.id = :warehouseId")
+    List<Location> getReceivingStageLocations(Long warehouseId);
 }
