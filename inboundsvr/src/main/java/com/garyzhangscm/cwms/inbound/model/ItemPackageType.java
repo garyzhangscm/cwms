@@ -48,6 +48,7 @@ public class ItemPackageType implements Serializable {
     private ItemUnitOfMeasure trackingLpnUOM;
 
     private ItemUnitOfMeasure stockItemUnitOfMeasure;
+    private ItemUnitOfMeasure displayItemUnitOfMeasure;
 
     public ItemUnitOfMeasure getDefaultInboundReceivingUOM() {
         if (itemUnitOfMeasures.size() == 0) {
@@ -123,7 +124,15 @@ public class ItemPackageType implements Serializable {
         return stockItemUnitOfMeasure;
     }
 
+    public ItemUnitOfMeasure getDisplayItemUnitOfMeasure() {
+        return displayItemUnitOfMeasure;
+    }
 
+    public void setDisplayItemUnitOfMeasure(ItemUnitOfMeasure displayItemUnitOfMeasure) {
+        this.displayItemUnitOfMeasure = displayItemUnitOfMeasure;
+    }
+
+    /**
     public ItemUnitOfMeasure getDisplayItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {
             return null;
@@ -143,6 +152,7 @@ public class ItemPackageType implements Serializable {
         }
         return stockItemUnitOfMeasure;
     }
+ **/
     public Long getId() {
         return id;
     }
