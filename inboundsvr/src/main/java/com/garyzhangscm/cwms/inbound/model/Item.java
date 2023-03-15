@@ -19,7 +19,10 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +48,15 @@ public class Item implements Serializable {
 
     private double unitCost;
 
+    private boolean trackingColorFlag;
+    private String defaultColor;
+
+    private boolean trackingProductSizeFlag;
+    private String defaultProductSize;
+
+    private boolean trackingStyleFlag;
+    private String defaultStyle;
+
     @Override
     public boolean equals(Object anotherItem) {
         if (this == anotherItem) {
@@ -62,8 +74,12 @@ public class Item implements Serializable {
 
     @Override
     public String toString() {
-        return "name: " + getName() + "\n"
-                + "description: " + getDescription() + "\n";
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {
@@ -147,5 +163,53 @@ public class Item implements Serializable {
                 getItemPackageTypes().isEmpty() ?
                         null :
                         getItemPackageTypes().get(0);
+    }
+
+    public boolean isTrackingColorFlag() {
+        return trackingColorFlag;
+    }
+
+    public void setTrackingColorFlag(boolean trackingColorFlag) {
+        this.trackingColorFlag = trackingColorFlag;
+    }
+
+    public String getDefaultColor() {
+        return defaultColor;
+    }
+
+    public void setDefaultColor(String defaultColor) {
+        this.defaultColor = defaultColor;
+    }
+
+    public boolean isTrackingProductSizeFlag() {
+        return trackingProductSizeFlag;
+    }
+
+    public void setTrackingProductSizeFlag(boolean trackingProductSizeFlag) {
+        this.trackingProductSizeFlag = trackingProductSizeFlag;
+    }
+
+    public String getDefaultProductSize() {
+        return defaultProductSize;
+    }
+
+    public void setDefaultProductSize(String defaultProductSize) {
+        this.defaultProductSize = defaultProductSize;
+    }
+
+    public boolean isTrackingStyleFlag() {
+        return trackingStyleFlag;
+    }
+
+    public void setTrackingStyleFlag(boolean trackingStyleFlag) {
+        this.trackingStyleFlag = trackingStyleFlag;
+    }
+
+    public String getDefaultStyle() {
+        return defaultStyle;
+    }
+
+    public void setDefaultStyle(String defaultStyle) {
+        this.defaultStyle = defaultStyle;
     }
 }

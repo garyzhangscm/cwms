@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 import java.util.*;
@@ -49,6 +51,16 @@ public class ItemPackageType implements Serializable {
 
     private ItemUnitOfMeasure stockItemUnitOfMeasure;
     private ItemUnitOfMeasure displayItemUnitOfMeasure;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public ItemUnitOfMeasure getDefaultInboundReceivingUOM() {
         if (itemUnitOfMeasures.size() == 0) {

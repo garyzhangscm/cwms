@@ -7,8 +7,8 @@ public class LocationFileUpload extends FileUploadType {
         super("locations", "Warehouse Locations",
                 "layout/locations/upload",
                 "resource/assets/file-templates/locations.csv",
-                "",
-                "");
+                "layout/locations/upload/progress",
+                "layout/locations/upload/result");
         setupColumns();
     }
 

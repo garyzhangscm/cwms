@@ -6,8 +6,8 @@ public class ItemFileUpload extends FileUploadType {
         super("items", "Item",
                 "inventory/items/upload",
                 "resource/assets/file-templates/items.csv",
-                "",
-                "");
+                "inventory/items/upload/progress",
+                "inventory/items/upload/result");
         setupColumns();
     }
 

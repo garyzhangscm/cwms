@@ -448,7 +448,7 @@ public class LocationGroupService implements TestDataInitiableService {
         locationGroup.getPickableUnitOfMeasures().forEach(
                 pickableUnitOfMeasure -> pickableUnitOfMeasure.setLocationGroup(locationGroup)
         );
-        return save(locationGroup);
+        return saveOrUpdate(locationGroup);
     }
 
     @Transactional

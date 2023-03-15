@@ -21,10 +21,7 @@ package com.garyzhangscm.cwms.inventory.controller;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
-import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
-import com.garyzhangscm.cwms.inventory.model.ClientValidationEndpoint;
-import com.garyzhangscm.cwms.inventory.model.Item;
-import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemService;
 import org.apache.logging.log4j.util.Strings;
@@ -204,8 +201,27 @@ public class ItemController {
 
 
         File localFile = fileService.saveFile(file);
-        List<Item> items = itemService.saveItemData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(String.valueOf(items.size()));
+        // List<Item> items = itemService.saveItemData(warehouseId, localFile);
+        // return  ResponseBodyWrapper.success(String.valueOf(items.size()));
+        String fileUploadProgressKey = itemService.uploadItemData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/items/upload/progress")
+    public ResponseBodyWrapper getFileUploadProgress(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",itemService.getFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/items/upload/result")
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId,
+                                                      String key) throws IOException {
+
+
+        return itemService.getFileUploadResult(warehouseId, key);
     }
 
     /**

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.layout.controller;
 
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
+import com.garyzhangscm.cwms.layout.model.FileUploadResult;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.service.FileService;
 import com.garyzhangscm.cwms.layout.service.LocationService;
@@ -86,9 +87,30 @@ public class LocationController {
 
 
         File localFile = fileService.saveFile(file);
-        List<Location> locations = locationService.loadLocationData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(locations.size() + "");
+        // List<Location> locations = locationService.loadLocationData(warehouseId, localFile);
+
+        String fileUploadProgressKey = locationService.uploadLocationData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/locations/upload/progress")
+    public ResponseBodyWrapper getFileUploadProgress(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",locationService.getFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/locations/upload/result")
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId,
+                                                      String key) throws IOException {
+
+
+        return locationService.getFileUploadResult(warehouseId, key);
+    }
+
 
     @RequestMapping(method=RequestMethod.GET, value="/locations")
     public List<Location> findLocations(@RequestParam Long warehouseId,
