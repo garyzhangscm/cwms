@@ -310,7 +310,7 @@ public class CommonServiceRestemplateClient {
         }
 
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                         null,

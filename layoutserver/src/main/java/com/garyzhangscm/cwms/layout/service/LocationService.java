@@ -40,6 +40,7 @@ import javax.transaction.Transactional;
 import javax.persistence.criteria.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,6 +63,13 @@ public class LocationService {
 
     @Value("${fileupload.test-data.locations:locations}")
     String testDataFile;
+
+    @Autowired
+    private UserService userService;
+
+    private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
+    private Map<String, Double> fileUploadProgressMap = new ConcurrentHashMap<>();
+    private Map<String, List<FileUploadResult>> fileUploadResultsMap = new ConcurrentHashMap<>();
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -312,7 +320,7 @@ public class LocationService {
     }
 
     public List<LocationCSVWrapper> loadData(File file) throws IOException {
-        return fileService.loadData(file, getLocationCsvSchema(), LocationCSVWrapper.class);
+        return fileService.loadData(file,   LocationCSVWrapper.class);
     }
     public List<LocationCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
@@ -964,4 +972,120 @@ public class LocationService {
 
         return locationRepository.getReceivingStageLocations(warehouseId);
     }
+
+
+    private void clearFileUploadMap() {
+
+        if (fileUploadProgressMap.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = fileUploadProgressMap.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (fileUploadResultsMap.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = fileUploadResultsMap.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    public double getFileUploadProgress(String key) {
+        return fileUploadProgressMap.getOrDefault(key, 100.0);
+    }
+
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId, String key) {
+        return fileUploadResultsMap.getOrDefault(key, new ArrayList<>());
+    }
+
+    public String uploadLocationData(Long warehouseId,
+                                      File file) throws IOException {
+
+        String username = userService.getCurrentUserName();
+
+        String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
+        // before we add new
+        clearFileUploadMap();
+        fileUploadProgressMap.put(fileUploadProgressKey, 0.0);
+        fileUploadResultsMap.put(fileUploadProgressKey, new ArrayList<>());
+
+
+        List<LocationCSVWrapper> locationCSVWrappers = loadData(file);
+        fileUploadProgressMap.put(fileUploadProgressKey, 10.0);
+
+        logger.debug("get {} record from the file", locationCSVWrappers.size());
+
+        new Thread(() -> {
+            // loop through each inventory
+            int totalLocationCount = locationCSVWrappers.size();
+            int index = 0;
+            for (LocationCSVWrapper locationCSVWrapper : locationCSVWrappers) {
+                // in case anything goes wrong, we will continue with the next record
+                // and save the result with error message to the result set
+                fileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalLocationCount) * (index));
+                try {
+                    saveOrUpdate(convertFromWrapper(warehouseId, locationCSVWrapper));
+                    // we complete this inventory
+                    fileUploadProgressMap.put(fileUploadProgressKey, 10.0 + (90.0 / totalLocationCount) * (index + 1));
+
+                    List<FileUploadResult> fileUploadResults = fileUploadResultsMap.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            locationCSVWrapper.toString(),
+                            "success", ""
+                    ));
+                    fileUploadResultsMap.put(fileUploadProgressKey, fileUploadResults);
+
+                }
+                catch(Exception ex) {
+
+                    ex.printStackTrace();
+                    logger.debug("Error while process location upload file record: {}, \n error message: {}",
+                            locationCSVWrapper,
+                            ex.getMessage());
+                    List<FileUploadResult> fileUploadResults = fileUploadResultsMap.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            locationCSVWrapper.toString(),
+                            "fail", ex.getMessage()
+                    ));
+                    fileUploadResultsMap.put(fileUploadProgressKey, fileUploadResults);
+                }
+                finally {
+
+                    index++;
+                }
+            }
+            // after we process all inventory, mark the progress to 100%
+            fileUploadProgressMap.put(fileUploadProgressKey, 100.0);
+        }).start();
+
+        return fileUploadProgressKey;
+    }
+
 }

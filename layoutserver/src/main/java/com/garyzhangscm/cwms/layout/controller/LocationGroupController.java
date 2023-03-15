@@ -89,7 +89,7 @@ public class LocationGroupController {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; locationGroup.getId(): " + locationGroup.getId());
         }
-        return locationGroupService.save(locationGroup);
+        return locationGroupService.saveOrUpdate(locationGroup);
     }
 
 

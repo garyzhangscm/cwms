@@ -21,13 +21,11 @@ package com.garyzhangscm.cwms.inventory.controller;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
-import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
-import com.garyzhangscm.cwms.inventory.model.Item;
-import com.garyzhangscm.cwms.inventory.model.ItemPackageType;
-import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
+import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemPackageTypeService;
 import com.garyzhangscm.cwms.inventory.service.ItemUnitOfMeasureService;
+import com.garyzhangscm.cwms.inventory.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 public class ItemUnitOfMeasureController {
@@ -45,6 +45,7 @@ public class ItemUnitOfMeasureController {
     @Autowired
     private FileService fileService;
 
+
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/item-unit-of-measures/upload")
     public ResponseBodyWrapper uploadItemUnitOfMeasures(Long warehouseId,
@@ -52,8 +53,30 @@ public class ItemUnitOfMeasureController {
 
 
         File localFile = fileService.saveFile(file);
-        List<ItemUnitOfMeasure> itemUnitOfMeasures = itemUnitOfMeasureService.saveItemUnitOfMeasureData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(itemUnitOfMeasures.size() + "");
+        // List<ItemUnitOfMeasure> itemUnitOfMeasures = itemUnitOfMeasureService.saveItemUnitOfMeasureData(warehouseId, localFile);
+        // return  ResponseBodyWrapper.success(itemUnitOfMeasures.size() + "");
+
+        String fileUploadProgressKey = itemUnitOfMeasureService.uploadItemUnitOfMeasureData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/item-unit-of-measures/upload/progress")
+    public ResponseBodyWrapper getFileUploadProgress(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",itemUnitOfMeasureService.getFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/item-unit-of-measures/upload/result")
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId,
+                                                      String key) throws IOException {
+
+
+        return itemUnitOfMeasureService.getFileUploadResult(warehouseId, key);
+    }
+
 
 }

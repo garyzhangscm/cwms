@@ -34,8 +34,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,6 +56,13 @@ public class ItemUnitOfMeasureService {
 
     @Value("${fileupload.test-data.item-unit-of-measures:item_unit_of_measures}")
     String testDataFile;
+
+    @Autowired
+    private UserService userService;
+
+    private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
+    private Map<String, Double> fileUploadProgressMap = new ConcurrentHashMap<>();
+    private Map<String, List<FileUploadResult>> fileUploadResultsMap = new ConcurrentHashMap<>();
 
     public ItemUnitOfMeasure findById(Long id) {
         return itemUnitOfMeasureRepository.findById(id)
@@ -99,39 +106,8 @@ public class ItemUnitOfMeasureService {
 
 
     public List<ItemUnitOfMeasureCSVWrapper> loadData(File file) throws IOException {
-        CsvSchema schema = CsvSchema.builder().
-                addColumn("company").
-                addColumn("warehouse").
-                addColumn("client").
-                addColumn("item").
-                addColumn("itemDescription").
-                addColumn("itemFamily").
-                addColumn("trackingColorFlag").
-                addColumn("defaultColor").
-                addColumn("trackingProductSizeFlag").
-                addColumn("defaultProductSize").
-                addColumn("trackingStyleFlag").
-                addColumn("defaultStyle").
-                addColumn("itemPackageType").
-                // only needed if the item package type doesn't exists and we need to
-                // create one
-                        addColumn("itemPackageTypeDescription").
-                // only needed if the item package type doesn't exists and we need to
-                // create one
-                        addColumn("defaultItemPackageType").
-                addColumn("unitOfMeasure").
-                addColumn("quantity").
-                addColumn("weight").
-                addColumn("length").
-                addColumn("width").
-                addColumn("height").
-                        addColumn("defaultForInboundReceiving").
-                        addColumn("defaultForWorkOrderReceiving").
-                        addColumn("trackingLpn").
-                        addColumn("caseFlag").
-                        addColumn("defaultForDisplay").
-                build().withHeader();
-        return fileService.loadData(file, schema, ItemUnitOfMeasureCSVWrapper.class);
+
+        return fileService.loadData(file,  ItemUnitOfMeasureCSVWrapper.class);
     }
     public List<ItemUnitOfMeasureCSVWrapper> loadData(InputStream inputStream) throws IOException {
 
@@ -285,4 +261,124 @@ public class ItemUnitOfMeasureService {
                 .map(itemUnitOfMeasureCSVWrapper -> saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true)))
                 .collect(Collectors.toList());
     }
+
+
+    public String uploadItemUnitOfMeasureData(Long warehouseId,
+                                 File file) throws IOException {
+
+        String username = userService.getCurrentUserName();
+
+        String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
+        // before we add new
+        clearFileUploadMap();
+        fileUploadProgressMap.put(fileUploadProgressKey, 0.0);
+        fileUploadResultsMap.put(fileUploadProgressKey, new ArrayList<>());
+
+        List<ItemUnitOfMeasureCSVWrapper> itemUnitOfMeasureCSVWrappers = loadData(file);
+
+
+        fileUploadProgressMap.put(fileUploadProgressKey, 10.0);
+
+        logger.debug("get {} record from the file", itemUnitOfMeasureCSVWrappers.size());
+
+        // start a new thread to process the inventory
+        new Thread(() -> {
+            // loop through each inventory
+            int totalCount = itemUnitOfMeasureCSVWrappers.size();
+            int index = 0;
+            for (ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper : itemUnitOfMeasureCSVWrappers) {
+                // in case anything goes wrong, we will continue with the next record
+                // and save the result with error message to the result set
+                fileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
+                try {
+                    saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true));
+                    // we complete this inventory
+                    fileUploadProgressMap.put(fileUploadProgressKey, 10.0 + (90.0 / totalCount) * (index + 1));
+
+                    List<FileUploadResult> fileUploadResults = fileUploadResultsMap.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            itemUnitOfMeasureCSVWrapper.toString(),
+                            "success", ""
+                    ));
+                    fileUploadResultsMap.put(fileUploadProgressKey, fileUploadResults);
+
+                }
+                catch(Exception ex) {
+
+                    ex.printStackTrace();
+                    logger.debug("Error while process item unit of measure upload file record: {}, \n error message: {}",
+                            itemUnitOfMeasureCSVWrapper,
+                            ex.getMessage());
+                    List<FileUploadResult> fileUploadResults = fileUploadResultsMap.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            itemUnitOfMeasureCSVWrapper.toString(),
+                            "fail", ex.getMessage()
+                    ));
+                    fileUploadResultsMap.put(fileUploadProgressKey, fileUploadResults);
+                }
+                finally {
+
+                    index++;
+                }
+            }
+            // after we process all inventory, mark the progress to 100%
+            fileUploadProgressMap.put(fileUploadProgressKey, 100.0);
+        }).start();
+
+        return fileUploadProgressKey;
+    }
+
+    private void clearFileUploadMap() {
+
+        if (fileUploadProgressMap.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = fileUploadProgressMap.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (fileUploadResultsMap.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = fileUploadResultsMap.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+
+
+    public double getFileUploadProgress(String key) {
+        return fileUploadProgressMap.getOrDefault(key, 100.0);
+    }
+
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId, String key) {
+        return fileUploadResultsMap.getOrDefault(key, new ArrayList<>());
+    }
+
 }

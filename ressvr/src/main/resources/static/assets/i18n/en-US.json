@@ -1973,7 +1973,7 @@
   "trackingColorFlag": "Tracking Color",
   "defaultColor": "Default Color",
   "trackingProductSizeFlag": "Tracking Product Size",
-  "defaultProductSize": "Default Product",
+  "defaultProductSize": "Default Product Size",
   "trackingStyleFlag": "Tracking Style",
   "defaultStyle": "Default Style",
   "removeExistingInventory": "Remove Existing Inventory",
@@ -2010,5 +2010,6 @@
   "activityTime": "Activity Time",
   "order.billable-activity-type": "Billable Activity Type",
   "order.line.billable-activity-type": "Line Billable Activity Type",
-  "menu.mobile.inbound.barcode-receiving": "Barcode Receiving"
+  "menu.mobile.inbound.barcode-receiving": "Barcode Receiving",
+  "menu.main.work-order.silo": "Silo"
 }
