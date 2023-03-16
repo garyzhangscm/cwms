@@ -2139,22 +2139,4 @@ public class WorkOrderService implements TestDataInitiableService {
 
     }
 
-    public List<SiloInformation> getSiloMonitor(Long warehouseId, String token) {
-        String siloInformation =  siloRestemplateClient.getSiloInformation(token);
-
-        logger.debug("start to convert the information into POJO \n{}",
-                siloInformation);
-        // convert to object
-        try {
-            SiloInformationResponseWrapper siloInformationResponseWrapper
-                    = objectMapper.readValue(siloInformation, SiloInformationResponseWrapper.class);
-
-            return siloInformationResponseWrapper.getSiloInformations();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            logger.debug("can't pass the sile information");
-        }
-
-        return null;
-    }
 }

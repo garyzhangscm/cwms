@@ -23,17 +23,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.List;
 
-public class SiloInformationResponseWrapper implements Serializable {
+public class SiloLoginResponseWrapper implements Serializable {
 
-    @JsonProperty("qry")
-    private List<SiloInformation> siloInformations;
+    @JsonProperty("id_token")
+    private String token;
 
 
-    public List<SiloInformation> getSiloInformations() {
-        return siloInformations;
+    public String getToken() {
+        return token;
     }
 
-    public void setSiloInformations(List<SiloInformation> siloInformations) {
-        this.siloInformations = siloInformations;
+    public void setToken(String token) {
+        this.token = token;
     }
 }
