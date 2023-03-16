@@ -19,8 +19,6 @@
 package com.garyzhangscm.cwms.workorder;
 
 
-import java.io.Serializable;
-
 public class ResponseBodyWrapper<T>  {
     private int result;
     private String message;
