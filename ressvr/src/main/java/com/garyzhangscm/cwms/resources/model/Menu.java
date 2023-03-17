@@ -64,6 +64,8 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
     @Column(name = "is_system_admin_menu")
     private Boolean systemAdminMenuFlag;
 
+    @Transient
+    private boolean displayOnly;
 
 
     @ManyToOne
@@ -177,5 +179,13 @@ public class Menu extends AuditibleEntity<String>  implements Comparable<Menu> {
 
     public void setSystemAdminMenuFlag(Boolean systemAdminMenuFlag) {
         this.systemAdminMenuFlag = systemAdminMenuFlag;
+    }
+
+    public boolean isDisplayOnly() {
+        return displayOnly;
+    }
+
+    public void setDisplayOnly(boolean displayOnly) {
+        this.displayOnly = displayOnly;
     }
 }
