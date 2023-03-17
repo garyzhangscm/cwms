@@ -41,11 +41,11 @@ public class SiloController {
     @RequestMapping(value="/silo-devices", method = RequestMethod.GET)
     public List<SiloDevice> getSiloDevices(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "token", required = false, defaultValue = "") String token
+            @RequestParam(name = "refresh", defaultValue = "false", required = false) Boolean refresh
     ) {
 
 
-        return siloService.getSiloMonitor(warehouseId, token);
+        return siloService.getSiloDevices(warehouseId, refresh);
     }
 
 }

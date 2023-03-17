@@ -1,5 +1,6 @@
 
 FROM openjdk:20-ea-13-jdk-slim
+# FROM openjdk:21-jdk
 # RUN  apk update && apk upgrade && apk add netcat-openbsd && apk add curl
 # RUN  apk update && apk upgrade
 

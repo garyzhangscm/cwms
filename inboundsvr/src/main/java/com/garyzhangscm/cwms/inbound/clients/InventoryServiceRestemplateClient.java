@@ -411,7 +411,7 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("lpn", lpn);
 
         ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
                 HttpMethod.POST,
                 null,
