@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.service.SiloAPICallHistoryService;
 import com.garyzhangscm.cwms.workorder.service.SiloConfigurationService;
 import com.garyzhangscm.cwms.workorder.service.SiloDeviceAPICallHistoryService;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,9 +103,9 @@ public class SiloRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("https").host("mysilotrackcloud.com")
-                        // .scheme(siloConfiguration.getWebAPIProtocol())
-                        // .host(siloConfiguration.getWebAPIUrl())
+                        // .scheme("https").host("mysilotrackcloud.com")
+                        .scheme(siloConfiguration.getWebAPIProtocol())
+                        .host(siloConfiguration.getWebAPIUrl())
                         .path("/arch/cfc/controller/jwtLogin.cfc")
                         .queryParam("method", "login");
 
@@ -154,7 +155,7 @@ public class SiloRestemplateClient {
         HttpEntity<String> entity = getHttpEntity(token, "");
         String url = builder.toUriString();
 
-        logger.debug("entity ==============>\n{}", entity);
+        logger.debug("getSiloDevices with entity ==============>\n{}", entity);
         ResponseEntity<String> responseBodyWrapper
                 = getSiloRestTemplate().exchange(
                 url,
@@ -197,6 +198,9 @@ public class SiloRestemplateClient {
     }
 
     private void addSiloAPICallHistory(Long warehouseId, String method, String parameters, String response) {
+        if (Strings.isNotBlank(response) && response.length() > 1000) {
+            response = response.substring(0, 1000);
+        }
         SiloAPICallHistory siloAPICallHistory = new SiloAPICallHistory(
                 warehouseId, method, parameters, response
         );

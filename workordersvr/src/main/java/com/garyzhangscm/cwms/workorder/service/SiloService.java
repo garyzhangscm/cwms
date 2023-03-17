@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -81,7 +82,7 @@ public class SiloService {
     /**
      * Sync device status from web API endpoint every 5 minutes
      */
-    // @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 300000)
     public void syncDeviceStaus() {
 
         logger.debug("start to sync silo device status");
@@ -148,7 +149,7 @@ public class SiloService {
 
         return siloDeviceAPICallHistories.stream().map(
                 siloDeviceAPICallHistory -> new SiloDevice(siloDeviceAPICallHistory)
-        ).collect(Collectors.toList());
+        ).sorted(Comparator.comparing(SiloDevice::getName)).collect(Collectors.toList());
 
     }
 
