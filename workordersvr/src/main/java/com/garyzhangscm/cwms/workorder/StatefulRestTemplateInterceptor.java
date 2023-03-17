@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.workorder;
 
 import com.garyzhangscm.cwms.workorder.clients.SiloRestemplateClient;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -18,11 +19,11 @@ import java.util.stream.Collectors;
  */
 public class StatefulRestTemplateInterceptor  implements ClientHttpRequestInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(StatefulRestTemplateInterceptor.class);
-    private String cookie;
-
+    // private String cookie = "AWSALB=NrUtVeGurbC/uGEzT2vJZ4VhEiKL+Vy5yTgcVQqRC8dPwqjNtr0MFMVpaTBNWUnUkgYZ/vv1vxbRmaI+8E2qph/WC8eeBT123j7cqSMT+almCYaX7weaikiC03az; AWSALBCORS=NrUtVeGurbC/uGEzT2vJZ4VhEiKL+Vy5yTgcVQqRC8dPwqjNtr0MFMVpaTBNWUnUkgYZ/vv1vxbRmaI+8E2qph/WC8eeBT123j7cqSMT+almCYaX7weaikiC03az";
+    private String cookie = "";
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-        if (cookie != null) {
+        if (Strings.isNotBlank(cookie)) {
 
             logger.debug("start to add cookie to the http call: \n{}",
                     cookie);

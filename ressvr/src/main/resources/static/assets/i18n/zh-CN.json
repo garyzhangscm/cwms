@@ -2011,5 +2011,8 @@
   "order.billable-activity-type": "付费项目",
   "order.line.billable-activity-type": "行付费项目",
   "menu.mobile.inbound.barcode-receiving": "扫码入库",
-  "menu.main.work-order.silo": "Silo"
+  "menu.main.work-order.silo": "Silo",
+  "menu.main.work-order.silo-configuration": "Silo 系统配置",
+  "webAPIProtocol": "API 接口协议(http / https)",
+  "webAPIUrl": "API 接口地址"
 }

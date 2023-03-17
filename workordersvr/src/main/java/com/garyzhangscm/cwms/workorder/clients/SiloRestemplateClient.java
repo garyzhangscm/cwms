@@ -22,7 +22,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.JsonMimeInterceptor;
 import com.garyzhangscm.cwms.workorder.StatefulRestTemplateInterceptor;
+import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
+import com.garyzhangscm.cwms.workorder.service.SiloAPICallHistoryService;
+import com.garyzhangscm.cwms.workorder.service.SiloConfigurationService;
+import com.garyzhangscm.cwms.workorder.service.SiloDeviceAPICallHistoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,14 +47,16 @@ public class SiloRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(SiloRestemplateClient.class);
 
-    @Value("${silo.username:paul.harper}")
-    String username;
-    @Value("${silo.password:@Ecotech123}")
-    String password;
-
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private SiloConfigurationService siloConfigurationService;
+    @Autowired
+    private SiloAPICallHistoryService siloAPICallHistoryService;
+    @Autowired
+    private SiloDeviceAPICallHistoryService siloDeviceAPICallHistoryService;
 
     private RestTemplate restTemplate;
 
@@ -80,60 +86,37 @@ public class SiloRestemplateClient {
         return restTemplate;
     }
 
-
-    public SiloDeviceResponseWrapper getSiloDevices(String token) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("https").host("mysilotrackcloud.com")
-                        .path("/arch/cfc/controller/Locations.cfc")
-                        .queryParam("page", "1")
-                        .queryParam("orderBy", "l.name")
-                        .queryParam("orderDirection", "ASC")
-                        .queryParam("recordsPerPage", "50")
-                        .queryParam("date", System.currentTimeMillis())
-                .queryParam("method", "getAllDevices");
-
-        HttpEntity<String> entity = getHttpEntity(token, "");
-
-        logger.debug("entity ==============>\n{}", entity);
-        ResponseEntity<String> responseBodyWrapper
-                = getSiloRestTemplate().exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                entity,
-                String.class);
-
-
-        logger.debug("get response from getSiloDevices request: \n {}",
-                responseBodyWrapper.getBody());
-        try {
-            SiloDeviceResponseWrapper siloGroupResponseWrapper =
-                    objectMapper.readValue(responseBodyWrapper.getBody(), SiloDeviceResponseWrapper.class);
-
-            return siloGroupResponseWrapper;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
+    private SiloConfiguration getSileConfiguration(Long warehouseId) {
+        SiloConfiguration siloConfiguration = siloConfigurationService.findByWarehouseId(warehouseId);
+        if (Objects.isNull(siloConfiguration)) {
+            throw WorkOrderException.raiseException("silo system is not configured for the current warehouse");
         }
 
-
+        return siloConfiguration;
     }
-    public String loginSilo() {
+
+    public String loginSilo(Long warehouseId) {
+        SiloConfiguration siloConfiguration = getSileConfiguration(warehouseId);
+
+        RestTemplate restTemplate = new RestTemplate();
+
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("https").host("mysilotrackcloud.com")
+                        // .scheme(siloConfiguration.getWebAPIProtocol())
+                        // .host(siloConfiguration.getWebAPIUrl())
                         .path("/arch/cfc/controller/jwtLogin.cfc")
                         .queryParam("method", "login");
 
 
         HttpEntity<String> entity = getHttpEntity("",
-                "{\"username\":\"" + username + "\", " +
-                        "\"password\":\"" + password + "\"," +
+                "{\"username\":\"" + siloConfiguration.getWebAPIUsername() + "\", " +
+                        "\"password\":\"" + siloConfiguration.getWebAPIPassword() + "\"," +
                         "\"rememberme\":\"true\"}");
 
-        logger.debug("entity ==============>\n{}", entity);
+        logger.debug("entity for silo login ==============>\n{}", entity);
         ResponseEntity<String> responseBodyWrapper
-                = getSiloRestTemplate().exchange(
+                = restTemplate.exchange(
                 builder.toUriString(),
                 HttpMethod.POST,
                 entity,
@@ -141,51 +124,64 @@ public class SiloRestemplateClient {
 
         logger.debug("get response from silo login request: \n {}",
                 responseBodyWrapper.getBody());
+
+        addSiloAPICallHistory(warehouseId, "login",
+                "username=" + siloConfiguration.getWebAPIUsername() + "&rememberme=true",
+                responseBodyWrapper.getBody());
+
         return responseBodyWrapper.getBody();
 
     }
 
-    public SiloGroupResponseWrapper getGroups(String token) {
+    public SiloDeviceResponseWrapper getSiloDevices(Long warehouseId, String token) {
+
+        SiloConfiguration siloConfiguration = getSileConfiguration(warehouseId);
+        Long currentTimeMills = System.currentTimeMillis();
+
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("https").host("mysilotrackcloud.com")
+                        // .scheme("https").host("mysilotrackcloud.com")
+                        .scheme(siloConfiguration.getWebAPIProtocol())
+                        .host(siloConfiguration.getWebAPIUrl())
                         .path("/arch/cfc/controller/Locations.cfc")
-                        .queryParam("method", "getGroups")
-                .queryParam("status_cde", "a");
-
+                        .queryParam("page", "1")
+                        .queryParam("orderBy", "l.name")
+                        .queryParam("orderDirection", "ASC")
+                        .queryParam("recordsPerPage", "50")
+                        .queryParam("date", currentTimeMills)
+                .queryParam("method", "getAllDevices");
 
         HttpEntity<String> entity = getHttpEntity(token, "");
-
+        String url = builder.toUriString();
 
         logger.debug("entity ==============>\n{}", entity);
-/**
-        SiloGroupResponseWrapper responseBodyWrapper
-                = getSiloRestTemplate().exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<SiloGroupResponseWrapper>() {}).getBody();
-
-**/
         ResponseEntity<String> responseBodyWrapper
                 = getSiloRestTemplate().exchange(
-                builder.toUriString(),
+                url,
                 HttpMethod.GET,
                 entity,
                 String.class);
 
 
-        logger.debug("get response from getGroups request: \n {}",
+        logger.debug("get response from getSiloDevices request: \n {}",
                 responseBodyWrapper.getBody());
-        try {
-            SiloGroupResponseWrapper siloGroupResponseWrapper =
-                    objectMapper.readValue(responseBodyWrapper.getBody(), SiloGroupResponseWrapper.class);
 
-            return siloGroupResponseWrapper;
+        addSiloAPICallHistory(warehouseId, "getAllDevices",
+                url.substring(url.indexOf("?")),
+                responseBodyWrapper.getBody());
+
+        try {
+            SiloDeviceResponseWrapper siloDeviceResponseWrapper =
+                    objectMapper.readValue(responseBodyWrapper.getBody(), SiloDeviceResponseWrapper.class);
+
+            addSiloDeviceAPICallHistory(warehouseId, currentTimeMills, siloDeviceResponseWrapper);
+            return siloDeviceResponseWrapper;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;
         }
+
+
     }
 
 
@@ -200,5 +196,46 @@ public class SiloRestemplateClient {
         return new HttpEntity<>(body, headers);
     }
 
+    private void addSiloAPICallHistory(Long warehouseId, String method, String parameters, String response) {
+        SiloAPICallHistory siloAPICallHistory = new SiloAPICallHistory(
+                warehouseId, method, parameters, response
+        );
+
+        siloAPICallHistoryService.addSiloAPICallHistory(siloAPICallHistory);
+
+    }
+
+    private void addSiloDeviceAPICallHistory(Long warehouseId, Long webAPICallTimeStamp,
+                                             SiloDeviceResponseWrapper siloDeviceResponseWrapper) {
+        if (siloDeviceResponseWrapper.getSiloDevices() == null ||
+                siloDeviceResponseWrapper.getSiloDevices().isEmpty()) {
+            // we don't have any device information returned from the web api call
+            SiloDeviceAPICallHistory siloDeviceAPICallHistory =
+                    new SiloDeviceAPICallHistory(warehouseId, webAPICallTimeStamp);
+
+            siloDeviceAPICallHistoryService.addSiloDeviceAPICallHistory(siloDeviceAPICallHistory);
+
+        }
+        else {
+            siloDeviceResponseWrapper.getSiloDevices().forEach(
+                    siloDevice -> {
+
+                        SiloDeviceAPICallHistory siloDeviceAPICallHistory =
+                                new SiloDeviceAPICallHistory(warehouseId, webAPICallTimeStamp,
+                                        siloDevice.getLocationName(),
+                                        siloDevice.getName(),
+                                        siloDevice.getDeviceId(),
+                                        siloDevice.getMaterial(),
+                                        siloDevice.getDistance(),
+                                        siloDevice.getTimeStamp(),
+                                        siloDevice.getStatusCode(),
+                                        siloDeviceResponseWrapper.getToken());
+
+                        siloDeviceAPICallHistoryService.addSiloDeviceAPICallHistory(siloDeviceAPICallHistory);
+                    }
+            );
+        }
+
+    }
 
 }

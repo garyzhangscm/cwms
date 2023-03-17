@@ -42,6 +42,19 @@ public class SiloDevice implements Serializable {
     private String statusCode;
 
 
+    public SiloDevice() {
+
+    }
+    public SiloDevice(SiloDeviceAPICallHistory siloDeviceAPICallHistory) {
+
+        setLocationName(siloDeviceAPICallHistory.getLocationName());
+        setName(siloDeviceAPICallHistory.getName());
+        setDeviceId(siloDeviceAPICallHistory.getDeviceId());
+        setMaterial(siloDeviceAPICallHistory.getMaterial());
+        setDistance(siloDeviceAPICallHistory.getDistance());
+        setTimeStamp(siloDeviceAPICallHistory.getTimeStamp());
+        setStatusCode(siloDeviceAPICallHistory.getStatusCode());
+    }
     @Override
     public String toString() {
         try {

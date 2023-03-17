@@ -22,6 +22,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -40,6 +41,7 @@ import java.util.Collections;
 // Database configuration won't be updated in the client even the
 // configuration server is updated with new DB information
 @RefreshScope
+@EnableScheduling
 @EnableResourceServer
 @EnableCaching
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")

@@ -2011,5 +2011,8 @@
   "order.billable-activity-type": "Billable Activity Type",
   "order.line.billable-activity-type": "Line Billable Activity Type",
   "menu.mobile.inbound.barcode-receiving": "Barcode Receiving",
-  "menu.main.work-order.silo": "Silo"
+  "menu.main.work-order.silo": "Silo",
+  "menu.main.work-order.silo-configuration": "Silo Configuration",
+  "webAPIProtocol": "Web API Protocol(http / https)",
+  "webAPIUrl": "Web API URL"
 }
