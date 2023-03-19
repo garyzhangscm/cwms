@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.SiloRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
@@ -14,7 +15,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +33,9 @@ public class SiloService {
 
     @Autowired
     private SiloDeviceAPICallHistoryService siloDeviceAPICallHistoryService;
+
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     private static String lastToken = "";
     private static LocalDateTime lastTokenGeneratedTime;
@@ -147,10 +150,36 @@ public class SiloService {
         List<SiloDeviceAPICallHistory> siloDeviceAPICallHistories =
                 siloDeviceAPICallHistoryService.getLatestBatchOfSiloDeviceAPICallHistory(warehouseId);
 
-        return siloDeviceAPICallHistories.stream().map(
-                siloDeviceAPICallHistory -> new SiloDevice(siloDeviceAPICallHistory)
-        ).sorted(Comparator.comparing(SiloDevice::getName)).collect(Collectors.toList());
+        // if setup , we will get the silo device's material field from the inventory in the WMS
+        // instead of the material value from the remote SILO system
+        if (Boolean.TRUE.equals(siloConfiguration.getInventoryInformationFromWMS())) {
 
+            return siloDeviceAPICallHistories.stream().map(
+                    siloDeviceAPICallHistory -> new SiloDevice(siloDeviceAPICallHistory)
+            ).map(siloDevice -> setDeviceMaterialFromInventoryInWMS(warehouseId, siloDevice))
+                    .sorted(Comparator.comparing(SiloDevice::getName)).collect(Collectors.toList());
+        }
+        else {
+
+            return siloDeviceAPICallHistories.stream().map(
+                    siloDeviceAPICallHistory -> new SiloDevice(siloDeviceAPICallHistory)
+            ).sorted(Comparator.comparing(SiloDevice::getName)).collect(Collectors.toList());
+        }
+
+    }
+
+    private SiloDevice setDeviceMaterialFromInventoryInWMS(
+            Long warehouseId, SiloDevice siloDevice) {
+        Item item = inventoryServiceRestemplateClient.getLastItemFromSiloLocation(
+                warehouseId, siloDevice
+        );
+        // if we have one item in the silo location, then the item will be returned
+        // if we have multiple items in the silo location, then the latest item that is
+        // moved into the location will be returned
+        if (Objects.nonNull(item)) {
+            siloDevice.setMaterial(item.getName());
+        }
+        return siloDevice;
     }
 
 }

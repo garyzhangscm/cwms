@@ -36,7 +36,6 @@ public class InitTestDataService {
     UserService userService;
     RoleService roleService;
     UserRoleService userRoleService;
-    RoleMenuService roleMenuService;
     WorkingTeamService workingTeamService;
     WorkingTeamUserService workingTeamUserService;
     ReportService reportService;
@@ -97,7 +96,6 @@ public class InitTestDataService {
                                // MenuSubGroupService menuSubGroupService,
                                // MenuService menuService,
                                UserRoleService userRoleService,
-                               RoleMenuService roleMenuService,
                                WorkingTeamService workingTeamService,
                                WorkingTeamUserService workingTeamUserService,
                                ReportService reportService) {
@@ -109,7 +107,6 @@ public class InitTestDataService {
         // this.menuSubGroupService = menuSubGroupService;
         // this.menuService = menuService;
         this.userRoleService = userRoleService;
-        this.roleMenuService = roleMenuService;
         this.workingTeamService = workingTeamService;
         this.workingTeamUserService = workingTeamUserService;
         this.reportService = reportService;
@@ -131,8 +128,6 @@ public class InitTestDataService {
          ****/
         initiableServices.put("User_Role", userRoleService);
         serviceNames.add("User_Role");
-        initiableServices.put("Role_Menu_Access", roleMenuService);
-        serviceNames.add("Role_Menu_Access");
 
 
         initiableServices.put("working_team", workingTeamService);

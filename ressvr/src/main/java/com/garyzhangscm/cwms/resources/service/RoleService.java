@@ -139,28 +139,6 @@ public class RoleService implements TestDataInitiableService{
     }
 
 
-    public void processMenus(Long roleId, String assignedMenuIds, String deassignedMenuIds) {
-
-        Role role = findById(roleId);
-        if (!StringUtils.isBlank(assignedMenuIds)) {
-            Arrays.stream(assignedMenuIds.split(","))
-                    .mapToLong(Long::parseLong)
-                    .forEach(menuId -> {
-                        Menu menu = menuService.findById(menuId);
-                        role.assignMenu(menu);
-                    });
-        }
-        if (!StringUtils.isBlank(deassignedMenuIds)) {
-            Arrays.stream(deassignedMenuIds.split(","))
-                    .mapToLong(Long::parseLong)
-                    .forEach(menuId -> {
-                        Menu menu = menuService.findById(menuId);
-                        role.deassignMenu(menu);
-                    });
-        }
-        saveOrUpdate(role);
-
-    }
 
     public void processUsers(Long roleId, String assignedUserIds, String deassignedUserIds) {
 
@@ -186,6 +164,88 @@ public class RoleService implements TestDataInitiableService{
 
     }
 
+    public void processMenuAssignment(Long roleId, String assignedFullyFunctionalMenuIds,
+                                      String assignedDisplayOnlyMenuIds, String deassignedMenuIds) {
+
+
+        Role role = findById(roleId);
+
+        // process the non display only menus
+        if (!StringUtils.isBlank(assignedFullyFunctionalMenuIds)) {
+            Arrays.stream(assignedFullyFunctionalMenuIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(menuId -> {
+                        // see if the menu is already assigned
+                        RoleMenu roleMenu = getRoleMenuAccess(role, menuId);
+                        if (Objects.isNull(roleMenu)) {
+                            // the role doesn't have access to the menu before, let's
+                            // assign the menu to this role
+                            assignNewMenu(role, menuId, false);
+                        }
+                        else {
+                            // the menu is already assigned to the role, we will only need to
+                            // setup the display only flag
+                            roleMenu.setDisplayOnlyFlag(false);
+                        }
+                    });
+        }
+        if (!StringUtils.isBlank(assignedDisplayOnlyMenuIds)) {
+            Arrays.stream(assignedDisplayOnlyMenuIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(menuId -> {
+                        // see if the menu is already assigned
+                        RoleMenu roleMenu = getRoleMenuAccess(role, menuId);
+                        if (Objects.isNull(roleMenu)) {
+                            // the role doesn't have access to the menu before, let's
+                            // assign the menu to this role
+                            assignNewMenu(role, menuId, true);
+                        }
+                        else {
+                            // the menu is already assigned to the role, we will only need to
+                            // setup the display only flag
+                            roleMenu.setDisplayOnlyFlag(true);
+                        }
+                    });
+        }
+        if (!StringUtils.isBlank(deassignedMenuIds)) {
+            Arrays.stream(deassignedMenuIds.split(","))
+                    .mapToLong(Long::parseLong)
+                    .forEach(menuId -> {
+                        deassignMenu(role, menuId);
+                    });
+        }
+        saveOrUpdate(role);
+
+    }
+    private void deassignMenu(Role role, long menuId) {
+        Iterator<RoleMenu> roleMenuIterator = role.getRoleMenus().iterator();
+        while(roleMenuIterator.hasNext()) {
+            RoleMenu roleMenu = roleMenuIterator.next();
+            if (roleMenu.getMenu().getId().equals(menuId)) {
+                roleMenuIterator.remove();
+                // we should only have one menu with the specific menu id that is
+                // assigned to the role
+                break;
+            }
+        }
+    }
+
+    private void assignNewMenu(Role role, long menuId, boolean displayOnly) {
+        Menu menu = menuService.findById(menuId);
+        RoleMenu roleMenu = new RoleMenu();
+        roleMenu.setRole(role);
+        roleMenu.setMenu(menu);
+        roleMenu.setDisplayOnlyFlag(displayOnly);
+
+        role.addRoleMenu(roleMenu);
+    }
+
+    private RoleMenu getRoleMenuAccess(Role role, Long menuId) {
+        return role.getRoleMenus().stream().filter(
+                roleMenu -> roleMenu.getMenu().getId().equals(menuId)
+        ).findFirst().orElse(null);
+    }
+
     @Transactional
     public Role addRole(Role role) {
 
@@ -196,8 +256,9 @@ public class RoleService implements TestDataInitiableService{
                 menuGroup.getMenuSubGroups().forEach(menuSubGroup -> {
                     menuSubGroup.getMenus().forEach(menu -> {
                         logger.debug("Assign menu: {} to the role {}", menu, role.getName());
-                        Menu assignedMenu = menuService.findById(menu.getId());
-                        role.assignMenu(assignedMenu);
+                        // Menu assignedMenu = menuService.findById(menu.getId());
+                        // role.assignMenu(assignedMenu);
+                        assignNewMenu(role, menu.getId(), false);
                     });
                 });
             });

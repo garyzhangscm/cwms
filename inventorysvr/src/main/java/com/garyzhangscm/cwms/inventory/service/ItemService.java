@@ -1329,4 +1329,41 @@ public class ItemService {
         return fileUploadResultsMap.getOrDefault(key, new ArrayList<>());
     }
 
+    public Item getLastItemFromSiloLocation(Long warehouseId, String locationName, Boolean loadDetails) {
+        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+        if (Objects.isNull(location)) {
+            logger.debug("can't find WMS location for silo name {}", locationName);
+            return null;
+        }
+        // let's get the inventory currently in the location
+        List<Inventory> inventories = inventoryService.findByLocationId(
+                location.getId(), loadDetails
+        );
+        if (inventories.isEmpty()) {
+            logger.debug("There's no inventory in the silo location {}", locationName);
+            return null;
+        }
+        // ok , there's inventory in the silo location, let's get the latest one based on the inventory activity
+        InventoryActivity latestInventoryActivity =
+                inventories.stream().map(Inventory::getItem).distinct()
+                .map(item -> inventoryActivityService.findLatestActivity(location.getId(), item))
+                .sorted((o1, o2) -> o2.getActivityDateTime().compareTo(o1.getActivityDateTime()))
+                .findFirst().orElse(null);
+
+        if (Objects.isNull(latestInventoryActivity)) {
+            logger.debug("Fail to get the latest activity from location {}",
+                    locationName);
+            return null;
+        }
+        else {
+            logger.debug("Get the latest activity from location {}, for item {}, at {}",
+                    locationName,
+                    latestInventoryActivity.getItem().getName(),
+                    latestInventoryActivity.getActivityDateTime());
+            return latestInventoryActivity.getItem();
+
+        }
+
+
+    }
 }

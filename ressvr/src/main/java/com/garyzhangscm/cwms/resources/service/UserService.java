@@ -434,7 +434,7 @@ public class UserService  implements TestDataInitiableService{
             // we will short circuit after we find the first
             // role that has access to the menu
             user.getRoles().stream()
-                    .filter(role -> role.getMenus().contains(menu))
+                    .filter(role -> role.canAccessMenu(menu.getId()))
                     .findFirst()
                     .orElseThrow(() -> UserOperationException.raiseException("The user doesn't have access to the url: " + url));
 

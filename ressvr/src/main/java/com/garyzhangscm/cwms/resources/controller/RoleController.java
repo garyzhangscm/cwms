@@ -20,7 +20,9 @@ package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.*;
+import com.garyzhangscm.cwms.resources.repository.RoleMenuRepository;
 import com.garyzhangscm.cwms.resources.service.MenuGroupService;
+import com.garyzhangscm.cwms.resources.service.RoleMenuService;
 import com.garyzhangscm.cwms.resources.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -36,6 +38,8 @@ public class RoleController {
     RoleService roleService;
     @Autowired
     MenuGroupService menuGroupService;
+    @Autowired
+    private RoleMenuService roleMenuService;
 
     @RequestMapping(value="/roles", method = RequestMethod.GET)
     public List<Role> findAllRoles(@RequestParam Long companyId,
@@ -97,10 +101,17 @@ public class RoleController {
             }
     )
     public ResponseBodyWrapper processMenus(@PathVariable Long id,
-                                        @RequestParam(name = "assigned", required = false, defaultValue = "") String assignedMenuIds,
-                                        @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedMenuIds) {
+                                            @RequestParam(name = "assignedFullyFunctionalMenuIds", required = false, defaultValue = "") String assignedFullyFunctionalMenuIds,
+                                            @RequestParam(name = "assignedDisplayOnlyMenuIds", required = false, defaultValue = "") String assignedDisplayOnlyMenuIds,
+                                            @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedMenuIds) {
 
-        roleService.processMenus(id, assignedMenuIds, deassignedMenuIds);
+        // roleService.processMenus(id, assignedMenuIds, deassignedMenuIds);
+
+        roleService.processMenuAssignment(id,
+                assignedFullyFunctionalMenuIds,
+                assignedDisplayOnlyMenuIds,
+                deassignedMenuIds);
+
         return ResponseBodyWrapper.success("success");
     }
 
