@@ -90,8 +90,10 @@ public class SiloService {
 
         logger.debug("start to sync silo device status");
         List<SiloConfiguration> sileEnabledWarehouses = siloConfigurationService.findSiloEnabledWarehouse();
+        logger.debug("Find {} warehouse that has silo enabled!",
+                sileEnabledWarehouses.size());
         sileEnabledWarehouses.forEach(
-                siloConfiguration -> syncDeviceStaus(siloConfiguration.getWarehouseId())
+                siloConfiguration -> getSiloDevices(siloConfiguration.getWarehouseId(), true)
         );
     }
 
@@ -127,7 +129,7 @@ public class SiloService {
         logger.debug("Get {} silo devices", siloDevicesResponseWrapper.getSiloDevices().size());
 
         siloDevicesResponseWrapper.getSiloDevices().forEach(
-                siloDevice -> logger.debug("=========   Silo Device： {} ===========\n", siloDevice.getName(),
+                siloDevice -> logger.debug("=========   Silo Device: {} ===========\n", siloDevice.getName(),
                         siloDevice)
         );
     }
@@ -154,6 +156,7 @@ public class SiloService {
         // instead of the material value from the remote SILO system
         if (Boolean.TRUE.equals(siloConfiguration.getInventoryInformationFromWMS())) {
 
+            logger.debug("We will get the material information from WMS");
             return siloDeviceAPICallHistories.stream().map(
                     siloDeviceAPICallHistory -> new SiloDevice(siloDeviceAPICallHistory)
             ).map(siloDevice -> setDeviceMaterialFromInventoryInWMS(warehouseId, siloDevice))
@@ -161,6 +164,7 @@ public class SiloService {
         }
         else {
 
+            logger.debug("We will get the material information from SILO system");
             return siloDeviceAPICallHistories.stream().map(
                     siloDeviceAPICallHistory -> new SiloDevice(siloDeviceAPICallHistory)
             ).sorted(Comparator.comparing(SiloDevice::getName)).collect(Collectors.toList());
@@ -170,6 +174,8 @@ public class SiloService {
 
     private SiloDevice setDeviceMaterialFromInventoryInWMS(
             Long warehouseId, SiloDevice siloDevice) {
+        logger.debug("start to get item information from location of warehouse {}, name {}",
+                warehouseId, siloDevice.getName());
         Item item = inventoryServiceRestemplateClient.getLastItemFromSiloLocation(
                 warehouseId, siloDevice
         );
@@ -177,6 +183,8 @@ public class SiloService {
         // if we have multiple items in the silo location, then the latest item that is
         // moved into the location will be returned
         if (Objects.nonNull(item)) {
+            logger.debug("We find the latest item {} from location {}",
+                    item.getName(), siloDevice.getName());
             siloDevice.setMaterial(item.getName());
         }
         return siloDevice;

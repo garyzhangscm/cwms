@@ -1,7 +1,7 @@
-package com.garyzhangscm.cwms.inventory;
+package com.garyzhangscm.cwms.workorder;
 
 
-import com.garyzhangscm.cwms.inventory.usercontext.UserContextInterceptor;
+import com.garyzhangscm.cwms.workorder.usercontext.UserContextInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

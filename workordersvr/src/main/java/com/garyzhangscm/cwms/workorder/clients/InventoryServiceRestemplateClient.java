@@ -60,6 +60,10 @@ public class InventoryServiceRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
+
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     // @Cacheable(cacheNames = "WorkOrderService_Inventory", unless="#result == null")
     public Inventory getInventoryById(Long id) {
 
@@ -588,7 +592,7 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("locationName", siloDevice.getName());
 
         ResponseBodyWrapper<Item> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
                 HttpMethod.GET,
                 null,
