@@ -249,4 +249,12 @@ public class ItemController {
         return  ResponseBodyWrapper.success("Success");
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/items/last-item-from-silo-location")
+    public Item getLastItemFromSiloLocation(
+            Long warehouseId, String locationName,
+            @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) throws IOException {
+
+
+        return itemService.getLastItemFromSiloLocation(warehouseId, locationName, loadDetails);
+    }
 }

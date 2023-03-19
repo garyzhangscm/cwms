@@ -318,12 +318,7 @@ public class MenuGroupService implements TestDataInitiableService{
 
     }
     private boolean isAccessible(Menu menu, Role role) {
-        for(Menu assignedMenu: role.getMenus()) {
-            if (assignedMenu.equals(menu)) {
-                return true;
-            }
-        }
-        return false;
+        return role.canAccessMenu(menu.getId());
 
     }
 

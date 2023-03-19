@@ -2014,5 +2014,6 @@
   "menu.main.work-order.silo": "Silo",
   "menu.main.work-order.silo-configuration": "Silo 系统配置",
   "webAPIProtocol": "API 接口协议(http / https)",
-  "webAPIUrl": "API 接口地址"
+  "webAPIUrl": "API 接口地址",
+  "inventoryInformationFromWMS": "从WMS中读取库存信息"
 }

@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.inventory.repository;
 
+import com.garyzhangscm.cwms.inventory.model.CycleCountResult;
 import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
+import com.garyzhangscm.cwms.inventory.model.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -45,4 +47,6 @@ public interface InventoryActivityRepository extends JpaRepository<InventoryActi
             " where item_id = :oldItemId and warehouse_id = :warehouseId",
             nativeQuery = true)
     void processItemOverride(Long warehouseId, Long oldItemId, Long newItemId);
+
+    InventoryActivity findFirstByLocationIdAndItemOrderByActivityDateTimeDesc(Long locationId, Item item);
 }

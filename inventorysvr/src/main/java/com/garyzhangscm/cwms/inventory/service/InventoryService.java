@@ -695,6 +695,35 @@ public class InventoryService {
         return inventories;
     }
 
+    public List<Inventory> findByLocationName(Long warehouseId, String locationName, boolean includeDetails) {
+        return findAll(warehouseId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                locationName,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null, includeDetails);
+    }
+
     public List<Inventory> findByLocationId(Long locationId, boolean includeDetails) {
         List<Inventory> inventories =  inventoryRepository.findByLocationId(locationId);
 

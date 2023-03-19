@@ -29,6 +29,11 @@ public class SiloConfiguration extends AuditibleEntity<String>{
     private String webAPIPassword;
 
 
+    // whether we get the inventory information from
+    // current WMS or remote SILO system
+    @Column(name = "inventory_information_from_wms")
+    private Boolean inventoryInformationFromWMS;
+
     @Column(name = "enabled")
     private boolean enabled;
 
@@ -86,5 +91,13 @@ public class SiloConfiguration extends AuditibleEntity<String>{
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getInventoryInformationFromWMS() {
+        return inventoryInformationFromWMS;
+    }
+
+    public void setInventoryInformationFromWMS(Boolean inventoryInformationFromWMS) {
+        this.inventoryInformationFromWMS = inventoryInformationFromWMS;
     }
 }

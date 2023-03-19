@@ -2014,5 +2014,6 @@
   "menu.main.work-order.silo": "Silo",
   "menu.main.work-order.silo-configuration": "Silo Configuration",
   "webAPIProtocol": "Web API Protocol(http / https)",
-  "webAPIUrl": "Web API URL"
+  "webAPIUrl": "Web API URL",
+  "inventoryInformationFromWMS": "Get Inventory Information from WMS"
 }

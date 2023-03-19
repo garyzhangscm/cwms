@@ -456,4 +456,8 @@ public class InventoryActivityService{
         inventoryActivityRepository.processItemOverride(warehouseId,
                 oldItemId, newItemId);
     }
+
+    public InventoryActivity findLatestActivity(Long locationId, Item item) {
+        return inventoryActivityRepository.findFirstByLocationIdAndItemOrderByActivityDateTimeDesc(locationId, item);
+    }
 }

@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.resources.service;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.model.*;
+import com.garyzhangscm.cwms.resources.repository.RoleMenuRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,66 +36,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class RoleMenuService implements TestDataInitiableService{
+public class RoleMenuService {
     private static final Logger logger = LoggerFactory.getLogger(RoleMenuService.class);
 
 
     @Autowired
-    private MenuService menuService;
-    @Autowired
-    private RoleService roleService;
+    private RoleMenuRepository roleMenuRepository;
 
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
-    @Value("${fileupload.test-data.role-menus:role-menus}")
-    String testDataFile;
 
-    public List<RoleMenu> loadData(InputStream inputStream) throws IOException {
-
-        CsvSchema schema = CsvSchema.builder().
-                addColumn("roleName").
-                addColumn("menuName").
-                build().withHeader();
-
-        return fileService.loadData(inputStream, schema, RoleMenu.class);
-    }
-
-    public void initTestData(Long companyId, String warehouseName) {
-        try {
-            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
-
-            String testDataFileName = StringUtils.isBlank(warehouseName) ?
-                    testDataFile + ".csv" :
-                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
-            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<RoleMenu> roleMenus = loadData(inputStream);
-            // Save the user role result as a map
-            // key: role name
-            // value: a list of menu name
-            Map<String, Set<String>> roleMenuMap = new HashMap<>();
-
-            roleMenus.stream().forEach(roleMenu -> {
-                Set<String> menus = roleMenuMap.getOrDefault(roleMenu.getRoleName(), new HashSet<>());
-                menus.add(roleMenu.getMenuName());
-                roleMenuMap.put(roleMenu.getRoleName(), menus);
-            });
-
-            roleMenuMap.entrySet().stream().forEach(roleMenuEntry -> {
-                Role role = roleService.findByName(companyId, roleMenuEntry.getKey());
-                List<Menu> menus = new ArrayList<>();
-                Set<String> menuNames = roleMenuEntry.getValue();
-                menuNames.stream().forEach(menuName -> {
-                    menus.add(menuService.findByName(menuName));
-                });
-                role.setMenus(menus);
-                roleService.saveOrUpdate(role);
-            });
-        } catch (IOException ex) {
-            logger.debug("Exception while load test data: {}", ex.getMessage());
-        }
-    }
 
 }

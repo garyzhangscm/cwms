@@ -578,6 +578,25 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Item getLastItemFromSiloLocation(Long warehouseId, SiloDevice siloDevice) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/items/last-item-from-silo-location")
+                        .queryParam("includeDetails", false)
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationName", siloDevice.getName());
+
+        ResponseBodyWrapper<Item> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Item>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");

@@ -32,6 +32,7 @@ public class Role extends AuditibleEntity<String>  {
     @Column(name = "enabled")
     private Boolean enabled;
 
+    /**
     @ManyToMany(cascade = {
             CascadeType.ALL
     })
@@ -40,7 +41,14 @@ public class Role extends AuditibleEntity<String>  {
             inverseJoinColumns = @JoinColumn(name = "menu_id")
     )
     private List<Menu> menus = new ArrayList<>();
+**/
 
+    @OneToMany(
+            mappedBy = "role",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    List<RoleMenu> roleMenus = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "role",
@@ -72,6 +80,12 @@ public class Role extends AuditibleEntity<String>  {
     @Transient
     private List<User> users = new ArrayList<>();
 
+    public boolean canAccessMenu(Long menuId) {
+        return getRoleMenus().stream().anyMatch(
+                roleMenu -> roleMenu.getMenu().getId().equals(menuId)
+        );
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -82,7 +96,7 @@ public class Role extends AuditibleEntity<String>  {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, enabled, menus);
+        return Objects.hash(id, name, description, enabled);
     }
 
     @Override
@@ -135,24 +149,16 @@ public class Role extends AuditibleEntity<String>  {
         this.enabled = enabled;
     }
 
-    public List<Menu> getMenus() {
-
-        return menus;
+    public List<RoleMenu> getRoleMenus() {
+        return roleMenus;
     }
 
-    public void setMenus(List<Menu> menus) {
-        this.menus = menus;
+    public void addRoleMenu(RoleMenu roleMenu) {
+        getRoleMenus().add(roleMenu);
     }
 
-    public void assignMenu(Menu menu) {
-        if (!getMenus().contains(menu)) {
-            getMenus().add(menu);
-        }
-    }
-    public void deassignMenu(Menu menu) {
-        if (getMenus().contains(menu)) {
-            getMenus().remove(menu);
-        }
+    public void setRoleMenus(List<RoleMenu> roleMenus) {
+        this.roleMenus = roleMenus;
     }
 
     public List<MenuGroup> getMenuGroups() {
