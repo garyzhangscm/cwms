@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,11 @@ public class User implements Serializable {
 
     private boolean locked;
 
+    private String token;
+    private String refreshToken;
+    private String name;
+    private Timestamp time;
+    private int refreshIn;
 
     private Boolean isAdmin = false;
     private Boolean isSystemAdmin = false;
@@ -136,5 +142,45 @@ public class User implements Serializable {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Timestamp getTime() {
+        return time;
+    }
+
+    public void setTime(Timestamp time) {
+        this.time = time;
+    }
+
+    public int getRefreshIn() {
+        return refreshIn;
+    }
+
+    public void setRefreshIn(int refreshIn) {
+        this.refreshIn = refreshIn;
     }
 }

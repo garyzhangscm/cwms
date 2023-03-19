@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
  */
 public class StatefulRestTemplateInterceptor  implements ClientHttpRequestInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(StatefulRestTemplateInterceptor.class);
-    // private String cookie = "AWSALB=NrUtVeGurbC/uGEzT2vJZ4VhEiKL+Vy5yTgcVQqRC8dPwqjNtr0MFMVpaTBNWUnUkgYZ/vv1vxbRmaI+8E2qph/WC8eeBT123j7cqSMT+almCYaX7weaikiC03az; AWSALBCORS=NrUtVeGurbC/uGEzT2vJZ4VhEiKL+Vy5yTgcVQqRC8dPwqjNtr0MFMVpaTBNWUnUkgYZ/vv1vxbRmaI+8E2qph/WC8eeBT123j7cqSMT+almCYaX7weaikiC03az";
-    private String cookie = "";
+    private String cookie = "AWSALB=NrUtVeGurbC/uGEzT2vJZ4VhEiKL+Vy5yTgcVQqRC8dPwqjNtr0MFMVpaTBNWUnUkgYZ/vv1vxbRmaI+8E2qph/WC8eeBT123j7cqSMT+almCYaX7weaikiC03az; AWSALBCORS=NrUtVeGurbC/uGEzT2vJZ4VhEiKL+Vy5yTgcVQqRC8dPwqjNtr0MFMVpaTBNWUnUkgYZ/vv1vxbRmaI+8E2qph/WC8eeBT123j7cqSMT+almCYaX7weaikiC03az";
+    // private String cookie = "";
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
         if (Strings.isNotBlank(cookie)) {

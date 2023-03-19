@@ -1335,6 +1335,8 @@ public class ItemService {
             logger.debug("can't find WMS location for silo name {}", locationName);
             return null;
         }
+        logger.debug("Start to find existing inventory from location {}",
+                locationName);
         // let's get the inventory currently in the location
         List<Inventory> inventories = inventoryService.findByLocationId(
                 location.getId(), loadDetails
@@ -1343,6 +1345,8 @@ public class ItemService {
             logger.debug("There's no inventory in the silo location {}", locationName);
             return null;
         }
+        logger.debug("find {} existing inventory in the location {}",
+                inventories.size(), locationName);
         // ok , there's inventory in the silo location, let's get the latest one based on the inventory activity
         InventoryActivity latestInventoryActivity =
                 inventories.stream().map(Inventory::getItem).distinct()
