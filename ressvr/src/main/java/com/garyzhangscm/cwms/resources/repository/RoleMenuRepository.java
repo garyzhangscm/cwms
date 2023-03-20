@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.repository;
 
 import com.garyzhangscm.cwms.resources.model.Menu;
+import com.garyzhangscm.cwms.resources.model.Role;
 import com.garyzhangscm.cwms.resources.model.RoleMenu;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -28,4 +29,6 @@ import java.util.List;
 
 @Repository
 public interface RoleMenuRepository extends JpaRepository<RoleMenu, Long>, JpaSpecificationExecutor<RoleMenu> {
+
+    RoleMenu findByRoleAndMenu(Role role, Menu menu);
 }
