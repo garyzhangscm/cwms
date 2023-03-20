@@ -33,6 +33,9 @@ public class SiloDeviceAPICallHistory extends AuditibleEntity<String>{
     @Column(name = "material")
     private String material;
 
+    @Column(name = "item_name")
+    private String itemName;
+
     @Column(name = "distance")
     private Double distance;
 
@@ -112,6 +115,14 @@ public class SiloDeviceAPICallHistory extends AuditibleEntity<String>{
 
     public void setMaterial(String material) {
         this.material = material;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 
     public Double getDistance() {

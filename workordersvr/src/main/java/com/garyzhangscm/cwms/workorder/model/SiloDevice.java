@@ -34,6 +34,8 @@ public class SiloDevice implements Serializable {
     private Integer deviceId;
     @JsonProperty("MATERIAL")
     private String material;
+    @JsonProperty("itemName")
+    private String itemName;
     @JsonProperty("DISTANCE")
     private Double distance;
     @JsonProperty("SMU_TIMESTAMP")
@@ -51,6 +53,7 @@ public class SiloDevice implements Serializable {
         setName(siloDeviceAPICallHistory.getName());
         setDeviceId(siloDeviceAPICallHistory.getDeviceId());
         setMaterial(siloDeviceAPICallHistory.getMaterial());
+        setItemName(siloDeviceAPICallHistory.getItemName());
         setDistance(siloDeviceAPICallHistory.getDistance());
         setTimeStamp(siloDeviceAPICallHistory.getTimeStamp());
         setStatusCode(siloDeviceAPICallHistory.getStatusCode());
@@ -120,5 +123,13 @@ public class SiloDevice implements Serializable {
 
     public void setStatusCode(String statusCode) {
         this.statusCode = statusCode;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 }

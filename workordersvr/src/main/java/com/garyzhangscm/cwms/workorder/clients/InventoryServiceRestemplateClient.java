@@ -582,14 +582,14 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
-    public Item getLastItemFromSiloLocation(Long warehouseId, SiloDevice siloDevice) {
+    public Item getLastItemFromSiloLocation(Long warehouseId, String siloDeviceName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/items/last-item-from-silo-location")
                         .queryParam("includeDetails", false)
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("locationName", siloDevice.getName());
+                        .queryParam("locationName", siloDeviceName);
 
         ResponseBodyWrapper<Item> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
