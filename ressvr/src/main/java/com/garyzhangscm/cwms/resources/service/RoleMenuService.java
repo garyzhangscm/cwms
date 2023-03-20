@@ -18,22 +18,16 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.model.*;
+import com.garyzhangscm.cwms.resources.model.Menu;
+import com.garyzhangscm.cwms.resources.model.Role;
+import com.garyzhangscm.cwms.resources.model.RoleMenu;
 import com.garyzhangscm.cwms.resources.repository.RoleMenuRepository;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class RoleMenuService {
@@ -42,6 +36,14 @@ public class RoleMenuService {
 
     @Autowired
     private RoleMenuRepository roleMenuRepository;
+
+    public boolean isDisplayOnly(Role role, Menu menu) {
+        RoleMenu roleMenu = roleMenuRepository.findByRoleAndMenu(role, menu);
+        if (Objects.isNull(roleMenu)) {
+            return false;
+        }
+        return roleMenu.getDisplayOnlyFlag();
+    }
 
 
 

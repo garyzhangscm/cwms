@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MenuGroupService implements TestDataInitiableService{
@@ -47,6 +48,9 @@ public class MenuGroupService implements TestDataInitiableService{
     private RoleService roleService;
     @Autowired
     private CompanyMenuService companyMenuService;
+
+    @Autowired
+    private RoleMenuService roleMenuService;
 
     @Autowired
     private MenuService menuService;
@@ -187,15 +191,18 @@ public class MenuGroupService implements TestDataInitiableService{
                         // full access to everything and thus handled separately
 
                         menuIterator.remove();
+                        continue;
                     }
                     else if (!Boolean.TRUE.equals(menu.getEnabled())) {
                         // menu is diabled
                         menuIterator.remove();
+                        continue;
                     }
                     else if (!isAccessibleByCompany(menu, companyMenus)) {
                         // menu is not assigned to this company
 
                         menuIterator.remove();
+                        continue;
                     }
                     // for admin, the user has access to all menus that is assigned to
                     // this company, regardless of the roles that assigned to the
@@ -203,7 +210,21 @@ public class MenuGroupService implements TestDataInitiableService{
                     else if (!isAdmin && !isAccessible(menu, roles)) {
 
                         menuIterator.remove();
+                        continue;
                     }
+                    // the user has access to the menu, let's see if any
+                    // role has non display access to the menu. The user
+                    // has full access to the menu as long as one of the role
+                    // has full access
+
+                    boolean displayOnly = roles.stream().noneMatch(
+                            role -> !roleMenuService.isDisplayOnly(role, menu)
+                    );
+                    logger.debug("roles: {}",
+                            roles.stream().map(role -> role.getName()).collect(Collectors.joining(",")));
+                    logger.debug("menu: {}", menu.getName());
+                    logger.debug(">> display only: {}", displayOnly);
+                    menu.setDisplayOnly(displayOnly);
                 }
                 if (menuSubGroup.getMenus().size() == 0) {
                     // there's nothing left in the sub group, let's
