@@ -126,7 +126,9 @@ public class OrderService {
                                LocalDate specificCreatedDate,
                                String category,
                                String customerName,
-                               Long customerId, Long trailerAppointmentId,
+                               Long customerId,
+                               Long clientId,
+                               Long trailerAppointmentId,
                                Boolean loadDetails, ClientRestriction clientRestriction) {
 
         List<Order> orders =  orderRepository.findAll(
@@ -193,6 +195,12 @@ public class OrderService {
                         predicates.add(criteriaBuilder.between(
                                 root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
 
+                    }
+
+                    if (Objects.nonNull(clientId)) {
+
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("clientId"), clientId));
                     }
 
                     if (Objects.nonNull(customerId)) {
@@ -286,12 +294,14 @@ public class OrderService {
                                ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime,
                                LocalDate specificCreatedDate,
                                String category, String customerName, Long customerId,
+                               Long clientId,
                               Long trailerAppointmentId,
                               ClientRestriction clientRestriction) {
         return findAll(warehouseId, number, status,
                 startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
-                category, customerName, customerId, trailerAppointmentId, true, clientRestriction);
+                category, customerName, customerId,
+                clientId, trailerAppointmentId, true, clientRestriction);
     }
 
 

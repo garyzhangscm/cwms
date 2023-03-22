@@ -2017,5 +2017,6 @@
   "webAPIUrl": "API 接口地址",
   "inventoryInformationFromWMS": "从WMS中读取库存信息",
   "menu.main.billing.billable-activity": "付费项目",
-  "totalLPNs": "LPNs总数"
+  "totalLPNs": "LPNs总数",
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_PALLET_COUNT": "按使用的托盘数量计费"
 }
