@@ -161,6 +161,9 @@ public abstract class StorageFeeBillingService implements BillingService {
                         case STORAGE_FEE_BY_LOCATION_COUNT:
                             existingAmounts.add(clientLocationUtilizationSnapshotBatch.getTotalLocations() * 1.0);
                             break;
+                        case STORAGE_FEE_BY_PALLET_COUNT:
+                            existingAmounts.add(clientLocationUtilizationSnapshotBatch.getTotalLPNs() * 1.0);
+                            break;
                     }
                     dailyAmountMap.put(date, existingAmounts);
                 }

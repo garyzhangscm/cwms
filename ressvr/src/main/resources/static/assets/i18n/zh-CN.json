@@ -2016,5 +2016,6 @@
   "webAPIProtocol": "API 接口协议(http / https)",
   "webAPIUrl": "API 接口地址",
   "inventoryInformationFromWMS": "从WMS中读取库存信息",
-  "menu.main.billing.billable-activity": "付费项目"
+  "menu.main.billing.billable-activity": "付费项目",
+  "totalLPNs": "LPNs总数"
 }

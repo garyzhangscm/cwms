@@ -57,6 +57,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     @Query("select count(distinct inv.locationId) from Inventory inv join inv.item i where i.id = :itemId")
     Integer getLocationCount(Long itemId);
 
+
+    Integer countByLocationIdInAndClientId(List<Long> locationIds, Long clientId);
     /**
      * Override a item in the warehouse level. We will change the inventory's item id to the new warehouse level
      * item. We will only change the inventory in the specific warehouse

@@ -57,6 +57,13 @@ public class LocationGroupController {
         return locationGroupService.getQCLocationGroups(warehouseId);
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/locationgroups/storage")
+    public List<LocationGroup> getStorageLocationGroup(@RequestParam Long warehouseId) {
+        logger.debug("Will list storage location groups by  warehouseId {} ",
+                warehouseId );
+        return locationGroupService.getStorageLocationGroup(warehouseId);
+    }
+
     @RequestMapping(method=RequestMethod.GET, value="/locationgroups/{id}")
     public LocationGroup getLocationGroup(@PathVariable long id) {
         return locationGroupService.findById(id);

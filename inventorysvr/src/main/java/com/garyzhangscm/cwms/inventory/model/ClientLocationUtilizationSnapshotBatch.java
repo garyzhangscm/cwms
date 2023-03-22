@@ -54,6 +54,9 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
     @Column(name = "total_locations")
     private Integer totalLocations;
 
+    @Column(name = "total_lpns")
+    private Integer totalLPNs;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_utilization_snapshot_batch_id")
@@ -163,5 +166,13 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
 
     public void setCapacityUnit(String capacityUnit) {
         this.capacityUnit = capacityUnit;
+    }
+
+    public Integer getTotalLPNs() {
+        return totalLPNs;
+    }
+
+    public void setTotalLPNs(Integer totalLPNs) {
+        this.totalLPNs = totalLPNs;
     }
 }

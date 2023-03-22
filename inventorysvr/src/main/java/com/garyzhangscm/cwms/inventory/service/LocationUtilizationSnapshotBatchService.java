@@ -298,6 +298,10 @@ public class LocationUtilizationSnapshotBatchService {
         logger.debug("=========           clientLocationUtilizationSnapshotBatchMap  =============  ");
         clientLocationUtilizationSnapshotBatchMap.forEach(
                 (key, value) -> {
+                    // let's setup the total LPN count for each warehouse and client combination
+                    int lpnCount = inventoryService.getLPNCountFromStorageLocation(value.getWarehouseId(), value.getClientId());
+                    value.setTotalLPNs(lpnCount);
+
                     logger.debug("key: {}, value's: {} / {} / {} / {} / {}",
                             key,
                             value.getClientId(),
@@ -356,6 +360,10 @@ public class LocationUtilizationSnapshotBatchService {
                     );
                     locationUtilizationSnapshotBatch.setCapacityUnit(
                             clientLocationUtilizationSnapshotBatch.getCapacityUnit()
+                    );
+                    locationUtilizationSnapshotBatch.setTotalLPNs(
+                            locationUtilizationSnapshotBatch.getTotalLPNs() +
+                                    clientLocationUtilizationSnapshotBatch.getTotalLPNs()
                     );
                     clientLocationUtilizationSnapshotBatch.getLocationUtilizationSnapshots().forEach(
                             locationUtilizationSnapshot -> {

@@ -2016,5 +2016,6 @@
   "webAPIProtocol": "Web API Protocol(http / https)",
   "webAPIUrl": "Web API URL",
   "inventoryInformationFromWMS": "Get Inventory Information from WMS",
-  "menu.main.billing.billable-activity": "Billable Activity"
+  "menu.main.billing.billable-activity": "Billable Activity",
+  "totalLPNs": "Total LPNs"
 }

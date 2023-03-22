@@ -3651,4 +3651,38 @@ public class InventoryService {
             }
         }
     }
+
+    public int getLPNCountFromStorageLocation(Long warehouseId, Long clientId) {
+        List<LocationGroup> storageLocationGroups =
+                warehouseLayoutServiceRestemplateClient.getStorageLocationGroups(warehouseId);
+        if (Objects.isNull(storageLocationGroups) || storageLocationGroups.isEmpty()) {
+            logger.debug("There's no storage location defined for warehouse {}", warehouseId);
+            return 0;
+        }
+        int totalLPNCount = 0;
+        String locationGroupIds = storageLocationGroups.stream().map(LocationGroup::getId)
+                .map(String::valueOf).collect(Collectors.joining(","));
+
+        logger.debug("start to get locations from storage location groups {}",
+                locationGroupIds);
+
+        List<Long> locationIds =
+                warehouseLayoutServiceRestemplateClient.getLocationIdsByLocationGroups(
+                        warehouseId, locationGroupIds);
+
+        logger.debug("We get {} storage locations, let's do 100 location a time",
+                locationIds.size());
+        // split the location id list into smaller list with 100 location ids per list
+        int subListSize = 100;
+        Collection<List<Long>> listOfLocationIds =
+                locationIds.stream()
+                        .collect(Collectors.groupingBy(s -> (s-1)/subListSize))
+                        .values();
+        for (List<Long> subListOfLocationIds : listOfLocationIds) {
+            totalLPNCount += inventoryRepository.countByLocationIdInAndClientId(subListOfLocationIds, clientId);
+        }
+        logger.debug("total LPNs from storage lcoations: {}",
+                totalLPNCount);
+        return totalLPNCount;
+    }
 }

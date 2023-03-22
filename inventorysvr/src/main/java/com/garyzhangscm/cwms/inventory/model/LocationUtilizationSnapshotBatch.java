@@ -58,6 +58,8 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
 
     @Column(name = "total_locations")
     private Integer totalLocations;
+    @Column(name = "total_lpns")
+    private Integer totalLPNs;
 
     @Column(name = "start_time")
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
@@ -85,12 +87,13 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
     public LocationUtilizationSnapshotBatch(){}
 
     public LocationUtilizationSnapshotBatch(Long warehouseId, String number) {
-        this(warehouseId, number, 0.0, 0.0, 0, LocationUtilizationSnapshotStatus.PROCESSING,
+        this(warehouseId, number, 0.0, 0.0, 0, 0, LocationUtilizationSnapshotStatus.PROCESSING,
                 ZonedDateTime.now(ZoneOffset.UTC), "");
     }
 
     public LocationUtilizationSnapshotBatch(Long warehouseId, String number, Double netVolume,
                                             Double grossVolume, Integer totalLocations,
+                                            Integer totalLPNs,
                                             LocationUtilizationSnapshotStatus status,
                                             ZonedDateTime startTime,
                                             String capacityUnit) {
@@ -99,6 +102,7 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
         this.netVolume = netVolume;
         this.grossVolume = grossVolume;
         this.totalLocations = totalLocations;
+        this.totalLPNs = totalLPNs;
         this.status = status;
         this.startTime = startTime;
         this.capacityUnit = capacityUnit;
@@ -193,5 +197,13 @@ public class LocationUtilizationSnapshotBatch extends AuditibleEntity<String>{
 
     public void setCapacityUnit(String capacityUnit) {
         this.capacityUnit = capacityUnit;
+    }
+
+    public Integer getTotalLPNs() {
+        return totalLPNs;
+    }
+
+    public void setTotalLPNs(Integer totalLPNs) {
+        this.totalLPNs = totalLPNs;
     }
 }
