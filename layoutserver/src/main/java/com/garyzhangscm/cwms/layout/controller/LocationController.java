@@ -39,6 +39,7 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class LocationController {
@@ -112,6 +113,35 @@ public class LocationController {
     }
 
 
+    @RequestMapping(method=RequestMethod.GET, value="/location-ids")
+    public List<Long> findLocationIds(@RequestParam Long warehouseId,
+                                        @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
+                                        @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
+                                        @RequestParam(name = "name", required = false, defaultValue = "") String name,
+                                        @RequestParam(name = "code", required = false, defaultValue = "") String code,
+                                        @RequestParam(name = "locationStatus", required = false, defaultValue = "") String locationStatus,
+                                        @RequestParam(name = "beginSequence", required = false, defaultValue = "") Long beginSequence,
+                                        @RequestParam(name = "endSequence", required = false, defaultValue = "") Long endSequence,
+                                        @RequestParam(name = "beginAisle", required = false, defaultValue = "") String beginAisle,
+                                        @RequestParam(name = "endAisle", required = false, defaultValue = "") String endAisle,
+                                        @RequestParam(name = "sequenceType", required = false, defaultValue = "") String sequenceType,
+                                        @RequestParam(name = "includeEmptyLocation", required = false, defaultValue = "") Boolean includeEmptyLocation,
+                                        @RequestParam(name = "emptyLocationOnly", required = false, defaultValue = "") Boolean emptyLocationOnly,
+                                        @RequestParam(name = "minEmptyCapacity", required = false, defaultValue = "") Double minEmptyCapacity,
+                                        @RequestParam(name = "pickableLocationOnly", required = false, defaultValue = "") Boolean pickableLocationOnly,
+                                        @RequestParam(name = "includeDisabledLocation", required = false, defaultValue = "") Boolean includeDisabledLocation,
+                                        @RequestParam(name = "maxResultCount", required =  false, defaultValue =  "0") Integer maxResultCount,
+                                        @RequestParam(name = "reservedCode", required =  false, defaultValue =  "") String reservedCode,
+                                        @RequestParam(name = "emptyReservedCodeOnly", required =  false, defaultValue =  "") Boolean emptyReservedCodeOnly
+    ) {
+        return locationService.findAll(
+                warehouseId,
+                locationGroupTypeIds, locationGroupIds, name,
+                beginSequence, endSequence, beginAisle, endAisle, sequenceType,
+                includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
+                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus).stream()
+                .map(Location::getId).collect(Collectors.toList());
+    }
     @RequestMapping(method=RequestMethod.GET, value="/locations")
     public List<Location> findLocations(@RequestParam Long warehouseId,
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,

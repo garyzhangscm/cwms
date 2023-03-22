@@ -285,6 +285,22 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public List<LocationGroup> getStorageLocationGroups(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locationgroups/storage")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<LocationGroup>> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<LocationGroup>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
     public List<LocationGroup> getQCLocationGroups(Long warehouseId) {
         UriComponentsBuilder builder =
@@ -312,6 +328,25 @@ public class WarehouseLayoutServiceRestemplateClient {
         return getLocationByLocationGroups(warehouseId, locationGroupIds);
     }
 
+    public List<Long> getLocationIdsByLocationGroups(Long warehouseId, String locationGroupIds) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/location-ids")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationGroupIds", locationGroupIds);
+
+        ResponseBodyWrapper<List<Long>> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Long>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
     public List<Location> getLocationByLocationGroups(Long warehouseId, String locationGroupIds) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -321,7 +356,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("locationGroupIds", locationGroupIds);
 
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
-                = restTemplate.exchange(
+                = restTemplateProxy.getRestTemplate().exchange(
                         builder.toUriString(),
                         HttpMethod.GET,
                         null,

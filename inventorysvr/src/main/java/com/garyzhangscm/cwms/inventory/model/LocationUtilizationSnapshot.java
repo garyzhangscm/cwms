@@ -60,7 +60,6 @@ public class LocationUtilizationSnapshot extends AuditibleEntity<String>{
     @Column(name = "total_locations")
     private Integer totalLocations;
 
-
     @OneToMany(
             mappedBy = "locationUtilizationSnapshot",
             cascade = CascadeType.ALL,

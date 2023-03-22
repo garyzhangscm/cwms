@@ -33,6 +33,7 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
 
 
     private Integer totalLocations;
+    private Integer totalLPNs;
 
     public Long getId() {
         return id;
@@ -88,5 +89,13 @@ public class ClientLocationUtilizationSnapshotBatch extends AuditibleEntity<Stri
 
     public void setTotalLocations(Integer totalLocations) {
         this.totalLocations = totalLocations;
+    }
+
+    public Integer getTotalLPNs() {
+        return totalLPNs;
+    }
+
+    public void setTotalLPNs(Integer totalLPNs) {
+        this.totalLPNs = totalLPNs;
     }
 }
