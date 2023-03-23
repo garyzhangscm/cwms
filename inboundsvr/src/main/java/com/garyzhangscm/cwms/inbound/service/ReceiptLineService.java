@@ -249,7 +249,8 @@ public class ReceiptLineService {
                 receiptLineCSVWrapper.getItem(), receiptLineCSVWrapper.getReceipt(),
                 warehouse.getId());
         if (Objects.isNull(receipt) && Strings.isNotBlank(receiptLineCSVWrapper.getReceipt())) {
-            receipt = receiptService.findByNumber(warehouse.getId(), receiptLineCSVWrapper.getReceipt());
+            receipt = receiptService.findByNumber(warehouse.getId(),
+                    receipt.getClientId(), receiptLineCSVWrapper.getReceipt());
         }
         if (Objects.nonNull(receipt)) {
             receiptLine.setReceipt(receipt);
@@ -257,7 +258,7 @@ public class ReceiptLineService {
 
         if (!StringUtils.isBlank(receiptLineCSVWrapper.getItem())) {
             Item item =
-                    inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), receiptLineCSVWrapper.getItem());
+                    inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), receipt.getClientId(),  receiptLineCSVWrapper.getItem());
             receiptLine.setItemId(item.getId());
 
 

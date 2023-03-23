@@ -104,7 +104,7 @@ public class TestCreatingInventoryAdjustmentThreshold extends TestScenario{
     }
 
     private Item assertItem(Warehouse warehouse, String itemName) {
-        Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), itemName);
+        Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), null, itemName);
 
         if (Objects.isNull(item)) {
             throw TestFailException.raiseException("Can't find item by name: " + itemName);

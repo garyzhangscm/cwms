@@ -30,9 +30,11 @@ public interface ItemPackageTypeRepository extends JpaRepository<ItemPackageType
 
     @Query("select itemPackageType from ItemPackageType itemPackageType " +
            " where itemPackageType.name = :name and itemPackageType.item.id = :itemId and itemPackageType.warehouseId = :warehouseId")
-    ItemPackageType findByNaturalKeys(Long warehouseId, String name, Long itemId);
+    ItemPackageType findByNaturalKeys(Long warehouseId, Long itemId, String name);
 
     @Query("select itemPackageType from ItemPackageType itemPackageType " +
-            " where itemPackageType.name = :name and itemPackageType.item.name = :itemName and itemPackageType.warehouseId = :warehouseId")
-    ItemPackageType findByNaturalKeys(Long warehouseId, String name, String itemName);
+            " where itemPackageType.name = :name and itemPackageType.item.name = :itemName " +
+            "   and itemPackageType.warehouseId = :warehouseId" +
+            "   and itemPackageType.clientId = :clientId")
+    ItemPackageType findByNaturalKeys(Long warehouseId, Long clientId, String itemName, String name);
 }

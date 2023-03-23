@@ -86,7 +86,7 @@ public class InventoryServiceRestemplateClient {
     }
 
     @Cacheable(cacheNames = "InboundService_Item", unless="#result == null" )
-    public Item getItemByName(Long warehouseId, String name) {
+    public Item getItemByName(Long warehouseId, Long clientId, String name) {
         logger.debug("Start to get item by name {} / {}",
                 warehouseId, name);
 
@@ -98,6 +98,9 @@ public class InventoryServiceRestemplateClient {
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"))
                             .queryParam("warehouseId", warehouseId);
 
+            if (Objects.nonNull(clientId)) {
+                builder = builder.queryParam("clientIds", String.valueOf(clientId));
+            }
 
             ResponseBodyWrapper<List<Item>> responseBodyWrapper
                     = restTemplateProxy.getRestTemplate().exchange(

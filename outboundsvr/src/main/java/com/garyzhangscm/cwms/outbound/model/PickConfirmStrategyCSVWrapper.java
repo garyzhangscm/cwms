@@ -38,6 +38,8 @@ public class PickConfirmStrategyCSVWrapper  implements Serializable {
     private Boolean confirmLocationFlag;
     private Boolean confirmLocationCodeFlag;
 
+    private String client;
+
     public String getCompany() {
         return company;
     }
@@ -132,5 +134,13 @@ public class PickConfirmStrategyCSVWrapper  implements Serializable {
 
     public void setConfirmLocationCodeFlag(Boolean confirmLocationCodeFlag) {
         this.confirmLocationCodeFlag = confirmLocationCodeFlag;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 }

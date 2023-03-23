@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.adminserver.service;
 
-import com.garyzhangscm.cwms.adminserver.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.model.*;
 import com.garyzhangscm.cwms.adminserver.model.wms.Item;
@@ -105,7 +104,7 @@ public class ShippingInventoryBillingService implements BillingService {
         ).forEach(
                 billableActivity -> {
                     Item item = inventoryServiceRestemplateClient.getItemByName(
-                            warehouseId,  billableActivity.getItemName()
+                            warehouseId,  clientId, billableActivity.getItemName()
                     );
                     logger.debug("Get item by name : {} / {}, item\n{}",
                             warehouseId,

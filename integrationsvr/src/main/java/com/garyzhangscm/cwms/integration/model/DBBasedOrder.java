@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
@@ -219,7 +220,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
 
     public Order convertToOrder(
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
-            InventoryServiceRestemplateClient inventoryServiceRestemplateClient) {
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+            CommonServiceRestemplateClient commonServiceRestemplateClient) {
         Order order = new Order();
 
         String[] fieldNames = {
@@ -247,7 +249,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
         // Copy each order line as well
         getOrderLines().forEach(dbBasedOrderLine -> {
             OrderLine orderLine = dbBasedOrderLine.convertToOrderLine(order, warehouseLayoutServiceRestemplateClient,
-                    inventoryServiceRestemplateClient);
+                    inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient);
             order.getOrderLines().add(orderLine);
         });
 

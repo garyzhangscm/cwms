@@ -42,7 +42,7 @@ public class RoleMenuService {
         if (Objects.isNull(roleMenu)) {
             return false;
         }
-        return roleMenu.getDisplayOnlyFlag();
+        return Boolean.TRUE.equals(roleMenu.getDisplayOnlyFlag());
     }
 
 

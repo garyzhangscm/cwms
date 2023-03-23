@@ -92,12 +92,12 @@ public class OrderLineService{
         return orderLines;
     }
 
-    public List<OrderLine> findAll(Long warehouseId, Long shipmentId,
+    public List<OrderLine> findAll(Long warehouseId, Long clientId,Long shipmentId,
                                    String orderNumber, String itemName) {
-        return findAll(warehouseId, shipmentId, orderNumber, itemName,true);
+        return findAll(warehouseId, clientId, shipmentId, orderNumber, itemName,true);
     }
 
-    public List<OrderLine> findAll(Long warehouseId, Long shipmentId,
+    public List<OrderLine> findAll(Long warehouseId, Long clientId, Long shipmentId,
                                    String orderNumber, String itemName,
                                    boolean includeDetails) {
 
@@ -117,6 +117,12 @@ public class OrderLineService{
                         predicates.add(criteriaBuilder.notEqual(joinShipmentLine.get("status"), ShipmentLineStatus.CANCELLED));
 
                     }
+                    if (Objects.nonNull(clientId)) {
+
+                        Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("clientId"), clientId));
+                    }
 
                     if (StringUtils.isNotBlank(orderNumber)) {
 
@@ -130,7 +136,7 @@ public class OrderLineService{
                     if (StringUtils.isNotBlank(itemName)) {
 
                         Item item = inventoryServiceRestemplateClient.getItemByName(
-                                warehouseId, itemName
+                                warehouseId, clientId, itemName
                         );
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
 
@@ -363,7 +369,8 @@ public class OrderLineService{
         }
         if (!StringUtils.isBlank(orderLineCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(
-                    warehouseId, orderLineCSVWrapper.getItem());
+                    warehouseId, order.getClientId(),
+                    orderLineCSVWrapper.getItem());
             orderLine.setItemId(item.getId());
 
             long unitOfMeasureQuantity = 1l;
@@ -485,7 +492,7 @@ public class OrderLineService{
     public List<OrderLine> findProductionPlanCandidate( Long warehouseId,
                                                         String orderNumber,
                                                         String itemName) {
-        List<OrderLine> orderLines = findAll(warehouseId, null, orderNumber, itemName);
+        List<OrderLine> orderLines = findAll(warehouseId, null, null, orderNumber, itemName);
         logger.debug("Find {} candidate by parameters {}, {}, {}",
                 orderLines.size(), warehouseId, orderNumber, itemName);
         return orderLines.stream().filter(orderLine -> isProductionPlanCandidate(orderLine))

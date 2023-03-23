@@ -31,6 +31,6 @@ public interface ReceiptRepository extends JpaRepository<Receipt, Long>, JpaSpec
     @Query("select r from Receipt r where r.warehouseId = :warehouseId")
     List<Receipt> findAll(Long warehouseId);
 
-    @Query("select r from Receipt r where r.warehouseId = :warehouseId and r.number = :number")
-    Receipt findByNumber(Long warehouseId, String number);
+    @Query("select r from Receipt r where r.warehouseId = :warehouseId and r.number = :number and r.clientId = :clientId")
+    Receipt findByNumber(Long warehouseId, Long clientId, String number);
 }

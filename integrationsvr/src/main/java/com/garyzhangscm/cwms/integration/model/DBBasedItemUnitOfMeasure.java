@@ -75,6 +75,13 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
     @JoinColumn(name = "integration_item_package_type_id")
     private DBBasedItemPackageType itemPackageType;
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Column(name = "client_name")
+    private String clientName;
+
+
     @Column(name = "quantity")
     private Integer quantity;
 
@@ -169,10 +176,24 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
             logger.debug("Will get item by company id {}, warehouse id {}, item name: {}",
                     companyId, warehouseId, getItemName());
             if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+                Long clientId = null;
+                if (Objects.nonNull(getClientId())) {
+                    clientId = getClientId();
+                }
+                else if (Strings.isNotBlank(getClientName())) {
+                    Client client = commonServiceRestemplateClient.getClientByName(
+                            getWarehouseId(), getClientName()
+                    );
+                    if (Objects.nonNull(client)) {
+                        clientId = client.getId();
+                    }
+                }
+
                 itemUnitOfMeasure.setItemId(
                         inventoryServiceRestemplateClient.getItemByName(
                                 companyId,
                                 warehouseId,
+                                clientId,
                                 getItemName()).getId()
                 );
             }
@@ -400,5 +421,21 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
     public String getItemPackageTypeReference() {
         return Objects.isNull(itemPackageType) ? "N/A" :
                 Objects.isNull(itemPackageType.getName()) ? "NULL/NAME" : itemPackageType.getName();
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 }

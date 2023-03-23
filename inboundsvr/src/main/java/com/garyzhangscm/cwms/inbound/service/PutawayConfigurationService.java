@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inbound.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.PutawayException;
@@ -26,6 +27,7 @@ import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.PutawayConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,8 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private PutawayConfigurationStrategyService putawayConfigurationStrategyService;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     @Autowired
     private FileService fileService;
@@ -69,6 +73,7 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     }
 
     public List<PutawayConfiguration> findAll(Long warehouseId,
+                                              Long clientId,
                                               Integer sequence,
                                               String itemName,
                                               String itemFamilyName,
@@ -84,9 +89,15 @@ public class PutawayConfigurationService implements TestDataInitiableService{
                         predicates.add(criteriaBuilder.equal(root.get("sequence"), sequence));
 
                     }
+                    if (clientId != null) {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+
+                    }
 
                     if (!StringUtils.isBlank(itemName) && warehouseId != null) {
-                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemName);
+                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId,
+                                Objects.isNull(clientId) ?  null : clientId,
+                                itemName);
                         if (item != null) {
                             predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
                         }
@@ -242,9 +253,16 @@ public class PutawayConfigurationService implements TestDataInitiableService{
 
         putawayConfiguration.setWarehouseId(warehouse.getId());
 
+        Client client = null;
+        if (Strings.isNotBlank(putawayConfigurationCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(warehouse.getId(),
+                    putawayConfigurationCSVWrapper.getClient());
+        }
+
         if (!StringUtils.isBlank(putawayConfigurationCSVWrapper.getItem())) {
             Item item =
-                    inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), putawayConfigurationCSVWrapper.getItem());
+                    inventoryServiceRestemplateClient.getItemByName(warehouse.getId(),
+                            Objects.isNull(client) ? null : client.getId(), putawayConfigurationCSVWrapper.getItem());
             if (item != null) {
                 putawayConfiguration.setItemId(item.getId());
             }

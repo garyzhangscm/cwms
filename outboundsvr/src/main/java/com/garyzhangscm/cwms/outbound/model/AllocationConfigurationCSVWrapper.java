@@ -41,6 +41,8 @@ public class AllocationConfigurationCSVWrapper {
     private String warehouse;
     private String company;
 
+    private String client;
+
     @Override
     public String toString() {
         return new StringBuilder()
@@ -152,5 +154,13 @@ public class AllocationConfigurationCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 }

@@ -125,16 +125,17 @@ public class CustomerReturnOrderService{
         return customerReturnOrders;
     }
 
-    public CustomerReturnOrder findByNumber(Long warehouseId, String number, boolean loadDetails) {
-        CustomerReturnOrder customerReturnOrder = customerReturnOrderRepository.findByWarehouseIdAndNumber(warehouseId, number);
+    public CustomerReturnOrder findByNumber(Long warehouseId, Long clientId, String number,  boolean loadDetails) {
+        CustomerReturnOrder customerReturnOrder = customerReturnOrderRepository.findByWarehouseIdAndClientIdAndNumber(
+                warehouseId, clientId, number);
         if (customerReturnOrder != null && loadDetails) {
             loadAttribute(customerReturnOrder);
         }
         return customerReturnOrder;
     }
 
-    public CustomerReturnOrder findByNumber(Long warehouseId, String number) {
-        return findByNumber(warehouseId, number, true);
+    public CustomerReturnOrder findByNumber(Long warehouseId, Long clientId, String number) {
+        return findByNumber(warehouseId, clientId, number, true);
     }
 
 
@@ -186,8 +187,10 @@ public class CustomerReturnOrderService{
     @Transactional
     public CustomerReturnOrder saveOrUpdate(CustomerReturnOrder customerReturnOrder, boolean loadAttribute) {
         if (customerReturnOrder.getId() == null &&
-                findByNumber(customerReturnOrder.getWarehouseId(),customerReturnOrder.getNumber(), false) != null) {
-            customerReturnOrder.setId(findByNumber(customerReturnOrder.getWarehouseId(),customerReturnOrder.getNumber(), false).getId());
+                findByNumber(customerReturnOrder.getWarehouseId(),
+                        customerReturnOrder.getClientId(), customerReturnOrder.getNumber(), false) != null) {
+            customerReturnOrder.setId(findByNumber(customerReturnOrder.getWarehouseId(),
+                    customerReturnOrder.getClientId(), customerReturnOrder.getNumber(), false).getId());
         }
         if (Objects.isNull(customerReturnOrder.getId())) {
             // we are creating a new customer return, let's setup the QC quantity
@@ -487,7 +490,7 @@ public class CustomerReturnOrderService{
         // if the receipt already exists, make sure its status is
         // still open
         CustomerReturnOrder existingCustomerReturnOrder = findByNumber(customerReturnOrder.getWarehouseId(),
-                customerReturnOrder.getNumber(), false);
+                customerReturnOrder.getClientId(), customerReturnOrder.getNumber(), false);
         if (Objects.nonNull(existingCustomerReturnOrder) &&
                 !existingCustomerReturnOrder.getStatus().equals(ReceiptStatus.OPEN)) {
             throw ReceiptOperationException.raiseException("Customer return order " + existingCustomerReturnOrder.getNumber() +

@@ -181,9 +181,23 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
             // ok this is a standalone transaction to create / modify the item package type
             // we will need to make sure the item already exists
             if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+
+                Long clientId = null;
+                if (Objects.nonNull(getClientId())) {
+                    clientId = getClientId();
+                }
+                else if (Strings.isNotBlank(getClientName())) {
+                    Client client = commonServiceRestemplateClient.getClientByName(
+                            getWarehouseId(), getClientName()
+                    );
+                    if (Objects.nonNull(client)) {
+                        clientId = client.getId();
+                    }
+                }
                 itemPackageType.setItemId(
                         inventoryServiceRestemplateClient.getItemByName(
                                 companyId, warehouseId,
+                                clientId,
                                 getItemName()).getId()
                 );
             }

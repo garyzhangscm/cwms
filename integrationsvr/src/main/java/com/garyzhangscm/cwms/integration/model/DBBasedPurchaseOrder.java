@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
@@ -101,7 +102,8 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
 
     public PurchaseOrder convertToPurchaseOrder(
             WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
-            InventoryServiceRestemplateClient inventoryServiceRestemplateClient) {
+            InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+            CommonServiceRestemplateClient commonServiceRestemplateClient) {
         PurchaseOrder purchaseOrder = new PurchaseOrder();
 
         String[] fieldNames = {
@@ -127,7 +129,8 @@ public class DBBasedPurchaseOrder extends AuditibleEntity<String> implements Ser
         getPurchaseOrderLines().forEach(dbBasedPurchaseOrderLine -> {
             PurchaseOrderLine purchaseOrderLine = dbBasedPurchaseOrderLine.convertToPurchaseOrderLine(
                     purchaseOrder, warehouseLayoutServiceRestemplateClient,
-                    inventoryServiceRestemplateClient
+                    inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient
             );
             purchaseOrder.getPurchaseOrderLines().add(purchaseOrderLine);
         });

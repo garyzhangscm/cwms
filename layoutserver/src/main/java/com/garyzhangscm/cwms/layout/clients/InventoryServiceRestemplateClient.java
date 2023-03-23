@@ -82,7 +82,7 @@ public class InventoryServiceRestemplateClient {
 
     }
     @Cacheable(cacheNames = "LayoutService_Item", unless="#result == null")
-    public Item getItemByName(Long warehouseId, String name) {
+    public Item getItemByName(Long warehouseId, Long clientId, String name) {
 
         try {
             UriComponentsBuilder builder =
@@ -91,6 +91,10 @@ public class InventoryServiceRestemplateClient {
                             .path("/api/inventory/items")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"))
                             .queryParam("warehouseId", warehouseId);
+
+            if (Objects.nonNull(clientId)) {
+                builder = builder.queryParam("clientIds", String.valueOf(clientId));
+            }
 
 
             // logger.debug("Start to get item: {} / {}", name, warehouseId);

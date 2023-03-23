@@ -169,9 +169,6 @@ public class ItemUnitOfMeasureService {
     }
      **/
 
-    private ItemUnitOfMeasure convertFromWrapper(Long warehouseId, ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
-        return convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, false);
-    }
     private ItemUnitOfMeasure convertFromWrapper(Long warehouseId,
                                                  ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper,
                                                  boolean autoCreateItemPackageType) {
@@ -188,6 +185,12 @@ public class ItemUnitOfMeasureService {
         Warehouse warehouse =
                 warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
 
+        Client client = null;
+        if (Strings.isNotBlank(itemUnitOfMeasureCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(
+                    warehouseId, itemUnitOfMeasureCSVWrapper.getClient()
+            );
+        }
         itemUnitOfMeasure.setCompanyId(warehouse.getCompanyId());
         itemUnitOfMeasure.setWarehouseId(warehouse.getId());
 
@@ -233,8 +236,10 @@ public class ItemUnitOfMeasureService {
         }
         if (Strings.isNotBlank(itemUnitOfMeasureCSVWrapper.getItem()) &&  Strings.isNotBlank(itemUnitOfMeasureCSVWrapper.getItemPackageType())) {
             ItemPackageType itemPackageType = itemPackageTypeService.findByNaturalKeys(
-                    warehouse.getId(), itemUnitOfMeasureCSVWrapper.getItemPackageType(),
-                    itemUnitOfMeasureCSVWrapper.getItem() );
+                    warehouse.getId(),
+                    Objects.isNull(client) ? null : client.getId(),
+                    itemUnitOfMeasureCSVWrapper.getItem(),
+                    itemUnitOfMeasureCSVWrapper.getItemPackageType() );
             // if the item package type is not created yet, let's create the
             // item package type first. We allow the user to create the item package type
             // when load item unit of measure from CSV files
@@ -250,16 +255,6 @@ public class ItemUnitOfMeasureService {
     private ItemPackageType createItemPackageType(Long warehouseId, ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
 
         return itemPackageTypeService.createItemPackageType(warehouseId, itemUnitOfMeasureCSVWrapper);
-    }
-
-
-    public List<ItemUnitOfMeasure> saveItemUnitOfMeasureData(Long warehouseId,
-                                                             File file) throws IOException {
-
-        List<ItemUnitOfMeasureCSVWrapper> itemUnitOfMeasureCSVWrappers = loadData(file);
-        return itemUnitOfMeasureCSVWrappers.stream()
-                .map(itemUnitOfMeasureCSVWrapper -> saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true)))
-                .collect(Collectors.toList());
     }
 
 

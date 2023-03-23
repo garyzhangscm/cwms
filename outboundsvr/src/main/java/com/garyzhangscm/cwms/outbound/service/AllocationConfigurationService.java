@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -318,9 +319,19 @@ public class AllocationConfigurationService implements TestDataInitiableService 
 
         allocationConfiguration.setWarehouseId(warehouse.getId());
 
+        Client client = null;
+        if (Strings.isNotBlank(allocationConfigurationCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(),
+                    allocationConfigurationCSVWrapper.getClient()
+            );
+        }
+
         if (!StringUtils.isBlank(allocationConfigurationCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(
-                    warehouse.getId(), allocationConfigurationCSVWrapper.getItem());
+                    warehouse.getId(),
+                    Objects.isNull(client) ? null : client.getId(),
+                    allocationConfigurationCSVWrapper.getItem());
             if (item != null) {
                 allocationConfiguration.setItemId(item.getId());
             }

@@ -150,7 +150,9 @@ public class DBBasedOrderIntegration {
         try {
 
 
-            Order order = dbBasedOrder.convertToOrder(warehouseLayoutServiceRestemplateClient, inventoryServiceRestemplateClient);
+            Order order = dbBasedOrder.convertToOrder(warehouseLayoutServiceRestemplateClient,
+                    inventoryServiceRestemplateClient,
+                    commonServiceRestemplateClient);
 
             // we will support client to send name
             // instead of id for the following field . In such case, we will
@@ -281,7 +283,9 @@ public class DBBasedOrderIntegration {
             if (Strings.isNotBlank(dbBasedOrderLine.getItemName())) {
                 item = inventoryServiceRestemplateClient.getItemByName(
                         warehouse.getCompany().getId(),
-                        orderLine.getWarehouseId(), dbBasedOrderLine.getItemName()
+                        orderLine.getWarehouseId(),
+                        dbBasedOrderLine.getOrder().getCarrierId(),
+                        dbBasedOrderLine.getItemName()
                 );
             }
             else if (Strings.isNotBlank(dbBasedOrderLine.getItemQuickbookListId())) {

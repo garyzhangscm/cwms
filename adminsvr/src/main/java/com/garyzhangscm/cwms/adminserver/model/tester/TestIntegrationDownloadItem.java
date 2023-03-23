@@ -104,7 +104,7 @@ public class TestIntegrationDownloadItem extends TestScenario{
                     String itemName = entry.getKey();
                     String itemFamilyName = entry.getValue();
                     // Get the item information
-                    Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), itemName);
+                    Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), null, itemName);
                     if (Objects.isNull(item)) {
                         allProcessed = false;
                         break;
