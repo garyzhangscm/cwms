@@ -1474,7 +1474,10 @@ public class ReceiptService {
                             receipt, matchedReceiptLine);
 
                     if (Objects.isNull(inventory.getLocation())) {
-                        throw ReceiptOperationException.raiseException("Can't get the location for the inventory. " +
+                        throw ReceiptOperationException.raiseException("Can't get the location " +
+                                (Strings.isBlank(inventoryCSVWrapper.getLocation()) ?
+                                        receipt.getNumber() : inventoryCSVWrapper.getLocation())
+                                  + " for the inventory. " +
                                 "if receive into the receipt, make sure that the receipt is already check in");
                     }
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.75));

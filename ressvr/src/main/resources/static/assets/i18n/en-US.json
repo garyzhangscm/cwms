@@ -2021,5 +2021,7 @@
   "BILLABLE-CATEGORY-STORAGE_FEE_BY_PALLET_COUNT": "Storage fee by Pallet Count",
   "receipt":"Receipt",
   "receiving-inventory":"Receiving Inventory",
-  "displayOnly": "Display Only"
+  "displayOnly": "Display Only",
+  "unit-of-measure.defaultForDisplay": "Default For Display",
+  "unit-of-measure.caseFlag": "Case UOM"
 }

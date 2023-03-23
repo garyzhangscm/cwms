@@ -2021,5 +2021,7 @@
   "BILLABLE-CATEGORY-STORAGE_FEE_BY_PALLET_COUNT": "按使用的托盘数量计费",
   "receipt":"入库单",
   "receiving-inventory":"收货",
-  "displayOnly": "仅显示"
+  "displayOnly": "仅显示",
+  "unit-of-measure.defaultForDisplay": "显示的UOM",
+  "unit-of-measure.caseFlag": "箱规"
 }
