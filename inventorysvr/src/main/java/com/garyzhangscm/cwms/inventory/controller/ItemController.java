@@ -61,7 +61,8 @@ public class ItemController {
                                    @RequestParam(name="itemIdList", required = false, defaultValue = "") String itemIdList,
                                    @RequestParam(name="companyItem", required = false, defaultValue = "") Boolean companyItem,
                                    @RequestParam(name="warehouseSpecificItem", required = false, defaultValue = "") Boolean warehouseSpecificItem,
-                                   @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+                                   @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                   ClientRestriction clientRestriction) {
 
         // company ID or warehouse id is required
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
@@ -77,17 +78,19 @@ public class ItemController {
         }
 
         return itemService.findAll(companyId, warehouseId, name, quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
-                warehouseSpecificItem, description,  loadDetails);
+                warehouseSpecificItem, description,  loadDetails, clientRestriction);
     }
 
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/items-query/by-keyword", method = RequestMethod.GET)
     public List<Item> findByKeyword(@RequestParam Long companyId,
                                     @RequestParam Long warehouseId,
                                     @RequestParam String keyword,
-                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                    ClientRestriction clientRestriction) {
 
-        return itemService.findByKeyword(companyId, warehouseId, keyword, loadDetails);
+        return itemService.findByKeyword(companyId, warehouseId, keyword, loadDetails, clientRestriction);
 
     }
     @RequestMapping(value="/items/{id}", method = RequestMethod.GET)

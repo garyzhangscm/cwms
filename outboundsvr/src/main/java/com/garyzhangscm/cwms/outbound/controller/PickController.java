@@ -38,6 +38,7 @@ public class PickController {
 
     @RequestMapping(value="/picks", method = RequestMethod.GET)
     public List<Pick> findAllPicks(@RequestParam Long warehouseId,
+                                   @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                    @RequestParam(name="number", required = false, defaultValue = "") String number,
                                    @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
@@ -69,7 +70,7 @@ public class PickController {
         if (StringUtils.isNotBlank(containerId)) {
             return pickService.getPicksByContainer(warehouseId, containerId);
         }
-        return pickService.findAll(warehouseId, number, orderId, orderNumber, shipmentId, waveId, listId,cartonizationId,  ids,
+        return pickService.findAll(warehouseId, clientId, number, orderId, orderNumber, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber, itemNumber,

@@ -56,6 +56,13 @@ public class PutawayConfiguration {
     private Item item;
 
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
+
     @Column(name = "item_family_id")
     private Long itemFamilyId;
 
@@ -244,5 +251,21 @@ public class PutawayConfiguration {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

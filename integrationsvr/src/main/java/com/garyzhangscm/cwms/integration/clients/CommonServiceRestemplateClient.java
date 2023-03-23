@@ -55,22 +55,29 @@ public class CommonServiceRestemplateClient {
 
     }
     @Cacheable(cacheNames = "IntegrationService_Client", unless="#result == null")
-    public Client getClientByName(Long warehouseId, String name) throws UnsupportedEncodingException {
+    public Client getClientByName(Long warehouseId, String name)   {
         UriComponentsBuilder builder =
-                UriComponentsBuilder
-                        .fromHttpUrl("http://zuulserver:5555/api/common/clients")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+                null;
+        try {
+            builder = UriComponentsBuilder
+                    .fromHttpUrl("http://zuulserver:5555/api/common/clients")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
-        ResponseBodyWrapper<List<Client>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
-        List<Client> clients = responseBodyWrapper.getData();
-        if (clients.size() == 0) {
-            return null;
+            ResponseBodyWrapper<List<Client>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
+            List<Client> clients = responseBodyWrapper.getData();
+            if (clients.size() == 0) {
+                return null;
+            }
+            else {
+                return clients.get(0);
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
-        else {
-            return clients.get(0);
-        }
+        return null;
+
     }
     @Cacheable(cacheNames = "IntegrationService_Supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {

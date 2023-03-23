@@ -2018,5 +2018,8 @@
   "inventoryInformationFromWMS": "从WMS中读取库存信息",
   "menu.main.billing.billable-activity": "付费项目",
   "totalLPNs": "LPNs总数",
-  "BILLABLE-CATEGORY-STORAGE_FEE_BY_PALLET_COUNT": "按使用的托盘数量计费"
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_PALLET_COUNT": "按使用的托盘数量计费",
+  "receipt":"入库单",
+  "receiving-inventory":"收货",
+  "displayOnly": "仅显示"
 }

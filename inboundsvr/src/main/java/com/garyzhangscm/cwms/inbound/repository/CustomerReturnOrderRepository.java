@@ -32,6 +32,6 @@ import java.util.List;
 @Repository
 public interface CustomerReturnOrderRepository extends JpaRepository<CustomerReturnOrder, Long>, JpaSpecificationExecutor<CustomerReturnOrder> {
 
-    CustomerReturnOrder findByWarehouseIdAndNumber(Long warehouseId, String number);
+    CustomerReturnOrder findByWarehouseIdAndClientIdAndNumber(Long warehouseId, Long clientId,  String number);
 
 }

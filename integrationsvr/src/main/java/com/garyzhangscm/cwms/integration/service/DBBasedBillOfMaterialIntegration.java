@@ -220,7 +220,7 @@ public class DBBasedBillOfMaterialIntegration {
 
         billOfMaterial.setItemId(
                 inventoryServiceRestemplateClient.getItemByName(
-                        warehouse.getCompany().getId(), warehouseId, dbBasedBillOfMaterial.getItemName()
+                        warehouse.getCompany().getId(), warehouseId, null, dbBasedBillOfMaterial.getItemName()
                 ).getId()
         );
 
@@ -274,7 +274,7 @@ public class DBBasedBillOfMaterialIntegration {
         if(Objects.isNull(billOfMaterialLine.getItemId())) {
             billOfMaterialLine.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
-                            warehouse.getCompany().getId(), warehouse.getId(), dbBasedBillOfMaterialLine.getItemName()
+                            warehouse.getCompany().getId(), warehouse.getId(), null,  dbBasedBillOfMaterialLine.getItemName()
                     ).getId()
             );
         }
@@ -303,7 +303,7 @@ public class DBBasedBillOfMaterialIntegration {
             billOfMaterialByProduct.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
                             warehouse.getCompany().getId(),
-                            warehouse.getId(), dbBasedBillOfMaterialByProduct.getItemName()
+                            warehouse.getId(), null, dbBasedBillOfMaterialByProduct.getItemName()
                     ).getId()
             );
         }

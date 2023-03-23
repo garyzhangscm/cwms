@@ -568,6 +568,8 @@ public class UserService  implements TestDataInitiableService{
 
         authServiceRestemplateClient.changeUserAuth(userAuth);
 
+        saveOrUpdate(user);
+
 
     }
 

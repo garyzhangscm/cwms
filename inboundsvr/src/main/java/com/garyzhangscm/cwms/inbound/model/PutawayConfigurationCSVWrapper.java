@@ -23,6 +23,8 @@ public class PutawayConfigurationCSVWrapper {
 
     private Integer sequence;
 
+    private String client;
+
     private String item;
 
     private String itemFamily;
@@ -115,5 +117,13 @@ public class PutawayConfigurationCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 }

@@ -319,7 +319,7 @@ public class TestBasicReceivingPutaway extends TestScenario{
             String itemName = itemNames[i];
             Long quantity = expectedQuantities[i];
 
-            Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), itemName);
+            Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), null, itemName);
             ReceiptLine receiptLine = new ReceiptLine(warehouse, receipt, String.valueOf(i),
                     item, quantity, overReceivingQuantity, 0.0);
             receipt.addReceiptLine(receiptLine);

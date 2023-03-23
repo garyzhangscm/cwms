@@ -169,7 +169,7 @@ public class DBBasedPurchaseOrderIntegration {
             PurchaseOrder purchaseOrder
                     = dbBasedPurchaseOrder.convertToPurchaseOrder(
                             warehouseLayoutServiceRestemplateClient,
-                    inventoryServiceRestemplateClient);
+                    inventoryServiceRestemplateClient, commonServiceRestemplateClient);
 
             // we will support host to send name
             // instead of id for the following field . In such case, we will
@@ -295,7 +295,9 @@ public class DBBasedPurchaseOrderIntegration {
             else if (Strings.isNotBlank(dbBasedPurchaseOrderLine.getItemName())) {
                 item = inventoryServiceRestemplateClient.getItemByName(
                         warehouse.getCompany().getId(),
-                        purchaseOrderLine.getWarehouseId(), dbBasedPurchaseOrderLine.getItemName()
+                        purchaseOrderLine.getWarehouseId(),
+                        dbBasedPurchaseOrderLine.getPurchaseOrder().getClientId(),
+                        dbBasedPurchaseOrderLine.getItemName()
                 );
             }
             else {

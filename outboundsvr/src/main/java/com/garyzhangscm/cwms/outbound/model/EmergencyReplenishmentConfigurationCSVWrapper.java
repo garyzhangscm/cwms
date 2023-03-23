@@ -11,6 +11,8 @@ public class EmergencyReplenishmentConfigurationCSVWrapper {
 
     private String itemFamily;
 
+    private String client;
+
 
     private String sourceLocation;
     private String sourceLocationGroup;
@@ -97,5 +99,13 @@ public class EmergencyReplenishmentConfigurationCSVWrapper {
 
     public void setUnitOfMeasure(String unitOfMeasure) {
         this.unitOfMeasure = unitOfMeasure;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 }

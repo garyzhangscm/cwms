@@ -1013,7 +1013,7 @@ public class InventoryService {
             if (!itemMap.containsKey(inventoryCSVWrapper.getItem()) && Objects.nonNull(warehouse)) {
 
                 Item item = itemService.findByName(warehouse.getId(),
-                        client.getId(), inventoryCSVWrapper.getItem());
+                        Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getItem());
                 if (Objects.isNull(item)) {
 
                     logger.debug("skip the record as we can't find the item by name {} from warehouse {} / {}",
@@ -1027,8 +1027,9 @@ public class InventoryService {
                     && Objects.nonNull(warehouse)) {
                 ItemPackageType itemPackageType = itemPackageTypeService.findByNaturalKeys(
                         warehouse.getId(),
-                        inventoryCSVWrapper.getItemPackageType(),
-                        inventoryCSVWrapper.getItem());
+                        Objects.isNull(client) ? null : client.getId(),
+                        inventoryCSVWrapper.getItem(),
+                        inventoryCSVWrapper.getItemPackageType());
                 if (Objects.isNull(itemPackageType)) {
                     logger.debug("skip the record as we can't find item package type by " +
                             "warehouse {} / {}, item {}, item package type {}",
@@ -1156,8 +1157,9 @@ public class InventoryService {
             inventory.setItemPackageType(
                     itemPackageTypeService.findByNaturalKeys(
                             warehouseId,
-                            inventoryCSVWrapper.getItemPackageType(),
-                            inventoryCSVWrapper.getItem()));
+                            Objects.isNull(client) ? null : client.getId(),
+                            inventoryCSVWrapper.getItem(),
+                            inventoryCSVWrapper.getItemPackageType()));
         }
         else {
             // set the inventory's item package type to the item's default item package type

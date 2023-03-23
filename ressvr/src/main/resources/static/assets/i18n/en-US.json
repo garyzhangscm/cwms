@@ -2018,5 +2018,8 @@
   "inventoryInformationFromWMS": "Get Inventory Information from WMS",
   "menu.main.billing.billable-activity": "Billable Activity",
   "totalLPNs": "Total LPNs",
-  "BILLABLE-CATEGORY-STORAGE_FEE_BY_PALLET_COUNT": "Storage fee by Pallet Count"
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_PALLET_COUNT": "Storage fee by Pallet Count",
+  "receipt":"Receipt",
+  "receiving-inventory":"Receiving Inventory",
+  "displayOnly": "Display Only"
 }

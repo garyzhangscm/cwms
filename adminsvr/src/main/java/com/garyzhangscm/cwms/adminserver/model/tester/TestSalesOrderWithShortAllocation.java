@@ -179,7 +179,7 @@ public class TestSalesOrderWithShortAllocation extends TestScenario{
             Long quantity = inventoryQuantities[i];
             String locationName = locationNames[i];
 
-            Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), itemName);
+            Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), null, itemName);
             Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
                     warehouse.getId(), locationName
             );
@@ -303,7 +303,7 @@ public class TestSalesOrderWithShortAllocation extends TestScenario{
             String itemName = itemNames[i];
             Long quantity = orderQuantities[i];
 
-            Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), itemName);
+            Item item = inventoryServiceRestemplateClient.getItemByName(warehouse.getId(), null, itemName);
             OrderLine orderLine = new OrderLine(warehouse, order, String.valueOf(i),
                     item, quantity, inventoryStatus);
             order.addOrderLine(orderLine);

@@ -101,7 +101,7 @@ public class IntegrationService {
                     item.getWarehouseId(), item.getItemPackageTypes().get(0).getName(), item.getName());
             ItemPackageType itemPackageType =
                     itemPackageTypeService.findByNaturalKeys(
-                            item.getWarehouseId(), item.getItemPackageTypes().get(0).getName(), item.getName());
+                            item.getWarehouseId(), item.getClientId(), item.getName(), item.getItemPackageTypes().get(0).getName());
             logger.debug("get itemPackageType: {}",itemPackageType);
             itemUnitOfMeasure.setItemPackageType(itemPackageType);
         }

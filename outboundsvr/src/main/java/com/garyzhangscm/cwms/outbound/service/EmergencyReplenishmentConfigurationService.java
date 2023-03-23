@@ -29,6 +29,7 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
 import com.garyzhangscm.cwms.outbound.repository.EmergencyReplenishmentConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -304,6 +305,12 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         emergencyReplenishmentConfiguration.setWarehouseId(warehouse.getId());
 
+        Client client = null;
+        if (Strings.isNotBlank(emergencyReplenishmentConfigurationCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(warehouse.getId(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getClient());
+        }
+
         if (StringUtils.isNotBlank(emergencyReplenishmentConfigurationCSVWrapper.getUnitOfMeasure())) {
             UnitOfMeasure unitOfMeasure =
                     commonServiceRestemplateClient.getUnitOfMeasureByName(
@@ -317,7 +324,9 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
 
         if (!StringUtils.isBlank(emergencyReplenishmentConfigurationCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(
-                    warehouse.getId(), emergencyReplenishmentConfigurationCSVWrapper.getItem());
+                    warehouse.getId(),
+                    Objects.isNull(client) ? null : client.getId(),
+                    emergencyReplenishmentConfigurationCSVWrapper.getItem());
             if (item != null) {
                 emergencyReplenishmentConfiguration.setItemId(item.getId());
             }

@@ -26,6 +26,7 @@ import java.io.Serializable;
 public class InventoryCSVWrapper implements Serializable {
 
     private String receipt;
+    private String client;
 
     private String lpn;
 
@@ -142,5 +143,13 @@ public class InventoryCSVWrapper implements Serializable {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 }

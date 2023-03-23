@@ -264,7 +264,9 @@ public class DBBasedReceiptIntegration {
             receiptLine.setItemId(
                         inventoryServiceRestemplateClient.getItemByName(
                                 warehouse.getCompany().getId(),
-                                warehouse.getId(), dbBasedReceiptLine.getItemName()
+                                warehouse.getId(),
+                                dbBasedReceiptLine.getReceipt().getClientId(),
+                                dbBasedReceiptLine.getItemName()
                         ).getId()
                 );
         }

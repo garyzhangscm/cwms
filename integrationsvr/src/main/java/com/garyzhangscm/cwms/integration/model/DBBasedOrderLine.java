@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.integration.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.controller.OrderIntegrationDataController;
@@ -161,7 +162,8 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     * */
     public OrderLine convertToOrderLine(Order order,
                                         WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
-                                        InventoryServiceRestemplateClient inventoryServiceRestemplateClient
+                                        InventoryServiceRestemplateClient inventoryServiceRestemplateClient,
+                                        CommonServiceRestemplateClient commonServiceRestemplateClient
                                         ) {
 
         // company ID or company code is required
@@ -210,9 +212,24 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
                 );
             }
             else if (Strings.isNotBlank(getItemName())) {
+                // see if the client is passed in
+                Long clientId = null;
+                if (Objects.nonNull(order.getClientId())) {
+                    clientId = order.getClientId();
+                }
+                else if (Strings.isNotBlank(order.getClientName())) {
+                    Client client = commonServiceRestemplateClient.getClientByName(
+                            order.getWarehouseId(), order.getClientName()
+                    );
+                    if (Objects.nonNull(client)) {
+                        clientId = client.getId();
+                    }
+                }
                 item = inventoryServiceRestemplateClient.getItemByName(
                         getCompanyId(),
-                        orderLine.getWarehouseId(), getItemName()
+                        orderLine.getWarehouseId(),
+                        clientId,
+                        getItemName()
                 );
             }
             else {

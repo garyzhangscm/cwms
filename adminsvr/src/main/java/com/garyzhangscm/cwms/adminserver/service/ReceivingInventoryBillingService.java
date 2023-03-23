@@ -106,7 +106,7 @@ public class ReceivingInventoryBillingService implements BillingService {
         ).forEach(
                 billableActivity -> {
                     Item item = inventoryServiceRestemplateClient.getItemByName(
-                            warehouseId,  billableActivity.getItemName()
+                            warehouseId, clientId,  billableActivity.getItemName()
                     );
                     logger.debug("Get item by name : {} / {}, item\n{}",
                             warehouseId,

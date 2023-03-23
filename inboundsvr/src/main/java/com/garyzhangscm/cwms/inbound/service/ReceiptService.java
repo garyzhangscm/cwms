@@ -269,16 +269,16 @@ public class ReceiptService {
         return receipts;
     }
 
-    public Receipt findByNumber(Long warehouseId, String number, boolean loadDetails) {
-        Receipt receipt = receiptRepository.findByNumber(warehouseId, number);
+    public Receipt findByNumber(Long warehouseId, Long clientId, String number, boolean loadDetails) {
+        Receipt receipt = receiptRepository.findByNumber(warehouseId, clientId, number);
         if (receipt != null && loadDetails) {
             loadReceiptAttribute(receipt);
         }
         return receipt;
     }
 
-    public Receipt findByNumber(Long warehouseId, String number) {
-        return findByNumber(warehouseId, number, true);
+    public Receipt findByNumber(Long warehouseId, Long clientId, String number) {
+        return findByNumber(warehouseId, clientId, number, true);
     }
 
 
@@ -345,8 +345,9 @@ public class ReceiptService {
 
     @Transactional
     public Receipt saveOrUpdate(Receipt receipt, boolean loadAttribute) {
-        if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),receipt.getNumber(), false) != null) {
-            receipt.setId(findByNumber(receipt.getWarehouseId(),receipt.getNumber(), false).getId());
+        if (receipt.getId() == null && findByNumber(receipt.getWarehouseId(),
+                receipt.getClientId(), receipt.getNumber(), false) != null) {
+            receipt.setId(findByNumber(receipt.getWarehouseId(),  receipt.getClientId(), receipt.getNumber(), false).getId());
         }
         if (Objects.isNull(receipt.getId())) {
             // we are creating a new receipt, let's setup the QC quantity
@@ -1173,7 +1174,7 @@ public class ReceiptService {
         // if the receipt already exists, make sure its status is
         // still open
         Receipt existingReceipt = findByNumber(receipt.getWarehouseId(),
-                receipt.getNumber(), false);
+                receipt.getClientId(), receipt.getNumber(), false);
         if (Objects.nonNull(existingReceipt) &&
                 !existingReceipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
             throw ReceiptOperationException.raiseException("Receipt " + existingReceipt.getNumber() +
@@ -1309,7 +1310,14 @@ public class ReceiptService {
                 try {
 
                     receiptFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalReceiptLineCount) * (index));
-                    Receipt receipt = findByNumber(warehouseId, receiptLineCSVWrapper.getReceipt());
+                    Client client = null;
+                    if (Strings.isNotBlank(receiptLineCSVWrapper.getClient())) {
+                        client = commonServiceRestemplateClient.getClientByName(warehouseId,
+                                receiptLineCSVWrapper.getClient());
+                    }
+                    Receipt receipt = findByNumber(warehouseId,
+                            Objects.isNull(client) ? null : client.getId(),
+                            receiptLineCSVWrapper.getReceipt());
                     receiptFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalReceiptLineCount) * (index + 0.25));
                     if (Objects.isNull(receipt)) {
                         logger.debug("receipt {} is not created yet, let's create the order on the fly ", receiptLineCSVWrapper.getReceipt());
@@ -1411,9 +1419,15 @@ public class ReceiptService {
                                         + ", skip current line");
                     }
 
+                    Client client = null;
+                    if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
+                        client = commonServiceRestemplateClient.getClientByName(
+                                warehouseId, inventoryCSVWrapper.getClient()
+                        );
+                    }
 
                     Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId,
-                            inventoryCSVWrapper.getItem());
+                            Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getItem());
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.2));
                     if (Objects.isNull(item)) {
                         // skip the item if the name is wrong
@@ -1423,8 +1437,11 @@ public class ReceiptService {
                                 "can't find item by name " + inventoryCSVWrapper.getItem()
                                         + ", skip current line");
                     }
+
+
                     logger.debug("got item {} by name {}", item.getId(), item.getName());
-                    Receipt receipt = findByNumber(warehouseId, inventoryCSVWrapper.getReceipt());
+                    Receipt receipt = findByNumber(warehouseId,
+                            Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getReceipt());
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.4));
 
                     logger.debug("got receipt by number {}", receipt.getNumber());

@@ -91,7 +91,7 @@ public class ShortAllocationService {
     }
 
     public List<ShortAllocation> findAll(boolean loadDetails) {
-        return findAll(null, null,
+        return findAll(null, null,  null,
                 null, null, null,
                 null, null, null, false, null, loadDetails);
     }
@@ -100,7 +100,7 @@ public class ShortAllocationService {
         return findAll(true);
     }
 
-    public List<ShortAllocation> findAll(Long warehouseId,
+    public List<ShortAllocation> findAll(Long warehouseId, Long clientId,
                                          Long workOrderLineId, String workOrderLineIds,
                                          String itemNumber, Long orderId,  Long workOrderId,
                                          Long shipmentId, Long waveId, Boolean includeCancelledShortAllocation,
@@ -127,8 +127,17 @@ public class ShortAllocationService {
                     }
 
                     if (StringUtils.isNotBlank(itemNumber)) {
-                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemNumber);
+                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, clientId, itemNumber);
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
+                    }
+
+                    if (Objects.nonNull(clientId)) {
+
+                        Join<ShortAllocation, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, OrderLine> joinOrderLine = joinShipmentLine.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("clientId"), clientId));
+
                     }
 
                     if (Objects.nonNull(orderId)) {
@@ -180,25 +189,25 @@ public class ShortAllocationService {
 
 
 
-    public List<ShortAllocation> findAll(Long warehouseId,
+    public List<ShortAllocation> findAll(Long warehouseId, Long clientId,
                                          Long workOrderLineId, String workOrderLineIds,
                                          String itemNumber, Long orderId,
                                          Long workOrderId, Long shipmentId, Long waveId,
                                          Boolean includeCancelledShortAllocation,
                                          Long trailerAppointmentId) {
-        return findAll(warehouseId, workOrderLineId, workOrderLineIds,
+        return findAll(warehouseId, clientId, workOrderLineId, workOrderLineIds,
                 itemNumber, orderId,  workOrderId,
                 shipmentId, waveId, includeCancelledShortAllocation, trailerAppointmentId,
                 true);
     }
 
     public List<ShortAllocation> findByOrder(Order order) {
-        return findAll(order.getWarehouseId(), null, null,
+        return findAll(order.getWarehouseId(), null, null, null,
                 null, order.getId(),  null, null, null, null, null);
     }
 
     public List<ShortAllocation> findByShipment(Shipment shipment) {
-        return findAll(shipment.getWarehouseId(), null, null,
+        return findAll(shipment.getWarehouseId(),null, null, null,
                 null, null,  null, shipment.getId(), null, null, null);
     }
 

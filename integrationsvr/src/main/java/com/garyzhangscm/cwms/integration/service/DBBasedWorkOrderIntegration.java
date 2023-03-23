@@ -296,7 +296,7 @@ public class DBBasedWorkOrderIntegration {
 
 
         Item item = inventoryServiceRestemplateClient.getItemByName(
-                warehouse.getCompany().getId(), warehouseId, dbBasedWorkOrder.getItemName()
+                warehouse.getCompany().getId(), warehouseId, null,  dbBasedWorkOrder.getItemName()
                 );
         if (Objects.isNull(item)) {
             throw ResourceNotFoundException.raiseException("Can't find item   by " +
@@ -359,7 +359,7 @@ public class DBBasedWorkOrderIntegration {
         if(Objects.isNull(workOrderLine.getItemId())) {
 
             Item item = inventoryServiceRestemplateClient.getItemByName(
-                    warehouse.getCompany().getId(), warehouse.getId(), dbBasedWorkOrderLine.getItemName()
+                    warehouse.getCompany().getId(), warehouse.getId(), null, dbBasedWorkOrderLine.getItemName()
             );
             if (Objects.isNull(item)) {
                 throw ResourceNotFoundException.raiseException("Can't find item   by " +
@@ -400,7 +400,7 @@ public class DBBasedWorkOrderIntegration {
         if(Objects.isNull(workOrderByProduct.getItemId())) {
             workOrderByProduct.setItemId(
                     inventoryServiceRestemplateClient.getItemByName(
-                            warehouse.getCompany().getId(), warehouse.getId(), dbBasedWorkOrderByProduct.getItemName()
+                            warehouse.getCompany().getId(), warehouse.getId(), null, dbBasedWorkOrderByProduct.getItemName()
                     ).getId()
             );
         }

@@ -45,10 +45,11 @@ public class OrderLineController {
 
     @RequestMapping(value="/orders/lines", method = RequestMethod.GET)
     public List<OrderLine> findAllOrderLines(@RequestParam Long warehouseId,
+                                             @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                              @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                              @RequestParam(name = "orderNumber", required = false, defaultValue = "") String orderNumber,
                                              @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName) {
-        return orderLineService.findAll(warehouseId, shipmentId, orderNumber, itemName);
+        return orderLineService.findAll(warehouseId, clientId, shipmentId, orderNumber, itemName);
     }
 
     @RequestMapping(value="/orders/lines/{id}", method = RequestMethod.GET)

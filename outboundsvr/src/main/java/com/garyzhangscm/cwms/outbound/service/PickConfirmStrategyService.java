@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.AllocationConfigurationRepository;
 import com.garyzhangscm.cwms.outbound.repository.PickConfirmStrategyRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -310,9 +311,16 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
 
         pickConfirmStrategy.setWarehouseId(warehouse.getId());
 
+        Client client = null;
+        if (Strings.isNotBlank(pickConfirmStrategyCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(warehouse.getId(),
+                    pickConfirmStrategyCSVWrapper.getClient());
+        }
         if (!StringUtils.isBlank(pickConfirmStrategyCSVWrapper.getItem())) {
             Item item = inventoryServiceRestemplateClient.getItemByName(
-                    warehouse.getId(), pickConfirmStrategyCSVWrapper.getItem());
+                    warehouse.getId(),
+                    Objects.isNull(client) ? null : client.getId(),
+                    pickConfirmStrategyCSVWrapper.getItem());
             if (item != null) {
                 pickConfirmStrategy.setItemId(item.getId());
             }

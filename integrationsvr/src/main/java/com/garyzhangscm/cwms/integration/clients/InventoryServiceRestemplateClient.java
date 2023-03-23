@@ -42,6 +42,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class InventoryServiceRestemplateClient {
@@ -128,7 +129,7 @@ public class InventoryServiceRestemplateClient {
 
 
     @Cacheable(cacheNames = "IntegrationService_Item", unless="#result == null")
-    public Item getItemByName(Long companyId, Long warehouseId, String name)  {
+    public Item getItemByName(Long companyId, Long warehouseId, Long clientId, String name)  {
         logger.debug("Start to get item by name {}", name);
         if (Strings.isBlank(name)) {
             return null;
@@ -142,6 +143,10 @@ public class InventoryServiceRestemplateClient {
                             .queryParam("warehouseId", warehouseId)
                             .queryParam("companyId", companyId);
 
+
+            if (Objects.nonNull(clientId)) {
+                builder = builder.queryParam("clientIds", String.valueOf(clientId));
+            }
 
             ResponseBodyWrapper<List<Item>> responseBodyWrapper
                     = restTemplate.exchange(

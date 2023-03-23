@@ -157,18 +157,19 @@ public class ItemPackageTypeService {
     public ItemPackageType findByNaturalKeys(ItemPackageType itemPackageType) {
         // Natrual key: name,  item_id
         return itemPackageTypeRepository.findByNaturalKeys(itemPackageType.getWarehouseId(),
-                itemPackageType.getName(), itemPackageType.getItem().getId());
+                itemPackageType.getItem().getId(), itemPackageType.getName());
     }
 
-    public ItemPackageType findByNaturalKeys(Long warehouseId, String name, Long itemId) {
+    public ItemPackageType findByNaturalKeys(Long warehouseId, Long itemId, String name) {
         // Natrual key: name,  item_id
-        return itemPackageTypeRepository.findByNaturalKeys(warehouseId, name, itemId);
+        return itemPackageTypeRepository.findByNaturalKeys(warehouseId, itemId, name);
     }
 
-    public ItemPackageType findByNaturalKeys(Long warehouseId, String name, String itemName) {
-        // Natrual key: name,  item name
-        return itemPackageTypeRepository.findByNaturalKeys(warehouseId, name, itemName);
+    public ItemPackageType findByNaturalKeys(Long warehouseId, Long clientId, String itemName, String name) {
+        // Natrual key: name,  item_id
+        return itemPackageTypeRepository.findByNaturalKeys(warehouseId, clientId, itemName, name);
     }
+
 
     // Natural Key: item &
     public ItemPackageType saveOrUpdate(ItemPackageType itemPackageType) {
