@@ -65,6 +65,12 @@ public class ItemCSVWrapper implements Serializable {
 
     private String thumbnailUrl;
 
+    private Double receivingRateByUnit;
+
+    private Double shippingRateByUnit;
+
+    private Double handlingRateByUnit;
+
     @Override
     public String toString() {
         try {
@@ -251,5 +257,29 @@ public class ItemCSVWrapper implements Serializable {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public Double getReceivingRateByUnit() {
+        return receivingRateByUnit;
+    }
+
+    public void setReceivingRateByUnit(Double receivingRateByUnit) {
+        this.receivingRateByUnit = receivingRateByUnit;
+    }
+
+    public Double getShippingRateByUnit() {
+        return shippingRateByUnit;
+    }
+
+    public void setShippingRateByUnit(Double shippingRateByUnit) {
+        this.shippingRateByUnit = shippingRateByUnit;
+    }
+
+    public Double getHandlingRateByUnit() {
+        return handlingRateByUnit;
+    }
+
+    public void setHandlingRateByUnit(Double handlingRateByUnit) {
+        this.handlingRateByUnit = handlingRateByUnit;
     }
 }

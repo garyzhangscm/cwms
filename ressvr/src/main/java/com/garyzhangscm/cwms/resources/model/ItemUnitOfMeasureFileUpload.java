@@ -34,6 +34,21 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
                 String.class, 100, false
         ));
 
+        addColumn(new FileUploadTemplateColumn(
+                "receivingRateByUnit", "Receiving Rate By Unit",
+                Double.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "shippingRateByUnit", "Shipping Rate By Unit",
+                Double.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "handlingRateByUnit", "Handling Fee By Unit",
+                Double.class, 100, true
+        ));
+
+
 
         addColumn(new FileUploadTemplateColumn(
                 "trackingColorFlag", "Tracking Color?(only needed for new item)",

@@ -116,4 +116,16 @@ public class KafkaSender {
         }
     }
 
+    public void send(Alert alert) {
+        try {
+
+            logger.debug("Start to send alert \n{}", alert);
+            // send("INVENTORY-ACTIVITY", mapper.writeValueAsString(inventoryActivity));
+            send("ALERT", objectMapper.writeValueAsString(alert));
+        }
+        catch (Exception ex) {
+            send("SYSTEM_ERROR", ex.getMessage());
+        }
+    }
+
 }

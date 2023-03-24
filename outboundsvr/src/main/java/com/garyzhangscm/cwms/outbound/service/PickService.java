@@ -565,7 +565,9 @@ public class PickService {
 
     }
 
-    public List<Pick> cancelPicks(String pickIds) {
+    public List<Pick> cancelPicks(String pickIds,
+                                  boolean errorLocation,
+                                  boolean generateCycleCount) {
 
         List<Pick> picks = new ArrayList<>();
 
@@ -573,7 +575,7 @@ public class PickService {
                 pickIdString -> {
                     Long pickId = Long.parseLong(pickIdString);
                     picks.add(findById(pickId));
-                    cancelPick(pickId);
+                    cancelPick(pickId, errorLocation, generateCycleCount);
                 }
         );
 
@@ -581,15 +583,16 @@ public class PickService {
 
     }
 
-    public Pick cancelPick(Long id) {
-        return cancelPick(findById(id));
+    public Pick cancelPick(Long id, boolean errorLocation, boolean generateCycleCount) {
+        return cancelPick(findById(id), errorLocation, generateCycleCount);
     }
 
-    public Pick cancelPick(Pick pick) {
-        return cancelPick(pick, pick.getQuantity() - pick.getPickedQuantity());
+    public Pick cancelPick(Pick pick, boolean errorLocation, boolean generateCycleCount) {
+        return cancelPick(pick, pick.getQuantity() - pick.getPickedQuantity(),
+                errorLocation, generateCycleCount);
 
     }
-    public Pick cancelPick(Pick pick, Long cancelledQuantity) {
+    public Pick cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount) {
         if (pick.getStatus().equals(PickStatus.COMPLETED)) {
             throw PickingException.raiseException("Can't cancel pick that is already completed!");
         }
@@ -631,6 +634,25 @@ public class PickService {
 
         // Save the data to cancelled pick table
         cancelledPickService.registerPickCancelled(pick, cancelledQuantity);
+
+        if (errorLocation) {
+            warehouseLayoutServiceRestemplateClient.errorLocation(
+                    pick.getWarehouseId(), pick.getSourceLocationId());
+        }
+        if (generateCycleCount) {
+
+            Location location = Objects.nonNull(pick.getSourceLocation()) ?
+                    pick.getSourceLocation() :
+                    Objects.nonNull(pick.getSourceLocationId()) ?
+                        warehouseLayoutServiceRestemplateClient.getLocationById(pick.getSourceLocationId()) : null;
+
+            if (Objects.nonNull(location)) {
+
+                inventoryServiceRestemplateClient.generateCycleCount(
+                        pick.getWarehouseId(), location.getName()
+                );
+            }
+        }
 
         pick.setQuantity(pick.getQuantity() - cancelledQuantity);
 
@@ -1496,7 +1518,7 @@ public class PickService {
      */
     public Pick unpick(Pick pick, Long unpickedQuantity) {
         // Cancel the pick with unpicked quantity
-        return cancelPick(pick, unpickedQuantity);
+        return cancelPick(pick, unpickedQuantity, false, false);
     }
 
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {

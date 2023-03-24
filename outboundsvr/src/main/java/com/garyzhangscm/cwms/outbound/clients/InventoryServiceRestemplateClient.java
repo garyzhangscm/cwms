@@ -589,6 +589,33 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    /**
+     * Generate cycle count on the location
+     * @param warehouseId
+     * @param locationName
+     */
+    public void generateCycleCount(Long warehouseId, String locationName) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/cycle-count-requests")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("cycleCountRequestType", CycleCountRequestType.BY_LOCATION_RANGE)
+                        .queryParam("beginValue", locationName)
+                        .queryParam("endValue", locationName)
+                        .queryParam("includeEmptyLocation", true);
+
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        logger.debug("Cycle count is generated: \n {}", responseBodyWrapper.getData());
+    }
+
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");

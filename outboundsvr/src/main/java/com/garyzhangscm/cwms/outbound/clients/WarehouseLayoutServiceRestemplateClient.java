@@ -645,4 +645,22 @@ public class WarehouseLayoutServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Location errorLocation(Long warehouseId, Long locationId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/{id}/error")
+                        .queryParam("error", true)
+                .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(locationId).toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 }

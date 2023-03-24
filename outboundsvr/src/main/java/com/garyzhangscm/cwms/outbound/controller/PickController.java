@@ -97,8 +97,10 @@ public class PickController {
 
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
-    public Pick cancelPick(@PathVariable Long id){
-        return pickService.cancelPick(id);
+    public Pick cancelPick(@PathVariable Long id,
+                           @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                           @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
+        return pickService.cancelPick(id, errorLocation, generateCycleCount);
     }
 
     @BillableEndpoint
@@ -111,8 +113,10 @@ public class PickController {
 
     @BillableEndpoint
     @RequestMapping(value="/picks", method = RequestMethod.DELETE)
-    public List<Pick> cancelPicks(@RequestParam(name = "pick_ids") String pickIds) {
-        return pickService.cancelPicks(pickIds);
+    public List<Pick> cancelPicks(@RequestParam(name = "pick_ids") String pickIds,
+                                  @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                                  @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount) {
+        return pickService.cancelPicks(pickIds, errorLocation, generateCycleCount);
     }
 
 
