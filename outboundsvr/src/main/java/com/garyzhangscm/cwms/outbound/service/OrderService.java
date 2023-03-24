@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.*;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -69,6 +66,8 @@ public class OrderService {
     private OrderLineService orderLineService;
     @Autowired
     private OrderActivityService orderActivityService;
+    @Autowired
+    private KafkaSender kafkaSender;
 
     @Autowired
     private PickService pickService;
@@ -493,12 +492,44 @@ public class OrderService {
         return save(order, true);
     }
     public Order save(Order order, boolean loadDetails) {
+        // send alert for new order or order change
+        boolean newOrderFlag = false;
+        if (Objects.isNull(order.getId())) {
+            newOrderFlag = true;
+        }
+        if (!newOrderFlag) {
+            validateOrderForModification(order);
+        }
+
         Order newOrder = orderRepository.save(order);
         if (loadDetails) {
 
             loadOrderAttribute(newOrder);
         }
+        sendAlertForOrder(order, newOrderFlag);
         return newOrder;
+    }
+
+    /**
+     * Check if we can modify an existing order
+     * @param order
+     */
+    private void validateOrderForModification(Order order) {
+        if (Objects.isNull(order.getId())) {
+            // if the id of the order is null, then we assume it is
+            // a new order
+            return;
+        }
+
+        // if there's already active shipment for this order, let's
+        // disallow the user to change the
+        if (order.getStatus().equals(OrderStatus.CANCELLED) || order.getStatus().equals(OrderStatus.COMPLETE)) {
+            // OK, if we are try to cancel the order or complete the order
+            // we will always allow
+            return;
+        }
+        // see if we are try to chance the quantity.
+
     }
 
     public Order saveOrUpdate(Order order) {
@@ -2301,6 +2332,39 @@ public class OrderService {
 
     public List<FileUploadResult> getOrderFileUploadResult(Long warehouseId, String key) {
         return fileUploadResultMap.getOrDefault(key, new ArrayList<>());
+    }
+
+    /**
+     * Send alert for new order or changing order
+     * @param order
+     */
+    private void sendAlertForOrder(Order order, boolean newOrderFlag) {
+
+        String username = userService.getCurrentUserName();
+
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId()).getCompanyId();
+        StringBuilder alertParameters = new StringBuilder();
+        alertParameters.append("number=").append(order.getNumber())
+                .append("&lineCount=").append(order.getOrderLines().size());
+
+        if (newOrderFlag) {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.NEW_ORDER,
+                    "NEW-ORDER-" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
+                    "Outbound Order " + order.getNumber() + " created, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
+        else {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.MODIFY_ORDER,
+                    "MODIFY-ORDER-" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
+                    "Outbound Order " + order.getNumber() + " is changed, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
     }
 
 }

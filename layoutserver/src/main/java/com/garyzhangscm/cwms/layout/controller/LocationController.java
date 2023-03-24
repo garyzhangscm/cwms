@@ -532,6 +532,25 @@ public class LocationController {
 
         return locationService.processLocationLock(id, locked);
     }
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/{id}/error")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+            }
+    )
+    public Location processLocationError(@PathVariable Long id,
+                                        @RequestParam Long warehouseId,
+                                        @RequestParam Boolean error) {
+
+        return locationService.processLocationError(id, error);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/locations/container/{containerName}")

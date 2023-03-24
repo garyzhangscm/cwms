@@ -269,23 +269,23 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
     public WorkOrder save(WorkOrder workOrder) {
+        return save(workOrder, true);
+    }
+
+    public WorkOrder save(WorkOrder workOrder, boolean loadDetails) {
+
         boolean sendNewWorkOrderAlertFlag = false;
         if (Objects.isNull(workOrder.getId())) {
             sendNewWorkOrderAlertFlag = true;
         }
 
-        WorkOrder newWorkOrder =  save(workOrder, true);
-        if (sendNewWorkOrderAlertFlag) {
-            sendAlertForNewWorkOrder(newWorkOrder);
-        }
-        return newWorkOrder;
-    }
-
-    public WorkOrder save(WorkOrder workOrder, boolean loadDetails) {
         WorkOrder newWorkOrder = workOrderRepository.save(workOrder);
         if (loadDetails) {
 
             loadAttribute(newWorkOrder, true, true);
+        }
+        if (sendNewWorkOrderAlertFlag) {
+            sendAlertForNewWorkOrder(newWorkOrder);
         }
         return newWorkOrder;
     }

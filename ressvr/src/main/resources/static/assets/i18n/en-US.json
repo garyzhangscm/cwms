@@ -2023,5 +2023,11 @@
   "receiving-inventory":"Receiving Inventory",
   "displayOnly": "Display Only",
   "unit-of-measure.defaultForDisplay": "Default For Display",
-  "unit-of-measure.caseFlag": "Case UOM"
+  "unit-of-measure.caseFlag": "Case UOM",
+  "receivingRateByUnit": "Receiving Rate By Unit",
+  "shippingRateByUnit": "Shipping Rate By Unit",
+  "handlingRateByUnit": "Handling Rate By Unit",
+  "cancel-pick": "Cancel Pick",
+  "cancel-pick-error-location": "Cancel Pick, Error Location",
+  "cancel-pick-error-location-generate-cycle-count": "Cancel Pick, Error Location, Generate Cycle Count"
 }

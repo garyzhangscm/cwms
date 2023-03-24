@@ -102,6 +102,10 @@ public class Location extends AuditibleEntity<String>{
     @Column(name = "locked")
     private Boolean locked = false;
 
+    @Column(name = "error_flag")
+    private Boolean errorFlag = false;
+
+
     @ManyToOne
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
@@ -331,5 +335,13 @@ public class Location extends AuditibleEntity<String>{
 
     public void setCapacityUnit(String capacityUnit) {
         this.capacityUnit = capacityUnit;
+    }
+
+    public Boolean getErrorFlag() {
+        return errorFlag;
+    }
+
+    public void setErrorFlag(Boolean errorFlag) {
+        this.errorFlag = errorFlag;
     }
 }

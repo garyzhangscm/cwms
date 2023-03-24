@@ -2023,5 +2023,11 @@
   "receiving-inventory":"收货",
   "displayOnly": "仅显示",
   "unit-of-measure.defaultForDisplay": "显示的UOM",
-  "unit-of-measure.caseFlag": "箱规"
+  "unit-of-measure.caseFlag": "箱规",
+  "receivingRateByUnit": "入库费率（单位：个）",
+  "shippingRateByUnit": "出库费率（单位：个）",
+  "handlingRateByUnit": "库内作业费率（单位：个）",
+  "cancel-pick": "取消",
+  "cancel-pick-error-location": "取消拣货，库位不可用",
+  "cancel-pick-error-location-generate-cycle-count": "取消拣货，库位不可用，生成盘点任务"
 }

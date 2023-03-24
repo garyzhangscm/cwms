@@ -653,6 +653,14 @@ public class LocationService {
         return saveOrUpdate(location);
 
     }
+    public Location processLocationError(Long id, Boolean errorFlag) {
+
+        Location location = findById(id);
+        location.setErrorFlag(errorFlag);
+        return saveOrUpdate(location);
+
+    }
+
 
 
     /**
