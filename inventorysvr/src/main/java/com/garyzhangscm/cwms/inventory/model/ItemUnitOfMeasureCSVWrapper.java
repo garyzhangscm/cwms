@@ -56,6 +56,12 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
     private String caseFlag;
     private String defaultForDisplay;
 
+    private Double receivingRateByUnit;
+
+    private Double shippingRateByUnit;
+
+    private Double handlingRateByUnit;
+
 
     @Override
     public String toString() {
@@ -259,5 +265,29 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
 
     public void setDefaultForDisplay(String defaultForDisplay) {
         this.defaultForDisplay = defaultForDisplay;
+    }
+
+    public Double getReceivingRateByUnit() {
+        return receivingRateByUnit;
+    }
+
+    public void setReceivingRateByUnit(Double receivingRateByUnit) {
+        this.receivingRateByUnit = receivingRateByUnit;
+    }
+
+    public Double getShippingRateByUnit() {
+        return shippingRateByUnit;
+    }
+
+    public void setShippingRateByUnit(Double shippingRateByUnit) {
+        this.shippingRateByUnit = shippingRateByUnit;
+    }
+
+    public Double getHandlingRateByUnit() {
+        return handlingRateByUnit;
+    }
+
+    public void setHandlingRateByUnit(Double handlingRateByUnit) {
+        this.handlingRateByUnit = handlingRateByUnit;
     }
 }

@@ -94,6 +94,8 @@ public class ItemService {
     private QCRuleConfigurationService qcRuleConfigurationService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private KafkaSender kafkaSender;
 
 
     @Autowired
@@ -363,6 +365,15 @@ public class ItemService {
     }
 
     public Item save(Item item) {
+
+        // send alert for new receipt or receipt change
+        boolean newItemFlag = false;
+        if (Objects.isNull(item.getId())) {
+            newItemFlag = true;
+        }
+
+        sendAlertForItem(item, newItemFlag);
+
         return itemRepository.save(item);
     }
 
@@ -547,8 +558,25 @@ public class ItemService {
 
     private Item convertFromWrapper(Long warehouseId,
                                     ItemCSVWrapper itemCSVWrapper) {
+        String username = "";
+        try {
+            username = userService.getCurrentUserName();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
+                    ex.getMessage());
+        }
+        return convertFromWrapper(warehouseId, itemCSVWrapper,
+                username);
+
+    }
+    private Item convertFromWrapper(Long warehouseId,
+                                    ItemCSVWrapper itemCSVWrapper,
+                                    String username) {
         Item item = new Item();
         BeanUtils.copyProperties(itemCSVWrapper, item);
+        item.setCreatedBy(username);
         /***
         item.setName(itemCSVWrapper.getName());
         item.setDescription(itemCSVWrapper.getDescription());
@@ -1204,7 +1232,8 @@ public class ItemService {
         logger.debug("refresh is done");
     }
 
-    public Item createItem(Long warehouseId, ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper) {
+    public Item createItem(Long warehouseId, ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper,
+                           String username) {
         ItemCSVWrapper itemCSVWrapper = new ItemCSVWrapper();
         itemCSVWrapper.setName(itemPackageTypeCSVWrapper.getItem());
         itemCSVWrapper.setDescription(itemPackageTypeCSVWrapper.getItemDescription());
@@ -1251,8 +1280,17 @@ public class ItemService {
                 itemPackageTypeCSVWrapper.getDefaultStyle()
         );
 
+        itemCSVWrapper.setReceivingRateByUnit(
+                itemPackageTypeCSVWrapper.getReceivingRateByUnit()
+        );
+        itemCSVWrapper.setShippingRateByUnit(
+                itemPackageTypeCSVWrapper.getShippingRateByUnit()
+        );
+        itemCSVWrapper.setHandlingRateByUnit(
+                itemPackageTypeCSVWrapper.getHandlingRateByUnit()
+        );
 
-        return saveOrUpdate(convertFromWrapper(warehouseId, itemCSVWrapper));
+        return saveOrUpdate(convertFromWrapper(warehouseId, itemCSVWrapper, username));
 
     }
 
@@ -1412,7 +1450,52 @@ public class ItemService {
             return latestInventoryActivity.getItem();
 
         }
+    }
 
+    /**
+     * Send alert for new item or changing item
+     * @param item
+     */
+    private void sendAlertForItem(Item item, boolean newItemFlag) {
 
+        String username = "";
+
+        try {
+            username = userService.getCurrentUserName();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
+                    ex.getMessage());
+        }
+
+        if (Strings.isBlank(username) && Strings.isNotBlank(item.getCreatedBy())) {
+            logger.debug("set the current user for the new item {}",
+                    item.getCreatedBy());
+            username = item.getCreatedBy();
+        }
+
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(item.getWarehouseId()).getCompanyId();
+        StringBuilder alertParameters = new StringBuilder();
+        alertParameters.append("name=").append(item.getName()) ;
+
+        if (newItemFlag) {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.NEW_ITEM,
+                    "NEW-ITEM-" + companyId + "-" + item.getWarehouseId() + "-" + item.getName(),
+                    "Item " + item.getName() + " created, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
+        else {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.MODIFY_RECEIPT,
+                    "MODIFY-ITEM-" + companyId + "-" + item.getWarehouseId() + "-" + item.getName(),
+                    "Item " + item.getName() + " is changed, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
     }
 }
