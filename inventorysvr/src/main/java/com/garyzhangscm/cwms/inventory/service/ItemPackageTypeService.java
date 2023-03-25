@@ -241,7 +241,9 @@ public class ItemPackageTypeService {
     }
      **/
 
-    private ItemPackageType convertFromWrapper(Long warehouseId, ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper) {
+    private ItemPackageType convertFromWrapper(Long warehouseId,
+                                               ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper,
+                                               String username) {
         ItemPackageType itemPackageType = new ItemPackageType();
         itemPackageType.setName(itemPackageTypeCSVWrapper.getName());
         itemPackageType.setDescription(itemPackageTypeCSVWrapper.getDescription());
@@ -264,7 +266,7 @@ public class ItemPackageTypeService {
         if (Strings.isNotBlank(itemPackageTypeCSVWrapper.getItem())) {
             Item item = itemService.findByName(warehouse.getId(), itemPackageType.getClientId(), itemPackageTypeCSVWrapper.getItem());
             if (Objects.isNull(item)) {
-                item = itemService.createItem(warehouseId, itemPackageTypeCSVWrapper);
+                item = itemService.createItem(warehouseId, itemPackageTypeCSVWrapper, username);
                 logger.debug("Item is not created yet, let's create on the fly while loading item package type data");
                 logger.debug(" ============       item package data ================");
                 logger.debug(itemPackageTypeCSVWrapper.toString());
@@ -283,7 +285,8 @@ public class ItemPackageTypeService {
      * @return
      */
     public ItemPackageType createItemPackageType(Long warehouseId,
-                                                 ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
+                                                 ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper,
+                                                 String username) {
         ItemPackageTypeCSVWrapper itemPackageTypeCSVWrapper = new ItemPackageTypeCSVWrapper();
 
         itemPackageTypeCSVWrapper.setClient(itemUnitOfMeasureCSVWrapper.getClient());
@@ -316,9 +319,18 @@ public class ItemPackageTypeService {
         itemPackageTypeCSVWrapper.setDefaultStyle(
                 itemUnitOfMeasureCSVWrapper.getDefaultStyle()
         );
+        itemPackageTypeCSVWrapper.setReceivingRateByUnit(
+                itemUnitOfMeasureCSVWrapper.getReceivingRateByUnit()
+        );
+        itemPackageTypeCSVWrapper.setShippingRateByUnit(
+                itemUnitOfMeasureCSVWrapper.getShippingRateByUnit()
+        );
+        itemPackageTypeCSVWrapper.setHandlingRateByUnit(
+                itemUnitOfMeasureCSVWrapper.getHandlingRateByUnit()
+        );
 
 
-        return saveOrUpdate(convertFromWrapper(warehouseId, itemPackageTypeCSVWrapper));
+        return saveOrUpdate(convertFromWrapper(warehouseId, itemPackageTypeCSVWrapper, username));
 
     }
 

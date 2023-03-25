@@ -42,6 +42,11 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
     private String client;
     private String supplier;
 
+    private Double receivingRateByUnit;
+
+    private Double shippingRateByUnit;
+
+    private Double handlingRateByUnit;
 
     @Override
     public String toString() {
@@ -157,5 +162,29 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
 
     public void setItemFamily(String itemFamily) {
         this.itemFamily = itemFamily;
+    }
+
+    public Double getReceivingRateByUnit() {
+        return receivingRateByUnit;
+    }
+
+    public void setReceivingRateByUnit(Double receivingRateByUnit) {
+        this.receivingRateByUnit = receivingRateByUnit;
+    }
+
+    public Double getShippingRateByUnit() {
+        return shippingRateByUnit;
+    }
+
+    public void setShippingRateByUnit(Double shippingRateByUnit) {
+        this.shippingRateByUnit = shippingRateByUnit;
+    }
+
+    public Double getHandlingRateByUnit() {
+        return handlingRateByUnit;
+    }
+
+    public void setHandlingRateByUnit(Double handlingRateByUnit) {
+        this.handlingRateByUnit = handlingRateByUnit;
     }
 }

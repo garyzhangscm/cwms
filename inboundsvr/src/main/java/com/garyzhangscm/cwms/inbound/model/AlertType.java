@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.integration.model;
+package com.garyzhangscm.cwms.inbound.model;
 
 public enum AlertType {
     INTEGRATION_FAIL,

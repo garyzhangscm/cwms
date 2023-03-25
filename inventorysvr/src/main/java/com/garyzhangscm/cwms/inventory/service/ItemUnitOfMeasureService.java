@@ -171,7 +171,8 @@ public class ItemUnitOfMeasureService {
 
     private ItemUnitOfMeasure convertFromWrapper(Long warehouseId,
                                                  ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper,
-                                                 boolean autoCreateItemPackageType) {
+                                                 boolean autoCreateItemPackageType,
+                                                 String username) {
         logger.debug("===>Start to create item unit of measure with \n item: {}, packate type: {}",
                 itemUnitOfMeasureCSVWrapper.getItem(), itemUnitOfMeasureCSVWrapper.getItemPackageType());
         ItemUnitOfMeasure itemUnitOfMeasure = new ItemUnitOfMeasure();
@@ -244,7 +245,7 @@ public class ItemUnitOfMeasureService {
             // item package type first. We allow the user to create the item package type
             // when load item unit of measure from CSV files
             if (Objects.isNull(itemPackageType) && autoCreateItemPackageType) {
-                itemPackageType = createItemPackageType(warehouseId, itemUnitOfMeasureCSVWrapper);
+                itemPackageType = createItemPackageType(warehouseId, itemUnitOfMeasureCSVWrapper, username);
 
             }
             itemUnitOfMeasure.setItemPackageType(itemPackageType);
@@ -252,9 +253,12 @@ public class ItemUnitOfMeasureService {
         return itemUnitOfMeasure;
     }
 
-    private ItemPackageType createItemPackageType(Long warehouseId, ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper) {
+    private ItemPackageType createItemPackageType(Long warehouseId,
+                                                  ItemUnitOfMeasureCSVWrapper itemUnitOfMeasureCSVWrapper,
+                                                  String username) {
 
-        return itemPackageTypeService.createItemPackageType(warehouseId, itemUnitOfMeasureCSVWrapper);
+        return itemPackageTypeService.createItemPackageType(warehouseId,
+                itemUnitOfMeasureCSVWrapper, username);
     }
 
 
@@ -286,7 +290,7 @@ public class ItemUnitOfMeasureService {
                 // and save the result with error message to the result set
                 fileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
                 try {
-                    saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true));
+                    saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true, username));
                     // we complete this inventory
                     fileUploadProgressMap.put(fileUploadProgressKey, 10.0 + (90.0 / totalCount) * (index + 1));
 

@@ -75,6 +75,8 @@ public class ReceiptService {
     private FileService fileService;
     @Autowired
     private IntegrationService integrationService;
+    @Autowired
+    private KafkaSender kafkaSender;
 
     @Autowired
     private UserService userService;
@@ -326,10 +328,19 @@ public class ReceiptService {
 
     @Transactional
     public Receipt save(Receipt receipt, boolean loadAttribute) {
+
+        // send alert for new receipt or receipt change
+        boolean newReceiptFlag = false;
+        if (Objects.isNull(receipt.getId())) {
+            newReceiptFlag = true;
+        }
+
         Receipt newReceipt = receiptRepository.save(receipt);
         if (loadAttribute) {
             loadReceiptAttribute(newReceipt);
         }
+        sendAlertForReceipt(receipt, newReceiptFlag, receipt.getCreatedBy());
+
         return newReceipt;
     }
 
@@ -1321,9 +1332,12 @@ public class ReceiptService {
                     receiptFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalReceiptLineCount) * (index + 0.25));
                     if (Objects.isNull(receipt)) {
                         logger.debug("receipt {} is not created yet, let's create the order on the fly ", receiptLineCSVWrapper.getReceipt());
-                        receipt = saveOrUpdate(
-                                convertFromWrapper(warehouseId, receiptLineCSVWrapper)
-                        );
+                        // save the username for the receipt
+                        // we have to do it manually since the user name is only available in the main http session
+                        // but we will create the receipt / receipt line in a separate transaction
+                        receipt = convertFromWrapper(warehouseId, receiptLineCSVWrapper);
+                        receipt.setCreatedBy(username);
+                        receipt = saveOrUpdate(receipt);
                     }
                     receiptFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalReceiptLineCount) * (index + 0.5));
                     logger.debug("start to create receipt line {} for item {}, quantity {}, for receipt {}",
@@ -1759,4 +1773,49 @@ public class ReceiptService {
             }
         }
     }
+
+    /**
+     * Send alert for new receipt or changing receipt
+     * @param receipt
+     */
+    private void sendAlertForReceipt(Receipt receipt, boolean newReceiptFlag, String username) {
+
+        if (Strings.isBlank(username)) {
+
+            try {
+                username = userService.getCurrentUserName();
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
+                        ex.getMessage());
+            }
+
+        }
+
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(receipt.getWarehouseId()).getCompanyId();
+        StringBuilder alertParameters = new StringBuilder();
+        alertParameters.append("number=").append(receipt.getNumber())
+                .append("&lineCount=").append(receipt.getReceiptLines().size());
+
+        if (newReceiptFlag) {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.NEW_RECEIPT,
+                    "NEW-RECEIPT-" + companyId + "-" + receipt.getWarehouseId() + "-" + receipt.getNumber(),
+                    "Receipt " + receipt.getNumber() + " created, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
+        else {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.MODIFY_RECEIPT,
+                    "MODIFY-RECEIPT-" + companyId + "-" + receipt.getWarehouseId() + "-" + receipt.getNumber(),
+                    "Receipt " + receipt.getNumber() + " is changed, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
+    }
+
 }

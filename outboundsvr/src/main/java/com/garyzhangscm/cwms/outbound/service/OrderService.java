@@ -2238,7 +2238,12 @@ public class OrderService {
                     if (Objects.isNull(order)) {
                         logger.debug("order {} is not created yet, let's create the order on the fly ", orderLineCSVWrapper.getOrder());
                         // the order is not created yet, let's
-                        order = saveOrUpdate(convertFromWrapper(warehouseId, orderLineCSVWrapper));
+
+                        // we have to do it manually since the user name is only available in the main http session
+                        // but we will create the receipt / receipt line in a separate transaction
+                        order = convertFromWrapper(warehouseId, orderLineCSVWrapper);
+                        order.setCreatedBy(username);
+                        order = saveOrUpdate(order);
                     }
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.5));
                     logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
@@ -2340,7 +2345,20 @@ public class OrderService {
      */
     private void sendAlertForOrder(Order order, boolean newOrderFlag) {
 
-        String username = userService.getCurrentUserName();
+        String username = "";
+        try {
+            username = userService.getCurrentUserName();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
+                    ex.getMessage());
+        }
+        if (Strings.isBlank(username) && Strings.isNotBlank(order.getCreatedBy())) {
+            logger.debug("set the current user for the new order {}",
+                    order.getCreatedBy());
+            username = order.getCreatedBy();
+        }
 
         Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId()).getCompanyId();
         StringBuilder alertParameters = new StringBuilder();

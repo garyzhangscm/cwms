@@ -14,5 +14,7 @@ public enum AlertType {
     NEW_RECEIPT,
     MODIFY_ORDER,
     MODIFY_WORK_ORDER,
-    MODIFY_RECEIPT
+    MODIFY_RECEIPT,
+    NEW_ITEM,
+    MODIFY_ITEM
 }
