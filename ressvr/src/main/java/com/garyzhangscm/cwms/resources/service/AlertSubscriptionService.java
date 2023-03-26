@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import javax.persistence.criteria.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -49,6 +51,8 @@ public class AlertSubscriptionService {
     private EMailService eMailService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private GMailService gMailService;
 
 
     public AlertSubscription findById(Long id) {
@@ -215,6 +219,23 @@ public class AlertSubscriptionService {
                     alert.getTitle(),
                     alert.getMessage()
             );
+            /**
+             * Gmail service will need service account so we will use the SMTP instead of the
+             *  gmail api
+            try {
+                logger.debug("start to send email with gmail service");
+                gMailService.sendEmail("cwms.notification@gmail.com", "gzhang1999@gmail.com");
+                logger.debug("email sent!");
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                logger.debug("MessagingException while send email with gmail service: \n{}",
+                        e.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+                logger.debug("IOException while send email with gmail service: \n{}",
+                        e.getMessage());
+            }
+             */
         }
     }
 

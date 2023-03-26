@@ -28,6 +28,9 @@ public class EMailService {
 
     /**
      * 发送纯文本邮件.
+     * when use gmail , please follow https://myaccount.google.com/apppasswords to create app password and use the
+     * app password to login the email account
+     * current pwd: wcuurhzojawjslyo
      *
      * @param companyId    Company Id
      * @param to      目标email 地址
@@ -48,11 +51,13 @@ public class EMailService {
 
         message.setFrom(emailAlertConfiguration.getSendFromEmail());
         message.setTo(to);
+        // message.setTo("gzhang1999@gmail.com");
         message.setSubject(subject);
         message.setText(text);
         logger.debug("start to sent email to {}, from {}, \n subject: {}, text: {}",
                 message.getTo(), message.getFrom(), message.getSubject(), message.getText());
         javaMailSender.send(message);
+        logger.debug("Email sent!");
     }
 
 
