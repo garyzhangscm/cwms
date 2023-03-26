@@ -632,4 +632,11 @@ public class UserService  implements TestDataInitiableService{
 
 
     }
+    public User changeEmail(Long companyId, String username, String email) {
+        User user = findByUsername(companyId, username, false);
+
+        user.setEmail(email);
+        logger.debug("User {}'s email is changed to {}", username, email);
+        return saveOrUpdate(user);
+    }
 }

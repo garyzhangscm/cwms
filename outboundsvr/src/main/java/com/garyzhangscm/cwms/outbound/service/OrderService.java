@@ -500,13 +500,26 @@ public class OrderService {
         if (!newOrderFlag) {
             validateOrderForModification(order);
         }
+        // in case the order is created out of context, we will need to
+        // setup the created by in the context and then pass the username
+        // in the down stream so that when we send alert, the alert will
+        // contain the right username
+        // example: when we create order via uploading CSV file,
+        // 1. we will save the username in the main thread
+        // 2. in a separate thread, we will create the order according to the
+        //    csv file and setup the order's create by with the username from
+        //    the main thread
+        // 3. we will fetch the right username here(who upload the file) and use
+        //    it to send alert
+        String username = order.getCreatedBy();
 
         Order newOrder = orderRepository.save(order);
         if (loadDetails) {
 
             loadOrderAttribute(newOrder);
         }
-        sendAlertForOrder(order, newOrderFlag);
+        sendAlertForOrder(order, newOrderFlag,
+                Strings.isBlank(username) ? newOrder.getCreatedBy() : username);
         return newOrder;
     }
 
@@ -2343,23 +2356,20 @@ public class OrderService {
      * Send alert for new order or changing order
      * @param order
      */
-    private void sendAlertForOrder(Order order, boolean newOrderFlag) {
+    private void sendAlertForOrder(Order order, boolean newOrderFlag, String username) {
 
-        String username = "";
-        try {
-            username = userService.getCurrentUserName();
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
-                    ex.getMessage());
-        }
-        if (Strings.isBlank(username) && Strings.isNotBlank(order.getCreatedBy())) {
-            logger.debug("set the current user for the new order {}",
-                    order.getCreatedBy());
-            username = order.getCreatedBy();
-        }
+        if (Strings.isBlank(username)) {
 
+            try {
+                username = userService.getCurrentUserName();
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
+                        ex.getMessage());
+            }
+
+        }
         Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(order.getWarehouseId()).getCompanyId();
         StringBuilder alertParameters = new StringBuilder();
         alertParameters.append("number=").append(order.getNumber())

@@ -241,6 +241,25 @@ public class UserController {
         return userService.addTempUser(companyId, username, firstname, lastname);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/user/change-email", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
+    public User changeEmail(@RequestParam Long companyId,
+                            @RequestParam String username,
+                            @RequestParam String email) {
+        return userService.changeEmail(companyId, username, email);
+    }
+
 
 
 }
