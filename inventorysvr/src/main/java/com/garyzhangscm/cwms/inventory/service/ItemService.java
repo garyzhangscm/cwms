@@ -371,10 +371,24 @@ public class ItemService {
         if (Objects.isNull(item.getId())) {
             newItemFlag = true;
         }
+        // in case the item is created out of context, we will need to
+        // setup the created by in the context and then pass the username
+        // in the down stream so that when we send alert, the alert will
+        // contain the right username
+        // example: when we create item via uploading CSV file,
+        // 1. we will save the username in the main thread
+        // 2. in a separate thread, we will create the item according to the
+        //    csv file and setup the item's create by with the username from
+        //    the main thread
+        // 3. we will fetch the right username here(who upload the file) and use
+        //    it to send alert
+        String username = item.getCreatedBy();
 
-        sendAlertForItem(item, newItemFlag);
+        Item newItem = itemRepository.save(item);
+        sendAlertForItem(item, newItemFlag,
+                Strings.isBlank(username) ? newItem.getCreatedBy() : username);
 
-        return itemRepository.save(item);
+        return newItem;
     }
 
 
@@ -1456,23 +1470,19 @@ public class ItemService {
      * Send alert for new item or changing item
      * @param item
      */
-    private void sendAlertForItem(Item item, boolean newItemFlag) {
+    private void sendAlertForItem(Item item, boolean newItemFlag, String username) {
 
-        String username = "";
+        if (Strings.isBlank(username)) {
 
-        try {
-            username = userService.getCurrentUserName();
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
-                    ex.getMessage());
-        }
+            try {
+                username = userService.getCurrentUserName();
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
+                        ex.getMessage());
+            }
 
-        if (Strings.isBlank(username) && Strings.isNotBlank(item.getCreatedBy())) {
-            logger.debug("set the current user for the new item {}",
-                    item.getCreatedBy());
-            username = item.getCreatedBy();
         }
 
         Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(item.getWarehouseId()).getCompanyId();

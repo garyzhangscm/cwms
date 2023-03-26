@@ -290,6 +290,12 @@ public class ItemUnitOfMeasureService {
                 // and save the result with error message to the result set
                 fileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
                 try {
+                    // start to convert the CSV file record into item unit of measure POJO and save it
+                    // Note: if the item package type or item doesn't exists yet, we will create them
+                    // in this transaction as well(only if autoCreateItemPackageType is passed in as true)
+                    // Note 2: we will pass in the username here so that we know who created the item
+                    // and item package type(the user who upload the file). As we are in a separate thread,
+                    //    the user information that upload the CSV file is no long in the context
                     saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true, username));
                     // we complete this inventory
                     fileUploadProgressMap.put(fileUploadProgressKey, 10.0 + (90.0 / totalCount) * (index + 1));

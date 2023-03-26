@@ -2029,5 +2029,12 @@
   "handlingRateByUnit": "库内作业费率（单位：个）",
   "cancel-pick": "取消",
   "cancel-pick-error-location": "取消拣货，库位不可用",
-  "cancel-pick-error-location-generate-cycle-count": "取消拣货，库位不可用，生成盘点任务"
+  "cancel-pick-error-location-generate-cycle-count": "取消拣货，库位不可用，生成盘点任务",
+  "ALERT-TYPE-MODIFY_ORDER": "出库单修改",
+  "ALERT-TYPE-MODIFY_WORK_ORDER": "加工工单修改",
+  "ALERT-TYPE-MODIFY_RECEIPT": "入库单修改",
+  "ALERT-TYPE-NEW_ITEM": "新增商品",
+  "ALERT-TYPE-MODIFY_ITEM": "商品修改",
+  "basic-info": "基础信息",
+  "email-is-required": "请填写Email"
 }

@@ -101,6 +101,9 @@ public class WorkOrderService implements TestDataInitiableService {
     private ProductionLineCapacityService productionLineCapacityService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -274,19 +277,33 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public WorkOrder save(WorkOrder workOrder, boolean loadDetails) {
 
-        boolean sendNewWorkOrderAlertFlag = false;
+        // send alert for new receipt or receipt change
+        boolean newWorkOrderFlag = false;
         if (Objects.isNull(workOrder.getId())) {
-            sendNewWorkOrderAlertFlag = true;
+            newWorkOrderFlag = true;
         }
+        // in case the work order is created out of context, we will need to
+        // setup the created by in the context and then pass the username
+        // in the down stream so that when we send alert, the alert will
+        // contain the right username
+        // example: when we create work order via uploading CSV file,
+        // 1. we will save the username in the main thread
+        // 2. in a separate thread, we will create the work order according to the
+        //    csv file and setup the receipt's create by with the username from
+        //    the main thread
+        // 3. we will fetch the right username here(who upload the file) and use
+        //    it to send alert
+        String username = workOrder.getCreatedBy();
 
         WorkOrder newWorkOrder = workOrderRepository.save(workOrder);
         if (loadDetails) {
 
             loadAttribute(newWorkOrder, true, true);
         }
-        if (sendNewWorkOrderAlertFlag) {
-            sendAlertForNewWorkOrder(newWorkOrder);
-        }
+        sendAlertForWorkOrder(newWorkOrder, newWorkOrderFlag,
+                Strings.isBlank(username) ? newWorkOrder.getCreatedBy() : username
+        );
+
         return newWorkOrder;
     }
 
@@ -2011,19 +2028,43 @@ public class WorkOrderService implements TestDataInitiableService {
      * Send new work order alert
      * @param workOrder
      */
-    private void sendAlertForNewWorkOrder(WorkOrder workOrder) {
+    private void sendAlertForWorkOrder(WorkOrder workOrder, boolean newWorkOrderFlag, String username) {
+        if (Strings.isBlank(username)) {
+
+            try {
+                username = userService.getCurrentUserName();
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                logger.debug("We got error while getting username from the session, let's just ignore.\nerror: {}",
+                        ex.getMessage());
+            }
+
+        }
 
         Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId()).getCompanyId();
         StringBuilder alertParameters = new StringBuilder();
         alertParameters.append("number=").append(workOrder.getNumber())
                 .append("&lineCount=").append(workOrder.getWorkOrderLines().size());
 
-        Alert alert = new Alert(companyId,
-                AlertType.NEW_WORK_ORDER,
-                "NEW-WORK-ORDER-" + companyId + "-" + workOrder.getWarehouseId() + "-" + workOrder.getNumber(),
-                "work order " + workOrder.getNumber() + " created!",
-                "", alertParameters.toString());
-        kafkaSender.send(alert);
+        if (newWorkOrderFlag) {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.NEW_WORK_ORDER,
+                    "NEW-WORK-ORDER-" + companyId + "-" + workOrder.getWarehouseId() + "-" + workOrder.getNumber(),
+                    "Work Order " + workOrder.getNumber() + " created, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
+        else {
+
+            Alert alert = new Alert(companyId,
+                    AlertType.MODIFY_WORK_ORDER,
+                    "MODIFY-WORK-ORDER-" + companyId + "-" + workOrder.getWarehouseId() + "-" + workOrder.getNumber(),
+                    "Work Order " + workOrder.getNumber() + " is changed, by " + username,
+                    "", alertParameters.toString());
+            kafkaSender.send(alert);
+        }
     }
 
     public WorkOrder createWorkOrderForShortAllocation(

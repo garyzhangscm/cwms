@@ -2029,5 +2029,12 @@
   "handlingRateByUnit": "Handling Rate By Unit",
   "cancel-pick": "Cancel Pick",
   "cancel-pick-error-location": "Cancel Pick, Error Location",
-  "cancel-pick-error-location-generate-cycle-count": "Cancel Pick, Error Location, Generate Cycle Count"
+  "cancel-pick-error-location-generate-cycle-count": "Cancel Pick, Error Location, Generate Cycle Count",
+  "ALERT-TYPE-MODIFY_ORDER": "Order Changed",
+  "ALERT-TYPE-MODIFY_WORK_ORDER": "Work Order Changed",
+  "ALERT-TYPE-MODIFY_RECEIPT": "Receipt Changed",
+  "ALERT-TYPE-NEW_ITEM": "New Item",
+  "ALERT-TYPE-MODIFY_ITEM": "Item Changed",
+  "basic-info": "Basic Information",
+  "email-is-required": "Email is required"
 }

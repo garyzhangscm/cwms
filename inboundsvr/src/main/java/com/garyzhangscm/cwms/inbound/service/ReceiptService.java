@@ -334,12 +334,25 @@ public class ReceiptService {
         if (Objects.isNull(receipt.getId())) {
             newReceiptFlag = true;
         }
+        // in case the receipt is created out of context, we will need to
+        // setup the created by in the context and then pass the username
+        // in the down stream so that when we send alert, the alert will
+        // contain the right username
+        // example: when we create receipt via uploading CSV file,
+        // 1. we will save the username in the main thread
+        // 2. in a separate thread, we will create the receipt according to the
+        //    csv file and setup the receipt's create by with the username from
+        //    the main thread
+        // 3. we will fetch the right username here(who upload the file) and use
+        //    it to send alert
+        String username = receipt.getCreatedBy();
 
         Receipt newReceipt = receiptRepository.save(receipt);
         if (loadAttribute) {
             loadReceiptAttribute(newReceipt);
         }
-        sendAlertForReceipt(receipt, newReceiptFlag, receipt.getCreatedBy());
+        sendAlertForReceipt(receipt, newReceiptFlag,
+                Strings.isBlank(username) ? newReceipt.getCreatedBy() : username);
 
         return newReceipt;
     }
