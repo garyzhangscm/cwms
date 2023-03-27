@@ -67,6 +67,10 @@ public class UserService  implements TestDataInitiableService{
     private FileService fileService;
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
+    @Autowired
+    private PermissionService permissionService;
+    @Autowired
+    private RolePermissionService rolePermissionService;
 
 
     @Value("${fileupload.test-data.users:users}")
@@ -638,5 +642,114 @@ public class UserService  implements TestDataInitiableService{
         user.setEmail(email);
         logger.debug("User {}'s email is changed to {}", username, email);
         return saveOrUpdate(user);
+    }
+
+    /**
+     * Get current user's permission by web page. Permission in web page normally means if the
+     * user has access to certain button or link
+     * @param companyId
+     * @param warehouseId
+     * @param webPageUrl
+     * @return
+     */
+    public List<UserPermission> getUserPermissionByWebPage(Long companyId, Long warehouseId, String webPageUrl) {
+        User user = findByUsername(companyId, getCurrentUserName(), false);
+        return getUserPermissionByWebPage(user, webPageUrl);
+    }
+
+    public List<UserPermission> getUserPermissionByWebPage(User user, String webPageUrl) {
+
+        return getUserPermissionByWebPage(
+                user,
+                menuService.getMenuByUrl(webPageUrl)
+        );
+
+    }
+
+    /**
+     * Get the user's permission on the web page of the menu
+     * @param user
+     * @param menu
+     * @return
+     */
+    public List<UserPermission> getUserPermissionByWebPage(User user, Menu menu) {
+        // get all the permission that belong to the menu
+
+        List<Permission> permissions = permissionService.findAll(menu, null);
+        // loop through each permission and see if current user has access
+        // to the permission
+        // the user is blocked from the permission only if it is explicitly
+        // disallowed
+        return permissions.stream().map(
+                permission -> {
+                    UserPermission userPermission = new UserPermission();
+                    userPermission.setUsername(user.getUsername());
+                    userPermission.setPermission(permission);
+                    userPermission.setAllowAccess(isPermissionAccessAllowed(user, permission));
+                    return userPermission;
+                }
+        ).collect(Collectors.toList());
+    }
+
+    private Boolean isPermissionAccessAllowed(User user, Permission permission) {
+
+        logger.debug("Start to check if the user {} can access permission {} - {} / {}",
+                user.getUsername(),
+                permission.getMenu().getName(),
+                permission.getMenu().getLink(),
+                permission.getName());
+        // admin and system admin has access to everything
+        if (user.getAdmin() || user.getSystemAdmin()) {
+            logger.debug("Current user is admin / system admin, allow any permission");
+            return true;
+        }
+        // if we have at least one role of the user allowed to access the permission
+        // then the user is allowed to access the permission
+        // else if there's no role allowed to access the permission but there's role
+        // that not allowed to access the permission explicitly, then the user doesn't
+        // allow to access the permission
+        int accessAllowedRoleCount = 0;
+        int accessDisallowedRoleCount = 0;
+
+        for (Role role : user.getRoles()) {
+            RolePermission rolePermission = rolePermissionService.findByRoleAndPermission(
+                    role, permission
+            );
+
+            if (Objects.nonNull(rolePermission)) {
+                logger.debug("Role {} / Permission {} - {} / {} is defined as {}",
+                        role.getName(),
+                        permission.getMenu().getName(),
+                        permission.getMenu().getLink(),
+                        permission.getName(),
+                        rolePermission.getAllowAccess());
+                if (Boolean.FALSE.equals(rolePermission.getAllowAccess())) {
+                    accessDisallowedRoleCount++;
+                }
+                else {
+                    accessAllowedRoleCount++;
+                }
+            }
+            else {
+                logger.debug("Role {} / Permission {} - {} / {} is not defined ",
+                        role.getName(),
+                        permission.getMenu().getName(),
+                        permission.getMenu().getLink(),
+                        permission.getName());
+            }
+        }
+
+        if (accessDisallowedRoleCount == 0) {
+            // no role has explicitly disallowed the permission, by default
+            // the permission is allowed
+            logger.debug("There's no role that block the access, we will allow the access by default");
+            return true;
+        }
+        // we have roles that explicitly disallow the permission,
+        // we will still allow the permission only if there's other roles that
+        // explicitly allow the permission
+        logger.debug("There's roles that block the access, We will still allow access only if there's role" +
+                " that allow the permission? {}", (accessAllowedRoleCount > 0));
+        return accessAllowedRoleCount > 0;
     }
 }

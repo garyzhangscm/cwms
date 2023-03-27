@@ -34,20 +34,14 @@ public class Permission extends AuditibleEntity<String>  {
     @Column(name = "permission_id")
     private Long id;
 
-    @Column(name = "warehouse_id")
-    private Long warehouseId;
-
     @ManyToOne
     @JoinColumn(name = "menu_id")
     @JsonIgnore
     private Menu menu;
 
-
     @Column(name = "name")
     private String name;
 
-    @Column(name = "accessible_flag")
-    private Boolean accessibleFlag;
 
     public Long getId() {
         return id;
@@ -57,13 +51,6 @@ public class Permission extends AuditibleEntity<String>  {
         this.id = id;
     }
 
-    public Long getWarehouseId() {
-        return warehouseId;
-    }
-
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
-    }
 
     public Menu getMenu() {
         return menu;
@@ -81,11 +68,4 @@ public class Permission extends AuditibleEntity<String>  {
         this.name = name;
     }
 
-    public Boolean getAccessibleFlag() {
-        return accessibleFlag;
-    }
-
-    public void setAccessibleFlag(Boolean accessibleFlag) {
-        this.accessibleFlag = accessibleFlag;
-    }
 }

@@ -61,6 +61,8 @@ public class MyApplicationRunner implements ApplicationRunner {
     ReportService reportService;
     @Autowired
     FileService fileService;
+    @Autowired
+    private PermissionService permissionService;
 
     @Autowired
     private EMailService eMailService;
@@ -89,6 +91,8 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         initReportData();
 
+        // init permission data
+        permissionService.initData("permission.csv");
 
 
     }
