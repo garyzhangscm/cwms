@@ -2036,5 +2036,8 @@
   "ALERT-TYPE-NEW_ITEM": "新增商品",
   "ALERT-TYPE-MODIFY_ITEM": "商品修改",
   "basic-info": "基础信息",
-  "email-is-required": "请填写Email"
+  "email-is-required": "请填写Email",
+  "menu.main.auth.permission": "权限",
+  "permission": "权限",
+  "assign-permission": "分配权限"
 }

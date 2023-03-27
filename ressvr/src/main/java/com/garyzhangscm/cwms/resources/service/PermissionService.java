@@ -57,7 +57,7 @@ public class PermissionService {
         return permissionRepository.findByMenuAndName(menu, name);
     }
 
-    public List<Permission> findAll(Menu menu, String name) {
+    public List<Permission> findAll(Menu menu, String name, String menuIds) {
 
         return permissionRepository.findAll(
                 (Root<Permission> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -70,6 +70,15 @@ public class PermissionService {
                     }
                     if (Strings.isNotBlank(name)) {
                         predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                    }
+                    if (Strings.isNotBlank(menuIds)) {
+
+                        Join<Permission, Menu> joinMenu = root.join("menu", JoinType.INNER);
+                        CriteriaBuilder.In<Long> inMenuIds = criteriaBuilder.in(joinMenu.get("id"));
+                        for(String id : menuIds.split(",")) {
+                            inMenuIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inMenuIds));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -113,6 +122,7 @@ public class PermissionService {
         }
         permission.setMenu(menu);
         permission.setName(permissionCSVWrapper.getName());
+        permission.setDescription(permissionCSVWrapper.getDescription());
 
         return permission;
     }

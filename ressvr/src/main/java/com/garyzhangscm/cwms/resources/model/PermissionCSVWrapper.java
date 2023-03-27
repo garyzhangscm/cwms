@@ -6,6 +6,7 @@ public class PermissionCSVWrapper {
     private String menu;
 
     private String name;
+    private String description;
 
     public String getMenu() {
         return menu;
@@ -21,5 +22,13 @@ public class PermissionCSVWrapper {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -1,3 +1,12 @@
-menu,name
-Outbound-Order,add-order
-Outbound-Order,file-upload
+menu,name,description
+Outbound-Order,add-order,Add Order
+Outbound-Order,file-upload,Upload Order File
+Outbound-Order,modify-order,Modify Order
+Outbound-Order,allocate-order,Allocate Order
+Outbound-Order,reassign-stage-location,Reassign Stage Location
+Outbound-Order,complete-order,Complete Order
+Outbound-Order,remove-order,Remove Order
+Outbound-Order,retrigger-order-confirm-integration,Retrigger Order Confirmation Integration
+Outbound-Order,upload-document,Upload Order Document
+Outbound-Order,ship-parcel,Shipping Parcel Package
+Outbound-Order,add-order-billable-activity-type,Add Order Billable Activity
