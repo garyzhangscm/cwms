@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.resources.controller;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.User;
+import com.garyzhangscm.cwms.resources.model.UserPermission;
 import com.garyzhangscm.cwms.resources.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -258,6 +259,15 @@ public class UserController {
                             @RequestParam String username,
                             @RequestParam String email) {
         return userService.changeEmail(companyId, username, email);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/users/permission/by-web-page", method = RequestMethod.GET)
+    public List<UserPermission> getUserPermissionByWebPage(@RequestParam Long companyId,
+                                                           @RequestParam Long warehouseId,
+                                                           @RequestParam String webPageUrl) {
+        return userService.getUserPermissionByWebPage(companyId, warehouseId, webPageUrl);
     }
 
 

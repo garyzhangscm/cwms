@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.apache.commons.io.FileUtils;
@@ -192,5 +194,45 @@ public class FileService {
                 sourceDirectoryLocation,
                 destinationDirectoryLocation);
         copyDirectory(new File(sourceDirectoryLocation), new File(destinationDirectoryLocation));
+    }
+    public <T> List<T> loadData(File file, Class<T> tClass)throws IOException {
+        CsvMapper csvMapper = new CsvMapper();
+        CsvSchema bootstrapSchema = CsvSchema.emptySchema() //
+                .withHeader() //
+                .withColumnSeparator(',');
+
+        ObjectReader reader = csvMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) //
+                .readerFor(tClass) //
+                .with(bootstrapSchema);
+
+        MappingIterator<T> iterator;
+        try {
+            iterator = reader.readValues(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new IllegalStateException(String.format("could not access file " + file.getName()), e);
+        }
+        List<T> results = new ArrayList<>();
+        iterator.forEachRemaining(results::add);
+        return results;
+    }
+    public <T> List<T> loadData(InputStream inputStream, Class<T> tClass)throws IOException {
+        CsvMapper csvMapper = new CsvMapper();
+        CsvSchema bootstrapSchema = CsvSchema.emptySchema() //
+                .withHeader() //
+                .withColumnSeparator(',');
+
+        ObjectReader reader = csvMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) //
+                .readerFor(tClass) //
+                .with(bootstrapSchema);
+
+        MappingIterator<T> iterator;
+        try {
+            iterator = reader.readValues(inputStream);
+        } catch (IOException e) {
+            throw new IllegalStateException("could not access file ", e);
+        }
+        List<T> results = new ArrayList<>();
+        iterator.forEachRemaining(results::add);
+        return results;
     }
 }
