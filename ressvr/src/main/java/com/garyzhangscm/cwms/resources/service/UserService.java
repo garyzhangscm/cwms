@@ -675,7 +675,7 @@ public class UserService  implements TestDataInitiableService{
     public List<UserPermission> getUserPermissionByWebPage(User user, Menu menu) {
         // get all the permission that belong to the menu
 
-        List<Permission> permissions = permissionService.findAll(menu, null);
+        List<Permission> permissions = permissionService.findAll(menu, null, null);
         // loop through each permission and see if current user has access
         // to the permission
         // the user is blocked from the permission only if it is explicitly

@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.resources.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.*;
 
@@ -41,6 +42,11 @@ public class Permission extends AuditibleEntity<String>  {
 
     @Column(name = "name")
     private String name;
+    @Column(name = "description")
+    private String description;
+
+    @Transient
+    private String menuName;
 
 
     public Long getId() {
@@ -68,4 +74,20 @@ public class Permission extends AuditibleEntity<String>  {
         this.name = name;
     }
 
+    public String getMenuName() {
+        return Strings.isBlank(menuName) ?
+            menu.getName() : menuName;
+    }
+
+    public void setMenuName(String menuName) {
+        this.menuName = menuName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

@@ -2036,5 +2036,8 @@
   "ALERT-TYPE-NEW_ITEM": "New Item",
   "ALERT-TYPE-MODIFY_ITEM": "Item Changed",
   "basic-info": "Basic Information",
-  "email-is-required": "Email is required"
+  "email-is-required": "Email is required",
+  "menu.main.auth.permission": "Permission",
+  "permission": "Permission",
+  "assign-permission": "Assign Permission"
 }

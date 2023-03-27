@@ -5,8 +5,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Location Kanban",menu.dashboard.location-kanban,/warehouse-layout/location-dashboard,4,User-Menu-Dashboard,Dashboard-Location,,true,false
 "User",menu.main.auth.user,/auth/user,1,Main-Menu-Auth,Auth-User,,true,false
 "Role",menu.main.auth.role,/auth/role,2,Main-Menu-Auth,Auth-Role,,true,false
-"WorkingTeam",menu.main.auth.working-team,/auth/working-team,3,Main-Menu-Auth,Auth-WorkingTeam,,true,false
-"Department",menu.main.auth.department,/auth/department,4,Main-Menu-Auth,Auth-Department,,true,false
+"Permission",menu.main.auth.permission,/auth/permission,3,Main-Menu-Auth,Auth-Permission,,true,false
+"WorkingTeam",menu.main.auth.working-team,/auth/working-team,4,Main-Menu-Auth,Auth-WorkingTeam,,true,false
+"Department",menu.main.auth.department,/auth/department,5,Main-Menu-Auth,Auth-Department,,true,false
 "Warehouse",menu.main.layout.warehouse,/warehouse-layout/warehouse,1,Main-Menu-Layout,Layout-warehouse,,true,false
 "LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group,,true,false
 "WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location,,true,false
