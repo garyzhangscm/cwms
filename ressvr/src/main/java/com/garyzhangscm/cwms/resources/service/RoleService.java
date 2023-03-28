@@ -41,6 +41,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RoleService implements TestDataInitiableService{
@@ -53,6 +54,8 @@ public class RoleService implements TestDataInitiableService{
     private UserService userService;
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
+    @Autowired
+    private RolePermissionService rolePermissionService;
 
 
     @Autowired
@@ -353,5 +356,27 @@ public class RoleService implements TestDataInitiableService{
         }
         return saveOrUpdate(role);
 
+    }
+
+    /**
+     * Process role's permission
+     * @param id
+     * @param rolePermissions
+     * @return
+     */
+    public List<RolePermission> processPermissions(Long id, List<RolePermission> rolePermissions) {
+        Role role = findById(id);
+        return processPermissions(role, rolePermissions);
+    }
+
+    public List<RolePermission> processPermissions(Role role, List<RolePermission> rolePermissions) {
+        return rolePermissions.stream().map(
+                rolePermission -> processPermission(role, rolePermission)
+        ).collect(Collectors.toList());
+
+    }
+    public RolePermission processPermission(Role role, RolePermission rolePermission) {
+
+        return rolePermissionService.processPermission(role, rolePermission);
     }
 }

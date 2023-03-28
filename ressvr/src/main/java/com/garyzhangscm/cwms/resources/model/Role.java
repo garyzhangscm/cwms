@@ -58,6 +58,12 @@ public class Role extends AuditibleEntity<String>  {
     )
     private List<RoleClientAccess> clientAccesses = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "role",
+            orphanRemoval = true
+    )
+    private List<RolePermission> rolePermissions = new ArrayList<>();
+
 
     // whether the role has access to the non client data
     // by default, the role has access to any non client data
@@ -202,5 +208,13 @@ public class Role extends AuditibleEntity<String>  {
 
     public void setAllClientAccess(Boolean allClientAccess) {
         this.allClientAccess = allClientAccess;
+    }
+
+    public List<RolePermission> getRolePermissions() {
+        return rolePermissions;
+    }
+
+    public void setRolePermissions(List<RolePermission> rolePermissions) {
+        this.rolePermissions = rolePermissions;
     }
 }

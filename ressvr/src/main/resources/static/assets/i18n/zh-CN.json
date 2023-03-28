@@ -2039,5 +2039,6 @@
   "email-is-required": "请填写Email",
   "menu.main.auth.permission": "权限",
   "permission": "权限",
-  "assign-permission": "分配权限"
+  "assign-permission": "分配权限",
+  "cannot-get-current-role": "无法加载当前角色"
 }

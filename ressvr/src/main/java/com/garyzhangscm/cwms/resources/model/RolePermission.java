@@ -20,7 +20,6 @@ public class RolePermission extends AuditibleEntity<String>  {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "permission_id")
     private Permission permission;
