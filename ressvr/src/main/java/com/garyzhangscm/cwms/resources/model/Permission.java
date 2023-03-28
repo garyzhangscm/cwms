@@ -37,7 +37,6 @@ public class Permission extends AuditibleEntity<String>  {
 
     @ManyToOne
     @JoinColumn(name = "menu_id")
-    @JsonIgnore
     private Menu menu;
 
     @Column(name = "name")
@@ -47,6 +46,8 @@ public class Permission extends AuditibleEntity<String>  {
 
     @Transient
     private String menuName;
+    @Transient
+    private Long menuId;
 
 
     public Long getId() {
@@ -89,5 +90,13 @@ public class Permission extends AuditibleEntity<String>  {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getMenuId() {
+        return menuId;
+    }
+
+    public void setMenuId(Long menuId) {
+        this.menuId = menuId;
     }
 }

@@ -2039,5 +2039,6 @@
   "email-is-required": "Email is required",
   "menu.main.auth.permission": "Permission",
   "permission": "Permission",
-  "assign-permission": "Assign Permission"
+  "assign-permission": "Assign Permission",
+  "cannot-get-current-role": "Can't find the current role"
 }

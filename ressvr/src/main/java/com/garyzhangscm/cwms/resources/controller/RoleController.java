@@ -151,4 +151,13 @@ public class RoleController {
     }
 
 
+    @RequestMapping(value="/roles/{id}/permissions", method = RequestMethod.POST)
+    public List<RolePermission> processPermissions(@PathVariable Long id,
+                                                   @RequestParam Long companyId,
+                                                   @RequestParam Long warehouseId,
+                                                   @RequestBody List<RolePermission> rolePermissions) {
+
+        return roleService.processPermissions(id, rolePermissions);
+    }
+
 }
