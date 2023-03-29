@@ -10,3 +10,13 @@ Outbound-Order,retrigger-order-confirm-integration,Retrigger Order Confirmation 
 Outbound-Order,upload-document,Upload Order Document
 Outbound-Order,ship-parcel,Shipping Parcel Package
 Outbound-Order,add-order-billable-activity-type,Add Order Billable Activity
+Util-File-Upload,items,Item
+Util-File-Upload,BOMs,BOM
+Util-File-Upload,inventory,Inventory
+Util-File-Upload,itemUnitOfMeasure,Item Unit of Measure
+Util-File-Upload,locations,Warehouse Locations
+Util-File-Upload,orders,Order
+Util-File-Upload,putaway-inventories,Putaway Inventory
+Util-File-Upload,receipts,Receipt
+Util-File-Upload,receiving-inventories,Receiving Inventory
+Util-File-Upload,shipping-trailer-appointment,Shipping Trailer Appointment
