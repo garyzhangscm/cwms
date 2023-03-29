@@ -92,7 +92,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Trailer",menu.main.transport.trailer,/transportation/trailer,2,Main-Menu-transport,transport-Trailer,,true,false
 "Carrier",menu.main.transport.carrier,/transportation/carrier,3,Main-Menu-transport,transport-carrier,,true,false
 "Easy Post",menu.main.transport.easy-post,/transportation/easy-post,3,Main-Menu-transport,transport-EasyPost,,true,false
-"File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-Client,,true,false
+"File Upload",menu.main.util.file-upload,/util/file-upload,1,Main-Menu-Util,Util-File-Upload,,true,false
 "Test Data Initial",menu.main.util.test-data-init,,2,Main-Menu-Util,Util-TestDataInit,,true,true
 "Tester",menu.main.util.tester,/util/tester,3,Main-Menu-Util,Util-Tester,,true,true
 "Valid Icon",menu.main.util.icon-list,/util/icon-list,4,Main-Menu-Util,Util-ValidIcon,,true,true
