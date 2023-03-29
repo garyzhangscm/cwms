@@ -37,6 +37,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLEncoder;
@@ -55,6 +56,8 @@ public class ResourceServiceRestemplateClient {
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
 
     @Cacheable(cacheNames = "InventoryService_User")
     public User getUserById(Long id) {
@@ -165,6 +168,29 @@ public class ResourceServiceRestemplateClient {
                 HttpMethod.POST,
                 getHttpEntity(objectMapper.writeValueAsString(reportData)),
                 new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
+    public String validateCSVFile(Long warehouseId,
+                                  String type, String headers) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("type", type)
+                        .queryParam("headers", headers);
+
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
 

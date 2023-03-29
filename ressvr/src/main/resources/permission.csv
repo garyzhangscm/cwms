@@ -10,6 +10,17 @@ Outbound-Order,retrigger-order-confirm-integration,Retrigger Order Confirmation 
 Outbound-Order,upload-document,Upload Order Document
 Outbound-Order,ship-parcel,Shipping Parcel Package
 Outbound-Order,add-order-billable-activity-type,Add Order Billable Activity
+Outbound-Order,add-order-line-billable-activity-type,Add Order Line Billable Activity
+Outbound-Order,cancel-single-pick,Cancel Single Pick
+Outbound-Order,cancel-multiple-pick,Cancel Multiple Pick
+Outbound-Order,confirm-multiple-pick,Confirm Pick
+Outbound-Order,unpick,Unpick
+Outbound-Order,allocate-short-allocation,Allocate Short Allocation
+Outbound-Order,create-work-order,Create Work Order
+Outbound-Order,cancel-short-allocation,Cancel Short Allocation
+Outbound-Order,remove-order-billable-activity-type,Remove Order Billable Activity Type
+Outbound-Order,remove-order-document,Remove Order Document
+Outbound-Order,remove-order-line-billable-activity-type,Remove Order Line Billable Activity Type
 Util-File-Upload,items,Item
 Util-File-Upload,BOMs,BOM
 Util-File-Upload,inventory,Inventory
@@ -20,3 +31,32 @@ Util-File-Upload,putaway-inventories,Putaway Inventory
 Util-File-Upload,receipts,Receipt
 Util-File-Upload,receiving-inventories,Receiving Inventory
 Util-File-Upload,shipping-trailer-appointment,Shipping Trailer Appointment
+Inbound-receipt,modify-receipt,Modify Receipt
+Inbound-receipt,check-in-receipt,Check In Receipt
+Inbound-receipt,complete-receipt,Complete Receipt
+Inbound-receipt,add-receipt-billable-activity,Add Receipt Billable Activity
+Inbound-receipt,remove-receipt-billable-activity,Remove Receipt Billable Activity
+Inbound-receipt,add-receipt-line-billable-activity,Add Receipt Line Billable Activity
+Inbound-receipt,remove-receipt-line-billable-activity,Remove Receipt Line Billable Activity
+Inbound-receipt,remove-multiple-receipt,Remove Multiple Receipt
+Inbound-receipt,add-receipt,Add Receipt
+Inbound-receipt,upload-receipt,Upload Receipt
+Inbound-receipt,upload-receiving-inventory,Upload Receiving Inventory
+Inbound-receipt,upload-putaway-inventory,Upload Put Away Inventory
+Inventory-Inventory,adjust-inventory-quantity,Adjust Inventory Quantity
+Inventory-Inventory,change-inventory-attribute,Change Inventory Attribute
+Inventory-Inventory,move-inventory,Move Inventory
+Inventory-Inventory,remove-inventory,Remove Inventory
+Inventory-Inventory,remove-inventory-in-batch,Remove Inventory In Batch
+Inventory-Inventory,move-inventory-in-batch,Move Inventory In Batch
+Inventory-Inventory,upload-inventory,Upload Inventory
+Inventory-InventoryAdjust,add-inventory,Add Inventory
+Inventory-InventoryAdjust,empty-location,Empty Location
+Inventory-InventoryAdjust,adjust-inventory-quantity,Adjust Inventory Quantity
+Inventory-InventoryAdjust,change-inventory-attribute,Change Inventory Attribute
+Inventory-InventoryAdjust,remove-inventory,Remove Inventory
+Inventory-Item,modify-item,Modify Item
+Inventory-Item,remove-item,Remove Item
+Inventory-Item,upload-item,Upload Item
+Inventory-Item,upload-item-unit-of-measure,Upload Item Unit Of Measure
+Inventory-Item,add-item,Add Item

@@ -76,6 +76,7 @@ public class TrailerAppointmentController {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "shipping-trailer-appointment", localFile);
         String fileUploadProgressKey = trailerAppointmentService.saveShippingTrailerAppointmentData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }

@@ -16,22 +16,14 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.workorder.clients;
+package com.garyzhangscm.cwms.layout.clients;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.model.Report;
-import com.garyzhangscm.cwms.workorder.model.ReportHistory;
-import com.garyzhangscm.cwms.workorder.model.ReportType;
-import com.garyzhangscm.cwms.workorder.model.User;
-import org.apache.logging.log4j.util.Strings;
+import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -41,7 +33,6 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
 
 
 @Component
@@ -58,54 +49,6 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
-    public ReportHistory generateReport(Long warehouseId, ReportType type,
-                                        Report reportData, String locale, String printerName)
-            throws JsonProcessingException {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/resource/reports/{warehouseId}/{type}")
-                        .queryParam("locale", locale);
-        if (Strings.isNotBlank(printerName)) {
-            builder = builder.queryParam("printerName", printerName);
-        }
-
-        ResponseBodyWrapper<ReportHistory> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(warehouseId, type).toUriString(),
-                        HttpMethod.POST,
-                        getHttpEntity(objectMapper.writeValueAsString(reportData)),
-                        new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
-    @Cacheable(cacheNames = "WorkOrderService_User", unless="#result == null")
-    public User getUserByUsername(Long companyId, String username) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/resource/users")
-                        .queryParam("username", username)
-                        .queryParam("companyId", companyId);
-
-        ResponseBodyWrapper<List<User>> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
-
-        List<User> users = responseBodyWrapper.getData();
-
-        if (users.size() != 1) {
-            return null;
-        }
-        else {
-            return users.get(0);
-        }
-
-    }
 
     public String validateCSVFile(Long warehouseId,
                                   String type, String headers) {

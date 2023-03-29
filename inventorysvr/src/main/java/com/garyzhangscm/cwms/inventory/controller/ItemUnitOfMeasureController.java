@@ -53,6 +53,7 @@ public class ItemUnitOfMeasureController {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "itemUnitOfMeasure", localFile);
         // List<ItemUnitOfMeasure> itemUnitOfMeasures = itemUnitOfMeasureService.saveItemUnitOfMeasureData(warehouseId, localFile);
         // return  ResponseBodyWrapper.success(itemUnitOfMeasures.size() + "");
 

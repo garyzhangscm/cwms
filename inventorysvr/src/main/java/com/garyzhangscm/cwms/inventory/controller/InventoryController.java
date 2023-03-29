@@ -541,6 +541,7 @@ public class InventoryController {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "inventory", localFile);
         String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
@@ -577,6 +578,7 @@ public class InventoryController {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "putaway-inventories", localFile);
         String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }

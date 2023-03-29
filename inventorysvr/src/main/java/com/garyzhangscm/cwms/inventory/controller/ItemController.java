@@ -204,6 +204,7 @@ public class ItemController {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "items", localFile);
         // List<Item> items = itemService.saveItemData(warehouseId, localFile);
         // return  ResponseBodyWrapper.success(String.valueOf(items.size()));
         String fileUploadProgressKey = itemService.uploadItemData(warehouseId, localFile);
