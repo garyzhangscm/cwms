@@ -887,8 +887,19 @@ public class ShipmentService {
     }
 
     private void sendOrderConfirmationIntegration(Shipment shipment) {
+        sendOrderConfirmationIntegration(shipment, true);
+    }
 
-        integrationService.process(new OrderConfirmation(shipment));
+    /**
+     * Send order confirmation for order complete.
+     * Include Zero Quantity: include the line that is in order but not in the shipment or
+     * shipped 0 in the shipment
+     * @param shipment
+     * @param includeZeroQuantity
+     */
+    private void sendOrderConfirmationIntegration(Shipment shipment, boolean includeZeroQuantity) {
+
+        integrationService.process(new OrderConfirmation(shipment, includeZeroQuantity));
     }
     /**
      * Check if we are ready to complete a shipment when
