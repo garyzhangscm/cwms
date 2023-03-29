@@ -26,9 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class OrderConfirmation  extends AuditibleEntity<String> implements Serializable {
 
@@ -66,7 +64,7 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
         });
     }
 
-    public OrderConfirmation(Shipment shipment){
+    public OrderConfirmation(Shipment shipment, boolean includeZeroQuantity){
         this.number = shipment.getOrderNumber();
         this.warehouseId = shipment.getWarehouseId();
         if (Objects.nonNull(shipment.getOrder())) {
@@ -85,11 +83,48 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
         if (Objects.nonNull(shipment.getWarehouse())) {
             this.warehouseName = shipment.getWarehouse().getName();
         }
+        Set<Order> orders = new HashSet<>();
+        Set<Long> shippedOrderLineId = new HashSet<>();
+
         shipment.getShipmentLines().forEach(shipmentLine -> {
             OrderLineConfirmation orderLineConfirmation = new OrderLineConfirmation(shipmentLine);
             orderLineConfirmation.setOrder(this);
             addOrderLine(orderLineConfirmation);
+            shippedOrderLineId.add(shipmentLine.getOrderLine().getId());
+
+            orders.add(shipmentLine.getOrderLine().getOrder());
         });
+
+        // if we will need to include zero quantity, then get the orders that in this shipment
+        // and include all the order lines in the orders but not in the shipment and mark it as
+        // shipped 0 quantity
+        if (includeZeroQuantity) {
+            logger.debug("We will need to include zero quantity order line in the order confirmation");
+            orders.forEach(order -> {
+                logger.debug(">> start to process order {}", order.getNumber());
+                order.getOrderLines().stream().filter(
+                        orderLine -> {
+                            logger.debug(">>>> need to include order line {} / {} ? {}",
+                                    order.getNumber(),
+                                    orderLine.getNumber(),
+                                    !shippedOrderLineId.contains(orderLine.getId()));
+                            return !shippedOrderLineId.contains(orderLine.getId());
+                        }
+                ).forEach(
+                        orderLine -> {
+                            logger.debug(">>>> start to add the zeor shipped quantity line {} / {}",
+                                    order.getNumber(),
+                                    orderLine.getNumber());
+
+                            OrderLineConfirmation orderLineConfirmation = new OrderLineConfirmation(orderLine);
+                            orderLineConfirmation.setOrder(this);
+                            // set the shipped quantity to 0 as the order line is not in this shipment
+                            orderLineConfirmation.setShippedQuantity(0L);
+                            addOrderLine(orderLineConfirmation);
+                        }
+                );
+            });
+        }
     }
 
     @Override
