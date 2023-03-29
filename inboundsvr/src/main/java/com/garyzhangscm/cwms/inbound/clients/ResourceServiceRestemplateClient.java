@@ -55,6 +55,8 @@ public class ResourceServiceRestemplateClient {
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
 
     public ReportHistory generateReport(Long warehouseId, ReportType type,
                                         Report reportData, String locale,
@@ -105,6 +107,28 @@ public class ResourceServiceRestemplateClient {
         else {
             return users.get(0);
         }
+
+    }
+
+    public String validateCSVFile(Long warehouseId,
+                                  String type, String headers) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("type", type)
+                        .queryParam("headers", headers);
+
+        ResponseBodyWrapper<String> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
 
     }
 

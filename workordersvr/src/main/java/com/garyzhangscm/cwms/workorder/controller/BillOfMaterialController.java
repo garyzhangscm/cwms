@@ -97,10 +97,12 @@ public class BillOfMaterialController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/bill-of-materials/upload")
-    public ResponseBodyWrapper uploadBillOfMaterials(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseBodyWrapper uploadBillOfMaterials(Long warehouseId,
+                                                     @RequestParam("file") MultipartFile file) throws IOException {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "BOMs", localFile);
         List<BillOfMaterialLine> billOfMaterialLines = billOfMaterialLineService.saveBOMLineData(localFile);
         return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
     }

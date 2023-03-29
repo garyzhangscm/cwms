@@ -23,6 +23,10 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.layout.clients.ResourceServiceRestemplateClient;
+import com.garyzhangscm.cwms.layout.exception.SystemFatalException;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,6 +40,8 @@ public class FileService {
 
     @Value("${fileupload.temp-file.directory:/upload/tmp/}")
     String destinationFolder;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     public File saveFile(MultipartFile file, String destination) throws IOException {
         File localFile = new File(destination);
@@ -109,5 +115,40 @@ public class FileService {
         // read from input stream
         MappingIterator<T> mappingIterator = mapper.readerFor(tClass).with(schema).readValues(csvInputStream);
         return mappingIterator.readAll();
+    }
+
+    public void validateCSVFile(Long warehouseId,
+                                String type,
+                                File file) {
+        // we will assume the first line of the file is the hader of the CSV file
+
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(file));
+            String header = br.readLine();
+            if (header != null) {
+                validateCSVFile(warehouseId, type, header);
+            }
+            throw SystemFatalException.raiseException(
+                    "CSV file " + file.getName() + " is not in the right format for type " + type);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw SystemFatalException.raiseException(
+                    "CSV file " + file.getName() + " is not in the right format for type " + type
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw SystemFatalException.raiseException(
+                    "CSV file " + file.getName() + " is not in the right format for type " + type
+            );
+        }
+    }
+
+    public void validateCSVFile(Long warehouseId,
+                                String type, String headers) {
+        String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
+        if (Strings.isBlank(result)) {
+            throw SystemFatalException.raiseException(result);
+        }
     }
 }

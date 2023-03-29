@@ -380,6 +380,7 @@ public class ReceiptController {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "receipts", localFile);
         String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
@@ -415,6 +416,7 @@ public class ReceiptController {
 
 
         File localFile = fileService.saveFile(file);
+        fileService.validateCSVFile(warehouseId, "receiving-inventories", localFile);
 
         String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
