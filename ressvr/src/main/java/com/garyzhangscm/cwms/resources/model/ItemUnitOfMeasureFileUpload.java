@@ -117,6 +117,10 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
                 Double.class, 100, false
         ));
         addColumn(new FileUploadTemplateColumn(
+                "width", "width",
+                Double.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
                 "height", "height",
                 Double.class, 100, false
         ));
@@ -134,6 +138,10 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "caseFlag", "case flag",
+                Boolean.class, 100, false
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "defaultForDisplay", "Default for Display",
                 Boolean.class, 100, false
         ));
 
