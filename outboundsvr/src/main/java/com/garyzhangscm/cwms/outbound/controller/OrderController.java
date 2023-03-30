@@ -310,6 +310,12 @@ public class OrderController {
 
 
         File localFile = fileService.saveFile(file);
+        try {
+            fileService.validateCSVFile(warehouseId, "orders", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
         String fileUploadProgressKey = orderService.saveOrderData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }

@@ -88,7 +88,12 @@ public class LocationController {
 
 
         File localFile = fileService.saveFile(file);
-        fileService.validateCSVFile(warehouseId, "locations", localFile);
+        try {
+            fileService.validateCSVFile(warehouseId, "locations", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
         // List<Location> locations = locationService.loadLocationData(warehouseId, localFile);
 
         String fileUploadProgressKey = locationService.uploadLocationData(warehouseId, localFile);

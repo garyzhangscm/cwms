@@ -541,7 +541,12 @@ public class InventoryController {
 
 
         File localFile = fileService.saveFile(file);
-        fileService.validateCSVFile(warehouseId, "inventory", localFile);
+        try {
+            fileService.validateCSVFile(warehouseId, "inventory", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
         String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
@@ -578,7 +583,12 @@ public class InventoryController {
 
 
         File localFile = fileService.saveFile(file);
-        fileService.validateCSVFile(warehouseId, "putaway-inventories", localFile);
+        try {
+            fileService.validateCSVFile(warehouseId, "putaway-inventories", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
         String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }

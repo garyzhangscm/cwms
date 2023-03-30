@@ -200,8 +200,12 @@ public class FileService {
             if (header != null) {
                 validateCSVFile(warehouseId, type, header);
             }
-            throw SystemFatalException.raiseException(
-                    "CSV file " + file.getName() + " is not in the right format for type " + type);
+            else {
+                logger.debug("Can't get header information from file {}", file);
+
+                throw SystemFatalException.raiseException(
+                        "CSV file " + file.getName() + " is missing the header");
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw SystemFatalException.raiseException(
@@ -218,7 +222,9 @@ public class FileService {
     public void validateCSVFile(Long warehouseId,
                                 String type, String headers) {
         String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
-        if (Strings.isBlank(result)) {
+        if (Strings.isNotBlank(result)) {
+            logger.debug("Get error while validate CSV file of type {}, \n{}",
+                    type, result);
             throw SystemFatalException.raiseException(result);
         }
     }

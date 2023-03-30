@@ -24,6 +24,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.SystemFatalException;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ import java.util.List;
 
 @Service
 public class FileService {
+    private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
     @Value("${fileupload.temp-file.directory:/upload/tmp/}")
     String destinationFolder;
@@ -134,8 +137,13 @@ public class FileService {
             if (header != null) {
                 validateCSVFile(warehouseId, type, header);
             }
-            throw SystemFatalException.raiseException(
-                    "CSV file " + file.getName() + " is not in the right format for type " + type);
+            else {
+                logger.debug("Can't get header information from file {}", file);
+
+                throw SystemFatalException.raiseException(
+                        "CSV file " + file.getName() + " is missing the header");
+            }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw SystemFatalException.raiseException(
@@ -152,7 +160,9 @@ public class FileService {
     public void validateCSVFile(Long warehouseId,
                                 String type, String headers) {
         String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
-        if (Strings.isBlank(result)) {
+        if (Strings.isNotBlank(result)) {
+            logger.debug("Get error while validate CSV file of type {}, \n{}",
+                    type, result);
             throw SystemFatalException.raiseException(result);
         }
     }

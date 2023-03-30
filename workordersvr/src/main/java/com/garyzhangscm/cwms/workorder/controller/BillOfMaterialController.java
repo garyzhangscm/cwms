@@ -102,7 +102,13 @@ public class BillOfMaterialController {
 
 
         File localFile = fileService.saveFile(file);
-        fileService.validateCSVFile(warehouseId, "BOMs", localFile);
+        try {
+            fileService.validateCSVFile(warehouseId, "BOMs", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
+
         List<BillOfMaterialLine> billOfMaterialLines = billOfMaterialLineService.saveBOMLineData(localFile);
         return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
     }

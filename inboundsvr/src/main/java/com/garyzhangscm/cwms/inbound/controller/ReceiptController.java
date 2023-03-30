@@ -380,7 +380,12 @@ public class ReceiptController {
 
 
         File localFile = fileService.saveFile(file);
-        fileService.validateCSVFile(warehouseId, "receipts", localFile);
+        try {
+            fileService.validateCSVFile(warehouseId, "receipts", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
         String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
@@ -416,7 +421,12 @@ public class ReceiptController {
 
 
         File localFile = fileService.saveFile(file);
-        fileService.validateCSVFile(warehouseId, "receiving-inventories", localFile);
+        try {
+            fileService.validateCSVFile(warehouseId, "receiving-inventories", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
 
         String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
