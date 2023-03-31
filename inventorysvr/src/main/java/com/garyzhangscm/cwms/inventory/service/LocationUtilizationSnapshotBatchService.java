@@ -139,7 +139,7 @@ public class LocationUtilizationSnapshotBatchService {
                     ).getId()
             );
         }
-        return locationUtilizationSnapshotBatchRepository.save(locationUtilizationSnapshotBatch);
+        return save(locationUtilizationSnapshotBatch);
     }
 
     private void loadAttribute(List<LocationUtilizationSnapshotBatch> locationUtilizationSnapshotBatches) {

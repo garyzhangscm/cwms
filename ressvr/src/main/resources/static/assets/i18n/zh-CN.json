@@ -2040,5 +2040,11 @@
   "menu.main.auth.permission": "权限",
   "permission": "权限",
   "assign-permission": "分配权限",
-  "cannot-get-current-role": "无法加载当前角色"
+  "cannot-get-current-role": "无法加载当前角色",
+  "menu.main.inventory.inventory-aging-snapshot": "库龄快照",
+  "inventory-aging-snapshot": "库龄快照",
+  "locationUtilizationSnapshotEnabled": "启用库位使用率快照",
+  "inventoryAgingSnapshotEnabled": "启用库龄快照",
+  "INVENTORY-AGING-SNAPSHOT-STATUS-PROCESSING": "处理中",
+  "INVENTORY-AGING-SNAPSHOT-STATUS-DONE": "完成"
 }

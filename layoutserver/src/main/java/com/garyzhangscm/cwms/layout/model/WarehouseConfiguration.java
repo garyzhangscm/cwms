@@ -74,6 +74,11 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @Column(name = "billing_request_enabled")
     private Boolean billingRequestEnabledFlag;
 
+    @Column(name = "location_utilization_snapshot_enabled")
+    private Boolean locationUtilizationSnapshotEnabled;
+    @Column(name = "inventory_aging_snapshot_enabled")
+    private Boolean inventoryAgingSnapshotEnabled;
+
 
     // define week days
     @Column(name = "working_on_sunday")
@@ -245,5 +250,21 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
+    }
+
+    public Boolean getLocationUtilizationSnapshotEnabled() {
+        return locationUtilizationSnapshotEnabled;
+    }
+
+    public void setLocationUtilizationSnapshotEnabled(Boolean locationUtilizationSnapshotEnabled) {
+        this.locationUtilizationSnapshotEnabled = locationUtilizationSnapshotEnabled;
+    }
+
+    public Boolean getInventoryAgingSnapshotEnabled() {
+        return inventoryAgingSnapshotEnabled;
+    }
+
+    public void setInventoryAgingSnapshotEnabled(Boolean inventoryAgingSnapshotEnabled) {
+        this.inventoryAgingSnapshotEnabled = inventoryAgingSnapshotEnabled;
     }
 }

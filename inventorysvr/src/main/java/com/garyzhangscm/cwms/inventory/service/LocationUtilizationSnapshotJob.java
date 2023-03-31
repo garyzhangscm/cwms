@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.model.WarehouseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +38,29 @@ public class LocationUtilizationSnapshotJob {
     @Autowired
     private InventoryConfigurationService inventoryConfigurationService;
 
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+
     @Scheduled(cron = "0 0 0-23 * * ?")
     public void generateLocationUtilizationSnapshot() throws IOException {
 
+
+        logger.debug("start to automatically generate the inventory aging snapshot");
+        List<WarehouseConfiguration> warehouseConfigurations
+                = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration();
+        warehouseConfigurations.stream().filter(
+                warehouseConfiguration -> warehouseConfiguration.getLocationUtilizationSnapshotEnabled()
+        ).forEach(
+                warehouseConfiguration -> {
+                    logger.debug("start to generate location utilization snapshot for warehouse {}",
+                            warehouseConfiguration.getWarehouse().getId());
+
+                    locationUtilizationSnapshotBatchService.generateLocationUtilizationSnapshotBatch(
+                            warehouseConfiguration.getWarehouse().getId()
+                    );
+                }
+        );
+        /***
         logger.debug("start to automatically generate the location utilization snapshot");
         List<Long> warehouseIds = inventoryConfigurationService.findLocationUtilizationEnabledWarehouses();
         warehouseIds.forEach(
@@ -48,6 +70,7 @@ public class LocationUtilizationSnapshotJob {
                     locationUtilizationSnapshotBatchService.generateLocationUtilizationSnapshotBatch(warehouseId);
                 }
         );
+         **/
 
 
     }

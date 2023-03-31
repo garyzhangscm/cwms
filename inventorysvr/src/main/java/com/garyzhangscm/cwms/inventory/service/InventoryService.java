@@ -3687,4 +3687,33 @@ public class InventoryService {
                 totalLPNCount);
         return totalLPNCount;
     }
+
+    public List<Inventory> findByClientId(Long warehouseId, Long clientId) {
+        return findAll(warehouseId,
+                null,
+                null,
+                null,
+                clientId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                null);
+    }
 }

@@ -223,13 +223,6 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     @Cacheable(cacheNames = "InventoryService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(long warehouseId)   {
-/**
-        if (warehouseConfigurationMap.containsKey(warehouseId)) {
-            logger.debug("start to get warehouse configuration from Local cache by warehouse id {}",
-                    warehouseId);
-            return warehouseConfigurationMap.get(warehouseId);
-        }
- **/
         logger.debug("start to get warehouse configuration from warehouse id {}",
                 warehouseId);
 
@@ -237,7 +230,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout//warehouse-configuration/by-warehouse/{id}");
+                        .path("/api/layout/warehouse-configuration/by-warehouse/{id}");
 
         ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
              = restTemplateProxy.getRestTemplate().exchange(
@@ -245,6 +238,27 @@ public class WarehouseLayoutServiceRestemplateClient {
                    HttpMethod.GET,
                  null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+    /**
+     * Get all warehouse configuration
+     * @return
+     */
+    public List<WarehouseConfiguration> getWarehouseConfiguration()   {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouse-configuration");
+
+        ResponseBodyWrapper<List<WarehouseConfiguration>> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<WarehouseConfiguration>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
     }

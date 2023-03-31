@@ -2040,5 +2040,13 @@
   "menu.main.auth.permission": "Permission",
   "permission": "Permission",
   "assign-permission": "Assign Permission",
-  "cannot-get-current-role": "Can't find the current role"
+  "cannot-get-current-role": "Can't find the current role",
+  "menu.main.inventory.inventory-aging-snapshot": "Inventory Aging Snapshot",
+  "inventory-aging-snapshot": "Inventory Aging Snapshot",
+  "locationUtilizationSnapshotEnabled": "Location Utilization Snapshot Enabled",
+  "inventoryAgingSnapshotEnabled": "Inventory Aging Snapshot Enabled",
+  "INVENTORY-AGING-SNAPSHOT-STATUS-PROCESSING": "In Processing",
+  "INVENTORY-AGING-SNAPSHOT-STATUS-DONE": "Done",
+  "averageAgeInDays": "Average Age In Days",
+  "averageAgeInWeeks": "Average Age In Weekscd "
 }

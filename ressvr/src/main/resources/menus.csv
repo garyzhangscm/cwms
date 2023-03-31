@@ -30,8 +30,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Inventory Snapshot",menu.main.inventory.snapshot,/inventory/snapshot,16,Main-Menu-Inventory,Inventory-Snapshot,,true,false
 "Inventory Sampling",menu.main.inventory.item-sampling,/inventory/item-sampling,17,Main-Menu-Inventory,Inventory-ItemSampling,,true,false
 "Location Utilization Snapshot",menu.main.inventory.location-util,/inventory/location-utilization-snapshot,18,Main-Menu-Inventory,Location-Utilization-Snapshot,,true,false
-"Inventory Status",menu.main.inventory.status,/inventory/status,19,Main-Menu-Inventory,Inventory-Status,,true,false
-"Lock",menu.main.inventory.lock,/inventory/lock,20,Main-Menu-Inventory,Inventory-Lock,,true,false
+"Inventory Aging Snapshot",menu.main.inventory.inventory-aging-snapshot,/inventory/inventory-aging-snapshot,19,Main-Menu-Inventory,Inventory-Aging-Snapshot,,true,false
+"Inventory Status",menu.main.inventory.status,/inventory/status,20,Main-Menu-Inventory,Inventory-Status,,true,false
+"Lock",menu.main.inventory.lock,/inventory/lock,21,Main-Menu-Inventory,Inventory-Lock,,true,false
 "QC Rule Maintenance",menu.main.qc.qc-rule,/qc/rules,1,Main-Menu-QC,QC-Rule,,true,false
 "QC Rule Configuration",menu.main.qc.qc-rule-configuration,/qc/rules/configuration,2,Main-Menu-QC,QC-Rule-Configuration,,true,false
 "QC Configuration",menu.main.qc.qc-configuration,/qc/configuration,2,Main-Menu-QC,QC-Configuration,,true,false

@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import javax.persistence.Column;
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -37,6 +39,11 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     private Boolean reuseLPNAfterRemovedFlag;
     private Boolean reuseLPNAfterShippedFlag;
+
+
+    private Boolean locationUtilizationSnapshotEnabled;
+    private Boolean inventoryAgingSnapshotEnabled;
+
 
     public Long getId() {
         return id;
@@ -100,5 +107,21 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setReuseLPNAfterShippedFlag(Boolean reuseLPNAfterShippedFlag) {
         this.reuseLPNAfterShippedFlag = reuseLPNAfterShippedFlag;
+    }
+
+    public Boolean getLocationUtilizationSnapshotEnabled() {
+        return locationUtilizationSnapshotEnabled;
+    }
+
+    public void setLocationUtilizationSnapshotEnabled(Boolean locationUtilizationSnapshotEnabled) {
+        this.locationUtilizationSnapshotEnabled = locationUtilizationSnapshotEnabled;
+    }
+
+    public Boolean getInventoryAgingSnapshotEnabled() {
+        return inventoryAgingSnapshotEnabled;
+    }
+
+    public void setInventoryAgingSnapshotEnabled(Boolean inventoryAgingSnapshotEnabled) {
+        this.inventoryAgingSnapshotEnabled = inventoryAgingSnapshotEnabled;
     }
 }
