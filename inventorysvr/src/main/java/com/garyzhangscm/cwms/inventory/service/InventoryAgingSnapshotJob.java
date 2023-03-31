@@ -19,58 +19,44 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.model.InventoryAgingSnapshot;
 import com.garyzhangscm.cwms.inventory.model.WarehouseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.util.List;
 
 @Component
-public class LocationUtilizationSnapshotJob {
+public class InventoryAgingSnapshotJob {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocationUtilizationSnapshotJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(InventoryAgingSnapshotJob.class);
     @Autowired
-    private LocationUtilizationSnapshotBatchService locationUtilizationSnapshotBatchService;
-
-    @Autowired
-    private InventoryConfigurationService inventoryConfigurationService;
+    private InventoryAgingSnapshotService inventoryAgingSnapshotService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
-    @Scheduled(cron = "0 0 0-23 * * ?")
-    public void generateLocationUtilizationSnapshot() throws IOException {
 
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void generateInventoryAgingSnapshot() throws IOException {
 
         logger.debug("start to automatically generate the inventory aging snapshot");
         List<WarehouseConfiguration> warehouseConfigurations
                 = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration();
         warehouseConfigurations.stream().filter(
-                warehouseConfiguration -> warehouseConfiguration.getLocationUtilizationSnapshotEnabled()
+                warehouseConfiguration -> warehouseConfiguration.getInventoryAgingSnapshotEnabled()
         ).forEach(
                 warehouseConfiguration -> {
-                    logger.debug("start to generate location utilization snapshot for warehouse {}",
+                    logger.debug("start to generate inventory aging snapshot for warehouse {}",
                             warehouseConfiguration.getWarehouse().getId());
 
-                    locationUtilizationSnapshotBatchService.generateLocationUtilizationSnapshotBatch(
-                            warehouseConfiguration.getWarehouse().getId()
-                    );
+                    inventoryAgingSnapshotService.generateInventoryAgingSnapshot(warehouseConfiguration.getWarehouse().getId());
                 }
         );
-        /***
-        logger.debug("start to automatically generate the location utilization snapshot");
-        List<Long> warehouseIds = inventoryConfigurationService.findLocationUtilizationEnabledWarehouses();
-        warehouseIds.forEach(
-                warehouseId -> {
-                    logger.debug("start to generate location utilization snapshot for warehouse {}", warehouseId);
-
-                    locationUtilizationSnapshotBatchService.generateLocationUtilizationSnapshotBatch(warehouseId);
-                }
-        );
-         **/
 
 
     }
