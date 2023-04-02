@@ -87,7 +87,7 @@ public class InventoryAgingSnapshotService {
 
                     if (Strings.isNotBlank(status)) {
 
-                        predicates.add(criteriaBuilder.equal(root.get("status"), LocationUtilizationSnapshotStatus.valueOf(status)));
+                        predicates.add(criteriaBuilder.equal(root.get("status"), InventoryAgingSnapshotStatus.valueOf(status)));
                     }
 
                     if (Strings.isNotBlank(number)) {
