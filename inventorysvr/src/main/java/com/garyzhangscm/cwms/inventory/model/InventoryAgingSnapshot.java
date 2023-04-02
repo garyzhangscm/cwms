@@ -75,6 +75,9 @@ public class InventoryAgingSnapshot extends AuditibleEntity<String> implements S
     @Enumerated(EnumType.STRING)
     private InventoryAgingSnapshotStatus status;
 
+    public InventoryAgingSnapshot( ) {
+    }
+
     public InventoryAgingSnapshot(Long warehouseId, String number) {
         this(warehouseId, number, InventoryAgingSnapshotStatus.PROCESSING,
                 ZonedDateTime.now(ZoneOffset.UTC));
