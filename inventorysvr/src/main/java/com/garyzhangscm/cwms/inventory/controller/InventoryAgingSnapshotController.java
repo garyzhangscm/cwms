@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.controller;
 
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
+import com.garyzhangscm.cwms.inventory.model.ClientInventoryAgingSnapshot;
 import com.garyzhangscm.cwms.inventory.model.InventoryAgingSnapshot;
 import com.garyzhangscm.cwms.inventory.model.LocationUtilizationSnapshotBatch;
 import com.garyzhangscm.cwms.inventory.service.InventoryAgingSnapshotService;
@@ -27,9 +28,11 @@ import com.garyzhangscm.cwms.inventory.service.LocationUtilizationSnapshotBatchS
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -48,8 +51,8 @@ public class InventoryAgingSnapshotController {
             @RequestParam Long warehouseId,
             @RequestParam(name="status", required = false, defaultValue = "") String status,
             @RequestParam(name="number", required = false, defaultValue = "") String number,
-            @RequestParam(name="startTime", required = false, defaultValue = "") LocalDateTime startTime,
-            @RequestParam(name="endTime", required = false, defaultValue = "") LocalDateTime endTime) {
+            @RequestParam(name="startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name="endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime) {
         return inventoryAgingSnapshotService.findAll(warehouseId, status,  number, startTime, endTime);
     }
 
@@ -60,6 +63,14 @@ public class InventoryAgingSnapshotController {
         inventoryAgingSnapshotService.remove(warehouseId, id);
 
         return ResponseBodyWrapper.success("inventory aging snapshot is removed");
+    }
+
+    @RequestMapping(value="/inventory-aging-snapshots/by-client/group-by-lpn", method = RequestMethod.GET)
+    public ClientInventoryAgingSnapshot getClientInventoryAgingSnapshotGroupByLPN(
+            @RequestParam Long warehouseId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) ZonedDateTime date,
+            @RequestParam Long clientId) {
+        return inventoryAgingSnapshotService.getClientInventoryAgingSnapshotGroupByLPN(warehouseId, date, clientId);
     }
 
 

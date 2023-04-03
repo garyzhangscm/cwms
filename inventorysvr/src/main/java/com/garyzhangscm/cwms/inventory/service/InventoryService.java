@@ -3689,6 +3689,10 @@ public class InventoryService {
     }
 
     public List<Inventory> findByClientId(Long warehouseId, Long clientId) {
+        return findByClientId(warehouseId, clientId, true);
+    }
+    public List<Inventory> findByClientId(Long warehouseId, Long clientId,
+                                          boolean includeDetails) {
         return findAll(warehouseId,
                 null,
                 null,
@@ -3714,6 +3718,6 @@ public class InventoryService {
                 null,
                 null,
                 false,
-                null);
+                null, includeDetails);
     }
 }
