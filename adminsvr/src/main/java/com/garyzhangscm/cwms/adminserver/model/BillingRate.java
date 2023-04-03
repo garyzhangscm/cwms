@@ -57,6 +57,23 @@ public class BillingRate extends AuditibleEntity<String>{
     private Boolean enabled;
 
 
+    public BillingRate(){}
+    public BillingRate(Long companyId,
+                       Long warehouseId,
+                       Long clientId,
+                       BillableCategory billableCategory,
+                       Double rate,
+                       BillingCycle billingCycle,
+                       Boolean enabled) {
+        this.companyId = companyId;
+        this.warehouseId = warehouseId;
+        this.clientId = clientId;
+        this.billableCategory = billableCategory;
+        this.rate = rate;
+        this.billingCycle = billingCycle;
+        this.enabled = enabled;
+    }
+
     public Long getId() {
         return id;
     }

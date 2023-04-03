@@ -66,11 +66,12 @@ public class InventoryAgingSnapshotController {
     }
 
     @RequestMapping(value="/inventory-aging-snapshots/by-client/group-by-lpn", method = RequestMethod.GET)
-    public ClientInventoryAgingSnapshot getClientInventoryAgingSnapshotGroupByLPN(
+    public List<ClientInventoryAgingSnapshot> getClientInventoryAgingSnapshotGroupByLPN(
             @RequestParam Long warehouseId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) ZonedDateTime date,
+            @RequestParam(name="startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name="endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime,
             @RequestParam Long clientId) {
-        return inventoryAgingSnapshotService.getClientInventoryAgingSnapshotGroupByLPN(warehouseId, date, clientId);
+        return inventoryAgingSnapshotService.getClientInventoryAgingSnapshotGroupByLPN(warehouseId, clientId, startTime, endTime);
     }
 
 

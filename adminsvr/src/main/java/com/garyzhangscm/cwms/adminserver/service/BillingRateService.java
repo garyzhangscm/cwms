@@ -242,4 +242,29 @@ public class BillingRateService {
     public List<BillingRate> saveBillingRates(List<BillingRate> billingRates) {
         return billingRates.stream().map(this::saveBillingRate).collect(Collectors.toList());
     }
+
+    public List<ProgressiveBillingRate> getProgressiveRateByCategory(Long companyId, Long warehouseId,
+                                                          Long clientId, BillableCategory billableCategory,
+                                                          Boolean exactMatch) {
+
+
+        List<ProgressiveBillingRate> progressiveBillingRates = new ArrayList<>();
+        progressiveBillingRates.add(
+                new ProgressiveBillingRate(companyId, warehouseId, clientId, billableCategory, 1.0,
+                        BillingCycle.DAILY, 0, 30, true)
+        );
+        progressiveBillingRates.add(
+                new ProgressiveBillingRate(companyId, warehouseId, clientId, billableCategory, 1.0,
+                        BillingCycle.DAILY, 31, 60, true)
+        );
+        progressiveBillingRates.add(
+                new ProgressiveBillingRate(companyId, warehouseId, clientId, billableCategory, 1.0,
+                        BillingCycle.DAILY, 61, 90, true)
+        );
+        progressiveBillingRates.add(
+                new ProgressiveBillingRate(companyId, warehouseId, clientId, billableCategory, 1.0,
+                        BillingCycle.DAILY, 91, 9999, true)
+        );
+        return  progressiveBillingRates;
+    }
 }
