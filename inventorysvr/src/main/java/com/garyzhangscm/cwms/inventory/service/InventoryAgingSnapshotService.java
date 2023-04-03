@@ -35,6 +35,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -382,7 +383,58 @@ public class InventoryAgingSnapshotService {
         inventoryAgingSnapshotRepository.deleteById(id);
     }
 
-    public ClientInventoryAgingSnapshot getClientInventoryAgingSnapshotGroupByLPN(Long warehouseId, ZonedDateTime date, Long clientId) {
+    public List<ClientInventoryAgingSnapshot> getClientInventoryAgingSnapshotGroupByLPN(Long warehouseId, Long clientId,
+                                                                                  ZonedDateTime startTime,
+                                                                                  ZonedDateTime endTime) {
+
+        List<InventoryAgingSnapshot> inventoryAgingSnapshots = findAll(warehouseId,
+                InventoryAgingSnapshotStatus.DONE.toString(), null,
+                startTime,
+                endTime).stream()
+                // only return the inventory snapshot that has the client's information
+                .filter(
+                        inventoryAgingSnapshot ->
+                                inventoryAgingSnapshot.getClientInventoryAgingSnapshots()
+                                        .stream().anyMatch(clientInventoryAgingSnapshot -> clientId.equals(clientInventoryAgingSnapshot.getClientId()))
+                ).collect(Collectors.toList());
+
+        if (inventoryAgingSnapshots.isEmpty()) {
+            return null;
+        }
+
+        Collections.sort(inventoryAgingSnapshots, Comparator.comparing(InventoryAgingSnapshot::getCreatedTime));
+
+        // make sure we will only have one record per day
+        // key: YYYYMMDD
+        // value: InventoryAgingSnapshot
+        Map<String, InventoryAgingSnapshot> inventoryAgingSnapshotMap = new HashMap<>();
+        inventoryAgingSnapshots.forEach(
+                inventoryAgingSnapshot -> {
+                    String key = inventoryAgingSnapshot.getCreatedTime().format(DateTimeFormatter.ofPattern("YYYYMMDD"));
+                    if (!inventoryAgingSnapshotMap.containsKey(key)) {
+                        inventoryAgingSnapshotMap.put(key, inventoryAgingSnapshot);
+                    }
+                }
+        );
+
+        return inventoryAgingSnapshotMap.values().stream().map(
+                inventoryAgingSnapshot ->
+                        inventoryAgingSnapshot.getClientInventoryAgingSnapshots().stream().filter(
+                                clientInventoryAgingSnapshot -> clientId.equals(clientInventoryAgingSnapshot.getClientId()))
+                                .findFirst().orElse(null)
+        ).filter(inventoryAgingSnapshot -> Objects.nonNull(inventoryAgingSnapshot))
+                .map(
+                        clientInventoryAgingSnapshot -> {
+                            clientInventoryAgingSnapshot.setupInventoryAgingByLPN();
+                            // clear the details since we don't need it any more and
+                            // won't need to send to the caller
+                            clientInventoryAgingSnapshot.setInventoryAgingSnapshotDetails(Collections.emptyList());
+                            return clientInventoryAgingSnapshot;
+                        }
+                ).collect(Collectors.toList());
+
+    }
+    public ClientInventoryAgingSnapshot getClientInventoryAgingSnapshotGroupByLPN(Long warehouseId, Long clientId, ZonedDateTime date) {
         // get the date's inventory that is on the specific date
         ZonedDateTime startTime = date.toLocalDate().atStartOfDay(date.getZone());
         ZonedDateTime endTime = date.toLocalDate().plusDays(1).atStartOfDay(date.getZone()).minusMinutes(1);

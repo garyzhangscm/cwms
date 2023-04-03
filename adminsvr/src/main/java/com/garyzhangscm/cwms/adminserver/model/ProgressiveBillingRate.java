@@ -12,13 +12,13 @@ import javax.persistence.*;
  *
  */
 @Entity
-@Table(name = "billing_rate")
-public class BillingRate extends AuditibleEntity<String>{
+@Table(name = "progressive_billing_rate")
+public class ProgressiveBillingRate extends AuditibleEntity<String>{
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "billing_rate_id")
+    @Column(name = "progressive_billing_rate_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -53,24 +53,34 @@ public class BillingRate extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private BillingCycle billingCycle;
 
+    @Column(name = "cycle_start")
+    private Integer cycleStart;
+
+    @Column(name = "cycle_end")
+    private Integer cycleEnd;
+
     @Column(name = "enabled")
     private Boolean enabled;
 
 
-    public BillingRate(){}
-    public BillingRate(Long companyId,
-                       Long warehouseId,
-                       Long clientId,
-                       BillableCategory billableCategory,
-                       Double rate,
-                       BillingCycle billingCycle,
-                       Boolean enabled) {
+    public ProgressiveBillingRate(){}
+    public ProgressiveBillingRate(Long companyId,
+                                  Long warehouseId,
+                                  Long clientId,
+                                  BillableCategory billableCategory,
+                                  Double rate,
+                                  BillingCycle billingCycle,
+                                  Integer cycleStart,
+                                  Integer cycleEnd,
+                                  Boolean enabled) {
         this.companyId = companyId;
         this.warehouseId = warehouseId;
         this.clientId = clientId;
         this.billableCategory = billableCategory;
         this.rate = rate;
         this.billingCycle = billingCycle;
+        this.cycleStart = cycleStart;
+        this.cycleEnd = cycleEnd;
         this.enabled = enabled;
     }
 
@@ -161,5 +171,21 @@ public class BillingRate extends AuditibleEntity<String>{
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Integer getCycleStart() {
+        return cycleStart;
+    }
+
+    public void setCycleStart(Integer cycleStart) {
+        this.cycleStart = cycleStart;
+    }
+
+    public Integer getCycleEnd() {
+        return cycleEnd;
+    }
+
+    public void setCycleEnd(Integer cycleEnd) {
+        this.cycleEnd = cycleEnd;
     }
 }

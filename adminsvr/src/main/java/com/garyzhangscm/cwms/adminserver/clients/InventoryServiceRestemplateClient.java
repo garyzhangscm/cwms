@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.adminserver.model.ClientInventoryAgingSnapshot;
 import com.garyzhangscm.cwms.adminserver.model.ClientLocationUtilizationSnapshotBatch;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
@@ -855,6 +856,33 @@ public class InventoryServiceRestemplateClient {
             return responseBodyWrapper.getData();
     }
 
+
+    public List<ClientInventoryAgingSnapshot> getClientInventoryAgingSnapshot(
+            Long warehouseId, Long clientId, ZonedDateTime startTime, ZonedDateTime endTime) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory-aging-snapshots/by-client/group-by-lpn")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("loadDetails", false)
+                        .queryParam("startTime", startTime)
+                        .queryParam("endTime", endTime);
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+
+
+        // logger.debug("Start to get item: {} / {}", name, warehouseId);
+        ResponseBodyWrapper<List<ClientInventoryAgingSnapshot>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.build(true).toUri(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<ClientInventoryAgingSnapshot>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
