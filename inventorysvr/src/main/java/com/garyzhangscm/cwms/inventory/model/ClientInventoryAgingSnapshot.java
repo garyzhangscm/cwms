@@ -29,7 +29,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Entity
@@ -58,6 +60,8 @@ public class ClientInventoryAgingSnapshot extends AuditibleEntity<String> implem
     private Long averageAgeInWeeks;
 
 
+    @Transient
+    private List<InventoryAgingByLPN> inventoryAgingByLPNS = new ArrayList<>();
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -85,6 +89,25 @@ public class ClientInventoryAgingSnapshot extends AuditibleEntity<String> implem
 
     }
 
+    public void setupInventoryAgingByLPN() {
+
+        Map<String, InventoryAgingByLPN> inventoryAgingByLPNMap = new HashMap<>();
+
+        getInventoryAgingSnapshotDetails().forEach(
+                inventoryAgingSnapshotDetail -> {
+                    InventoryAgingByLPN inventoryAgingByLPN = inventoryAgingByLPNMap.getOrDefault(inventoryAgingSnapshotDetail.getLpn(),
+                            new InventoryAgingByLPN(inventoryAgingSnapshotDetail.getLpn()));
+
+                    inventoryAgingByLPN.addInventoryAgingSnapshotDetail(inventoryAgingSnapshotDetail);
+                    inventoryAgingByLPNMap.put(
+                            inventoryAgingSnapshotDetail.getLpn(),
+                            inventoryAgingByLPN
+                    );
+                }
+        );
+        inventoryAgingByLPNS = new ArrayList<>(inventoryAgingByLPNMap.values());
+
+    }
     public void recalculateAverageAge() {
         this.averageAgeInDays = (long)
                 this.getInventoryAgingSnapshotDetails().stream().map(
@@ -128,27 +151,20 @@ public class ClientInventoryAgingSnapshot extends AuditibleEntity<String> implem
         this.inventoryAgingSnapshot = inventoryAgingSnapshot;
     }
 
-    public List<InventoryAgingSnapshotDetail> getInventoryAgingDetails() {
-        return inventoryAgingSnapshotDetails;
-    }
-
-    public void setInventoryAgingDetails(List<InventoryAgingSnapshotDetail> inventoryAgingSnapshotDetails) {
-        this.inventoryAgingSnapshotDetails = inventoryAgingSnapshotDetails;
-        // recalculate the average age in days and weeks once we changed the details
-        recalculateAverageAge();
-    }
-    public void addInventoryAgingDetail(InventoryAgingSnapshotDetail inventoryAgingSnapshotDetail) {
-        this.inventoryAgingSnapshotDetails.add(inventoryAgingSnapshotDetail);
-        // recalculate the average age in days and weeks once we changed the details
-        recalculateAverageAge();
-    }
-
     public List<InventoryAgingSnapshotDetail> getInventoryAgingSnapshotDetails() {
         return inventoryAgingSnapshotDetails;
     }
 
     public void setInventoryAgingSnapshotDetails(List<InventoryAgingSnapshotDetail> inventoryAgingSnapshotDetails) {
         this.inventoryAgingSnapshotDetails = inventoryAgingSnapshotDetails;
+        // recalculate the average age in days and weeks once we changed the details
+        recalculateAverageAge();
+    }
+    public void addInventoryAgingSnapshotDetail(InventoryAgingSnapshotDetail inventoryAgingSnapshotDetail) {
+        this.inventoryAgingSnapshotDetails.add(inventoryAgingSnapshotDetail);
+        inventoryAgingSnapshotDetail.setClientInventoryAgingSnapshot(this);
+        // recalculate the average age in days and weeks once we changed the details
+        recalculateAverageAge();
     }
 
     public Long getWarehouseId() {
@@ -173,5 +189,13 @@ public class ClientInventoryAgingSnapshot extends AuditibleEntity<String> implem
 
     public void setAverageAgeInWeeks(Long averageAgeInWeeks) {
         this.averageAgeInWeeks = averageAgeInWeeks;
+    }
+
+    public List<InventoryAgingByLPN> getInventoryAgingByLPNS() {
+        return inventoryAgingByLPNS;
+    }
+
+    public void setInventoryAgingByLPNS(List<InventoryAgingByLPN> inventoryAgingByLPNS) {
+        this.inventoryAgingByLPNS = inventoryAgingByLPNS;
     }
 }

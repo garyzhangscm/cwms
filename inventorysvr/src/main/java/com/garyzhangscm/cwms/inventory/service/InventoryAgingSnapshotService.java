@@ -18,32 +18,21 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.garyzhangscm.cwms.inventory.CustomRequestScopeAttr;
-import com.garyzhangscm.cwms.inventory.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryAgingSnapshotRepository;
-import com.garyzhangscm.cwms.inventory.repository.LocationUtilizationSnapshotBatchRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -76,10 +65,21 @@ public class InventoryAgingSnapshotService {
     public List<InventoryAgingSnapshot> findAll(Long warehouseId,
                                                 String status,
                                                 String number,
-                                                LocalDateTime startTime,
-                                                LocalDateTime endTime) {
+                                                ZonedDateTime startTime,
+                                                ZonedDateTime endTime) {
+        return findAll(warehouseId, status, number,
+                startTime, endTime, true);
 
-        return inventoryAgingSnapshotRepository.findAll(
+    }
+    public List<InventoryAgingSnapshot> findAll(Long warehouseId,
+                                                String status,
+                                                String number,
+                                                ZonedDateTime startTime,
+                                                ZonedDateTime endTime,
+                                                Boolean loadDetails) {
+
+        List<InventoryAgingSnapshot> inventoryAgingSnapshots =
+                inventoryAgingSnapshotRepository.findAll(
                 (Root<InventoryAgingSnapshot> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -111,6 +111,12 @@ public class InventoryAgingSnapshotService {
                 ,
                 Sort.by(Sort.Direction.DESC, "createdTime")
         );
+
+        if (!inventoryAgingSnapshots.isEmpty() && Boolean.TRUE.equals(loadDetails)) {
+            loadAttribute(inventoryAgingSnapshots);
+        }
+        return inventoryAgingSnapshots;
+
     }
 
     public InventoryAgingSnapshot save(InventoryAgingSnapshot inventoryAgingSnapshot) {
@@ -290,7 +296,7 @@ public class InventoryAgingSnapshotService {
                                             inventoryAgingSnapshot
                                     )
                             );
-                    clientInventoryAgingSnapshot.addInventoryAgingDetail(
+                    clientInventoryAgingSnapshot.addInventoryAgingSnapshotDetail(
                             inventoryAgingSnapshotDetail
                     );
                     clientInventoryAgingSnapshotMap.put(
@@ -365,7 +371,7 @@ public class InventoryAgingSnapshotService {
             Long warehouseId, Long clientId) {
 
         // get four wall inventory by client
-        List<Inventory> inventories = inventoryService.findByClientId(warehouseId, clientId);
+        List<Inventory> inventories = inventoryService.findByClientId(warehouseId, clientId, false);
 
         return inventories.stream().map(
                 inventory -> new InventoryAgingSnapshotDetail(inventory)
@@ -374,5 +380,45 @@ public class InventoryAgingSnapshotService {
 
     public void remove(Long warehouseId, Long id) {
         inventoryAgingSnapshotRepository.deleteById(id);
+    }
+
+    public ClientInventoryAgingSnapshot getClientInventoryAgingSnapshotGroupByLPN(Long warehouseId, ZonedDateTime date, Long clientId) {
+        // get the date's inventory that is on the specific date
+        ZonedDateTime startTime = date.toLocalDate().atStartOfDay(date.getZone());
+        ZonedDateTime endTime = date.toLocalDate().plusDays(1).atStartOfDay(date.getZone()).minusMinutes(1);
+
+        List<InventoryAgingSnapshot> inventoryAgingSnapshots = findAll(warehouseId,
+                InventoryAgingSnapshotStatus.DONE.toString(), null,
+                startTime,
+                endTime).stream()
+                // only return the inventory snapshot that has the client's information
+                .filter(
+                        inventoryAgingSnapshot ->
+                                inventoryAgingSnapshot.getClientInventoryAgingSnapshots()
+                                        .stream().anyMatch(clientInventoryAgingSnapshot -> clientId.equals(clientInventoryAgingSnapshot.getClientId()))
+                ).collect(Collectors.toList());
+
+        if (inventoryAgingSnapshots.isEmpty()) {
+            return null;
+        }
+        // get the first snapshot of the day
+        Collections.sort(inventoryAgingSnapshots, Comparator.comparing(InventoryAgingSnapshot::getCreatedTime));
+
+        ClientInventoryAgingSnapshot matchedClientInventoryAgingSnapshot =
+                inventoryAgingSnapshots.get(0).getClientInventoryAgingSnapshots().stream().filter(
+                    clientInventoryAgingSnapshot -> clientId.equals(clientInventoryAgingSnapshot.getClientId()))
+                .findFirst().orElse(null);
+
+        if (Objects.isNull(matchedClientInventoryAgingSnapshot)) {
+            return null;
+        }
+
+        matchedClientInventoryAgingSnapshot.setupInventoryAgingByLPN();
+        // clear the details since we don't need it any more and
+        // won't need to send to the caller
+        matchedClientInventoryAgingSnapshot.setInventoryAgingSnapshotDetails(Collections.emptyList());
+
+        return matchedClientInventoryAgingSnapshot;
+
     }
 }
