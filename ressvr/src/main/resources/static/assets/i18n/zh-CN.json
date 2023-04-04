@@ -2046,5 +2046,6 @@
   "locationUtilizationSnapshotEnabled": "启用库位使用率快照",
   "inventoryAgingSnapshotEnabled": "启用库龄快照",
   "INVENTORY-AGING-SNAPSHOT-STATUS-PROCESSING": "处理中",
-  "INVENTORY-AGING-SNAPSHOT-STATUS-DONE": "完成"
+  "INVENTORY-AGING-SNAPSHOT-STATUS-DONE": "完成",
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "按库龄计费"
 }

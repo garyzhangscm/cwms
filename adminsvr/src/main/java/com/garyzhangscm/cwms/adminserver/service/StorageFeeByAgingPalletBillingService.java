@@ -239,6 +239,8 @@ public class StorageFeeByAgingPalletBillingService extends  StorageFeeBillingSer
                 date.toLocalDate().atStartOfDay().atZone(ZoneOffset.UTC),
                 date.toLocalDate().plusDays(1).atStartOfDay().minusNanos(1).atZone(ZoneOffset.UTC),
                 date.toLocalDate(),
+                inventoryAgingByLPN.getLpn(),
+                "",
                 totalAmount,
                 totalCharge,
                 0.0

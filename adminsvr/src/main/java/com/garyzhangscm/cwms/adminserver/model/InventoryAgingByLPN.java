@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 
 
@@ -41,6 +44,15 @@ public class InventoryAgingByLPN implements Serializable {
 
     }
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public InventoryAgingByLPN(String lpn, Long quantity, Long ageInDays, Long ageInWeeks) {
         this.lpn = lpn;
         this.quantity = quantity;
