@@ -2048,5 +2048,6 @@
   "INVENTORY-AGING-SNAPSHOT-STATUS-PROCESSING": "In Processing",
   "INVENTORY-AGING-SNAPSHOT-STATUS-DONE": "Done",
   "averageAgeInDays": "Average Age In Days",
-  "averageAgeInWeeks": "Average Age In Weekscd "
+  "averageAgeInWeeks": "Average Age In Weeks",
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "Storage Fee by Aging Inventory"
 }

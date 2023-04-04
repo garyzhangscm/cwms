@@ -402,7 +402,7 @@ public class InventoryAgingSnapshotService {
             return null;
         }
 
-        Collections.sort(inventoryAgingSnapshots, Comparator.comparing(InventoryAgingSnapshot::getCreatedTime));
+        Collections.sort(inventoryAgingSnapshots, Comparator.comparing(InventoryAgingSnapshot::getStartTime));
 
         // make sure we will only have one record per day
         // key: YYYYMMDD
@@ -410,7 +410,7 @@ public class InventoryAgingSnapshotService {
         Map<String, InventoryAgingSnapshot> inventoryAgingSnapshotMap = new HashMap<>();
         inventoryAgingSnapshots.forEach(
                 inventoryAgingSnapshot -> {
-                    String key = inventoryAgingSnapshot.getCreatedTime().format(DateTimeFormatter.ofPattern("YYYYMMDD"));
+                    String key = inventoryAgingSnapshot.getStartTime().format(DateTimeFormatter.ofPattern("YYYYMMDD"));
                     if (!inventoryAgingSnapshotMap.containsKey(key)) {
                         inventoryAgingSnapshotMap.put(key, inventoryAgingSnapshot);
                     }
