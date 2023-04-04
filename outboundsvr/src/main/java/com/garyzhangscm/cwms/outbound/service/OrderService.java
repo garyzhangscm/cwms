@@ -304,38 +304,52 @@ public class OrderService {
     }
 
 
-    public List<Order> findWavableOrders(Long warehouseId,
-                                         String orderNumber,
-                                         String customerName) {
-        // We will get all the wavable order lines and constuct the order structure with those order line
-        // As long as there's one line in the order is wavable, we will return the order but only with
-        // those wavable lines
-        logger.debug("start to find order lines with order: {}, customer：{}", orderNumber, customerName);
-        List<OrderLine> wavableOrderLine = orderLineService.findWavableOrderLines(warehouseId,
-                orderNumber, customerName);
-        logger.debug("get order lines: {}", wavableOrderLine.size());
-        Map<String, Order> wavableOrderMap = new HashMap<>();
+    public List<Order> findWavableOrders(Long warehouseId, String orderNumber,
+                                         Long clientId,
+                                         String customerName, Long customerId,
+                                         ZonedDateTime startCreatedTime,
+                                         ZonedDateTime endCreatedTime,
+                                         LocalDate specificCreatedDate,
+                                         ClientRestriction clientRestriction) {
 
-        wavableOrderLine.forEach(orderLine -> {
-            Order order;
-            if (wavableOrderMap.containsKey(orderLine.getOrder().getNumber())) {
-                order = wavableOrderMap.get(orderLine.getOrder().getNumber());
-            }
-            else {
-                order = orderLine.getOrder();
-                // clear all lines so that we will only have the wavable lines in the order
-                order.setOrderLines(new ArrayList<>());
+        List<Order> orders = findAll(warehouseId,
+                orderNumber, null,
+                null,
+                null,
+                null,
+                startCreatedTime,
+                endCreatedTime,
+                specificCreatedDate,
+                null,
+                customerName,
+                customerId,
+                clientId,
+                null,
+                true, clientRestriction);
 
-            }
+        // skip the completed ones and any orders that doesn't have any open quantity
+        return orders.stream().filter(
+                order -> !order.getStatus().equals(OrderStatus.CANCELLED) && !order.getStatus().equals(OrderStatus.COMPLETE)
+        ).filter(
+                order -> order.getOrderLines().stream().anyMatch(
+                        orderLine -> orderLine.getOpenQuantity() > 0
+                )
+        ).map(
+                // remove the lines that doesn't have any open quantity
+                order -> {
+                    Iterator<OrderLine> orderLineIterator = order.getOrderLines().iterator();
+                    while(orderLineIterator.hasNext()) {
+                        OrderLine orderLine = orderLineIterator.next();
+                        if (orderLine.getOpenQuantity() == 0) {
+                            orderLineIterator.remove();
+                        }
+                    }
+                    return order;
+                }
+        ).filter(
+                order -> !order.getOrderLines().isEmpty()
+        ).collect(Collectors.toList());
 
-            order.addOrderLine(orderLine);
-            wavableOrderMap.put(order.getNumber(), order);
-
-        });
-
-        wavableOrderMap.values().forEach(order -> logger.debug("will return order # {} with {} wavable lines ", order.getNumber(), order.getOrderLines().size()));
-
-        return new ArrayList<>(wavableOrderMap.values());
     }
 
     public Order findByNumber(Long warehouseId, String number, boolean loadDetails) {

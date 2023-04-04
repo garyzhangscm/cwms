@@ -40,7 +40,7 @@ public class OrderFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "inventoryStatus", "Inventory Status",
-                String.class, 100, false
+                String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "allocationStrategyType", "Allocation Strategy Type(Default to FIFO)",
@@ -145,15 +145,15 @@ public class OrderFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "color", "Color",
-                String.class, 100, false
+                String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "productSize", "Product Size",
-                String.class, 100, false
+                String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "style", "Style",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
     }
