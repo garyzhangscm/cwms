@@ -33,12 +33,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -194,10 +200,14 @@ public class OrderLineService{
         }
     }
 
-
-    public List<OrderLine> findWavableOrderLines(Long warehouseId,
-                                                 String orderNumber,
-                                         String customerName) {
+/**
+    public List<OrderLine> findWavableOrderLines(Long warehouseId, String orderNumber,
+                                                 Long clientId,
+                                                 String customerName, Long customerId,
+                                                 ZonedDateTime startCreatedTime,
+                                                 ZonedDateTime endCreatedTime,
+                                                 LocalDate specificCreatedDate,
+                                                 ClientRestriction clientRestriction) {
 
         List<OrderLine> wavableOrderLine =  orderLineRepository.findAll(
                 (Root<OrderLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -222,6 +232,33 @@ public class OrderLineService{
                         predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), customer.getId()));
 
                     }
+                    if (Objects.nonNull(customerId)) {
+                        predicates.add(criteriaBuilder.equal(joinOrder.get("shipToCustomerId"), customerId));
+                    }
+
+                    if (Objects.nonNull(startCreatedTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                joinOrder.get("createdTime"), startCreatedTime));
+
+                    }
+
+                    if (Objects.nonNull(endCreatedTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                joinOrder.get("createdTime"), endCreatedTime));
+
+                    }
+                    if (Objects.nonNull(specificCreatedDate)) {
+                        LocalDateTime dateStartTime = specificCreatedDate.atStartOfDay();
+                        LocalDateTime dateEndTime = specificCreatedDate.atStartOfDay().plusDays(1).minusSeconds(1);
+                        predicates.add(criteriaBuilder.between(
+                                joinOrder.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+
+                    }
+                    if (Objects.nonNull(clientId)) {
+
+                        predicates.add(criteriaBuilder.equal(
+                                joinOrder.get("clientId"), clientId));
+                    }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
@@ -235,6 +272,7 @@ public class OrderLineService{
         ).collect(Collectors.toList());
     }
 
+ **/
     public OrderLine save(OrderLine orderLine) {
         return orderLineRepository.save(orderLine);
     }

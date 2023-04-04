@@ -2047,5 +2047,8 @@
   "inventoryAgingSnapshotEnabled": "启用库龄快照",
   "INVENTORY-AGING-SNAPSHOT-STATUS-PROCESSING": "处理中",
   "INVENTORY-AGING-SNAPSHOT-STATUS-DONE": "完成",
-  "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "按库龄计费"
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "按库龄计费",
+  "leave-empty-system-generate": "如果不填，系统将会自动生成号码",
+  "no-order-selected": "请选择订单",
+  "current-wave": "当前波次"
 }

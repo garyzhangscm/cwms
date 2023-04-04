@@ -7,7 +7,7 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/dblink-v1.6.jar /usr/local/service/
+ADD target/dblink-v1.7.jar /usr/local/service/
 
 
-ENTRYPOINT ["java","-jar","/usr/local/service/dblink-v1.6.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/dblink-v1.7.jar"]

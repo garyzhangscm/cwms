@@ -2049,5 +2049,8 @@
   "INVENTORY-AGING-SNAPSHOT-STATUS-DONE": "Done",
   "averageAgeInDays": "Average Age In Days",
   "averageAgeInWeeks": "Average Age In Weeks",
-  "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "Storage Fee by Aging Inventory"
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "Storage Fee by Aging Inventory",
+  "leave-empty-system-generate": "Leave it empty to let the system generate one for you",
+  "no-order-selected": "No Order Selected",
+  "current-wave": "Current Wave"
 }

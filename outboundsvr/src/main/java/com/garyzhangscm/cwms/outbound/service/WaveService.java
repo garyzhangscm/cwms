@@ -30,6 +30,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -322,9 +323,17 @@ public class WaveService {
     }
 
     public List<Order> findWaveCandidate(Long warehouseId, String orderNumber,
-                                         String customerName) {
+                                         Long clientId,
+                                         String customerName, Long customerId,
+                                         ZonedDateTime startCreatedTime,
+                                         ZonedDateTime endCreatedTime,
+                                         LocalDate specificCreatedDate,
+                                         ClientRestriction clientRestriction
+    ) {
 
-        return orderService.findWavableOrders(warehouseId, orderNumber, customerName);
+        return orderService.findWavableOrders(warehouseId, orderNumber, clientId,
+                customerName, customerId, startCreatedTime, endCreatedTime,
+                specificCreatedDate, clientRestriction);
     }
 
     public Wave allocateWave(Long id) {
