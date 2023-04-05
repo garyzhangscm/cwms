@@ -133,6 +133,19 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @JsonIgnore
     private PickList pickList;
 
+    @ManyToOne
+    @JoinColumn(name = "bulk_pick_id")
+    @JsonIgnore
+    private BulkPick bulkPick;
+
+    // if the pick is currently picking by certain user
+    @Column(name = "picking_by_user_id")
+    private Long pickingByUserId;
+
+    // if the user is assigned to certain user
+    @Column(name = "assigned_to_user_id")
+    private Long assignedToUserId;
+
 
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
@@ -208,6 +221,44 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         }
     }
 
+    public Pick clone() {
+        Pick pick = new Pick();
+
+        pick.setNumber(getNumber());
+
+        pick.setSourceLocationId(getSourceLocationId());
+        pick.setDestinationLocationId(getDestinationLocationId());
+        pick.setItemId(getItemId());
+        pick.setLpn(getLpn());
+        pick.setWarehouseId(getWarehouseId());
+        pick.setShipmentLine(getShipmentLine());
+        pick.setCartonization(getCartonization());
+
+        pick.setWorkOrderLineId(getWorkOrderLineId());
+        pick.setShortAllocation(getShortAllocation());
+        pick.setPickType(getPickType());
+        pick.setQuantity(getQuantity());
+        pick.setPickedQuantity(getPickedQuantity());
+        pick.setStatus(getStatus());
+        pick.setInventoryStatusId(getInventoryStatusId());
+        pick.setPickMovements(getPickMovements());
+        pick.setPickList(getPickList());
+        pick.setBulkPick(getBulkPick());
+        pick.setPickingByUserId(getPickingByUserId());
+        pick.setAssignedToUserId(getAssignedToUserId());
+        pick.setUnitOfMeasureId(getUnitOfMeasureId());
+        pick.setConfirmLpnFlag(isConfirmLpnFlag());
+        pick.setConfirmItemFlag(isConfirmItemFlag());
+        pick.setConfirmLocationCodeFlag(isConfirmLocationCodeFlag());
+        pick.setConfirmLocationFlag(isConfirmLocationFlag());
+
+        pick.setWorkId(getWorkId());
+        pick.setColor(getColor());
+        pick.setProductSize(getProductSize());
+        pick.setStyle(getStyle());
+
+        return pick;
+    }
     public Long getId() {
         return id;
     }
@@ -348,6 +399,14 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         this.warehouseId = warehouseId;
     }
 
+    public BulkPick getBulkPick() {
+        return bulkPick;
+    }
+
+    public void setBulkPick(BulkPick bulkPick) {
+        this.bulkPick = bulkPick;
+    }
+
     public Warehouse getWarehouse() {
         return warehouse;
     }
@@ -466,6 +525,22 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         else {
             return item.getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
         }
+    }
+
+    public Long getPickingByUserId() {
+        return pickingByUserId;
+    }
+
+    public void setPickingByUserId(Long pickingByUserId) {
+        this.pickingByUserId = pickingByUserId;
+    }
+
+    public Long getAssignedToUserId() {
+        return assignedToUserId;
+    }
+
+    public void setAssignedToUserId(Long assignedToUserId) {
+        this.assignedToUserId = assignedToUserId;
     }
 
     public String getColor() {

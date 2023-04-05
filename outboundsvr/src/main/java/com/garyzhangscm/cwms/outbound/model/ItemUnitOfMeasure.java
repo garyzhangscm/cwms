@@ -38,6 +38,7 @@ public class ItemUnitOfMeasure implements Serializable {
     private Double length;
     private Double width;
     private Double height;
+    private Boolean trackingLpn;
 
 
     public Long getId() {
@@ -111,5 +112,13 @@ public class ItemUnitOfMeasure implements Serializable {
 
     public void setItemPackageType(ItemPackageType itemPackageType) {
         this.itemPackageType = itemPackageType;
+    }
+
+    public Boolean getTrackingLpn() {
+        return trackingLpn;
+    }
+
+    public void setTrackingLpn(Boolean trackingLpn) {
+        this.trackingLpn = trackingLpn;
     }
 }
